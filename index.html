@@ -1,14 +1,24 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Andre AI Technologies</title>
+    <title>Andre AI Technologies | Transformation</title>
+
+    <!-- Favicon -->
     <link rel="icon" href="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" type="image/png">
+
+    <!-- FontAwesome for Video Controls & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- JetBrains Mono Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --brand-purple: #8854F3;
@@ -21,23 +31,21 @@
             overscroll-behavior: none; 
             background-color: #0a0a0a;
         }
-        .content-section { 
-            overscroll-behavior: contain; 
-        }
-
+        
         body {
             font-family: 'JetBrains Mono', monospace;
             background-color: #0a0a0a;
             color: #E5E7EB;
-            /* Высота для работы скролла по секциям. 9 секций * 100vh. */
-            height: 900vh; 
+            /* 11 sections total (0 to 10) = 1100dvh */
+            height: 1100dvh; 
             -webkit-overflow-scrolling: touch;
         }
-        
+
+        /* --- Scroll & Section Architecture using DVH to prevent mobile clipping --- */
         #page-container {
             position: sticky;
             top: 0;
-            height: 100vh;
+            height: 100dvh;
             width: 100%;
             overflow: hidden;
             perspective: 1000px;
@@ -58,15 +66,29 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* Default for mobile */
+            justify-content: flex-start;
             opacity: 0;
             z-index: 1;
             transition: opacity 1.2s ease;
-            padding: 9rem 1rem 4rem; /* Оставляем отступ, чтобы контент не залезал под header */
-            overflow-y: auto; /* Включаем скролл для длинных секций */
+            padding: 5rem 0 4rem; 
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             box-sizing: border-box;
-            scroll-padding-top: 9rem;  
+        }
+
+        @media (min-width: 768px) {
+            .content-section {
+                padding-top: 7rem;
+                padding-bottom: 3rem;
+            }
+        }
+
+        .section-inner {
+            width: 100%;
+            margin: auto 0; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .content-section.is-visible {
@@ -74,6 +96,7 @@
             z-index: 2;
         }
         
+        /* --- Background Blobs --- */
         .blob {
             position: fixed;
             z-index: -1;
@@ -86,68 +109,100 @@
             background-position: center;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: high-quality;
         }
 
         .blob-purple {  
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1600' viewBox='0 0 500 500'%3e%3cdefs%3e%3cradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3e%3cstop offset='0%25' stop-color='%238854F3' stop-opacity='1'/%3e%3cstop offset='100%25' stop-color='%238854F3' stop-opacity='0'/%3e%3c/radialGradient%3e%3cfilter id='blob_filter' x='-50%25' y='-50%25' width='200%25' height='200%25'%3e%3CfeTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='3' result='noise'/%3e%3CfeDisplacementMap in='SourceGraphic' in2='noise' scale='50'/%3e%3CfeGaussianBlur stdDeviation='70'/%3e%3C/filter%3e%3c/defs%3e%3ccircle cx='250' cy='250' r='150' fill='url(%23grad)' filter='url(%23blob_filter)'/%3e%3c/svg%3e");
         }
+        
         .blob-orange {  
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1600' viewBox='0 0 500 500'%3e%3cdefs%3e%3cradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3e%3cstop offset='0%25' stop-color='%23F97316' stop-opacity='1'/%3e%3cstop offset='100%25' stop-color='%23F97316' stop-opacity='0'/%3e%3c/radialGradient%3e%3cfilter id='blob_filter' x='-50%25' y='-50%25' width='200%25' height='200%25'%3e%3CfeTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='3' result='noise'/%3e%3CfeDisplacementMap in='SourceGraphic' in2='noise' scale='50'/%3e%3CfeGaussianBlur stdDeviation='70'/%3e%3C/filter%3e%3c/defs%3e%3ccircle cx='250' cy='250' r='150' fill='url(%23grad)' filter='url(%23blob_filter)'/%3e%3c/svg%3e");
         }
-        
-        .author-photo-container {
-            position: relative;
-            z-index: 10;
+
+        /* --- Minimalist Glass Content Blocks --- */
+        .glass-panel {
+            display: flex;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 1.25rem;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            text-decoration: none;
         }
 
-        .speech-bubble {
-            background-color: #111113;
-            border: 1px solid #333;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .glass-panel:hover {
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
-        
-        .speech-bubble::before {
-            content: '';
-            position: absolute;
-            top: -1rem;  
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 1rem solid transparent;
-            border-right: 1rem solid transparent;
-            border-bottom: 1rem solid #111113;
-            filter: drop-shadow(0px -1px 0px #333);
+
+        /* Horizontal Card Styling */
+        .horizontal-card {
+            flex-direction: row;
+            text-align: left; 
+            align-items: flex-start; 
+            padding: 1.5rem;
+            min-height: 160px; 
+            gap: 1.25rem;
         }
-        
+
         @media (min-width: 768px) {
-            .content-section {
-                justify-content: center;
-            }
-            #final-section {
-                padding-bottom: 0; /* Убрали отступ, т.к. футер теперь внутри */
-            }
-            .speech-bubble::before {
-                top: 3rem; left: -1rem;
-                transform: translateY(-50%);
-                border-left: 0; border-right: 1rem solid #111113;
-                border-top: 1rem solid transparent;
-                border-bottom: 1rem solid transparent;
-                filter: drop-shadow(-1px 0px 0px #333);
+            .horizontal-card {
+                padding: 2rem;
+                min-height: 200px;
+                gap: 1.5rem;
             }
         }
-        
-        .logo-link { transition: opacity 0.3s ease, transform 0.3s ease; }
-        .logo-link:hover { opacity: 0.85; transform: scale(1.05); }
 
+        .horizontal-card p {
+            flex-grow: 1;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        /* Sleek Text Button */
+        .sleek-link {
+            display: inline-flex;
+            align-items: center;
+            font-family: monospace;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            transition: color 0.3s ease;
+            width: max-content;
+        }
+
+        .sleek-link i {
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .glass-panel:hover .sleek-link { 
+            color: var(--brand-orange); 
+        }
+        .glass-panel:hover .sleek-link.text-\\[var\\(--brand-purple\\)\\] { 
+            color: var(--brand-purple); 
+        }
+        .glass-panel:hover .sleek-link i { 
+            transform: translateX(4px); 
+        }
+
+        /* --- UI Elements --- */
         .cta-button {
             position: relative;
-            background: transparent;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, color 0.5s ease, background-image 0.5s ease;
             z-index: 1;
+            border-radius: 9999px;
+            text-decoration: none;
         }
+        
         .cta-button::before {
             content: '';
             position: absolute;
@@ -156,69 +211,65 @@
             border-radius: 9999px;
             padding: 2px;
             background: linear-gradient(to right, var(--brand-purple), var(--brand-orange));
-            -webkit-mask:
-                linear-gradient(#fff 0 0) content-box,
-                linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             transition: opacity 0.5s ease;
             opacity: 1;
         }
+        
         .cta-button:hover {
             background-image: linear-gradient(to right, var(--brand-purple), var(--brand-orange), var(--brand-purple));
             background-size: 200% auto;
-            background-position: left center;
             transform: translateY(2px);
             box-shadow: 0px 5px 15px rgba(var(--brand-orange-rgb), 0.2), 0px 5px 15px rgba(var(--brand-purple-rgb), 0.2);
             color: white;
         }
-        .cta-button:hover::before {
-            opacity: 0;
+        
+        .cta-button:hover::before { opacity: 0; }
+        .cta-button > * { position: relative; z-index: 1; }
+
+        .main-cta-button { 
+            background-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; 
+            transition: all 0.4s ease-in-out; 
+            transform: scale(1); 
+            text-decoration: none;
+        }
+        
+        .main-cta-button:hover { 
+            background-color: transparent;
+            background-image: linear-gradient(to right, rgba(var(--brand-orange-rgb), 0.9), rgba(var(--brand-purple-rgb), 0.9), rgba(var(--brand-orange-rgb), 0.9)); 
+            border-color: transparent;
+            color: white; 
+            transform: scale(1.05); 
+            box-shadow: 0 10px 25px -5px rgba(var(--brand-orange-rgb), 0.4), 0 8px 10px -6px rgba(var(--brand-purple-rgb), 0.4); 
+            background-size: 200% auto; 
+            animation: gradient-flow 4s linear infinite; 
         }
 
-        .cta-button > * { position: relative; z-index: 1; }
-        .cta-button svg { transition: transform 0.3s ease; }
-        .cta-button:hover svg { transform: scale(1.1); }
-        .nav-link { position: relative; transition: color 0.3s ease; }
-        .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 50%; transform: translateX(-50%); background-color: var(--brand-purple); transition: width 0.3s ease; }
+        @keyframes gradient-flow { 
+            0% { background-position: 0% center; } 
+            100% { background-position: 200% center; } 
+        }
+
+        .nav-link { position: relative; transition: color 0.3s ease; text-decoration: none; }
+        .nav-link::after { 
+            content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 50%; 
+            transform: translateX(-50%); background-color: var(--brand-purple); transition: width 0.3s ease; 
+        }
         .nav-link:hover { color: #FFFFFF; }
         .nav-link:hover::after { width: 100%; }
-        .mobile-menu { transition: transform 0.3s ease-in-out; }
-        .main-cta-button { background-color: white; color: #0a0a0a; transition: color 0.4s ease-in-out, transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out, background-image 0.4s ease-in-out; transform: scale(1); }
-        .main-cta-button:hover { background-image: linear-gradient(to right, var(--brand-orange), var(--brand-purple), var(--brand-orange)); color: white; transform: scale(1.05); box-shadow: 0 10px 25px -5px rgba(var(--brand-orange-rgb), 0.4), 0 8px 10px -6px rgba(var(--brand-purple-rgb), 0.4); background-size: 200% auto; animation: gradient-flow 4s linear infinite; }
-        .cv-button { background-color: white; color: #0a0a0a; transition: color 0.4s ease-in-out, transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out, background-image 0.4s ease-in-out; transform: scale(1); }
-        .cv-button:hover { background-image: linear-gradient(to right, var(--brand-orange), var(--brand-purple), var(--brand-orange)); color: white; transform: scale(1.05); box-shadow: 0 10px 25px -5px rgba(var(--brand-orange-rgb), 0.4), 0 8px 10px -6px rgba(var(--brand-purple-rgb), 0.4); background-size: 200% auto; animation: gradient-flow 4s linear infinite; }
-        @keyframes gradient-flow { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
-        
-        .btn-with-arrow::before {
-            content: '';
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            margin-right: 0.5rem;
-            background-color: currentColor;
-            flex-shrink: 0;
-            -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='currentColor'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25' /%3e%3c/svg%3e");
-            mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='currentColor'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25' /%3e%3c/svg%3e");
-            -webkit-mask-size: contain;
-            mask-size: contain;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
-            transition: background-color 0.4s ease-in-out;
-            transform: translateZ(0);
-        }
 
+        /* --- Grain Effect --- */
         body::after {
             content: "";
             position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            z-index: 0;
-            pointer-events: none;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            z-index: 0; pointer-events: none;
             background-image: url('data:image/svg+xml,<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><filter id="a"><feTurbulence baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23a)"/></svg>');
             background-size: 256px 256px;
             opacity: 0.08;
@@ -239,526 +290,694 @@
             75%  { transform: translate(-2px, -2px); }
             100% { transform: translate(0, 0); }
         }
+
+        /* --- Circular Video Assistant --- */
+        #video-assistant {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 500; 
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #111;
+            box-shadow: 0 -12px 24px rgba(136, 84, 243, 0.3), 0 12px 24px rgba(249, 115, 22, 0.3), inset 0 0 0 2px rgba(255,255,255,0.1);
+            overflow: hidden;
+            cursor: grab;
+            transition: transform 0.2s ease-out;
+        }
+
+        @media (min-width: 768px) {
+            #video-assistant {
+                width: 140px;
+                height: 140px;
+                bottom: 40px;
+                right: 40px;
+            }
+        }
+
+        #video-assistant:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        #video-assistant video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .assistant-controls {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        #video-assistant:hover .assistant-controls {
+            opacity: 1;
+        }
+
+        .ctrl-btn {
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
         
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
+        .ctrl-btn:hover {
+            transform: scale(1.2);
+            color: var(--brand-orange);
         }
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        #final-section {
-            padding-left: 0;
-            padding-right: 0;
-            padding-bottom: 0;
-        }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased selection:bg-[#8854F3] selection:text-white">
+
     <div id="page-container">
+        
+        <!-- Animated Background Blobs -->
         <div id="blob1" class="blob blob-purple w-[45rem] h-[45rem] md:w-[65rem] md:h-[65rem] lg:w-[80rem] lg:h-[80rem] xl:w-[95rem] xl:h-[95rem]"></div>
         <div id="blob2" class="blob blob-orange w-[45rem] h-[45rem] md:w-[65rem] md:h-[65rem] lg:w-[80rem] lg:h-[80rem] xl:w-[95rem] xl:h-[95rem]"></div>
 
-        <header class="absolute top-0 w-full z-[200] py-1 px-4 sm:px-6 lg:px-8 bg-[#0a0a0a]">
+        <!-- Sticky Header -->
+        <header class="absolute top-0 w-full z-[200] py-4 px-4 sm:px-6 lg:px-8 bg-transparent">
             <div class="container mx-auto flex justify-between items-center">
-                <a href="#" data-target-section-index="0" class="logo-link flex-shrink-0"><img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-16 lg:h-20 w-auto"></a>
-                <nav class="hidden md:flex items-center md:text-xs lg:text-sm xl:text-base space-x-4 md:space-x-6 lg:space-x-10">
-                    <a href="#" data-target-section-index="2" class="nav-link text-center lg:whitespace-nowrap"><div class="hidden lg:block">Science Hub</div><div class="lg:hidden"><span class="block">Science</span><span class="block leading-tight">Hub</span></div></a>
-                    <a href="#" data-target-section-index="3" class="nav-link text-center lg:whitespace-nowrap"><div class="hidden lg:block">AI Super Agent</div><div class="lg:hidden"><span class="block">AI</span><span class="block leading-tight">Super Agent</span></div></a>
-                    <a href="#" data-target-section-index="4" class="nav-link text-center lg:whitespace-nowrap"><div class="hidden lg:block">AI Employees</div><div class="lg:hidden"><span class="block">AI</span><span class="block leading-tight">Employees</span></div></a>
-                    <a href="#" data-target-section-index="5" class="nav-link text-center lg:whitespace-nowrap"><div class="hidden lg:block">AI Products</div><div class="lg:hidden"><span class="block">AI</span><span class="block leading-tight">Products</span></div></a>
-                    <a href="#" data-target-section-index="6" class="nav-link text-center lg:whitespace-nowrap"><div class="hidden lg:block">AI Services</div><div class="lg:hidden"><span class="block">AI</span><span class="block leading-tight">Services</span></div></a>
-                    <a href="#" data-target-section-index="7" class="nav-link text-center lg:whitespace-nowrap">Blog</a>
-                </nav>
-                <a href="#" class="hidden md:flex items-center justify-center cta-button text-white font-medium py-3 md:px-3 lg:px-5 xl:px-7 rounded-full md:text-xs lg:text-sm xl:text-base">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    <div><span class="block leading-tight whitespace-nowrap">AI Solutions</span></div>
+                <a href="#" data-target-section-index="0" class="logo-link flex-shrink-0">
+                    <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-10 sm:h-12 md:h-14 w-auto">
                 </a>
-                <button id="menu-btn" class="md:hidden focus:outline-none z-[310]"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg></button>
+                
+                <nav class="hidden md:flex items-center text-[11px] lg:text-sm xl:text-base space-x-3 lg:space-x-6">
+                    <a href="#" data-target-section-index="3" class="nav-link whitespace-nowrap">Platform</a>
+                    <a href="#" data-target-section-index="4" class="nav-link whitespace-nowrap">Skills</a>
+                    <a href="#" data-target-section-index="5" class="nav-link whitespace-nowrap">Development</a>
+                    <a href="#" data-target-section-index="6" class="nav-link whitespace-nowrap">Trainings</a>
+                    <a href="#" data-target-section-index="7" class="nav-link whitespace-nowrap">Talents</a>
+                    <a href="#" data-target-section-index="8" class="nav-link whitespace-nowrap">Media</a>
+                    <a href="#" data-target-section-index="9" class="nav-link whitespace-nowrap text-white hover:text-white">Leaders</a>
+                </nav>
+                
+                <a href="#" data-target-section-index="9" class="hidden lg:flex items-center justify-center cta-button text-white font-medium py-2.5 px-6 rounded-full text-sm">
+                    AI Transformation <i class="fa-solid fa-arrow-right ml-2"></i>
+                </a>
+                
+                <button id="menu-btn" class="md:hidden focus:outline-none z-[310]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                </button>
             </div>
         </header>
         
         <div id="content-wrapper">
-                 <section id="hero-section" class="content-section justify-center">
-                       <div class="container mx-auto max-w-4xl text-center">
-                             <h1 id="hero-title" class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-tight xl:whitespace-nowrap">
-                                   <span style="color: var(--brand-purple);">AI</span> FOR <span style="color: var(--brand-orange);">HUMAN</span> GOOD
-                             </h1>
-                             <p id="hero-subtitle" data-typewriter-mode="adaptive" class="typewriter-target mt-6 text-base sm:text-lg md:text-xl lg:text-2xl text-white max-w-3xl mx-auto" style="font-weight: 700;">AI ecosystem for making AI<br>a trusted business & personal assistant</p>
-                             <a href="#" data-target-section-index="8" class="main-cta-button inline-flex items-center justify-center font-bold py-4 px-6 sm:py-5 sm:px-8 rounded-full mt-12 text-base sm:text-lg lg:text-xl"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>Discover AI Solutions</a>
-                       </div>
-                 </section>
+        
+            <!-- Slide 0: Hero -->
+            <section id="slide-0" class="content-section">
+                <div class="section-inner container mx-auto max-w-5xl text-center px-4">
+                    <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Andre AI Technologies</p>
+                    <h1 id="hero-title" class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight break-words">
+                        <span style="color: var(--brand-purple);">AI</span> TRANSFORMATION<br>OF YOUR <span style="color: var(--brand-orange);">BUSINESS</span>
+                    </h1>
+                    <p id="hero-subtitle" data-typewriter-mode="adaptive" class="typewriter-target mt-6 sm:mt-8 text-sm sm:text-lg md:text-xl text-gray-400 max-w-3xl mx-auto font-medium">
+                        AI Ecosystem for Human Good
+                    </p>
+                    <a href="#" data-target-section-index="9" class="main-cta-button inline-flex items-center justify-center font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-full mt-8 md:mt-12 text-sm sm:text-base md:text-lg">
+                        AI Transformation <i class="fa-solid fa-arrow-right ml-3"></i>
+                    </a>
+                </div>
+            </section>
 
-                 <section id="about-section" class="content-section">
-                               <div class="container mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-16">
-                                     <div class="flex-shrink-0">
-                                         <div class="author-photo-container w-48 h-48 lg:w-56 lg:h-56 rounded-full inline-block">
-                                             <img src="https://i.ibb.co/G3MdKgx1/High-Performance-bli.gif" alt="Andre, founder of Andre AI Technologies" class="w-full h-full object-cover rounded-full">
-                                         </div>
-                                     </div>
-                                     <div class="speech-bubble mt-4 md:mt-0 w-full max-w-2xl rounded-2xl p-6 lg:p-8 flex flex-col">
-                                         <p id="about-text" data-typewriter-mode="adaptive" class="typewriter-target text-white text-sm md:text-base lg:text-lg leading-relaxed">🤖 Hi, I’m Andre, founder of Andre AI Technologies.<br>I have 10+ years of experience in AI transformation of global tech companies and launching AI startups.<br>I focus on AI research, building AI products, training people for emerging professions, and shaping a new economy where AI is the core of the modern operational model.</p>
-                                         <a href="#" class="cv-button inline-flex items-center justify-center font-bold py-2 px-5 rounded-full mt-6 text-base self-end">
-                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 mr-2"><path fill-rule="evenodd" d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0 0 16.5 9h-1.875a.375.375 0 0 1-.375-.375V6.75A3.75 3.75 0 0 0 10.5 3h-1.875A.375.375 0 0 1 8.25 2.625V1.5H5.625ZM7.5 15a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 7.5 15Zm.75 2.25a.75.75 0 0 0 0 1.5H12a.75.75 0 0 0 0-1.5H8.25Z" clip-rule="evenodd" /><path d="M12.971 1.816A5.23 5.23 0 0 1 15.75 1.5h1.875c.414 0 .75.336.75.75v4.5c0 .414-.336.75-.75.75h-1.875a5.23 5.23 0 0 1-2.779-.316Z" /></svg>
-                                             CV
-                                         </a>
-                                     </div>
-                               </div>
-                 </section>
-
-                 <section id="dataism-section" class="content-section">
-                               <div class="container mx-auto max-w-7xl xl:max-w-screen-xl text-center flex flex-col items-center justify-start px-4">
-                                     <div class="flex flex-col items-center justify-start">
-                                         <div class="flex flex-col text-center">
-                                             <h2 id="dataism-title" class="typewriter-target text-4xl sm:text-5xl font-bold text-white leading-tight">
-                                                 Dataism Science Hub
-                                             </h2>
-                                             <p id="dataism-subtitle" class="typewriter-target text-xl md:text-2xl text-white mt-2">Open Applied AI Community</p>
-                                         </div>
-                                     </div>
-                                     <div class="mt-8 md:mt-12 w-full">
-                                         <div class="flex flex-col items-center md:grid md:grid-cols-3 gap-8 w-full py-4">
-                                             <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-center shadow-lg w-full max-w-xs md:max-w-none mb-4 md:mb-0 h-full">
-                                                 <div class="flex-grow">
-                                                     <h3 class="text-2xl font-bold text-white">🔬 AI Laboratory</h3>
-                                                     <p class="mt-3 text-gray-400">Research & Development<br>of Applied AI Solutions</p>
-                                                 </div>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full mt-6 text-sm w-48">
-                                                     <span class="whitespace-nowrap">Visit</span>
-                                                 </a>
-                                             </div>
-                                             <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-center shadow-lg w-full max-w-xs md:max-w-none mb-4 md:mb-0 h-full">
-                                                 <div class="flex-grow">
-                                                     <h3 class="text-2xl font-bold text-white">🎓 AI Academy</h3>
-                                                     <p class="mt-3 text-gray-400">Educational programs<br>for AI Professionals</p>
-                                                 </div>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full mt-6 text-sm w-48">
-                                                     <span class="whitespace-nowrap">Visit</span>
-                                                 </a>
-                                             </div>
-                                             <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-center shadow-lg w-full max-w-xs md:max-w-none h-full">
-                                                 <div class="flex-grow">
-                                                      <h3 class="text-2xl font-bold text-white">🌍 Datapedia</h3>
-                                                      <p class="mt-3 text-gray-400">Interactive Encyclopedia<br>of AI Simulations</p>
-                                                 </div>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full mt-6 text-sm w-48">
-                                                     <span class="whitespace-nowrap">Visit</span>
-                                                 </a>
-                                             </div>
-                                         </div>
-                                     </div>
-                               </div>
-                 </section>
-
-                 <section id="neuronium-section" class="content-section">
-                               <div class="container mx-auto max-w-7xl xl:max-w-screen-xl text-center flex flex-col items-center justify-start px-4">
-                                     <div class="flex flex-col items-center justify-start">
-                                         <div class="flex flex-col text-center">
-                                             <h2 id="neuronium-title" class="typewriter-target text-4xl sm:text-5xl font-bold text-white leading-tight">
-                                                 Neuronium AI
-                                             </h2>
-                                             <p id="neuronium-subtitle" class="typewriter-target text-xl md:text-2xl text-white mt-2">AI Super Agent</p>
-                                         </div>
-                                     </div>
-
-                                     <div class="mt-8 md:mt-12 w-full max-w-4xl mx-auto">
-                                         <div class="flex flex-col items-center md:grid md:grid-cols-2 gap-8 w-full py-4">
-                                             <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-center shadow-lg w-full max-w-xs md:max-w-none mb-4 md:mb-0">
-                                                 <div class="flex-grow">
-                                                     <h3 class="text-2xl font-bold text-white">🤖 Personal</h3>
-                                                     <p class="mt-3 text-gray-400">For advanced research<br>and daily tasks</p>
-                                                 </div>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full mt-6 text-sm w-48">
-                                                     <span class="whitespace-nowrap">Learn More</span>
-                                                 </a>
-                                             </div>
-                                             <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-center shadow-lg w-full max-w-xs md:max-w-none">
-                                                 <div class="flex-grow">
-                                                     <h3 class="text-2xl font-bold text-white">💼 Professional</h3>
-                                                     <p class="mt-3 text-gray-400">For automation of complex<br>business processes</p>
-                                                 </div>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full mt-6 text-sm w-48">
-                                                     <span class="whitespace-nowrap">Learn More</span>
-                                                 </a>
-                                             </div>
-                                         </div>
-                                     </div>
-                               </div>
-                 </section>
-                 
-                 <section id="human-intelligence-section" class="content-section">
-                               <div class="container mx-auto max-w-7xl xl:max-w-screen-xl text-center flex flex-col items-center justify-start px-4">
-                                     <div class="flex flex-col items-center justify-start">
-                                         <div class="flex flex-col text-center">
-                                             <h2 id="human-intelligence-title" class="typewriter-target text-4xl sm:text-5xl font-bold text-white leading-tight">
-                                                 Human Intelligence Platform
-                                             </h2>
-                                             <p id="human-intelligence-subtitle" class="typewriter-target text-xl md:text-2xl text-white mt-2">Hire Human-like AI Employees</p>
-                                         </div>
-                                     </div>
-                                     
-                                     <div class="mt-8 md:mt-12 w-full">
-                                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 w-full">
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">🗓️<br>Manager</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">👤<br>HR</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">🔍<br>Marketer</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">💬<br>SMM</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">💰<br>Sales</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">💜<br>Support</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">📊<br>Analyst</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">🎨<br>Designer</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">💻<br>Developer</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                             <div class="employee-card bg-[#111113] border border-[#333] rounded-2xl p-4 lg:p-6 flex flex-col justify-between text-center shadow-lg">
-                                                 <h3 class="text-xl lg:text-2xl font-bold text-white mb-4">⚙️<br>Engineer</h3>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm">Hire</a>
-                                             </div>
-                                         </div>
-                                     </div>
-                               </div>
-                 </section>
-
-                 <section id="genesis-factory-section" class="content-section">
-                               <div class="container mx-auto max-w-7xl xl:max-w-screen-xl text-center flex flex-col items-center justify-start px-4">
-                                     <div class="flex flex-col items-center justify-start">
-                                         <div class="flex flex-col text-center">
-                                             <h2 id="genesis-factory-title" class="typewriter-target text-4xl sm:text-5xl font-bold text-white leading-tight">
-                                                 Genesis Startup Factory
-                                             </h2>
-                                             <p id="genesis-factory-subtitle" class="typewriter-target text-xl md:text-2xl text-white mt-2">AI Startup Studio</p>
-                                         </div>
-                                     </div>
-
-                                     <div class="mt-8 md:mt-12 w-full max-w-4xl mx-auto">
-                                         <div class="flex flex-col items-center md:grid md:grid-cols-2 gap-8 w-full py-4">
-                                             <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-center shadow-lg w-full max-w-xs md:max-w-none mb-4 md:mb-0">
-                                                 <div class="flex-grow">
-                                                     <h3 class="text-2xl font-bold text-white">📜 Dataist AI</h3>
-                                                     <p class="mt-3 text-gray-400">AI Papers Researcher</p>
-                                                 </div>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full mt-6 text-sm w-48">
-                                                     <span class="whitespace-nowrap">Get Help</span>
-                                                 </a>
-                                             </div>
-                                             <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-center shadow-lg w-full max-w-xs md:max-w-none">
-                                                 <div class="flex-grow">
-                                                     <h3 class="text-2xl font-bold text-white">♾️ Landao AI</h3>
-                                                     <p class="mt-3 text-gray-400">AI Mental Coach</p>
-                                                 </div>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full mt-6 text-sm w-48">
-                                                     <span class="whitespace-nowrap">Get Help</span>
-                                                 </a>
-                                             </div>
-                                         </div>
-                                     </div>
-                               </div>
-                 </section>
-
-                 <section id="ai-first-group-section" class="content-section">
-                               <div class="container mx-auto max-w-7xl xl:max-w-screen-xl text-center flex flex-col items-center justify-start px-4">
-                                     <div class="flex flex-col items-center justify-start">
-                                         <div class="flex flex-col text-center">
-                                             <h2 id="ai-first-group-title" class="typewriter-target text-4xl sm:text-5xl font-bold text-white leading-tight">
-                                                 AI-First Group
-                                             </h2>
-                                             <p id="ai-first-group-subtitle" class="typewriter-target text-xl md:text-2xl text-white mt-2">Empowering AI Startups and Tech Companies</p>
-                                         </div>
-                                     </div>
-                                     
-                                     <div class="mt-8 md:mt-12 w-full">
-                                         <div class="flex flex-col items-center md:grid md:grid-cols-2 gap-8 w-full py-4">
-                                             <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-center shadow-lg w-full max-w-sm md:max-w-none mb-4 md:mb-0">
-                                                 <div>
-                                                     <h3 class="text-2xl font-bold text-white">🧠 Andre AI Consulting</h3>
-                                                     <p class="mt-1 text-gray-400">CTO-as-a-Service</p>
-                                                     <ul class="mt-6 space-y-2 text-gray-300 text-left inline-block">
-                                                         <li class="flex items-start"><span class="text-purple-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>AI Maturity Audit</span></li>
-                                                         <li class="flex items-start"><span class="text-purple-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>AI Transformation Strategy</span></li>
-                                                         <li class="flex items-start"><span class="text-purple-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>AI Team Management</span></li>
-                                                         <li class="flex items-start"><span class="text-purple-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>AI Product Development</span></li>
-                                                         <li class="flex items-start"><span class="text-purple-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>AI Process Automation</span></li>
-                                                         <li class="flex items-start"><span class="text-purple-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>AI Training for Executives</span></li>
-                                                     </ul>
-                                                 </div>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full mt-8 text-sm w-48">
-                                                     <span class="whitespace-nowrap">Contact</span>
-                                                 </a>
-                                             </div>
-                                             <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 lg:p-8 flex flex-col justify-between text-center shadow-lg w-full max-w-sm md:max-w-none">
-                                                 <div>
-                                                     <h3 class="text-2xl font-bold text-white">✨ Universa Design</h3>
-                                                     <p class="mt-1 text-gray-400">Customer Experience</p>
-                                                     <ul class="mt-6 space-y-2 text-gray-300 text-left inline-block">
-                                                         <li class="flex items-start"><span class="text-orange-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>Pitch Deck</span></li>
-                                                         <li class="flex items-start"><span class="text-orange-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>Landing page</span></li>
-                                                         <li class="flex items-start"><span class="text-orange-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>Customer Journey</span></li>
-                                                         <li class="flex items-start"><span class="text-orange-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>User Experience</span></li>
-                                                         <li class="flex items-start"><span class="text-orange-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>User Interface</span></li>
-                                                         <li class="flex items-start"><span class="text-orange-400 mr-3 mt-1.5 flex-shrink-0">•</span><span>App Prototype</span></li>
-                                                     </ul>
-                                                 </div>
-                                                 <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full mt-8 text-sm w-48">
-                                                     <span class="whitespace-nowrap">Contact</span>
-                                                 </a>
-                                             </div>
-                                         </div>
-                                     </div>
-                               </div>
-                 </section>
-
-                 <section id="blog-section" class="content-section">
-                               <div class="container mx-auto max-w-7xl xl:max-w-screen-xl text-center flex flex-col items-center justify-start px-4">
-                                     <div class="flex flex-col items-center justify-start">
-                                         <div class="flex flex-col text-center">
-                                             <h2 id="blog-title" class="typewriter-target text-4xl sm:text-5xl font-bold text-white leading-tight">
-                                                 Dataist Media
-                                             </h2>
-                                             <p id="blog-subtitle" class="typewriter-target text-xl md:text-2xl text-white mt-2">Latest News & Insights from the World of AI</p>
-                                         </div>
-                                     </div>
-                                     
-                                     <div class="mt-8 md:mt-12 w-full max-w-3xl mx-auto flex flex-col items-center">
-                                         <div class="w-full flex items-center gap-x-4">
-                                             <button id="blog-prev" class="hidden md:flex flex-shrink-0 z-10 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
-                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                                             </button>
-                                             <div id="blog-slider-wrapper" class="w-full flex-grow overflow-hidden">
-                                                 <div id="blog-slider-container" class="flex transition-transform duration-500 ease-in-out">
-                                                     <div class="blog-slide flex-shrink-0 w-full p-2">
-                                                         <div class="blog-card relative bg-[#111113] rounded-2xl overflow-hidden shadow-lg w-full transition-transform transform hover:scale-[1.01] h-96">
-                                                             <img src="https://i.ibb.co/1YqZKwPL/Chat-GPT-Image-14-2025-01-05-00.png" alt="Business Matrix" class="absolute inset-0 w-full h-full object-cover">
-                                                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                                                             <p class="absolute top-6 left-6 text-xs uppercase tracking-wider text-white">September 14, 2025</p>
-                                                             <div class="relative p-6 lg:p-8 flex items-end h-full text-white text-left">
-                                                                 <div class="w-full flex justify-between items-end">
-                                                                     <h3 class="text-xl lg:text-2xl font-bold flex-grow">Business Matrix: The Architecture of Companies in the Age of AI</h3>
-                                                                     <a href="#" class="cv-button btn-with-arrow self-end inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm flex-shrink-0 ml-4"><span>Read More</span></a>
-                                                                 </div>
-                                                             </div>
-                                                         </div>
-                                                     </div>
-                                                     <div class="blog-slide flex-shrink-0 w-full p-2">
-                                                         <div class="blog-card relative bg-[#111113] rounded-2xl overflow-hidden shadow-lg w-full transition-transform transform hover:scale-[1.01] h-96">
-                                                             <img src="https://i.ibb.co/L5B0p1V/photo-1518770660439-4636190af475-ixlib-rb-4-0.jpg" alt="AI Ethics" class="absolute inset-0 w-full h-full object-cover">
-                                                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                                                             <p class="absolute top-6 left-6 text-xs uppercase tracking-wider text-white">September 10, 2025</p>
-                                                              <div class="relative p-6 lg:p-8 flex items-end h-full text-white text-left">
-                                                                 <div class="w-full flex justify-between items-end">
-                                                                     <h3 class="text-xl lg:text-2xl font-bold flex-grow">Navigating the Ethics of AI</h3>
-                                                                     <a href="#" class="cv-button btn-with-arrow self-end inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm flex-shrink-0 ml-4"><span>Read More</span></a>
-                                                                 </div>
-                                                             </div>
-                                                         </div>
-                                                     </div>
-                                                     <div class="blog-slide flex-shrink-0 w-full p-2">
-                                                         <div class="blog-card relative bg-[#111113] rounded-2xl overflow-hidden shadow-lg w-full transition-transform transform hover:scale-[1.01] h-96">
-                                                             <img src="https://i.ibb.co/L5B0p1V/photo-1518770660439-4636190af475-ixlib-rb-4-0.jpg" alt="AI in Healthcare" class="absolute inset-0 w-full h-full object-cover">
-                                                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                                                             <p class="absolute top-6 left-6 text-xs uppercase tracking-wider text-white">September 08, 2025</p>
-                                                              <div class="relative p-6 lg:p-8 flex items-end h-full text-white text-left">
-                                                                 <div class="w-full flex justify-between items-end">
-                                                                     <h3 class="text-xl lg:text-2xl font-bold flex-grow">AI's Impact on Healthcare</h3>
-                                                                     <a href="#" class="cv-button btn-with-arrow self-end inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm flex-shrink-0 ml-4"><span>Read More</span></a>
-                                                                 </div>
-                                                             </div>
-                                                         </div>
-                                                     </div>
-                                                     <div class="blog-slide flex-shrink-0 w-full p-2">
-                                                         <div class="blog-card relative bg-[#111113] rounded-2xl overflow-hidden shadow-lg w-full transition-transform transform hover:scale-[1.01] h-96">
-                                                             <img src="https://i.ibb.co/L5B0p1V/photo-1518770660439-4636190af475-ixlib-rb-4-0.jpg" alt="AI Job Market" class="absolute inset-0 w-full h-full object-cover">
-                                                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                                                             <p class="absolute top-6 left-6 text-xs uppercase tracking-wider text-white">September 05, 2025</p>
-                                                             <div class="relative p-6 lg:p-8 flex items-end h-full text-white text-left">
-                                                                 <div class="w-full flex justify-between items-end">
-                                                                     <h3 class="text-xl lg:text-2xl font-bold flex-grow">The AI Job Market in 2025</h3>
-                                                                     <a href="#" class="cv-button btn-with-arrow self-end inline-flex items-center justify-center font-bold py-2 px-5 rounded-full text-sm flex-shrink-0 ml-4"><span>Read More</span></a>
-                                                                 </div>
-                                                             </div>
-                                                         </div>
-                                                     </div>
-                                                 </div>
-                                             </div>
-                                             <button id="blog-next" class="hidden md:flex flex-shrink-0 z-10 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
-                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                                             </button>
-                                         </div>
-                                         <div class="md:hidden flex justify-center w-full mt-4 space-x-4">
-                                             <button id="blog-prev-mobile" class="flex-shrink-0 z-10 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
-                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                                             </button>
-                                              <button id="blog-next-mobile" class="flex-shrink-0 z-10 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
-                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                                             </button>
-                                         </div>
-                                     </div>
-                               </div>
-                 </section>
-
-                 <section id="final-section" class="content-section flex flex-col scrollbar-hide">
-                               <div class="container mx-auto max-w-screen-xl flex flex-col items-center md:justify-center px-4 w-full flex-grow"> 
-                                     <div class="w-full flex flex-col items-center md:justify-center text-center gap-8 md:gap-12">
-
-                                         <div class="flex flex-col items-center justify-center">
-                                             <h2 class="text-4xl sm:text-5xl font-bold text-white leading-tight">Andre AI Technologies</h2>
-                                             <p id="footer-subtitle" class="typewriter-target text-xl md:text-2xl text-white mt-2">AI Ecosystem for Human Good</p>
-                                         </div>
-                                         
-                                         <div class="w-full">
-                                             <div class="flex flex-col items-center md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 w-full py-4">
-                                                 <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 flex flex-col text-center shadow-lg h-full transition-transform transform hover:scale-105 w-full max-w-xs md:max-w-none mb-4 md:mb-0">
-                                                     <div class="flex-grow">
-                                                         <h4 class="text-xl font-bold text-white mb-3">🔬 Dataism Science Hub</h4>
-                                                         <p class="text-sm text-gray-400">Open Applied AI Community for research and development.</p>
-                                                     </div>
-                                                     <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full text-sm mt-6"><span>Explore</span></a>
-                                                 </div>
-                                                 <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 flex flex-col text-center shadow-lg h-full transition-transform transform hover:scale-105 w-full max-w-xs md:max-w-none mb-4 md:mb-0">
-                                                     <div class="flex-grow">
-                                                         <h4 class="text-xl font-bold text-white mb-3">🧠 Neuronium AI</h4>
-                                                         <p class="text-sm text-gray-400">Your personal and professional AI Super Agent for any task.</p>
-                                                     </div>
-                                                     <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full text-sm mt-6"><span>Explore</span></a>
-                                                 </div>
-                                                 <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 flex flex-col text-center shadow-lg h-full transition-transform transform hover:scale-105 w-full max-w-xs md:max-w-none mb-4 md:mb-0">
-                                                     <div class="flex-grow">
-                                                         <h4 class="text-xl font-bold text-white mb-3">🤵🏻 Human Intelligence Platform</h4>
-                                                         <p class="text-sm text-gray-400">Hire autonomous, human-like AI employees for your business.</p>
-                                                     </div>
-                                                     <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full text-sm mt-6"><span>Explore</span></a>
-                                                 </div>
-                                                 <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 flex flex-col text-center shadow-lg h-full transition-transform transform hover:scale-105 w-full max-w-xs md:max-w-none mb-4 md:mb-0">
-                                                     <div class="flex-grow">
-                                                         <h4 class="text-xl font-bold text-white mb-3">🚀 Genesis Startup Factory</h4>
-                                                         <p class="text-sm text-gray-400">Our AI Startup Studio for launching innovative products.</p>
-                                                     </div>
-                                                     <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full text-sm mt-6"><span>Explore</span></a>
-                                                 </div>
-                                                 <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 flex flex-col text-center shadow-lg h-full transition-transform transform hover:scale-105 w-full max-w-xs md:max-w-none mb-4 md:mb-0">
-                                                     <div class="flex-grow">
-                                                         <h4 class="text-xl font-bold text-white mb-3">✨ AI-First Group</h4>
-                                                         <p class="text-sm text-gray-400">Consulting and design services to empower tech companies.</p>
-                                                     </div>
-                                                     <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full text-sm mt-6"><span>Explore</span></a>
-                                                 </div>
-                                                 <div class="dataism-card bg-[#111113] border border-[#333] rounded-2xl p-6 flex flex-col text-center shadow-lg h-full transition-transform transform hover:scale-105 w-full max-w-xs md:max-w-none">
-                                                     <div class="flex-grow">
-                                                         <h4 class="text-xl font-bold text-white mb-3">🤖 Dataist Media</h4>
-                                                         <p class="text-sm text-gray-400">Latest news, insights, and stories from the world of AI.</p>
-                                                     </div>
-                                                     <a href="#" class="cv-button btn-with-arrow self-center inline-flex items-center justify-center font-bold py-3 px-6 rounded-full text-sm mt-6"><span>Explore</span></a>
-                                                     </div>
-                                             </div>
-                                         </div>
-                                     </div>
-                               </div>
-                                                   <footer class="w-full z-20 bg-[#0a0a0a] mt-auto border-t border-gray-800">
-                        <div class="container mx-auto">
-                            <div class="w-full flex flex-col md:flex-row items-center justify-between gap-y-4 py-4 px-4 sm:px-6 lg:px-8">
-                                
-                                <div class="flex items-center gap-3">
-                                    <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-8 w-auto">
-                                    <p class="text-base text-gray-400">&copy; 2025 Andre AI Technologies</p>
-                                </div>
+            <!-- Slide 1: Roadmap (6 cards) -->
+            <section id="slide-1" class="content-section">
+                <div class="section-inner w-full flex flex-col items-center">
+                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
+                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">How to become AI-First Company</p>
+                        <h2 id="roadmap-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Transformation Roadmap</h2>
+                    </div>
                     
-                                <div class="flex items-center gap-x-8">
-                                    <div class="flex items-center gap-x-8 text-base text-gray-400">
-                                        <a href="#" class="hover:text-white transition-colors">Privacy policy</a>
-                                        <a href="#" class="hover:text-white transition-colors">Terms of use</a>
-                                    </div>
-                                    <button id="back-to-top-btn" class="bg-[#1a1a1c] border border-gray-700 rounded-full p-3 text-white hover:bg-purple-500/20 hover:border-purple-500 transition-all transform hover:-translate-y-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7" />
-                                        </svg>
-                                    </button>
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-chess-knight text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
+                                    <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Strategy</h3>
+                                    <span class="text-2xl md:text-3xl font-black text-white/10 leading-none">01</span>
                                 </div>
-                    
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Strategic guidance and custom roadmaps to identify where AI generates the highest ROI.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Explore <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-network-wired text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
+                                    <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Platform</h3>
+                                    <span class="text-2xl md:text-3xl font-black text-white/10 leading-none">02</span>
+                                </div>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Enterprise-grade infrastructure running custom models, tailored to your industry operations.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-user-astronaut text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
+                                    <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Skills</h3>
+                                    <span class="text-2xl md:text-3xl font-black text-white/10 leading-none">03</span>
+                                </div>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Autonomous agents integrated perfectly into your workflows for support, sales, or ops.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-code text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
+                                    <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Development</h3>
+                                    <span class="text-2xl md:text-3xl font-black text-white/10 leading-none">04</span>
+                                </div>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Custom AI solutions, tools, and agentic architectures built specifically for your needs.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-graduation-cap text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
+                                    <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Trainings</h3>
+                                    <span class="text-2xl md:text-3xl font-black text-white/10 leading-none">05</span>
+                                </div>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Upskill your existing workforce to manage, build, and collaborate with AI systems effectively.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-users-gear text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
+                                    <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Talents</h3>
+                                    <span class="text-2xl md:text-3xl font-black text-white/10 leading-none">06</span>
+                                </div>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Sourcing, organizational design and onboarding of top-tier AI professionals for your team.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 2: AI Strategy -->
+            <section id="slide-2" class="content-section">
+                <div class="section-inner w-full flex flex-col items-center">
+                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
+                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Consulting</p>
+                        <h2 id="consulting-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Strategy</h2>
+                    </div>
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-magnifying-glass-chart text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AS-IS Analysis</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Mapping real business processes and bottlenecks via Process Mining and structured interviews.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-wand-magic-sparkles text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Automation Points</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Identifying precise tasks where AI creates immediate and measurable business impact.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-pen-ruler text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">TO-BE Design</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Architecting the future workflow and updating policies for AI-native operations.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">New Role</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Redefining human responsibilities from executors to orchestrators of AI agents.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-chart-radar text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Maturity Index</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Comprehensive audit across 7 dimensions to define your AI readiness and potential.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-flag-checkered text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Strategy Execution</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Translating strategy into a working AI Playbook and achieving measurable ROI.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 3: Platform -->
+            <section id="slide-3" class="content-section">
+                <div class="section-inner w-full flex flex-col items-center">
+                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
+                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Horizontal Solution</p>
+                        <h2 id="platform-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Platform</h2>
+                    </div>
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-layer-group text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Models</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Unified access to multimodal neural networks and leading AI models in one secure environment.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-server text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Memory</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Persistent memory and secure API integrations with your existing IT infrastructure.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-brain text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Context</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Intelligent context engineering deeply integrated with your corporate knowledge base.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 4: AI Skills (3 cards) -->
+            <section id="slide-4" class="content-section">
+                <div class="section-inner w-full flex flex-col items-center">
+                    <div class="w-full max-w-7xl mx-auto text-center mb-10 md:mb-12 px-4">
+                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Vertical Solutions</p>
+                        <h2 id="agents-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Skills</h2>
+                    </div>
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Manager</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">AI-driven process management and operational control without human bottlenecks.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-users text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">HR</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Recruitment screening, automated candidate scoring, and seamless employee onboarding.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-hashtag text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">SMM</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Automated social media execution, post scheduling, and audience interaction.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 5: AI Development -->
+            <section id="slide-5" class="content-section">
+                <div class="section-inner w-full flex flex-col items-center">
+                    <div class="w-full max-w-7xl mx-auto text-center mb-10 md:mb-12 px-4">
+                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Custom Solutions</p>
+                        <h2 class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Development</h2>
+                    </div>
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-code text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Custom AI Apps</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Tailor-made AI solutions and internal tools built specifically for your unique business needs.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-network-wired text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Agentic Architecture</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Designing multi-agent systems where AI workers collaborate to solve complex tasks autonomously.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-plug text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">API & Integrations</h4>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Seamless integration of modern LLMs into your existing legacy IT infrastructure and databases.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 6: Trainings -->
+            <section id="slide-6" class="content-section">
+                <div class="section-inner w-full flex flex-col items-center">
+                    <div class="w-full max-w-7xl mx-auto text-center mb-10 md:mb-16 px-4">
+                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Upskilling</p>
+                        <h2 id="trainings-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Trainings</h2>
+                    </div>
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Executive Day</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">1-day intensive for C-level and owners to manage business in an AI-first logic.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Enroll <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-laptop-code text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Automation Bootcamp</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">1-month practical program for teams to autonomously automate their own processes.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Enroll <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-rocket text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Product Hackathon</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">1-week intensive to build a working AI product from a raw idea to an MVP.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Enroll <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 7: Talents -->
+            <section id="slide-7" class="content-section">
+                <div class="section-inner w-full flex flex-col items-center">
+                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
+                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Sourcing</p>
+                        <h2 id="talents-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Talents</h2>
+                    </div>
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-user-shield text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Executives</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">C-level leaders to orchestrate and drive your corporate AI transformation strategy.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Find Talent <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-boxes-stacked text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Product Engineers</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Builders of scalable, agentic AI products and user-facing applications.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Find Talent <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-cogs text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Automation Engineers</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Experts in linking AI capabilities seamlessly with your existing business processes.</p>
+                                <span class="sleek-link text-[var(--brand-orange)] mt-auto">Find Talent <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
+                            <i class="fa-solid fa-laptop-file text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <div class="flex flex-col flex-grow w-full h-full">
+                                <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Engineers</h3>
+                                <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Deep technical specialists in LLMs, model fine-tuning, and AI infrastructure.</p>
+                                <span class="sleek-link text-[var(--brand-purple)] mt-auto">Find Talent <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                        
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 8: Media (Compact Adaptive Frame) -->
+            <section id="slide-8" class="content-section">
+                <div class="section-inner w-full flex flex-col items-center">
+                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
+                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Journal</p>
+                        <h2 id="media-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">Dataist Media</h2>
+                        <p id="media-subtitle" class="typewriter-target text-sm md:text-lg text-gray-400 mt-4">Insights, case studies, and thought leadership.</p>
+                    </div>
+                    <div class="w-full max-w-3xl mx-auto px-4 pb-8">
+                        <a href="#" class="glass-panel block relative w-full rounded-2xl overflow-hidden h-[240px] sm:h-[300px] md:h-[350px] flex flex-col justify-end cursor-pointer transition-transform transform hover:scale-[1.02] border border-white/10 hover:border-[var(--brand-purple)]">
+                            <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop" alt="AI Matrix" class="absolute inset-0 w-full h-full object-cover opacity-40">
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/50 to-transparent z-0"></div>
+                            <div class="relative p-6 md:p-8 text-left z-10 w-full mt-auto">
+                                <p class="text-[var(--brand-purple)] font-bold text-xs tracking-widest uppercase mb-2">Featured Article</p>
+                                <h3 class="text-xl md:text-3xl font-bold text-white mb-4">Business Architecture in the Age of AI</h3>
+                                <span class="sleek-link text-[var(--brand-purple)]">Read Journal <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 9: Revolution / Contacts -->
+            <section id="slide-9" class="content-section flex flex-col scrollbar-hide" style="padding-bottom: 0; padding-left: 0; padding-right: 0;">
+                <div class="section-inner container mx-auto max-w-5xl flex flex-col items-center px-4 text-center justify-center flex-grow pt-8">
+                    <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">The Future is Here</p>
+                    
+                    <h2 id="revolution-title" class="typewriter-target text-4xl sm:text-5xl md:text-7xl font-bold text-white leading-tight mb-12">
+                        Are you ready for the<br>
+                        <span style="color: var(--brand-purple);">AI</span> 
+                        <span style="color: var(--brand-orange);">Revolution</span>?
+                    </h2>
+                    
+                    <div class="flex flex-col items-center justify-center w-full mt-4 pb-12">
+                        <a href="#" data-target-section-index="10" class="main-cta-button inline-flex items-center justify-center font-bold py-4 px-10 rounded-full text-base md:text-xl w-full sm:w-auto mb-6">
+                            Start Transformation <i class="fa-solid fa-arrow-right ml-3"></i>
+                        </a>
+                        
+                        <a href="#" class="text-sm md:text-base font-medium text-gray-400 hover:text-white transition-colors border-b border-gray-600 hover:border-white pb-1">
+                            Become a Partner
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Pure Black Footer strictly at the bottom of Revolution block -->
+                <footer class="w-full py-8 bg-[#020202] border-t border-white/5 relative z-20 mt-auto">
+                    <div class="container mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 font-mono text-xs md:text-sm">
+                        <p>&copy; 2026 Andre AI Technologies.</p>
+                        <div class="flex gap-6">
+                            <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                            <a href="#" class="hover:text-white transition-colors">Terms</a>
                         </div>
-                    </footer>
-                 </section>
+                    </div>
+                </footer>
+            </section>
+
+            <!-- Slide 10: Blueprint / Minimal Roadmap -->
+            <section id="slide-10" class="content-section flex flex-col scrollbar-hide" style="padding-bottom: 0; padding-left: 0; padding-right: 0; background-color: #020202;">
+                <div class="section-inner container mx-auto max-w-4xl flex flex-col items-start justify-center px-6 md:px-12 w-full flex-grow">
+                    <h2 class="text-gray-600 font-mono text-sm md:text-base mb-10 md:mb-14 uppercase tracking-widest w-full text-center md:text-left">Roadmap</h2>
+                    
+                    <div class="flex flex-col w-full space-y-6 md:space-y-8">
+                        <a href="#" data-target-section-index="2" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-purple)] transition-colors">01</span>
+                            AI Strategy
+                            <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-purple)]"></i>
+                        </a>
+                        <a href="#" data-target-section-index="3" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-orange)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-orange)] transition-colors">02</span>
+                            AI Platform
+                            <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-orange)]"></i>
+                        </a>
+                        <a href="#" data-target-section-index="4" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-purple)] transition-colors">03</span>
+                            AI Skills
+                            <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-purple)]"></i>
+                        </a>
+                        <a href="#" data-target-section-index="5" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-orange)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-orange)] transition-colors">04</span>
+                            AI Development
+                            <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-orange)]"></i>
+                        </a>
+                        <a href="#" data-target-section-index="6" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-purple)] transition-colors">05</span>
+                            Upskilling
+                            <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-purple)]"></i>
+                        </a>
+                        <a href="#" data-target-section-index="7" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-orange)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-orange)] transition-colors">06</span>
+                            Talent Sourcing
+                            <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-orange)]"></i>
+                        </a>
+                        <a href="#" data-target-section-index="8" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-purple)] transition-colors">07</span>
+                            Dataist Media
+                            <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-purple)]"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
         </div>
     </div>
 
-    <div id="mobile-menu" class="mobile-menu md:hidden fixed top-0 right-0 h-full w-full bg-[#0a0a0a] transform translate-x-full z-[300] p-8">
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu md:hidden fixed top-0 right-0 h-full w-full bg-[#0a0a0a] transform translate-x-full z-[300] p-8 transition-transform duration-300">
         <button id="close-menu-btn" class="absolute top-7 right-6 sm:right-8 text-white focus:outline-none z-[310]">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
-        <a href="#" data-target-section-index="0" class="logo-link absolute top-1 left-4 sm:left-6">
-            <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-16 w-auto">
+        <a href="#" data-target-section-index="0" class="logo-link absolute top-4 left-4 sm:left-6">
+            <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-10 sm:h-12 w-auto">
         </a>
-        <nav class="flex flex-col h-full justify-center items-center space-y-8 text-lg">
-            <a href="#" data-target-section-index="2" class="nav-link text-center">Science Hub</a>
-            <a href="#" data-target-section-index="3" class="nav-link text-center">AI Super Agent</a>
-            <a href="#" data-target-section-index="4" class="nav-link text-center">AI Employees</a>
-            <a href="#" data-target-section-index="5" class="nav-link text-center">AI Products</a>
-            <a href="#" data-target-section-index="6" class="nav-link text-center">AI Services</a>
-            <a href="#" data-target-section-index="7" class="nav-link text-center">Blog</a>
-            <a href="#" data-target-section-index="8" class="main-cta-button inline-flex items-center justify-center font-bold py-4 px-6 sm:py-5 sm:px-8 rounded-full mt-12 text-base sm:text-lg lg:text-xl"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>Discover AI Solutions</a>
+        <nav class="flex flex-col h-full justify-center items-center space-y-8 text-xl font-bold font-mono mt-8">
+            <a href="#" data-target-section-index="3" class="nav-link text-center">Platform</a>
+            <a href="#" data-target-section-index="4" class="nav-link text-center">Skills</a>
+            <a href="#" data-target-section-index="5" class="nav-link text-center">Development</a>
+            <a href="#" data-target-section-index="6" class="nav-link text-center">Trainings</a>
+            <a href="#" data-target-section-index="7" class="nav-link text-center">Talents</a>
+            <a href="#" data-target-section-index="8" class="nav-link text-center">Media</a>
+            <a href="#" data-target-section-index="9" class="nav-link text-center text-white">Leaders</a>
         </nav>
+    </div>
+
+    <!-- ================= CIRCULAR VIDEO ASSISTANT ================= -->
+    <div id="video-assistant">
+        <video id="assistant-video" muted playsinline loop>
+            <!-- Direct URL to Github raw content for proper video streaming -->
+            <source src="https://raw.githubusercontent.com/andre-kuzminykh/andre-ait-page/main/Andre_AI%20(1).mp4" type="video/mp4">
+        </video>
+        
+        <div class="assistant-controls">
+            <i id="btn-playpause" class="fa-solid fa-play ctrl-btn"></i>
+            <i id="btn-mute" class="fa-solid fa-volume-xmark ctrl-btn"></i>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Говорим браузеру, чтобы он не пытался самостоятельно восстанавливать
-            // позицию прокрутки при перезагрузке страницы. Мы будем управлять этим полностью сами.
             if ('scrollRestoration' in history) {
                 history.scrollRestoration = 'manual';
             }
 
-            // === Глобальные переменные ===
+            // --- CONFIG: Video & Slides ---
+            const andreConfig = {
+                videoMode: "timestamps", 
+                slides: [
+                    { id: "slide-0", t: 0 },
+                    { id: "slide-1", t: 2 },
+                    { id: "slide-2", t: 4 },
+                    { id: "slide-3", t: 6 },
+                    { id: "slide-4", t: 8 },
+                    { id: "slide-5", t: 10 },
+                    { id: "slide-6", t: 12 },
+                    { id: "slide-7", t: 14 },
+                    { id: "slide-8", t: 16 },
+                    { id: "slide-9", t: 18 },
+                    { id: "slide-10", t: 20 }
+                ]
+            };
+
+            const videoEl = document.getElementById('assistant-video');
+
+            function syncVideoWithSlide(index) {
+                const config = andreConfig.slides[index];
+                if (!config) return;
+                if(videoEl.readyState >= 1) videoEl.currentTime = config.t;
+                else videoEl.addEventListener('loadedmetadata', function onMeta() {
+                    videoEl.currentTime = config.t;
+                    videoEl.removeEventListener('loadedmetadata', onMeta);
+                });
+            }
+
+            // --- GLOBAL VARIABLES ---
             const sections = document.querySelectorAll('.content-section');
             const totalSections = sections.length;
             let currentSectionIndex = 0;
-            let isTransitioning = false; // Главный замок для блокировки прокрутки во время анимации
-            const transitionDuration = 1200; // Должно соответствовать 'transition' в CSS для .content-section
+            let isTransitioning = false; 
+            const transitionDuration = 1200; 
             let touchStartY = 0;
+            let touchStartX = 0;
+            let lastScrollTime = 0; // Throttle to prevent fast skipping
+            const scrollCooldown = 1500; 
             const typewriterInstances = {};
 
             const blob1 = document.getElementById('blob1');
             const blob2 = document.getElementById('blob2');
-            const authorPhoto = document.querySelector('.author-photo-container');
-            let isOrbiting = false;
-            let angle = 0;
             let wanderTime = 0;
+            let blob1State = { x: window.innerWidth * 0.25, y: window.innerHeight * 0.3, scale: 1.0 };
+            let blob2State = { x: window.innerWidth * 0.75, y: window.innerHeight * 0.6, scale: 1.0 };
             let cardTarget = null;
-            let blob1State = { x: window.innerWidth * 0.45, y: window.innerHeight * 0.4, scale: 1.0 };
-            let blob2State = { x: window.innerWidth * 0.55, y: window.innerHeight * 0.5, scale: 1.0 };
 
+            // Используем делегирование событий, чтобы отслеживать любой интерактивный элемент
+            document.addEventListener('mouseover', (e) => {
+                const target = e.target.closest('.main-cta-button, .cta-button, .sleek-link, .horizontal-card, .glass-panel');
+                cardTarget = target || null;
+            });
 
-            // === ЛОГИКА TYPEWRITER (без изменений) ===
+            // --- TYPEWRITER LOGIC ---
             const setupTypewriter = (element) => {
                 if (!element || !element.id) return;
                 const elementId = element.id;
-                
                 const isAdaptive = element.dataset.typewriterMode === 'adaptive';
                 const originalHTML = element.innerHTML;
                 let typingTarget = element;
@@ -785,6 +1004,8 @@
                         contentQueue.push(...node.textContent.split(''));
                     } else if (node.tagName === 'BR') {
                         contentQueue.push('<br>');
+                    } else if (node.tagName === 'SPAN') {
+                        contentQueue.push(node.outerHTML);
                     }
                 });
 
@@ -794,18 +1015,15 @@
                 const startTyping = (onComplete = null) => {
                     cancelAnimationFrame(animationFrameId);
                     if (isTyping) return;
-                    
                     isTyping = true;
                     typingTarget.innerHTML = '';
-                    
                     let charIndex = 0;
                     let lastTime = 0;
-                    const typingSpeed = 25; // ms
+                    const typingSpeed = 15; 
 
                     const type = (currentTime) => {
                         if (!isTyping) return;
                         if (lastTime === 0) lastTime = currentTime;
-                        
                         const elapsed = currentTime - lastTime;
                         if (elapsed >= typingSpeed) {
                             if (charIndex < contentQueue.length) {
@@ -834,34 +1052,22 @@
             };
             document.querySelectorAll('.typewriter-target').forEach(setupTypewriter);
 
-
-            // === НОВАЯ ЛОГИКА НАВИГАЦИИ ===
-
-            // Функция для обновления активной секции
+            // --- NAVIGATION LOGIC ---
             const updateActiveSection = (newIndex) => {
                 if (newIndex < 0 || newIndex >= totalSections || newIndex === currentSectionIndex && sections[newIndex]?.classList.contains('is-visible')) {
                     isTransitioning = false;
                     return;
                 }
                 
-                const oldIndex = currentSectionIndex;
                 currentSectionIndex = newIndex;
 
-                // Сбрасываем цель для "капель" при смене секции
-                cardTarget = null;
-
-                // Обновляем классы видимости
                 sections.forEach((section, index) => {
                     const typewriterElements = section.querySelectorAll('.typewriter-target');
                     if (index === newIndex) {
                         section.classList.add('is-visible');
                         
-                        // Сбрасываем внутреннюю прокрутку
-                        requestAnimationFrame(() => {
-                            section.scrollTop = 0;
-                        });
+                        requestAnimationFrame(() => { section.scrollTop = 0; });
                         
-                        // Запускаем typewriter
                         const title = typewriterElements[0];
                         const subtitle = typewriterElements[1];
                         if (title && typewriterInstances[title.id]) {
@@ -871,274 +1077,252 @@
                                 typewriterInstances[title.id].start();
                             }
                         }
-
                     } else {
                         section.classList.remove('is-visible');
-                        // Сбрасываем typewriter
                         typewriterElements.forEach(el => typewriterInstances[el.id]?.reset());
                     }
                 });
 
-                // Обновляем состояние для анимации "капель"
-                isOrbiting = (currentSectionIndex === 1);
+                syncVideoWithSlide(currentSectionIndex);
+                window.scrollTo({ top: newIndex * window.innerHeight, behavior: 'auto' });
 
-                // Физически прокручиваем страницу, чтобы sticky-позиционирование работало
-                window.scrollTo({
-                    top: newIndex * window.innerHeight,
-                    behavior: 'auto'
-                });
-
-                // Разблокируем навигацию после завершения анимации
-                setTimeout(() => {
-                    isTransitioning = false;
-                }, transitionDuration + 50); // Добавляем 50ms на всякий случай
+                setTimeout(() => { isTransitioning = false; }, transitionDuration + 50);
             };
             
-            // Единая функция для перехода к секции
             const navigateToSection = (targetIndex) => {
                 if (isTransitioning) return;
                 isTransitioning = true;
                 updateActiveSection(targetIndex);
             };
 
-
-            // === ОБРАБОТЧИКИ СОБЫТИЙ ===
-
-            // Обработчик колесика мыши
+            // --- EVENT LISTENERS (with strict horizontal scroll lock & cooldown) ---
             const wheelHandler = (e) => {
-                if (isTransitioning) {
-                    e.preventDefault();
-                    return;
-                }
+                if (isTransitioning) { e.preventDefault(); return; }
+                const now = Date.now();
+                if (now - lastScrollTime < scrollCooldown) { e.preventDefault(); return; }
+
+                // Жесткая блокировка перелистывания слайдов при горизонтальном скролле мышки/трекпада
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; 
+                if (Math.abs(e.deltaY) < 10) return; // Порог для защиты от случайных диагональных смахиваний трекпада
 
                 const currentSection = sections[currentSectionIndex];
-                if (!currentSection) return; // FIX: Добавлена проверка на существование секции
+                if (!currentSection) return;
                 
                 const isScrollable = currentSection.scrollHeight > currentSection.clientHeight;
                 const isScrollingDown = e.deltaY > 0;
-                const scrollBuffer = 5; // Небольшой буфер
+                const scrollBuffer = 5;
 
-                // Проверяем, нужно ли скроллить внутри секции
+                // Разрешаем вертикальный скролл контента внутри длинной секции (если не влезло)
                 if (isScrollable) {
-                    if (isScrollingDown && currentSection.scrollTop + currentSection.clientHeight < currentSection.scrollHeight - scrollBuffer) {
-                        return; // Позволяем скроллить вниз внутри секции
-                    }
-                    if (!isScrollingDown && currentSection.scrollTop > scrollBuffer) {
-                        return; // Позволяем скроллить вверх внутри секции
-                    }
+                    if (isScrollingDown && currentSection.scrollTop + currentSection.clientHeight < currentSection.scrollHeight - scrollBuffer) return;
+                    if (!isScrollingDown && currentSection.scrollTop > scrollBuffer) return;
                 }
 
-                // Если мы у края секции, переключаем на следующую
                 e.preventDefault();
-                if (isScrollingDown) {
-                    navigateToSection(currentSectionIndex + 1);
-                } else {
-                    navigateToSection(currentSectionIndex - 1);
-                }
+                lastScrollTime = now;
+                if (isScrollingDown) navigateToSection(currentSectionIndex + 1);
+                else navigateToSection(currentSectionIndex - 1);
             };
             
-            // Обработчики касаний (для мобильных)
             const touchStartHandler = (e) => {
                 if (isTransitioning) return;
                 touchStartY = e.touches[0].clientY;
+                touchStartX = e.touches[0].clientX;
             };
 
             const touchEndHandler = (e) => {
                 if (isTransitioning) return;
+                const now = Date.now();
+                if (now - lastScrollTime < scrollCooldown) return;
 
                 const touchEndY = e.changedTouches[0].clientY;
+                const touchEndX = e.changedTouches[0].clientX;
+                
                 const deltaY = touchStartY - touchEndY;
-                const sensitivity = 50;
+                const deltaX = touchStartX - touchEndX;
 
-                if (Math.abs(deltaY) < sensitivity) return;
+                // Игнорируем горизонтальные свайпы на телефонах
+                if (Math.abs(deltaX) > Math.abs(deltaY)) return;
+                if (Math.abs(deltaY) < 50) return;
                 
                 const currentSection = sections[currentSectionIndex];
-                if (!currentSection) return; // FIX: Добавлена проверка на существование секции
+                if (!currentSection) return;
                 
                 const isScrollable = currentSection.scrollHeight > currentSection.clientHeight;
                 const isSwipingUp = deltaY > 0;
-                const scrollBuffer = 5;
 
                 if (isScrollable) {
-                    if (isSwipingUp && currentSection.scrollTop + currentSection.clientHeight < currentSection.scrollHeight - scrollBuffer) {
-                        return;
-                    }
-                    if (!isSwipingUp && currentSection.scrollTop > scrollBuffer) {
-                        return;
-                    }
+                    if (isSwipingUp && currentSection.scrollTop + currentSection.clientHeight < currentSection.scrollHeight - 5) return;
+                    if (!isSwipingUp && currentSection.scrollTop > 5) return;
                 }
                 
-                if (isSwipingUp) {
-                    navigateToSection(currentSectionIndex + 1);
-                } else {
-                    navigateToSection(currentSectionIndex - 1);
-                }
+                lastScrollTime = now;
+                if (isSwipingUp) navigateToSection(currentSectionIndex + 1);
+                else navigateToSection(currentSectionIndex - 1);
             };
 
-            // Назначаем обработчики
+            // { passive: false } MUST be strictly used to be able to preventDefault on wheel
             window.addEventListener('wheel', wheelHandler, { passive: false });
             window.addEventListener('touchstart', touchStartHandler, { passive: true });
             window.addEventListener('touchend', touchEndHandler, { passive: true });
 
-            // Обработка кликов по ссылкам навигации
-            const allNavLinks = document.querySelectorAll('a[data-target-section-index]');
-            allNavLinks.forEach(link => {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === 'ArrowDown') navigateToSection(currentSectionIndex + 1);
+                else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') navigateToSection(currentSectionIndex - 1);
+            });
+
+            document.querySelectorAll('a[data-target-section-index]').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const targetIndex = parseInt(link.dataset.targetSectionIndex, 10);
-                    if (!isNaN(targetIndex)) {
-                        navigateToSection(targetIndex);
-                    }
-                    if (link.closest('#mobile-menu')) {
-                        setTimeout(() => {
-                           if (!mobileMenu.classList.contains('translate-x-full')) {
-                               toggleMenu();
-                           }
-                        }, 100);
-                    }
+                    if (!isNaN(targetIndex)) navigateToSection(targetIndex);
+                    if (link.closest('#mobile-menu')) setTimeout(() => toggleMenu(), 100);
                 });
             });
 
-
-            // === ЛОГИКА МОБИЛЬНОГО МЕНЮ (без изменений) ===
-            const menuBtn = document.getElementById('menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
-            const closeMenuBtn = document.getElementById('close-menu-btn');
-            
-            const toggleMenu = () => {
-                mobileMenu.classList.toggle('translate-x-full');
-            };
+            const toggleMenu = () => mobileMenu.classList.toggle('translate-x-full');
+            document.getElementById('menu-btn').addEventListener('click', toggleMenu);
+            document.getElementById('close-menu-btn').addEventListener('click', toggleMenu);
 
-            menuBtn.addEventListener('click', toggleMenu);
-            closeMenuBtn.addEventListener('click', toggleMenu);
-            
-
-            // === ЛОГИКА АНИМАЦИИ "КАПЕЛЬ" ===
-            const allCtaButtons = document.querySelectorAll('.main-cta-button, .cv-button, .cta-button');
-            allCtaButtons.forEach(button => {
-                const hide = () => { blob1.style.opacity = '0';   blob2.style.opacity = '0'; };
-                const show = () => { blob1.style.opacity = '0.7'; blob2.style.opacity = '0.7'; };
-                button.addEventListener('mouseenter', hide);
-                button.addEventListener('mouseleave', show);
-                button.addEventListener('focus', hide);
-                button.addEventListener('blur', show);
-                button.addEventListener('click', show);
-                button.addEventListener('touchstart', hide, {passive:true});
-                button.addEventListener('touchend', show,   {passive:true});
-            });
-            
-            const interactiveCards = document.querySelectorAll('.dataism-card, .employee-card, .blog-card');
-            interactiveCards.forEach(card => {
-                card.addEventListener('mouseenter', () => {
-                    if (currentSectionIndex >= 2) {
-                        cardTarget = card;
-                    }
-                });
-                card.addEventListener('mouseleave', () => {
-                    cardTarget = null;
-                });
-            });
-
-            function animate() {
-                let targetX1, targetY1, targetScale1;
-                let targetX2, targetY2, targetScale2;
+            // --- BLOBS ANIMATION ---
+            function animateBlobs() {
+                let targetX1, targetY1, targetX2, targetY2;
+                let targetScale1 = 1.0, targetScale2 = 1.0;
                 const blobWidth = blob1.offsetWidth;
                 const blobHeight = blob1.offsetHeight;
                 
-                if (cardTarget && currentSectionIndex >= 2) {
-                    const cardRect = cardTarget.getBoundingClientRect();
-                    const centerX = cardRect.left + cardRect.width / 2;
-                    const centerY = cardRect.top + cardRect.height / 2;
-                    targetScale1 = 0.6;
-                    targetScale2 = 0.6;
-                    const offset = cardRect.width * 0.2;
-                    targetX1 = centerX - (blobWidth / 2) - offset;
-                    targetY1 = centerY - blobHeight / 2;
-                    targetX2 = centerX - (blobWidth / 2) + offset;
-                    targetY2 = centerY - blobHeight / 2;
-                } else if (isOrbiting && authorPhoto) {
-                    const photoRect = authorPhoto.getBoundingClientRect();
-                    const centerX = photoRect.left + photoRect.width / 2;
-                    const centerY = window.innerHeight * 0.32;
-                    const radius = photoRect.width * 0.6;
-                    angle += 0.003; 
-                    targetScale1 = 0.7;
-                    targetScale2 = 0.7;
-                    targetX1 = (centerX + radius * Math.cos(angle)) - blobWidth / 2;
-                    targetY1 = (centerY + radius * Math.sin(angle)) - blobHeight / 2;
-                    targetX2 = (centerX + radius * Math.cos(angle + Math.PI / 2)) - blobWidth / 2;  
-                    targetY2 = (centerY + radius * Math.sin(angle + Math.PI / 2)) - blobHeight / 2;
+                if (cardTarget) {
+                    const rect = cardTarget.getBoundingClientRect();
+                    const targetCenterX = rect.left + rect.width / 2;
+                    const targetCenterY = rect.top + rect.height / 2;
+                    
+                    targetX1 = targetCenterX - blobWidth / 2;
+                    targetY1 = targetCenterY - blobHeight / 2;
+                    
+                    targetX2 = targetCenterX - blobWidth / 2;
+                    targetY2 = targetCenterY - blobHeight / 2;
+
+                    const isButton = cardTarget.classList.contains('main-cta-button') || cardTarget.classList.contains('sleek-link') || cardTarget.classList.contains('cta-button');
+                    targetScale1 = isButton ? 0.3 : 0.5; 
+                    targetScale2 = isButton ? 0.3 : 0.5;
                 } else {
                     wanderTime += 0.003;
                     const centerX = window.innerWidth / 2;
                     const centerY = window.innerHeight / 2;
-                    const wanderRadiusX = Math.min(centerX, centerY) * 0.45;
-                    const wanderRadiusY = Math.min(centerX, centerY) * 0.35;
-                    targetX1 = centerX + wanderRadiusX * Math.cos(wanderTime) - blobWidth / 2;
-                    targetY1 = centerY + wanderRadiusY * Math.sin(wanderTime * 1.5) - blobHeight / 2;
-                    targetScale1 = 1.0;
+                    const wanderRadiusX = Math.min(centerX, centerY) * 0.55;
+                    const wanderRadiusY = Math.min(centerX, centerY) * 0.45;
+                    
+                    const centerX1 = window.innerWidth * 0.25;
+                    const centerY1 = window.innerHeight * 0.35;
+                    const centerX2 = window.innerWidth * 0.75;
+                    const centerY2 = window.innerHeight * 0.65;
+                    
+                    targetX1 = centerX1 + wanderRadiusX * Math.cos(wanderTime) - blobWidth / 2;
+                    targetY1 = centerY1 + wanderRadiusY * Math.sin(wanderTime * 1.5) - blobHeight / 2;
+                    
                     const phaseOffset = 1.5;
-                    targetX2 = centerX + wanderRadiusX * Math.cos(wanderTime - phaseOffset) - blobWidth / 2;
-                    targetY2 = centerY + wanderRadiusY * Math.sin((wanderTime - phaseOffset) * 1.5) - blobHeight / 2;
+                    targetX2 = centerX2 + wanderRadiusX * Math.cos(wanderTime - phaseOffset) - blobWidth / 2;
+                    targetY2 = centerY2 + wanderRadiusY * Math.sin((wanderTime - phaseOffset) * 1.5) - blobHeight / 2;
+
+                    targetScale1 = 1.0;
                     targetScale2 = 1.0;
                 }
                 
-                const smoothingFactor = 0.04;  
+                const smoothingFactor = cardTarget ? 0.08 : 0.04;  
                 blob1State.x += (targetX1 - blob1State.x) * smoothingFactor;
                 blob1State.y += (targetY1 - blob1State.y) * smoothingFactor;
                 blob1State.scale += (targetScale1 - blob1State.scale) * smoothingFactor;
+                
                 blob2State.x += (targetX2 - blob2State.x) * smoothingFactor;
                 blob2State.y += (targetY2 - blob2State.y) * smoothingFactor;
                 blob2State.scale += (targetScale2 - blob2State.scale) * smoothingFactor;
                 
                 blob1.style.transform = `translate3d(${blob1State.x}px, ${blob1State.y}px, 0) scale(${blob1State.scale})`;
                 blob2.style.transform = `translate3d(${blob2State.x}px, ${blob2State.y}px, 0) scale(${blob2State.scale})`;
-                requestAnimationFrame(animate);
+                requestAnimationFrame(animateBlobs);
             }
 
-
-            // === ЛОГИКА СЛАЙДЕРА И ПРОЧЕЕ (без изменений) ===
-            const backToTopBtn = document.getElementById('back-to-top-btn');
-            if (backToTopBtn) {
-                backToTopBtn.addEventListener('click', () => {
-                    navigateToSection(0);
-                });
-            }
+            // --- VIDEO ASSISTANT DRAG & DROP ---
+            const widget = document.getElementById('video-assistant');
             
-            const sliderContainer = document.getElementById('blog-slider-container');
-            if (sliderContainer) {
-                const slides = sliderContainer.querySelectorAll('.blog-slide');
-                let currentIndex = 0;
-                const totalSlides = slides.length;
-                const updateSliderPosition = () => {
-                    if (slides.length === 0) return;
-                    const slideWidth = slides[0].clientWidth;
-                    sliderContainer.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
-                    const atStart = currentIndex === 0;
-                    const atEnd = currentIndex >= totalSlides - 1;
-                    document.getElementById('blog-prev').disabled = atStart;
-                    document.getElementById('blog-prev-mobile').disabled = atStart;
-                    document.getElementById('blog-next').disabled = atEnd;
-                    document.getElementById('blog-next-mobile').disabled = atEnd;
-                };
-                const goToNext = () => { if (currentIndex < totalSlides - 1) { currentIndex++; updateSliderPosition(); } };
-                const goToPrev = () => { if (currentIndex > 0) { currentIndex--; updateSliderPosition(); } };
-                document.getElementById('blog-next').addEventListener('click', goToNext);
-                document.getElementById('blog-next-mobile').addEventListener('click', goToNext);
-                document.getElementById('blog-prev').addEventListener('click', goToPrev);
-                document.getElementById('blog-prev-mobile').addEventListener('click', goToPrev);
-                updateSliderPosition();
-                window.addEventListener('resize', updateSliderPosition);
+            widget.onmousedown = dragStart;
+            widget.ontouchstart = dragStart;
+
+            function dragStart(e) {
+                if (e.target.classList.contains('ctrl-btn')) return;
+
+                e.preventDefault();
+                let startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                let startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+                
+                document.onmouseup = dragEnd;
+                document.onmousemove = dragAction;
+                document.ontouchend = dragEnd;
+                document.ontouchmove = dragAction;
+
+                function dragAction(e) {
+                    e.preventDefault();
+                    let currentX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                    let currentY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                    
+                    let diffX = startX - currentX;
+                    let diffY = startY - currentY;
+                    
+                    startX = currentX;
+                    startY = currentY;
+
+                    let newTop = widget.offsetTop - diffY;
+                    let newLeft = widget.offsetLeft - diffX;
+
+                    const maxTop = window.innerHeight - widget.offsetHeight;
+                    const maxLeft = window.innerWidth - widget.offsetWidth;
+
+                    newTop = Math.max(0, Math.min(newTop, maxTop));
+                    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+
+                    widget.style.top = newTop + "px";
+                    widget.style.left = newLeft + "px";
+                    widget.style.bottom = "auto";
+                    widget.style.right = "auto";
+                }
+
+                function dragEnd() {
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                    document.ontouchend = null;
+                    document.ontouchmove = null;
+                }
             }
 
-            // === ИНИЦИАЛИЗАЦИЯ ===
-            const initialSectionIndex = Math.round(window.scrollY / window.innerHeight);
-            currentSectionIndex = -1; // Устанавливаем -1, чтобы updateActiveSection гарантированно сработала
-            updateActiveSection(initialSectionIndex);
+            // --- VIDEO CONTROLS ---
+            const btnPlayPause = document.getElementById('btn-playpause');
+            const btnMute = document.getElementById('btn-mute');
             
-            animate();
+            btnPlayPause.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                if (videoEl.paused) {
+                    videoEl.play();
+                    btnPlayPause.className = 'fa-solid fa-pause ctrl-btn';
+                } else {
+                    videoEl.pause();
+                    btnPlayPause.className = 'fa-solid fa-play ctrl-btn';
+                }
+            });
+
+            btnMute.addEventListener('click', (e) => {
+                e.stopPropagation();
+                videoEl.muted = !videoEl.muted;
+                btnMute.className = videoEl.muted 
+                    ? 'fa-solid fa-volume-xmark ctrl-btn' 
+                    : 'fa-solid fa-volume-high ctrl-btn text-[var(--brand-orange)]';
+            });
+
+            // --- INITIALIZATION ---
+            currentSectionIndex = -1;
+            updateActiveSection(0);
+            animateBlobs();
         });
     </script>
 </body>
 </html>
-
