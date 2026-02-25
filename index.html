@@ -70,16 +70,15 @@
             opacity: 0;
             z-index: 1;
             transition: opacity 1.2s ease;
-            padding: 5rem 0 4rem; 
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            padding: 4.5rem 0 3rem; 
+            overflow-y: hidden; /* Prevent visual double scroll on cards */
             box-sizing: border-box;
         }
 
         @media (min-width: 768px) {
             .content-section {
-                padding-top: 7rem;
-                padding-bottom: 3rem;
+                padding-top: 6rem;
+                padding-bottom: 2rem;
             }
         }
 
@@ -96,6 +95,24 @@
             z-index: 2;
         }
         
+        /* --- Height-based constraints to force fitting on small laptop screens --- */
+        @media (max-height: 750px) {
+            .content-section { padding-top: 4.5rem; padding-bottom: 2rem; }
+            .section-inner h2 { font-size: 2rem !important; line-height: 1.2 !important; margin-bottom: 0.75rem !important; }
+            .section-inner p.uppercase { margin-bottom: 0.5rem !important; font-size: 0.75rem !important;}
+            .horizontal-card { padding: 1.25rem !important; min-height: 140px !important; gap: 1rem !important; }
+            .horizontal-card h3, .horizontal-card h4 { margin-bottom: 0.25rem !important; padding-bottom: 0.25rem !important; font-size: 1.15rem !important; }
+            .horizontal-card p { margin-bottom: 0.5rem !important; font-size: 0.85rem !important; line-height: 1.3 !important; }
+            .horizontal-card i.shrink-0 { font-size: 1.75rem !important; }
+            .icon-box { display: none; } /* Simplified visually for tiny vertical space */
+            .sleek-link { padding: 0.35rem 0.85rem !important; font-size: 0.75rem !important; }
+            .mb-12, .mb-10, .mb-8 { margin-bottom: 1.5rem !important; }
+            .pb-12, .pb-8 { padding-bottom: 1.5rem !important; }
+            #slide-10 .space-y-6, #slide-10 .md\:space-y-8 { margin-top: 0 !important; }
+            #slide-10 a { font-size: 1.25rem !important; margin-bottom: 0.5rem !important; }
+            #slide-10 span.text-gray-600 { font-size: 1.1rem !important; margin-right: 1rem !important; }
+        }
+
         /* --- Background Blobs --- */
         .blob {
             position: fixed;
@@ -145,15 +162,15 @@
             text-align: left; 
             align-items: flex-start; 
             padding: 1.5rem;
-            min-height: 160px; 
+            min-height: 180px; /* Made taller vertically */
             gap: 1.25rem;
         }
 
         @media (min-width: 768px) {
             .horizontal-card {
                 padding: 2rem;
-                min-height: 200px;
-                gap: 1.5rem;
+                min-height: 220px; /* Made taller vertically */
+                gap: 1.75rem;
             }
         }
 
@@ -297,23 +314,14 @@
             bottom: 20px;
             right: 20px;
             z-index: 500; 
-            width: 100px;
-            height: 100px;
+            width: clamp(80px, 12vw, 140px);
+            height: clamp(80px, 12vw, 140px);
             border-radius: 50%;
             background: #111;
             box-shadow: 0 -12px 24px rgba(136, 84, 243, 0.3), 0 12px 24px rgba(249, 115, 22, 0.3), inset 0 0 0 2px rgba(255,255,255,0.1);
             overflow: hidden;
             cursor: grab;
             transition: transform 0.2s ease-out;
-        }
-
-        @media (min-width: 768px) {
-            #video-assistant {
-                width: 140px;
-                height: 140px;
-                bottom: 40px;
-                right: 40px;
-            }
         }
 
         #video-assistant:active {
@@ -331,7 +339,7 @@
         .assistant-controls {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -346,7 +354,7 @@
 
         .ctrl-btn {
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             cursor: pointer;
             transition: color 0.2s, transform 0.2s;
         }
@@ -369,14 +377,15 @@
         <div id="blob1" class="blob blob-purple w-[45rem] h-[45rem] md:w-[65rem] md:h-[65rem] lg:w-[80rem] lg:h-[80rem] xl:w-[95rem] xl:h-[95rem]"></div>
         <div id="blob2" class="blob blob-orange w-[45rem] h-[45rem] md:w-[65rem] md:h-[65rem] lg:w-[80rem] lg:h-[80rem] xl:w-[95rem] xl:h-[95rem]"></div>
 
-        <!-- Sticky Header -->
-        <header class="absolute top-0 w-full z-[200] py-4 px-4 sm:px-6 lg:px-8 bg-transparent">
-            <div class="container mx-auto flex justify-between items-center">
+        <!-- Sticky Header with flexible spacing -->
+        <header class="absolute top-0 w-full z-[200] py-3 md:py-4 px-4 sm:px-6 lg:px-8 bg-transparent">
+            <div class="container mx-auto flex justify-between items-center gap-2">
                 <a href="#" data-target-section-index="0" class="logo-link flex-shrink-0">
-                    <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-10 sm:h-12 md:h-14 w-auto">
+                    <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-10 sm:h-12 md:h-14 lg:h-16 xl:h-20 w-auto transition-all">
                 </a>
                 
-                <nav class="hidden md:flex items-center text-[11px] lg:text-sm xl:text-base space-x-3 lg:space-x-6">
+                <!-- Main Nav hidden on tablet and below -->
+                <nav class="hidden lg:flex flex-1 justify-center items-center text-[11px] lg:text-xs xl:text-sm 2xl:text-base gap-3 lg:gap-6 xl:gap-10 px-2 transition-all">
                     <a href="#" data-target-section-index="3" class="nav-link whitespace-nowrap">Platform</a>
                     <a href="#" data-target-section-index="4" class="nav-link whitespace-nowrap">Skills</a>
                     <a href="#" data-target-section-index="5" class="nav-link whitespace-nowrap">Development</a>
@@ -386,12 +395,13 @@
                     <a href="#" data-target-section-index="9" class="nav-link whitespace-nowrap text-white hover:text-white">Leaders</a>
                 </nav>
                 
-                <a href="#" data-target-section-index="9" class="hidden lg:flex items-center justify-center cta-button text-white font-medium py-2.5 px-6 rounded-full text-sm">
+                <!-- Kept on tablet (md) and above, hidden only on mobile -->
+                <a href="#" data-target-section-index="9" class="hidden md:flex flex-shrink-0 items-center justify-center cta-button text-white font-medium py-2.5 px-5 lg:py-3 lg:px-8 rounded-full text-xs sm:text-sm lg:text-base transition-all ml-auto lg:ml-0">
                     AI Transformation <i class="fa-solid fa-arrow-right ml-2"></i>
                 </a>
                 
-                <button id="menu-btn" class="md:hidden focus:outline-none z-[310]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                <button id="menu-btn" class="md:hidden focus:outline-none z-[310] flex-shrink-0 ml-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                 </button>
             </div>
         </header>
@@ -402,13 +412,13 @@
             <section id="slide-0" class="content-section">
                 <div class="section-inner container mx-auto max-w-5xl text-center px-4">
                     <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Andre AI Technologies</p>
-                    <h1 id="hero-title" class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight break-words">
+                    <h1 id="hero-title" class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold text-white leading-tight break-words transition-all">
                         <span style="color: var(--brand-purple);">AI</span> TRANSFORMATION<br>OF YOUR <span style="color: var(--brand-orange);">BUSINESS</span>
                     </h1>
-                    <p id="hero-subtitle" data-typewriter-mode="adaptive" class="typewriter-target mt-6 sm:mt-8 text-sm sm:text-lg md:text-xl text-gray-400 max-w-3xl mx-auto font-medium">
+                    <p id="hero-subtitle" data-typewriter-mode="adaptive" class="typewriter-target mt-4 sm:mt-6 md:text-xl xl:text-2xl text-gray-400 max-w-3xl mx-auto font-medium transition-all">
                         AI Ecosystem for Human Good
                     </p>
-                    <a href="#" data-target-section-index="9" class="main-cta-button inline-flex items-center justify-center font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-full mt-8 md:mt-12 text-sm sm:text-base md:text-lg">
+                    <a href="#" data-target-section-index="9" class="main-cta-button inline-flex items-center justify-center font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-full mt-6 md:mt-10 text-sm sm:text-base md:text-lg">
                         AI Transformation <i class="fa-solid fa-arrow-right ml-3"></i>
                     </a>
                 </div>
@@ -417,15 +427,15 @@
             <!-- Slide 1: Roadmap (6 cards) -->
             <section id="slide-1" class="content-section">
                 <div class="section-inner w-full flex flex-col items-center">
-                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
-                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">How to become AI-First Company</p>
-                        <h2 id="roadmap-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Transformation Roadmap</h2>
+                    <div class="w-full max-w-7xl mx-auto text-center mb-6 md:mb-8 px-4">
+                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3">How to become AI-First Company</p>
+                        <h2 id="roadmap-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight transition-all">AI Transformation Roadmap</h2>
                     </div>
                     
-                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-5 px-6 md:px-12 lg:px-24 pb-6 w-full scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-chess-knight text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-chess-knight text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
                                     <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Strategy</h3>
@@ -437,7 +447,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-network-wired text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-network-wired text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
                                     <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Platform</h3>
@@ -449,7 +459,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-user-astronaut text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-user-astronaut text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
                                     <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Skills</h3>
@@ -461,7 +471,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-code text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-code text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
                                     <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Development</h3>
@@ -473,7 +483,7 @@
                         </a>
 
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-graduation-cap text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-graduation-cap text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
                                     <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Trainings</h3>
@@ -485,7 +495,7 @@
                         </a>
 
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-users-gear text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-users-gear text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <div class="flex justify-between items-start border-b border-white/10 pb-2 mb-3">
                                     <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">AI Talents</h3>
@@ -502,61 +512,61 @@
             <!-- Slide 2: AI Strategy -->
             <section id="slide-2" class="content-section">
                 <div class="section-inner w-full flex flex-col items-center">
-                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
-                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Consulting</p>
-                        <h2 id="consulting-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Strategy</h2>
+                    <div class="w-full max-w-7xl mx-auto text-center mb-6 md:mb-8 px-4">
+                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3">Consulting</p>
+                        <h2 id="consulting-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight transition-all">AI Strategy</h2>
                     </div>
-                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-5 px-6 md:px-12 lg:px-24 pb-6 w-full scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-magnifying-glass-chart text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-magnifying-glass-chart text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
-                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AS-IS Analysis</h4>
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AS-IS Analysis</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Mapping real business processes and bottlenecks via Process Mining and structured interviews.</p>
                                 <span class="sleek-link text-[var(--brand-purple)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-wand-magic-sparkles text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-wand-magic-sparkles text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
-                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Automation Points</h4>
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Automation Points</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Identifying precise tasks where AI creates immediate and measurable business impact.</p>
                                 <span class="sleek-link text-[var(--brand-orange)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-pen-ruler text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-pen-ruler text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
-                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">TO-BE Design</h4>
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">TO-BE Design</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Architecting the future workflow and updating policies for AI-native operations.</p>
                                 <span class="sleek-link text-[var(--brand-purple)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
-                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">New Role</h4>
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">New Role</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Redefining human responsibilities from executors to orchestrators of AI agents.</p>
                                 <span class="sleek-link text-[var(--brand-orange)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-chart-radar text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-chart-radar text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
-                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Maturity Index</h4>
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Maturity Index</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Comprehensive audit across 7 dimensions to define your AI readiness and potential.</p>
                                 <span class="sleek-link text-[var(--brand-purple)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-flag-checkered text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-flag-checkered text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
-                                <h4 class="text-lg md:text-xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Strategy Execution</h4>
+                                <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Strategy Execution</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Translating strategy into a working AI Playbook and achieving measurable ROI.</p>
                                 <span class="sleek-link text-[var(--brand-orange)] mt-auto">Details <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
@@ -569,14 +579,14 @@
             <!-- Slide 3: Platform -->
             <section id="slide-3" class="content-section">
                 <div class="section-inner w-full flex flex-col items-center">
-                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
-                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Horizontal Solution</p>
-                        <h2 id="platform-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Platform</h2>
+                    <div class="w-full max-w-7xl mx-auto text-center mb-6 md:mb-8 px-4">
+                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3">Horizontal Solution</p>
+                        <h2 id="platform-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight transition-all">AI Platform</h2>
                     </div>
-                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-5 px-6 md:px-12 lg:px-24 pb-6 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-layer-group text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-layer-group text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Models</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Unified access to multimodal neural networks and leading AI models in one secure environment.</p>
@@ -585,7 +595,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-server text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-server text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Memory</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Persistent memory and secure API integrations with your existing IT infrastructure.</p>
@@ -594,7 +604,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-brain text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-brain text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Context</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Intelligent context engineering deeply integrated with your corporate knowledge base.</p>
@@ -609,14 +619,14 @@
             <!-- Slide 4: AI Skills (3 cards) -->
             <section id="slide-4" class="content-section">
                 <div class="section-inner w-full flex flex-col items-center">
-                    <div class="w-full max-w-7xl mx-auto text-center mb-10 md:mb-12 px-4">
-                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Vertical Solutions</p>
-                        <h2 id="agents-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Skills</h2>
+                    <div class="w-full max-w-7xl mx-auto text-center mb-6 md:mb-8 px-4">
+                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3">Vertical Solutions</p>
+                        <h2 id="agents-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight transition-all">AI Skills</h2>
                     </div>
-                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-5 px-6 md:px-12 lg:px-24 pb-6 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Manager</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">AI-driven process management and operational control without human bottlenecks.</p>
@@ -625,7 +635,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-users text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-users text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">HR</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Recruitment screening, automated candidate scoring, and seamless employee onboarding.</p>
@@ -634,7 +644,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-hashtag text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-hashtag text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">SMM</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Automated social media execution, post scheduling, and audience interaction.</p>
@@ -649,14 +659,14 @@
             <!-- Slide 5: AI Development -->
             <section id="slide-5" class="content-section">
                 <div class="section-inner w-full flex flex-col items-center">
-                    <div class="w-full max-w-7xl mx-auto text-center mb-10 md:mb-12 px-4">
-                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Custom Solutions</p>
-                        <h2 class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Development</h2>
+                    <div class="w-full max-w-7xl mx-auto text-center mb-6 md:mb-8 px-4">
+                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3">Custom Solutions</p>
+                        <h2 class="typewriter-target text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight transition-all">AI Development</h2>
                     </div>
-                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-5 px-6 md:px-12 lg:px-24 pb-6 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-code text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-code text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Custom AI Apps</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Tailor-made AI solutions and internal tools built specifically for your unique business needs.</p>
@@ -665,7 +675,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-network-wired text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-network-wired text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">Agentic Architecture</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Designing multi-agent systems where AI workers collaborate to solve complex tasks autonomously.</p>
@@ -674,7 +684,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-plug text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-plug text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h4 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">API & Integrations</h4>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Seamless integration of modern LLMs into your existing legacy IT infrastructure and databases.</p>
@@ -689,14 +699,14 @@
             <!-- Slide 6: Trainings -->
             <section id="slide-6" class="content-section">
                 <div class="section-inner w-full flex flex-col items-center">
-                    <div class="w-full max-w-7xl mx-auto text-center mb-10 md:mb-16 px-4">
-                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Upskilling</p>
-                        <h2 id="trainings-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Trainings</h2>
+                    <div class="w-full max-w-7xl mx-auto text-center mb-6 md:mb-8 px-4">
+                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3">Upskilling</p>
+                        <h2 id="trainings-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight transition-all">AI Trainings</h2>
                     </div>
-                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-5 px-6 md:px-12 lg:px-24 pb-6 w-full xl:justify-center scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Executive Day</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">1-day intensive for C-level and owners to manage business in an AI-first logic.</p>
@@ -705,7 +715,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-laptop-code text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-laptop-code text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Automation Bootcamp</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">1-month practical program for teams to autonomously automate their own processes.</p>
@@ -714,7 +724,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-rocket text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-rocket text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Product Hackathon</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">1-week intensive to build a working AI product from a raw idea to an MVP.</p>
@@ -729,14 +739,14 @@
             <!-- Slide 7: Talents -->
             <section id="slide-7" class="content-section">
                 <div class="section-inner w-full flex flex-col items-center">
-                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
-                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Sourcing</p>
-                        <h2 id="talents-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">AI Talents</h2>
+                    <div class="w-full max-w-7xl mx-auto text-center mb-6 md:mb-8 px-4">
+                        <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3">Sourcing</p>
+                        <h2 id="talents-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight transition-all">AI Talents</h2>
                     </div>
-                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 lg:px-24 pb-12 w-full scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-5 px-6 md:px-12 lg:px-24 pb-6 w-full scrollbar-hide scroll-pl-6 md:scroll-pl-12 lg:scroll-pl-24">
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-user-shield text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-user-shield text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Executives</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">C-level leaders to orchestrate and drive your corporate AI transformation strategy.</p>
@@ -745,7 +755,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-boxes-stacked text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-boxes-stacked text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Product Engineers</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Builders of scalable, agentic AI products and user-facing applications.</p>
@@ -754,7 +764,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-cogs text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-cogs text-3xl md:text-4xl text-[var(--brand-orange)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Automation Engineers</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Experts in linking AI capabilities seamlessly with your existing business processes.</p>
@@ -763,7 +773,7 @@
                         </a>
                         
                         <a href="#" class="glass-panel horizontal-card shrink-0 snap-center w-[85vw] md:w-[450px] lg:w-[500px] cursor-pointer">
-                            <i class="fa-solid fa-laptop-file text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 mt-1 w-8 md:w-10 text-center"></i>
+                            <i class="fa-solid fa-laptop-file text-3xl md:text-4xl text-[var(--brand-purple)] shrink-0 w-10 text-center"></i>
                             <div class="flex flex-col flex-grow w-full h-full">
                                 <h3 class="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mb-3 leading-tight">AI Engineers</h3>
                                 <p class="text-sm md:text-base text-gray-400 mb-6 flex-grow">Deep technical specialists in LLMs, model fine-tuning, and AI infrastructure.</p>
@@ -775,16 +785,16 @@
                 </div>
             </section>
 
-            <!-- Slide 8: Media (Compact Adaptive Frame) -->
+            <!-- Slide 8: Media -->
             <section id="slide-8" class="content-section">
                 <div class="section-inner w-full flex flex-col items-center">
-                    <div class="w-full max-w-7xl mx-auto text-center mb-8 md:mb-12 px-4">
-                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">Journal</p>
-                        <h2 id="media-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">Dataist Media</h2>
+                    <div class="w-full max-w-7xl mx-auto text-center mb-6 md:mb-8 px-4">
+                        <p class="text-[var(--brand-purple)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3">Journal</p>
+                        <h2 id="media-title" class="typewriter-target text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight transition-all">Dataist Media</h2>
                         <p id="media-subtitle" class="typewriter-target text-sm md:text-lg text-gray-400 mt-4">Insights, case studies, and thought leadership.</p>
                     </div>
-                    <div class="w-full max-w-3xl mx-auto px-4 pb-8">
-                        <a href="#" class="glass-panel block relative w-full rounded-2xl overflow-hidden h-[240px] sm:h-[300px] md:h-[350px] flex flex-col justify-end cursor-pointer transition-transform transform hover:scale-[1.02] border border-white/10 hover:border-[var(--brand-purple)]">
+                    <div class="w-full max-w-4xl mx-auto px-6 pb-6">
+                        <a href="#" class="glass-panel block relative w-full rounded-2xl overflow-hidden h-[240px] sm:h-[300px] md:h-[350px] lg:h-[400px] flex flex-col justify-end cursor-pointer transition-transform transform hover:scale-[1.02] border border-white/10 hover:border-[var(--brand-purple)] text-decoration-none">
                             <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop" alt="AI Matrix" class="absolute inset-0 w-full h-full object-cover opacity-40">
                             <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/50 to-transparent z-0"></div>
                             <div class="relative p-6 md:p-8 text-left z-10 w-full mt-auto">
@@ -802,26 +812,26 @@
                 <div class="section-inner container mx-auto max-w-5xl flex flex-col items-center px-4 text-center justify-center flex-grow pt-8">
                     <p class="text-[var(--brand-orange)] uppercase tracking-widest text-xs md:text-sm font-bold mb-3 md:mb-4">The Future is Here</p>
                     
-                    <h2 id="revolution-title" class="typewriter-target text-4xl sm:text-5xl md:text-7xl font-bold text-white leading-tight mb-12">
+                    <h2 id="revolution-title" class="typewriter-target text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold text-white leading-tight mb-8 md:mb-12 transition-all">
                         Are you ready for the<br>
                         <span style="color: var(--brand-purple);">AI</span> 
                         <span style="color: var(--brand-orange);">Revolution</span>?
                     </h2>
                     
-                    <div class="flex flex-col items-center justify-center w-full mt-4 pb-12">
-                        <a href="#" data-target-section-index="10" class="main-cta-button inline-flex items-center justify-center font-bold py-4 px-10 rounded-full text-base md:text-xl w-full sm:w-auto mb-6">
+                    <div class="flex flex-col items-center justify-center w-full mt-2 pb-12">
+                        <a href="#" data-target-section-index="10" class="main-cta-button inline-flex items-center justify-center font-bold py-3 px-8 md:py-4 md:px-10 rounded-full text-sm md:text-xl w-full sm:w-auto mb-6">
                             Start Transformation <i class="fa-solid fa-arrow-right ml-3"></i>
                         </a>
                         
-                        <a href="#" class="text-sm md:text-base font-medium text-gray-400 hover:text-white transition-colors border-b border-gray-600 hover:border-white pb-1">
+                        <a href="#" class="text-xs md:text-sm font-medium text-gray-400 hover:text-white transition-colors border-b border-gray-600 hover:border-white pb-1">
                             Become a Partner
                         </a>
                     </div>
                 </div>
 
                 <!-- Pure Black Footer strictly at the bottom of Revolution block -->
-                <footer class="w-full py-8 bg-[#020202] border-t border-white/5 relative z-20 mt-auto">
-                    <div class="container mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 font-mono text-xs md:text-sm">
+                <footer class="w-full py-6 md:py-8 bg-[#020202] border-t border-white/5 relative z-20 mt-auto">
+                    <div class="container mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 font-mono text-[10px] md:text-xs lg:text-sm">
                         <p>&copy; 2026 Andre AI Technologies.</p>
                         <div class="flex gap-6">
                             <a href="#" class="hover:text-white transition-colors">Privacy</a>
@@ -834,41 +844,41 @@
             <!-- Slide 10: Blueprint / Minimal Roadmap -->
             <section id="slide-10" class="content-section flex flex-col scrollbar-hide" style="padding-bottom: 0; padding-left: 0; padding-right: 0; background-color: #020202;">
                 <div class="section-inner container mx-auto max-w-4xl flex flex-col items-start justify-center px-6 md:px-12 w-full flex-grow">
-                    <h2 class="text-gray-600 font-mono text-sm md:text-base mb-10 md:mb-14 uppercase tracking-widest w-full text-center md:text-left">Roadmap</h2>
+                    <h2 class="text-gray-600 font-mono text-xs md:text-sm lg:text-base mb-6 md:mb-10 uppercase tracking-widest w-full text-center md:text-left">Roadmap</h2>
                     
-                    <div class="flex flex-col w-full space-y-6 md:space-y-8">
-                        <a href="#" data-target-section-index="2" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
-                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-purple)] transition-colors">01</span>
+                    <div class="flex flex-col w-full space-y-4 md:space-y-6 lg:space-y-8">
+                        <a href="#" data-target-section-index="2" class="group flex items-center text-xl md:text-3xl lg:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-xl lg:text-2xl mr-4 md:mr-8 group-hover:text-[var(--brand-purple)] transition-colors">01</span>
                             AI Strategy
                             <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-purple)]"></i>
                         </a>
-                        <a href="#" data-target-section-index="3" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-orange)] transition-colors w-full text-decoration-none">
-                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-orange)] transition-colors">02</span>
+                        <a href="#" data-target-section-index="3" class="group flex items-center text-xl md:text-3xl lg:text-4xl font-bold text-white hover:text-[var(--brand-orange)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-xl lg:text-2xl mr-4 md:mr-8 group-hover:text-[var(--brand-orange)] transition-colors">02</span>
                             AI Platform
                             <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-orange)]"></i>
                         </a>
-                        <a href="#" data-target-section-index="4" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
-                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-purple)] transition-colors">03</span>
+                        <a href="#" data-target-section-index="4" class="group flex items-center text-xl md:text-3xl lg:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-xl lg:text-2xl mr-4 md:mr-8 group-hover:text-[var(--brand-purple)] transition-colors">03</span>
                             AI Skills
                             <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-purple)]"></i>
                         </a>
-                        <a href="#" data-target-section-index="5" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-orange)] transition-colors w-full text-decoration-none">
-                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-orange)] transition-colors">04</span>
+                        <a href="#" data-target-section-index="5" class="group flex items-center text-xl md:text-3xl lg:text-4xl font-bold text-white hover:text-[var(--brand-orange)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-xl lg:text-2xl mr-4 md:mr-8 group-hover:text-[var(--brand-orange)] transition-colors">04</span>
                             AI Development
                             <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-orange)]"></i>
                         </a>
-                        <a href="#" data-target-section-index="6" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
-                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-purple)] transition-colors">05</span>
+                        <a href="#" data-target-section-index="6" class="group flex items-center text-xl md:text-3xl lg:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-xl lg:text-2xl mr-4 md:mr-8 group-hover:text-[var(--brand-purple)] transition-colors">05</span>
                             Upskilling
                             <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-purple)]"></i>
                         </a>
-                        <a href="#" data-target-section-index="7" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-orange)] transition-colors w-full text-decoration-none">
-                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-orange)] transition-colors">06</span>
+                        <a href="#" data-target-section-index="7" class="group flex items-center text-xl md:text-3xl lg:text-4xl font-bold text-white hover:text-[var(--brand-orange)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-xl lg:text-2xl mr-4 md:mr-8 group-hover:text-[var(--brand-orange)] transition-colors">06</span>
                             Talent Sourcing
                             <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-orange)]"></i>
                         </a>
-                        <a href="#" data-target-section-index="8" class="group flex items-center text-xl md:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
-                            <span class="text-gray-600 font-mono text-base md:text-2xl mr-6 md:mr-10 group-hover:text-[var(--brand-purple)] transition-colors">07</span>
+                        <a href="#" data-target-section-index="8" class="group flex items-center text-xl md:text-3xl lg:text-4xl font-bold text-white hover:text-[var(--brand-purple)] transition-colors w-full text-decoration-none">
+                            <span class="text-gray-600 font-mono text-base md:text-xl lg:text-2xl mr-4 md:mr-8 group-hover:text-[var(--brand-purple)] transition-colors">07</span>
                             Dataist Media
                             <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-4 transition-all ml-auto md:ml-6 text-[var(--brand-purple)]"></i>
                         </a>
@@ -909,7 +919,6 @@
         
         <div class="assistant-controls">
             <i id="btn-playpause" class="fa-solid fa-play ctrl-btn"></i>
-            <i id="btn-mute" class="fa-solid fa-volume-xmark ctrl-btn"></i>
         </div>
     </div>
 
@@ -1297,11 +1306,11 @@
 
             // --- VIDEO CONTROLS ---
             const btnPlayPause = document.getElementById('btn-playpause');
-            const btnMute = document.getElementById('btn-mute');
             
             btnPlayPause.addEventListener('click', (e) => {
                 e.stopPropagation(); 
                 if (videoEl.paused) {
+                    videoEl.muted = false; // Звук сразу включается при нажатии Play
                     videoEl.play();
                     btnPlayPause.className = 'fa-solid fa-pause ctrl-btn';
                 } else {
@@ -1310,12 +1319,17 @@
                 }
             });
 
-            btnMute.addEventListener('click', (e) => {
-                e.stopPropagation();
-                videoEl.muted = !videoEl.muted;
-                btnMute.className = videoEl.muted 
-                    ? 'fa-solid fa-volume-xmark ctrl-btn' 
-                    : 'fa-solid fa-volume-high ctrl-btn text-[var(--brand-orange)]';
+            // --- WINDOW RESIZE ---
+            window.addEventListener('resize', () => {
+                if (widget.style.top || widget.style.left) {
+                    const maxTop = window.innerHeight - widget.offsetHeight;
+                    const maxLeft = window.innerWidth - widget.offsetWidth;
+                    let currentTop = parseInt(widget.style.top) || 0;
+                    let currentLeft = parseInt(widget.style.left) || 0;
+                    
+                    widget.style.top = Math.max(0, Math.min(currentTop, maxTop)) + "px";
+                    widget.style.left = Math.max(0, Math.min(currentLeft, maxLeft)) + "px";
+                }
             });
 
             // --- INITIALIZATION ---
