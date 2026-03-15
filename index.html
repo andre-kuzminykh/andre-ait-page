@@ -62,6 +62,7 @@
             width: 100vw;
             height: 100vh;
             transition: background-color 0.5s ease, color 0.5s ease;
+            touch-action: none; /* Предотвращаем стандартный скролл при свайпе */
         }
 
         ::selection { background: var(--brand-purple); color: #FFFFFF; }
@@ -224,7 +225,7 @@
         .logo-container {
             display: flex;
             align-items: center;
-            height: 55px;
+            height: 60px; /* Увеличили контейнер для логотипа побольше */
         }
         
     </style>
@@ -241,8 +242,8 @@
     <!-- Header -->
     <header class="absolute top-0 left-0 w-full p-4 md:p-6 z-40 flex justify-between items-center bg-transparent">
         <div class="logo-container gap-4 md:gap-6 cursor-pointer group" onclick="goToSlide(0)">
-            <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-full w-auto object-contain scale-[1.20] origin-left group-hover:scale-[1.30] transition-transform"/>
-            <div class="hidden md:flex flex-col justify-center text-left mt-1">
+            <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-full w-auto object-contain scale-[1.25] origin-left group-hover:scale-[1.35] transition-transform"/>
+            <div class="hidden md:flex flex-col justify-center text-left">
                 <span class="font-bold text-2xl uppercase tracking-[0.1em] text-[var(--text-main)] leading-[0.9] mb-1">Andre <span class="text-brand-purple">AI</span></span>
                 <div class="flex justify-between w-full text-[0.6rem] text-brand-orange font-bold uppercase leading-none">
                     <span>T</span><span>E</span><span>C</span><span>H</span><span>N</span><span>O</span><span>L</span><span>O</span><span>G</span><span>I</span><span>E</span><span>S</span>
@@ -264,7 +265,7 @@
                 <i class="fa-solid fa-moon dark:hidden text-xl"></i>
                 <i class="fa-solid fa-sun hidden dark:block text-xl"></i>
             </button>
-            <button class="btn-white px-5 py-2 rounded-full text-[10px] md:text-[11px] uppercase tracking-widest font-bold hidden sm:flex items-center gap-2">
+            <button class="btn-white px-5 py-2 rounded-full text-xs md:text-[11px] uppercase tracking-widest font-bold hidden sm:flex items-center gap-2">
                 Open OS <i class="fa-solid fa-arrow-right"></i>
             </button>
         </div>
@@ -276,13 +277,13 @@
         <section class="slide active" id="slide-0">
             <div class="slide-inner flex flex-col items-center text-center !justify-center pb-[5vh] md:pb-[10vh]">
                 <div class="inline-flex items-center space-x-3 px-5 py-2 md:px-6 md:py-2.5 rounded-full bg-black/10 dark:bg-white/10 backdrop-blur-md mb-6 md:mb-8 uppercase tracking-widest text-[10px] md:text-xs font-bold text-[var(--text-main)] dark:text-white border-none">
-                    <span class="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
+                    <span class="relative flex h-2.5 w-2.5 md:h-3 md:w-3">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-purple opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 bg-brand-purple"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 md:h-3 md:w-3 bg-brand-purple"></span>
                     </span>
                     <span>Chief AI Officer</span>
                 </div>
-                <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-8 md:mb-12 uppercase drop-shadow-2xl">
+                <h1 class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold tracking-tight mb-8 md:mb-12 uppercase drop-shadow-2xl">
                     <span style="color: var(--brand-purple);">AI</span> TRANSFORMATION<br>OF YOUR <span style="color: var(--brand-orange);">BUSINESS</span>
                 </h1>
                 <div class="flex flex-col items-center justify-center w-full gap-4 md:gap-5">
@@ -377,16 +378,34 @@
             </div>
         </section>
 
-        <!-- Слайд 2: Platform -->
+        <!-- Слайд 2: Strategy Content -->
         <section class="slide" id="slide-2">
             <div class="slide-inner flex flex-col items-center justify-center text-center gap-4 md:gap-8 max-w-4xl mx-auto">
                 <div class="flex justify-center gap-3 md:gap-6">
-                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-orange/30 flex flex-col items-center justify-center animate-float"><i class="fa-solid fa-database text-xl md:text-2xl text-brand-orange mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-orange/50"></div></div>
-                    <div class="w-20 h-28 md:w-24 md:h-32 glass-panel border-brand-purple/50 flex flex-col items-center justify-center animate-float shadow-lg shadow-brand-purple/10" style="animation-delay: 0.2s"><i class="fa-solid fa-brain text-3xl md:text-4xl text-brand-purple mb-2"></i><div class="w-10 md:w-12 h-1 bg-brand-purple/50"></div></div>
-                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-orange/30 flex flex-col items-center justify-center animate-float" style="animation-delay: 0.4s"><i class="fa-solid fa-server text-xl md:text-2xl text-brand-orange mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-orange/50"></div></div>
+                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-purple/30 flex flex-col items-center justify-center animate-float"><i class="fa-solid fa-magnifying-glass-chart text-2xl md:text-3xl text-brand-purple mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-purple/50"></div></div>
+                    <div class="w-20 h-28 md:w-24 md:h-32 glass-panel border-brand-orange/50 flex flex-col items-center justify-center animate-float shadow-lg shadow-brand-orange/10" style="animation-delay: 0.2s"><i class="fa-solid fa-network-wired text-4xl md:text-5xl text-brand-orange mb-2"></i><div class="w-10 md:w-12 h-1 bg-brand-orange/50"></div></div>
+                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-purple/30 flex flex-col items-center justify-center animate-float" style="animation-delay: 0.4s"><i class="fa-solid fa-chess-knight text-2xl md:text-3xl text-brand-purple mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-purple/50"></div></div>
                 </div>
                 <div>
-                    <h2 class="text-3xl md:text-6xl font-black mb-2 md:mb-4 uppercase">Platform Core</h2>
+                    <h2 class="text-4xl md:text-6xl font-black mb-2 md:mb-4 uppercase">AI Strategy</h2>
+                    <p class="text-[10px] md:text-lg text-[var(--text-muted)] mb-5 md:mb-8 max-w-2xl mx-auto">Comprehensive audit of your business processes and architecture design for seamless AI integration.</p>
+                    <button class="btn-white px-8 md:px-10 py-3 md:py-4 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs inline-flex items-center gap-3 shadow-sm">
+                        Request Audit <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Слайд 3: Platform -->
+        <section class="slide" id="slide-3">
+            <div class="slide-inner flex flex-col items-center justify-center text-center gap-4 md:gap-8 max-w-4xl mx-auto">
+                <div class="flex justify-center gap-3 md:gap-6">
+                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-orange/30 flex flex-col items-center justify-center animate-float"><i class="fa-solid fa-database text-2xl md:text-3xl text-brand-orange mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-orange/50"></div></div>
+                    <div class="w-20 h-28 md:w-24 md:h-32 glass-panel border-brand-purple/50 flex flex-col items-center justify-center animate-float shadow-lg shadow-brand-purple/10" style="animation-delay: 0.2s"><i class="fa-solid fa-brain text-4xl md:text-5xl text-brand-purple mb-2"></i><div class="w-10 md:w-12 h-1 bg-brand-purple/50"></div></div>
+                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-orange/30 flex flex-col items-center justify-center animate-float" style="animation-delay: 0.4s"><i class="fa-solid fa-server text-2xl md:text-3xl text-brand-orange mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-orange/50"></div></div>
+                </div>
+                <div>
+                    <h2 class="text-4xl md:text-6xl font-black mb-2 md:mb-4 uppercase">Platform Core</h2>
                     <p class="text-[10px] md:text-lg text-[var(--text-muted)] mb-5 md:mb-8 max-w-2xl mx-auto">Orchestrating neural models, enterprise memory, and workflow automation into a single secure hub.</p>
                     <button class="btn-white px-8 md:px-10 py-3 md:py-4 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs inline-flex items-center gap-3 shadow-sm">
                         Discover Platform <i class="fa-solid fa-arrow-right"></i>
@@ -395,16 +414,16 @@
             </div>
         </section>
 
-        <!-- Слайд 3: Employees -->
-        <section class="slide" id="slide-3">
+        <!-- Слайд 4: Employees -->
+        <section class="slide" id="slide-4">
             <div class="slide-inner flex flex-col items-center justify-center text-center gap-4 md:gap-8 max-w-4xl mx-auto">
                 <div class="flex justify-center gap-3 md:gap-6">
-                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-purple/30 flex flex-col items-center justify-center animate-float"><i class="fa-solid fa-chart-radar text-xl md:text-2xl text-brand-purple mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-purple/50"></div></div>
-                    <div class="w-20 h-28 md:w-24 md:h-32 glass-panel border-brand-orange/50 flex flex-col items-center justify-center animate-float shadow-lg shadow-brand-orange/10" style="animation-delay: 0.2s"><i class="fa-solid fa-user-astronaut text-3xl md:text-4xl text-brand-orange mb-2"></i><div class="w-10 md:w-12 h-1 bg-brand-orange/50"></div></div>
-                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-purple/30 flex flex-col items-center justify-center animate-float" style="animation-delay: 0.4s"><i class="fa-solid fa-laptop-code text-xl md:text-2xl text-brand-purple mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-purple/50"></div></div>
+                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-purple/30 flex flex-col items-center justify-center animate-float"><i class="fa-solid fa-chart-radar text-2xl md:text-3xl text-brand-purple mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-purple/50"></div></div>
+                    <div class="w-20 h-28 md:w-24 md:h-32 glass-panel border-brand-orange/50 flex flex-col items-center justify-center animate-float shadow-lg shadow-brand-orange/10" style="animation-delay: 0.2s"><i class="fa-solid fa-user-astronaut text-4xl md:text-5xl text-brand-orange mb-2"></i><div class="w-10 md:w-12 h-1 bg-brand-orange/50"></div></div>
+                    <div class="w-16 h-24 md:w-20 md:h-28 glass-panel border-brand-purple/30 flex flex-col items-center justify-center animate-float" style="animation-delay: 0.4s"><i class="fa-solid fa-laptop-code text-2xl md:text-3xl text-brand-purple mb-2"></i><div class="w-8 md:w-10 h-1 bg-brand-purple/50"></div></div>
                 </div>
                 <div>
-                    <h2 class="text-3xl md:text-6xl font-black mb-2 md:mb-4 uppercase">AI Teammates</h2>
+                    <h2 class="text-4xl md:text-6xl font-black mb-2 md:mb-4 uppercase">AI Teammates</h2>
                     <p class="text-[10px] md:text-lg text-[var(--text-muted)] mb-5 md:mb-8 max-w-2xl mx-auto">Deploy autonomous digital employees for Management, HR, Marketing, Sales, and Support.</p>
                     <button class="btn-white px-8 md:px-10 py-3 md:py-4 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs inline-flex items-center gap-3 shadow-sm">
                         View Employee Roster <i class="fa-solid fa-arrow-right"></i>
@@ -413,61 +432,61 @@
             </div>
         </section>
 
-        <!-- Слайд 4: Products -->
-        <section class="slide" id="slide-4">
+        <!-- Слайд 5: Products -->
+        <section class="slide" id="slide-5">
             <div class="slide-inner text-center !justify-center gap-1 md:gap-2">
-                <h2 class="text-2xl md:text-5xl font-black mb-1 md:mb-3 uppercase shrink-0">Proprietary Products</h2>
+                <h2 class="text-3xl md:text-5xl font-black mb-1 md:mb-3 uppercase shrink-0">Proprietary Products</h2>
                 <p class="text-[10px] md:text-lg text-[var(--text-muted)] mb-3 md:mb-8 shrink-0">Software products tailored for complex industry challenges.</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 w-full max-w-5xl mx-auto">
                     <div class="hover-gradient-card glass-panel p-4 md:p-6 flex flex-col items-center group cursor-pointer relative justify-center">
-                        <i class="fa-solid fa-boxes-stacked text-2xl md:text-4xl text-brand-purple mb-2 md:mb-4"></i>
-                        <h3 class="text-sm md:text-xl font-bold mb-1 md:mb-2 uppercase">Dataist AI</h3>
-                        <p class="text-[8px] md:text-[11px] text-[var(--text-muted)] mb-3 md:mb-5">Data structuring</p>
-                        <span class="bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-5 py-2 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold btn-gradient-hover flex items-center gap-1.5 shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                        <i class="fa-solid fa-boxes-stacked text-3xl md:text-4xl text-brand-purple mb-2 md:mb-4"></i>
+                        <h3 class="text-base md:text-xl font-bold mb-1 md:mb-2 uppercase">Dataist AI</h3>
+                        <p class="text-[10px] md:text-[11px] text-[var(--text-muted)] mb-3 md:mb-5">Data structuring</p>
+                        <span class="bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-5 py-2 rounded-full text-[10px] md:text-[10px] uppercase tracking-widest font-bold btn-gradient-hover flex items-center gap-1.5 shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
                     <div class="hover-gradient-card glass-panel p-4 md:p-6 flex flex-col items-center group cursor-pointer relative justify-center">
-                        <i class="fa-solid fa-wand-magic-sparkles text-2xl md:text-4xl text-brand-orange mb-2 md:mb-4"></i>
-                        <h3 class="text-sm md:text-xl font-bold mb-1 md:mb-2 uppercase">Landao AI</h3>
-                        <p class="text-[8px] md:text-[11px] text-[var(--text-muted)] mb-3 md:mb-5">Territorial intelligence</p>
-                        <span class="bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-5 py-2 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold btn-gradient-hover flex items-center gap-1.5 shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                        <i class="fa-solid fa-wand-magic-sparkles text-3xl md:text-4xl text-brand-orange mb-2 md:mb-4"></i>
+                        <h3 class="text-base md:text-xl font-bold mb-1 md:mb-2 uppercase">Landao AI</h3>
+                        <p class="text-[10px] md:text-[11px] text-[var(--text-muted)] mb-3 md:mb-5">Territorial intelligence</p>
+                        <span class="bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-5 py-2 rounded-full text-[10px] md:text-[10px] uppercase tracking-widest font-bold btn-gradient-hover flex items-center gap-1.5 shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
                     <div class="hover-gradient-card glass-panel p-4 md:p-6 flex flex-col items-center group cursor-pointer relative justify-center">
-                        <i class="fa-solid fa-brain text-2xl md:text-4xl text-brand-purple mb-2 md:mb-4"></i>
-                        <h3 class="text-sm md:text-xl font-bold mb-1 md:mb-2 uppercase">Deurolady AI</h3>
-                        <p class="text-[8px] md:text-[11px] text-[var(--text-muted)] mb-3 md:mb-5">Assistant models</p>
-                        <span class="bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-5 py-2 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold btn-gradient-hover flex items-center gap-1.5 shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                        <i class="fa-solid fa-brain text-3xl md:text-4xl text-brand-purple mb-2 md:mb-4"></i>
+                        <h3 class="text-base md:text-xl font-bold mb-1 md:mb-2 uppercase">Deurolady AI</h3>
+                        <p class="text-[10px] md:text-[11px] text-[var(--text-muted)] mb-3 md:mb-5">Assistant models</p>
+                        <span class="bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-5 py-2 rounded-full text-[10px] md:text-[10px] uppercase tracking-widest font-bold btn-gradient-hover flex items-center gap-1.5 shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Слайд 5: Education -->
-        <section class="slide" id="slide-5">
+        <!-- Слайд 6: Education -->
+        <section class="slide" id="slide-6">
             <div class="slide-inner text-center !justify-center gap-1 md:gap-2">
-                <h2 class="text-2xl md:text-5xl font-black mb-1 md:mb-3 uppercase shrink-0">AI Education</h2>
+                <h2 class="text-3xl md:text-5xl font-black mb-1 md:mb-3 uppercase shrink-0">AI Education</h2>
                 <p class="text-[10px] md:text-lg text-[var(--text-muted)] mb-3 md:mb-8 shrink-0">Train your team to operate natively in an AI-first company.</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-6 w-full max-w-5xl mx-auto">
                     <div class="hover-gradient-card glass-panel p-3 md:p-6 flex flex-col items-center group cursor-pointer relative justify-center min-h-[120px] md:min-h-[140px]">
-                        <i class="fa-solid fa-user-tie text-2xl md:text-4xl text-brand-purple mb-1.5 md:mb-4"></i>
-                        <h3 class="text-sm md:text-xl font-bold mb-2 md:mb-5 uppercase">Executive Day</h3>
+                        <i class="fa-solid fa-user-tie text-3xl md:text-4xl text-brand-purple mb-1.5 md:mb-4"></i>
+                        <h3 class="text-base md:text-xl font-bold mb-2 md:mb-5 uppercase">Executive Day</h3>
                         <span class="mt-auto bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-4 py-1.5 md:py-2 rounded-full text-[8px] md:text-[10px] uppercase tracking-widest font-bold btn-gradient-hover flex items-center gap-1.5 shadow-sm">Join <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
                     <div class="hover-gradient-card glass-panel p-3 md:p-6 flex flex-col items-center group cursor-pointer relative justify-center min-h-[120px] md:min-h-[140px]">
-                        <i class="fa-solid fa-laptop-code text-2xl md:text-4xl text-brand-orange mb-1.5 md:mb-4"></i>
-                        <h3 class="text-sm md:text-xl font-bold mb-2 md:mb-5 uppercase">Bootcamp</h3>
+                        <i class="fa-solid fa-laptop-code text-3xl md:text-4xl text-brand-orange mb-1.5 md:mb-4"></i>
+                        <h3 class="text-base md:text-xl font-bold mb-2 md:mb-5 uppercase">Bootcamp</h3>
                         <span class="mt-auto bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-4 py-1.5 md:py-2 rounded-full text-[8px] md:text-[10px] uppercase tracking-widest font-bold btn-gradient-hover flex items-center gap-1.5 shadow-sm">Join <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
                     <div class="hover-gradient-card glass-panel p-3 md:p-6 flex flex-col items-center group cursor-pointer relative justify-center min-h-[120px] md:min-h-[140px]">
-                        <i class="fa-solid fa-rocket text-2xl md:text-4xl text-brand-purple mb-1.5 md:mb-4"></i>
-                        <h3 class="text-sm md:text-xl font-bold mb-2 md:mb-5 uppercase">Hackathon</h3>
+                        <i class="fa-solid fa-rocket text-3xl md:text-4xl text-brand-purple mb-1.5 md:mb-4"></i>
+                        <h3 class="text-base md:text-xl font-bold mb-2 md:mb-5 uppercase">Hackathon</h3>
                         <span class="mt-auto bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-4 py-1.5 md:py-2 rounded-full text-[8px] md:text-[10px] uppercase tracking-widest font-bold btn-gradient-hover flex items-center gap-1.5 shadow-sm">Join <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Слайд 6: Contact -->
-        <section class="slide" id="slide-6">
+        <!-- Слайд 7: Contact -->
+        <section class="slide" id="slide-7">
             <div class="slide-inner flex flex-col items-center justify-between text-center max-w-4xl mx-auto h-full">
                 
                 <div class="flex-grow flex flex-col items-center justify-center w-full min-h-0">
@@ -514,15 +533,15 @@
             </div>
         </section>
 
-        <!-- Слайд 7: Roadmap -->
-        <section class="slide bg-[var(--bg-main)] text-[var(--text-main)] z-30" id="slide-7">
+        <!-- Слайд 8: Roadmap -->
+        <section class="slide bg-[var(--bg-main)] text-[var(--text-main)] z-30" id="slide-8">
             <div class="slide-inner flex flex-col h-full max-w-4xl mx-auto w-full !justify-center">
                 <div class="flex-grow flex flex-col justify-center">
                     <h2 class="text-xl md:text-4xl font-black mb-3 md:mb-8 mt-1 md:mt-4 uppercase text-center tracking-widest shrink-0">Transformation Roadmap</h2>
                     
                     <div class="flex flex-col gap-1.5 md:gap-5 w-full px-2 md:px-12 flex-grow min-h-0">
                         
-                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(1)">
+                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(2)">
                             <div class="text-brand-purple font-mono font-bold text-sm md:text-2xl opacity-50 group-hover:opacity-100 transition-opacity w-5 md:w-auto">01</div>
                             <div class="flex-grow border-b border-[var(--text-main)]/10 pb-1.5 md:pb-5 group-hover:border-brand-purple/50 transition-colors flex justify-between items-center h-full">
                                 <div>
@@ -535,7 +554,7 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(2)">
+                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(3)">
                             <div class="text-brand-orange font-mono font-bold text-sm md:text-2xl opacity-50 group-hover:opacity-100 transition-opacity w-5 md:w-auto">02</div>
                             <div class="flex-grow border-b border-[var(--text-main)]/10 pb-1.5 md:pb-5 group-hover:border-brand-orange/50 transition-colors flex justify-between items-center h-full">
                                 <div>
@@ -548,7 +567,7 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(3)">
+                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(4)">
                             <div class="text-brand-purple font-mono font-bold text-sm md:text-2xl opacity-50 group-hover:opacity-100 transition-opacity w-5 md:w-auto">03</div>
                             <div class="flex-grow border-b border-[var(--text-main)]/10 pb-1.5 md:pb-5 group-hover:border-brand-purple/50 transition-colors flex justify-between items-center h-full">
                                 <div>
@@ -561,7 +580,7 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(4)">
+                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(5)">
                             <div class="text-brand-orange font-mono font-bold text-sm md:text-2xl opacity-50 group-hover:opacity-100 transition-opacity w-5 md:w-auto">04</div>
                             <div class="flex-grow border-b border-[var(--text-main)]/10 pb-1.5 md:pb-5 group-hover:border-brand-orange/50 transition-colors flex justify-between items-center h-full">
                                 <div>
@@ -574,7 +593,7 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(5)">
+                        <div class="flex items-center gap-3 md:gap-6 group cursor-pointer w-full flex-1" onclick="goToSlide(6)">
                             <div class="text-brand-purple font-mono font-bold text-sm md:text-2xl opacity-50 group-hover:opacity-100 transition-opacity w-5 md:w-auto">05</div>
                             <div class="flex-grow pb-1.5 md:pb-5 transition-colors flex justify-between items-center h-full">
                                 <div>
@@ -603,7 +622,7 @@
     </div>
 
     <script>
-        const TOTAL_SLIDES = 8;
+        const TOTAL_SLIDES = 9;
         
         let currentSlide = 0;
         let isAnimating = false;
@@ -720,6 +739,39 @@
             setTimeout(() => { isAnimating = false; }, 800);
         }
 
+        // Мобильные свайпы с защитой от стандартного скролла
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', e => {
+            if (e.target.closest('#assistant-widget')) return;
+            touchStartY = e.touches[0].clientY;
+        }, {passive: true});
+
+        document.addEventListener('touchend', e => {
+            if (e.target.closest('#assistant-widget')) return;
+            touchEndY = e.changedTouches[0].clientY;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            const swipeThreshold = 40; 
+            if (Math.abs(touchStartY - touchEndY) > swipeThreshold && !isAnimating) {
+                if (touchStartY > touchEndY) {
+                    goToSlide(currentSlide + 1); 
+                } else {
+                    goToSlide(currentSlide - 1); 
+                }
+            }
+        }
+
+        // Предотвращаем прокрутку браузера чтобы свайпы работали гладко
+        document.addEventListener('touchmove', e => {
+            if (!e.target.closest('#assistant-widget')) {
+                if (e.cancelable) e.preventDefault();
+            }
+        }, {passive: false});
+
         window.addEventListener('wheel', (e) => {
             if (Math.abs(e.deltaY) > 30 && !isAnimating) {
                 if (e.deltaY > 0) goToSlide(currentSlide + 1);
@@ -737,45 +789,67 @@
                     videoIcon.style.opacity = '1';
                 }
             } else { 
-                assistantVideo.play(); 
+                // Надежный запуск звука на мобильных
                 assistantVideo.muted = false;
-                if(videoIcon) {
-                    videoIcon.classList.replace('fa-play', 'fa-pause'); 
-                    videoIcon.style.opacity = '0';
+                const playPromise = assistantVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        if(videoIcon) {
+                            videoIcon.classList.replace('fa-play', 'fa-pause'); 
+                            videoIcon.style.opacity = '0';
+                        }
+                    }).catch(err => {
+                        // Фолбэк если браузер все равно блокирует звук
+                        assistantVideo.muted = true;
+                        assistantVideo.play();
+                        if(videoIcon) {
+                            videoIcon.classList.replace('fa-play', 'fa-pause'); 
+                            videoIcon.style.opacity = '0';
+                        }
+                    });
                 }
             }
             isVideoPlaying = !isVideoPlaying;
         }
 
-        // Drag logic
-        let isDragging = false, dx=0, dy=0, ix=0, iy=0, ox=0, oy=0, isClick = false;
+        // Drag & Click logic для мобильных устройств
+        let isDragging = false, startX = 0, startY = 0, ox = 0, oy = 0;
         
         function dragStart(e) {
-            ix = e.clientX || e.touches[0].clientX;
-            iy = e.clientY || e.touches[0].clientY;
+            startX = e.clientX || e.touches[0].clientX;
+            startY = e.clientY || e.touches[0].clientY;
             isDragging = true; 
-            isClick = true; 
             if(widget) widget.classList.add('dragging'); 
         }
         
         function drag(e) {
             if (!isDragging) return; 
-            e.preventDefault(); 
+            if (e.cancelable) e.preventDefault(); 
             const cx = e.clientX || (e.touches ? e.touches[0].clientX : 0);
             const cy = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-            dx = cx - ix; 
-            dy = cy - iy;
-            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) isClick = false; 
+            const dx = cx - startX; 
+            const dy = cy - startY;
             if(widget) widget.style.transform = `translate3d(${ox + dx}px, ${oy + dy}px, 0)`;
         }
         
-        function dragEnd() {
+        function dragEnd(e) {
             if (!isDragging) return;
-            ix = dx; iy = dy; ox += dx; oy += dy;
+            
+            const cx = e.clientX || (e.changedTouches ? e.changedTouches[0].clientX : startX);
+            const cy = e.clientY || (e.changedTouches ? e.changedTouches[0].clientY : startY);
+            const dx = cx - startX; 
+            const dy = cy - startY;
+            
             isDragging = false; 
             if(widget) widget.classList.remove('dragging');
-            if (isClick) toggleVideo(); 
-            dx = 0; dy = 0;
+            
+            ox += dx; 
+            oy += dy;
+            
+            // Если сдвиг минимальный (меньше 5 пикселей), это был клик (Tap)
+            if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+                toggleVideo();
+            }
         }
 
         if(widget) {
