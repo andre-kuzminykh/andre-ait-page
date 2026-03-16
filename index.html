@@ -241,7 +241,7 @@
 
     <!-- Header -->
     <header class="absolute top-0 left-0 w-full p-4 md:p-6 z-40 flex justify-between items-center bg-transparent">
-        <div class="logo-container gap-4 md:gap-6 cursor-pointer group" onclick="goToSlide(0)">
+        <div class="logo-container gap-4 md:gap-6 cursor-pointer group shrink-0" onclick="goToSlide(0)">
             <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-full w-auto object-contain scale-[1.5] md:scale-[1.25] origin-left group-hover:scale-[1.6] md:group-hover:scale-[1.35] transition-transform"/>
         </div>
         
@@ -254,14 +254,27 @@
             <button onclick="goToSlide(6)" class="nav-link lg:px-3 xl:px-4 py-2 rounded-full text-[10px] xl:text-[11px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors">Contact</button>
         </nav>
 
-        <div class="flex items-center gap-3">
-            <button id="theme-toggle" class="w-12 h-12 md:w-11 md:h-11 rounded-full flex items-center justify-center text-[var(--text-main)] hover:scale-110 transition-transform bg-transparent">
-                <i class="fa-solid fa-moon dark:hidden text-2xl md:text-xl"></i>
-                <i class="fa-solid fa-sun hidden dark:block text-2xl md:text-xl"></i>
+        <div class="flex items-center gap-2 md:gap-3 shrink-0">
+            <button id="theme-toggle" class="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-[var(--text-main)] hover:scale-110 transition-transform bg-transparent shrink-0">
+                <i class="fa-solid fa-moon dark:hidden text-xl md:text-xl"></i>
+                <i class="fa-solid fa-sun hidden dark:block text-xl md:text-xl"></i>
             </button>
-            <button class="btn-white px-5 py-2 rounded-full text-xs md:text-[11px] uppercase tracking-widest font-bold hidden sm:flex items-center gap-2">
-                Open OS <i class="fa-solid fa-arrow-right"></i>
+            <button class="btn-white px-4 py-2 md:px-5 md:py-2 rounded-full text-[10px] md:text-[11px] uppercase tracking-widest font-bold flex items-center gap-1.5 shrink-0">
+                <span class="hidden sm:inline">Open </span>OS <i class="fa-solid fa-arrow-right"></i>
             </button>
+            <button id="mobile-menu-btn" class="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-main)] hover:scale-110 transition-transform bg-[var(--glass-bg)] border border-[var(--glass-border)] shrink-0">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="absolute top-[70px] right-4 w-48 glass-panel p-2 flex flex-col gap-1 opacity-0 pointer-events-none transition-all duration-300 z-50 lg:hidden transform translate-y-[-10px]">
+            <button onclick="goToSlide(1); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--text-main)]/5 text-left transition-colors">Strategy</button>
+            <button onclick="goToSlide(2); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--text-main)]/5 text-left transition-colors">Platform</button>
+            <button onclick="goToSlide(3); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--text-main)]/5 text-left transition-colors">Employees</button>
+            <button onclick="goToSlide(4); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--text-main)]/5 text-left transition-colors">Products</button>
+            <button onclick="goToSlide(5); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--text-main)]/5 text-left transition-colors">Education</button>
+            <button onclick="goToSlide(6); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--text-main)]/5 text-left transition-colors">Contact</button>
         </div>
     </header>
 
@@ -519,7 +532,7 @@
                     
                     <div class="flex justify-center mb-4 md:mb-6 shrink-0">
                         <div class="relative w-28 h-28 md:w-48 md:h-48 flex items-center justify-center pointer-events-none">
-                            <div class="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-2xl bg-black/50 border border-brand-purple shadow-[0_0_30px_rgba(136,84,243,0.3)] flex items-center justify-center z-10 animate-pulse"><i class="fa-solid fa-mobile-screen text-3xl md:text-5xl text-brand-purple"></i></div>
+                            <div class="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-2xl bg-black/5 dark:bg-black/50 backdrop-blur-sm border border-brand-purple shadow-[0_0_30px_rgba(136,84,243,0.3)] flex items-center justify-center z-10 animate-pulse"><i class="fa-solid fa-mobile-screen text-3xl md:text-5xl text-brand-purple"></i></div>
                             <div class="absolute top-0 left-0 w-8 h-8 md:w-12 md:h-12 rounded-full glass-panel flex items-center justify-center animate-float"><i class="fa-solid fa-globe text-xs md:text-base text-brand-orange"></i></div>
                             <div class="absolute bottom-1 right-0 w-8 h-8 md:w-14 md:h-14 rounded-full glass-panel flex items-center justify-center animate-float" style="animation-delay: 0.5s"><i class="fa-solid fa-link text-xs md:text-base text-brand-purple"></i></div>
                         </div>
@@ -684,6 +697,34 @@
         const videoIcon = document.getElementById('video-icon');
         const assistantCollapsed = document.getElementById('assistant-collapsed');
 
+        // Мобильное меню
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        let isMobileMenuOpen = false;
+
+        function toggleMobileMenu() {
+            if (!mobileMenu) return;
+            isMobileMenuOpen = !isMobileMenuOpen;
+            if (isMobileMenuOpen) {
+                mobileMenu.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+                mobileMenu.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+            } else {
+                mobileMenu.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+                mobileMenu.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+            }
+        }
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        }
+
+        // Закрытие меню при клике вне его
+        document.addEventListener('click', (e) => {
+            if (isMobileMenuOpen && !mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                toggleMobileMenu();
+            }
+        });
+
         if (assistantCollapsed) {
             assistantCollapsed.addEventListener('mouseenter', () => {
                 if(isVideoPlaying) videoIcon.style.opacity = '1';
@@ -760,11 +801,15 @@
             });
 
             navLinks.forEach((link) => {
-                const targetIdx = parseInt(link.getAttribute('onclick').match(/\d+/)[0]);
-                if(targetIdx === currentSlide) {
-                    link.classList.add('bg-[var(--text-main)]/10', 'text-[var(--text-main)]');
-                } else {
-                    link.classList.remove('bg-[var(--text-main)]/10', 'text-[var(--text-main)]');
+                // Извлекаем только первую цифру для точного соответствия
+                const match = link.getAttribute('onclick').match(/\d+/);
+                if (match) {
+                    const targetIdx = parseInt(match[0]);
+                    if(targetIdx === currentSlide) {
+                        link.classList.add('bg-[var(--text-main)]/10', 'text-[var(--text-main)]');
+                    } else {
+                        link.classList.remove('bg-[var(--text-main)]/10', 'text-[var(--text-main)]');
+                    }
                 }
             });
         }
@@ -802,7 +847,7 @@
         }
 
         document.addEventListener('touchmove', e => {
-            if (!e.target.closest('#assistant-widget')) {
+            if (!e.target.closest('#assistant-widget') && !e.target.closest('#mobile-menu')) {
                 if (e.cancelable) e.preventDefault();
             }
         }, {passive: false});
