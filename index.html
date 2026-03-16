@@ -277,19 +277,9 @@
             <button class="btn-white px-4 py-2 md:px-5 md:py-2 rounded-full text-[10px] md:text-[11px] uppercase tracking-widest font-bold flex items-center gap-1.5 shrink-0">
                 <span class="hidden sm:inline">Open </span>OS <i class="fa-solid fa-arrow-right"></i>
             </button>
-            <button id="mobile-menu-btn" class="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-main)] hover:scale-110 transition-transform bg-[var(--glass-bg)] border border-[var(--glass-border)] shrink-0">
+            <button onclick="goToSlide(8)" class="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-main)] hover:scale-110 transition-transform bg-[var(--glass-bg)] border border-[var(--glass-border)] shrink-0">
                 <i class="fa-solid fa-bars text-lg"></i>
             </button>
-        </div>
-
-        <!-- Mobile Menu Dropdown -->
-        <div id="mobile-menu" class="absolute top-[70px] right-4 w-48 glass-panel p-2 flex flex-col gap-1 opacity-0 pointer-events-none transition-all duration-300 z-50 lg:hidden transform translate-y-[-10px]">
-            <button onclick="goToSlide(2); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:bg-[var(--text-main)]/5 text-left transition-colors"><span class="nav-text">Strategy</span></button>
-            <button onclick="goToSlide(3); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:bg-[var(--text-main)]/5 text-left transition-colors"><span class="nav-text">Platform</span></button>
-            <button onclick="goToSlide(4); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:bg-[var(--text-main)]/5 text-left transition-colors"><span class="nav-text">Employees</span></button>
-            <button onclick="goToSlide(5); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:bg-[var(--text-main)]/5 text-left transition-colors"><span class="nav-text">Products</span></button>
-            <button onclick="goToSlide(6); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:bg-[var(--text-main)]/5 text-left transition-colors"><span class="nav-text">Education</span></button>
-            <button onclick="goToSlide(7); toggleMobileMenu()" class="nav-link px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] hover:bg-[var(--text-main)]/5 text-left transition-colors"><span class="nav-text">Contact</span></button>
         </div>
     </header>
 
@@ -711,34 +701,6 @@
         const assistantVideo = document.getElementById('assistant-video');
         const videoIcon = document.getElementById('video-icon');
         const assistantCollapsed = document.getElementById('assistant-collapsed');
-
-        // Мобильное меню
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        let isMobileMenuOpen = false;
-
-        function toggleMobileMenu() {
-            if (!mobileMenu) return;
-            isMobileMenuOpen = !isMobileMenuOpen;
-            if (isMobileMenuOpen) {
-                mobileMenu.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
-                mobileMenu.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
-            } else {
-                mobileMenu.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
-                mobileMenu.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
-            }
-        }
-
-        if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-        }
-
-        // Закрытие меню при клике вне его
-        document.addEventListener('click', (e) => {
-            if (isMobileMenuOpen && !mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
-                toggleMobileMenu();
-            }
-        });
 
         if (assistantCollapsed) {
             assistantCollapsed.addEventListener('mouseenter', () => {
