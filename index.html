@@ -68,14 +68,6 @@
 
         ::selection { background: var(--brand-purple); color: #FFFFFF; }
 
-        .bg-grid {
-            background-size: 40px 40px;
-            background-image:
-                linear-gradient(to right, var(--grid-color-purple) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-color-orange) 1px, transparent 1px);
-            transition: background-image 0.5s ease;
-        }
-
         /* Фоновые блобы */
         .blob {
             position: fixed;
@@ -96,11 +88,10 @@
             mix-blend-mode: screen;
         }
 
-        .blob-purple {  
+        .blob-purple {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1600' viewBox='0 0 500 500'%3e%3cdefs%3e%3cradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3e%3cstop offset='0%25' stop-color='%238854F3' stop-opacity='1'/%3e%3cstop offset='100%25' stop-color='%238854F3' stop-opacity='0'/%3e%3c/radialGradient%3e%3c/defs%3e%3ccircle cx='250' cy='250' r='250' fill='url(%23grad)'/%3e%3c/svg%3e");
-        }
-        
-        .blob-orange {  
+        }                
+        .blob-orange {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1600' viewBox='0 0 500 500'%3e%3cdefs%3e%3cradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3e%3cstop offset='0%25' stop-color='%23F97316' stop-opacity='1'/%3e%3cstop offset='100%25' stop-color='%23F97316' stop-opacity='0'/%3e%3c/radialGradient%3e%3c/defs%3e%3ccircle cx='250' cy='250' r='250' fill='url(%23grad)'/%3e%3c/svg%3e");
         }
 
@@ -204,8 +195,7 @@
         }
         @media (min-width: 768px) {
             .slide { padding: 5.5rem 1.5rem 1.5rem 1.5rem; }
-        }
-        
+        }                
         .slide-inner { margin: 0 auto; width: 100%; max-width: 80rem; display: flex; flex-direction: column; justify-content: center; height: 100%; max-height: 100%; }
         .slide.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
         .slide.past { transform: translateY(-40px) scale(0.98); }
@@ -239,8 +229,7 @@
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
-        .animate-float { animation: float 4s ease-in-out infinite; }
-        
+        .animate-float { animation: float 4s ease-in-out infinite; }                
         #assistant-widget {
             transition: transform 0.1s;
             touch-action: none; 
@@ -255,14 +244,12 @@
     </style>
 </head>
 <body class="antialiased">
-
     <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="absolute inset-0 bg-grid z-10"></div>
         <div id="blob1" class="blob blob-purple w-[30rem] h-[30rem] md:w-[40rem] md:h-[40rem] lg:w-[50rem] lg:h-[50rem]"></div>
         <div id="blob2" class="blob blob-orange w-[30rem] h-[30rem] md:w-[40rem] md:h-[40rem] lg:w-[50rem] lg:h-[50rem]"></div>
         <div class="grain-overlay"></div>
     </div>
-
+    
     <!-- Header -->
     <header class="absolute top-0 left-0 w-full p-4 md:p-6 z-40 flex justify-between items-center bg-transparent">
         <div class="logo-container gap-3 md:gap-4 cursor-pointer group shrink-0 min-w-0" onclick="goToSlide(0)">
@@ -272,7 +259,7 @@
                 <span class="font-mono text-[11px] sm:text-xs md:text-[14px] font-medium text-[var(--text-main)] leading-[1.15] whitespace-nowrap">Technologies</span>
             </div>
         </div>
-        
+                
         <nav class="hidden lg:flex items-center gap-1 glass-panel p-1.5 rounded-full">
             <button onclick="goToSlide(2)" class="nav-link lg:px-3 xl:px-4 py-2 rounded-full text-[10px] xl:text-[11px] uppercase tracking-widest font-bold text-[var(--text-muted)] transition-colors"><span class="nav-text text-hover-orange">Strategy</span></button>
             <button onclick="goToSlide(3)" class="nav-link lg:px-3 xl:px-4 py-2 rounded-full text-[10px] xl:text-[11px] uppercase tracking-widest font-bold text-[var(--text-muted)] transition-colors"><span class="nav-text text-hover-purple">Platform</span></button>
@@ -297,7 +284,7 @@
     </header>
 
     <main id="slides-container" class="relative w-full h-full">
-        
+                
         <!-- Слайд 0: Hero -->
         <section class="slide active" id="slide-0">
             <div class="slide-inner flex flex-col items-center text-center !justify-center pt-[2vh] md:pt-[3vh]">
@@ -327,9 +314,9 @@
         <section class="slide" id="slide-1">
             <div class="slide-inner !justify-center gap-4 md:gap-4 max-w-5xl mx-auto">
                 <h2 class="text-3xl md:text-5xl font-black mb-1 md:mb-2 uppercase text-center md:text-left shrink-0">Strategy & Roadmap</h2>
-                
+                                
                 <div class="flex flex-col lg:grid lg:grid-cols-12 lg:grid-rows-4 gap-3 md:gap-4 w-full h-full lg:h-auto min-h-0">
-                    
+                                        
                     <!-- Strategy Card -->
                     <div class="hover-card hover-card-orange glass-panel lg:col-span-6 lg:row-span-4 flex-1 p-3 lg:p-8 flex items-center lg:items-start lg:flex-col justify-between cursor-pointer group w-full" onclick="goToSlide(2)">
                         <div class="flex items-center lg:items-start gap-3 lg:gap-0 lg:block min-w-0 flex-grow">
@@ -526,7 +513,6 @@
                 
                 <!-- 2x2 Grid для мобилок, 4x1 для десктопов, чтобы всё умещалось -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 w-full max-w-5xl mx-auto">
-                    
                     <div class="hover-card hover-card-purple glass-panel p-3 md:p-6 flex flex-col items-center group cursor-pointer relative justify-center min-h-[120px] md:min-h-[160px]">
                         <i class="fa-solid fa-user-tie text-2xl md:text-4xl text-brand-purple mb-1.5 md:mb-3"></i>
                         <h3 class="text-xs md:text-base font-bold mb-0.5 md:mb-2 uppercase text-center leading-tight">Executive Management</h3>
@@ -554,7 +540,6 @@
                         <p class="text-[9px] md:text-xs text-[var(--text-muted)] mb-3 md:mb-5 leading-tight text-center">Designing and deploying AI systems</p>
                         <span class="mt-auto bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] px-3 py-1.5 md:px-5 md:py-2 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold hover-btn-orange flex items-center gap-1 shadow-sm">Join <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
-
                 </div>
             </div>
         </section>
@@ -562,9 +547,7 @@
         <!-- Слайд 7: Contact -->
         <section class="slide" id="slide-7">
             <div class="slide-inner flex flex-col items-center justify-between text-center max-w-4xl mx-auto h-full pb-10">
-                
                 <div class="flex-grow flex flex-col items-center justify-center w-full min-h-0 pb-[8vh] md:pb-[12vh]">
-                    
                     <div class="flex justify-center mb-6 md:mb-8 shrink-0">
                         <div class="relative w-28 h-28 md:w-48 md:h-48 flex items-center justify-center pointer-events-none">
                             <div class="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-2xl glass-panel border border-brand-purple shadow-[0_0_30px_rgba(136,84,243,0.3)] flex items-center justify-center z-10 animate-pulse"><i class="fa-solid fa-mobile-screen text-3xl md:text-5xl text-brand-purple"></i></div>
@@ -572,10 +555,8 @@
                             <div class="absolute bottom-1 right-0 w-8 h-8 md:w-14 md:h-14 rounded-full glass-panel flex items-center justify-center animate-float" style="animation-delay: 0.5s"><i class="fa-solid fa-link text-xs md:text-base text-brand-purple"></i></div>
                         </div>
                     </div>
-
                     <div class="flex flex-col items-center shrink-0 w-full">
                         <h2 class="text-4xl md:text-6xl font-black mb-6 md:mb-10 uppercase"><span class="text-brand-orange">Start</span> <span class="text-brand-purple">Your AI</span> Transformation</h2>
-                        
                         <button class="btn-white hover-btn-purple px-10 md:px-10 py-4 md:py-4 rounded-full font-bold uppercase tracking-widest text-sm md:text-xs inline-flex items-center gap-3 md:gap-3 shadow-sm mb-6 md:mb-12">
                             Launch AI Business OS <i class="fa-solid fa-arrow-right"></i>
                         </button>
@@ -602,7 +583,6 @@
                         &copy; 2026 Andre AI Technologies. All rights reserved.
                     </div>
                 </footer>
-            
             </div>
         </section>
 
@@ -613,7 +593,6 @@
                     <h2 class="text-3xl md:text-4xl font-black mb-6 md:mb-8 mt-2 md:mt-4 uppercase text-center tracking-widest shrink-0">Transformation Roadmap</h2>
                     
                     <div class="flex flex-col gap-4 md:gap-5 w-full px-3 md:px-12 flex-grow min-h-0">
-                        
                         <div class="flex items-center gap-4 group cursor-pointer w-full flex-1" onclick="goToSlide(2)">
                             <div class="w-14 h-14 md:w-14 md:h-14 rounded-2xl md:rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-2xl md:text-2xl shrink-0 group-hover:scale-110 transition-transform">
                                 <i class="fa-solid fa-chess-knight"></i>
@@ -693,12 +672,10 @@
                 </div>
             </div>
         </section>
-
     </main>
 
     <!-- Виджет ассистента -->
-    <div id="assistant-widget" class="fixed z-50 overflow-hidden flex flex-col bg-[#111] cursor-grab border-none" 
-         style="bottom: 1.5rem; right: 1.5rem; width: 9rem; height: 9rem; border-radius: 9999px; transform: translate3d(0px, 0px, 0px);">
+    <div id="assistant-widget" class="fixed z-50 overflow-hidden flex flex-col bg-[#111] cursor-grab border-none" style="bottom: 1.5rem; right: 1.5rem; width: 9rem; height: 9rem; border-radius: 9999px; transform: translate3d(0px, 0px, 0px);">
         <video id="assistant-video" src="https://raw.githubusercontent.com/andre-kuzminykh/andre-ait-page/main/Andre_AI%20(1).mp4" class="absolute inset-0 w-full h-full object-cover pointer-events-none" loop playsinline muted></video>
         <div id="assistant-collapsed" class="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/10 transition-colors cursor-pointer">
             <i id="video-icon" class="fa-solid fa-play text-white text-4xl drop-shadow-[0_0_10px_rgba(0,0,0,0.8)] ml-1 transition-opacity duration-300"></i>
@@ -707,7 +684,6 @@
 
     <script>
         const TOTAL_SLIDES = 9;
-        
         let currentSlide = 0;
         let isAnimating = false;
         let isVideoPlaying = false;
@@ -716,6 +692,7 @@
         const navLinks = document.querySelectorAll('.nav-link');
         const blob1 = document.getElementById('blob1');
         const blob2 = document.getElementById('blob2');
+        
         let wanderTime = 0;
         let blob1State = { x: window.innerWidth * 0.45, y: window.innerHeight * 0.4, scale: 1.0 };
         let blob2State = { x: window.innerWidth * 0.55, y: window.innerHeight * 0.6, scale: 1.0 };
@@ -770,8 +747,7 @@
                 const cx = window.innerWidth / 2;
                 const cy = window.innerHeight / 2;
                 
-                const baseOffset = Math.min(window.innerWidth * 0.18, 180); 
-                
+                const baseOffset = Math.min(window.innerWidth * 0.18, 180);
                 const radiusX = Math.min(window.innerWidth * 0.1, 100);
                 const radiusY = Math.min(window.innerHeight * 0.1, 100);
                 
@@ -807,7 +783,6 @@
             });
 
             navLinks.forEach((link) => {
-                // Извлекаем только первую цифру для точного соответствия
                 const match = link.getAttribute('onclick').match(/\d+/);
                 if (match) {
                     const targetIdx = parseInt(match[0]);
