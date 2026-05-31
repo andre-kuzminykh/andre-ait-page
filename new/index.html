@@ -101,8 +101,15 @@
         @media (min-width: 640px) { .card-rail > * { flex-basis: 60%; } }
         @media (min-width: 1024px) {
             .card-rail { flex-direction: column; align-items: center; overflow: visible; }
-            /* карточки одного размера, по центру правой зоны */
+            /* 2-3 карточки — один столбец, по центру правой зоны */
             .card-rail > * { flex: none; width: 100%; max-width: 15rem; }
+            /* 4+ карточек — в два ряда (2 столбца) */
+            .card-rail:has(> :nth-child(4)) {
+                display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.55rem;
+                align-items: stretch; justify-items: stretch;
+                width: 100%; max-width: 24rem; margin-inline: auto;
+            }
+            .card-rail:has(> :nth-child(4)) > * { width: auto; max-width: none; }
         }
 
         .nav-tab {
