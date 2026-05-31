@@ -1,15 +1,14 @@
 // TDD contract for _new/index.html
 //
-// The page is a single self-contained HTML file. These tests load it in jsdom,
-// run its inline script, and assert the interactive behaviour the brief asks for:
-//   - a persistent talking-head presenter that never gets swapped out
-//   - a cinematic background scene that switches per navigation section
-//   - nav tabs + CTA buttons that drive the section/scene switch
-//   - an audio toggle that (un)mutes the presenter
+// The page is the "Interactive Session" template: a talking-head video that
+// fills the whole screen as the BACKGROUND, with glass content + nav on top.
+// Navigating swaps the head to a short per-section "part" (a trimmed slice of
+// the same head video) — the head stays, the next part speaks, the buttons
+// change. These tests lock that behaviour in so it can't regress.
 //
-// Tests are decoupled from specific copy/filenames where possible: they assert
-// internal consistency (the active scene matches the SCENES map for the current
-// section) rather than hard-coding asset names, so the page stays easy to retheme.
+// Note: the visual swap is debounced (fade-out, then change src), so the
+// authoritative "which part is showing" signal is the synchronous
+// `#assistant-video[data-part]` attribute, which is what we assert.
 
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -29,7 +28,6 @@ function makeDom() {
     pretendToBeVisual: true,
     url: 'https://andre.technology/_new/index.html',
     beforeParse(window) {
-      // jsdom does not implement media playback — stub it so the page script runs.
       const proto = window.HTMLMediaElement.prototype;
       proto.play = function () { this._playing = true; return Promise.resolve(); };
       proto.pause = function () { this._playing = false; };
@@ -38,12 +36,7 @@ function makeDom() {
   });
 }
 
-function activeSceneLayer(doc) {
-  return doc.querySelector('.scene-layer.is-active');
-}
-function src(el) {
-  return el ? (el.getAttribute('src') || '') : '';
-}
+function srcAttr(el) { return el ? (el.getAttribute('src') || '') : ''; }
 
 let dom, window, doc;
 beforeEach(() => {
@@ -52,18 +45,35 @@ beforeEach(() => {
   doc = window.document;
 });
 
-test('exposes a SCENES map covering every section, all under assets/', () => {
-  assert.ok(window.SCENES, 'window.SCENES should be defined');
+test('exposes a HEAD_PARTS map covering every section, all head clips under assets/', () => {
+  assert.ok(window.HEAD_PARTS, 'window.HEAD_PARTS should be defined');
   for (const id of SECTION_IDS) {
-    const v = window.SCENES[id];
-    assert.equal(typeof v, 'string', `SCENES.${id} should be a string path`);
-    assert.match(v, /^assets\/.+\.mp4$/, `SCENES.${id} should be an mp4 under assets/`);
+    const v = window.HEAD_PARTS[id];
+    assert.equal(typeof v, 'string', `HEAD_PARTS.${id} should be a string path`);
+    assert.match(v, /^assets\/head-.+\.mp4$/, `HEAD_PARTS.${id} should be a head-*.mp4 under assets/`);
   }
-  assert.equal(Object.keys(window.SCENES).length, SECTION_IDS.length);
+  assert.equal(Object.keys(window.HEAD_PARTS).length, SECTION_IDS.length);
 });
 
 test('exposes a global openTab(id) function', () => {
   assert.equal(typeof window.openTab, 'function');
+});
+
+test('the talking head is the FULL-SCREEN BACKGROUND (not an avatar)', () => {
+  const v = doc.querySelector('#assistant-video');
+  assert.ok(v, '#assistant-video exists');
+  // lives in a fixed, full-bleed, z-0 background container
+  const bg = v.parentElement;
+  const bgc = bg.className;
+  assert.ok(/\bfixed\b/.test(bgc) && /\binset-0\b/.test(bgc) && /\bz-0\b/.test(bgc),
+    'head video must sit in a fixed inset-0 z-0 background layer');
+  // and the video itself covers the whole screen
+  assert.ok(/\bobject-cover\b/.test(v.className), 'head video must be object-cover');
+  assert.ok(/\bw-full\b/.test(v.className) && /\bh-full\b/.test(v.className));
+  // it is a looping, muted, autoplaying background video
+  assert.ok(v.hasAttribute('loop') && v.hasAttribute('autoplay') && v.hasAttribute('muted'));
+  // and it shows a head part
+  assert.match(srcAttr(v), /assets\/head-.+\.mp4$/);
 });
 
 test('renders one nav tab and one content section per section id', () => {
@@ -73,30 +83,19 @@ test('renders one nav tab and one content section per section id', () => {
   }
 });
 
-test('initial state: overview is the only active section & tab', () => {
-  const activeTabs = doc.querySelectorAll('.nav-tab.active');
-  const activeSections = doc.querySelectorAll('.content-section.active');
-  assert.equal(activeTabs.length, 1);
-  assert.equal(activeSections.length, 1);
-  assert.equal(activeTabs[0].getAttribute('data-target'), 'overview');
-  assert.equal(activeSections[0].id, 'overview');
-});
+test('initial state: overview is the only active section & tab, head shows the overview part', () => {
+  assert.equal(doc.querySelectorAll('.nav-tab.active').length, 1);
+  assert.equal(doc.querySelectorAll('.content-section.active').length, 1);
+  assert.equal(doc.querySelector('.nav-tab.active').getAttribute('data-target'), 'overview');
+  assert.equal(doc.querySelector('.content-section.active').id, 'overview');
 
-test('initial state: scene stage and active scene layer point at overview', () => {
-  const stage = doc.querySelector('#scene-stage');
-  assert.ok(stage, '#scene-stage exists');
-  assert.equal(stage.getAttribute('data-scene'), 'overview');
-  assert.ok(src(activeSceneLayer(doc)).endsWith(window.SCENES.overview));
-});
-
-test('there are exactly two stacked scene layers for crossfading', () => {
-  const layers = doc.querySelectorAll('.scene-layer');
-  assert.equal(layers.length, 2);
-  assert.equal(doc.querySelectorAll('.scene-layer.is-active').length, 1);
+  const v = doc.querySelector('#assistant-video');
+  assert.equal(v.getAttribute('data-part'), 'overview');
+  assert.ok(srcAttr(v).endsWith(window.HEAD_PARTS.overview));
 });
 
 for (const id of SECTION_IDS) {
-  test(`openTab(${id}) activates exactly that section + matching scene`, () => {
+  test(`openTab(${id}) activates that section and points the head at its part`, () => {
     window.openTab(id);
 
     const activeTabs = [...doc.querySelectorAll('.nav-tab.active')];
@@ -106,85 +105,65 @@ for (const id of SECTION_IDS) {
     assert.equal(activeTabs[0].getAttribute('data-target'), id);
     assert.equal(activeSections[0].id, id);
 
-    const stage = doc.querySelector('#scene-stage');
-    assert.equal(stage.getAttribute('data-scene'), id);
-    assert.equal(doc.querySelectorAll('.scene-layer.is-active').length, 1);
-    assert.ok(
-      src(activeSceneLayer(doc)).endsWith(window.SCENES[id]),
-      `active scene layer should show ${window.SCENES[id]}`
-    );
+    // the head (background) now targets this section's part
+    assert.equal(doc.querySelector('#assistant-video').getAttribute('data-part'), id);
   });
 }
 
-test('the talking head presenter persists across navigation (same node, same src)', () => {
-  const before = doc.querySelector('#presenter');
-  assert.ok(before, '#presenter exists');
-  const beforeSrc = src(before);
-  assert.ok(beforeSrc, 'presenter has a src');
-
+test('the head video element is never swapped out — same node, always a head part', () => {
+  const before = doc.querySelector('#assistant-video');
+  assert.ok(before);
   window.openTab('platform');
   window.openTab('education');
   window.openTab('products');
-
-  const after = doc.querySelector('#presenter');
-  assert.equal(after, before, 'presenter node identity is unchanged');
-  assert.equal(src(after), beforeSrc, 'presenter src is never swapped');
+  const after = doc.querySelector('#assistant-video');
+  assert.equal(after, before, 'the head element keeps its identity (голова остаётся)');
+  assert.match(srcAttr(after), /assets\/head-.+\.mp4$/, 'src is always one of the head parts');
 });
 
 test('clicking a nav tab drives the switch', () => {
   doc.querySelector('.nav-tab[data-target="employees"]').click();
-  assert.equal(doc.querySelector('#scene-stage').getAttribute('data-scene'), 'employees');
+  assert.equal(doc.querySelector('#assistant-video').getAttribute('data-part'), 'employees');
   assert.ok(doc.querySelector('.content-section#employees').classList.contains('active'));
 });
 
-test('clicking any [data-target] CTA navigates (event delegation)', () => {
-  const cta = doc.querySelector('[data-target="strategy"]:not(.nav-tab)');
-  assert.ok(cta, 'there is at least one non-tab CTA wired to a section');
+test('the hero CTA (inline onclick) navigates to its section', () => {
+  const cta = doc.querySelector('#overview button[onclick]');
+  assert.ok(cta, 'overview has a CTA button');
   cta.click();
-  assert.equal(doc.querySelector('#scene-stage').getAttribute('data-scene'), 'strategy');
+  assert.equal(doc.querySelector('#assistant-video').getAttribute('data-part'), 'strategy');
+  assert.ok(doc.querySelector('.content-section#strategy').classList.contains('active'));
 });
 
-test('audio toggle (un)mutes the presenter and updates the indicator', () => {
-  const presenter = doc.querySelector('#presenter');
+test('the mic toggle (un)mutes the background head and updates the indicator', () => {
+  const v = doc.querySelector('#assistant-video');
   const btn = doc.querySelector('#audio-toggle');
   const icon = doc.querySelector('#audio-icon');
   const wave = doc.querySelector('#sound-wave');
-  assert.ok(btn && icon && wave, 'audio controls exist');
+  assert.ok(btn && icon && wave);
 
-  // starts muted
-  assert.equal(presenter.muted, true);
+  assert.equal(v.muted, true);
   assert.ok(icon.classList.contains('fa-microphone-lines-slash'));
   assert.ok(wave.classList.contains('hidden'));
 
-  btn.click(); // unmute
-  assert.equal(presenter.muted, false);
+  btn.click();
+  assert.equal(v.muted, false);
   assert.ok(icon.classList.contains('fa-microphone-lines'));
   assert.ok(!wave.classList.contains('hidden'));
 
-  btn.click(); // mute again
-  assert.equal(presenter.muted, true);
+  btn.click();
+  assert.equal(v.muted, true);
   assert.ok(icon.classList.contains('fa-microphone-lines-slash'));
   assert.ok(wave.classList.contains('hidden'));
 });
 
-test('top bar: header is pointer-events-none but every interactive group re-enables them', () => {
-  // Regression guard: the fixed top bar must let clicks through to the page,
-  // while its own interactive groups (logo, OS button, nav) stay clickable.
-  // A missing `pointer-events-auto` here silently makes nav tabs unclickable.
-  const header = doc.querySelector('header');
-  assert.ok(header, 'a top bar <header> exists');
-  assert.ok(header.classList.contains('pointer-events-none'), 'header should be pointer-events-none');
-
-  const groups = header.querySelectorAll(':scope > div > *');
-  assert.ok(groups.length >= 3, 'top bar should hold logo + OS + nav');
-  for (const g of groups) {
-    assert.ok(
-      g.classList.contains('pointer-events-auto'),
-      `top-bar group <${g.tagName.toLowerCase()}> must have pointer-events-auto`
-    );
-  }
-  // and the nav specifically
-  assert.ok(doc.querySelector('nav').classList.contains('pointer-events-auto'));
+test('the header keeps nav and the OS button as siblings (no z-overlap nesting)', () => {
+  // Regression guard: nav and the OS button must not be stacked such that one
+  // covers the other (the old bug that made the last tab unclickable).
+  const nav = doc.querySelector('header nav');
+  const osBtn = [...doc.querySelectorAll('header button')].find(b => /AI Business OS/i.test(b.textContent));
+  assert.ok(nav && osBtn, 'header has a nav and an OS button');
+  assert.ok(!nav.contains(osBtn) && !osBtn.contains(nav), 'nav and OS button are not nested');
 });
 
 test('navigation never leaves more than one active section (invariant sweep)', () => {
@@ -192,6 +171,6 @@ test('navigation never leaves more than one active section (invariant sweep)', (
     window.openTab(id);
     assert.equal(doc.querySelectorAll('.content-section.active').length, 1);
     assert.equal(doc.querySelectorAll('.nav-tab.active').length, 1);
-    assert.equal(doc.querySelectorAll('.scene-layer.is-active').length, 1);
+    assert.equal(doc.querySelector('#assistant-video').getAttribute('data-part'), id);
   }
 });

@@ -1,119 +1,97 @@
 # Andre AI — Interactive Session (`_new/`)
 
-A self-contained, single-file landing page (`index.html`) built in the same
-visual language as the existing site (glassmorphism, JetBrains Mono, brand
-purple `#8854F3` / orange `#F97316`, Tailwind + Font Awesome from CDN).
+A self-contained, single-file page (`index.html`) — the exact "Interactive
+Session" template (glassmorphism, JetBrains Mono, brand purple `#8854F3` /
+orange `#F97316`, Tailwind + Font Awesome from CDN), same pattern as the live
+`andre.technology` site.
 
 ## The idea
 
-A **talking-head presenter that stays on screen** while the **cinematic
-background scene switches per section** and the **glass content / buttons
-morph in**:
+The **talking head fills the whole screen as the background** (like the live
+site's `assistant-video`). Glass content + nav sit on top.
 
-- You land on **Overview** — the presenter (Andre AI, the host) greets you and
-  the "Andre AI Technologies" gate plays behind.
-- Tap a nav tab (or a CTA) → the **head stays put**, the background crossfades
-  to that section's "world", a caption under the head updates, and that
-  section's panel + buttons animate in — all in the same style.
-- The mic button un-mutes the presenter so the head actually *speaks*.
+When you click a nav tab (or a CTA):
 
-This is the "голова остаётся, следующее говорит, кнопки меняются" behaviour
-from the brief.
+- the **head stays** as the full-screen background;
+- it smoothly crossfades to that section's **head "part"** — a short trimmed
+  slice of the *same* head video, so "the next part speaks";
+- that section's panel + **buttons change**.
 
-> **Note on the reference clip.** The reference video mentioned in the brief
-> wasn't available in this environment, so the scene⇄section mapping below is a
-> best-effort interpretation. It's all data-driven and trivial to re-map — see
-> *Customising* below.
+The mic button un-mutes the background head so it actually speaks out loud.
+
+> Only the head video (`Andre_AI (1).mp4`) is used — nothing else from the repo.
+
+## Why it's cut into parts ("обрезать каждую чтобы быстрее загружать")
+
+The 18-second head video is split into **6 short parts** (one per section,
+in nav order), each ~140 KB:
+
+| Section | Head part |
+|---|---|
+| Overview | `assets/head-overview.mp4` (0–3 s) |
+| Strategy | `assets/head-strategy.mp4` (3–6 s) |
+| Platform | `assets/head-platform.mp4` (6–9 s) |
+| Employees | `assets/head-employees.mp4` (9–12 s) |
+| Products | `assets/head-products.mp4` (12–15 s) |
+| Education | `assets/head-education.mp4` (15–18 s) |
+
+So only ~140 KB loads up front (instead of the whole clip); the rest are
+prefetched on tab hover. Walking Overview → … → Education plays the monologue
+start-to-finish, one piece per step. Each part has a JPEG poster for instant
+first paint.
+
+Want one continuous looping head instead of per-section parts? Point every
+entry in `HEAD_PARTS` at the same file — no other change needed.
+
+## Regenerate the parts (needs `ffmpeg`)
+
+```bash
+IN="Andre_AI (1).mp4"; i=0
+for id in overview strategy platform employees products education; do
+  ffmpeg -y -ss $((i*3)) -t 3.2 -i "$IN" \
+    -vf "scale=480:480:force_original_aspect_ratio=increase,crop=480:480,fps=25" \
+    -c:v libx264 -crf 28 -preset veryfast -pix_fmt yuv420p \
+    -c:a aac -b:a 96k -movflags +faststart "_new/assets/head-$id.mp4"
+  i=$((i+1))
+done
+```
 
 ## Files
 
 ```
 _new/
-├── index.html            ← the page (open this / deploy this)
-├── assets/               ← optimised, web-ready media (5.6 MB total)
-│   ├── presenter.mp4      (talking head, with audio)
-│   ├── scene-*.mp4        (6 muted background loops)
-│   └── poster-*.jpg       (instant first-paint posters)
+├── index.html            ← the page (open / deploy this)
+├── assets/               ← 6 head parts + 6 posters (~0.9 MB total)
 ├── tests/page.test.mjs   ← jsdom behaviour tests
 ├── package.json
 └── README.md
 ```
 
-The page also loads Tailwind, Font Awesome and Google Fonts from their CDNs at
-runtime (same as the rest of the site), so it works as a plain static file on
-GitHub Pages with no build step.
-
-## Section ⇄ scene mapping
-
-| Section    | Background scene (source)              |
-|------------|----------------------------------------|
-| Overview   | Andre AI Technologies gate (`1.mp4`)   |
-| Strategy   | Genesis core (`5.mp4`)                 |
-| Platform   | Human Intelligence Platform (`3.mp4`)  |
-| Employees  | Dataism Science Hub (`4.mp4`)          |
-| Products   | Neuronium AI dome (`2.mp4`)            |
-| Education  | AI Academy tower (`6.mp4`)             |
-
-## Asset pipeline (why it loads fast)
-
-The originals in the repo root are ~100 MB of 1920×1080 clips. For the page they
-were trimmed and compressed with ffmpeg to short, muted, web-optimised loops:
-
-- backgrounds: 5 s, 1280×720, H.264 CRF 31, **no audio**, `+faststart`
-- presenter: 480×480, H.264 CRF 30, AAC audio kept (so it can speak)
-- a JPEG poster per clip for instant first paint
-- backgrounds use `preload="none"` + are prefetched on tab hover; only the
-  Overview scene and the presenter load up front
-
-Result: **5.6 MB** for the whole experience instead of ~100 MB.
-
-To regenerate (requires `ffmpeg`), re-run the equivalent of:
-
-```bash
-# background (repeat per scene, -an = drop audio)
-ffmpeg -y -ss 0 -t 5 -i SOURCE.mp4 -an \
-  -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,fps=24" \
-  -c:v libx264 -crf 31 -preset veryfast -pix_fmt yuv420p -movflags +faststart \
-  assets/scene-NAME.mp4
-
-# presenter (keep audio)
-ffmpeg -y -i "Andre_AI (1).mp4" \
-  -vf "scale=480:480:force_original_aspect_ratio=increase,crop=480:480,fps=25" \
-  -c:v libx264 -crf 30 -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart \
-  assets/presenter.mp4
-```
+Tailwind / Font Awesome / Google Fonts load from their CDNs at runtime (same as
+the rest of the site), so it works as a plain static file on GitHub Pages with
+no build step.
 
 ## Tests (TDD)
 
-The interactive contract is covered by jsdom tests so refactors can't silently
-break navigation, the persistent head, or the audio toggle.
-
 ```bash
-cd _new
-npm install     # one dev dependency: jsdom
-npm test
+cd _new && npm install && npm test
 ```
 
 They assert, among other things:
 
-- a `SCENES` map covering every section, all under `assets/`
-- exactly one active nav tab + section at all times (invariant sweep)
-- each `openTab(id)` activates the matching section **and** its scene
-- the **talking-head presenter is never swapped out** across navigation
-- nav tabs **and** any `[data-target]` CTA drive the switch (event delegation)
-- the mic toggle (un)mutes the presenter and updates the indicator
-- the fixed top bar is `pointer-events-none` but every interactive group
-  (logo / OS button / nav) re-enables them — a regression guard for an
-  overlap bug where the OS button covered the last nav tab
+- the talking head is the **full-screen background** (`#assistant-video` in a
+  `fixed inset-0 z-0` layer, `object-cover`, looping/muted/autoplay) — a guard
+  so it never regresses to a small avatar
+- a `HEAD_PARTS` map covering every section, all `assets/head-*.mp4`
+- `openTab(id)` activates exactly that section and points the head at its part
+  (`#assistant-video[data-part]`)
+- the head element is **never swapped out** (same node) — голова остаётся
+- nav tabs and the hero CTA drive the switch; mic toggles mute
+- nav and the OS button stay siblings (no overlap/unclickable-tab regression)
 
 ## Customising
 
-Everything lives in the inline `<script>` at the bottom of `index.html`:
-
-- `SCENES`         — section id → background video path
-- `POSTERS`        — section id → poster image path
-- `SCENE_CAPTIONS` — the line shown under the presenter per section
-
-Add a section by adding a nav tab (`data-target="x"`), a
-`<div id="x" class="content-section …">` panel, and `x` entries in those three
-maps.
+Everything lives in the inline `<script>`: `HEAD_PARTS` (section → head clip)
+and `HEAD_POSTERS` (section → poster). Add a section by adding a nav tab
+(`data-target="x"`), a `<div id="x" class="content-section …">` panel, and `x`
+entries in those two maps.
