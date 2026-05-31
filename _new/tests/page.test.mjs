@@ -67,8 +67,8 @@ test('the talking head is the FULL-SCREEN BACKGROUND (not an avatar)', () => {
   const bgc = bg.className;
   assert.ok(/\bfixed\b/.test(bgc) && /\binset-0\b/.test(bgc) && /\bz-0\b/.test(bgc),
     'head video must sit in a fixed inset-0 z-0 background layer');
-  // and the video itself covers the whole screen
-  assert.ok(/\bobject-cover\b/.test(v.className), 'head video must be object-cover');
+  // and the video itself fills the screen, shown in full (zoomed out — object-contain)
+  assert.ok(/\bobject-contain\b/.test(v.className), 'head video must be object-contain (whole head visible)');
   assert.ok(/\bw-full\b/.test(v.className) && /\bh-full\b/.test(v.className));
   // it is a looping, muted, autoplaying background video
   assert.ok(v.hasAttribute('loop') && v.hasAttribute('autoplay') && v.hasAttribute('muted'));
@@ -164,6 +164,17 @@ test('the header keeps nav and the OS button as siblings (no z-overlap nesting)'
   const osBtn = [...doc.querySelectorAll('header button')].find(b => /AI Business OS/i.test(b.textContent));
   assert.ok(nav && osBtn, 'header has a nav and an OS button');
   assert.ok(!nav.contains(osBtn) && !osBtn.contains(nav), 'nav and OS button are not nested');
+});
+
+test('mobile menu button toggles the nav dropdown and closes on navigation', () => {
+  const toggle = doc.querySelector('#menu-toggle');
+  const nav = doc.querySelector('#main-nav');
+  assert.ok(toggle && nav, 'a menu button and the nav exist');
+  assert.ok(!nav.classList.contains('open'), 'nav starts closed');
+  toggle.click();
+  assert.ok(nav.classList.contains('open'), 'menu button opens the nav');
+  window.openTab('platform');
+  assert.ok(!nav.classList.contains('open'), 'choosing a section closes the menu');
 });
 
 test('navigation never leaves more than one active section (invariant sweep)', () => {

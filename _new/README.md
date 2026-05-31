@@ -21,6 +21,17 @@ The mic button un-mutes the background head so it actually speaks out loud.
 
 > Only the head video (`Andre_AI (1).mp4`) is used — nothing else from the repo.
 
+### Layout
+
+- The head is shown **in full** (`object-contain`) so it's zoomed out, not
+  cropped into the face — best on desktop.
+- **Top bar:** logo (left); on the right, the **AI Business OS** button and a
+  **menu button** next to it. On desktop the nav sits centered; on mobile it
+  collapses into a dropdown opened by the menu button.
+- **Everything else lives in a bottom panel** (centered on mobile, right on
+  desktop) that **scrolls** if it's tall — so the content/buttons never cover
+  the face. The speaker caption + mic stay visible there.
+
 ## Why it's cut into parts ("обрезать каждую чтобы быстрее загружать")
 
 The 18-second head video is split into **6 short parts** (one per section,
@@ -87,6 +98,7 @@ They assert, among other things:
   (`#assistant-video[data-part]`)
 - the head element is **never swapped out** (same node) — голова остаётся
 - nav tabs and the hero CTA drive the switch; mic toggles mute
+- the mobile menu button opens the nav dropdown and closes on navigation
 - nav and the OS button stay siblings (no overlap/unclickable-tab regression)
 
 ## Customising

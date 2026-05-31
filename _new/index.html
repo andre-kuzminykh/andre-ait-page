@@ -16,15 +16,8 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                    },
-                    colors: {
-                        brand: {
-                            purple: '#8854F3',
-                            orange: '#F97316'
-                        }
-                    }
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'] },
+                    colors: { brand: { purple: '#8854F3', orange: '#F97316' } }
                 }
             }
         }
@@ -40,13 +33,12 @@
             --glass-bg: rgba(255, 255, 255, 0.4);
             --glass-border: rgba(0, 0, 0, 0.08);
         }
-
         .dark {
             --bg-main: #050505;
             --text-main: #E5E7EB;
             --text-muted: #9ca3af;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.06);
         }
 
         body {
@@ -54,17 +46,13 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
-            overflow: hidden; /* Блокируем скролл всей страницы */
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
+            overflow: hidden;
+            width: 100vw; height: 100vh; height: 100dvh;
             transition: background-color 0.5s ease, color 0.5s ease;
             -webkit-tap-highlight-color: transparent;
         }
-
         ::selection { background: var(--brand-purple); color: #FFFFFF; }
 
-        /* Кастомный скроллбар для правой панели */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
@@ -72,116 +60,105 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Фоновая говорящая голова + плавная смена «реплик» */
-        #assistant-video {
-            transition: opacity 0.4s ease;
-        }
+        /* Фоновая говорящая голова (видно целиком — object-contain) + плавная смена реплик */
+        #assistant-video { transition: opacity 0.4s ease; }
         #assistant-video.is-switching { opacity: 0; }
-
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 1.25rem;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        /* Hover эффекты карточек */
-        .hover-card {
-            position: relative;
-            background-clip: padding-box;
-            border: 1px solid var(--glass-border);
-            border-radius: 1rem;
-            transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
-            cursor: pointer;
-        }
-        .hover-card::before {
-            content: "";
-            position: absolute;
-            inset: -1px;
-            border-radius: inherit;
-            padding: 1px;
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-            z-index: -1;
-        }
-        .hover-card:hover {
-            border-color: transparent;
-            transform: translateY(-2px);
-        }
-        .hover-card:hover::before { opacity: 1; }
-        .hover-card-orange::before { background: var(--brand-orange); }
-        .hover-card-orange:hover { box-shadow: 0 10px 40px rgba(249, 115, 22, 0.1); }
-        .hover-card-purple::before { background: var(--brand-purple); }
-        .hover-card-purple:hover { box-shadow: 0 10px 40px rgba(136, 84, 243, 0.1); }
 
         /* Кнопки */
         .btn-white {
             background: #ffffff; color: #050505;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             border: 1px solid var(--glass-border);
         }
-        html:not(.dark) .btn-white {
-            background: #0f172a; color: #ffffff; border-color: #0f172a;
-        }
+        html:not(.dark) .btn-white { background: #0f172a; color: #ffffff; border-color: #0f172a; }
         .hover-btn-orange:hover {
-            background: var(--brand-orange) !important; color: #ffffff !important;
-            border-color: transparent !important;
-            box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.4) !important;
-            transform: translateY(-2px);
+            background: var(--brand-orange) !important; color: #ffffff !important; border-color: transparent !important;
+            box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.4) !important; transform: translateY(-2px);
         }
         .hover-btn-purple:hover {
-            background: var(--brand-purple) !important; color: #ffffff !important;
-            border-color: transparent !important;
-            box-shadow: 0 10px 25px -5px rgba(136, 84, 243, 0.4) !important;
-            transform: translateY(-2px);
+            background: var(--brand-purple) !important; color: #ffffff !important; border-color: transparent !important;
+            box-shadow: 0 10px 25px -5px rgba(136, 84, 243, 0.4) !important; transform: translateY(-2px);
         }
 
-        .text-gradient {
-            background: linear-gradient(to right, var(--brand-purple), var(--brand-orange));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
+        /* Карточки */
+        .hover-card {
+            position: relative; background-clip: padding-box;
+            border: 1px solid var(--glass-border); border-radius: 1rem;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease; cursor: pointer;
         }
+        .hover-card::before {
+            content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: -1;
+        }
+        .hover-card:hover { border-color: transparent; transform: translateY(-2px); }
+        .hover-card:hover::before { opacity: 1; }
+        .hover-card-orange::before { background: var(--brand-orange); }
+        .hover-card-orange:hover { box-shadow: 0 10px 40px rgba(249, 115, 22, 0.15); }
+        .hover-card-purple::before { background: var(--brand-purple); }
+        .hover-card-purple:hover { box-shadow: 0 10px 40px rgba(136, 84, 243, 0.15); }
 
         /* Переходы контента */
         .content-section {
-            display: none;
-            opacity: 0;
-            transform: translateY(15px);
+            display: none; opacity: 0; transform: translateY(15px);
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        .content-section.active {
-            display: flex;
-            animation: fadeUp 0.45s forwards;
-        }
+        .content-section.active { display: flex; animation: fadeUp 0.45s forwards; }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
-        @keyframes fadeUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Навигация */
+        /* ===== Навигация ===== */
         .nav-tab {
-            position: relative;
-            color: var(--text-muted);
-            transition: color 0.3s ease;
-            cursor: pointer;
+            position: relative; color: var(--text-muted);
+            transition: color 0.3s ease; cursor: pointer; background: none; border: 0;
+            font-family: inherit; text-transform: uppercase; font-weight: 700;
+            white-space: nowrap; letter-spacing: 0.06em;
         }
-        .nav-tab.active {
-            color: var(--text-main);
-        }
+        .nav-tab:hover { color: var(--text-main); }
+        .nav-tab.active { color: var(--text-main); }
         .nav-tab::after {
-            content: ''; position: absolute; bottom: -2px; left: 50%;
-            transform: translateX(-50%); width: 0; height: 2px;
-            background: var(--brand-purple); transition: width 0.3s ease;
-            border-radius: 2px;
+            content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 2px; background: var(--brand-purple); transition: width 0.3s ease; border-radius: 2px;
         }
-        .nav-tab.active::after { width: 80%; }
+        .nav-tab.active::after { width: 70%; }
+
+        /* Меню-обёртка: десктоп — по центру сверху; мобайл — выпадает по кнопке */
+        #main-nav {
+            display: flex; align-items: center; justify-content: center; gap: 0.25rem;
+            background: rgba(10, 10, 14, 0.5); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 999px; padding: 0.4rem 0.85rem;
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.25);
+            max-width: 100%; overflow-x: auto;
+        }
+        #main-nav .nav-tab { padding: 0.25rem 0.5rem; font-size: 12px; }
+        @media (min-width: 768px) {
+            #main-nav { position: absolute; left: 50%; top: 0; transform: translateX(-50%); }
+        }
+        @media (max-width: 767px) {
+            #main-nav {
+                position: absolute; top: calc(100% + 0.5rem); right: 0;
+                flex-direction: column; align-items: stretch; justify-content: flex-start;
+                gap: 0.1rem; border-radius: 1rem; padding: 0.4rem; min-width: 11rem;
+                display: none; box-shadow: 0 24px 60px -12px rgba(0,0,0,0.7);
+                transform-origin: top right; background: rgba(12, 12, 16, 0.96);
+            }
+            #main-nav.open { display: flex; animation: menuPop 0.2s ease forwards; }
+            #main-nav .nav-tab { text-align: center; padding: 0.65rem 0.75rem; font-size: 13px; border-radius: 0.6rem; }
+            #main-nav .nav-tab::after { display: none; }
+            #main-nav .nav-tab.active { background: var(--glass-bg); color: var(--brand-purple); }
+        }
+        @keyframes menuPop { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+        /* Затемнение снизу — чтобы контент читался, а лицо сверху оставалось чистым */
+        .bottom-scrim {
+            position: fixed; inset-inline: 0; bottom: 0; height: 62vh; z-index: 5; pointer-events: none;
+            background: linear-gradient(to top, var(--bg-main) 2%, rgba(5,5,5,0.72) 30%, rgba(5,5,5,0.0) 100%);
+        }
+        html:not(.dark) .bottom-scrim {
+            background: linear-gradient(to top, var(--bg-main) 2%, rgba(248,250,252,0.75) 30%, rgba(248,250,252,0.0) 100%);
+        }
 
         /* Пульсация звука */
         @keyframes soundWave {
@@ -189,135 +166,112 @@
             100% { transform: scale(2.2); opacity: 0; }
         }
         .sound-wave::before, .sound-wave::after {
-            content: ''; position: absolute; inset: 0;
-            border-radius: 50%; border: 1px solid var(--brand-purple);
-            animation: soundWave 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            border: 1px solid var(--brand-purple); animation: soundWave 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
         }
         .sound-wave::after { animation-delay: 1s; }
 
         @media (prefers-reduced-motion: reduce) {
-            #assistant-video, .content-section { transition: none; animation: none; }
+            #assistant-video, .content-section, #main-nav { transition: none; animation: none; }
         }
     </style>
 </head>
 <body class="antialiased overflow-hidden">
 
-    <!-- ФОНОВОЕ ВИДЕО НА ВЕСЬ ЭКРАН (говорящая голова) -->
+    <!-- ФОНОВОЕ ВИДЕО НА ВЕСЬ ЭКРАН (говорящая голова, видно целиком) -->
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden bg-[var(--bg-main)]">
         <video id="assistant-video" src="assets/head-overview.mp4" poster="assets/poster-overview.jpg" data-part="overview"
-               class="absolute inset-0 w-full h-full object-cover object-center md:object-[30%_center]"
+               class="absolute inset-0 w-full h-full object-contain object-top md:object-center"
                loop playsinline autoplay muted preload="auto"></video>
-
-        <!-- Дополнительный легкий шум/текстура -->
         <div class="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style="background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E&quot;);"></div>
     </div>
 
-    <!-- ОСНОВНОЙ КОНТЕНТ (Поверх видео) -->
-    <div class="relative z-10 flex flex-col md:flex-row w-full h-full pointer-events-none">
+    <!-- Затемнение снизу -->
+    <div class="bottom-scrim"></div>
 
-        <!-- ЛЕВАЯ ЧАСТЬ: ЛОГОТИП И ПАНЕЛЬ ИМЕНИ -->
-        <div class="relative w-full h-[30vh] md:h-full md:w-[45%] shrink-0 flex flex-col justify-between p-4 md:p-8">
+    <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ: лого слева, справа — кнопка OS и кнопка-меню ===== -->
+    <header class="fixed top-0 inset-x-0 z-30 p-3 sm:p-4 md:p-6 lg:p-8 pointer-events-none">
+        <div class="relative flex items-center justify-between gap-3">
 
-            <!-- Логотип AIT -->
-            <div class="pointer-events-auto flex items-center gap-3 md:gap-4 w-fit cursor-pointer" onclick="openTab('overview')">
-                <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="w-12 h-12 md:w-16 md:h-16 object-contain scale-[1.2] origin-left drop-shadow-lg">
-                <div class="flex flex-col text-white drop-shadow-md">
-                    <span class="font-mono text-xs md:text-sm font-bold leading-none mb-1">Andre AI</span>
-                    <span class="font-mono text-[9px] md:text-[10px] font-medium text-white/70 uppercase tracking-widest leading-none">Technologies</span>
-                </div>
+            <!-- Лого (только иконка, без текста) -->
+            <div class="pointer-events-auto cursor-pointer shrink-0" onclick="openTab('overview')" aria-label="Home">
+                <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT" class="w-10 h-10 md:w-14 md:h-14 object-contain scale-[1.15] origin-left drop-shadow-lg">
             </div>
 
-            <!-- Имя собеседника и Темный Микрофон в одной панели -->
-            <div class="pointer-events-auto bg-black/40 backdrop-blur-md border border-white/10 text-white p-2 pr-2 pl-5 rounded-full flex items-center gap-3 shadow-lg w-fit mt-auto md:mb-0 mb-4">
-                <div class="flex items-center gap-2 pr-1 md:pr-3">
-                    <h3 class="text-xs md:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
-                    <span class="text-white/30 text-[10px] md:text-xs leading-none">|</span>
-                    <p class="text-[8px] md:text-[10px] text-white/80 uppercase tracking-widest leading-none whitespace-nowrap pt-[2px]">Chief AI Officer</p>
-                </div>
-                <!-- Темный микрофон -->
-                <button id="audio-toggle" class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black hover:bg-[#111] border border-white/5 text-white flex items-center justify-center transition-all group shrink-0 shadow-inner">
-                    <div class="relative flex items-center justify-center w-full h-full">
-                        <i id="audio-icon" class="fa-solid fa-microphone-lines-slash text-[10px] md:text-sm transition-transform group-hover:scale-110 text-white/50"></i>
-                        <div id="sound-wave" class="absolute inset-0 hidden sound-wave"></div>
-                    </div>
+            <!-- Навигация: десктоп — по центру; мобайл — выпадает по кнопке-меню -->
+            <nav id="main-nav" class="pointer-events-auto no-scrollbar">
+                <button class="nav-tab active" data-target="overview">Overview</button>
+                <button class="nav-tab" data-target="strategy">Strategy</button>
+                <button class="nav-tab" data-target="platform">Platform</button>
+                <button class="nav-tab" data-target="employees">Employees</button>
+                <button class="nav-tab" data-target="products">Products</button>
+                <button class="nav-tab" data-target="education">Education</button>
+            </nav>
+
+            <!-- Правые кнопки: OS + меню (рядом) -->
+            <div class="pointer-events-auto flex items-center gap-2 shrink-0">
+                <button class="btn-white hover-btn-purple px-3.5 py-2 md:px-5 md:py-2.5 rounded-full font-bold uppercase tracking-widest text-[9px] md:text-xs flex items-center gap-2 shadow-lg whitespace-nowrap">
+                    <span class="hidden sm:inline">AI Business OS</span><span class="sm:hidden">OS</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button id="menu-toggle" aria-label="Menu" class="md:hidden w-10 h-10 rounded-full bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-xl text-[var(--text-main)] flex items-center justify-center shadow-lg shrink-0">
+                    <i id="menu-icon" class="fa-solid fa-bars text-sm"></i>
                 </button>
             </div>
         </div>
+    </header>
 
-        <!-- ПРАВАЯ ЧАСТЬ: ИНТЕРАКТИВНЫЙ КОНТЕНТ И МЕНЮ -->
-        <div class="w-full h-[70vh] md:h-full md:w-[55%] flex flex-col relative z-20">
+    <!-- ===== НИЗ: всё по центру (мобайл) / справа (десктоп), со скроллом ===== -->
+    <div class="fixed inset-0 z-10 flex flex-col justify-end pointer-events-none">
+        <div class="w-full md:w-[56%] md:ml-auto px-4 pb-5 md:px-8 md:pb-8">
+            <div class="flex flex-col items-center md:items-end gap-4 max-h-[60vh] md:max-h-[80vh] overflow-y-auto no-scrollbar pointer-events-auto">
 
-            <!-- Хедер: Меню и Кнопка OS (Справа Сверху) -->
-            <header class="flex flex-col md:flex-row items-center gap-3 md:gap-4 p-4 md:p-8 shrink-0 pointer-events-auto relative w-full">
-
-                <!-- Левый баланс-спейсер (чтобы меню было ровно по центру) -->
-                <div class="hidden md:block md:flex-1 md:order-1"></div>
-
-                <!-- Навигация (По центру) -->
-                <nav class="md:order-2 w-full md:w-max max-w-full mx-auto flex items-center justify-center gap-0 sm:gap-1 md:gap-2 overflow-x-auto no-scrollbar bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-full px-2 py-1.5 md:px-3 md:py-2 backdrop-blur-xl shadow-sm">
-                    <button class="nav-tab active px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="overview">Overview</button>
-                    <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="strategy">Strategy</button>
-                    <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="platform">Platform</button>
-                    <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="employees">Employees</button>
-                    <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="products">Products</button>
-                    <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="education">Education</button>
-                </nav>
-
-                <!-- Главная кнопка OS -->
-                <div class="md:order-3 md:flex-1 flex justify-center md:justify-end w-full md:w-auto">
-                    <button class="btn-white hover-btn-purple px-5 py-2.5 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs flex items-center gap-2 shadow-lg shrink-0 whitespace-nowrap">
-                        AI Business OS <i class="fa-solid fa-arrow-right"></i>
+                <!-- Подпись собеседника + микрофон (видно всегда) -->
+                <div id="speaker" class="order-first md:order-none w-fit md:fixed md:left-8 md:bottom-8 md:z-20 bg-black/45 backdrop-blur-md border border-white/10 text-white p-2 pr-2 pl-5 rounded-full flex items-center gap-3 shadow-lg">
+                    <div class="flex items-center gap-2 pr-1">
+                        <h3 class="text-xs md:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
+                        <span class="text-white/30 text-[10px] md:text-xs leading-none">|</span>
+                        <p class="text-[8px] md:text-[10px] text-white/80 uppercase tracking-widest leading-none whitespace-nowrap pt-[2px]">Chief AI Officer</p>
+                    </div>
+                    <button id="audio-toggle" class="w-9 h-9 md:w-11 md:h-11 rounded-full bg-black hover:bg-[#111] border border-white/5 text-white flex items-center justify-center transition-all group shrink-0 shadow-inner">
+                        <div class="relative flex items-center justify-center w-full h-full">
+                            <i id="audio-icon" class="fa-solid fa-microphone-lines-slash text-[10px] md:text-sm transition-transform group-hover:scale-110 text-white/50"></i>
+                            <div id="sound-wave" class="absolute inset-0 hidden sound-wave"></div>
+                        </div>
                     </button>
                 </div>
-            </header>
 
-            <!-- Область контента (Справа Снизу) -->
-            <!-- flex-grow push contents down using mt-auto on the inner container -->
-            <div class="flex-grow overflow-y-auto p-4 md:p-8 pb-8 md:pb-12 flex flex-col pointer-events-none no-scrollbar">
-
-                <div class="mt-auto w-full pointer-events-auto">
+                <!-- Контент разделов -->
+                <div class="w-full flex flex-col items-center md:items-end">
 
                     <!-- SECTION: OVERVIEW -->
-                    <div id="overview" class="content-section active flex-col gap-6 md:gap-8 w-full ml-auto items-end text-right">
+                    <div id="overview" class="content-section active flex-col gap-5 md:gap-8 w-full max-w-xl items-center text-center md:items-end md:text-right">
                         <h1 class="text-3xl md:text-5xl font-black uppercase tracking-tight leading-tight">
                             <span class="bg-black/60 backdrop-blur-md px-5 py-3 md:px-6 md:py-4 rounded-2xl text-white inline-block border border-white/5 shadow-lg">
                                 <span class="text-brand-purple drop-shadow-md">AI</span> Transformation<br>
                                 of your <span class="text-brand-orange drop-shadow-md">Business</span>
                             </span>
                         </h1>
-                        <button class="btn-white hover-btn-orange px-8 py-4 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs flex items-center gap-3 shadow-md w-fit mt-2 md:mt-4" onclick="openTab('strategy')">
+                        <button class="btn-white hover-btn-orange px-8 py-4 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs flex items-center gap-3 shadow-md w-fit" onclick="openTab('strategy')">
                             Get Free AI Strategy <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
 
                     <!-- SECTION: STRATEGY -->
-                    <div id="strategy" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
-                        <div class="flex items-center gap-4 mb-2">
+                    <div id="strategy" class="content-section flex-col gap-5 w-full max-w-xl md:max-w-2xl">
+                        <div class="flex items-center gap-4 mb-1 justify-center md:justify-start">
                             <div class="w-12 h-12 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-xl shadow-lg shadow-brand-orange/10 backdrop-blur-md"><i class="fa-solid fa-chess-knight"></i></div>
                             <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Strategy</h2>
                         </div>
-
-                        <div class="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl p-6 backdrop-blur-xl shadow-lg">
+                        <div class="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl p-5 md:p-6 backdrop-blur-xl shadow-lg text-left">
                             <h3 class="text-base md:text-lg font-bold mb-3">Audit &amp; Design</h3>
-                            <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-6">
+                            <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-5">
                                 Audit Processes, Identify Automation, Design Workflows, Define Human-AI Roles, and Build an Architecture Roadmap Based on Your AI Maturity.
                             </p>
-
-                            <ul class="space-y-3 mb-6">
-                                <li class="flex items-start gap-3 text-xs md:text-sm font-medium">
-                                    <i class="fa-solid fa-check text-brand-orange mt-1"></i>
-                                    <span>Comprehensive AI Maturity Assessment</span>
-                                </li>
-                                <li class="flex items-start gap-3 text-xs md:text-sm font-medium">
-                                    <i class="fa-solid fa-check text-brand-orange mt-1"></i>
-                                    <span>Identify high-ROI automation bottlenecks</span>
-                                </li>
-                                <li class="flex items-start gap-3 text-xs md:text-sm font-medium">
-                                    <i class="fa-solid fa-check text-brand-orange mt-1"></i>
-                                    <span>Strategic implementation roadmap</span>
-                                </li>
+                            <ul class="space-y-3 mb-5">
+                                <li class="flex items-start gap-3 text-xs md:text-sm font-medium"><i class="fa-solid fa-check text-brand-orange mt-1"></i><span>Comprehensive AI Maturity Assessment</span></li>
+                                <li class="flex items-start gap-3 text-xs md:text-sm font-medium"><i class="fa-solid fa-check text-brand-orange mt-1"></i><span>Identify high-ROI automation bottlenecks</span></li>
+                                <li class="flex items-start gap-3 text-xs md:text-sm font-medium"><i class="fa-solid fa-check text-brand-orange mt-1"></i><span>Strategic implementation roadmap</span></li>
                             </ul>
-
                             <button class="w-full sm:w-auto btn-white hover-btn-orange px-8 py-3.5 rounded-full font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-md">
                                 Request Strategy Audit <i class="fa-solid fa-arrow-right"></i>
                             </button>
@@ -325,33 +279,21 @@
                     </div>
 
                     <!-- SECTION: PLATFORM -->
-                    <div id="platform" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
-                        <div class="flex items-center gap-4 mb-2">
+                    <div id="platform" class="content-section flex-col gap-5 w-full max-w-xl md:max-w-2xl">
+                        <div class="flex items-center gap-4 mb-1 justify-center md:justify-start">
                             <div class="w-12 h-12 rounded-xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-xl shadow-lg shadow-brand-purple/10 backdrop-blur-md"><i class="fa-solid fa-layer-group"></i></div>
                             <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Platform</h2>
                         </div>
-
-                        <div class="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl p-6 backdrop-blur-xl shadow-lg">
+                        <div class="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl p-5 md:p-6 backdrop-blur-xl shadow-lg text-left">
                             <h3 class="text-base md:text-lg font-bold mb-3">Infrastructure &amp; Memory</h3>
-                            <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-6">
+                            <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-5">
                                 Integrate Models, Memory &amp; Context to Build AI Applications for Process Automation via Voice and Text inputs.
                             </p>
-
-                            <div class="grid grid-cols-2 gap-3 mb-6">
-                                <div class="border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-xl p-3 text-center hover:border-brand-purple/50 transition-colors">
-                                    <i class="fa-solid fa-database text-brand-purple text-xl mb-2"></i>
-                                    <h4 class="text-[10px] font-bold uppercase">Vector Data</h4>
-                                </div>
-                                <div class="border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-xl p-3 text-center hover:border-brand-purple/50 transition-colors">
-                                    <i class="fa-solid fa-brain text-brand-purple text-xl mb-2"></i>
-                                    <h4 class="text-[10px] font-bold uppercase">LLM Core</h4>
-                                </div>
-                                <div class="border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-xl p-3 text-center hover:border-brand-purple/50 transition-colors col-span-2">
-                                    <i class="fa-solid fa-server text-brand-purple text-xl mb-2"></i>
-                                    <h4 class="text-[10px] font-bold uppercase">Enterprise Integration</h4>
-                                </div>
+                            <div class="grid grid-cols-2 gap-3 mb-5">
+                                <div class="border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-xl p-3 text-center hover:border-brand-purple/50 transition-colors"><i class="fa-solid fa-database text-brand-purple text-xl mb-2"></i><h4 class="text-[10px] font-bold uppercase">Vector Data</h4></div>
+                                <div class="border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-xl p-3 text-center hover:border-brand-purple/50 transition-colors"><i class="fa-solid fa-brain text-brand-purple text-xl mb-2"></i><h4 class="text-[10px] font-bold uppercase">LLM Core</h4></div>
+                                <div class="border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-xl p-3 text-center hover:border-brand-purple/50 transition-colors col-span-2"><i class="fa-solid fa-server text-brand-purple text-xl mb-2"></i><h4 class="text-[10px] font-bold uppercase">Enterprise Integration</h4></div>
                             </div>
-
                             <button class="w-full sm:w-auto btn-white hover-btn-purple px-8 py-3.5 rounded-full font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-md">
                                 Explore Platform <i class="fa-solid fa-arrow-right"></i>
                             </button>
@@ -359,33 +301,21 @@
                     </div>
 
                     <!-- SECTION: EMPLOYEES -->
-                    <div id="employees" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
-                        <div class="flex items-center gap-4 mb-2">
+                    <div id="employees" class="content-section flex-col gap-5 w-full max-w-xl md:max-w-2xl">
+                        <div class="flex items-center gap-4 mb-1 justify-center md:justify-start">
                             <div class="w-12 h-12 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-xl shadow-lg shadow-brand-orange/10 backdrop-blur-md"><i class="fa-solid fa-robot"></i></div>
                             <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Employees</h2>
                         </div>
-
-                        <div class="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl p-6 backdrop-blur-xl shadow-lg">
+                        <div class="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl p-5 md:p-6 backdrop-blur-xl shadow-lg text-left">
                             <h3 class="text-base md:text-lg font-bold mb-3">AI Agents Workspace</h3>
-                            <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-6">
+                            <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-5">
                                 AI Agents for Management, HR, Marketing, SMM, Sales, Support, Analytics, Design, Development and Engineering.
                             </p>
-
-                            <div class="space-y-2 mb-6">
-                                <div class="flex justify-between items-center p-3 border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-lg hover:bg-[var(--glass-bg)] cursor-pointer transition">
-                                    <div class="flex items-center gap-3"><i class="fa-solid fa-bullhorn text-brand-orange"></i> <span class="text-xs font-bold">Marketing Agent</span></div>
-                                    <i class="fa-solid fa-chevron-right text-[var(--text-muted)] text-[10px]"></i>
-                                </div>
-                                <div class="flex justify-between items-center p-3 border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-lg hover:bg-[var(--glass-bg)] cursor-pointer transition">
-                                    <div class="flex items-center gap-3"><i class="fa-solid fa-headset text-brand-orange"></i> <span class="text-xs font-bold">Customer Support Agent</span></div>
-                                    <i class="fa-solid fa-chevron-right text-[var(--text-muted)] text-[10px]"></i>
-                                </div>
-                                <div class="flex justify-between items-center p-3 border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-lg hover:bg-[var(--glass-bg)] cursor-pointer transition">
-                                    <div class="flex items-center gap-3"><i class="fa-solid fa-chart-line text-brand-orange"></i> <span class="text-xs font-bold">Data Analyst Agent</span></div>
-                                    <i class="fa-solid fa-chevron-right text-[var(--text-muted)] text-[10px]"></i>
-                                </div>
+                            <div class="space-y-2 mb-5">
+                                <div class="flex justify-between items-center p-3 border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-lg hover:bg-[var(--glass-bg)] cursor-pointer transition"><div class="flex items-center gap-3"><i class="fa-solid fa-bullhorn text-brand-orange"></i> <span class="text-xs font-bold">Marketing Agent</span></div><i class="fa-solid fa-chevron-right text-[var(--text-muted)] text-[10px]"></i></div>
+                                <div class="flex justify-between items-center p-3 border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-lg hover:bg-[var(--glass-bg)] cursor-pointer transition"><div class="flex items-center gap-3"><i class="fa-solid fa-headset text-brand-orange"></i> <span class="text-xs font-bold">Customer Support Agent</span></div><i class="fa-solid fa-chevron-right text-[var(--text-muted)] text-[10px]"></i></div>
+                                <div class="flex justify-between items-center p-3 border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-lg hover:bg-[var(--glass-bg)] cursor-pointer transition"><div class="flex items-center gap-3"><i class="fa-solid fa-chart-line text-brand-orange"></i> <span class="text-xs font-bold">Data Analyst Agent</span></div><i class="fa-solid fa-chevron-right text-[var(--text-muted)] text-[10px]"></i></div>
                             </div>
-
                             <button class="w-full sm:w-auto btn-white hover-btn-orange px-8 py-3.5 rounded-full font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-md">
                                 Hire AI Agents <i class="fa-solid fa-arrow-right"></i>
                             </button>
@@ -393,87 +323,41 @@
                     </div>
 
                     <!-- SECTION: PRODUCTS -->
-                    <div id="products" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
-                        <div class="flex items-center gap-4 mb-2">
+                    <div id="products" class="content-section flex-col gap-4 w-full max-w-xl md:max-w-2xl">
+                        <div class="flex items-center gap-4 mb-1 justify-center md:justify-start">
                             <div class="w-12 h-12 rounded-xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-xl shadow-lg shadow-brand-purple/10 backdrop-blur-md"><i class="fa-solid fa-boxes-stacked"></i></div>
                             <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Products</h2>
                         </div>
-
-                        <div class="grid gap-3">
-                            <div class="hover-card hover-card-purple p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--glass-bg)] backdrop-blur-xl shadow-sm">
-                                <div class="flex items-center gap-4">
-                                    <i class="fa-solid fa-boxes-stacked text-2xl text-brand-purple w-8 text-center"></i>
-                                    <div>
-                                        <h3 class="text-sm font-bold uppercase">Dataist AI</h3>
-                                        <p class="text-[10px] text-[var(--text-main)] font-medium">Education Assistant</p>
-                                    </div>
-                                </div>
-                                <span class="bg-black/10 dark:bg-white/10 border border-[var(--glass-border)] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover-btn-purple flex items-center justify-center gap-2 md:w-auto w-full text-center shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                        <div class="grid gap-3 w-full text-left">
+                            <div class="hover-card hover-card-purple p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--glass-bg)] backdrop-blur-xl shadow-sm">
+                                <div class="flex items-center gap-4"><i class="fa-solid fa-boxes-stacked text-2xl text-brand-purple w-8 text-center"></i><div><h3 class="text-sm font-bold uppercase">Dataist AI</h3><p class="text-[10px] text-[var(--text-main)] font-medium">Education Assistant</p></div></div>
+                                <span class="bg-black/10 dark:bg-white/10 border border-[var(--glass-border)] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover-btn-purple flex items-center justify-center gap-2 sm:w-auto w-full text-center shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
-
-                            <div class="hover-card hover-card-orange p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--glass-bg)] backdrop-blur-xl shadow-sm">
-                                <div class="flex items-center gap-4">
-                                    <i class="fa-solid fa-wand-magic-sparkles text-2xl text-brand-orange w-8 text-center"></i>
-                                    <div>
-                                        <h3 class="text-sm font-bold uppercase">Landao AI</h3>
-                                        <p class="text-[10px] text-[var(--text-main)] font-medium">Personal Assistant</p>
-                                    </div>
-                                </div>
-                                <span class="bg-black/10 dark:bg-white/10 border border-[var(--glass-border)] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover-btn-orange flex items-center justify-center gap-2 md:w-auto w-full text-center shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            <div class="hover-card hover-card-orange p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--glass-bg)] backdrop-blur-xl shadow-sm">
+                                <div class="flex items-center gap-4"><i class="fa-solid fa-wand-magic-sparkles text-2xl text-brand-orange w-8 text-center"></i><div><h3 class="text-sm font-bold uppercase">Landao AI</h3><p class="text-[10px] text-[var(--text-main)] font-medium">Personal Assistant</p></div></div>
+                                <span class="bg-black/10 dark:bg-white/10 border border-[var(--glass-border)] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover-btn-orange flex items-center justify-center gap-2 sm:w-auto w-full text-center shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
-
-                            <div class="hover-card hover-card-purple p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--glass-bg)] backdrop-blur-xl shadow-sm">
-                                <div class="flex items-center gap-4">
-                                    <i class="fa-solid fa-brain text-2xl text-brand-purple w-8 text-center"></i>
-                                    <div>
-                                        <h3 class="text-sm font-bold uppercase">Neurolady AI</h3>
-                                        <p class="text-[10px] text-[var(--text-main)] font-medium">Conversational Assistant</p>
-                                    </div>
-                                </div>
-                                <span class="bg-black/10 dark:bg-white/10 border border-[var(--glass-border)] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover-btn-purple flex items-center justify-center gap-2 md:w-auto w-full text-center shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            <div class="hover-card hover-card-purple p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--glass-bg)] backdrop-blur-xl shadow-sm">
+                                <div class="flex items-center gap-4"><i class="fa-solid fa-brain text-2xl text-brand-purple w-8 text-center"></i><div><h3 class="text-sm font-bold uppercase">Neurolady AI</h3><p class="text-[10px] text-[var(--text-main)] font-medium">Conversational Assistant</p></div></div>
+                                <span class="bg-black/10 dark:bg-white/10 border border-[var(--glass-border)] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover-btn-purple flex items-center justify-center gap-2 sm:w-auto w-full text-center shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
                         </div>
                     </div>
 
                     <!-- SECTION: EDUCATION -->
-                    <div id="education" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
-                        <div class="flex items-center gap-4 mb-2">
+                    <div id="education" class="content-section flex-col gap-4 w-full max-w-xl md:max-w-2xl">
+                        <div class="flex items-center gap-4 mb-1 justify-center md:justify-start">
                             <div class="w-12 h-12 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-xl shadow-lg shadow-brand-orange/10 backdrop-blur-md"><i class="fa-solid fa-graduation-cap"></i></div>
                             <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Education</h2>
                         </div>
-
-                        <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-2 bg-[var(--glass-bg)] backdrop-blur-md p-3 rounded-xl border border-[var(--glass-border)] shadow-sm">
+                        <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed bg-[var(--glass-bg)] backdrop-blur-md p-3 rounded-xl border border-[var(--glass-border)] shadow-sm text-left">
                             Develop Skills for the New AI Roles. Join our intensive programs.
                         </p>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-purple/50 transition cursor-pointer group shadow-sm">
-                                <i class="fa-solid fa-user-tie text-xl text-brand-purple mb-2"></i>
-                                <h3 class="font-bold text-xs uppercase mb-1">Executive Management</h3>
-                                <p class="text-[10px] text-[var(--text-muted)] mb-3">Strategic leadership in AI</p>
-                                <span class="text-[9px] font-bold text-brand-purple uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span>
-                            </div>
-
-                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-orange/50 transition cursor-pointer group shadow-sm">
-                                <i class="fa-solid fa-gears text-xl text-brand-orange mb-2"></i>
-                                <h3 class="font-bold text-xs uppercase mb-1">Process Automation</h3>
-                                <p class="text-[10px] text-[var(--text-muted)] mb-3">Automating workflows with AI</p>
-                                <span class="text-[9px] font-bold text-brand-orange uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span>
-                            </div>
-
-                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-purple/50 transition cursor-pointer group shadow-sm">
-                                <i class="fa-solid fa-box-open text-xl text-brand-purple mb-2"></i>
-                                <h3 class="font-bold text-xs uppercase mb-1">Product Development</h3>
-                                <p class="text-[10px] text-[var(--text-muted)] mb-3">Building products using AI</p>
-                                <span class="text-[9px] font-bold text-brand-purple uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span>
-                            </div>
-
-                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-orange/50 transition cursor-pointer group shadow-sm">
-                                <i class="fa-solid fa-laptop-code text-xl text-brand-orange mb-2"></i>
-                                <h3 class="font-bold text-xs uppercase mb-1">AI Engineering</h3>
-                                <p class="text-[10px] text-[var(--text-muted)] mb-3">Designing AI systems</p>
-                                <span class="text-[9px] font-bold text-brand-orange uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span>
-                            </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left">
+                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-purple/50 transition cursor-pointer group shadow-sm"><i class="fa-solid fa-user-tie text-xl text-brand-purple mb-2"></i><h3 class="font-bold text-xs uppercase mb-1">Executive Management</h3><p class="text-[10px] text-[var(--text-muted)] mb-3">Strategic leadership in AI</p><span class="text-[9px] font-bold text-brand-purple uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span></div>
+                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-orange/50 transition cursor-pointer group shadow-sm"><i class="fa-solid fa-gears text-xl text-brand-orange mb-2"></i><h3 class="font-bold text-xs uppercase mb-1">Process Automation</h3><p class="text-[10px] text-[var(--text-muted)] mb-3">Automating workflows with AI</p><span class="text-[9px] font-bold text-brand-orange uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span></div>
+                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-purple/50 transition cursor-pointer group shadow-sm"><i class="fa-solid fa-box-open text-xl text-brand-purple mb-2"></i><h3 class="font-bold text-xs uppercase mb-1">Product Development</h3><p class="text-[10px] text-[var(--text-muted)] mb-3">Building products using AI</p><span class="text-[9px] font-bold text-brand-purple uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span></div>
+                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-orange/50 transition cursor-pointer group shadow-sm"><i class="fa-solid fa-laptop-code text-xl text-brand-orange mb-2"></i><h3 class="font-bold text-xs uppercase mb-1">AI Engineering</h3><p class="text-[10px] text-[var(--text-muted)] mb-3">Designing AI systems</p><span class="text-[9px] font-bold text-brand-orange uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span></div>
                         </div>
                     </div>
 
@@ -484,7 +368,6 @@
 
     <script>
         // ===== Говорящая голова на фоне: одна голова, короткие «реплики» по разделам =====
-        // Каждая реплика — короткий обрезок одного и того же видео головы (быстрая загрузка).
         const HEAD_PARTS = {
             overview:  'assets/head-overview.mp4',
             strategy:  'assets/head-strategy.mp4',
@@ -506,16 +389,18 @@
         const navTabs = document.querySelectorAll('.nav-tab');
         const contentSections = document.querySelectorAll('.content-section');
         const assistantVideo = document.getElementById('assistant-video');
+        const mainNav = document.getElementById('main-nav');
+        const menuToggle = document.getElementById('menu-toggle');
+        const menuIcon = document.getElementById('menu-icon');
         let isMuted = true;
         let currentPart = 'overview';
         if (assistantVideo) assistantVideo.muted = true;
 
-        // Плавно меняем «реплику» головы (фон остаётся той же головой)
         function setHeadPart(id) {
             if (!HEAD_PARTS[id] || currentPart === id || !assistantVideo) return;
             currentPart = id;
             const v = assistantVideo;
-            v.setAttribute('data-part', id); // синхронная отметка текущей реплики (для CSS/тестов)
+            v.setAttribute('data-part', id);
             v.classList.add('is-switching');
             window.setTimeout(function () {
                 v.setAttribute('src', HEAD_PARTS[id]);
@@ -530,41 +415,40 @@
                     if (p && p.catch) p.catch(function () {});
                 };
                 v.addEventListener('loadeddata', reveal, { once: true });
-                window.setTimeout(reveal, 450); // подстраховка
+                window.setTimeout(reveal, 450);
             }, 200);
         }
 
-        // Предзагрузка реплики при наведении на таб
         const prefetched = {};
         function prefetchPart(id) {
             if (!HEAD_PARTS[id] || prefetched[id]) return;
             prefetched[id] = true;
             const link = document.createElement('link');
-            link.rel = 'prefetch';
-            link.href = HEAD_PARTS[id];
+            link.rel = 'prefetch'; link.href = HEAD_PARTS[id];
             document.head.appendChild(link);
         }
 
-        // Навигация по табам контента (голова остаётся, контент и кнопки меняются)
+        function closeMenu() {
+            if (mainNav) mainNav.classList.remove('open');
+            if (menuIcon) { menuIcon.classList.remove('fa-xmark'); menuIcon.classList.add('fa-bars'); }
+        }
+
+        // Навигация (голова остаётся, контент и кнопки меняются)
         function openTab(targetId) {
             if (!document.getElementById(targetId)) return;
-
             navTabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-target') === targetId));
             contentSections.forEach(s => s.classList.remove('active'));
-
             const targetSection = document.getElementById(targetId);
             if (targetSection) targetSection.classList.add('active');
-
             setHeadPart(targetId);
-
-            const targetTab = document.querySelector(`.nav-tab[data-target="${targetId}"]`);
+            closeMenu();
+            const targetTab = document.querySelector('.nav-tab[data-target="' + targetId + '"]');
             if (targetTab && targetTab.scrollIntoView) {
                 targetTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         }
         window.openTab = openTab;
 
-        // Клики по навигации
         navTabs.forEach(tab => {
             const id = tab.getAttribute('data-target');
             tab.addEventListener('click', () => openTab(id));
@@ -572,45 +456,46 @@
             tab.addEventListener('touchstart', () => prefetchPart(id), { passive: true });
         });
 
-        // ===== Управление аудио головы (микрофон) =====
+        // Кнопка-меню (бургер): открывает/закрывает навигацию
+        if (menuToggle && mainNav) {
+            menuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const open = mainNav.classList.toggle('open');
+                if (menuIcon) {
+                    menuIcon.classList.toggle('fa-bars', !open);
+                    menuIcon.classList.toggle('fa-xmark', open);
+                }
+            });
+            document.addEventListener('click', (e) => {
+                if (!mainNav.contains(e.target) && !menuToggle.contains(e.target)) closeMenu();
+            });
+        }
+
+        // ===== Микрофон: включает звук говорящей головы =====
         const audioBtn = document.getElementById('audio-toggle');
         const audioIcon = document.getElementById('audio-icon');
         const soundWave = document.getElementById('sound-wave');
-
         if (audioBtn) {
             audioBtn.addEventListener('click', () => {
                 isMuted = !isMuted;
                 if (assistantVideo) {
                     assistantVideo.muted = isMuted;
-                    assistantVideo.currentTime = 0; // голова начинает «говорить» с начала реплики
+                    assistantVideo.currentTime = 0;
                     const p = assistantVideo.play && assistantVideo.play();
-                    if (p && p.catch) p.catch(e => console.log("Autoplay prevented", e));
+                    if (p && p.catch) p.catch(() => {});
                 }
-
                 if (isMuted) {
-                    if (audioIcon) {
-                        audioIcon.classList.replace('fa-microphone-lines', 'fa-microphone-lines-slash');
-                        audioIcon.classList.add('text-white/50');
-                        audioIcon.classList.remove('text-brand-purple');
-                    }
+                    if (audioIcon) { audioIcon.classList.replace('fa-microphone-lines', 'fa-microphone-lines-slash'); audioIcon.classList.add('text-white/50'); audioIcon.classList.remove('text-brand-purple'); }
                     if (soundWave) soundWave.classList.add('hidden');
                 } else {
-                    if (audioIcon) {
-                        audioIcon.classList.replace('fa-microphone-lines-slash', 'fa-microphone-lines');
-                        audioIcon.classList.remove('text-white/50');
-                        audioIcon.classList.add('text-brand-purple');
-                    }
+                    if (audioIcon) { audioIcon.classList.replace('fa-microphone-lines-slash', 'fa-microphone-lines'); audioIcon.classList.remove('text-white/50'); audioIcon.classList.add('text-brand-purple'); }
                     if (soundWave) soundWave.classList.remove('hidden');
                 }
             });
         }
 
-        // Инициализация (запуск видео головы)
         window.addEventListener('load', () => {
-            if (assistantVideo) {
-                const p = assistantVideo.play && assistantVideo.play();
-                if (p && p.catch) p.catch(e => console.log("Autoplay with mute prevented", e));
-            }
+            if (assistantVideo) { const p = assistantVideo.play && assistantVideo.play(); if (p && p.catch) p.catch(() => {}); }
         });
     </script>
 </body>
