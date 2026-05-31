@@ -23,16 +23,15 @@ The mic button un-mutes the background head so it actually speaks out loud.
 
 ### Layout
 
-- The head is shown **in full** (`object-contain`) over a purple→orange
-  gradient that matches the video, so the sides aren't empty black bars.
-- **Desktop (≥1024px):** the head sits **smaller on the left**
-  (`object-contain`, zoomed out) and fades on its right edge into the
-  purple→orange gradient — the **right side is free for your images**. The full
-  section menu is **horizontal at the top**; **AI Business OS** is the
-  right-most control; the **Andre AI + mic** badge is **centred**; section
-  content is aligned to the **bottom-right** (cards stacked, not stretched).
-  Tune the head via the video's `lg:object-[18%_center] lg:scale-90` and the
-  right-edge fade in the `@media (min-width:1024px) #assistant-video` mask.
+- The head is a **full-screen background**. The source video is square
+  (480×480), so a **blurred, zoomed copy** of the same head fills the sides
+  (`#assistant-bg`) and the **sharp head** sits on top in full
+  (`#assistant-video`) — covering the whole screen with no giant cropped face
+  and no empty bars. Both videos swap to the section's head-part together.
+- **Desktop (≥1024px):** the full section menu is **horizontal at the top**;
+  **AI Business OS** is the right-most control; the **Andre AI + mic** badge is
+  **bottom-centre**; section content is aligned to the **bottom-right** (cards
+  stacked, not stretched, over a right-side scrim for legibility).
 - **Mobile (<1024px):** logo + speaker (Andre AI) + **mic** at the top; on the
   right a **menu button** then the **OS** button (right-most). The menu opens as
   a **full-screen** overlay. Section content sits at the bottom as a **one-card

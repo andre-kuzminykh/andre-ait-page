@@ -59,13 +59,7 @@
         }
         #assistant-video { transition: opacity 0.4s ease; }
         #assistant-video.is-switching { opacity: 0; }
-        /* На компе голова «подальше» (видно целиком) слева; правый край мягко в градиент */
-        @media (min-width: 1024px) {
-            #assistant-video {
-                -webkit-mask-image: linear-gradient(to right, #000 60%, transparent 82%);
-                mask-image: linear-gradient(to right, #000 60%, transparent 82%);
-            }
-        }
+        #assistant-bg { transition: opacity 0.4s ease; }
 
         .btn-white {
             background: #ffffff; color: #050505; transition: all 0.3s ease;
@@ -158,8 +152,13 @@
 
     <!-- ФОН: градиент + говорящая голова (на компе — слева; видно целиком) -->
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden scene-bg">
+        <!-- Размытый «заполнитель»: квадратное видео растянуто на весь экран, чтобы голова была фоном без пустых полей -->
+        <video id="assistant-bg" aria-hidden="true" src="assets/head-overview.mp4"
+               class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-90"
+               loop playsinline autoplay muted preload="auto"></video>
+        <!-- Чёткая голова целиком поверх -->
         <video id="assistant-video" src="assets/head-overview.mp4" poster="assets/poster-overview.jpg" data-part="overview"
-               class="absolute inset-0 w-full h-full object-contain object-top lg:object-[18%_center] lg:scale-90 lg:origin-left"
+               class="absolute inset-0 w-full h-full object-contain object-top lg:object-center"
                loop playsinline autoplay muted preload="auto"></video>
         <div class="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style="background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E&quot;);"></div>
     </div>
@@ -175,7 +174,7 @@
                 <div class="cursor-pointer shrink-0" onclick="openTab('overview')" aria-label="Home">
                     <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT" class="w-9 h-9 lg:w-12 lg:h-12 object-contain scale-[1.15] drop-shadow-lg">
                 </div>
-                <div id="speaker" class="lg:fixed lg:left-1/2 lg:-translate-x-1/2 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
+                <div id="speaker" class="lg:fixed lg:left-1/2 lg:-translate-x-1/2 lg:top-auto lg:bottom-8 lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
                     <div class="flex items-center gap-1.5 sm:gap-2">
                         <h3 class="text-[11px] sm:text-xs lg:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
                         <span class="hidden sm:inline text-white/30 text-[10px] lg:text-xs leading-none">|</span>
@@ -343,6 +342,7 @@
         const navTabs = document.querySelectorAll('.nav-tab');
         const contentSections = document.querySelectorAll('.content-section');
         const assistantVideo = document.getElementById('assistant-video');
+        const assistantBg = document.getElementById('assistant-bg');
         const mainNav = document.getElementById('main-nav');
         const menuToggle = document.getElementById('menu-toggle');
         const menuIcon = document.getElementById('menu-icon');
@@ -361,6 +361,7 @@
                 if (HEAD_POSTERS[id]) v.setAttribute('poster', HEAD_POSTERS[id]);
                 v.muted = isMuted;
                 try { v.load(); } catch (e) {}
+                if (assistantBg) { assistantBg.setAttribute('src', HEAD_PARTS[id]); try { assistantBg.load(); } catch (e) {} const bp = assistantBg.play && assistantBg.play(); if (bp && bp.catch) bp.catch(function(){}); }
                 let done = false;
                 const reveal = function () { if (done) return; done = true; v.classList.remove('is-switching'); const p = v.play && v.play(); if (p && p.catch) p.catch(function(){}); };
                 v.addEventListener('loadeddata', reveal, { once: true });
@@ -415,7 +416,7 @@
             });
         }
 
-        window.addEventListener('load', () => { if (assistantVideo) { const p = assistantVideo.play && assistantVideo.play(); if (p && p.catch) p.catch(()=>{}); } });
+        window.addEventListener('load', () => { [assistantVideo, assistantBg].forEach(v => { if (v) { const p = v.play && v.play(); if (p && p.catch) p.catch(()=>{}); } }); });
     </script>
 </body>
 </html>
