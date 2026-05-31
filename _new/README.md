@@ -25,11 +25,15 @@ The mic button un-mutes the background head so it actually speaks out loud.
 
 - The head is shown **in full** (`object-contain`) over a purple→orange
   gradient that matches the video, so the sides aren't empty black bars.
-- **Desktop (≥1024px):** face on the **left**, gradient on the right; the full
-  section menu sits **horizontally at the top**; the **AI Business OS** button
-  is the right-most control; the speaker caption + **mic** sit **bottom-left**;
-  section content stacks on the **right**, one card under another (not
-  stretched).
+- **Desktop (≥1024px):** the head fills the **left ~60%** (`object-cover`) and
+  fades on its right edge into the purple→orange gradient — the **right side is
+  left free for you to drop in images**. The full section menu sits
+  **horizontally at the top**; the **AI Business OS** button is the right-most
+  control; the speaker caption + **mic** sit **bottom-left**; section content is
+  **vertically centred on the right**, cards stacked one under another (not
+  stretched). Tune the head via the video's `lg:w-[60%]` / `lg:object-[52%_16%]`
+  and the right-edge fade in the `@media (min-width:1024px) #assistant-video`
+  mask.
 - **Mobile (<1024px):** logo + speaker (Andre AI) + **mic** at the top; on the
   right a **menu button** then the **OS** button (right-most). The menu opens as
   a **full-screen** overlay. Section content sits at the bottom as a **one-card
