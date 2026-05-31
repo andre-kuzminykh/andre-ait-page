@@ -60,11 +60,18 @@
         #assistant-video { transition: opacity 0.4s ease; }
         #assistant-video.is-switching { opacity: 0; }
         #assistant-bg { transition: opacity 0.4s ease; }
-        /* На компе голова слева; края мягко растворяются в размытый фон (слева — градиент, справа темнеет) */
+        /* На компе: видео заполняет слева, размытие — переход, справа чёрное */
         @media (min-width: 1024px) {
+            .scene-bg { background: #000; }
+            /* размытый дубль только слева → растворяется в чёрный (переход) */
+            #assistant-bg {
+                -webkit-mask-image: linear-gradient(to right, #000 34%, transparent 52%);
+                mask-image: linear-gradient(to right, #000 34%, transparent 52%);
+            }
+            /* чёткое видео заполняет левую часть, правый край мягко в переход */
             #assistant-video {
-                -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 80%, transparent 100%);
-                mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 80%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to right, #000 82%, transparent 100%);
+                mask-image: linear-gradient(to right, #000 82%, transparent 100%);
             }
         }
 
@@ -151,8 +158,7 @@
             background: linear-gradient(to top, rgba(5,5,5,0.92) 4%, rgba(5,5,5,0.55) 32%, rgba(5,5,5,0) 100%);
         }
         @media (min-width: 1024px) {
-            .bottom-scrim { width: 62%; left: auto; right: 0; height: 100vh;
-                background: linear-gradient(to left, rgba(4,4,6,0.97) 22%, rgba(4,4,6,0.75) 50%, rgba(4,4,6,0.25) 80%, rgba(4,4,6,0) 100%); }
+            .bottom-scrim { display: none; }
         }
 
         @keyframes soundWave { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.2); opacity: 0; } }
