@@ -60,6 +60,13 @@
         #assistant-video { transition: opacity 0.4s ease; }
         #assistant-video.is-switching { opacity: 0; }
         #assistant-bg { transition: opacity 0.4s ease; }
+        /* На компе чёткая голова мягко растворяется слева и справа в размытый фон */
+        @media (min-width: 1024px) {
+            #assistant-video {
+                -webkit-mask-image: linear-gradient(to right, transparent 5%, #000 23%, #000 77%, transparent 95%);
+                mask-image: linear-gradient(to right, transparent 5%, #000 23%, #000 77%, transparent 95%);
+            }
+        }
 
         .btn-white {
             background: #ffffff; color: #050505; transition: all 0.3s ease;
@@ -93,7 +100,8 @@
         @media (min-width: 640px) { .card-rail > * { flex-basis: 60%; } }
         @media (min-width: 1024px) {
             .card-rail { flex-direction: column; align-items: flex-end; overflow: visible; }
-            .card-rail > * { flex: none; width: 100%; max-width: 26rem; }
+            /* карточки по размеру текста и прижаты вправо */
+            .card-rail > * { flex: none; width: max-content; max-width: 22rem; }
         }
 
         .nav-tab {
