@@ -25,15 +25,15 @@ The mic button un-mutes the background head so it actually speaks out loud.
 
 - The head video is square (480×480). **On mobile** a **blurred, zoomed copy**
   of the same head (`#assistant-bg`) fills behind the sharp head so it covers
-  the whole screen. **On desktop** the sharp head is **centred** on a **black**
-  background and its **left/right edges feather** into the black (horizontal
-  `mask-image`) — no hard square seam.
-- **Desktop (≥1024px):** centred head with **black sides**; the full section
-  menu is **horizontal at the top**; **AI Business OS** is the right-most
-  control; the **Andre AI + mic** badge is **bottom-centre**. Section content
-  lives in the **right band** (between the head and the screen edge),
-  **vertically + horizontally centred**, with cards of **uniform size**. Tune
-  the head size with the video's `lg:scale-[…]` and the feather with the
+  the whole screen.
+- **Desktop (≥1024px):** the head is a **tall portrait rectangle on the left**
+  (`object-cover`, `lg:w-[34%]`) whose right edge **feathers into the black**
+  background, with the **Andre AI + mic** badge **just below it**. The full
+  section menu is **horizontal at the top** and **AI Business OS** is the
+  right-most control. Section content lives in the **right area**, centred, with
+  **uniform-size cards**: **2–3 cards → one column, 4+ → two columns** (via a
+  `:has(> :nth-child(4))` quantity query). Tune the head with the video's
+  `lg:w-[…]` / `lg:object-[…]` and the right-edge fade in the
   `@media (min-width:1024px) #assistant-video` mask.
 - **Mobile (<1024px):** logo + speaker (Andre AI) + **mic** at the top; on the
   right a **menu button** then the **OS** button (right-most). The menu opens as
