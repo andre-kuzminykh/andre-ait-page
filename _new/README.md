@@ -23,14 +23,17 @@ The mic button un-mutes the background head so it actually speaks out loud.
 
 ### Layout
 
-- The head is shown **in full** (`object-contain`) so it's zoomed out, not
-  cropped into the face.
-- **Top bar — left:** the logo (icon only) + the speaker caption
-  ("Andre AI · Chief AI Officer") with the **mic** button.
-- **Top bar — right:** the **AI Business OS** button and a **menu button**; the
-  section menu opens as a dropdown from that button on every screen size.
-- **The section content lives in a bottom panel** (centered on mobile, right on
-  desktop) that **scrolls** when it's tall — so it never covers the face.
+- The head is shown **in full** (`object-contain`) over a purple→orange
+  gradient that matches the video, so the sides aren't empty black bars.
+- **Desktop (≥1024px):** face on the **left**, gradient on the right; the full
+  section menu sits **horizontally at the top**; the **AI Business OS** button
+  is the right-most control; the speaker caption + **mic** sit **bottom-left**;
+  section content stacks on the **right**, one card under another (not
+  stretched).
+- **Mobile (<1024px):** logo + speaker (Andre AI) + **mic** at the top; on the
+  right a **menu button** then the **OS** button (right-most). The menu opens as
+  a **full-screen** overlay. Section content sits at the bottom as a **one-card
+  swipe carousel**.
 
 ## Why it's cut into parts ("обрезать каждую чтобы быстрее загружать")
 

@@ -166,13 +166,13 @@ test('the header keeps nav and the OS button as siblings (no z-overlap nesting)'
   assert.ok(!nav.contains(osBtn) && !osBtn.contains(nav), 'nav and OS button are not nested');
 });
 
-test('mobile menu button toggles the nav dropdown and closes on navigation', () => {
+test('the menu button opens the section menu and navigating closes it', () => {
   const toggle = doc.querySelector('#menu-toggle');
   const nav = doc.querySelector('#main-nav');
   assert.ok(toggle && nav, 'a menu button and the nav exist');
-  assert.ok(!nav.classList.contains('open'), 'nav starts closed');
+  assert.ok(!nav.classList.contains('open'), 'menu starts closed');
   toggle.click();
-  assert.ok(nav.classList.contains('open'), 'menu button opens the nav');
+  assert.ok(nav.classList.contains('open'), 'menu button opens the menu');
   window.openTab('platform');
   assert.ok(!nav.classList.contains('open'), 'choosing a section closes the menu');
 });
