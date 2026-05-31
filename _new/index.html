@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Andre AI - Interactive Session</title>
+
+    <!-- Шрифты и иконки -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'] },
+                    colors: { brand: { purple: '#8854F3', orange: '#F97316' } }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --brand-purple: #8854F3;
+            --brand-orange: #F97316;
+            --bg-main: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.4);
+            --glass-border: rgba(0, 0, 0, 0.08);
+        }
+        .dark {
+            --bg-main: #050505;
+            --text-main: #E5E7EB;
+            --text-muted: #9ca3af;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            width: 100vw; height: 100vh; height: 100dvh;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::selection { background: var(--brand-purple); color: #FFFFFF; }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ===== ФОНОВАЯ СЦЕНА (cinematic, crossfade between sections) ===== */
+        #scene-stage { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #050505; }
+        .scene-layer {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; object-position: center;
+            opacity: 0; transition: opacity 0.9s ease;
+            will-change: opacity; transform: translateZ(0);
+        }
+        .scene-layer.is-active { opacity: 1; }
+        .scene-scrim {
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                linear-gradient(to top, rgba(5,5,5,0.88) 0%, rgba(5,5,5,0.25) 38%, rgba(5,5,5,0.10) 60%, rgba(5,5,5,0.55) 100%),
+                linear-gradient(to right, rgba(5,5,5,0.65) 0%, rgba(5,5,5,0.10) 45%, rgba(5,5,5,0.0) 100%);
+        }
+        html:not(.dark) .scene-scrim {
+            background:
+                linear-gradient(to top, rgba(248,250,252,0.85) 0%, rgba(248,250,252,0.15) 45%, rgba(248,250,252,0.55) 100%),
+                linear-gradient(to right, rgba(248,250,252,0.6) 0%, rgba(248,250,252,0.0) 55%);
+        }
+        .grain-overlay {
+            position: absolute; inset: 0; pointer-events: none; opacity: 0.04;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        /* Hover эффекты карточек */
+        .hover-card {
+            position: relative; background-clip: padding-box;
+            border: 1px solid var(--glass-border); border-radius: 1rem;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+        }
+        .hover-card::before {
+            content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: -1;
+        }
+        .hover-card:hover { border-color: transparent; transform: translateY(-2px); }
+        .hover-card:hover::before { opacity: 1; }
+        .hover-card-orange::before { background: var(--brand-orange); }
+        .hover-card-orange:hover { box-shadow: 0 10px 40px rgba(249, 115, 22, 0.1); }
+        .hover-card-purple::before { background: var(--brand-purple); }
+        .hover-card-purple:hover { box-shadow: 0 10px 40px rgba(136, 84, 243, 0.1); }
+
+        /* Кнопки */
+        .btn-white {
+            background: #ffffff; color: #050505; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border);
+        }
+        html:not(.dark) .btn-white { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+        .hover-btn-orange:hover {
+            background: var(--brand-orange) !important; color: #ffffff !important; border-color: transparent !important;
+            box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.4) !important; transform: translateY(-2px);
+        }
+        .hover-btn-purple:hover {
+            background: var(--brand-purple) !important; color: #ffffff !important; border-color: transparent !important;
+            box-shadow: 0 10px 25px -5px rgba(136, 84, 243, 0.4) !important; transform: translateY(-2px);
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, var(--brand-purple), var(--brand-orange));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* Переходы контента */
+        .content-section {
+            display: none; opacity: 0; transform: translateY(15px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .content-section.active { display: flex; animation: fadeUp 0.45s forwards; }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* Навигация */
+        .nav-tab { position: relative; color: var(--text-muted); transition: color 0.3s ease; cursor: pointer; }
+        .nav-tab.active { color: var(--text-main); }
+        .nav-tab::after {
+            content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 2px; background: var(--brand-purple); transition: width 0.3s ease; border-radius: 2px;
+        }
+        .nav-tab.active::after { width: 80%; }
+
+        /* Презентер (говорящая голова, остаётся на месте) */
+        .presenter-frame {
+            position: relative; border-radius: 1.25rem; overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 18px 50px -12px rgba(0,0,0,0.65);
+        }
+        .presenter-frame::after {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+        }
+        #presenter { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center top; background: #1a1024; }
+        .presenter-live {
+            position: absolute; top: 0.5rem; left: 0.5rem; z-index: 2;
+            display: flex; align-items: center; gap: 0.35rem;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.12); color: #fff;
+            font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700;
+            padding: 3px 7px; border-radius: 999px;
+        }
+        .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 0 rgba(239,68,68,0.7); animation: livePulse 1.6s infinite; }
+        @keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); } 70% { box-shadow: 0 0 0 6px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+
+        /* Пульсация звука */
+        @keyframes soundWave {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+        .sound-wave::before, .sound-wave::after {
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            border: 1px solid var(--brand-purple); animation: soundWave 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sound-wave::after { animation-delay: 1s; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .scene-layer, .content-section { transition: none; animation: none; }
+        }
+    </style>
+</head>
+<body class="antialiased overflow-hidden">
+
+    <!-- ===== ФОНОВЫЕ СЦЕНЫ (меняются при навигации, голова остаётся) ===== -->
+    <div id="scene-stage" data-scene="overview">
+        <video id="scene-a" class="scene-layer is-active"
+               src="assets/scene-overview.mp4" poster="assets/poster-overview.jpg"
+               muted loop playsinline autoplay preload="auto"></video>
+        <video id="scene-b" class="scene-layer"
+               muted loop playsinline preload="none"></video>
+        <div class="scene-scrim"></div>
+        <div class="grain-overlay"></div>
+    </div>
+
+    <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ (фиксированная, на всю ширину — адаптивная, без перекрытий) ===== -->
+    <header class="fixed top-0 inset-x-0 z-30 p-3 sm:p-4 md:p-6 lg:p-8 pointer-events-none">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-4">
+
+            <!-- Логотип AIT -->
+            <div class="order-1 lg:justify-self-start pointer-events-auto flex items-center gap-2.5 md:gap-4 w-fit cursor-pointer shrink-0" data-target="overview">
+                <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="w-11 h-11 md:w-14 md:h-14 lg:w-16 lg:h-16 object-contain scale-[1.2] origin-left drop-shadow-lg">
+                <div class="flex flex-col text-white drop-shadow-md">
+                    <span class="font-mono text-xs md:text-sm font-bold leading-none mb-1">Andre AI</span>
+                    <span class="font-mono text-[9px] md:text-[10px] font-medium text-white/70 uppercase tracking-widest leading-none">Technologies</span>
+                </div>
+            </div>
+
+            <!-- Главная кнопка OS -->
+            <div class="order-2 ml-auto lg:order-3 lg:ml-0 lg:justify-self-end pointer-events-auto shrink-0">
+                <button class="btn-white hover-btn-purple px-4 py-2 md:px-5 md:py-2.5 rounded-full font-bold uppercase tracking-widest text-[9px] md:text-xs flex items-center gap-2 shadow-lg whitespace-nowrap">
+                    AI Business OS <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Навигация (по центру) -->
+            <nav class="order-3 lg:order-2 basis-full lg:basis-auto lg:justify-self-center w-full lg:w-max max-w-full mx-auto pointer-events-auto flex items-center justify-center gap-0 sm:gap-1 md:gap-2 overflow-x-auto no-scrollbar bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-full px-2 py-1.5 md:px-3 md:py-2 backdrop-blur-xl shadow-sm mt-1 lg:mt-0">
+                <button class="nav-tab active px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="overview">Overview</button>
+                <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="strategy">Strategy</button>
+                <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="platform">Platform</button>
+                <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="employees">Employees</button>
+                <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="products">Products</button>
+                <button class="nav-tab px-1 sm:px-1.5 md:px-2 py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs uppercase tracking-wide md:tracking-widest font-bold whitespace-nowrap" data-target="education">Education</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+    <div class="relative z-10 flex flex-col md:flex-row w-full h-full pointer-events-none">
+
+        <!-- ЛЕВАЯ ЧАСТЬ: ГОВОРЯЩАЯ ГОЛОВА (остаётся на месте при смене разделов) -->
+        <div class="relative w-full h-[40vh] md:h-full md:w-[45%] shrink-0 flex flex-col justify-end p-4 md:p-8 pt-24 sm:pt-28 md:pt-8">
+
+            <!-- ГОВОРЯЩАЯ ГОЛОВА (persistent presenter) -->
+            <div class="pointer-events-auto w-fit mt-auto md:mb-0 mb-2 flex items-end gap-3 md:gap-4">
+                <!-- Видео-аватар -->
+                <div class="presenter-frame w-24 h-28 md:w-40 md:h-48 shrink-0">
+                    <span class="presenter-live"><span class="live-dot"></span> Live</span>
+                    <video id="presenter" src="assets/presenter.mp4" poster="assets/poster-presenter.jpg"
+                           loop muted playsinline autoplay preload="auto"></video>
+                </div>
+
+                <!-- Имя + роль + микрофон -->
+                <div class="bg-black/40 backdrop-blur-md border border-white/10 text-white p-2 pr-2 pl-4 rounded-full flex items-center gap-3 shadow-lg">
+                    <div class="flex flex-col gap-1 pr-1">
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-xs md:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
+                            <span class="text-white/30 text-[10px] md:text-xs leading-none">|</span>
+                            <p class="text-[8px] md:text-[10px] text-white/80 uppercase tracking-widest leading-none whitespace-nowrap pt-[1px]">Chief AI Officer</p>
+                        </div>
+                        <p id="scene-caption" class="text-[8px] md:text-[9px] text-brand-purple/90 uppercase tracking-[0.18em] leading-none whitespace-nowrap font-bold">Andre AI Technologies</p>
+                    </div>
+                    <button id="audio-toggle" class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black hover:bg-[#111] border border-white/5 text-white flex items-center justify-center transition-all group shrink-0 shadow-inner">
+                        <div class="relative flex items-center justify-center w-full h-full">
+                            <i id="audio-icon" class="fa-solid fa-microphone-lines-slash text-[10px] md:text-sm transition-transform group-hover:scale-110 text-white/50"></i>
+                            <div id="sound-wave" class="absolute inset-0 hidden sound-wave"></div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПРАВАЯ ЧАСТЬ: ИНТЕРАКТИВНЫЙ КОНТЕНТ -->
+        <div class="w-full h-[60vh] md:h-full md:w-[55%] flex flex-col relative">
+
+            <!-- Область контента -->
+            <div class="flex-grow overflow-y-auto p-4 md:p-8 pt-4 md:pt-28 pb-8 md:pb-12 flex flex-col pointer-events-none no-scrollbar">
+                <div class="mt-auto w-full pointer-events-auto">
+
+                    <!-- SECTION: OVERVIEW -->
+                    <div id="overview" class="content-section active flex-col gap-6 md:gap-8 w-full ml-auto items-end text-right">
+                        <h1 class="text-3xl md:text-5xl font-black uppercase tracking-tight leading-tight">
+                            <span class="bg-black/60 backdrop-blur-md px-5 py-3 md:px-6 md:py-4 rounded-2xl text-white inline-block border border-white/5 shadow-lg">
+                                <span class="text-brand-purple drop-shadow-md">AI</span> Transformation<br>
+                                of your <span class="text-brand-orange drop-shadow-md">Business</span>
+                            </span>
+                        </h1>
+                        <button class="btn-white hover-btn-orange px-8 py-4 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs flex items-center gap-3 shadow-md w-fit mt-2 md:mt-4" data-target="strategy">
+                            Get Free AI Strategy <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- SECTION: STRATEGY -->
+                    <div id="strategy" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-xl shadow-lg shadow-brand-orange/10 backdrop-blur-md"><i class="fa-solid fa-chess-knight"></i></div>
+                            <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Strategy</h2>
+                        </div>
+                        <div class="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl p-6 backdrop-blur-xl shadow-lg">
+                            <h3 class="text-base md:text-lg font-bold mb-3">Audit &amp; Design</h3>
+                            <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-6">
+                                Audit Processes, Identify Automation, Design Workflows, Define Human-AI Roles, and Build an Architecture Roadmap Based on Your AI Maturity.
+                            </p>
+                            <ul class="space-y-3 mb-6">
+                                <li class="flex items-start gap-3 text-xs md:text-sm font-medium"><i class="fa-solid fa-check text-brand-orange mt-1"></i><span>Comprehensive AI Maturity Assessment</span></li>
+                                <li class="flex items-start gap-3 text-xs md:text-sm font-medium"><i class="fa-solid fa-check text-brand-orange mt-1"></i><span>Identify high-ROI automation bottlenecks</span></li>
+                                <li class="flex items-start gap-3 text-xs md:text-sm font-medium"><i class="fa-solid fa-check text-brand-orange mt-1"></i><span>Strategic implementation roadmap</span></li>
+                            </ul>
+                            <button class="w-full sm:w-auto btn-white hover-btn-orange px-8 py-3.5 rounded-full font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-md">
+                                Request Strategy Audit <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SECTION: PLATFORM -->
+                    <div id="platform" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-xl shadow-lg shadow-brand-purple/10 backdrop-blur-md"><i class="fa-solid fa-layer-group"></i></div>
+                            <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Platform</h2>
+                        </div>
+                        <div class="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl p-6 backdrop-blur-xl shadow-lg">
+                            <h3 class="text-base md:text-lg font-bold mb-3">Infrastructure &amp; Memory</h3>
+                            <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-6">
+                                Integrate Models, Memory &amp; Context to Build AI Applications for Process Automation via Voice and Text inputs.
+                            </p>
+                            <div class="grid grid-cols-2 gap-3 mb-6">
+                                <div class="border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-xl p-3 text-center hover:border-brand-purple/50 transition-colors">
+                                    <i class="fa-solid fa-database text-brand-purple text-xl mb-2"></i><h4 class="text-[10px] font-bold uppercase">Vector Data</h4>
+                                </div>
+                                <div class="border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-xl p-3 text-center hover:border-brand-purple/50 transition-colors">
+                                    <i class="fa-solid fa-brain text-brand-purple text-xl mb-2"></i><h4 class="text-[10px] font-bold uppercase">LLM Core</h4>
+                                </div>
+                                <div class="border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-xl p-3 text-center hover:border-brand-purple/50 transition-colors col-span-2">
+                                    <i class="fa-solid fa-server text-brand-purple text-xl mb-2"></i><h4 class="text-[10px] font-bold uppercase">Enterprise Integration</h4>
+                                </div>
+                            </div>
+                            <button class="w-full sm:w-auto btn-white hover-btn-purple px-8 py-3.5 rounded-full font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-md">
+                                Explore Platform <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SECTION: EMPLOYEES -->
+                    <div id="employees" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-xl shadow-lg shadow-brand-orange/10 backdrop-blur-md"><i class="fa-solid fa-robot"></i></div>
+                            <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Employees</h2>
+                        </div>
+                        <div class="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl p-6 backdrop-blur-xl shadow-lg">
+                            <h3 class="text-base md:text-lg font-bold mb-3">AI Agents Workspace</h3>
+                            <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-6">
+                                AI Agents for Management, HR, Marketing, SMM, Sales, Support, Analytics, Design, Development and Engineering.
+                            </p>
+                            <div class="space-y-2 mb-6">
+                                <div class="flex justify-between items-center p-3 border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-lg hover:bg-[var(--glass-bg)] cursor-pointer transition">
+                                    <div class="flex items-center gap-3"><i class="fa-solid fa-bullhorn text-brand-orange"></i> <span class="text-xs font-bold">Marketing Agent</span></div>
+                                    <i class="fa-solid fa-chevron-right text-[var(--text-muted)] text-[10px]"></i>
+                                </div>
+                                <div class="flex justify-between items-center p-3 border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-lg hover:bg-[var(--glass-bg)] cursor-pointer transition">
+                                    <div class="flex items-center gap-3"><i class="fa-solid fa-headset text-brand-orange"></i> <span class="text-xs font-bold">Customer Support Agent</span></div>
+                                    <i class="fa-solid fa-chevron-right text-[var(--text-muted)] text-[10px]"></i>
+                                </div>
+                                <div class="flex justify-between items-center p-3 border border-[var(--glass-border)] bg-black/5 dark:bg-white/5 rounded-lg hover:bg-[var(--glass-bg)] cursor-pointer transition">
+                                    <div class="flex items-center gap-3"><i class="fa-solid fa-chart-line text-brand-orange"></i> <span class="text-xs font-bold">Data Analyst Agent</span></div>
+                                    <i class="fa-solid fa-chevron-right text-[var(--text-muted)] text-[10px]"></i>
+                                </div>
+                            </div>
+                            <button class="w-full sm:w-auto btn-white hover-btn-orange px-8 py-3.5 rounded-full font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-md">
+                                Hire AI Agents <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SECTION: PRODUCTS -->
+                    <div id="products" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-xl shadow-lg shadow-brand-purple/10 backdrop-blur-md"><i class="fa-solid fa-boxes-stacked"></i></div>
+                            <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Products</h2>
+                        </div>
+                        <div class="grid gap-3">
+                            <div class="hover-card hover-card-purple p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--glass-bg)] backdrop-blur-xl shadow-sm">
+                                <div class="flex items-center gap-4">
+                                    <i class="fa-solid fa-boxes-stacked text-2xl text-brand-purple w-8 text-center"></i>
+                                    <div><h3 class="text-sm font-bold uppercase">Dataist AI</h3><p class="text-[10px] text-[var(--text-main)] font-medium">Education Assistant</p></div>
+                                </div>
+                                <span class="bg-black/10 dark:bg-white/10 border border-[var(--glass-border)] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover-btn-purple flex items-center justify-center gap-2 md:w-auto w-full text-center shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                            <div class="hover-card hover-card-orange p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--glass-bg)] backdrop-blur-xl shadow-sm">
+                                <div class="flex items-center gap-4">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-2xl text-brand-orange w-8 text-center"></i>
+                                    <div><h3 class="text-sm font-bold uppercase">Landao AI</h3><p class="text-[10px] text-[var(--text-main)] font-medium">Personal Assistant</p></div>
+                                </div>
+                                <span class="bg-black/10 dark:bg-white/10 border border-[var(--glass-border)] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover-btn-orange flex items-center justify-center gap-2 md:w-auto w-full text-center shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                            <div class="hover-card hover-card-purple p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--glass-bg)] backdrop-blur-xl shadow-sm">
+                                <div class="flex items-center gap-4">
+                                    <i class="fa-solid fa-brain text-2xl text-brand-purple w-8 text-center"></i>
+                                    <div><h3 class="text-sm font-bold uppercase">Neurolady AI</h3><p class="text-[10px] text-[var(--text-main)] font-medium">Conversational Assistant</p></div>
+                                </div>
+                                <span class="bg-black/10 dark:bg-white/10 border border-[var(--glass-border)] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover-btn-purple flex items-center justify-center gap-2 md:w-auto w-full text-center shadow-sm">Explore <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION: EDUCATION -->
+                    <div id="education" class="content-section flex-col gap-6 w-full max-w-2xl ml-auto">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-xl shadow-lg shadow-brand-orange/10 backdrop-blur-md"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <h2 class="text-2xl md:text-4xl font-black uppercase tracking-widest drop-shadow-md">Education</h2>
+                        </div>
+                        <p class="text-xs md:text-sm text-[var(--text-main)] font-medium leading-relaxed mb-2 bg-[var(--glass-bg)] backdrop-blur-md p-3 rounded-xl border border-[var(--glass-border)] shadow-sm">
+                            Develop Skills for the New AI Roles. Join our intensive programs.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-purple/50 transition cursor-pointer group shadow-sm">
+                                <i class="fa-solid fa-user-tie text-xl text-brand-purple mb-2"></i>
+                                <h3 class="font-bold text-xs uppercase mb-1">Executive Management</h3>
+                                <p class="text-[10px] text-[var(--text-muted)] mb-3">Strategic leadership in AI</p>
+                                <span class="text-[9px] font-bold text-brand-purple uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span>
+                            </div>
+                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-orange/50 transition cursor-pointer group shadow-sm">
+                                <i class="fa-solid fa-gears text-xl text-brand-orange mb-2"></i>
+                                <h3 class="font-bold text-xs uppercase mb-1">Process Automation</h3>
+                                <p class="text-[10px] text-[var(--text-muted)] mb-3">Automating workflows with AI</p>
+                                <span class="text-[9px] font-bold text-brand-orange uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span>
+                            </div>
+                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-purple/50 transition cursor-pointer group shadow-sm">
+                                <i class="fa-solid fa-box-open text-xl text-brand-purple mb-2"></i>
+                                <h3 class="font-bold text-xs uppercase mb-1">Product Development</h3>
+                                <p class="text-[10px] text-[var(--text-muted)] mb-3">Building products using AI</p>
+                                <span class="text-[9px] font-bold text-brand-purple uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span>
+                            </div>
+                            <div class="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-2xl p-4 hover:border-brand-orange/50 transition cursor-pointer group shadow-sm">
+                                <i class="fa-solid fa-laptop-code text-xl text-brand-orange mb-2"></i>
+                                <h3 class="font-bold text-xs uppercase mb-1">AI Engineering</h3>
+                                <p class="text-[10px] text-[var(--text-muted)] mb-3">Designing AI systems</p>
+                                <span class="text-[9px] font-bold text-brand-orange uppercase tracking-widest group-hover:translate-x-1 inline-block transition-transform">Join Course &rarr;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== Конфигурация сцен (фон меняется, голова остаётся) =====
+        var SCENES = {
+            overview:  'assets/scene-overview.mp4',
+            strategy:  'assets/scene-strategy.mp4',
+            platform:  'assets/scene-platform.mp4',
+            employees: 'assets/scene-employees.mp4',
+            products:  'assets/scene-products.mp4',
+            education: 'assets/scene-education.mp4'
+        };
+        var POSTERS = {
+            overview:  'assets/poster-overview.jpg',
+            strategy:  'assets/poster-strategy.jpg',
+            platform:  'assets/poster-platform.jpg',
+            employees: 'assets/poster-employees.jpg',
+            products:  'assets/poster-products.jpg',
+            education: 'assets/poster-education.jpg'
+        };
+        // Подпись сцены рядом с головой (использует реальные "локации" из видео)
+        var SCENE_CAPTIONS = {
+            overview:  'Andre AI Technologies',
+            strategy:  'Genesis · Strategy Core',
+            platform:  'Human Intelligence Platform',
+            employees: 'Dataism · Science Hub',
+            products:  'Neuronium · Product Lab',
+            education: 'AI Academy'
+        };
+        window.SCENES = SCENES;
+
+        var sceneLayers = [document.getElementById('scene-a'), document.getElementById('scene-b')];
+        var activeLayer = 0; // индекс активного слоя (scene-a по умолчанию)
+
+        function setScene(id) {
+            var stage = document.getElementById('scene-stage');
+            if (!SCENES[id]) return;
+            var current = sceneLayers[activeLayer];
+            // Уже показываем нужную сцену — ничего не делаем
+            if (stage.getAttribute('data-scene') === id && current.classList.contains('is-active')) {
+                return;
+            }
+            var nextIndex = 1 - activeLayer;
+            var next = sceneLayers[nextIndex];
+
+            if (next.getAttribute('src') !== SCENES[id]) {
+                next.setAttribute('poster', POSTERS[id] || '');
+                next.setAttribute('src', SCENES[id]);
+                try { next.load(); } catch (e) {}
+            }
+            next.classList.add('is-active');
+            current.classList.remove('is-active');
+            activeLayer = nextIndex;
+            stage.setAttribute('data-scene', id);
+
+            try { next.currentTime = 0; } catch (e) {}
+            var p = next.play && next.play();
+            if (p && p.catch) p.catch(function () {});
+
+            var cap = document.getElementById('scene-caption');
+            if (cap && SCENE_CAPTIONS[id]) cap.textContent = SCENE_CAPTIONS[id];
+        }
+
+        // Предзагрузка сцены при наведении на таб (быстрее переключение)
+        var prefetched = {};
+        function prefetchScene(id) {
+            if (!SCENES[id] || prefetched[id]) return;
+            prefetched[id] = true;
+            var link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.as = 'video';
+            link.href = SCENES[id];
+            document.head.appendChild(link);
+        }
+
+        // ===== Навигация (голова остаётся, контент и кнопки меняются) =====
+        var navTabs = document.querySelectorAll('.nav-tab');
+        var contentSections = document.querySelectorAll('.content-section');
+
+        function openTab(targetId) {
+            if (!document.getElementById(targetId)) return;
+
+            navTabs.forEach(function (t) {
+                t.classList.toggle('active', t.getAttribute('data-target') === targetId);
+            });
+            contentSections.forEach(function (s) {
+                s.classList.remove('active');
+            });
+            var targetSection = document.getElementById(targetId);
+            if (targetSection && targetSection.classList.contains('content-section')) {
+                // перезапуск анимации появления
+                targetSection.classList.add('active');
+            }
+
+            setScene(targetId);
+
+            var targetTab = document.querySelector('.nav-tab[data-target="' + targetId + '"]');
+            if (targetTab && targetTab.scrollIntoView) {
+                targetTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+        window.openTab = openTab;
+
+        // Делегирование кликов: любая кнопка с data-target открывает свою секцию
+        document.addEventListener('click', function (e) {
+            var trigger = e.target.closest('[data-target]');
+            if (trigger) {
+                e.preventDefault();
+                openTab(trigger.getAttribute('data-target'));
+            }
+        });
+
+        // Предзагрузка при наведении / касании таба
+        navTabs.forEach(function (tab) {
+            var id = tab.getAttribute('data-target');
+            tab.addEventListener('mouseenter', function () { prefetchScene(id); });
+            tab.addEventListener('touchstart', function () { prefetchScene(id); }, { passive: true });
+        });
+
+        // ===== Аудио говорящей головы (микрофон) =====
+        var presenter = document.getElementById('presenter');
+        var audioBtn = document.getElementById('audio-toggle');
+        var audioIcon = document.getElementById('audio-icon');
+        var soundWave = document.getElementById('sound-wave');
+        var isMuted = true;
+        // Явно синхронизируем состояние (атрибут muted не всегда задаёт свойство)
+        if (presenter) presenter.muted = true;
+
+        if (audioBtn) {
+            audioBtn.addEventListener('click', function () {
+                isMuted = !isMuted;
+                if (presenter) {
+                    presenter.muted = isMuted;
+                    if (!isMuted) {
+                        presenter.currentTime = 0; // голова начинает говорить с начала
+                        var pp = presenter.play && presenter.play();
+                        if (pp && pp.catch) pp.catch(function () {});
+                    }
+                }
+                if (isMuted) {
+                    if (audioIcon) {
+                        audioIcon.classList.replace('fa-microphone-lines', 'fa-microphone-lines-slash');
+                        audioIcon.classList.add('text-white/50');
+                        audioIcon.classList.remove('text-brand-purple');
+                    }
+                    if (soundWave) soundWave.classList.add('hidden');
+                } else {
+                    if (audioIcon) {
+                        audioIcon.classList.replace('fa-microphone-lines-slash', 'fa-microphone-lines');
+                        audioIcon.classList.remove('text-white/50');
+                        audioIcon.classList.add('text-brand-purple');
+                    }
+                    if (soundWave) soundWave.classList.remove('hidden');
+                }
+            });
+        }
+
+        // Инициализация: запускаем фон и голову (muted autoplay разрешён)
+        window.addEventListener('load', function () {
+            [sceneLayers[0], presenter].forEach(function (v) {
+                if (!v) return;
+                var p = v.play && v.play();
+                if (p && p.catch) p.catch(function () {});
+            });
+        });
+    </script>
+</body>
+</html>
