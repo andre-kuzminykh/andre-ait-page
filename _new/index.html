@@ -124,31 +124,21 @@
         .nav-tab.active::after { width: 70%; }
 
         /* Меню-обёртка: десктоп — по центру сверху; мобайл — выпадает по кнопке */
+        /* Меню разделов — выпадающее по кнопке (на всех экранах), справа сверху */
         #main-nav {
-            display: flex; align-items: center; justify-content: center; gap: 0.25rem;
-            background: rgba(10, 10, 14, 0.5); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 999px; padding: 0.4rem 0.85rem;
+            position: absolute; top: calc(100% + 0.5rem); right: 0; z-index: 40;
+            display: none; flex-direction: column; align-items: stretch; justify-content: flex-start;
+            gap: 0.1rem; min-width: 11rem; padding: 0.4rem;
+            background: rgba(12, 12, 16, 0.96); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 1rem;
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 4px 30px rgba(0,0,0,0.25);
-            max-width: 100%; overflow-x: auto;
+            box-shadow: 0 24px 60px -12px rgba(0,0,0,0.7);
+            transform-origin: top right;
         }
-        #main-nav .nav-tab { padding: 0.25rem 0.5rem; font-size: 12px; }
-        @media (min-width: 768px) {
-            #main-nav { position: absolute; left: 50%; top: 0; transform: translateX(-50%); }
-        }
-        @media (max-width: 767px) {
-            #main-nav {
-                position: absolute; top: calc(100% + 0.5rem); right: 0;
-                flex-direction: column; align-items: stretch; justify-content: flex-start;
-                gap: 0.1rem; border-radius: 1rem; padding: 0.4rem; min-width: 11rem;
-                display: none; box-shadow: 0 24px 60px -12px rgba(0,0,0,0.7);
-                transform-origin: top right; background: rgba(12, 12, 16, 0.96);
-            }
-            #main-nav.open { display: flex; animation: menuPop 0.2s ease forwards; }
-            #main-nav .nav-tab { text-align: center; padding: 0.65rem 0.75rem; font-size: 13px; border-radius: 0.6rem; }
-            #main-nav .nav-tab::after { display: none; }
-            #main-nav .nav-tab.active { background: var(--glass-bg); color: var(--brand-purple); }
-        }
+        #main-nav.open { display: flex; animation: menuPop 0.2s ease forwards; }
+        #main-nav .nav-tab { text-align: center; padding: 0.65rem 0.75rem; font-size: 13px; border-radius: 0.6rem; white-space: nowrap; }
+        #main-nav .nav-tab::after { display: none; }
+        #main-nav .nav-tab.active { background: rgba(255,255,255,0.06); color: var(--brand-purple); }
         @keyframes menuPop { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
 
         /* Затемнение снизу — чтобы контент читался, а лицо сверху оставалось чистым */
@@ -191,14 +181,41 @@
 
     <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ: лого слева, справа — кнопка OS и кнопка-меню ===== -->
     <header class="fixed top-0 inset-x-0 z-30 p-3 sm:p-4 md:p-6 lg:p-8 pointer-events-none">
-        <div class="relative flex items-center justify-between gap-3">
+        <div class="relative flex items-center justify-between gap-2 sm:gap-3">
 
-            <!-- Лого (только иконка, без текста) -->
-            <div class="pointer-events-auto cursor-pointer shrink-0" onclick="openTab('overview')" aria-label="Home">
-                <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT" class="w-10 h-10 md:w-14 md:h-14 object-contain scale-[1.15] origin-left drop-shadow-lg">
+            <!-- ЛЕВО: лого (только иконка) + говорящий (Andre AI + микрофон) -->
+            <div class="pointer-events-auto flex items-center gap-2 sm:gap-3 min-w-0">
+                <div class="cursor-pointer shrink-0" onclick="openTab('overview')" aria-label="Home">
+                    <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT" class="w-9 h-9 md:w-12 md:h-12 object-contain scale-[1.15] drop-shadow-lg">
+                </div>
+
+                <!-- Подпись собеседника + микрофон (наверху) -->
+                <div id="speaker" class="bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
+                    <div class="flex items-center gap-1.5 sm:gap-2">
+                        <h3 class="text-[11px] sm:text-xs md:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
+                        <span class="hidden sm:inline text-white/30 text-[10px] md:text-xs leading-none">|</span>
+                        <p class="hidden sm:inline text-[8px] md:text-[10px] text-white/80 uppercase tracking-widest leading-none whitespace-nowrap pt-[1px]">Chief AI Officer</p>
+                    </div>
+                    <button id="audio-toggle" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-black hover:bg-[#111] border border-white/5 text-white flex items-center justify-center transition-all group shrink-0 shadow-inner">
+                        <div class="relative flex items-center justify-center w-full h-full">
+                            <i id="audio-icon" class="fa-solid fa-microphone-lines-slash text-[10px] md:text-sm transition-transform group-hover:scale-110 text-white/50"></i>
+                            <div id="sound-wave" class="absolute inset-0 hidden sound-wave"></div>
+                        </div>
+                    </button>
+                </div>
             </div>
 
-            <!-- Навигация: десктоп — по центру; мобайл — выпадает по кнопке-меню -->
+            <!-- ПРАВО: кнопка OS + кнопка-меню (рядом) -->
+            <div class="pointer-events-auto flex items-center gap-2 shrink-0">
+                <button class="btn-white hover-btn-purple px-3.5 py-2 md:px-5 md:py-2.5 rounded-full font-bold uppercase tracking-widest text-[9px] md:text-xs flex items-center gap-2 shadow-lg whitespace-nowrap">
+                    <span class="hidden sm:inline">AI Business OS</span><span class="sm:hidden">OS</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button id="menu-toggle" aria-label="Menu" class="w-9 h-9 md:w-11 md:h-11 rounded-full bg-[rgba(10,10,14,0.55)] border border-white/10 backdrop-blur-xl text-white flex items-center justify-center shadow-lg shrink-0">
+                    <i id="menu-icon" class="fa-solid fa-bars text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Меню разделов (выпадает по кнопке) -->
             <nav id="main-nav" class="pointer-events-auto no-scrollbar">
                 <button class="nav-tab active" data-target="overview">Overview</button>
                 <button class="nav-tab" data-target="strategy">Strategy</button>
@@ -207,40 +224,15 @@
                 <button class="nav-tab" data-target="products">Products</button>
                 <button class="nav-tab" data-target="education">Education</button>
             </nav>
-
-            <!-- Правые кнопки: OS + меню (рядом) -->
-            <div class="pointer-events-auto flex items-center gap-2 shrink-0">
-                <button class="btn-white hover-btn-purple px-3.5 py-2 md:px-5 md:py-2.5 rounded-full font-bold uppercase tracking-widest text-[9px] md:text-xs flex items-center gap-2 shadow-lg whitespace-nowrap">
-                    <span class="hidden sm:inline">AI Business OS</span><span class="sm:hidden">OS</span> <i class="fa-solid fa-arrow-right"></i>
-                </button>
-                <button id="menu-toggle" aria-label="Menu" class="md:hidden w-10 h-10 rounded-full bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-xl text-[var(--text-main)] flex items-center justify-center shadow-lg shrink-0">
-                    <i id="menu-icon" class="fa-solid fa-bars text-sm"></i>
-                </button>
-            </div>
         </div>
     </header>
 
     <!-- ===== НИЗ: всё по центру (мобайл) / справа (десктоп), со скроллом ===== -->
     <div class="fixed inset-0 z-10 flex flex-col justify-end pointer-events-none">
         <div class="w-full md:w-[56%] md:ml-auto px-4 pb-5 md:px-8 md:pb-8">
-            <div class="flex flex-col items-center md:items-end gap-4 max-h-[60vh] md:max-h-[80vh] overflow-y-auto no-scrollbar pointer-events-auto">
+            <div class="flex flex-col items-center md:items-end gap-4 max-h-[66vh] md:max-h-[82vh] overflow-y-auto no-scrollbar pointer-events-auto">
 
-                <!-- Подпись собеседника + микрофон (видно всегда) -->
-                <div id="speaker" class="order-first md:order-none w-fit md:fixed md:left-8 md:bottom-8 md:z-20 bg-black/45 backdrop-blur-md border border-white/10 text-white p-2 pr-2 pl-5 rounded-full flex items-center gap-3 shadow-lg">
-                    <div class="flex items-center gap-2 pr-1">
-                        <h3 class="text-xs md:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
-                        <span class="text-white/30 text-[10px] md:text-xs leading-none">|</span>
-                        <p class="text-[8px] md:text-[10px] text-white/80 uppercase tracking-widest leading-none whitespace-nowrap pt-[2px]">Chief AI Officer</p>
-                    </div>
-                    <button id="audio-toggle" class="w-9 h-9 md:w-11 md:h-11 rounded-full bg-black hover:bg-[#111] border border-white/5 text-white flex items-center justify-center transition-all group shrink-0 shadow-inner">
-                        <div class="relative flex items-center justify-center w-full h-full">
-                            <i id="audio-icon" class="fa-solid fa-microphone-lines-slash text-[10px] md:text-sm transition-transform group-hover:scale-110 text-white/50"></i>
-                            <div id="sound-wave" class="absolute inset-0 hidden sound-wave"></div>
-                        </div>
-                    </button>
-                </div>
-
-                <!-- Контент разделов -->
+                <!-- Контент разделов (листается, если не влезает) -->
                 <div class="w-full flex flex-col items-center md:items-end">
 
                     <!-- SECTION: OVERVIEW -->
