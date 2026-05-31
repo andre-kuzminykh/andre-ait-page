@@ -60,11 +60,12 @@
         #assistant-video { transition: opacity 0.4s ease; }
         #assistant-video.is-switching { opacity: 0; }
         #assistant-bg { transition: opacity 0.4s ease; }
-        /* На компе чёткая голова мягко растворяется слева и справа в размытый фон */
+        /* На компе чёткая голова — в левой части, мягко растворяется слева и справа */
         @media (min-width: 1024px) {
+            .scene-bg { background: #000; }
             #assistant-video {
-                -webkit-mask-image: linear-gradient(to right, transparent 5%, #000 23%, #000 77%, transparent 95%);
-                mask-image: linear-gradient(to right, transparent 5%, #000 23%, #000 77%, transparent 95%);
+                -webkit-mask-image: linear-gradient(to right, transparent 14%, #000 30%, #000 68%, transparent 84%);
+                mask-image: linear-gradient(to right, transparent 14%, #000 30%, #000 68%, transparent 84%);
             }
         }
 
@@ -99,9 +100,9 @@
         .card-rail > * { scroll-snap-align: center; flex: 0 0 86%; }
         @media (min-width: 640px) { .card-rail > * { flex-basis: 60%; } }
         @media (min-width: 1024px) {
-            .card-rail { flex-direction: column; align-items: flex-end; overflow: visible; }
-            /* карточки по размеру текста и прижаты вправо */
-            .card-rail > * { flex: none; width: max-content; max-width: 22rem; }
+            .card-rail { flex-direction: column; align-items: center; overflow: visible; }
+            /* карточки одного размера, по центру правой зоны */
+            .card-rail > * { flex: none; width: 100%; max-width: 15rem; }
         }
 
         .nav-tab {
@@ -162,11 +163,11 @@
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden scene-bg">
         <!-- Размытый «заполнитель»: квадратное видео растянуто на весь экран, чтобы голова была фоном без пустых полей -->
         <video id="assistant-bg" aria-hidden="true" src="assets/head-overview.mp4"
-               class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-90"
+               class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-90 lg:hidden"
                loop playsinline autoplay muted preload="auto"></video>
         <!-- Чёткая голова целиком поверх -->
         <video id="assistant-video" src="assets/head-overview.mp4" poster="assets/poster-overview.jpg" data-part="overview"
-               class="absolute inset-0 w-full h-full object-contain object-top lg:object-center"
+               class="absolute inset-0 w-full h-full object-contain object-top lg:object-center lg:scale-[0.78]"
                loop playsinline autoplay muted preload="auto"></video>
         <div class="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style="background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E&quot;);"></div>
     </div>
@@ -221,15 +222,15 @@
     </header>
 
     <!-- ===== НИЗ: контент (мобайл — по центру/карусель; десктоп — справа столбиком) ===== -->
-    <div class="fixed inset-0 z-10 flex flex-col justify-end pointer-events-none">
-        <div class="w-full lg:w-[44%] lg:ml-auto px-4 pb-5 lg:px-10 lg:pb-10">
-            <div class="flex flex-col items-center lg:items-end gap-4 max-h-[66vh] lg:max-h-[80vh] overflow-y-auto no-scrollbar pointer-events-auto">
-                <div class="w-full flex flex-col items-center lg:items-end">
+    <div class="fixed inset-0 z-10 flex flex-col justify-end lg:justify-center pointer-events-none">
+        <div class="w-full lg:w-[28%] lg:ml-auto px-4 pb-5 lg:px-6 lg:pb-0">
+            <div class="flex flex-col items-center gap-4 max-h-[66vh] lg:max-h-[86vh] overflow-y-auto no-scrollbar pointer-events-auto">
+                <div class="w-full flex flex-col items-center">
 
                     <!-- OVERVIEW -->
-                    <div id="overview" class="content-section active flex-col gap-5 lg:gap-8 w-full max-w-xl items-center text-center lg:items-end lg:text-right">
-                        <h1 class="text-3xl lg:text-5xl font-black uppercase tracking-tight leading-tight">
-                            <span class="bg-black/60 backdrop-blur-md px-5 py-3 lg:px-6 lg:py-4 rounded-2xl text-white inline-block border border-white/5 shadow-lg">
+                    <div id="overview" class="content-section active flex-col gap-5 lg:gap-8 w-full max-w-xl items-center text-center">
+                        <h1 class="text-3xl lg:text-3xl font-black uppercase tracking-tight leading-tight">
+                            <span class="bg-black/60 backdrop-blur-md px-5 py-3 lg:px-5 lg:py-4 rounded-2xl text-white inline-block border border-white/5 shadow-lg">
                                 <span class="text-brand-purple drop-shadow-md">AI</span> Transformation<br>
                                 of your <span class="text-brand-orange drop-shadow-md">Business</span>
                             </span>
@@ -241,7 +242,7 @@
 
                     <!-- STRATEGY -->
                     <div id="strategy" class="content-section flex-col gap-4 w-full max-w-xl lg:max-w-md">
-                        <div class="flex items-center gap-4 justify-center lg:justify-end">
+                        <div class="flex items-center gap-4 justify-center">
                             <div class="w-11 h-11 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-lg shadow-lg backdrop-blur-md"><i class="fa-solid fa-chess-knight"></i></div>
                             <h2 class="text-2xl lg:text-3xl font-black uppercase tracking-widest drop-shadow-md">Strategy</h2>
                         </div>
@@ -259,7 +260,7 @@
 
                     <!-- PLATFORM -->
                     <div id="platform" class="content-section flex-col gap-4 w-full max-w-xl lg:max-w-md">
-                        <div class="flex items-center gap-4 justify-center lg:justify-end">
+                        <div class="flex items-center gap-4 justify-center">
                             <div class="w-11 h-11 rounded-xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-lg shadow-lg backdrop-blur-md"><i class="fa-solid fa-layer-group"></i></div>
                             <h2 class="text-2xl lg:text-3xl font-black uppercase tracking-widest drop-shadow-md">Platform</h2>
                         </div>
@@ -277,7 +278,7 @@
 
                     <!-- EMPLOYEES -->
                     <div id="employees" class="content-section flex-col gap-4 w-full max-w-xl lg:max-w-md">
-                        <div class="flex items-center gap-4 justify-center lg:justify-end">
+                        <div class="flex items-center gap-4 justify-center">
                             <div class="w-11 h-11 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-lg shadow-lg backdrop-blur-md"><i class="fa-solid fa-robot"></i></div>
                             <h2 class="text-2xl lg:text-3xl font-black uppercase tracking-widest drop-shadow-md">Employees</h2>
                         </div>
@@ -295,7 +296,7 @@
 
                     <!-- PRODUCTS (карусель на мобилке, столбик на компе) -->
                     <div id="products" class="content-section flex-col gap-4 w-full max-w-xl lg:max-w-md">
-                        <div class="flex items-center gap-4 justify-center lg:justify-end">
+                        <div class="flex items-center gap-4 justify-center">
                             <div class="w-11 h-11 rounded-xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-lg shadow-lg backdrop-blur-md"><i class="fa-solid fa-boxes-stacked"></i></div>
                             <h2 class="text-2xl lg:text-3xl font-black uppercase tracking-widest drop-shadow-md">Products</h2>
                         </div>
@@ -318,7 +319,7 @@
 
                     <!-- EDUCATION (карусель на мобилке, столбик на компе) -->
                     <div id="education" class="content-section flex-col gap-4 w-full max-w-xl lg:max-w-md">
-                        <div class="flex items-center gap-4 justify-center lg:justify-end">
+                        <div class="flex items-center gap-4 justify-center">
                             <div class="w-11 h-11 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-lg shadow-lg backdrop-blur-md"><i class="fa-solid fa-graduation-cap"></i></div>
                             <h2 class="text-2xl lg:text-3xl font-black uppercase tracking-widest drop-shadow-md">Education</h2>
                         </div>
