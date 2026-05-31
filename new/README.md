@@ -23,18 +23,17 @@ The mic button un-mutes the background head so it actually speaks out loud.
 
 ### Layout
 
-- The head video is square (480×480). **On mobile** a **blurred, zoomed copy**
-  of the same head (`#assistant-bg`) fills behind the sharp head so it covers
-  the whole screen.
-- **Desktop (≥1024px):** the head is a **tall portrait rectangle on the left**
-  (`object-cover`, `lg:w-[34%]`) whose right edge **feathers into the black**
-  background, with the **Andre AI + mic** badge **just below it**. The full
-  section menu is **horizontal at the top** and **AI Business OS** is the
-  right-most control. Section content lives in the **right area**, centred, with
-  **uniform-size cards**: **2–3 cards → one column, 4+ → two columns** (via a
-  `:has(> :nth-child(4))` quantity query). Tune the head with the video's
-  `lg:w-[…]` / `lg:object-[…]` and the right-edge fade in the
-  `@media (min-width:1024px) #assistant-video` mask.
+- The head video is square (480×480), so a **blurred, zoomed copy** of the same
+  head (`#assistant-bg`) fills the whole screen behind it (both mobile and
+  desktop) — no empty/black gaps.
+- **Desktop (≥1024px):** the sharp head sits **on the left** (zoomed out,
+  `object-contain`, ~half width) and **feathers on both edges** into the blurred
+  backdrop, so the left is the soft gradient and the **right is darkened** (a
+  right-side scrim) for legibility. The **Andre AI + mic** badge is **just below
+  the head**; the section menu is **horizontal at the top**; **AI Business OS**
+  is right-most. Section content lives in the **right area** with
+  **uniform-size cards** (all the same `13rem`): **2–3 cards → one row, 4+ →
+  two rows** (via a `:has(> :nth-child(4))` quantity query).
 - **Mobile (<1024px):** logo + speaker (Andre AI) + **mic** at the top; on the
   right a **menu button** then the **OS** button (right-most). The menu opens as
   a **full-screen** overlay. Section content sits at the bottom as a **one-card

@@ -60,12 +60,11 @@
         #assistant-video { transition: opacity 0.4s ease; }
         #assistant-video.is-switching { opacity: 0; }
         #assistant-bg { transition: opacity 0.4s ease; }
-        /* На компе голова — вытянутый прямоугольник слева; правый край мягко в чёрный */
+        /* На компе голова слева; края мягко растворяются в размытый фон (слева — градиент, справа темнеет) */
         @media (min-width: 1024px) {
-            .scene-bg { background: #000; }
             #assistant-video {
-                -webkit-mask-image: linear-gradient(to right, #000 85%, transparent 100%);
-                mask-image: linear-gradient(to right, #000 85%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 80%, transparent 100%);
+                mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 80%, transparent 100%);
             }
         }
 
@@ -152,8 +151,8 @@
             background: linear-gradient(to top, rgba(5,5,5,0.92) 4%, rgba(5,5,5,0.55) 32%, rgba(5,5,5,0) 100%);
         }
         @media (min-width: 1024px) {
-            .bottom-scrim { width: 56%; left: auto; right: 0; height: 100vh;
-                background: linear-gradient(to left, rgba(5,5,5,0.86) 30%, rgba(5,5,5,0.30) 70%, rgba(5,5,5,0) 100%); }
+            .bottom-scrim { width: 62%; left: auto; right: 0; height: 100vh;
+                background: linear-gradient(to left, rgba(4,4,6,0.97) 22%, rgba(4,4,6,0.75) 50%, rgba(4,4,6,0.25) 80%, rgba(4,4,6,0) 100%); }
         }
 
         @keyframes soundWave { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.2); opacity: 0; } }
@@ -169,7 +168,7 @@
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden scene-bg">
         <!-- Размытый «заполнитель»: квадратное видео растянуто на весь экран, чтобы голова была фоном без пустых полей -->
         <video id="assistant-bg" aria-hidden="true" src="assets/head-overview.mp4"
-               class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-90 lg:hidden"
+               class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-90"
                loop playsinline autoplay muted preload="auto"></video>
         <!-- Чёткая голова целиком поверх -->
         <video id="assistant-video" src="assets/head-overview.mp4" poster="assets/poster-overview.jpg" data-part="overview"
