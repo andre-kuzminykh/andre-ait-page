@@ -100,16 +100,15 @@
         .card-rail > * { scroll-snap-align: center; flex: 0 0 86%; }
         @media (min-width: 640px) { .card-rail > * { flex-basis: 60%; } }
         @media (min-width: 1024px) {
-            /* 2-3 карточки — в одну линию (ряд) */
-            .card-rail { flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: stretch; overflow: visible; gap: 0.7rem; }
-            .card-rail > * { flex: 1 1 0; min-width: 0; max-width: 17rem; }
-            /* 4+ карточек — в два ряда (2 столбца) */
+            /* все карточки одного размера; 2-3 — в одну линию (ряд) */
+            .card-rail { flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: stretch; overflow: visible; gap: 0.65rem; }
+            .card-rail > * { flex: none; width: 13rem; max-width: 13rem; }
+            /* 4+ карточек — в два ряда (2 столбца), карточки того же размера */
             .card-rail:has(> :nth-child(4)) {
-                display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem;
-                align-items: stretch; justify-items: stretch;
-                width: 100%; max-width: 32rem; margin-inline: auto;
+                display: grid; grid-template-columns: repeat(2, 13rem); gap: 0.65rem; justify-content: center;
+                align-items: stretch; width: auto; max-width: none; margin-inline: auto;
             }
-            .card-rail:has(> :nth-child(4)) > * { width: auto; max-width: none; }
+            .card-rail:has(> :nth-child(4)) > * { width: 13rem; max-width: 13rem; }
         }
 
         .nav-tab {
@@ -174,7 +173,7 @@
                loop playsinline autoplay muted preload="auto"></video>
         <!-- Чёткая голова целиком поверх -->
         <video id="assistant-video" src="assets/head-overview.mp4" poster="assets/poster-overview.jpg" data-part="overview"
-               class="absolute inset-0 w-full h-full object-contain object-top lg:right-auto lg:w-[50%] lg:object-cover lg:object-[center_28%]"
+               class="absolute inset-0 w-full h-full object-contain object-top lg:right-auto lg:w-[48%] lg:object-contain lg:object-center"
                loop playsinline autoplay muted preload="auto"></video>
         <div class="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style="background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E&quot;);"></div>
     </div>
@@ -190,7 +189,7 @@
                 <div class="cursor-pointer shrink-0" onclick="openTab('overview')" aria-label="Home">
                     <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT" class="w-9 h-9 lg:w-12 lg:h-12 object-contain scale-[1.15] drop-shadow-lg">
                 </div>
-                <div id="speaker" class="lg:fixed lg:left-[25%] lg:-translate-x-1/2 lg:top-auto lg:bottom-7 lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
+                <div id="speaker" class="lg:fixed lg:left-[24%] lg:-translate-x-1/2 lg:top-auto lg:bottom-7 lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
                     <div class="flex items-center gap-1.5 sm:gap-2">
                         <h3 class="text-[11px] sm:text-xs lg:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
                         <span class="hidden sm:inline text-white/30 text-[10px] lg:text-xs leading-none">|</span>
@@ -230,7 +229,7 @@
 
     <!-- ===== НИЗ: контент (мобайл — по центру/карусель; десктоп — справа столбиком) ===== -->
     <div class="fixed inset-0 z-10 flex flex-col justify-end lg:justify-center pointer-events-none">
-        <div class="w-full lg:w-[49%] lg:ml-auto px-4 pb-5 lg:px-8 lg:pb-0">
+        <div class="w-full lg:w-[51%] lg:ml-auto px-4 pb-5 lg:px-8 lg:pb-0">
             <div class="flex flex-col items-center gap-4 max-h-[66vh] lg:max-h-[86vh] overflow-y-auto no-scrollbar pointer-events-auto">
                 <div class="w-full flex flex-col items-center">
 
@@ -302,7 +301,7 @@
                     </div>
 
                     <!-- PRODUCTS (карусель на мобилке, столбик на компе) -->
-                    <div id="products" class="content-section flex-col gap-4 w-full max-w-xl lg:max-w-md">
+                    <div id="products" class="content-section flex-col gap-4 w-full max-w-xl lg:max-w-2xl">
                         <div class="flex items-center gap-4 justify-center">
                             <div class="w-11 h-11 rounded-xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-lg shadow-lg backdrop-blur-md"><i class="fa-solid fa-boxes-stacked"></i></div>
                             <h2 class="text-2xl lg:text-3xl font-black uppercase tracking-widest drop-shadow-md">Products</h2>
@@ -325,7 +324,7 @@
                     </div>
 
                     <!-- EDUCATION (карусель на мобилке, столбик на компе) -->
-                    <div id="education" class="content-section flex-col gap-4 w-full max-w-xl lg:max-w-md">
+                    <div id="education" class="content-section flex-col gap-4 w-full max-w-xl lg:max-w-2xl">
                         <div class="flex items-center gap-4 justify-center">
                             <div class="w-11 h-11 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-lg shadow-lg backdrop-blur-md"><i class="fa-solid fa-graduation-cap"></i></div>
                             <h2 class="text-2xl lg:text-3xl font-black uppercase tracking-widest drop-shadow-md">Education</h2>
