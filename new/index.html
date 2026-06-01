@@ -63,15 +63,20 @@
         /* На компе: видео слева, правый край размывается (blur) и уходит в чёрное справа */
         @media (min-width: 1024px) {
             .scene-bg { background: #000; }
-            /* размытый дубль — только на самом правом крае головы, тает в чёрный */
+            /* Явные правила (не зависят от Tailwind) — контент по центру чёрной правой части */
+            #content-layer { justify-content: center; }
+            #content-panel { width: 50%; margin-left: auto; }
+            /* Andre AI + микрофон — по центру видео, снизу */
+            #speaker { position: fixed; left: 25%; right: auto; top: auto; bottom: 9%; transform: translateX(-50%); }
+            /* размытый дубль — только самый правый край головы, тает в чёрный */
             #assistant-bg {
-                -webkit-mask-image: linear-gradient(to right, transparent 68%, #000 84%, transparent 100%);
-                mask-image: linear-gradient(to right, transparent 68%, #000 84%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to right, transparent 76%, #000 90%, transparent 100%);
+                mask-image: linear-gradient(to right, transparent 76%, #000 90%, transparent 100%);
             }
-            /* чёткое видео: лицо резкое, правый край мягко растворяется в размытие/чёрный */
+            /* чёткое видео: лицо резкое, мягко растворяется только на правом крае */
             #assistant-video {
-                -webkit-mask-image: linear-gradient(to right, #000 74%, transparent 94%);
-                mask-image: linear-gradient(to right, #000 74%, transparent 94%);
+                -webkit-mask-image: linear-gradient(to right, #000 82%, transparent 98%);
+                mask-image: linear-gradient(to right, #000 82%, transparent 98%);
             }
         }
 
@@ -194,7 +199,7 @@
                 <div class="cursor-pointer shrink-0" onclick="openTab('overview')" aria-label="Home">
                     <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT" class="w-9 h-9 lg:w-12 lg:h-12 object-contain scale-[1.15] drop-shadow-lg">
                 </div>
-                <div id="speaker" class="lg:fixed lg:left-[25%] lg:-translate-x-1/2 lg:top-auto lg:bottom-[12%] lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
+                <div id="speaker" class="lg:fixed lg:left-[25%] lg:-translate-x-1/2 lg:top-auto lg:bottom-[9%] lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
                     <div class="flex items-center gap-1.5 sm:gap-2">
                         <h3 class="text-[11px] sm:text-xs lg:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
                         <span class="hidden sm:inline text-white/30 text-[10px] lg:text-xs leading-none">|</span>
@@ -233,8 +238,8 @@
     </header>
 
     <!-- ===== НИЗ: контент (мобайл — по центру/карусель; десктоп — справа столбиком) ===== -->
-    <div class="fixed inset-0 z-10 flex flex-col justify-end lg:justify-center pointer-events-none">
-        <div class="w-full lg:w-[50%] lg:ml-auto px-4 pb-5 lg:px-8 lg:pb-0">
+    <div id="content-layer" class="fixed inset-0 z-10 flex flex-col justify-end lg:justify-center pointer-events-none">
+        <div id="content-panel" class="w-full lg:w-[50%] lg:ml-auto px-4 pb-5 lg:px-8 lg:pb-0">
             <div class="flex flex-col items-center gap-4 max-h-[66vh] lg:max-h-[86vh] overflow-y-auto no-scrollbar pointer-events-auto">
                 <div class="w-full flex flex-col items-center">
 
