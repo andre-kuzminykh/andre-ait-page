@@ -32,6 +32,9 @@ function makeDom() {
       proto.play = function () { this._playing = true; return Promise.resolve(); };
       proto.pause = function () { this._playing = false; };
       proto.load = function () {};
+      // the page runs an endless requestAnimationFrame blob loop — neutralise it so jsdom exits
+      window.requestAnimationFrame = function () { return 0; };
+      window.cancelAnimationFrame = function () {};
     },
   });
 }
