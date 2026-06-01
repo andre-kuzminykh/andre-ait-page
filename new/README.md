@@ -26,13 +26,14 @@ The mic button un-mutes the background head so it actually speaks out loud.
 - The head video is square (480×480). **On mobile** a **blurred, zoomed copy**
   (`#assistant-bg`) fills behind it so it covers the screen. **On desktop** that
   blur is off — the video is clean.
-- **Desktop (≥1024px):** the video fills the **left half** flush to the edge
-  (`object-cover`), and **only its right edge fades** (a horizontal `mask`) into
-  the **solid black** right side — that fade is the only transition, no blurred
-  halo. The **Andre AI + mic** badge is **centered on the video**; the section
-  menu is **horizontal at the top**; **AI Business OS** is right-most. Section
-  content sits on the **black right** with **uniform-size cards** (all `13rem`):
-  **2–3 cards → one row, 4+ → two rows** (via a `:has(> :nth-child(4))` query).
+- **Desktop (≥1024px):** the video sits **flush on the left** (`object-contain`,
+  zoomed out). Its **right edge blurs into the solid black** right side — a
+  blurred copy of the head (`#assistant-bg`) is masked to show only that right
+  edge and dissolve into black (the only transition). The **Andre AI + mic**
+  badge is **centered on the video**; the section menu is **horizontal at the
+  top**; **AI Business OS** is right-most. Section content is **centred within
+  the black area** with **uniform-size cards** (all `13rem`): **2–3 → one row,
+  4+ → two rows** (via a `:has(> :nth-child(4))` query).
 - **Mobile (<1024px):** logo + speaker (Andre AI) + **mic** at the top; on the
   right a **menu button** then the **OS** button (right-most). The menu opens as
   a **full-screen** overlay. Section content sits at the bottom as a **one-card
