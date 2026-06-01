@@ -63,15 +63,15 @@
         /* На компе: видео слева, правый край размывается (blur) и уходит в чёрное справа */
         @media (min-width: 1024px) {
             .scene-bg { background: #000; }
-            /* размытый дубль показывается только на правом крае головы и тает в чёрный */
+            /* размытый дубль — только на самом правом крае головы, тает в чёрный */
             #assistant-bg {
-                -webkit-mask-image: linear-gradient(to right, transparent 56%, #000 74%, transparent 100%);
-                mask-image: linear-gradient(to right, transparent 56%, #000 74%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to right, transparent 68%, #000 84%, transparent 100%);
+                mask-image: linear-gradient(to right, transparent 68%, #000 84%, transparent 100%);
             }
-            /* чёткое видео: левая часть резкая, правый край растворяется (открывая размытие) */
+            /* чёткое видео: лицо резкое, правый край мягко растворяется в размытие/чёрный */
             #assistant-video {
-                -webkit-mask-image: linear-gradient(to right, #000 66%, transparent 88%);
-                mask-image: linear-gradient(to right, #000 66%, transparent 88%);
+                -webkit-mask-image: linear-gradient(to right, #000 74%, transparent 94%);
+                mask-image: linear-gradient(to right, #000 74%, transparent 94%);
             }
         }
 
@@ -174,7 +174,7 @@
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden scene-bg">
         <!-- Размытый «заполнитель»: квадратное видео растянуто на весь экран, чтобы голова была фоном без пустых полей -->
         <video id="assistant-bg" aria-hidden="true" src="assets/head-overview.mp4"
-               class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-90 lg:scale-100 lg:opacity-100 lg:right-auto lg:w-[50%] lg:object-contain lg:object-left lg:blur-lg"
+               class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-90 lg:scale-100 lg:opacity-100 lg:right-auto lg:w-[50%] lg:object-contain lg:object-left lg:blur-md"
                loop playsinline autoplay muted preload="auto"></video>
         <!-- Чёткая голова целиком поверх -->
         <video id="assistant-video" src="assets/head-overview.mp4" poster="assets/poster-overview.jpg" data-part="overview"
@@ -194,7 +194,7 @@
                 <div class="cursor-pointer shrink-0" onclick="openTab('overview')" aria-label="Home">
                     <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT" class="w-9 h-9 lg:w-12 lg:h-12 object-contain scale-[1.15] drop-shadow-lg">
                 </div>
-                <div id="speaker" class="lg:fixed lg:left-[25%] lg:-translate-x-1/2 lg:top-auto lg:bottom-7 lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
+                <div id="speaker" class="lg:fixed lg:left-[25%] lg:-translate-x-1/2 lg:top-auto lg:bottom-[12%] lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
                     <div class="flex items-center gap-1.5 sm:gap-2">
                         <h3 class="text-[11px] sm:text-xs lg:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
                         <span class="hidden sm:inline text-white/30 text-[10px] lg:text-xs leading-none">|</span>
