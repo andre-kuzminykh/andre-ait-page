@@ -60,18 +60,12 @@
         #assistant-video { transition: opacity 0.4s ease; }
         #assistant-video.is-switching { opacity: 0; }
         #assistant-bg { transition: opacity 0.4s ease; }
-        /* На компе: видео заполняет слева, размытие — переход, справа чёрное */
+        /* На компе: видео заполняет слева (без блюра), справа чёрное; переход — только правый край видео */
         @media (min-width: 1024px) {
             .scene-bg { background: #000; }
-            /* размытый дубль только слева → растворяется в чёрный (переход) */
-            #assistant-bg {
-                -webkit-mask-image: linear-gradient(to right, #000 34%, transparent 52%);
-                mask-image: linear-gradient(to right, #000 34%, transparent 52%);
-            }
-            /* чёткое видео заполняет левую часть, правый край мягко в переход */
             #assistant-video {
-                -webkit-mask-image: linear-gradient(to right, #000 82%, transparent 100%);
-                mask-image: linear-gradient(to right, #000 82%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to right, #000 80%, transparent 100%);
+                mask-image: linear-gradient(to right, #000 80%, transparent 100%);
             }
         }
 
@@ -174,11 +168,11 @@
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden scene-bg">
         <!-- Размытый «заполнитель»: квадратное видео растянуто на весь экран, чтобы голова была фоном без пустых полей -->
         <video id="assistant-bg" aria-hidden="true" src="assets/head-overview.mp4"
-               class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-90"
+               class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-90 lg:hidden"
                loop playsinline autoplay muted preload="auto"></video>
         <!-- Чёткая голова целиком поверх -->
         <video id="assistant-video" src="assets/head-overview.mp4" poster="assets/poster-overview.jpg" data-part="overview"
-               class="absolute inset-0 w-full h-full object-contain object-top lg:right-auto lg:w-[48%] lg:object-contain lg:object-center"
+               class="absolute inset-0 w-full h-full object-contain object-top lg:right-auto lg:w-[50%] lg:object-cover lg:object-center"
                loop playsinline autoplay muted preload="auto"></video>
         <div class="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style="background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E&quot;);"></div>
     </div>
@@ -194,7 +188,7 @@
                 <div class="cursor-pointer shrink-0" onclick="openTab('overview')" aria-label="Home">
                     <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT" class="w-9 h-9 lg:w-12 lg:h-12 object-contain scale-[1.15] drop-shadow-lg">
                 </div>
-                <div id="speaker" class="lg:fixed lg:left-[24%] lg:-translate-x-1/2 lg:top-auto lg:bottom-7 lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
+                <div id="speaker" class="lg:fixed lg:left-[25%] lg:-translate-x-1/2 lg:top-auto lg:bottom-7 lg:z-30 bg-black/45 backdrop-blur-md border border-white/10 text-white p-1.5 pl-3 sm:pl-4 rounded-full flex items-center gap-2 sm:gap-3 shadow-lg shrink-0">
                     <div class="flex items-center gap-1.5 sm:gap-2">
                         <h3 class="text-[11px] sm:text-xs lg:text-sm font-bold leading-none whitespace-nowrap">Andre AI</h3>
                         <span class="hidden sm:inline text-white/30 text-[10px] lg:text-xs leading-none">|</span>
