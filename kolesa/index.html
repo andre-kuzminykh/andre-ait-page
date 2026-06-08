@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ИИ-трансформация</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-blue': '#1C6FE6',
+                        'brand-yellow': '#FFDE40',
+                        'cta-green': '#1EA936'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #111827;
+            -webkit-font-smoothing: antialiased;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- Навигация с логотипом -->
+    <nav class="flex items-center justify-between px-8 py-6 max-w-[1400px] mx-auto">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/0p14qcW3/2026-06-08-10-58-04-PM.png" alt="Andre AI Technologies" class="h-6 sm:h-7 md:h-8 w-auto object-contain">
+        </div>
+        <!-- Ссылки убраны по запросу -->
+    </nav>
+
+    <main class="max-w-[1400px] mx-auto px-4 sm:px-8 mt-2">
+        
+        <!-- Главный медиа-блок (Hero) -->
+        <div class="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-sm">
+            <!-- Фоновое изображение -->
+            <img src="https://i.ibb.co/846tj1W2/81f3241a-354e-40ad-92c7-e5ba4ffb466c.png" alt="Команда работает" class="absolute inset-0 w-full h-full object-cover">
+            
+            <!-- Градиент для читаемости текста -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+            
+            <div class="absolute bottom-10 left-6 md:left-10 max-w-4xl">
+                <h1 class="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tight">ИИ-трансформация</h1>
+                <p class="text-lg md:text-xl text-gray-200 font-medium">3-месячная программа перехода компании к новой операционной модели, где ИИ становится частью ежедневной работы</p>
+            </div>
+        </div>
+
+        <!-- Карточки статистики / Хайлайты -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+            
+            <!-- Синяя карточка 1: Цели -->
+            <div class="bg-brand-blue rounded-2xl p-8 text-white flex flex-col justify-center shadow-sm">
+                <div class="text-2xl font-bold mb-4">Цели программы</div>
+                <div class="text-white font-medium leading-tight text-base">
+                    Рост без штата, ускорение разработки и снижение затрат
+                </div>
+            </div>
+
+            <!-- Белая карточка 2: Месяц 1 -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-8 flex flex-col justify-center shadow-sm">
+                <div class="text-2xl font-bold text-gray-900 mb-4">Месяц 1</div>
+                <div class="text-gray-500 font-medium leading-tight">
+                    Диагностика процессов компании, аудит кодовой базы, оценка ИИ-зрелости и разработка ИИ-стратегии
+                </div>
+            </div>
+
+            <!-- Синяя карточка 3: Бизнес -->
+            <div class="bg-brand-blue rounded-2xl p-8 text-white flex flex-col justify-center shadow-sm">
+                <div class="text-2xl font-bold mb-4">Трек: Бизнес</div>
+                <div class="text-blue-100 font-medium leading-tight">
+                    Обучение и автоматизация бизнес-процессов: discovery, операционные и юридические задачи
+                </div>
+            </div>
+
+            <!-- Желтая карточка 4: Разработка -->
+            <div class="bg-brand-yellow rounded-2xl p-8 text-gray-900 flex flex-col justify-center shadow-sm">
+                <div class="text-2xl font-bold mb-4">Трек: Разработка</div>
+                <div class="text-gray-800 font-medium leading-tight">
+                    Переход к AI-Native SDLC (Жизненный цикл разработки ПО)
+                </div>
+            </div>
+        </div>
+
+        <!-- 12 НЕДЕЛЬ (Единый таймлайн, два столбика) -->
+        <div class="mt-24 page-break">
+            <h2 class="text-3xl md:text-5xl font-bold mb-12 tracking-tight text-center">План трансформации: 12 недель</h2>
+            
+            <!-- Заголовки столбиков (Sticky) -->
+            <div class="hidden lg:grid grid-cols-2 gap-8 mb-8 sticky top-0 z-10 bg-white/90 backdrop-blur py-4">
+                <div class="bg-brand-blue text-white rounded-2xl p-6 text-center shadow-sm">
+                    <h3 class="text-2xl font-bold">Бизнес и Автоматизация</h3>
+                    <p class="text-blue-100 text-sm mt-1">AI-First операционная модель</p>
+                </div>
+                <div class="bg-brand-yellow text-gray-900 rounded-2xl p-6 text-center shadow-sm">
+                    <h3 class="text-2xl font-bold">Разработка и SDLC</h3>
+                    <p class="text-gray-700 text-sm mt-1">Жизненный цикл разработки ПО</p>
+                </div>
+            </div>
+
+            <div class="space-y-12">
+                
+                <!-- НЕДЕЛЯ 1 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 1: Анализ процессов</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> 3 диагностические встречи с руководителями</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Поиск ручной работы и задержек</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Создание первичной карты бизнес-процессов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Фиксация списка точек ИИ-автоматизации</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Аудит текущей кодовой базы команды</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Разбор engineering-процессов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Оценка текущего жизненного цикла ПО</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Выявление узких мест в разработке</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 2 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 2: ИИ-зрелость</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Оценка готовности процессов к автоматизации</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Аудит используемых AI-инструментов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Выявление ограничений по данным и безопасности</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Составление списка быстрых побед для бизнеса</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Проверка готовности инфраструктуры к ИИ</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Выявление ограничений в архитектуре</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Безопасность при внедрении локальных и облачных LLM</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Определение быстрых побед для техкоманды</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 3 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 3: Модель To-Be</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Проектирование целевой бизнес-модели</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Определение ролей AI-ассистентов в команде</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Разделение понятий ИИ как ассистент и ИИ как агент</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Отрисовка целевой схемы работы операционных команд</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Формирование архитектуры AI-Native разработки</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Интеграция ИИ в контур тестирования и ревью кода</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Модель нового жизненного цикла ПО с ИИ-модулями</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Планирование архитектуры безопасного развертывания</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 4 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 4: ИИ-стратегия</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Составление Roadmap внедрения ИИ в бизнес</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Выбор приоритетных направлений автоматизации</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Создание списка AI-сценариев для разработки</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> План плавного перехода к AI-First модели</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Формирование Roadmap внедрения ИИ в разработку</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> План перехода к AI-Native циклам релизов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Подбор стека ИИ-инструментов для разработчиков</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Стратегия работы с техническим долгом через ИИ</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 5 -->
+                <div class="relative pt-12">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 5: База автоматизации</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Запуск:</strong> Старт AI-First операционной модели в командах</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Поиск рутинных операций для передачи ИИ</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Настройка делегирования базовых ручных задач</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Синхронизация командных процессов с новыми ботами</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Запуск:</strong> Внедрение нового AI-подхода к разработке в командах</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Синхронизация процессов инженерной команды</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> ИИ как обязательная часть ежедневного SDLC</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Настройка первичного инструментария в IDE</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 6 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 6: Сценарии и Требования</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Детальная карта автоматизируемых процессов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Формирование требований к бизнес-промптам</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Интеграция ИИ в регулярный документооборот</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Проверка качества автоматизации обработки информации</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Использование ИИ для создания спецификаций</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Восстановление бизнес-требований из легаси-кода</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Быстрая генерация Acceptance Criteria с ИИ</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Выявление скрытых edge cases на этапе планирования</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 7 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 7: Промпты и Тесты</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Создание устойчивых AI-сценариев под отделы</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Разработка корпоративных промпт-систем</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Шаблоны и рабочие инструкции для сотрудников</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Обучение правильной проверке результатов ИИ</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Интеграция тестирования до написания самого кода</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Автоматическая генерация тест-кейсов с помощью ИИ</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Покрытие критических бизнес-сценариев тестами</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Test-driven разработка с AI-помощниками в IDE</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 8 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 8: Агенты и Код</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Прототипирование персональных AI-ассистентов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Настройка первых автономных агентных сценариев</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Определение контура принятия решений для ботов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Замеры эффективности новых бизнес-агентов</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Безопасная генерация программного кода с ИИ</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Глубокая проверка AI-сгенерированных решений</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Организация умного и автоматизированного Code Review</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Снижение рисков галлюцинаций в языковых моделях</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 9 -->
+                <div class="relative pt-12">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 9: Масштабирование</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Автоматизация командных коммуникаций и чатов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Генерация мгновенных резюме встреч и отчётов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> ИИ для поддержки быстрого принятия решений</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Работа с большими объемами корпоративных документов</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Рефакторинг и безопасная работа с legacy-кодом</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Автоматическое документирование всей системы</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Выявление и массовое устранение технического долга</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Планирование архитектурных решений вместе с ИИ</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 10 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 10: Рост и Инфраструктура</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Построение модели роста бизнеса без увеличения штата</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Глубокое внедрение ИИ в продажи и маркетинг</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Полная автоматизация клиентского саппорта</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Оптимизация внутренних сервисных функций</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Глубокая интеграция ИИ в CI/CD-пайплайны</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Автоматизация проверок качества и безопасности</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Безопасный деплой с автоматическим AI-контролем</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Полное управление процессом релизов через агентов</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 11 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 11: Стандарты</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Регламенты и корпоративный контроль качества</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Снижение операционных и юридических рисков</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Внедрение правил безопасной работы с LLM</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Вебинар:</strong> Масштабирование human-in-the-loop подходов</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Формирование единого AI-инструментария</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Стандартизация использования агентов в команде</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Мониторинг качества генерируемого кода и дашборды</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Связь разрозненных AI-инструментов в экосистему</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НЕДЕЛЯ 12 -->
+                <div class="relative">
+                    <div class="flex items-center justify-center mb-6">
+                        <span class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Неделя 12: Финал</span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-brand-blue rounded-3xl p-8 text-white shadow-sm">
+                            <ul class="space-y-4 font-medium text-blue-50">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Финализация автоматизированных бизнес-сценариев</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Оценка измеримых финансовых и временных результатов</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Построение Roadmap для дальнейшего внедрения</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Подготовка бизнес-презентации к финальному Demo Day</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-yellow rounded-3xl p-8 text-gray-900 shadow-sm">
+                            <ul class="space-y-4 font-medium text-gray-800">
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Анализ:</strong> Связь успешных ИИ-релизов с продуктовыми метриками</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Практика:</strong> Интеграция ИИ для анализа пользовательского фидбека</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Сессия:</strong> Улучшение цикла от задачи до релиза с помощью ИИ</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-6 h-6 mr-3 flex-shrink-0 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span><strong>Воркшоп:</strong> Подготовка технического ревью к финальному Demo Day</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-32 page-break">
+            <!-- Demo Day -->
+            <div class="flex flex-col justify-center">
+                <h2 class="text-3xl font-bold mb-6">Финальный Demo Day</h2>
+                <p class="text-gray-600 mb-6 font-medium text-lg">В конце 3-го месяца проводится презентация результатов для руководства компании Команда демонстрирует:</p>
+                <ul class="space-y-4 text-gray-800 font-bold text-lg">
+                    <li class="flex items-center"><span class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-cta-green/20 text-cta-green mr-4"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>Изменённые процессы и AI-сценарии</li>
+                    <li class="flex items-center"><span class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-cta-green/20 text-cta-green mr-4"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>Спецификации, тесты, код и агенты</li>
+                    <li class="flex items-center"><span class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-cta-green/20 text-cta-green mr-4"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>Измеримые результаты (quick wins)</li>
+                    <li class="flex items-center"><span class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-cta-green/20 text-cta-green mr-4"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>Roadmap дальнейшей трансформации</li>
+                </ul>
+            </div>
+
+            <!-- Инвестиции -->
+            <div class="bg-gray-50 rounded-3xl p-8 lg:p-12 border border-gray-200">
+                <h2 class="text-3xl font-bold mb-8">Инвестиции</h2>
+                
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <div class="flex justify-between items-end mb-2">
+                        <div class="font-bold text-xl">Только стратегия (Месяц 1)</div>
+                        <div class="text-3xl font-bold text-gray-900">4 900 €</div>
+                    </div>
+                    <div class="text-gray-500">Диагностика, аудит и ИИ-стратегия (до 21 часа)</div>
+                </div>
+
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <div class="flex justify-between items-end mb-2">
+                        <div class="font-bold text-xl text-brand-blue">Один из вариантов (Месяцы 2-3)</div>
+                        <div class="text-3xl font-bold text-brand-blue">14 700 €</div>
+                    </div>
+                    <div class="text-gray-500">Итого за 3 месяца: Диагностика + 1 профильный трек</div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <div class="font-bold text-xl text-brand-blue">Или все треки параллельно</div>
+                        <div class="text-3xl font-bold text-brand-blue">24 500 €</div>
+                    </div>
+                    <div class="text-gray-500">Итого за 3 месяца: Диагностика + Бизнес + Разработка</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-32 py-12 border-t border-gray-100 text-center text-gray-400">
+        <p class="font-medium text-lg">Andre AI Technologies</p>
+    </footer>
+
+</body>
+</html>
