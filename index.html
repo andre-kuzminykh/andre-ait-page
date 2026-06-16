@@ -151,7 +151,7 @@
   /* ===== Content layer / panel / scroll ===== */
   .content-layer { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; pointer-events: none; justify-content: flex-end; }
   @media (min-width:1024px) { .content-layer { justify-content: center; } }
-  .panel { width: 100%; height: 45dvh; padding: 0 1rem calc(3.2rem + env(safe-area-inset-bottom, 0px)) 1rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
+  .panel { width: 100%; height: 46dvh; padding: 0 1rem calc(4rem + env(safe-area-inset-bottom, 0px)) 1rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
   @media (min-width:1024px) { .panel { width: 40%; height: auto; margin-left: auto; padding: 0 2rem; display: block; } }
   .panel.leaving { opacity: 0; transform: translateY(-28px); transition: opacity 0.24s ease, transform 0.24s ease; }
   .panel.entering { animation: slideInPanel 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -202,9 +202,11 @@
 
   /* Rails: horizontal scroll on mobile, vertical column on desktop */
   .rail { display: flex; gap: 0.55rem; width: 100vw; align-self: start; margin-left: -1rem; --cw: min(82vw, 23rem); overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
-    padding: 0.65rem calc((100vw - var(--cw)) / 2 + 1.25rem) 0.9rem calc((100vw - var(--cw)) / 2); scroll-padding-inline: calc((100vw - var(--cw)) / 2); }
+    padding: 0.65rem 0 0.9rem calc((100vw - var(--cw)) / 2); scroll-padding-inline: calc((100vw - var(--cw)) / 2); }
   .rail::-webkit-scrollbar { width: 0; height: 0; display: none; }
-  @media (min-width:1024px) { .rail { flex-direction: column; align-self: auto; align-items: stretch; gap: 0.75rem; width: 100%; max-width: var(--railmax, 30rem); margin: 0 auto; overflow: visible; padding: 0; transform: none; } }
+  /* trailing spacer: gives the LAST card enough range to snap to centre (flex scroll containers don't always count padding-right) */
+  .rail::after { content: ''; flex: 0 0 calc((100vw - var(--cw)) / 2); }
+  @media (min-width:1024px) { .rail { flex-direction: column; align-self: auto; align-items: stretch; gap: 0.75rem; width: 100%; max-width: var(--railmax, 30rem); margin: 0 auto; overflow: visible; padding: 0; transform: none; } .rail::after { display: none; } }
   .rail-item { flex: 0 0 var(--cw); scroll-snap-align: center; scroll-snap-stop: always; box-sizing: border-box; }
   @media (min-width:1024px) { .rail-item { flex: initial; width: 100%; } }
 
@@ -228,20 +230,20 @@
   @media (min-width:1024px) { .cta { padding: 0.72rem 1.35rem; font-size: 11.5px; letter-spacing: 0.15em; gap: 0.55rem; } }
 
   /* ===== Contact screen (hero centered like other blocks, footer pinned) ===== */
-  .contact-screen { position: relative; width: 100%; min-height: 40dvh; }
-  @media (min-width:1024px) { .contact-screen { min-height: calc(100dvh - 16.5rem); justify-content: center; } }
-  .contact-hero { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 32rem; margin: auto 0; position: relative; top: 1.6rem; }
-  @media (min-width:1024px) { .contact-hero { gap: clamp(1.4rem, 1.6vw, 2.4rem); margin: 0; top: 0; } }
+  .contact-screen { position: relative; width: 100%; min-height: 40dvh; transform: translateY(2.8rem); }
+  @media (min-width:1024px) { .contact-screen { min-height: calc(100dvh - 16.5rem); justify-content: center; transform: none; } }
+  .contact-hero { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 32rem; margin: auto 0; }
+  @media (min-width:1024px) { .contact-hero { gap: clamp(1.4rem, 1.6vw, 2.4rem); margin: 0; } }
   .contact-title { font-size: 2rem; letter-spacing: 0.04em; }
   @media (min-width:1024px) { .contact-title { font-size: clamp(2.1rem, 2.4vw, 3.6rem); } }
 
-  /* Footer: column on mobile (social → copyright; legal lives in menu); single row on desktop */
+  /* Footer: column (icons on top → Privacy·Terms → copyright); legal hidden on mobile (lives in menu) */
   .contact-footer { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.65rem; padding-top: 1.1rem; padding-bottom: 0.4rem; }
-  @media (min-width:1024px) { .contact-footer { position: absolute; left: 0; right: 0; bottom: 0; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: clamp(0.7rem, 1.5vw, 1.9rem); padding-bottom: 1rem; } }
+  @media (min-width:1024px) { .contact-footer { position: absolute; left: 0; right: 0; bottom: 0; flex-direction: column; align-items: center; gap: 0.9rem; padding-bottom: 1.25rem; } }
   .contact-social { display: flex; align-items: center; justify-content: center; gap: 1rem; }
-  @media (min-width:1024px) { .contact-social { gap: clamp(0.85rem, 1.15vw, 1.5rem); } }
+  @media (min-width:1024px) { .contact-social { gap: clamp(1.1rem, 1.5vw, 1.9rem); } }
   .social { color: #94a3b8; transition: color 0.3s ease, transform 0.3s ease; font-size: 21px; }
-  @media (min-width:1024px) { .social { font-size: clamp(18px, 1.4vw, 25px); } }
+  @media (min-width:1024px) { .social { font-size: clamp(20px, 1.6vw, 28px); } }
   @media (hover:hover) { .social:hover { color: var(--brand); transform: scale(1.12); } }
   .contact-legal { display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
   @media (max-width:1023px) { .contact-legal { display: none; } }
@@ -315,7 +317,7 @@
 
       <div class="header-right">
         <button class="menu-btn" data-action="menu" aria-label="Menu"><i id="menu-icon" class="fa-solid fa-bars" style="font-size: 14px;"></i></button>
-        <button class="btn-white cta" data-action="contact">Free AI Strategy <i class="fa-solid fa-arrow-right"></i></button>
+        <button class="btn-white cta" data-action="contact">Free AI Diagnostic <i class="fa-solid fa-arrow-right"></i></button>
       </div>
     </div>
   </header>
@@ -527,7 +529,7 @@
         <section class="screen contact-screen" data-screen="contact" style="text-align: center;">
           <div class="contact-hero">
             <h2 class="h2-size contact-title" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.12; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);"><span style="color: #ffffff;">Start</span><br><span style="white-space: nowrap;"><span style="color: #8854F3;">AI</span> <span style="color: #F97316;">Transformation</span></span></h2>
-            <button class="btn-white" data-action="contact" style="padding: clamp(1.05rem, 0.9vw, 1.4rem) clamp(2.1rem, 1.8vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(13px, 0.85vw, 16px); width: fit-content;">Free AI Strategy <i class="fa-solid fa-arrow-right"></i></button>
+            <button class="btn-white" data-action="contact" style="padding: clamp(1.05rem, 0.9vw, 1.4rem) clamp(2.1rem, 1.8vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(13px, 0.85vw, 16px); width: fit-content;">Free AI Diagnostic <i class="fa-solid fa-arrow-right"></i></button>
           </div>
           <div class="contact-footer">
             <div class="contact-social">
@@ -556,6 +558,8 @@
 
   /* roadmap is a detour block: reached only via the overview CTA / its own cards, NOT in the scroll sequence */
   var ORDER = ['overview', 'strategy', 'platform', 'employees', 'products', 'education', 'contact'];
+  /* all reachable screens (roadmap is reachable via the CTA/cards though it's out of ORDER) */
+  var SCREENS = ['overview', 'roadmap', 'strategy', 'platform', 'employees', 'products', 'education', 'contact'];
   var CONTACT_URL = 'https://t.me/andre_andreevich';
   var CUES = [
     { t: 0.0,  text: "Hi I'm Andre AI" },
@@ -593,7 +597,7 @@
   /* ---- screen switching with leave/enter animation ---- */
   var swapT, enterT;
   function openTab(id) {
-    if (ORDER.indexOf(id) < 0) return;
+    if (SCREENS.indexOf(id) < 0) return;
     if (id === state.tab) { closeMenu(); return; }
     closeMenu();
     panel.classList.add('leaving');
