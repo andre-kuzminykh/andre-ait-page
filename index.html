@@ -3,7 +3,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
 <title>Andre AI Technologies — AI Transformation of your Business</title>
 <meta name="description" content="Andre AI Technologies — AI Transformation of your Business. AI Strategy, AI Business OS, AI Employees, AI Products and AI Education with your Chief AI Officer, Andre AI.">
 <meta property="og:title" content="Andre AI Technologies — AI Transformation of your Business">
@@ -88,8 +89,8 @@
   /* Center nav (desktop bar / mobile fullscreen menu) */
   .nav { display: none; }
   @media (max-width:1023px) {
-    .nav.open { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.7rem; padding: 4.5rem 1.5rem 2rem; z-index: 50;
-      background: #050505; overflow-y: auto; }
+    .nav.open { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 5rem 1.75rem calc(5rem + env(safe-area-inset-bottom, 0px)); z-index: 50;
+      background: #050505; overflow-y: auto; pointer-events: auto; }
   }
   @media (min-width:1024px) {
     .nav { display: flex; align-items: center; gap: 0.4rem; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -99,7 +100,7 @@
   .nav-close { display: none; }
   @media (max-width:1023px) {
     .nav.open .nav-close { display: flex; position: absolute; top: 1.25rem; right: 1.25rem; width: 2.75rem; height: 2.75rem; align-items: center; justify-content: center;
-      border-radius: 999px; background: #15151b; border: 1px solid rgba(255,255,255,0.12); color: #ffffff; cursor: pointer; z-index: 1; }
+      border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #ffffff; cursor: pointer; z-index: 1; }
   }
   .nav-tab { background: transparent; border: 0; cursor: pointer; text-transform: uppercase; font-weight: 700; white-space: nowrap;
     color: #cbd5e1; padding: 0.55rem 1rem; font-size: 26px; letter-spacing: 0.12em; transition: color 0.3s ease; }
@@ -108,21 +109,18 @@
   /* left icon + right arrow appear only inside the mobile menu */
   .nav-ic, .nav-go { display: none; }
   @media (max-width:1023px) {
-    .nav.open .nav-tab { display: flex; align-items: center; gap: 0.85rem; width: 100%; max-width: 22rem; text-align: left;
-      background: #121218; border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; padding: 0.85rem 0.95rem;
-      color: #ffffff; font-size: 15px; letter-spacing: 0.08em; box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-      transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease; }
-    .nav.open .nav-ic { display: inline-flex; align-items: center; justify-content: center; width: 2.7rem; height: 2.7rem; flex-shrink: 0;
-      border-radius: 0.75rem; font-size: 18px; color: var(--ic); background: rgba(255,255,255,0.06); }
+    /* elegant list: no backgrounds, thin hairline between rows, icon left, arrow right */
+    .nav.open .nav-tab { display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 23rem; text-align: left;
+      background: transparent; border: 0; border-top: 1px solid rgba(255,255,255,0.12); border-radius: 0; padding: 1.05rem 0.25rem;
+      color: #ffffff; font-size: 16px; letter-spacing: 0.1em; box-shadow: none; transition: color 0.25s ease; }
+    .nav.open .nav-tab:first-of-type { border-top: 0; }
+    .nav.open .nav-ic { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; flex-shrink: 0; font-size: 18px; color: var(--ic); background: none; }
     .nav.open .nav-label { flex: 1; min-width: 0; color: #ffffff; }
-    .nav.open .nav-go { display: inline-flex; align-items: center; justify-content: center; width: 1.95rem; height: 1.95rem; flex-shrink: 0;
-      border-radius: 999px; font-size: 12px; color: var(--ic); background: rgba(255,255,255,0.06); transition: background 0.25s ease, color 0.25s ease; }
-    .nav.open .nav-tab.active { border-color: var(--ic); background: #15151b; }
+    .nav.open .nav-go { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; flex-shrink: 0; font-size: 13px; color: rgba(255,255,255,0.45); background: none; transition: color 0.25s ease; }
+    .nav.open .nav-tab.active .nav-label, .nav.open .nav-tab.active .nav-go { color: var(--ic); }
   }
   @media (max-width:1023px) and (hover:hover) {
-    .nav.open .nav-tab:hover { border-color: var(--ic); transform: translateY(-1px); }
-    .nav.open .nav-tab:hover .nav-label { color: var(--ic); }
-    .nav.open .nav-tab:hover .nav-go { background: var(--ic); color: #050505; }
+    .nav.open .nav-tab:hover .nav-label, .nav.open .nav-tab:hover .nav-ic, .nav.open .nav-tab:hover .nav-go { color: var(--ic); }
   }
   @media (min-width:1024px) {
     .nav-tab { font-size: 13.5px; letter-spacing: 0.06em; padding: 0.35rem 0.7rem 0.5rem 0.7rem; color: #94a3b8; position: relative; }
@@ -131,12 +129,13 @@
   .nav-divider { display: none; }
   @media (min-width:1024px) { .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 13.5px; padding: 0 0.15rem; user-select: none; pointer-events: none; } }
 
-  /* Legal links inside the mobile menu (hidden on desktop) */
+  /* Legal links pinned to the very bottom of the mobile menu (hidden on desktop) */
   .nav-legal { display: none; }
   @media (max-width:1023px) {
-    .nav.open .nav-legal { display: flex; flex-direction: column; align-items: center; gap: 0.85rem; margin-top: 1.75rem; }
+    .nav.open .nav-legal { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 1.25rem;
+      position: absolute; left: 1.5rem; right: 1.5rem; bottom: calc(1.6rem + env(safe-area-inset-bottom, 0px)); }
   }
-  .nav-legal-link { color: rgba(255,255,255,0.6); font-size: 13px; text-transform: uppercase; letter-spacing: 0.14em; font-weight: 600; transition: color 0.3s ease; }
+  .nav-legal-link { color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; transition: color 0.3s ease; }
   @media (hover:hover) { .nav-legal-link:hover { color: #ffffff; } }
 
   .menu-btn { display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 999px;
@@ -152,7 +151,7 @@
   /* ===== Content layer / panel / scroll ===== */
   .content-layer { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; pointer-events: none; justify-content: flex-end; }
   @media (min-width:1024px) { .content-layer { justify-content: center; } }
-  .panel { width: 100%; height: 42dvh; padding: 0 1rem calc(1.1rem + env(safe-area-inset-bottom, 0px)) 1rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
+  .panel { width: 100%; height: 44dvh; padding: 0 1rem calc(2.4rem + env(safe-area-inset-bottom, 0px)) 1rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
   @media (min-width:1024px) { .panel { width: 40%; height: auto; margin-left: auto; padding: 0 2rem; display: block; } }
   .panel.leaving { opacity: 0; transform: translateY(-28px); transition: opacity 0.24s ease, transform 0.24s ease; }
   .panel.entering { animation: slideInPanel 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -199,10 +198,10 @@
   @media (min-width:1024px) { .swipe-hint { display: none; } }
 
   /* Rails: horizontal scroll on mobile, vertical column on desktop */
-  .rail { display: flex; gap: 0.55rem; width: 100vw; --cw: min(82vw, 23rem); overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  .rail { display: flex; gap: 0.55rem; width: 100vw; align-self: start; margin-left: -1rem; --cw: min(82vw, 23rem); overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
     padding: 0.65rem calc((100vw - var(--cw)) / 2) 0.9rem; scroll-padding-inline: calc((100vw - var(--cw)) / 2); }
   .rail::-webkit-scrollbar { width: 0; height: 0; display: none; }
-  @media (min-width:1024px) { .rail { flex-direction: column; align-items: stretch; gap: 0.75rem; width: 100%; max-width: var(--railmax, 30rem); margin: 0 auto; overflow: visible; padding: 0; transform: none; } }
+  @media (min-width:1024px) { .rail { flex-direction: column; align-self: auto; align-items: stretch; gap: 0.75rem; width: 100%; max-width: var(--railmax, 30rem); margin: 0 auto; overflow: visible; padding: 0; transform: none; } }
   .rail-item { flex: 0 0 var(--cw); scroll-snap-align: center; scroll-snap-stop: always; box-sizing: border-box; }
   @media (min-width:1024px) { .rail-item { flex: initial; width: 100%; } }
 
@@ -228,7 +227,7 @@
   /* ===== Contact screen (hero centered like other blocks, footer pinned) ===== */
   .contact-screen { position: relative; width: 100%; min-height: 40dvh; }
   @media (min-width:1024px) { .contact-screen { min-height: calc(100dvh - 16.5rem); justify-content: center; } }
-  .contact-hero { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 32rem; margin-top: auto; }
+  .contact-hero { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 32rem; margin: auto 0; }
   @media (min-width:1024px) { .contact-hero { gap: clamp(1.4rem, 1.6vw, 2.4rem); margin: 0; } }
   .contact-title { font-size: 2rem; letter-spacing: 0.04em; }
   @media (min-width:1024px) { .contact-title { font-size: clamp(2.1rem, 2.4vw, 3.6rem); } }
@@ -552,7 +551,8 @@
 (function () {
   "use strict";
 
-  var ORDER = ['overview', 'roadmap', 'strategy', 'platform', 'employees', 'products', 'education', 'contact'];
+  /* roadmap is a detour block: reached only via the overview CTA / its own cards, NOT in the scroll sequence */
+  var ORDER = ['overview', 'strategy', 'platform', 'employees', 'products', 'education', 'contact'];
   var CONTACT_URL = 'https://t.me/andre_andreevich';
   var CUES = [
     { t: 0.0,  text: "Hi I'm Andre AI" },
@@ -609,6 +609,8 @@
     }, 240);
   }
   function navStep(dir) {
+    /* roadmap is out of ORDER: scrolling forward goes to the first section, back to overview */
+    if (state.tab === 'roadmap') { openTab(dir > 0 ? 'strategy' : 'overview'); return; }
     var i = ORDER.indexOf(state.tab);
     var ni = i + dir;
     if (ni < 0 || ni >= ORDER.length) return;
@@ -723,15 +725,9 @@
   /* ---- contact CTA ---- */
   function openContact() { window.open(CONTACT_URL, '_blank', 'noopener'); }
 
-  /* ---- mobile: pull the full-bleed (100vw) rail to the viewport's left edge so cards reach both screen edges ---- */
+  /* ---- rails are full-bleed via pure CSS (align-self:start + negative margin); clear any stale transform ---- */
   function alignRails() {
-    var rails = document.querySelectorAll('[data-rail]');
-    if (mqDesktop.matches) { rails.forEach(function (r) { r.style.transform = 'none'; }); return; }
-    rails.forEach(function (r) {
-      r.style.transform = 'none';
-      var left = r.getBoundingClientRect().left;
-      if (Math.abs(left) > 0.5) r.style.transform = 'translateX(' + (-left) + 'px)';
-    });
+    document.querySelectorAll('[data-rail]').forEach(function (r) { r.style.transform = 'none'; });
   }
 
   /* ---- desktop video mask ---- */
