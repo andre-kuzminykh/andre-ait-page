@@ -76,6 +76,7 @@
     white-space: nowrap; pointer-events: auto; }
   @media (min-width:1024px) { .speaker { left: 29%; top: auto; bottom: 8%; transform: translateX(-50%); padding: 0.375rem 0.375rem 0.375rem 0.9rem; gap: 0.6rem; } }
   .speaker h3 { margin: 0; font-size: 13px; font-weight: 700; line-height: 1; white-space: nowrap; }
+  .speaker-emoji { font-size: 15px; line-height: 1; }
   .speaker .sep { color: rgba(255,255,255,0.3); font-size: 13px; line-height: 1; }
   .speaker .role { margin: 0; font-size: 13px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.08em; line-height: 1; white-space: nowrap; }
   .mic-btn { width: 2rem; height: 2rem; border-radius: 999px; background: #000000; border: 1px solid rgba(255,255,255,0.05); color: #ffffff;
@@ -99,8 +100,8 @@
   }
   .nav-close { display: none; }
   @media (max-width:1023px) {
-    .nav.open .nav-close { display: flex; position: absolute; top: 1.25rem; right: 1.25rem; width: 2.75rem; height: 2.75rem; align-items: center; justify-content: center;
-      border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #ffffff; cursor: pointer; z-index: 1; }
+    .nav.open .nav-close { display: flex; position: absolute; top: 1.25rem; right: 1.25rem; width: 2.85rem; height: 2.85rem; align-items: center; justify-content: center;
+      border-radius: 999px; background: #15151b; border: 1px solid rgba(255,255,255,0.16); color: #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.4); cursor: pointer; z-index: 1; }
   }
   .nav-tab { background: transparent; border: 0; cursor: pointer; text-transform: uppercase; font-weight: 700; white-space: nowrap;
     color: #cbd5e1; padding: 0.55rem 1rem; font-size: 26px; letter-spacing: 0.12em; transition: color 0.3s ease; }
@@ -110,11 +111,11 @@
   .nav-ic, .nav-go { display: none; }
   @media (max-width:1023px) {
     /* elegant list: no backgrounds, thin hairline between rows, icon left, arrow right */
-    .nav.open .nav-tab { display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 23rem; text-align: left;
-      background: transparent; border: 0; border-top: 1px solid rgba(255,255,255,0.12); border-radius: 0; padding: 1.05rem 0.25rem;
-      color: #ffffff; font-size: 16px; letter-spacing: 0.1em; box-shadow: none; transition: color 0.25s ease; }
-    .nav.open .nav-tab:first-of-type { border-top: 0; }
-    .nav.open .nav-ic { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; flex-shrink: 0; font-size: 18px; color: var(--ic); background: none; }
+    .nav.open .nav-tab { display: flex; align-items: center; gap: 1.15rem; width: 100%; max-width: 23rem; text-align: left;
+      background: transparent; border: 0; border-top: 1px solid rgba(255,255,255,0.14); border-radius: 0; padding: 1.4rem 0.25rem;
+      color: #ffffff; font-size: 18px; letter-spacing: 0.1em; box-shadow: none; transition: color 0.25s ease; }
+    .nav.open .nav-tab:last-of-type { border-bottom: 1px solid rgba(255,255,255,0.14); }
+    .nav.open .nav-ic { display: inline-flex; align-items: center; justify-content: center; width: 1.8rem; flex-shrink: 0; font-size: 20px; color: var(--ic); background: none; }
     .nav.open .nav-label { flex: 1; min-width: 0; color: #ffffff; }
     .nav.open .nav-go { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; flex-shrink: 0; font-size: 13px; color: rgba(255,255,255,0.45); background: none; transition: color 0.25s ease; }
     .nav.open .nav-tab.active .nav-label, .nav.open .nav-tab.active .nav-go { color: var(--ic); }
@@ -153,6 +154,8 @@
   @media (min-width:1024px) { .content-layer { justify-content: center; } }
   .panel { width: 100%; height: 46dvh; padding: 0 1rem calc(4rem + env(safe-area-inset-bottom, 0px)) 1rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
   @media (min-width:1024px) { .panel { width: 40%; height: auto; margin-left: auto; padding: 0 2rem; display: block; } }
+  /* overview (first block): lift the headline + CTA a bit higher on mobile */
+  @media (max-width:1023px) { [data-screen="overview"] { transform: translateY(-1.8rem); } }
   .panel.leaving { opacity: 0; transform: translateY(-28px); transition: opacity 0.24s ease, transform 0.24s ease; }
   .panel.entering { animation: slideInPanel 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
   .scroll { display: flex; flex-direction: column; align-items: center; gap: 1rem; pointer-events: auto; scrollbar-width: none;
@@ -197,11 +200,11 @@
   .desc { margin: 0; font-size: 14.5px; line-height: 1.6; color: #cbd5e1; max-width: 30rem; }
   @media (min-width:1024px) { .desc { font-size: clamp(15px, 1.05vw, 21px); max-width: 34rem; } }
 
-  .swipe-hint { margin: 0; margin-top: 1.3rem; font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.5); text-align: center; }
+  .swipe-hint { margin: 0; margin-top: 1.3rem; transform: translateY(1.8rem); font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.5); text-align: center; }
   @media (min-width:1024px) { .swipe-hint { display: none; } }
 
   /* Rails: horizontal scroll on mobile, vertical column on desktop */
-  .rail { display: flex; gap: 0.55rem; width: 100vw; align-self: start; margin-left: -1rem; --cw: min(82vw, 23rem); overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  .rail { display: flex; gap: 0.55rem; width: 100vw; margin-inline: calc(50% - 50vw); --cw: min(82vw, 23rem); overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
     padding: 0.65rem 0 0.9rem calc((100vw - var(--cw)) / 2); scroll-padding-inline: calc((100vw - var(--cw)) / 2); }
   .rail::-webkit-scrollbar { width: 0; height: 0; display: none; }
   /* trailing spacer: gives the LAST card enough range to snap to centre (flex scroll containers don't always count padding-right) */
@@ -232,8 +235,8 @@
   /* ===== Contact screen (hero centered like other blocks, footer pinned) ===== */
   .contact-screen { position: relative; width: 100%; min-height: 40dvh; transform: translateY(2.8rem); }
   @media (min-width:1024px) { .contact-screen { min-height: calc(100dvh - 16.5rem); justify-content: center; transform: none; } }
-  .contact-hero { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 32rem; margin: auto 0; }
-  @media (min-width:1024px) { .contact-hero { gap: clamp(1.4rem, 1.6vw, 2.4rem); margin: 0; } }
+  .contact-hero { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 32rem; margin: auto 0; position: relative; top: 1.4rem; }
+  @media (min-width:1024px) { .contact-hero { gap: clamp(1.4rem, 1.6vw, 2.4rem); margin: 0; top: 0; } }
   .contact-title { font-size: 2rem; letter-spacing: 0.04em; }
   @media (min-width:1024px) { .contact-title { font-size: clamp(2.1rem, 2.4vw, 3.6rem); } }
 
@@ -284,6 +287,7 @@
         </div>
         <div class="speaker">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="speaker-emoji" aria-hidden="true">🤖</span>
             <h3>Andre AI</h3>
             <span class="sep">|</span>
             <p class="role">Chief AI Officer</p>
