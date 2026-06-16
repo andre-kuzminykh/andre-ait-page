@@ -66,7 +66,7 @@
   .header-right { pointer-events: auto; display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
   .logo-btn { cursor: pointer; flex-shrink: 0; }
   .logo-img { width: 2.6rem; height: 2.6rem; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
-  @media (min-width:1024px) { .logo-img { width: 4rem; height: 4rem; } }
+  @media (min-width:1024px) { .logo-img { width: 3.6rem; height: 3.6rem; } }
 
   /* Speaker badge (fixed over the video on both breakpoints) */
   .speaker { position: fixed; left: 50%; top: 60dvh; transform: translate(-50%, -100%); z-index: 30;
@@ -123,11 +123,11 @@
     .nav.open .nav-tab:hover .nav-label, .nav.open .nav-tab:hover .nav-ic, .nav.open .nav-tab:hover .nav-go { color: var(--ic); }
   }
   @media (min-width:1024px) {
-    .nav-tab { font-size: 13.5px; letter-spacing: 0.06em; padding: 0.35rem 0.7rem 0.5rem 0.7rem; color: #94a3b8; position: relative; }
+    .nav-tab { font-size: 12.5px; letter-spacing: 0.06em; padding: 0.32rem 0.62rem 0.46rem 0.62rem; color: #94a3b8; position: relative; }
     .nav-tab.active { background: linear-gradient(var(--ul), var(--ul)) no-repeat bottom center / 70% 2px; }
   }
   .nav-divider { display: none; }
-  @media (min-width:1024px) { .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 13.5px; padding: 0 0.15rem; user-select: none; pointer-events: none; } }
+  @media (min-width:1024px) { .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12.5px; padding: 0 0.12rem; user-select: none; pointer-events: none; } }
 
   /* Legal links pinned to the very bottom of the mobile menu (hidden on desktop) */
   .nav-legal { display: none; }
@@ -178,6 +178,9 @@
   @media (min-width:1024px) { .hero-size { font-size: clamp(1.7rem, 3.2vw, 2.8rem); } }
   .h2-size { font-size: 1.65rem; }
   @media (min-width:1024px) { .h2-size { font-size: clamp(2.1rem, 2.3vw, 3.5rem); } }
+  /* AI Transformation (roadmap) title: always one line, never squish the icon */
+  .rm-title { font-size: 1.5rem; white-space: nowrap; }
+  @media (min-width:1024px) { .rm-title { font-size: clamp(1.5rem, 1.9vw, 2.5rem); } }
 
   .overview-aura { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); width: min(85%, 32rem); height: 15rem;
     background: radial-gradient(closest-side, rgba(136,84,243,0.4), rgba(249,115,22,0.14), transparent 72%); filter: blur(34px); z-index: 0; pointer-events: none; animation: auraPulse 5.5s ease-in-out infinite; }
@@ -222,7 +225,7 @@
   @media (hover:hover) { .btn-white:hover { background: linear-gradient(100deg, #8854F3 0%, #F97316 50%, #8854F3 100%); background-size: 250% 250%; color: #ffffff; border-color: transparent;
       box-shadow: 0 10px 25px -5px rgba(136,84,243,0.45); transform: translateY(-2px); animation: gradientShimmer 4.5s ease infinite; } }
   .cta { padding: 0.55rem 0.7rem; font-size: 8px; letter-spacing: 0.06em; gap: 0.35rem; }
-  @media (min-width:1024px) { .cta { padding: 0.8rem 1.5rem; font-size: 12.5px; letter-spacing: 0.15em; gap: 0.6rem; } }
+  @media (min-width:1024px) { .cta { padding: 0.72rem 1.35rem; font-size: 11.5px; letter-spacing: 0.15em; gap: 0.55rem; } }
 
   /* ===== Contact screen (hero centered like other blocks, footer pinned) ===== */
   .contact-screen { position: relative; width: 100%; min-height: 40dvh; }
@@ -340,8 +343,8 @@
         <!-- ROADMAP -->
         <section class="screen roadmap-col" data-screen="roadmap">
           <div style="display: flex; align-items: center; gap: 1rem; justify-content: center;">
-            <div style="width: 2.9rem; height: 2.9rem; border-radius: 0.8rem; background: rgba(136,84,243,0.2); color: #8854F3; display: flex; align-items: center; justify-content: center; font-size: 19px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 8px 24px rgba(0,0,0,0.3);"><i class="fa-solid fa-route"></i></div>
-            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; text-shadow: 0 2px 8px rgba(0,0,0,0.5); color: #ffffff;">AI Transformation</h2>
+            <div style="width: 2.9rem; height: 2.9rem; flex-shrink: 0; border-radius: 0.8rem; background: rgba(136,84,243,0.2); color: #8854F3; display: flex; align-items: center; justify-content: center; font-size: 19px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 8px 24px rgba(0,0,0,0.3);"><i class="fa-solid fa-route"></i></div>
+            <h2 class="rm-title" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; text-shadow: 0 2px 8px rgba(0,0,0,0.5); color: #ffffff;">AI Transformation</h2>
           </div>
           <div class="rail" data-rail style="--railmax: 34rem;">
             <div class="card rail-item" data-action="tab" data-target="strategy" style="--accent:#F97316; display: flex; align-items: center; gap: 0.85rem; padding: 0.72rem 1rem;">
@@ -380,7 +383,7 @@
             <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-network-wired" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
             <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-chess-knight" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
           </div>
-          <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Strategy</h2>
+          <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Strategy</h2>
           <p class="desc">Audit Processes, Identify Automation, Design Workflows, Define Human-AI Roles, and Build an Architecture Roadmap Based on Your AI Maturity</p>
           <button class="btn-white" data-action="contact" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Get AI Strategy <i class="fa-solid fa-arrow-right"></i></button>
         </section>
@@ -392,7 +395,7 @@
             <div class="tile lg" style="border: 1px solid rgba(136,84,243,0.5); box-shadow: 0 10px 30px rgba(136,84,243,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-brain" style="font-size: 38px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
             <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-server" style="font-size: 26px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
           </div>
-          <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Business OS</h2>
+          <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Business OS</h2>
           <p class="desc">Integrate Models, Memory &amp; Context to Build AI Applications for Process Automation via Voice</p>
           <button class="btn-white" data-action="contact" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Get AI Platform <i class="fa-solid fa-arrow-right"></i></button>
         </section>
@@ -405,7 +408,7 @@
               <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); animation-delay: 0.2s;"><i class="fa-solid fa-robot" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
               <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); animation-delay: 0.4s;"><i class="fa-solid fa-laptop-code" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
             </div>
-            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Employees</h2>
+            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Employees</h2>
             <p class="desc">Choose one of ten AI agents: Manager, HR, Marketer, SMM, Sales, Support, Analyst, Designer, Developer, Engineer</p>
             <button class="btn-white" data-action="toggle-employees" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Employees <i class="fa-solid fa-arrow-right"></i></button>
           </div>
@@ -458,7 +461,7 @@
               <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); animation-delay: 0.2s;"><i class="fa-solid fa-wand-magic-sparkles" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
               <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); animation-delay: 0.4s;"><i class="fa-solid fa-brain" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
             </div>
-            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Products</h2>
+            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Products</h2>
             <p class="desc">AI Products serving the human good</p>
             <button class="btn-white" data-action="toggle-products" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Products <i class="fa-solid fa-arrow-right"></i></button>
           </div>
@@ -493,7 +496,7 @@
               <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); animation-delay: 0.2s;"><i class="fa-solid fa-graduation-cap" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
               <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); animation-delay: 0.4s;"><i class="fa-solid fa-laptop-code" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
             </div>
-            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Education</h2>
+            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Education</h2>
             <p class="desc">Develop skills for the new AI roles</p>
             <button class="btn-white" data-action="toggle-education" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Courses <i class="fa-solid fa-arrow-right"></i></button>
           </div>
@@ -504,16 +507,16 @@
             </div>
             <div class="rail" data-rail>
               <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
-                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-user-tie" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Executive Management</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Strategic leadership in AI transformation</p></div><span class="status-progress"><i class="fa-solid fa-clock-rotate-left"></i> In Progress</span></div>
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-user-tie" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Executive Management</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Strategic leadership in AI transformation</p></div><span class="status-progress"><i class="fa-solid fa-clock-rotate-left"></i> In Progress</span></div>
               </div>
               <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
-                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-gears" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Process Automation</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Automating business workflows with AI agents</p></div><a class="btn-white" href="#" rel="noopener" style="padding: 0.5rem 0.9rem; font-size: 9px; letter-spacing: 0.12em; gap: 0.4rem; white-space: nowrap; flex-shrink: 0; text-decoration: none;">Join <i class="fa-solid fa-arrow-right"></i></a></div>
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-gears" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Process Automation</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Automating business workflows with AI agents</p></div><a class="btn-white" href="#" rel="noopener" style="padding: 0.5rem 0.9rem; font-size: 9px; letter-spacing: 0.12em; gap: 0.4rem; white-space: nowrap; flex-shrink: 0; text-decoration: none;">Join <i class="fa-solid fa-arrow-right"></i></a></div>
               </div>
               <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
-                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-box-open" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Product Development</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Building products using AI</p></div><span class="status-progress"><i class="fa-solid fa-clock-rotate-left"></i> In Progress</span></div>
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-box-open" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Product Development</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Create New Products End-to-End with AI</p></div><span class="status-progress"><i class="fa-solid fa-clock-rotate-left"></i> In Progress</span></div>
               </div>
               <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
-                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-laptop-code" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Engineering</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Designing and deploying AI systems</p></div><span class="status-progress"><i class="fa-solid fa-clock-rotate-left"></i> In Progress</span></div>
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-laptop-code" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Engineering</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Designing and deploying high-load AI systems</p></div><span class="status-progress"><i class="fa-solid fa-clock-rotate-left"></i> In Progress</span></div>
               </div>
             </div>
             <p class="swipe-hint"><i class="fa-solid fa-arrows-left-right"></i> Swipe</p>
