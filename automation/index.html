@@ -176,8 +176,18 @@
   .menu .top{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem}
   @media(min-width:640px){.menu .top{padding:.75rem 2rem}}
   .menu nav{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 1.5rem}
-  .menu a{display:flex;align-items:center;gap:1rem;padding:1.25rem 0;border-bottom:1px solid var(--card-border);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:1.125rem}
-  .menu a .go{margin-left:auto;color:var(--muted);font-size:1rem}
+  .menu nav a{display:flex;align-items:center;gap:1rem;padding:1.25rem 0;border-bottom:1px solid var(--card-border);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:1.125rem}
+  .menu nav a .go{margin-left:auto;color:var(--muted);font-size:1rem}
+  .menu-x{background:none;border:0;color:var(--fg);font-size:1.6rem;line-height:1;padding:.25rem;cursor:pointer}
+  /* menu footer: socials -> Privacy·Terms -> copyright */
+  .menu-foot{display:flex;flex-direction:column;align-items:center;gap:.85rem;padding:1.1rem 1.5rem calc(1.6rem + env(safe-area-inset-bottom,0px))}
+  .menu-social{display:flex;align-items:center;justify-content:center;gap:1.1rem}
+  .social{color:var(--navitem);font-size:21px;transition:color .3s ease,transform .3s ease}
+  @media(hover:hover){.social:hover{color:var(--brand);transform:scale(1.12)}}
+  .menu-legal{display:flex;align-items:center;justify-content:center;gap:.7rem}
+  .menu-legal a{color:var(--navitem);font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;transition:color .3s ease}
+  .menu-legal .sep{color:var(--divider);font-size:12px;user-select:none}
+  .menu-copy{margin:0;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap;text-align:center}
 </style>
 </head>
 <body>
@@ -207,7 +217,7 @@
         <button class="ctrl burger" id="burger" aria-label="Меню"><i class="fa-solid fa-bars"></i></button>
         <button class="ctrl" id="theme" aria-label="Сменить фон (тёмный/светлый)"><i class="fa-solid fa-sun"></i></button>
         <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Получить консультацию по ИИ">
-          <span class="full">Получить консультацию по ИИ</span>
+          <span class="full">Консультация по ИИ</span>
           <span class="short">Консультация</span>
           <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
         </button>
@@ -308,7 +318,7 @@
       <button class="logo-btn" aria-label="На главную" onclick="location.href='index.html'">
         <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="Andre AI">
       </button>
-      <button class="ctrl" id="closeMenu" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+      <button class="menu-x" id="closeMenu" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <nav>
       <a href="index.html"><span class="plum" style="font-size:1.25rem"><i class="fa-solid fa-chess-knight"></i></span><span>AI Strategy</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
@@ -317,6 +327,21 @@
       <a href="index.html"><span class="flame" style="font-size:1.25rem"><i class="fa-solid fa-boxes-stacked"></i></span><span>AI Products</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
       <a href="index.html"><span class="plum" style="font-size:1.25rem"><i class="fa-solid fa-graduation-cap"></i></span><span>AI Education</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
     </nav>
+    <!-- menu footer: socials, legal links, copyright (placeholders #) -->
+    <div class="menu-foot">
+      <div class="menu-social">
+        <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE"><i class="fa-brands fa-telegram"></i></a>
+        <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3"><i class="fa-solid fa-globe"></i></a>
+        <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="YouTube" style="--brand:#FF0000"><i class="fa-brands fa-youtube"></i></a>
+        <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+      <div class="menu-legal">
+        <a href="#" rel="noopener">Privacy Policy</a>
+        <span class="sep" aria-hidden="true">&middot;</span>
+        <a href="#" rel="noopener">Terms of Use</a>
+      </div>
+      <p class="menu-copy">2026 &copy; Andre AI Technologies LTD</p>
+    </div>
   </div>
 
   <script>
