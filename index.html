@@ -5,10 +5,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
-<title>Andre AI Technologies — AI Transformation of your Business</title>
+<meta name="color-scheme" content="dark">
+<title>Andre AI — AI Transformation of your Business</title>
 <meta name="description" content="Andre AI — AI Transformation of your Business">
 <meta property="og:title" content="Andre AI — AI Transformation of your Business">
-<meta property="og:description" content="Andre AI — AI Transformation of your Business"">
+<meta property="og:description" content="Andre AI — AI Transformation of your Business">
 <meta property="og:type" content="website">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +25,7 @@
      ============================================================ */
 
   html, body {
-    margin: 0; padding: 0; background: #050505;
+    margin: 0; padding: 0; background: #050505; color-scheme: dark;
     font-family: 'JetBrains Mono', monospace; color: #E5E7EB;
     overflow: hidden; width: 100vw; height: 100vh; height: 100dvh;
     -webkit-tap-highlight-color: transparent;
@@ -240,9 +241,15 @@
   /* ===== Contact screen (hero centered like other blocks, footer pinned) ===== */
   .contact-screen { position: relative; width: 100%; min-height: 40dvh; transform: translateY(2.8rem); }
   @media (min-width:1024px) {
-    /* Contact fills the full viewport: hero centred in the middle, footer pinned to the very bottom */
-    .scroll:has(.contact-screen.active) { max-height: 100dvh; height: 100dvh; padding-top: 0; padding-bottom: 0; }
-    .contact-screen { min-height: 100dvh; justify-content: center; transform: none; }
+    /* Contact fills the full viewport via %-heights cascading from the fixed, edge-pinned
+       .content-layer (inset:0) — NOT 100dvh. body{zoom} on large screens scales viewport
+       units, so a 100dvh block renders ~15-50% taller than the screen and its bottom rows
+       (Privacy·Terms, copyright, then even the icons) get clipped off the bottom. Percent
+       heights of an edge-pinned ancestor stay exactly one screen tall at any zoom.
+       Hero stays centred; footer pinned to the very bottom. */
+    .panel:has(.contact-screen.active) { height: 100%; }
+    .scroll:has(.contact-screen.active) { max-height: 100%; height: 100%; padding-top: 0; padding-bottom: 0; }
+    .contact-screen { min-height: 100%; justify-content: center; transform: none; }
   }
   .contact-hero { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 32rem; margin: auto 0; position: relative; top: 1.4rem; }
   @media (min-width:1024px) { .contact-hero { gap: clamp(1.4rem, 1.6vw, 2.4rem); margin: 0; top: 0; } }
