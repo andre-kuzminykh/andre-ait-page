@@ -1,975 +1,356 @@
+
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Agent Automation Bootcamp | Andre AI Technologies</title>
-    
-    <!-- Open Graph / Meta Tags for Telegram & Social Media -->
-    <meta name="description" content="Equip your team with the skills to build an AI-First Business. A practical corporate Bootcamp to design, build, and test AI agents." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://andre-ait.com/" />
-    <meta property="og:title" content="AI Agent Automation Bootcamp | Andre AI Technologies" />
-    <meta property="og:description" content="Equip your team with the skills to build an AI-First Business. A practical corporate Bootcamp to design, build, and test AI agents." />
-    <meta property="og:image" content="https://i.ibb.co/7xcdLTk3/2026-04-17-1-48-20-AM.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:type" content="image/png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AI Agent Automation Bootcamp | Andre AI" />
-    <meta name="twitter:description" content="Equip your team with the skills to build an AI-First Business." />
-    <meta name="twitter:image" content="https://i.ibb.co/7xcdLTk3/2026-04-17-1-48-20-AM.png" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<meta name="color-scheme" content="dark">
+<title>Andre AI — Курс по автоматизации бизнес-процессов с ИИ-агентами</title>
+<meta name="description" content="Курс по автоматизации бизнес-процессов с ИИ-агентами — станьте ИИ-инженером по автоматизации.">
 
-    <!-- Fonts and Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                    },
-                    colors: {
-                        brand: {
-                            purple: '#8854F3',
-                            orange: '#F97316'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <style>
-        :root {
-            --brand-purple: #8854F3;
-            --brand-orange: #F97316;
-            --bg-main: #f8fafc;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --glass-bg: rgba(255, 255, 255, 0.4);
-            --glass-border: rgba(0, 0, 0, 0.08);
-        }
+<style>
+  /* ============================================================
+     Andre AIT — Welcome / course landing (plain HTML).
+     Matches the main site: JetBrains Mono, dark #050505,
+     #8854F3 (purple) + #F97316 (orange), Font Awesome, btn-white shimmer.
+     Opened from the "Process Automation" card on AI Education.
+     ============================================================ */
+  :root{
+    --bg:#050505; --fg:#E5E7EB; --muted:rgba(255,255,255,.55);
+    --card-bg:rgba(255,255,255,.04); --card-border:rgba(255,255,255,.10); --card-shadow:none;
+    --pill-bg:rgba(255,255,255,.06); --pill-border:rgba(255,255,255,.10);
+    --divider:rgba(255,255,255,.20); --navitem:rgba(255,255,255,.60);
+    --btn-bg:#FAFAFA; --btn-fg:#050505;
+    --ctrl-bg:rgba(255,255,255,.05); --ctrl-border:rgba(255,255,255,.10); --ctrl-fg:rgba(255,255,255,.80);
+  }
 
-        .dark {
-            --bg-main: #050505; 
-            --text-main: #E5E7EB;
-            --text-muted: #9ca3af;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-        }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--fg);
+    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1,h2,h3{letter-spacing:-.03em;margin:0}
+  ::selection{background:#8854F3;color:#fff}
+  a{text-decoration:none;color:inherit}
+  button{font-family:inherit;cursor:pointer}
+  *:focus-visible{outline:2px solid #8854F3;outline-offset:2px}
+  .plum{color:#8854F3}
+  .flame{color:#F97316}
 
-        /* Fullscreen Slide Setup */
-        body {
-            font-family: 'JetBrains Mono', monospace;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            margin: 0;
-            overflow: hidden; /* Lock scroll for slides */
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
-            transition: background-color 0.5s ease, color 0.5s ease;
-            touch-action: none; /* Let JS handle swipe */
-        }
+  @keyframes gradientShimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-        ::selection { background: var(--brand-purple); color: #FFFFFF; }
+  /* ===== Grain overlay (same as main site) ===== */
+  .grain{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.06;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-size:180px 180px}
 
-        /* Custom Scrollbar for internal scrolling elements */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--brand-purple); }
+  /* ===== Header: transparent, floating ===== */
+  header{position:fixed;inset:0 0 auto 0;z-index:40;pointer-events:none}
+  .row{max-width:80rem;margin:0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:.75rem;padding:.75rem 1rem}
+  @media(min-width:640px){.row{padding:.75rem 2rem}}
+  .row>*{pointer-events:auto}
 
-        /* Background Blobs */
-        .blob {
-            position: fixed;
-            z-index: 0;
-            opacity: 0.5;
-            transform: scale(1) translateZ(0);
-            transition: opacity 0.4s ease;
-            will-change: transform, opacity;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            mix-blend-mode: multiply; 
-        }
+  .logo-btn{display:inline-flex;align-items:center;gap:.5rem;background:none;border:0;padding:0;justify-self:start}
+  .logo-btn img{height:2.5rem;width:auto;object-fit:contain;transition:transform .2s ease}
+  @media(min-width:640px){.logo-btn img{height:2.75rem}}
+  .logo-btn:hover img{transform:scale(1.05)}
 
-        .dark .blob { mix-blend-mode: screen; }
+  .navpill{
+    display:none;justify-self:center;align-items:center;gap:.25rem;
+    border:1px solid var(--pill-border);background:var(--pill-bg);
+    border-radius:999px;padding:.5rem .75rem;
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  }
+  @media(min-width:1280px){.navpill{display:flex}}
+  .navpill a{white-space:nowrap;padding:.25rem .75rem;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--navitem);transition:color .25s ease}
+  .navpill a.f:hover{color:#F97316}
+  .navpill a.p:hover{color:#8854F3}
+  .navpill .sep{color:var(--divider);user-select:none;font-size:11px}
 
-        .blob-purple {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1600' viewBox='0 0 500 500'%3e%3cdefs%3e%3cradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3e%3cstop offset='0%25' stop-color='%238854F3' stop-opacity='1'/%3e%3cstop offset='100%25' stop-color='%238854F3' stop-opacity='0'/%3e%3c/radialGradient%3e%3c/defs%3e%3ccircle cx='250' cy='250' r='250' fill='url(%23grad)'/%3e%3c/svg%3e");
-        }                
-        
-        .blob-orange {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1600' viewBox='0 0 500 500'%3e%3cdefs%3e%3cradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3e%3cstop offset='0%25' stop-color='%23F97316' stop-opacity='1'/%3e%3cstop offset='100%25' stop-color='%23F97316' stop-opacity='0'/%3e%3c/radialGradient%3e%3c/defs%3e%3ccircle cx='250' cy='250' r='250' fill='url(%23grad)'/%3e%3c/svg%3e");
-        }
+  .right{display:flex;align-items:center;justify-self:end;gap:.5rem}
+  @media(min-width:640px){.right{gap:.75rem}}
+  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:2.25rem;width:2.25rem;border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:1rem;transition:background .2s ease}
+  .ctrl:hover{background:rgba(255,255,255,.10)}
+  .burger{display:inline-flex}
+  @media(min-width:1280px){.burger{display:none}}
 
-        .grain-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 1; opacity: 0.03;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-            mix-blend-mode: overlay;
-        }
+  /* ===== CTA button: white, shimmer gradient on hover (same as site) ===== */
+  .btn-white{
+    display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border:0;
+    border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+    background:var(--btn-bg);color:var(--btn-fg);box-shadow:0 4px 15px rgba(0,0,0,.18);
+    transition:all .3s ease;white-space:nowrap;
+  }
+  .btn-white:hover{
+    background:linear-gradient(100deg,#8854F3 0%,#F97316 50%,#8854F3 100%);background-size:250% 250%;
+    color:#fff;box-shadow:0 10px 25px -5px rgba(136,84,243,.45);transform:translateY(-2px);
+    animation:gradientShimmer 4.5s ease infinite;
+  }
+  .consult{height:2.25rem;padding:0 .75rem;font-size:10px}
+  @media(min-width:640px){.consult{padding:0 1rem}}
+  .consult .short{display:inline}
+  .consult .full{display:none}
+  @media(min-width:640px){.consult .short{display:none}.consult .full{display:inline}}
 
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 1.25rem;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-        }
+  /* ===== Content ===== */
+  main{min-height:100dvh;overflow-y:auto;padding:5rem 1rem 0}
+  @media(min-width:640px){main{padding:6rem 2rem 0}}
+  .wrap{max-width:64rem;margin:0 auto;display:flex;flex-direction:column;padding-bottom:3rem;animation:fadeUp .5s ease both}
+  .center{max-width:48rem;margin:0 auto;text-align:center}
 
-        /* Refined Hover Cards */
-        .hover-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-        }
-        .hover-card-orange:hover, .hover-card-orange:active {
-            border-color: var(--brand-orange);
-            box-shadow: 0 8px 30px rgba(249, 115, 22, 0.15);
-            transform: translateY(-3px);
-        }
-        .hover-card-purple:hover, .hover-card-purple:active {
-            border-color: var(--brand-purple);
-            box-shadow: 0 8px 30px rgba(136, 84, 243, 0.15);
-            transform: translateY(-3px);
-        }
+  .hero{font-size:clamp(1.5rem,5.2vw,3rem);font-weight:800;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;padding-top:.5rem}
+  .hero span.line{display:block}
+  .hero .nowrap{display:block;white-space:nowrap}
+  .desc{color:var(--muted);max-width:42rem;margin:1.5rem auto 0;font-size:clamp(.875rem,1.6vw,1rem);line-height:1.7}
 
-        /* Buttons */
-        .btn-white {
-            background: #ffffff; color: #050505; transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); border: 1px solid #ffffff;
-        }
-        html:not(.dark) .btn-white { background: #0f172a; color: #ffffff; border-color: #0f172a; }
-        .hover-btn-orange:hover, .group:hover .hover-btn-orange {
-            background: var(--brand-orange) !important; color: #ffffff !important; border-color: transparent !important;
-            box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.4) !important; transform: translateY(-2px);
-        }
-        .hover-btn-purple:hover, .group:hover .hover-btn-purple {
-            background: var(--brand-purple) !important; color: #ffffff !important; border-color: transparent !important;
-            box-shadow: 0 10px 25px -5px rgba(136, 84, 243, 0.4) !important; transform: translateY(-2px);
-        }
+  section.block{margin-top:3rem}
+  .h2{text-align:center;font-size:clamp(1.25rem,3vw,1.5rem);font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
 
-        /* Slide Logic */
-        .slide {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            opacity: 0; pointer-events: none;
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; flex-direction: column;
-            padding: 5rem 1rem 1rem 1rem; 
-            transform: translateY(40px) scale(0.98);
-            z-index: 10; overflow: hidden;
-            justify-content: center;
-        }
-        @media (min-width: 768px) { .slide { padding: 5.5rem 1.5rem 1.5rem 1.5rem; } }                        
-        
-        .slide-inner { margin: 0 auto; width: 100%; max-width: 80rem; display: flex; flex-direction: column; justify-content: center; height: 100%; max-height: 100%; }
-        .slide.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
-        .slide.past { transform: translateY(-40px) scale(0.98); }
+  .roles{margin-top:1.5rem;display:grid;grid-template-columns:1fr;gap:1rem}
+  @media(min-width:640px){.roles{grid-template-columns:repeat(3,1fr)}}
+  .card{border:1px solid var(--card-border);background:var(--card-bg);box-shadow:var(--card-shadow);border-radius:1rem;transition:transform .2s ease,border-color .2s ease}
+  .card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.18)}
+  .role{padding:1.5rem;text-align:center;border-radius:1rem}
+  .role .ico{margin:0 auto 1rem;display:inline-flex;align-items:center;justify-content:center;height:3.5rem;width:3.5rem;border-radius:1rem;font-size:1.5rem}
+  .ico.p{background:rgba(136,84,243,.15);color:#8854F3}
+  .ico.f{background:rgba(249,115,22,.15);color:#F97316}
+  .role h3{font-size:1rem;font-weight:700;text-transform:uppercase}
+  .role p{color:var(--muted);margin:.5rem 0 0;font-size:.75rem;line-height:1.6}
 
-        .nav-text { transition: color 0.3s ease; }
-        .nav-link:hover .nav-text.text-hover-orange { color: var(--brand-orange); }
-        .nav-link:hover .nav-text.text-hover-purple { color: var(--brand-purple); }
+  .learn{margin-top:1.5rem;max-width:56rem;margin-left:auto;margin-right:auto;display:grid;grid-template-columns:1fr;gap:.5rem;list-style:none;padding:0}
+  @media(min-width:640px){.learn{grid-template-columns:repeat(2,1fr)}}
+  .learn li{display:flex;align-items:center;gap:.75rem;padding:.75rem;border-radius:1rem;border:1px solid var(--card-border);background:var(--card-bg)}
+  .learn .ico{height:2.25rem;width:2.25rem;border-radius:.5rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
+  .learn p{margin:0;font-size:.8125rem;line-height:1.35}
 
-        /* Horizontal Drag Scroll - Native touch + JS wheel scroll */
-        .drag-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            touch-action: pan-x; /* Essential for native horizontal touch scrolling */
-            cursor: grab;
-        }
-        .drag-scroll.active { cursor: grabbing; }
-        .drag-scroll::-webkit-scrollbar { display: none; }
+  .cta-row{margin:2.5rem 0 1rem;display:flex;justify-content:center}
+  .cta-row .btn-white{padding:0 2rem;height:3rem;font-size:14px;letter-spacing:.1em}
 
-        /* Timeline Gradient */
-        .timeline-gradient {
-            background: linear-gradient(to right, var(--brand-purple), var(--brand-orange));
-        }
+  /* ===== Video bubble (talking head): tap = sound / play-pause, draggable ===== */
+  .bubble{position:fixed;right:1rem;bottom:1rem;z-index:40;width:clamp(96px,18vw,200px);height:clamp(96px,18vw,200px);touch-action:none;user-select:none;-webkit-user-select:none}
+  @media(min-width:640px){.bubble{right:2rem;bottom:2rem}}
+  .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
+  .bubble.dragging .inner{cursor:grabbing}
+  .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
+  .bubble video{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}
+  .bubble-sound{position:absolute;z-index:3;left:50%;bottom:8%;transform:translateX(-50%);display:inline-flex;align-items:center;justify-content:center;height:1.5rem;min-width:1.5rem;padding:0 .4rem;border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font-size:.72rem;pointer-events:none;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);transition:opacity .2s ease}
+  .bubble.paused .bubble-sound{opacity:0}
+  .bubble-play{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.9rem;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity .2s ease;pointer-events:none}
+  .bubble.paused .bubble-play{opacity:1}
 
-        /* Form Inputs */
-        input[type="text"], input[type="email"], input[type="range"] {
-            background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main);
-        }
-        input:focus { border-color: var(--brand-purple); outline: none; }
-        
-        details > summary { list-style: none; }
-        details > summary::-webkit-details-marker { display: none; }
-    </style>
+  /* ===== Mobile fullscreen menu ===== */
+  .menu{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;background:var(--bg)}
+  .menu.open{display:flex}
+  .menu .top{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem}
+  @media(min-width:640px){.menu .top{padding:.75rem 2rem}}
+  .menu nav{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 1.5rem}
+  .menu a{display:flex;align-items:center;gap:1rem;padding:1.25rem 0;border-bottom:1px solid var(--card-border);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:1.125rem}
+  .menu a .go{margin-left:auto;color:var(--muted);font-size:1rem}
+</style>
 </head>
-<body class="antialiased">
+<body>
 
-    <!-- Animated Background -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div id="blob1" class="blob blob-purple w-[30rem] h-[30rem] md:w-[40rem] md:h-[40rem] lg:w-[50rem] lg:h-[50rem]"></div>
-        <div id="blob2" class="blob blob-orange w-[30rem] h-[30rem] md:w-[40rem] md:h-[40rem] lg:w-[50rem] lg:h-[50rem]"></div>
-        <div class="grain-overlay"></div>
+  <div class="grain"></div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="row">
+      <button class="logo-btn" aria-label="На главную" onclick="location.href='index.html'">
+        <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="Andre AI">
+      </button>
+
+      <nav class="navpill">
+        <a class="p" href="index.html">AI Strategy</a>
+        <span class="sep">|</span>
+        <a class="f" href="index.html">AI Business OS</a>
+        <span class="sep">|</span>
+        <a class="p" href="index.html">AI Employees</a>
+        <span class="sep">|</span>
+        <a class="f" href="index.html">AI Products</a>
+        <span class="sep">|</span>
+        <a class="p" href="index.html">AI Education</a>
+      </nav>
+
+      <div class="right">
+        <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Получить консультацию по ИИ">
+          <span class="full">Получить консультацию по ИИ</span>
+          <span class="short">Консультация</span>
+          <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
+        </button>
+        <button class="ctrl burger" id="burger" aria-label="Меню"><i class="fa-solid fa-bars"></i></button>
+      </div>
     </div>
-    
-    <!-- Header -->
-    <header class="fixed top-0 left-0 w-full p-4 md:px-6 md:py-4 z-50 flex justify-between items-center bg-transparent">
-        <div class="flex items-center gap-3 md:gap-4 cursor-pointer group shrink-0 min-w-0" onclick="goToSlide(0)">
-            <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT Logo" class="h-10 md:h-12 w-auto object-contain scale-[1.2] md:scale-[1.15] origin-left group-hover:scale-[1.3] transition-transform shrink-0"/>
-            <div class="flex flex-col justify-center text-left transition-all mt-[2px]">
-                <span class="font-mono text-[10px] sm:text-xs md:text-[14px] font-bold text-[var(--text-main)] leading-[1.15] whitespace-nowrap">Andre AI</span>
-                <span class="font-mono text-[10px] sm:text-xs md:text-[14px] font-medium text-[var(--text-main)] leading-[1.15] whitespace-nowrap">Technologies</span>
-            </div>
+  </header>
+
+  <!-- WELCOME CONTENT -->
+  <main>
+    <div class="wrap">
+
+      <!-- HERO -->
+      <div class="center">
+        <h1 class="hero">
+          <span class="line">Добро пожаловать на курс</span>
+          <span class="line">по автоматизации</span>
+          <span class="nowrap"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span>
+        </h1>
+        <p class="desc">Вы узнаете, как трансформировать свой бизнес в ИИ-First компанию: моделировать бизнес-процессы, автоматизировать их с помощью ИИ-агентов и масштабироваться без роста штата с измеримым экономическим эффектом</p>
+      </div>
+
+      <!-- ДЛЯ КОГО -->
+      <section class="block">
+        <h2 class="h2">Для кого <span class="plum">этот курс</span></h2>
+        <div class="roles">
+          <article class="card role">
+            <div class="ico p"><i class="fa-solid fa-compass"></i></div>
+            <h3>ИИ-консультант</h3>
+            <p>Находит процессы для ИИ-автоматизации</p>
+          </article>
+          <article class="card role">
+            <div class="ico f"><i class="fa-solid fa-wrench"></i></div>
+            <h3>ИИ-инженер по автоматизации</h3>
+            <p>Автоматизирует бизнес с ИИ-агентами</p>
+          </article>
+          <article class="card role">
+            <div class="ico p"><i class="fa-solid fa-rocket"></i></div>
+            <h3>ИИ-основатель</h3>
+            <p>Строит бизнес с помощью ИИ-агентов</p>
+          </article>
         </div>
-                
-        <nav class="hidden lg:flex items-center gap-1 glass-panel p-1.5 rounded-full">
-            <button onclick="goToSlide(1)" class="nav-link lg:px-3 xl:px-4 py-1.5 rounded-full text-[10px] xl:text-[11px] uppercase tracking-widest font-bold text-[var(--text-muted)] transition-colors"><span class="nav-text text-hover-purple">Results</span></button>
-            <button onclick="goToSlide(2)" class="nav-link lg:px-3 xl:px-4 py-1.5 rounded-full text-[10px] xl:text-[11px] uppercase tracking-widest font-bold text-[var(--text-muted)] transition-colors"><span class="nav-text text-hover-orange">Use Cases</span></button>
-            <button onclick="goToSlide(3)" class="nav-link lg:px-3 xl:px-4 py-1.5 rounded-full text-[10px] xl:text-[11px] uppercase tracking-widest font-bold text-[var(--text-muted)] transition-colors"><span class="nav-text text-hover-purple">Curriculum</span></button>
-            <button onclick="goToSlide(6)" class="nav-link lg:px-3 xl:px-4 py-1.5 rounded-full text-[10px] xl:text-[11px] uppercase tracking-widest font-bold text-[var(--text-muted)] transition-colors"><span class="nav-text text-hover-orange">Pricing</span></button>
-        </nav>
+      </section>
 
-        <div class="flex items-center gap-2 md:gap-3 shrink-0">
-            <button id="theme-toggle" class="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-main)] hover:scale-110 transition-transform bg-[var(--glass-bg)] border border-[var(--glass-border)] shrink-0">
-                <i class="fa-solid fa-moon dark:hidden"></i>
-                <i class="fa-solid fa-sun hidden dark:block"></i>
-            </button>
-            <button onclick="goToSlide(7)" class="btn-white hover-btn-purple px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[9px] md:text-[11px] uppercase tracking-widest font-bold flex items-center gap-1.5 shrink-0 cursor-pointer">
-                Apply Now <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            <button onclick="goToSlide(7)" class="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-main)] hover:scale-110 transition-transform bg-[var(--glass-bg)] border border-[var(--glass-border)] shrink-0">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-        </div>
-    </header>
+      <!-- ЧЕМУ НАУЧИТЕСЬ -->
+      <section class="block">
+        <h2 class="h2">Чему вы <span class="flame">научитесь</span></h2>
+        <ol class="learn">
+          <li><span class="ico p"><i class="fa-solid fa-brain"></i></span><p>Управлять компанией как потоком данных</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-magnifying-glass"></i></span><p>Находить процессы для автоматизации</p></li>
+          <li><span class="ico p"><i class="fa-solid fa-clipboard-list"></i></span><p>Описывать текущий AS-IS процесс</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-pen-ruler"></i></span><p>Проектировать будущую TO-BE модель</p></li>
+          <li><span class="ico p"><i class="fa-solid fa-user-gear"></i></span><p>Определять роль ИИ-агента в процессе</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-robot"></i></span><p>Создавать ИИ-агентов</p></li>
+          <li><span class="ico p"><i class="fa-solid fa-network-wired"></i></span><p>Понимать логику работы мультиагентных систем</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-shield-halved"></i></span><p>Проверять качество и безопасность ИИ-решений</p></li>
+          <li><span class="ico p"><i class="fa-solid fa-arrow-trend-up"></i></span><p>Оценивать эффект от автоматизации</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-rocket"></i></span><p>Внедрить первого ИИ-агента в бизнес</p></li>
+        </ol>
+      </section>
 
-    <!-- Main Slides Container (10 Slides Total) -->
-    <main id="slides-container" class="relative w-full h-full z-10">
-        
-        <!-- Slide 0: Hero -->
-        <section class="slide active" id="slide-0">
-            <div class="slide-inner text-center !justify-center">
-                <div class="inline-flex items-center space-x-3 px-5 py-2 md:px-6 md:py-2.5 rounded-full bg-black/5 dark:bg-white/5 backdrop-blur-md mb-6 md:mb-8 border border-[var(--glass-border)] uppercase tracking-widest text-[10px] md:text-xs font-bold text-[var(--text-main)] mx-auto">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-purple opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-purple"></span>
-                    </span>
-                    <span>Corporate Bootcamp</span>
-                </div>
-                
-                <h1 class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6 md:mb-8 uppercase drop-shadow-2xl leading-tight">
-                    <span class="text-brand-purple">Business</span> Automation <br>
-                    With <span class="text-brand-orange">AI Agents</span>
-                </h1>
-                
-                <p class="text-[var(--text-muted)] text-xs md:text-base max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed px-4">
-                    A practical corporate Bootcamp where your team will design, build, and test AI agents for real company tasks.
-                </p>
-                
-                <div class="flex flex-wrap justify-center gap-2 md:gap-3 mb-10 md:mb-12 max-w-3xl mx-auto px-2">
-                    <div class="glass-panel px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-[9px] md:text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-calendar text-brand-purple"></i> 1 Month
-                    </div>
-                    <div class="glass-panel px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-[9px] md:text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-users text-brand-orange"></i> Up to 30 People
-                    </div>
-                    <div class="glass-panel px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-[9px] md:text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-video text-brand-purple"></i> Live + Pre-recorded
-                    </div>
-                </div>
-                
-                <button onclick="goToSlide(7)" class="btn-white hover-btn-orange px-8 md:px-10 py-4 md:py-5 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-sm flex items-center justify-center gap-3 w-max mx-auto shadow-lg">
-                    Submit Application <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-        </section>
+      <!-- CTA -->
+      <div class="cta-row">
+        <button class="btn-white" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')">
+          Освоить новую профессию
+          <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
+        </button>
+      </div>
 
-        <!-- Slide 1: Business Outcomes -->
-        <section class="slide" id="slide-1">
-            <div class="slide-inner !justify-center">
-                <h2 class="text-2xl md:text-4xl lg:text-5xl font-black mb-6 md:mb-10 uppercase text-center shrink-0">Business <span class="text-brand-purple">Outcomes</span></h2>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-5 w-full max-w-6xl mx-auto px-2">
-                    <!-- Card 1 -->
-                    <div class="hover-card hover-card-purple glass-panel p-4 md:p-6 flex flex-col justify-center rounded-2xl">
-                        <i class="fa-solid fa-bullseye text-brand-purple text-xl md:text-2xl mb-2 md:mb-4"></i>
-                        <h3 class="text-xs md:text-base font-bold uppercase mb-1 md:mb-2">Priority Cases</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">2–3 prioritized automation cases with measurable business impact.</p>
-                    </div>
-                    
-                    <!-- Card 2 -->
-                    <div class="hover-card hover-card-orange glass-panel p-4 md:p-6 flex flex-col justify-center rounded-2xl">
-                        <i class="fa-solid fa-microchip text-brand-orange text-xl md:text-2xl mb-2 md:mb-4"></i>
-                        <h3 class="text-xs md:text-base font-bold uppercase mb-1 md:mb-2">Ready Prototypes</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Assembled AI agents adapted for your real company processes.</p>
-                    </div>
-                    
-                    <!-- Card 3 -->
-                    <div class="hover-card hover-card-purple glass-panel p-4 md:p-6 flex flex-col justify-center rounded-2xl">
-                        <i class="fa-solid fa-map text-brand-purple text-xl md:text-2xl mb-2 md:mb-4"></i>
-                        <h3 class="text-xs md:text-base font-bold uppercase mb-1 md:mb-2">30/60/90 Roadmap</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">A clear implementation plan for a smooth transition to the new model.</p>
-                    </div>
-                    
-                    <!-- Card 4 (Strictly ROI & Risks) -->
-                    <div class="hover-card hover-card-orange glass-panel p-4 md:p-6 flex flex-col justify-center rounded-2xl md:col-span-1">
-                        <i class="fa-solid fa-calculator text-brand-orange text-xl md:text-2xl mb-2 md:mb-4"></i>
-                        <h3 class="text-xs md:text-base font-bold uppercase mb-1 md:mb-2">ROI & Risks</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Detailed ROI calculation, economic justification, and a risk map.</p>
-                    </div>
-                    
-                    <!-- Card 5 -->
-                    <div class="hover-card hover-card-purple glass-panel p-4 md:p-6 flex flex-col justify-center rounded-2xl md:col-span-2 border-brand-purple/30 shadow-[0_0_20px_rgba(136,84,243,0.1)]">
-                        <i class="fa-solid fa-chart-simple text-brand-purple text-xl md:text-2xl mb-2 md:mb-4"></i>
-                        <h3 class="text-xs md:text-base font-bold uppercase mb-1 md:mb-2">Executive Report</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">A comprehensive analysis with specific recommendations for scaling agentic systems to other company departments.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+    </div>
+  </main>
 
-        <!-- Slide 2: Use Cases -->
-        <section class="slide" id="slide-2">
-            <div class="slide-inner !justify-center">
-                <div class="mb-6 md:mb-10 shrink-0 px-2 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div class="text-center sm:text-left">
-                        <h2 class="text-2xl md:text-4xl lg:text-5xl font-black mb-1 uppercase">AI Agent <span class="text-brand-purple">Use Cases</span></h2>
-                    </div>
-                    
-                    <!-- Навигационные кнопки для скролла юзкейсов -->
-                    <div class="flex gap-3 pointer-events-auto shrink-0">
-                        <button onclick="document.getElementById('use-cases-scroll').scrollBy({left: -320, behavior: 'smooth'})" class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-[var(--text-main)] hover:scale-110 transition-transform bg-[var(--glass-bg)] border border-[var(--glass-border)] hover:border-brand-purple hover:text-brand-purple shrink-0 shadow-lg">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
-                        <button onclick="document.getElementById('use-cases-scroll').scrollBy({left: 320, behavior: 'smooth'})" class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-[var(--text-main)] hover:scale-110 transition-transform bg-[var(--glass-bg)] border border-[var(--glass-border)] hover:border-brand-orange hover:text-brand-orange shrink-0 shadow-lg">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- drag-scroll container: Works natively with touch and translates vertical mouse wheels perfectly -->
-                <div id="use-cases-scroll" class="drag-scroll flex overflow-x-auto gap-4 pb-6 px-4 -mx-4 pointer-events-auto snap-x snap-mandatory">
-                    
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-purple glass-panel p-5 md:p-6 rounded-3xl snap-center">
-                        <i class="fa-solid fa-briefcase text-brand-purple text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">Manager</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Coordinating distributed teams, tracking tasks, and automatically generating project status updates.</p>
-                    </div>
-                    
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-orange glass-panel p-5 md:p-6 rounded-3xl snap-center">
-                        <i class="fa-solid fa-users text-brand-orange text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">HR</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Smart screening of hundreds of resumes, conducting initial interviews, and personalized employee onboarding.</p>
-                    </div>
+  <!-- VIDEO BUBBLE (talking head — drag to move; tap = sound, then play/pause; swap the src later) -->
+  <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
+    <div class="inner">
+      <div class="grad"></div>
+      <video id="bubble-video" src="https://github.com/andre-kuzminykh/andre-ait-page/raw/refs/heads/main/andre-ai-web-small.mp4" loop muted autoplay playsinline preload="auto"></video>
+      <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><i class="fa-solid fa-volume-xmark"></i></div>
+      <div class="bubble-play" aria-hidden="true"><i class="fa-solid fa-play"></i></div>
+    </div>
+  </div>
 
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-purple glass-panel p-5 md:p-6 rounded-3xl snap-center">
-                        <i class="fa-solid fa-bullseye text-brand-purple text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">Marketer</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Deep target audience analysis, campaign idea generation, and automated budget optimization.</p>
-                    </div>
+  <!-- MOBILE MENU -->
+  <div class="menu" id="mobileMenu">
+    <div class="top">
+      <button class="logo-btn" aria-label="На главную" onclick="location.href='index.html'">
+        <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="Andre AI">
+      </button>
+      <button class="ctrl" id="closeMenu" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <nav>
+      <a href="index.html"><span class="plum" style="font-size:1.25rem"><i class="fa-solid fa-chess-knight"></i></span><span>AI Strategy</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <a href="index.html"><span class="flame" style="font-size:1.25rem"><i class="fa-solid fa-layer-group"></i></span><span>AI Business OS</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <a href="index.html"><span class="plum" style="font-size:1.25rem"><i class="fa-solid fa-robot"></i></span><span>AI Employees</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <a href="index.html"><span class="flame" style="font-size:1.25rem"><i class="fa-solid fa-boxes-stacked"></i></span><span>AI Products</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <a href="index.html"><span class="plum" style="font-size:1.25rem"><i class="fa-solid fa-graduation-cap"></i></span><span>AI Education</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
+    </nav>
+  </div>
 
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-orange glass-panel p-5 md:p-6 rounded-3xl snap-center">
-                        <i class="fa-solid fa-mobile-screen text-brand-orange text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">SMM</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Content plan creation, generating engaging posts from prompts, and basic comment moderation.</p>
-                    </div>
+  <script>
+    // Mobile menu open/close
+    var menu = document.getElementById('mobileMenu');
+    document.getElementById('burger').addEventListener('click', function(){ menu.classList.add('open'); });
+    document.getElementById('closeMenu').addEventListener('click', function(){ menu.classList.remove('open'); });
 
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-purple glass-panel p-5 md:p-6 rounded-3xl snap-center">
-                        <i class="fa-solid fa-cart-shopping text-brand-purple text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">Sales</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Cold lead qualification, smart trigger emails, and automatic CRM card population.</p>
-                    </div>
+    // ===== Video bubble: tap = sound, then play/pause; drag to move =====
+    (function(){
+      var bubble = document.getElementById('bubble');
+      var video  = document.getElementById('bubble-video');
+      var sound  = document.getElementById('bubble-sound');
+      if (!bubble || !video) return;
 
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-orange glass-panel p-5 md:p-6 rounded-3xl snap-center">
-                        <i class="fa-solid fa-headset text-brand-orange text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">Support</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">L1 automation, working with knowledge bases (RAG), and routing complex tickets to human operators.</p>
-                    </div>
+      // autoplay muted loop (muted is required for autoplay); reflect state in classes
+      video.muted = true; video.loop = true;
+      var pr = video.play && video.play(); if (pr && pr.catch) pr.catch(function(){});
+      function syncSound(){
+        bubble.classList.toggle('muted', video.muted);
+        if (sound) sound.innerHTML = '<i class="fa-solid fa-volume-' + (video.muted ? 'xmark' : 'high') + '"></i>';
+      }
+      video.addEventListener('play',  function(){ bubble.classList.remove('paused'); });
+      video.addEventListener('pause', function(){ bubble.classList.add('paused'); });
+      video.addEventListener('volumechange', syncSound);
+      setTimeout(function(){ if (video.paused) bubble.classList.add('paused'); syncSound(); }, 400);
 
-                    <!-- Analyst -->
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-purple glass-panel p-5 md:p-6 rounded-3xl snap-center">
-                        <i class="fa-solid fa-chart-line text-brand-purple text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">Analyst</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Continuous data collection from various sources, anomaly detection, and business dashboard generation.</p>
-                    </div>
+      // tap: first turn the SOUND on (unmute — allowed inside the user gesture); then toggle play/pause
+      function onTap(){
+        if (video.muted){ video.muted = false; if (video.paused){ var q = video.play(); if (q && q.catch) q.catch(function(){}); } }
+        else if (video.paused){ var p2 = video.play(); if (p2 && p2.catch) p2.catch(function(){}); }
+        else video.pause();
+      }
 
-                    <!-- Designer -->
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-orange glass-panel p-5 md:p-6 rounded-3xl snap-center">
-                        <i class="fa-solid fa-pen-nib text-brand-orange text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">Designer</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Mass generation of ad creatives, auto-resizing layouts for different platforms, and background removal.</p>
-                    </div>
-
-                    <!-- Developer -->
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-purple glass-panel p-5 md:p-6 rounded-3xl snap-center">
-                        <i class="fa-solid fa-code text-brand-purple text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">Developer</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">Writing boilerplate and test code, automated pull request reviews, and refactoring assistance.</p>
-                    </div>
-
-                    <!-- Engineer -->
-                    <div class="shrink-0 w-[75vw] sm:w-[20rem] hover-card hover-card-orange glass-panel p-5 md:p-6 pr-8 rounded-3xl snap-center">
-                        <i class="fa-solid fa-server text-brand-orange text-2xl mb-4"></i>
-                        <h3 class="font-bold text-sm md:text-lg uppercase tracking-wider mb-2">Engineer</h3>
-                        <p class="text-[var(--text-muted)] text-[10px] md:text-xs leading-relaxed">System architecture design, server availability monitoring, and automated incident response.</p>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- Slide 3: Curriculum 1/2 -->
-        <section class="slide" id="slide-3">
-            <div class="slide-inner !justify-center">
-                <div class="mb-6 md:mb-8 text-center shrink-0 px-2">
-                    <h2 class="text-2xl md:text-4xl lg:text-5xl font-black mb-1 uppercase">Program <span class="text-brand-purple">Curriculum</span> <span class="text-sm opacity-50 tracking-widest">(1/2)</span></h2>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 md:gap-5 w-full max-w-4xl mx-auto px-2">
-                    <!-- Module 1 -->
-                    <div class="hover-card hover-card-purple glass-panel p-4 md:p-6 rounded-2xl flex flex-col">
-                        <span class="text-brand-purple font-bold text-[8px] md:text-[10px] tracking-widest uppercase block mb-1">Module 1</span>
-                        <h3 class="text-[10px] md:text-sm font-black uppercase mb-2 leading-tight">AI Strategy Intro</h3>
-                        <p class="text-[9px] md:text-[11px] text-[var(--text-muted)] mb-3 flex-grow line-clamp-3 leading-relaxed">AI Agents, operating models, maturity index, and transformation strategy.</p>
-                        <div class="bg-[var(--bg-main)] p-2 rounded-lg text-[8px] md:text-[9px] mt-auto"><span class="font-bold text-brand-purple uppercase">Result:</span> AI maturity assessment.</div>
-                    </div>
-                    <!-- Module 2 -->
-                    <div class="hover-card hover-card-orange glass-panel p-4 md:p-6 rounded-2xl flex flex-col">
-                        <span class="text-brand-orange font-bold text-[8px] md:text-[10px] tracking-widest uppercase block mb-1">Module 2</span>
-                        <h3 class="text-[10px] md:text-sm font-black uppercase mb-2 leading-tight">Process Modeling</h3>
-                        <p class="text-[9px] md:text-[11px] text-[var(--text-muted)] mb-3 flex-grow line-clamp-3 leading-relaxed">Process Mining, BPMN modeling, AS-IS and TO-BE visualization.</p>
-                        <div class="bg-[var(--bg-main)] p-2 rounded-lg text-[8px] md:text-[9px] mt-auto"><span class="font-bold text-brand-orange uppercase">Result:</span> Model with automation points.</div>
-                    </div>
-                    <!-- Module 3 -->
-                    <div class="hover-card hover-card-purple glass-panel p-4 md:p-6 rounded-2xl flex flex-col">
-                        <span class="text-brand-purple font-bold text-[8px] md:text-[10px] tracking-widest uppercase block mb-1">Module 3</span>
-                        <h3 class="text-[10px] md:text-sm font-black uppercase mb-2 leading-tight">AI Agent Design</h3>
-                        <p class="text-[9px] md:text-[11px] text-[var(--text-muted)] mb-3 flex-grow line-clamp-3 leading-relaxed">No/low-code tools, prompting rules, and testing principles.</p>
-                        <div class="bg-[var(--bg-main)] p-2 rounded-lg text-[8px] md:text-[9px] mt-auto"><span class="font-bold text-brand-purple uppercase">Result:</span> Working AI agent prototype.</div>
-                    </div>
-                    <!-- Module 4 -->
-                    <div class="hover-card hover-card-orange glass-panel p-4 md:p-6 rounded-2xl flex flex-col">
-                        <span class="text-brand-orange font-bold text-[8px] md:text-[10px] tracking-widest uppercase block mb-1">Module 4</span>
-                        <h3 class="text-[10px] md:text-sm font-black uppercase mb-2 leading-tight">Multi-Agent Systems</h3>
-                        <p class="text-[9px] md:text-[11px] text-[var(--text-muted)] mb-3 flex-grow line-clamp-3 leading-relaxed">Architectures, RAG for data, and agent-to-agent (A2A) interactions.</p>
-                        <div class="bg-[var(--bg-main)] p-2 rounded-lg text-[8px] md:text-[9px] mt-auto"><span class="font-bold text-brand-orange uppercase">Result:</span> Multi-agent system design.</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Slide 4: Curriculum 2/2 & Milestones -->
-        <section class="slide" id="slide-4">
-            <div class="slide-inner !justify-center">
-                <div class="mb-4 md:mb-6 text-center shrink-0 px-2">
-                    <h2 class="text-2xl md:text-4xl lg:text-5xl font-black mb-1 uppercase">Program <span class="text-brand-orange">Curriculum</span> <span class="text-sm opacity-50 tracking-widest">(2/2)</span></h2>
-                </div>
-
-                <!-- 4 Modules Layout (Restored Modules 7 & 8) -->
-                <div class="grid grid-cols-2 gap-3 md:gap-5 w-full max-w-4xl mx-auto px-2 mb-4 md:mb-6">
-                    <!-- Module 5 -->
-                    <div class="hover-card hover-card-purple glass-panel p-4 md:p-6 rounded-2xl flex flex-col">
-                        <span class="text-brand-purple font-bold text-[8px] md:text-[10px] tracking-widest uppercase block mb-1">Module 5</span>
-                        <h3 class="text-[10px] md:text-sm font-black uppercase mb-2 leading-tight">Advanced Dev</h3>
-                        <p class="text-[9px] md:text-[11px] text-[var(--text-muted)] mb-3 flex-grow line-clamp-3 leading-relaxed">Code nodes, vibe-coding, interfaces, custom logic.</p>
-                        <div class="bg-[var(--bg-main)] p-2 rounded-lg text-[8px] md:text-[9px] mt-auto"><span class="font-bold text-brand-purple uppercase">Result:</span> Complex integrations.</div>
-                    </div>
-                    <!-- Module 6 -->
-                    <div class="hover-card hover-card-orange glass-panel p-4 md:p-6 rounded-2xl flex flex-col">
-                        <span class="text-brand-orange font-bold text-[8px] md:text-[10px] tracking-widest uppercase block mb-1">Module 6</span>
-                        <h3 class="text-[10px] md:text-sm font-black uppercase mb-2 leading-tight">Test & Secure</h3>
-                        <p class="text-[9px] md:text-[11px] text-[var(--text-muted)] mb-3 flex-grow line-clamp-3 leading-relaxed">A/B testing, AIOps dashboards, and security protocols.</p>
-                        <div class="bg-[var(--bg-main)] p-2 rounded-lg text-[8px] md:text-[9px] mt-auto"><span class="font-bold text-brand-orange uppercase">Result:</span> Testing configured.</div>
-                    </div>
-                    <!-- Module 7 -->
-                    <div class="hover-card hover-card-purple glass-panel p-4 md:p-6 rounded-2xl flex flex-col">
-                        <span class="text-brand-purple font-bold text-[8px] md:text-[10px] tracking-widest uppercase block mb-1">Module 7</span>
-                        <h3 class="text-[10px] md:text-sm font-black uppercase mb-2 leading-tight">Change Mgmt</h3>
-                        <p class="text-[9px] md:text-[11px] text-[var(--text-muted)] mb-3 flex-grow line-clamp-3 leading-relaxed">New team roles, overcoming resistance, and training plans.</p>
-                        <div class="bg-[var(--bg-main)] p-2 rounded-lg text-[8px] md:text-[9px] mt-auto"><span class="font-bold text-brand-purple uppercase">Result:</span> Training plan.</div>
-                    </div>
-                    <!-- Module 8 -->
-                    <div class="hover-card hover-card-orange glass-panel p-4 md:p-6 rounded-2xl flex flex-col">
-                        <span class="text-brand-orange font-bold text-[8px] md:text-[10px] tracking-widest uppercase block mb-1">Module 8</span>
-                        <h3 class="text-[10px] md:text-sm font-black uppercase mb-2 leading-tight">Economics</h3>
-                        <p class="text-[9px] md:text-[11px] text-[var(--text-muted)] mb-3 flex-grow line-clamp-3 leading-relaxed">Efficiency analysis, ROI assessment, economic impact.</p>
-                        <div class="bg-[var(--bg-main)] p-2 rounded-lg text-[8px] md:text-[9px] mt-auto"><span class="font-bold text-brand-orange uppercase">Result:</span> Economic justification.</div>
-                    </div>
-                </div>
-
-                <!-- Milestones - Compact -->
-                <div class="glass-panel p-3 md:p-5 mx-2 shrink-0 rounded-2xl border-brand-purple/30 max-w-4xl lg:mx-auto">
-                    <h3 class="text-[10px] md:text-xs font-bold uppercase mb-2 text-center"><i class="fa-solid fa-flag-checkered text-brand-purple mr-2"></i> Milestones</h3>
-                    <div class="grid grid-cols-3 gap-2 text-center divide-x divide-[var(--glass-border)]">
-                        <div class="px-1 md:px-2">
-                            <div class="text-[8px] md:text-[10px] font-bold text-brand-purple uppercase mb-1">Early Stage</div>
-                            <p class="text-[7px] md:text-[9px] text-[var(--text-muted)]">Process mapping & target selection.</p>
-                        </div>
-                        <div class="px-1 md:px-2">
-                            <div class="text-[8px] md:text-[10px] font-bold text-brand-orange uppercase mb-1">Equator</div>
-                            <p class="text-[7px] md:text-[9px] text-[var(--text-muted)]">Defense of architecture & prototype.</p>
-                        </div>
-                        <div class="px-1 md:px-2">
-                            <div class="text-[8px] md:text-[10px] font-bold text-brand-purple uppercase mb-1">Final (Demo Day)</div>
-                            <p class="text-[7px] md:text-[9px] text-[var(--text-muted)]">Case defense & ROI presentation.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Slide 5: Who is this For? -->
-        <section class="slide" id="slide-5">
-            <div class="slide-inner !justify-center max-w-6xl px-2">
-                <h2 class="text-2xl md:text-4xl lg:text-5xl font-black mb-6 md:mb-12 uppercase text-center">Who is this <span class="text-brand-orange">For?</span></h2>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-8">
-                    <div class="hover-card hover-card-orange glass-panel p-6 md:p-8 rounded-[2rem] text-center flex flex-col items-center">
-                        <div class="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-xl md:text-3xl mb-4 md:mb-6">
-                            <i class="fa-solid fa-briefcase"></i>
-                        </div>
-                        <h4 class="font-bold uppercase text-[10px] md:text-sm mb-2 md:mb-3">Functional Leaders</h4>
-                        <p class="text-[var(--text-muted)] text-[9px] md:text-xs leading-relaxed">For those seeking tools for exponential efficiency growth and ready to invest in next-gen automation.</p>
-                    </div>
-
-                    <div class="hover-card hover-card-purple glass-panel p-6 md:p-8 rounded-[2rem] text-center flex flex-col items-center">
-                        <div class="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-xl md:text-3xl mb-4 md:mb-6">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        <h4 class="font-bold uppercase text-[10px] md:text-sm mb-2 md:mb-3">Cross-functional Teams</h4>
-                        <p class="text-[var(--text-muted)] text-[9px] md:text-xs leading-relaxed">Groups of specialists who will directly design, build, and deploy AI agents into operations.</p>
-                    </div>
-
-                    <div class="hover-card hover-card-orange glass-panel p-6 md:p-8 rounded-[2rem] text-center flex flex-col items-center">
-                        <div class="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-brand-orange/20 text-brand-orange flex items-center justify-center text-xl md:text-3xl mb-4 md:mb-6">
-                            <i class="fa-solid fa-building"></i>
-                        </div>
-                        <h4 class="font-bold uppercase text-[10px] md:text-sm mb-2 md:mb-3">Ready Companies</h4>
-                        <p class="text-[var(--text-muted)] text-[9px] md:text-xs leading-relaxed">Organizations moving from isolated AI experiments to systematic deployment of AI agents.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Slide 6: Pricing -->
-        <section class="slide" id="slide-6">
-            <div class="slide-inner !justify-center items-center px-4">
-                
-                <div class="glass-panel p-4 md:p-8 relative overflow-hidden flex flex-col justify-center rounded-[1.5rem] md:rounded-[2rem] w-full max-w-lg md:max-w-2xl border-brand-purple/20 shadow-2xl">
-                    <h2 class="text-xl md:text-3xl font-black mb-4 md:mb-6 uppercase text-center">Program <span class="text-brand-purple">Pricing</span></h2>
-                    
-                    <div class="mb-4 md:mb-6 bg-[var(--bg-main)] rounded-xl md:rounded-2xl p-4 md:p-6 border border-[var(--glass-border)] shadow-sm">
-                        <div class="mb-4 md:mb-6">
-                            <div class="flex justify-between items-end gap-2 mb-2">
-                                <label for="peopleCount" class="block font-bold uppercase tracking-wider text-[9px] md:text-[10px] text-[var(--text-muted)]">Team Size:</label>
-                                <div class="text-lg md:text-2xl font-black"><span id="peopleDisplay" class="text-brand-purple">up to 10</span> <span class="text-[8px] md:text-[10px] text-[var(--text-muted)] font-normal uppercase tracking-widest">people</span></div>
-                            </div>
-                            <input type="range" id="peopleCount" min="10" max="30" value="10" step="10" class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-[var(--brand-purple)] bg-[var(--glass-border)]">
-                            <div class="flex justify-between text-[7px] md:text-[9px] text-[var(--text-muted)] font-mono mt-1.5 px-1">
-                                <span>10</span>
-                                <span>20</span>
-                                <span>30</span>
-                            </div>
-                        </div>
-                        <div class="pt-3 border-t border-[var(--glass-border)]">
-                            <div class="flex flex-row justify-between items-end gap-1">
-                                <span class="text-[var(--text-muted)] font-bold uppercase tracking-wider text-[9px] md:text-[10px] mb-1">Total Cost:</span>
-                                <div id="totalPriceDisplay" class="text-3xl md:text-5xl font-black leading-none tracking-tight text-brand-orange">$4900</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <ul class="space-y-2.5 md:space-y-3 text-[var(--text-main)] text-[9px] md:text-xs font-medium mb-4 md:mb-6 px-1 md:px-2">
-                        <li class="flex items-center gap-2.5"><div class="w-4 h-4 md:w-5 md:h-5 rounded-full bg-brand-orange/20 flex items-center justify-center shrink-0"><i class="fa-solid fa-check text-brand-orange text-[8px] md:text-[10px]"></i></div> <span>Duration: 1 month</span></li>
-                        <li class="flex items-center gap-2.5"><div class="w-4 h-4 md:w-5 md:h-5 rounded-full bg-brand-orange/20 flex items-center justify-center shrink-0"><i class="fa-solid fa-check text-brand-orange text-[8px] md:text-[10px]"></i></div> <span>Case adaptation specifically for your company</span></li>
-                        <li class="flex items-center gap-2.5"><div class="w-4 h-4 md:w-5 md:h-5 rounded-full bg-brand-orange/20 flex items-center justify-center shrink-0"><i class="fa-solid fa-check text-brand-orange text-[8px] md:text-[10px]"></i></div> <span>Official B2B payment contracts and NDAs included</span></li>
-                    </ul>
-
-                    <button onclick="goToSlide(7)" class="btn-white hover-btn-orange font-black py-3 md:py-4 rounded-full text-[9px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-2 w-full shadow-md">
-                        Continue to Application <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Slide 7: Application Form -->
-        <section class="slide" id="slide-7">
-            <div class="slide-inner !justify-center items-center px-4">
-                <div class="hover-card hover-card-orange glass-panel p-4 md:p-8 flex flex-col justify-center rounded-[1.5rem] md:rounded-[2rem] w-full max-w-lg shadow-2xl border-brand-orange/20">
-                    <h2 class="text-xl md:text-3xl font-black mb-2 uppercase text-center">Apply for <span class="text-brand-orange">Training</span></h2>
-                    <p class="text-[var(--text-muted)] text-[9px] md:text-xs mb-4 md:mb-6 leading-relaxed text-center px-2 md:px-4">
-                        Complete the program as a team working on your real business cases.
-                    </p>
-                    
-                    <form id="leadForm" class="flex flex-col gap-2.5 md:gap-3" onsubmit="handleFormSubmit(event)">
-                        <input type="text" name="name" placeholder="Full Name *" required class="w-full rounded-xl px-3 md:px-4 py-2 md:py-3 text-[9px] md:text-xs transition-colors">
-                        
-                        <div class="grid grid-cols-2 gap-2.5 md:gap-3">
-                            <input type="text" name="role" placeholder="Role *" required class="w-full rounded-xl px-3 md:px-4 py-2 md:py-3 text-[9px] md:text-xs transition-colors">
-                            <input type="text" name="company" placeholder="Company *" required class="w-full rounded-xl px-3 md:px-4 py-2 md:py-3 text-[9px] md:text-xs transition-colors">
-                        </div>
-                        
-                        <input type="email" name="email" placeholder="Corporate Email *" required class="w-full rounded-xl px-3 md:px-4 py-2 md:py-3 text-[9px] md:text-xs transition-colors">
-                        
-                        <div class="grid grid-cols-2 gap-2.5 md:gap-3">
-                            <input type="text" name="mobile" placeholder="Phone Number" class="w-full rounded-xl px-3 md:px-4 py-2 md:py-3 text-[9px] md:text-xs transition-colors">
-                            <input type="text" name="tg" placeholder="Telegram / WhatsApp" class="w-full rounded-xl px-3 md:px-4 py-2 md:py-3 text-[9px] md:text-xs transition-colors">
-                        </div>
-                        
-                        <button type="submit" id="submitBtn" class="w-full btn-white hover-btn-purple font-black py-3 md:py-4 rounded-xl text-[9px] md:text-xs uppercase tracking-widest mt-1 md:mt-2 flex items-center justify-center gap-3 shadow-md">
-                            <i class="fa-solid fa-paper-plane"></i> Send Application
-                        </button>
-                        <p id="result" class="text-[10px] mt-1 md:mt-2 text-center hidden font-mono"></p>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <!-- Slide 8: FAQ -->
-        <section class="slide" id="slide-8">
-            <div class="slide-inner !justify-center max-w-4xl px-2">
-                <h2 class="text-3xl md:text-5xl font-black mb-6 md:mb-10 uppercase text-center tracking-widest shrink-0">FAQ</h2>
-                
-                <!-- Grouped Accordion: Only one opens at a time via name="faq" -->
-                <div class="space-y-3 md:space-y-4 max-h-[60vh] overflow-y-auto px-2 pb-6 allow-scroll custom-scrollbar pointer-events-auto">
-                    <details name="faq" class="group glass-panel p-4 md:p-6 cursor-pointer rounded-2xl relative z-20">
-                        <summary class="flex justify-between items-center gap-4 font-bold text-[10px] md:text-sm uppercase tracking-wide outline-none list-none">
-                            <span>Does the team need programming skills?</span>
-                            <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-brand-purple shrink-0"></i>
-                        </summary>
-                        <div class="mt-4 text-[var(--text-muted)] leading-relaxed text-[10px] md:text-sm border-t border-[var(--glass-border)] pt-4">
-                            Deep coding knowledge is not required. The program is built entirely around corporate no/low-code platforms (like n8n, Make, Dify). Cross-functional teams—even without a technical background—can design and assemble fully functioning AI agents.
-                        </div>
-                    </details>
-                    
-                    <details name="faq" class="group glass-panel p-4 md:p-6 cursor-pointer rounded-2xl relative z-20">
-                        <summary class="flex justify-between items-center gap-4 font-bold text-[10px] md:text-sm uppercase tracking-wide outline-none list-none">
-                            <span>How is our data security ensured?</span>
-                            <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-brand-orange shrink-0"></i>
-                        </summary>
-                        <div class="mt-4 text-[var(--text-muted)] leading-relaxed text-[10px] md:text-sm border-t border-[var(--glass-border)] pt-4">
-                            We work strictly under an NDA. All practical cases, prototype development, and process analysis are performed within your company's closed, secure environment. We also teach how to deploy LLM/RAG systems on-premise or in private clouds for total isolation.
-                        </div>
-                    </details>
-                    
-                    <details name="faq" class="group glass-panel p-4 md:p-6 cursor-pointer rounded-2xl relative z-20">
-                        <summary class="flex justify-between items-center gap-4 font-bold text-[10px] md:text-sm uppercase tracking-wide outline-none list-none">
-                            <span>What exactly will we get in just 1 month?</span>
-                            <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-brand-purple shrink-0"></i>
-                        </summary>
-                        <div class="mt-4 text-[var(--text-muted)] leading-relaxed text-[10px] md:text-sm border-t border-[var(--glass-border)] pt-4">
-                            The intensive format guarantees quick deliverables. You will receive a mapped matrix of prioritized processes, MVPs of 1–2 operational agents, a detailed economic calculation (ROI), and a robust implementation roadmap for the upcoming quarter.
-                        </div>
-                    </details>
-                    
-                    <details name="faq" class="group glass-panel p-4 md:p-6 cursor-pointer rounded-2xl relative z-20">
-                        <summary class="flex justify-between items-center gap-4 font-bold text-[10px] md:text-sm uppercase tracking-wide outline-none list-none">
-                            <span>Can we train more than 30 people?</span>
-                            <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-brand-orange shrink-0"></i>
-                        </summary>
-                        <div class="mt-4 text-[var(--text-muted)] leading-relaxed text-[10px] md:text-sm border-t border-[var(--glass-border)] pt-4">
-                            Yes, the program is scalable. We can split the training into multiple streams or conduct mass corporate lectures for a larger audience, allocating a focus group of up to 30 people for the hands-on intensive practice and agent assembly.
-                        </div>
-                    </details>
-                </div>
-            </div>
-        </section>
-
-        <!-- Slide 9: Final CTA & Footer -->
-        <section class="slide" id="slide-9">
-            <div class="slide-inner !justify-between pt-12 md:pt-[10vh]">
-                
-                <!-- Main Call to Action -->
-                <div class="flex flex-col items-center justify-center flex-grow text-center px-4 w-full pb-[8vh] md:pb-[10vh]">
-                    <div class="w-12 h-12 md:w-20 md:h-20 rounded-[1.5rem] glass-panel flex items-center justify-center mb-4 md:mb-6 border-brand-purple shadow-[0_0_30px_rgba(136,84,243,0.3)] animate-pulse shrink-0">
-                        <i class="fa-solid fa-power-off text-xl md:text-4xl text-brand-purple"></i>
-                    </div>
-                    <h2 class="text-3xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 uppercase leading-tight tracking-tight">
-                        Ready for<br><span class="text-brand-purple">AI</span> <span class="text-brand-orange">Transformation?</span>
-                    </h2>
-                    <p class="text-[var(--text-muted)] text-[9px] md:text-xs max-w-md mx-auto mb-6 md:mb-8 font-mono uppercase tracking-widest leading-relaxed">
-                        Equip your team with the skills to build an AI-First Business.
-                    </p>
-                    <button onclick="goToSlide(7)" class="btn-white hover-btn-purple font-black px-6 md:px-10 py-3.5 md:py-4 rounded-full text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shrink-0 max-w-[250px] md:max-w-xs mx-auto w-full">
-                        Apply Now <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
-
-                <!-- Integrated Footer -->
-                <footer class="w-full py-4 md:py-6 mt-auto border-t border-[var(--glass-border)] bg-transparent text-[var(--text-main)] shrink-0 px-4 md:px-8">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 w-full">
-                        
-                        <!-- Socials (Left aligned on mobile) -->
-                        <div class="flex items-center justify-start gap-5 md:gap-6 text-xl md:text-2xl text-[var(--text-muted)] w-full md:w-auto order-2 md:order-1 mt-2 md:mt-0">
-                            <a href="#" class="hover:text-[#2AABEE] transition-transform hover:scale-110"><i class="fa-brands fa-telegram"></i></a>
-                            <a href="#" class="hover:text-brand-purple transition-transform hover:scale-110"><i class="fa-solid fa-globe"></i></a>
-                            <a href="#" class="hover:text-[#FF0000] transition-transform hover:scale-110"><i class="fa-brands fa-youtube"></i></a>
-                            <a href="#" class="hover:text-[#0a66c2] transition-transform hover:scale-110"><i class="fa-brands fa-linkedin"></i></a>
-                        </div>
-                        
-                        <!-- Copyright -->
-                        <div class="font-mono text-[8px] md:text-[9px] text-[var(--text-muted)] uppercase tracking-widest text-left md:text-right w-full md:w-auto order-1 md:order-2 opacity-50">
-                            &copy; 2026 Andre AI Technologies.<br class="block md:hidden"> All rights reserved.
-                        </div>
-                        
-                    </div>
-                </footer>
-
-            </div>
-        </section>
-
-    </main>
-
-    <script>
-        // Config: 0 to 9 slides (10 total)
-        const TOTAL_SLIDES = 10;
-        let currentSlide = 0;
-        let isAnimating = false;
-
-        const slides = Array.from({length: TOTAL_SLIDES}).map((_, i) => document.getElementById(`slide-${i}`));
-        const navLinks = document.querySelectorAll('.nav-link');
-        
-        // Theme Toggle
-        const themeToggle = document.getElementById('theme-toggle');
-        if(themeToggle) {
-            themeToggle.addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+      // pointer drag; a tap (no real movement) triggers onTap (sound / play-pause)
+      var down = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0, TH = 6;
+      bubble.addEventListener('pointerdown', function(e){
+        down = true; moved = false; sx = e.clientX; sy = e.clientY;
+        var r = bubble.getBoundingClientRect(); ox = r.left; oy = r.top;
+        bubble.style.left = r.left + 'px'; bubble.style.top = r.top + 'px';
+        bubble.style.right = 'auto'; bubble.style.bottom = 'auto';
+        if (bubble.setPointerCapture) { try { bubble.setPointerCapture(e.pointerId); } catch (err) {} }
+      });
+      bubble.addEventListener('pointermove', function(e){
+        if (!down) return;
+        var dx = e.clientX - sx, dy = e.clientY - sy;
+        if (!moved && (Math.abs(dx) > TH || Math.abs(dy) > TH)) { moved = true; bubble.classList.add('dragging'); }
+        if (moved){
+          var w = bubble.offsetWidth, h = bubble.offsetHeight;
+          var nx = Math.min(Math.max(0, ox + dx), window.innerWidth  - w);
+          var ny = Math.min(Math.max(0, oy + dy), window.innerHeight - h);
+          bubble.style.left = nx + 'px'; bubble.style.top = ny + 'px';
         }
+      });
+      function endDrag(){
+        if (!down) return; down = false;
+        bubble.classList.remove('dragging');
+        if (!moved) onTap();   // a tap, not a drag
+      }
+      bubble.addEventListener('pointerup', endDrag);
+      bubble.addEventListener('pointercancel', endDrag);
 
-        // Fullscreen Slide Logic
-        function updateUI() {
-            slides.forEach((slide, i) => {
-                if(!slide) return;
-                slide.classList.remove('active', 'past');
-                if (i === currentSlide) slide.classList.add('active');
-                else if (i < currentSlide) slide.classList.add('past');
-            });
-
-            // Update Nav Highlighting
-            navLinks.forEach((link) => {
-                const match = link.getAttribute('onclick').match(/\d+/);
-                if (match) {
-                    const targetIdx = parseInt(match[0]);
-                    if(targetIdx === currentSlide) {
-                        link.classList.add('bg-[var(--text-main)]/10', 'text-[var(--text-main)]');
-                    } else {
-                        link.classList.remove('bg-[var(--text-main)]/10', 'text-[var(--text-main)]');
-                    }
-                }
-            });
-        }
-
-        function goToSlide(index) {
-            if (isAnimating || index < 0 || index >= TOTAL_SLIDES) return;
-            isAnimating = true; 
-            currentSlide = index; 
-            updateUI();
-            setTimeout(() => { isAnimating = false; }, 800);
-        }
-
-        // Swipe Handlers
-        let touchStartY = 0;
-        let touchStartX = 0;
-
-        document.addEventListener('touchstart', e => {
-            touchStartY = e.touches[0].clientY;
-            touchStartX = e.touches[0].clientX;
-        }, {passive: true});
-
-        document.addEventListener('touchend', e => {
-            // Prevent vertical slide change if interacting with internal scroll areas
-            if (e.target.closest('.allow-scroll')) return;
-            
-            const touchEndY = e.changedTouches[0].clientY;
-            const touchEndX = e.changedTouches[0].clientX;
-            
-            const deltaY = touchStartY - touchEndY;
-            const deltaX = touchStartX - touchEndX;
-
-            // If interacting with a horizontal carousel, ignore slide change if the swipe was mostly horizontal
-            if (e.target.closest('.drag-scroll') && Math.abs(deltaX) > Math.abs(deltaY)) {
-                return; 
-            }
-
-            const swipeThreshold = 40; 
-            if (Math.abs(deltaY) > swipeThreshold && Math.abs(deltaY) > Math.abs(deltaX) && !isAnimating) {
-                if (deltaY > 0) goToSlide(currentSlide + 1); 
-                else goToSlide(currentSlide - 1); 
-            }
-        }, {passive: true});
-
-        // Wheel Handler for Fullscreen Slides
-        window.addEventListener('wheel', (e) => {
-            // IGNORE completely if the target is inside a drag-scroll or allow-scroll container
-            // We will let dedicated handlers manage the scrolling for those elements.
-            if (e.target.closest('.drag-scroll') || e.target.closest('.allow-scroll')) return;
-
-            if (Math.abs(e.deltaY) > 30 && !isAnimating) {
-                if (e.deltaY > 0) goToSlide(currentSlide + 1);
-                else goToSlide(currentSlide - 1);
-            }
-        }, { passive: false });
-
-        // Prevent Default Scrolling behaviors outside explicitly allowed areas
-        document.addEventListener('touchmove', e => {
-            if (!e.target.closest('.drag-scroll') && !e.target.closest('.allow-scroll')) {
-                if (e.cancelable) e.preventDefault();
-            }
-        }, {passive: false});
-
-        // Completely Rewritten Reliable Horizontal Drag & Wheel Scroll
-        const sliders = document.querySelectorAll('.drag-scroll');
-        sliders.forEach(slider => {
-            let isDown = false;
-            let startX;
-            let scrollLeft;
-
-            // Mouse Drag Mechanics
-            slider.addEventListener('mousedown', (e) => {
-                isDown = true;
-                slider.classList.add('active');
-                slider.style.scrollSnapType = 'none'; // Prevent CSS snap from fighting JS drag
-                startX = e.pageX - slider.offsetLeft;
-                scrollLeft = slider.scrollLeft;
-            });
-            slider.addEventListener('mouseleave', () => {
-                isDown = false;
-                slider.classList.remove('active');
-                slider.style.scrollSnapType = ''; // Restore snap
-            });
-            slider.addEventListener('mouseup', () => {
-                isDown = false;
-                slider.classList.remove('active');
-                slider.style.scrollSnapType = ''; // Restore snap
-            });
-            slider.addEventListener('mousemove', (e) => {
-                if (!isDown) return;
-                e.preventDefault(); // Prevent text selection
-                const x = e.pageX - slider.offsetLeft;
-                const walk = (x - startX) * 2; // Scroll speed multiplier
-                slider.scrollLeft = scrollLeft - walk;
-            });
-
-            // Native Scroll via Wheel (Converts vertical wheel to horizontal scroll)
-            slider.addEventListener('wheel', (e) => {
-                // Only override vertical scroll wheels. Let horizontal trackpad swipes be native!
-                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                    e.preventDefault();
-                    slider.scrollLeft += e.deltaY;
-                }
-            }, { passive: false });
-        });
-
-        // Pricing Calculator Logic
-        const peopleSlider = document.getElementById('peopleCount');
-        const peopleDisplay = document.getElementById('peopleDisplay');
-        const totalPriceDisplay = document.getElementById('totalPriceDisplay');
-        
-        if (peopleSlider) {
-            peopleSlider.addEventListener('input', function () {
-                const count = parseInt(this.value);
-                if (count === 10) peopleDisplay.textContent = 'up to 10';
-                else peopleDisplay.textContent = count;
-                
-                let total = 0;
-                if (count <= 10) total = 4900;
-                else if (count === 20) total = 8900;
-                else if (count === 30) total = 12900;
-                
-                totalPriceDisplay.textContent = '$' + total;
-            });
-            peopleSlider.dispatchEvent(new Event('input'));
-        }
-
-        // Form Simulation
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            const form = document.getElementById('leadForm');
-            const submitBtn = document.getElementById('submitBtn');
-            const resultText = document.getElementById('result');
-            
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
-            
-            resultText.classList.remove('hidden');
-            resultText.className = 'text-[10px] mt-2 text-center text-[var(--text-muted)] font-mono';
-            resultText.textContent = 'Please wait...';
-            
-            setTimeout(() => {
-                resultText.className = 'text-[10px] mt-2 text-center text-brand-purple font-bold uppercase tracking-widest';
-                resultText.textContent = 'Application sent successfully!';
-                form.reset();
-                if(peopleSlider) peopleSlider.dispatchEvent(new Event('input'));
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Application';
-            }, 1200);
-        }
-
-        // Animated Blobs
-        const blob1 = document.getElementById('blob1');
-        const blob2 = document.getElementById('blob2');
-        let wanderTime = 0;
-        let blob1State = { x: window.innerWidth * 0.45, y: window.innerHeight * 0.4, scale: 1.0 };
-        let blob2State = { x: window.innerWidth * 0.55, y: window.innerHeight * 0.6, scale: 1.0 };
-        let cardTarget = null;
-        
-        document.addEventListener('mouseover', (e) => {
-            cardTarget = e.target.closest('.hover-card, .btn-white');
-        });
-
-        function animateBlobs() {
-            let targetX1, targetY1, targetX2, targetY2;
-            let targetScale1 = 1.0, targetScale2 = 1.0;
-            const blobW = blob1.offsetWidth || 800;
-            const blobH = blob1.offsetHeight || 800;
-            let ease1 = 0.03, ease2 = 0.03;
-            
-            if (cardTarget) {
-                const rect = cardTarget.getBoundingClientRect();
-                const tx = rect.left + rect.width / 2;
-                const ty = rect.top + rect.height / 2;
-                
-                targetX1 = tx - blobW/2; 
-                targetY1 = ty - blobH/2;
-                targetX2 = blob1State.x;
-                targetY2 = blob1State.y;
-                targetScale1 = 0.2; 
-                targetScale2 = 0;
-                ease1 = 0.15; 
-                ease2 = 0.25; 
-            } else {
-                wanderTime += 0.002;
-                const cx = window.innerWidth / 2;
-                const cy = window.innerHeight / 2;
-                const baseOffset = Math.min(window.innerWidth * 0.18, 180);
-                const radiusX = Math.min(window.innerWidth * 0.1, 100);
-                const radiusY = Math.min(window.innerHeight * 0.1, 100);
-                
-                targetX1 = (cx - baseOffset) + radiusX * Math.cos(wanderTime) - blobW/2;
-                targetY1 = cy + radiusY * Math.sin(wanderTime * 1.2) - blobH/2;
-                targetX2 = (cx + baseOffset) + radiusX * Math.cos(wanderTime + Math.PI) - blobW/2;
-                targetY2 = cy + radiusY * Math.sin((wanderTime + Math.PI) * 1.2) - blobH/2;
-                
-                targetScale1 = 1.0; targetScale2 = 1.0;
-            }
-            
-            blob1State.x += (targetX1 - blob1State.x) * ease1;
-            blob1State.y += (targetY1 - blob1State.y) * ease1;
-            blob1State.scale += (targetScale1 - blob1State.scale) * (ease1 * 1.5);
-            
-            blob2State.x += (targetX2 - blob2State.x) * ease2;
-            blob2State.y += (targetY2 - blob2State.y) * ease2;
-            blob2State.scale += (targetScale2 - blob2State.scale) * (ease2 * 1.5);
-            
-            blob1.style.transform = `translate3d(${blob1State.x}px, ${blob1State.y}px, 0) scale(${Math.max(0, blob1State.scale)})`;
-            blob2.style.transform = `translate3d(${blob2State.x}px, ${blob2State.y}px, 0) scale(${Math.max(0, blob2State.scale)})`;
-            requestAnimationFrame(animateBlobs);
-        }
-        
-        // Initialize
-        updateUI();
-        animateBlobs();
-
-    </script>
+      // keep the bubble inside the viewport after it has been moved
+      window.addEventListener('resize', function(){
+        if (!bubble.style.left) return;
+        var w = bubble.offsetWidth, h = bubble.offsetHeight;
+        bubble.style.left = Math.max(0, Math.min(parseFloat(bubble.style.left), window.innerWidth  - w)) + 'px';
+        bubble.style.top  = Math.max(0, Math.min(parseFloat(bubble.style.top),  window.innerHeight - h)) + 'px';
+      });
+    })();
+  </script>
 </body>
 </html>
