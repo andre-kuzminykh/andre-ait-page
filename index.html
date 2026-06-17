@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
 <meta name="color-scheme" content="dark">
-<title>Andre AI — AI Transformation of your Business</title>
+<title>Andre AI Technologies — AI Transformation of your Business</title>
 <meta name="description" content="Andre AI — AI Transformation of your Business">
 <meta property="og:title" content="Andre AI — AI Transformation of your Business">
 <meta property="og:description" content="Andre AI — AI Transformation of your Business">
@@ -272,6 +272,50 @@
   .copyright { margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.45); white-space: nowrap; text-align: center; }
   @media (min-width:1024px) { .copyright { font-size: clamp(11px, 0.78vw, 14px); letter-spacing: 0.1em; } }
 
+  /* ===== Landscape phones (short + wide): split layout (video | content) so the hero,
+     speaker badge and caption stop overlapping the way they do in the portrait layout.
+     Uses horizontal space instead of cramming everything into a short height. ===== */
+  @media (max-width:1023px) and (orientation: landscape) {
+    /* video fills the left side, full height; its right edge fades into the black content side */
+    #hero-video { width: 60%; height: 100dvh; transform: none; }
+    .video-shadow { width: 60%; height: 100dvh;
+      background: linear-gradient(to right, transparent 35%, rgba(5,5,5,0.5) 62%, #050505 86%); }
+
+    /* content centred in the right column */
+    .content-layer { justify-content: center; }
+    .panel { width: 44%; height: auto; margin-left: auto; padding: 0 1.4rem; display: block; }
+    .scroll { max-height: 100dvh; justify-content: flex-start; padding: 3.25rem 0.25rem 1rem; overflow-y: auto; }
+
+    /* badge + caption over the video, lower-left — clear of the heading on the right */
+    .speaker { left: 30%; top: auto; bottom: 7%; transform: translateX(-50%); }
+    .caption { left: 30%; top: auto; bottom: calc(7% + 3.3rem); transform: translateX(-50%); }
+
+    /* drop the portrait vertical nudges that cause the overlap */
+    [data-screen="overview"],
+    [data-screen="roadmap"], [data-screen="employees"], [data-screen="products"], [data-screen="education"] { transform: none; }
+
+    /* fit type to the shorter, narrower column */
+    .hero-size { font-size: clamp(1.2rem, 3vw, 1.95rem); }
+    .h2-size  { font-size: clamp(1.25rem, 2.9vw, 1.9rem); }
+    .rm-title { font-size: clamp(1.25rem, 2.5vw, 1.8rem); }
+    .contact-title { font-size: clamp(1.3rem, 3vw, 1.9rem); }
+    .desc { font-size: 12px; line-height: 1.4; }
+
+    /* cards stack vertically inside the panel (no full-bleed horizontal rail) */
+    .rail { flex-direction: column; align-items: stretch; gap: 0.5rem; width: 100%; max-width: 100%;
+      margin: 0; margin-inline: 0; overflow: visible; padding: 0; transform: none; scroll-snap-type: none; }
+    .rail::after { display: none; }
+    .rail-item { flex: initial; width: 100%; scroll-snap-align: none; }
+    .swipe-hint { display: none; }
+
+    /* smaller floating tiles so section blocks fit a short viewport */
+    .float-row { transform: scale(0.6); margin: -1.1rem 0; }
+
+    /* contact: centred hero, footer right under it (normal flow) */
+    .contact-screen { min-height: auto; transform: none; }
+    .contact-hero { top: 0; margin: 0; }
+  }
+
   /* Scale the whole UI up on large desktop screens so nothing looks tiny
      (zoom lifts fixed-px elements too — cards, nav, badge — unlike vw units). */
   @media (min-width:1600px) { body { zoom: 1.15; } }
@@ -357,7 +401,7 @@
             <span style="display: block; white-space: nowrap;"><span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">AI</span> <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">Transformation</span></span>
             <span style="display: block; white-space: nowrap;">of your <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">Business</span></span>
           </h1>
-          <button class="btn-white" data-action="tab" data-target="roadmap" style="padding: 1.05rem 2.1rem; letter-spacing: 0.15em; font-size: 12px; gap: 0.75rem; width: fit-content;">
+          <button class="btn-white" data-action="contact" style="padding: 1.05rem 2.1rem; letter-spacing: 0.15em; font-size: 12px; gap: 0.75rem; width: fit-content;">
             Start AI Transformation <i class="fa-solid fa-arrow-right"></i>
           </button>
         </section>
