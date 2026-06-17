@@ -48,6 +48,7 @@
 
   @keyframes gradientShimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes floatY{0%{transform:translateY(0)}50%{transform:translateY(-9px)}100%{transform:translateY(0)}}
 
   /* ===== Grain overlay (same as main site) ===== */
   .grain{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.06;mix-blend-mode:screen;
@@ -61,8 +62,8 @@
   .row>*{pointer-events:auto}
 
   .logo-btn{display:inline-flex;align-items:center;gap:.5rem;background:none;border:0;padding:0;justify-self:start}
-  .logo-btn img{height:2.5rem;width:auto;object-fit:contain;transition:transform .2s ease}
-  @media(min-width:640px){.logo-btn img{height:2.75rem}}
+  .logo-btn img{height:2.85rem;width:auto;object-fit:contain;transition:transform .2s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+  @media(min-width:640px){.logo-btn img{height:3.2rem}}
   .logo-btn:hover img{transform:scale(1.05)}
 
   .navpill{
@@ -79,7 +80,7 @@
 
   .right{display:flex;align-items:center;justify-self:end;gap:.5rem}
   @media(min-width:640px){.right{gap:.75rem}}
-  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:2.25rem;width:2.25rem;border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:1rem;transition:background .2s ease}
+  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:2.5rem;width:2.5rem;border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:1.05rem;transition:background .2s ease}
   .ctrl:hover{background:rgba(255,255,255,.10)}
   .burger{display:inline-flex}
   @media(min-width:1280px){.burger{display:none}}
@@ -96,7 +97,7 @@
     color:#fff;box-shadow:0 10px 25px -5px rgba(136,84,243,.45);transform:translateY(-2px);
     animation:gradientShimmer 4.5s ease infinite;
   }
-  .consult{height:2.25rem;padding:0 .75rem;font-size:10px}
+  .consult{height:2.5rem;padding:0 .95rem;font-size:11px}
   @media(min-width:640px){.consult{padding:0 1rem}}
   .consult .short{display:inline}
   .consult .full{display:none}
@@ -112,6 +113,16 @@
   .hero span.line{display:block}
   .hero .nowrap{display:block;white-space:nowrap}
   .desc{color:var(--muted);max-width:42rem;margin:1.5rem auto 0;font-size:clamp(.875rem,1.6vw,1rem);line-height:1.7}
+
+  /* decorative floating icon tiles above the hero (same style as the main site) */
+  .float-row{display:flex;justify-content:center;align-items:flex-end;gap:.85rem;transform:scale(.82);margin:0 0 .25rem}
+  @media(min-width:640px){.float-row{transform:none;margin-bottom:.85rem}}
+  .tile{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#15151b;border-radius:1rem;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:floatY 4s ease-in-out infinite}
+  .tile.sm{width:3.6rem;height:5.4rem;gap:.55rem}
+  .tile.lg{width:4.5rem;height:6.6rem;gap:.6rem;border-radius:1.1rem}
+  .tile .bar{height:3px;border-radius:2px}
+  .tile.sm .bar{width:1.6rem}
+  .tile.lg .bar{width:2rem}
 
   section.block{margin-top:3rem}
   .h2{text-align:center;font-size:clamp(1.25rem,3vw,1.5rem);font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
@@ -137,7 +148,7 @@
   .cta-row .btn-white{padding:0 2rem;height:3rem;font-size:14px;letter-spacing:.1em}
 
   /* ===== Video bubble (talking head): tap = sound / play-pause, draggable ===== */
-  .bubble{position:fixed;right:1rem;bottom:1rem;z-index:40;width:clamp(96px,18vw,200px);height:clamp(96px,18vw,200px);touch-action:none;user-select:none;-webkit-user-select:none}
+  .bubble{position:fixed;right:1rem;bottom:1rem;z-index:40;width:clamp(132px,30vw,200px);height:clamp(132px,30vw,200px);touch-action:none;user-select:none;-webkit-user-select:none}
   @media(min-width:640px){.bubble{right:2rem;bottom:2rem}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
@@ -182,12 +193,12 @@
       </nav>
 
       <div class="right">
+        <button class="ctrl burger" id="burger" aria-label="Меню"><i class="fa-solid fa-bars"></i></button>
         <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Получить консультацию по ИИ">
           <span class="full">Получить консультацию по ИИ</span>
           <span class="short">Консультация</span>
           <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
         </button>
-        <button class="ctrl burger" id="burger" aria-label="Меню"><i class="fa-solid fa-bars"></i></button>
       </div>
     </div>
   </header>
@@ -198,12 +209,25 @@
 
       <!-- HERO -->
       <div class="center">
+        <div class="float-row">
+          <div class="tile sm" style="border:1px solid rgba(136,84,243,0.3)"><i class="fa-solid fa-magnifying-glass-chart" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,0.5)"></div></div>
+          <div class="tile lg" style="border:1px solid rgba(249,115,22,0.5);box-shadow:0 10px 30px rgba(249,115,22,0.16);animation-delay:.2s"><i class="fa-solid fa-robot" style="font-size:38px;color:#F97316"></i><div class="bar" style="background:rgba(249,115,22,0.5)"></div></div>
+          <div class="tile sm" style="border:1px solid rgba(136,84,243,0.3);animation-delay:.4s"><i class="fa-solid fa-gears" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,0.5)"></div></div>
+        </div>
         <h1 class="hero">
           <span class="line">Добро пожаловать на курс</span>
           <span class="line">по автоматизации</span>
           <span class="nowrap"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span>
         </h1>
         <p class="desc">Вы узнаете, как трансформировать свой бизнес в ИИ-First компанию: моделировать бизнес-процессы, автоматизировать их с помощью ИИ-агентов и масштабироваться без роста штата с измеримым экономическим эффектом</p>
+      </div>
+
+      <!-- START CTA -->
+      <div class="cta-row" style="margin:2rem 0 0">
+        <button class="btn-white" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')">
+          Начать обучение
+          <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
+        </button>
       </div>
 
       <!-- ДЛЯ КОГО -->
