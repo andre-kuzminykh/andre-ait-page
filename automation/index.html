@@ -5,7 +5,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('welcome-theme')==='light')document.documentElement.classList.add('light');}catch(e){}})();</script>
 <title>Andre AI — Курс по автоматизации бизнес-процессов с ИИ-агентами</title>
 <meta name="description" content="Курс по автоматизации бизнес-процессов с ИИ-агентами — станьте ИИ-инженером по автоматизации.">
 
@@ -21,6 +22,7 @@
      #8854F3 (purple) + #F97316 (orange), Font Awesome, btn-white shimmer.
      Opened from the "Process Automation" card on AI Education.
      ============================================================ */
+  /* dark = default (matches the site); .light is toggled by the background switch */
   :root{
     --bg:#050505; --fg:#E5E7EB; --muted:rgba(255,255,255,.55);
     --card-bg:rgba(255,255,255,.04); --card-border:rgba(255,255,255,.10); --card-shadow:none;
@@ -29,11 +31,20 @@
     --btn-bg:#FAFAFA; --btn-fg:#050505;
     --ctrl-bg:rgba(255,255,255,.05); --ctrl-border:rgba(255,255,255,.10); --ctrl-fg:rgba(255,255,255,.80);
   }
+  html.light{
+    --bg:#FAFAFA; --fg:#0A0A0A; --muted:rgba(10,10,10,.55);
+    --card-bg:#fff; --card-border:rgba(0,0,0,.07); --card-shadow:0 1px 2px rgba(0,0,0,.04);
+    --pill-bg:rgba(255,255,255,.7); --pill-border:rgba(0,0,0,.10);
+    --divider:rgba(0,0,0,.20); --navitem:rgba(0,0,0,.55);
+    --btn-bg:#0A0A0A; --btn-fg:#FAFAFA;
+    --ctrl-bg:rgba(0,0,0,.03); --ctrl-border:rgba(0,0,0,.10); --ctrl-fg:rgba(0,0,0,.70);
+  }
 
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{
     background:var(--bg); color:var(--fg);
+    transition:background .25s ease,color .25s ease;
     font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
     -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     -webkit-tap-highlight-color:transparent;
@@ -78,7 +89,7 @@
   .navpill a.p:hover{color:#8854F3}
   .navpill .sep{color:var(--divider);user-select:none;font-size:11px}
 
-  .right{display:flex;align-items:center;justify-self:end;gap:.5rem}
+  .right{grid-column:3;display:flex;align-items:center;justify-self:end;gap:.5rem}
   @media(min-width:640px){.right{gap:.75rem}}
   .ctrl{display:inline-flex;align-items:center;justify-content:center;height:2.5rem;width:2.5rem;border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:1.05rem;transition:background .2s ease}
   .ctrl:hover{background:rgba(255,255,255,.10)}
@@ -194,6 +205,7 @@
 
       <div class="right">
         <button class="ctrl burger" id="burger" aria-label="Меню"><i class="fa-solid fa-bars"></i></button>
+        <button class="ctrl" id="theme" aria-label="Сменить фон (тёмный/светлый)"><i class="fa-solid fa-sun"></i></button>
         <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Получить консультацию по ИИ">
           <span class="full">Получить консультацию по ИИ</span>
           <span class="short">Консультация</span>
@@ -312,6 +324,25 @@
     var menu = document.getElementById('mobileMenu');
     document.getElementById('burger').addEventListener('click', function(){ menu.classList.add('open'); });
     document.getElementById('closeMenu').addEventListener('click', function(){ menu.classList.remove('open'); });
+
+    // ===== Theme / background switch (dark by default, .light when toggled) =====
+    (function(){
+      var root = document.documentElement;
+      var btn  = document.getElementById('theme');
+      if (!btn) return;
+      function sync(){
+        var light = root.classList.contains('light');
+        btn.innerHTML = '<i class="fa-solid fa-' + (light ? 'moon' : 'sun') + '"></i>';
+        var tc = document.querySelector('meta[name="theme-color"]');
+        if (tc) tc.setAttribute('content', light ? '#FAFAFA' : '#050505');
+      }
+      btn.addEventListener('click', function(){
+        root.classList.toggle('light');
+        try { localStorage.setItem('welcome-theme', root.classList.contains('light') ? 'light' : 'dark'); } catch (e) {}
+        sync();
+      });
+      sync();
+    })();
 
     // ===== Video bubble: tap = sound, then play/pause; drag to move =====
     (function(){
