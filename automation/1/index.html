@@ -212,6 +212,7 @@
     body.pdf-export-mode #progress-container,
     body.pdf-export-mode .nav-arrow,
     body.pdf-export-mode #video-bubble,
+    body.pdf-export-mode #lecture-header,
     body.pdf-export-mode #start-overlay {
         display: none !important;
     }
@@ -231,7 +232,7 @@
     @page { size: A4 landscape; margin: 10mm; }
     @media print {
         html, body { overflow: visible !important; height: auto !important; background: #ffffff !important; print-color-adjust: exact; }
-        .bg-glow-1, .bg-glow-2, #progress-container, .nav-arrow, #video-bubble, #start-overlay { display: none !important; }
+        .bg-glow-1, .bg-glow-2, #progress-container, .nav-arrow, #video-bubble, #lecture-header, #start-overlay { display: none !important; }
         .slide-container { position: relative !important; height: auto !important; min-height: 100vh; opacity: 1 !important; transform: none !important; page-break-after: always; break-after: page; }
     }
 </style>
@@ -457,12 +458,34 @@ html.dark [class~="text-grayBase"] { color:rgba(255,255,255,0.5) !important; }
 html.dark [class*="border-grayBase"] { border-color:rgba(255,255,255,0.12) !important; }
 html.dark [class*="border-black"] { border-color:rgba(255,255,255,0.18) !important; }
 </style>
+<style id="lecture-chrome">
+/* Шапка лекции: лого AIT слева, переключатель темы + «Консультация» справа (без меню).
+   Фиксированная, поверх слайдов, но ниже стартового оверлея/квиза. */
+#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:clamp(.55rem,2vw,1rem) clamp(.9rem,3.2vw,2rem); pointer-events:none; }
+#lecture-header > *{ pointer-events:auto; }
+#lecture-header .lec-logo{ display:inline-flex; align-items:center; }
+#lecture-header .lec-logo img{ height:clamp(2.3rem,9vw,3.2rem); width:auto; display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+#lecture-header .lec-right{ display:flex; align-items:center; gap:clamp(.5rem,2.2vw,.8rem); }
+#lecture-header .lec-ctrl{ display:inline-flex; align-items:center; justify-content:center; height:clamp(2.3rem,9vw,3rem); width:clamp(2.3rem,9vw,3rem); border-radius:999px; border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:clamp(1.05rem,4vw,1.3rem); line-height:1; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:background .2s ease,color .2s ease; }
+#lecture-header .lec-ctrl:hover{ background:#f1f1f1; }
+#lecture-header .lec-consult{ display:inline-flex; align-items:center; gap:.5rem; height:clamp(2.3rem,9vw,3rem); padding:0 clamp(1rem,3.4vw,1.6rem); border-radius:999px; background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:clamp(10px,2.6vw,13px); white-space:nowrap; box-shadow:0 10px 24px -6px rgba(139,92,246,.5); transition:transform .2s ease,box-shadow .2s ease; }
+#lecture-header .lec-consult:hover{ transform:translateY(-1px); box-shadow:0 14px 30px -6px rgba(139,92,246,.6); }
+html.dark #lecture-header .lec-ctrl{ background:#141414; color:#fafafa; border-color:rgba(255,255,255,.18); box-shadow:0 6px 16px rgba(0,0,0,.5); }
+html.dark #lecture-header .lec-ctrl:hover{ background:#1f1f1f; }
+</style>
 <script id="portal-theme">
 (function(){
-  function apply(t){ document.documentElement.classList.toggle('dark', t === 'dark'); }
-  try { apply(new URLSearchParams(location.search).get('theme')); } catch (e) {}
+  function apply(dark){ document.documentElement.classList.toggle('dark', !!dark); }
+  var urlT = null;
+  try { urlT = new URLSearchParams(location.search).get('theme'); } catch (e) {}
+  if (urlT === 'dark' || urlT === 'light') {
+    apply(urlT === 'dark');
+  } else {
+    var saved = null; try { saved = localStorage.getItem('lecture-theme'); } catch (e) {}
+    apply(saved === 'dark');           // по умолчанию — светлая (белая) тема
+  }
   window.addEventListener('message', function(e){
-    if (e && e.data && e.data.type === 'portal-theme') apply(e.data.theme);
+    if (e && e.data && e.data.type === 'portal-theme') apply(e.data.theme === 'dark');
   });
 })();
 </script>
@@ -526,6 +549,33 @@ window.addEventListener('load', function(){
 </script>
 </head>
 <body class="font-sans selection:bg-solar selection:text-black">
+
+    <!-- Шапка лекции: лого AIT слева, переключатель темы + «Консультация» справа (без меню) -->
+    <header id="lecture-header">
+        <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
+            <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
+        </a>
+        <div class="lec-right">
+            <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить тему (тёмная/светлая)"><i class="ph-fill ph-moon"></i></button>
+            <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Консультация <i class="ph-bold ph-arrow-right"></i></a>
+        </div>
+    </header>
+    <script>
+    (function(){
+        var btn = document.getElementById('lec-theme');
+        if (!btn) return;
+        function sync(){
+            var dark = document.documentElement.classList.contains('dark');
+            btn.innerHTML = '<i class="ph-fill ph-' + (dark ? 'sun' : 'moon') + '"></i>';
+        }
+        btn.addEventListener('click', function(){
+            var dark = document.documentElement.classList.toggle('dark');
+            try { localStorage.setItem('lecture-theme', dark ? 'dark' : 'light'); } catch (e) {}
+            sync();
+        });
+        sync();
+    })();
+    </script>
 
     <!-- Окно старта -->
     <div id="start-overlay" class="fixed inset-0 z-[10000] bg-black text-white flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500">
