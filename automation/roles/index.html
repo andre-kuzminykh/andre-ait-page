@@ -328,10 +328,19 @@
       var nextBtn = document.getElementById('next-btn');
       if (!bubble || !video) return;
 
-      // play once (NOT loop) so 'ended' fires; muted is required for autoplay
-      video.muted = true; video.loop = false;
-      // start playing immediately, and retry the moment any data/metadata arrives (slow GitHub-raw loads)
-      function tryPlay(){ var p = video.play && video.play(); if (p && p.catch) p.catch(function(){}); }
+      // play once (NOT loop) so 'ended' fires
+      video.loop = false;
+      // ===== ONE journey-wide audio memory: once the user turns sound ON (step 1), every later
+      // video (steps 2-3 + roadmap) starts WITH sound. Flag: localStorage('welcome-audio').
+      // Browsers block UNMUTED autoplay on a fresh page without a gesture, so we try sound-on and
+      // fall back to muted (one tap re-enables); on Chrome the domain's media engagement usually
+      // lets the later pages start unmuted on their own. =====
+      var WANT_SOUND = false;
+      try { WANT_SOUND = localStorage.getItem('welcome-audio') === '1'; } catch (e) {}
+      function rememberSound(){ try { localStorage.setItem('welcome-audio', '1'); } catch (e) {} }
+      video.muted = !WANT_SOUND;
+      // start ASAP; if we wanted sound but the browser blocked it, fall back to muted autoplay
+      function tryPlay(){ var p = video.play && video.play(); if (p && p.catch) p.catch(function(){ if (!video.muted){ video.muted = true; var q = video.play && video.play(); if (q && q.catch) q.catch(function(){}); } }); }
       tryPlay();
       video.addEventListener('loadedmetadata', tryPlay);
       video.addEventListener('loadeddata', tryPlay);
@@ -357,7 +366,7 @@
 
       // tap: first turn the SOUND on (unmute — allowed inside the user gesture); then toggle play/pause
       function onTap(){
-        if (video.muted){ video.muted = false; if (video.paused){ var q = video.play(); if (q && q.catch) q.catch(function(){}); } }
+        if (video.muted){ video.muted = false; rememberSound(); try { video.currentTime = 0; } catch (e) {} var q = video.play(); if (q && q.catch) q.catch(function(){}); } // включили звук → видео с начала
         else if (video.paused){ var p2 = video.play(); if (p2 && p2.catch) p2.catch(function(){}); }
         else video.pause();
       }
