@@ -121,7 +121,8 @@
   @media(min-width:640px){main{padding:7rem 2rem 5rem}}
   .wrap{max-width:64rem;margin:0 auto;animation:fadeUp .5s ease both}
   .title{text-align:center;font-size:clamp(1.9rem,5.5vw,3.3rem);font-weight:900;line-height:1.1;letter-spacing:-.03em}
-  .title .line2{display:block}
+  .title .line,.title .line2{display:block}
+  .title .nb{white-space:nowrap}  /* «бизнес-процессов» не разрывается по дефису */
 
   /* single-column grid with equal rows → all module cards are the same height (sized to the tallest) */
   .list{list-style:none;margin:2rem 0 0;padding:0;display:grid;grid-template-columns:1fr;grid-auto-rows:1fr;gap:.625rem}
@@ -168,8 +169,8 @@
   .menu-copy{margin:0;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap;text-align:center}
 
   /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
-  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(170px,26vw,340px);height:clamp(170px,26vw,340px);touch-action:none;user-select:none;-webkit-user-select:none}
-  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:180px;height:180px}}
+  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(140px,22vw,280px);height:clamp(140px,22vw,280px);touch-action:none;user-select:none;-webkit-user-select:none}
+  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:150px;height:150px}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
   .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
@@ -218,7 +219,7 @@
   <main>
     <div class="wrap">
       <h1 class="title">
-        <span>Автоматизация </span><span class="plum">бизнес-процессов </span><span class="line2"><span>с </span><span class="flame">ИИ-агентами</span></span>
+        <span class="line">Автоматизация</span><span class="line plum nb">бизнес-процессов</span><span class="line2"><span>с </span><span class="flame">ИИ-агентами</span></span>
       </h1>
 
       <ol class="list">
