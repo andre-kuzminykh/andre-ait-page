@@ -7,18 +7,18 @@
 <meta name="theme-color" content="#050505">
 <meta name="color-scheme" content="dark light">
 <script>(function(){try{if(localStorage.getItem('welcome-theme')==='light')document.documentElement.classList.add('light');}catch(e){}})();</script>
-<title>Автоматизация бизнес-процессов с ИИ-агентами</title>
+<title>Дорожная карта — Автоматизация бизнес-процессов с ИИ-агентами</title>
 <meta name="description" content="Дорожная карта курса: 8 модулей по автоматизации бизнес-процессов с ИИ-агентами.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
   /* ============================================================
      Andre AIT — Дорожная карта курса (plain HTML).
-     Единый стиль с сайтом/welcome: JetBrains Mono, тёмная #050505,
+     Единый стиль с сайтом/welcome: Montserrat, тёмная #050505,
      #8854F3 + #F97316, Font Awesome, btn-white shimmer, зерно.
      Открывается кнопкой «Начать обучение» с welcome.html.
      ============================================================ */
@@ -45,7 +45,7 @@
   body{
     background:var(--bg); color:var(--fg); overflow-x:hidden;
     transition:background .25s ease,color .25s ease;
-    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+    font-family:'Montserrat',ui-sans-serif,system-ui,-apple-system,sans-serif;
     -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     -webkit-tap-highlight-color:transparent;
   }
@@ -72,25 +72,24 @@
   .row>*{pointer-events:auto}
 
   .logo-btn{display:inline-flex;align-items:center;gap:.5rem;background:none;border:0;padding:0;justify-self:start;cursor:pointer}
-  .logo-btn img{height:2.85rem;width:auto;object-fit:contain;transition:transform .2s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
-  @media(min-width:640px){.logo-btn img{height:3.2rem}}
+  .logo-btn img{height:clamp(2.85rem,9vw,3.6rem);width:auto;object-fit:contain;transition:transform .2s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
   .logo-btn:hover img{transform:scale(1.05)}
 
   .navpill{
     display:none;justify-self:center;align-items:center;gap:.25rem;
     border:1px solid var(--pill-border);background:var(--pill-bg);
-    border-radius:999px;padding:.5rem .75rem;
+    border-radius:999px;padding:.6rem 1.1rem;
     -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
   }
   @media(min-width:1280px){.navpill{display:flex}}
-  .navpill a{white-space:nowrap;padding:.25rem .75rem;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--navitem);transition:color .25s ease}
+  .navpill a{white-space:nowrap;padding:.3rem .85rem;font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--navitem);transition:color .25s ease}
   .navpill a.f:hover{color:#F97316}
   .navpill a.p:hover{color:#8854F3}
   .navpill .sep{color:var(--divider);user-select:none;font-size:11px}
 
   .right{grid-column:3;display:flex;align-items:center;justify-self:end;gap:.5rem}
   @media(min-width:640px){.right{gap:.75rem}}
-  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:2.5rem;width:2.5rem;border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:1.05rem;line-height:1;flex-shrink:0;transition:background .2s ease}
+  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:clamp(2.5rem,5vw,3rem);width:clamp(2.5rem,5vw,3rem);border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:clamp(1.05rem,1.4vw,1.35rem);line-height:1;flex-shrink:0;transition:background .2s ease}
   .ctrl:hover{background:rgba(255,255,255,.10)}
   .burger{display:inline-flex}
   @media(min-width:1280px){.burger{display:none}}
@@ -107,7 +106,7 @@
     color:#fff;box-shadow:0 10px 25px -5px rgba(136,84,243,.45);transform:translateY(-2px);
     animation:gradientShimmer 4.5s ease infinite;
   }
-  .consult{height:2.5rem;padding:0 .95rem;font-size:11px}
+  .consult{height:clamp(2.5rem,5vw,3rem);padding:0 clamp(1rem,2.2vw,1.6rem);font-size:clamp(11px,1.05vw,13px)}
   @media(min-width:640px){.consult{padding:0 1rem}}
   /* large screens: scale the whole UI up (like the main site) — otherwise everything looks tiny on big monitors */
   @media(min-width:1600px){body{zoom:1.15}}
@@ -117,8 +116,8 @@
   /* ===== Content: roadmap (scrolls) ===== */
   main{min-height:100dvh;padding:6rem 1rem 8rem}
   @media(min-width:640px){main{padding:7rem 2rem 5rem}}
-  .wrap{max-width:56rem;margin:0 auto;animation:fadeUp .5s ease both}
-  .title{text-align:center;font-size:clamp(1.65rem,5.2vw,2.7rem);font-weight:900;line-height:1.1;letter-spacing:-.03em}
+  .wrap{max-width:64rem;margin:0 auto;animation:fadeUp .5s ease both}
+  .title{text-align:center;font-size:clamp(1.9rem,5.5vw,3.3rem);font-weight:900;line-height:1.1;letter-spacing:-.03em}
   .title .line2{display:block}
 
   /* single-column grid with equal rows → all module cards are the same height (sized to the tallest) */
@@ -130,11 +129,11 @@
     border-radius:1rem;padding:1.15rem 1.25rem;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
   }
   .module:hover{transform:translateY(-2px);border-color:rgba(136,84,243,.4);box-shadow:0 10px 24px -10px rgba(136,84,243,.4)}
-  .module .ico{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;height:3.4rem;width:3.4rem;border-radius:1rem;background:rgba(136,84,243,.15);color:#8854F3;font-size:1.65rem}
+  .module .ico{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;height:clamp(3.4rem,4vw,4.2rem);width:clamp(3.4rem,4vw,4.2rem);border-radius:1rem;background:rgba(136,84,243,.15);color:#8854F3;font-size:clamp(1.65rem,2vw,2.1rem)}
   .module .body{min-width:0;flex:1}
-  .module .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#F97316}
-  .module h3{margin:.18rem 0 0;font-size:clamp(.95rem,2.5vw,1.2rem);font-weight:700;line-height:1.25}
-  .module p{margin:.5rem 0 0;color:var(--muted);font-size:.85rem;line-height:1.6}
+  .module .lbl{font-size:clamp(11px,1vw,13px);font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#F97316}
+  .module h3{margin:.2rem 0 0;font-size:clamp(1.05rem,2.6vw,1.45rem);font-weight:700;line-height:1.25}
+  .module p{margin:.5rem 0 0;color:var(--muted);font-size:clamp(.85rem,1.1vw,1rem);line-height:1.6}
   .module .go{flex-shrink:0;align-self:center;color:var(--muted);font-size:1rem}
   /* locked modules (only module 1 is open) — minimalist grey/disabled */
   .module.locked{opacity:.48;cursor:default}
