@@ -333,7 +333,12 @@
 
       // play once (NOT loop) so 'ended' fires; muted is required for autoplay
       video.muted = true; video.loop = false;
-      var pr = video.play && video.play(); if (pr && pr.catch) pr.catch(function(){});
+      // start playing immediately, and retry the moment any data/metadata arrives (slow GitHub-raw loads)
+      function tryPlay(){ var p = video.play && video.play(); if (p && p.catch) p.catch(function(){}); }
+      tryPlay();
+      video.addEventListener('loadedmetadata', tryPlay);
+      video.addEventListener('loadeddata', tryPlay);
+      video.addEventListener('canplay', tryPlay);
       function syncSound(){
         bubble.classList.toggle('muted', video.muted);
         if (sound) sound.innerHTML = '<i class="fa-solid fa-volume-' + (video.muted ? 'xmark' : 'high') + '"></i>';
@@ -341,14 +346,16 @@
       video.addEventListener('play',  function(){ bubble.classList.remove('paused'); });
       video.addEventListener('pause', function(){ bubble.classList.add('paused'); });
       video.addEventListener('volumechange', syncSound);
-      setTimeout(function(){ if (video.paused) bubble.classList.add('paused'); syncSound(); }, 400);
+      syncSound();
+      // safety net: only if autoplay genuinely never started (rare with muted) show ▶ so the user can tap
+      setTimeout(function(){ if (video.paused && video.currentTime < 0.1) bubble.classList.add('paused'); }, 2500);
 
       // когда говорящая голова договорила — авто-нажатие кнопки и переход на следующий экран
       var advanced = false;
       video.addEventListener('ended', function(){
         if (advanced || !nextBtn) return; advanced = true;
         nextBtn.classList.add('pressed');           // анимация нажатия
-        setTimeout(function(){ nextBtn.click(); }, 430);
+        setTimeout(function(){ nextBtn.click(); }, 150);
       });
 
       // tap: first turn the SOUND on (unmute — allowed inside the user gesture); then toggle play/pause
