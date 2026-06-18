@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -121,8 +122,12 @@
   @media(min-width:2300px){body{zoom:1.5}}
 
   /* ===== Content: single non-scrolling screen, centred ===== */
-  main{height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 1rem 1.5rem}
-  @media(min-width:640px){main{padding:6rem 2rem 2rem}}
+  main{height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 1rem}
+  @media(min-width:640px){main{padding:5.5rem 2rem}}
+  /* body{zoom} scales 100dvh taller than the screen → correct the height so content stays vertically centred */
+  @media(min-width:1600px){main{height:calc(100dvh / 1.15)}}
+  @media(min-width:1900px){main{height:calc(100dvh / 1.3)}}
+  @media(min-width:2300px){main{height:calc(100dvh / 1.5)}}
   .wrap{width:100%;max-width:56rem;margin:0 auto;text-align:center;animation:fadeUp .5s ease both}
 
   .hero{font-size:clamp(1.5rem,5.2vw,3rem);font-weight:800;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;padding-top:.5rem}
@@ -239,7 +244,7 @@
         </div>
       </section>
       <div class="cta-row">
-        <button class="btn-white" id="next-btn" onclick="location.href='welcome-3.html'">
+        <button class="btn-white" id="next-btn" onclick="location.href='https://andre.technology/automation/skills'">
           Чему я научусь <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
         </button>
       </div>
