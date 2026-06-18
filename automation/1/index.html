@@ -276,6 +276,10 @@ h1 .text-solar, h2 .text-solar {
 #progress-bar {
   background: linear-gradient(90deg, #8B5CF6 0%, #F97316 100%) !important;
 }
+/* FR-LECTURE-32 — серой полосы трекa прогресса быть НЕ должно (на мобиле
+   bg-grayBase #E9E9E9 читался как «серая полоса снизу»). Трек прозрачный — видна
+   только цветная заполненная часть. */
+#progress-container { background: transparent !important; }
 
 /* FR-LECTURE-20 — контент слайда НЕ реагирует на hover/focus/active: ни движений,
    ни переходов, ни смены цвета/тени. Пуленепробиваем: глушим и Tailwind-переменные
@@ -434,7 +438,7 @@ h1 .text-solar, h2 .text-solar {
   #nav-prev, #nav-next { width:46px !important; height:46px !important; bottom:16px !important; }
   #nav-prev { right:66px !important; }
   #nav-next { right:12px !important; }
-  #video-bubble { width:120px !important; height:120px !important; left:15px !important; bottom:15px !important; }
+  #video-bubble { width:150px !important; height:150px !important; left:15px !important; bottom:15px !important; }
   .slide-container .content-z {
     padding-block: 72px !important;
     padding-left:1rem !important; padding-right:1rem !important;
@@ -1160,13 +1164,11 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
 
-                <div class="bg-black p-1 md:p-[2px] rounded-2xl md:rounded-3xl shadow-xl z-10 md:transform md:scale-[1.02] w-full">
-                    <div class="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[28px] flex items-center gap-3 md:gap-6 border-2 border-solar w-full">
-                        <div class="w-10 h-10 md:w-16 md:h-16 bg-black rounded-full flex items-center justify-center shrink-0 border-2 md:border-4 border-white"><i class="ph-fill ph-brain text-xl md:text-3xl text-solar"></i></div>
-                        <div class="w-full">
-                            <h3 class="font-black text-sm md:text-2xl text-black mb-0.5 md:mb-1">ИИ-Трансформация</h3>
-                            <p class="text-[9px] md:text-sm text-black/80 font-medium leading-tight">ИИ сам принимает решения и автономно управляет процессами</p>
-                        </div>
+                <div class="bg-white p-4 md:p-8 rounded-2xl md:rounded-3xl flex items-center gap-3 md:gap-6 border-2 border-solar shadow-xl z-10 md:transform md:scale-[1.02] w-full">
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-solar/20 rounded-full flex items-center justify-center shrink-0 border-2 md:border-4 border-white"><i class="ph-fill ph-brain text-xl md:text-3xl" style="color:#F97316"></i></div>
+                    <div class="w-full">
+                        <h3 class="font-black text-sm md:text-2xl mb-0.5 md:mb-1" style="color:#F97316">ИИ-Трансформация</h3>
+                        <p class="text-[9px] md:text-sm text-black/80 font-medium leading-tight">ИИ сам принимает решения и автономно управляет процессами</p>
                     </div>
                 </div>
             </div>
