@@ -369,7 +369,7 @@
 
       // tap: first turn the SOUND on (unmute — allowed inside the user gesture); then toggle play/pause
       function onTap(){
-        if (video.muted){ video.muted = false; rememberSound(); if (video.paused){ var q = video.play(); if (q && q.catch) q.catch(function(){}); } }
+        if (video.muted){ video.muted = false; rememberSound(); try { video.currentTime = 0; } catch (e) {} var q = video.play(); if (q && q.catch) q.catch(function(){}); } // включили звук → видео с начала
         else if (video.paused){ var p2 = video.play(); if (p2 && p2.catch) p2.catch(function(){}); }
         else video.pause();
       }
