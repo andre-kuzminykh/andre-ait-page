@@ -71,7 +71,7 @@
   @media(min-width:640px){.row{padding:.75rem 2rem}}
   .row>*{pointer-events:auto}
 
-  .logo-btn{display:inline-flex;align-items:center;gap:.5rem;background:none;border:0;padding:0;justify-self:start}
+  .logo-btn{display:inline-flex;align-items:center;gap:.5rem;background:none;border:0;padding:0;justify-self:start;cursor:pointer}
   .logo-btn img{height:2.85rem;width:auto;object-fit:contain;transition:transform .2s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
   @media(min-width:640px){.logo-btn img{height:3.2rem}}
   .logo-btn:hover img{transform:scale(1.05)}
@@ -90,7 +90,7 @@
 
   .right{grid-column:3;display:flex;align-items:center;justify-self:end;gap:.5rem}
   @media(min-width:640px){.right{gap:.75rem}}
-  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:2.5rem;width:2.5rem;border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:1.05rem;transition:background .2s ease}
+  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:2.5rem;width:2.5rem;border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:1.05rem;line-height:1;flex-shrink:0;transition:background .2s ease}
   .ctrl:hover{background:rgba(255,255,255,.10)}
   .burger{display:inline-flex}
   @media(min-width:1280px){.burger{display:none}}
@@ -109,15 +109,16 @@
   }
   .consult{height:2.5rem;padding:0 .95rem;font-size:11px}
   @media(min-width:640px){.consult{padding:0 1rem}}
-  .consult .short{display:inline}
-  .consult .full{display:none}
-  @media(min-width:640px){.consult .short{display:none}.consult .full{display:inline}}
+  /* large screens: scale the whole UI up (like the main site) — otherwise everything looks tiny on big monitors */
+  @media(min-width:1600px){body{zoom:1.15}}
+  @media(min-width:1900px){body{zoom:1.3}}
+  @media(min-width:2300px){body{zoom:1.5}}
 
   /* ===== Content: roadmap (scrolls) ===== */
   main{min-height:100dvh;padding:6rem 1rem 8rem}
   @media(min-width:640px){main{padding:7rem 2rem 5rem}}
-  .wrap{max-width:48rem;margin:0 auto;animation:fadeUp .5s ease both}
-  .title{text-align:center;font-size:clamp(1.5rem,5vw,2.25rem);font-weight:900;line-height:1.1;letter-spacing:-.03em}
+  .wrap{max-width:56rem;margin:0 auto;animation:fadeUp .5s ease both}
+  .title{text-align:center;font-size:clamp(1.65rem,5.2vw,2.7rem);font-weight:900;line-height:1.1;letter-spacing:-.03em}
   .title .line2{display:block}
 
   /* single-column grid with equal rows → all module cards are the same height (sized to the tallest) */
@@ -126,14 +127,14 @@
   .module{
     display:flex;align-items:flex-start;gap:1rem;width:100%;text-align:left;
     border:1px solid var(--card-border);background:var(--card-bg);box-shadow:var(--card-shadow);
-    border-radius:1rem;padding:1rem;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+    border-radius:1rem;padding:1.15rem 1.25rem;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
   }
   .module:hover{transform:translateY(-2px);border-color:rgba(136,84,243,.4);box-shadow:0 10px 24px -10px rgba(136,84,243,.4)}
-  .module .ico{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;height:3rem;width:3rem;border-radius:1rem;background:rgba(136,84,243,.15);color:#8854F3;font-size:1.4rem}
+  .module .ico{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;height:3.4rem;width:3.4rem;border-radius:1rem;background:rgba(136,84,243,.15);color:#8854F3;font-size:1.65rem}
   .module .body{min-width:0;flex:1}
-  .module .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#F97316}
-  .module h3{margin:.15rem 0 0;font-size:clamp(.9rem,2.4vw,1.05rem);font-weight:700;line-height:1.25}
-  .module p{margin:.45rem 0 0;color:var(--muted);font-size:.78rem;line-height:1.6}
+  .module .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#F97316}
+  .module h3{margin:.18rem 0 0;font-size:clamp(.95rem,2.5vw,1.2rem);font-weight:700;line-height:1.25}
+  .module p{margin:.5rem 0 0;color:var(--muted);font-size:.85rem;line-height:1.6}
   .module .go{flex-shrink:0;align-self:center;color:var(--muted);font-size:1rem}
 
   /* ===== Mobile fullscreen menu ===== */
@@ -156,7 +157,7 @@
   .menu-copy{margin:0;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap;text-align:center}
 
   /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
-  .bubble{position:fixed;right:1rem;bottom:1rem;z-index:40;width:clamp(132px,30vw,200px);height:clamp(132px,30vw,200px);touch-action:none;user-select:none;-webkit-user-select:none}
+  .bubble{position:fixed;right:1rem;bottom:1rem;z-index:40;width:clamp(150px,30vw,232px);height:clamp(150px,30vw,232px);touch-action:none;user-select:none;-webkit-user-select:none}
   @media(min-width:640px){.bubble{right:2rem;bottom:2rem}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
@@ -194,9 +195,8 @@
       <div class="right">
         <button class="ctrl burger" id="burger" aria-label="Меню"><i class="fa-solid fa-bars"></i></button>
         <button class="ctrl" id="theme" aria-label="Сменить фон (тёмный/светлый)"><i class="fa-solid fa-sun"></i></button>
-        <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Получить консультацию по ИИ">
-          <span class="full">Получить консультацию по ИИ</span>
-          <span class="short">Консультация</span>
+        <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Консультация">
+          Консультация
           <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
         </button>
       </div>
