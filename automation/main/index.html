@@ -169,7 +169,7 @@
 
   /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
   .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(140px,22vw,280px);height:clamp(140px,22vw,280px);touch-action:none;user-select:none;-webkit-user-select:none}
-  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:120px;height:120px}}
+  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:150px;height:150px}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
   .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
@@ -222,7 +222,7 @@
       </h1>
 
       <ol class="list">
-        <li><a class="module" href="https://andre.technology/automation/1/">
+        <li><a class="module" href="https://andre.technology/automation/1">
           <span class="ico"><i class="fa-solid fa-bullseye"></i></span>
           <span class="body"><span class="lbl">Модуль 1</span><h3>Стратегия внедрения ИИ в бизнес-процессы</h3>
           <p>Вы поймёте, как ИИ-агенты меняют операционную модель компании, сможете оценить уровень ИИ-зрелости бизнеса и определить, в какие процессы внедрение ИИ принесёт наибольший эффект.</p></span>
@@ -363,7 +363,12 @@
       try { WANT_SOUND = localStorage.getItem('welcome-audio') === '1'; } catch (e) {}
       function rememberSound(){ try { localStorage.setItem('welcome-audio', '1'); } catch (e) {} }
       video.loop = true; video.muted = !WANT_SOUND;
-      function tryPlay(){ var p = video.play && video.play(); if (p && p.catch) p.catch(function(){ if (!video.muted){ video.muted = true; var q = video.play && video.play(); if (q && q.catch) q.catch(function(){}); } }); }
+      // Only the autoplay-policy block (NotAllowedError) means "sound isn't allowed on this fresh page"
+      // → only THEN fall back to muted. Transient rejections (AbortError from an interrupted load) must
+      // NOT mute, otherwise we'd kill sound the browser would actually allow (e.g. Chrome after the user
+      // enabled sound earlier — media-engagement lets later pages start unmuted on their own).
+      var soundBlocked = false;
+      function tryPlay(){ var p = video.play && video.play(); if (p && p.catch) p.catch(function(err){ if (!video.muted && !soundBlocked && err && err.name === 'NotAllowedError'){ soundBlocked = true; video.muted = true; var q = video.play && video.play(); if (q && q.catch) q.catch(function(){}); } }); }
       tryPlay();
       video.addEventListener('loadedmetadata', tryPlay);
       video.addEventListener('loadeddata', tryPlay);
