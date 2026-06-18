@@ -136,6 +136,12 @@
   .module h3{margin:.18rem 0 0;font-size:clamp(.95rem,2.5vw,1.2rem);font-weight:700;line-height:1.25}
   .module p{margin:.5rem 0 0;color:var(--muted);font-size:.85rem;line-height:1.6}
   .module .go{flex-shrink:0;align-self:center;color:var(--muted);font-size:1rem}
+  /* locked modules (only module 1 is open) — minimalist grey/disabled */
+  .module.locked{opacity:.48;cursor:default}
+  .module.locked .ico{background:rgba(140,140,150,.12);color:var(--muted)}
+  .module.locked .lbl{color:var(--muted)}
+  @media(hover:hover){.module.locked:hover{transform:none;border-color:var(--card-border);box-shadow:var(--card-shadow)}}
+  .module .go.date{font-size:11px;font-weight:600;letter-spacing:.04em;white-space:nowrap;color:var(--muted)}
 
   /* ===== Mobile fullscreen menu ===== */
   .menu{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;background:var(--bg)}
@@ -157,8 +163,8 @@
   .menu-copy{margin:0;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap;text-align:center}
 
   /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
-  .bubble{position:fixed;right:1rem;bottom:1rem;z-index:40;width:clamp(150px,30vw,232px);height:clamp(150px,30vw,232px);touch-action:none;user-select:none;-webkit-user-select:none}
-  @media(min-width:640px){.bubble{right:2rem;bottom:2rem}}
+  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(140px,22vw,280px);height:clamp(140px,22vw,280px);touch-action:none;user-select:none;-webkit-user-select:none}
+  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:120px;height:120px}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
   .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
@@ -218,53 +224,53 @@
           <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
         </a></li>
 
-        <li><a class="module" href="lectures/2.html">
+        <li><a class="module locked">
           <span class="ico"><i class="fa-solid fa-diagram-project"></i></span>
           <span class="body"><span class="lbl">Модуль 2</span><h3>Моделирование бизнес-процессов с ИИ-агентами</h3>
           <p>Вы научитесь анализировать бизнес-процессы, выявлять узкие места и точки автоматизации, а также проектировать новые процессы, в которых человек и ИИ-агенты работают как единая система.</p></span>
-          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="go date">19 июня 2026</span>
         </a></li>
 
-        <li><a class="module" href="lectures/3.html">
+        <li><a class="module locked">
           <span class="ico"><i class="fa-solid fa-robot"></i></span>
           <span class="body"><span class="lbl">Модуль 3</span><h3>Проектирование и разработка ИИ-агентов</h3>
           <p>Вы освоите принципы создания ИИ-агентов, сможете спроектировать решение под конкретную бизнес-задачу и собрать работающего агента без глубокой технической подготовки.</p></span>
-          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="go"><i class="fa-solid fa-lock"></i></span>
         </a></li>
 
-        <li><a class="module" href="lectures/4.html">
+        <li><a class="module locked">
           <span class="ico"><i class="fa-solid fa-network-wired"></i></span>
           <span class="body"><span class="lbl">Модуль 4</span><h3>Проектирование и разработка мультиагентных систем</h3>
           <p>Вы разберётесь, как организовать взаимодействие нескольких ИИ-агентов, распределять между ними задачи и создавать мультиагентные системы для автоматизации сложных процессов.</p></span>
-          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="go"><i class="fa-solid fa-lock"></i></span>
         </a></li>
 
-        <li><a class="module" href="lectures/5.html">
+        <li><a class="module locked">
           <span class="ico"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
           <span class="body"><span class="lbl">Модуль 5</span><h3>Продвинутые техники разработки ИИ-сервисов</h3>
           <p>Вы научитесь расширять возможности ИИ-агентов с помощью интеграций, программной логики и пользовательских интерфейсов, превращая отдельные сценарии в полноценные цифровые сервисы.</p></span>
-          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="go"><i class="fa-solid fa-lock"></i></span>
         </a></li>
 
-        <li><a class="module" href="lectures/6.html">
+        <li><a class="module locked">
           <span class="ico"><i class="fa-solid fa-server"></i></span>
           <span class="body"><span class="lbl">Модуль 6</span><h3>Тестирование, мониторинг и масштабирование ИИ-систем</h3>
           <p>Вы освоите подходы к тестированию и мониторингу ИИ-решений, научитесь контролировать качество работы агентов и подготовите систему к масштабированию внутри компании.</p></span>
-          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="go"><i class="fa-solid fa-lock"></i></span>
         </a></li>
 
-        <li><a class="module" href="lectures/7.html">
+        <li><a class="module locked">
           <span class="ico"><i class="fa-solid fa-users"></i></span>
           <span class="body"><span class="lbl">Модуль 7</span><h3>Управление изменениями в компании</h3>
           <p>Вы поймёте, как меняются роли сотрудников и бизнес-процессы после внедрения ИИ, и сможете подготовить план организационных изменений, обучения и адаптации команды.</p></span>
-          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="go"><i class="fa-solid fa-lock"></i></span>
         </a></li>
 
-        <li><a class="module" href="lectures/8.html">
+        <li><a class="module locked">
           <span class="ico"><i class="fa-solid fa-chart-line"></i></span>
           <span class="body"><span class="lbl">Модуль 8</span><h3>Оценка эффективности и экономического эффекта</h3>
           <p>Вы научитесь рассчитывать ROI и экономический эффект от внедрения ИИ, формировать обоснование инвестиций и презентовать результаты проекта руководству или заказчикам.</p></span>
-          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="go"><i class="fa-solid fa-lock"></i></span>
         </a></li>
       </ol>
     </div>
