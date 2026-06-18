@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#050505">
 <meta name="color-scheme" content="dark light">
 <script>(function(){try{if(localStorage.getItem('welcome-theme')==='light')document.documentElement.classList.add('light');}catch(e){}})();</script>
-<title>Дорожная карта — Автоматизация бизнес-процессов с ИИ-агентами</title>
+<title>Автоматизация бизнес-процессов с ИИ-агентами</title>
 <meta name="description" content="Дорожная карта курса: 8 модулей по автоматизации бизнес-процессов с ИИ-агентами.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -274,7 +274,7 @@
   <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
     <div class="inner">
       <div class="grad"></div>
-      <video id="bubble-video" src="https://github.com/andre-kuzminykh/andre-ait-page/raw/refs/heads/main/andre-ai-web-small.mp4" loop muted autoplay playsinline preload="auto"></video>
+      <video id="bubble-video" src="https://github.com/andre-kuzminykh/automation/raw/7a9f653/l1/videos/0.mp4" loop muted autoplay playsinline preload="auto"></video>
       <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><i class="fa-solid fa-volume-xmark"></i></div>
       <div class="bubble-play" aria-hidden="true"><i class="fa-solid fa-play"></i></div>
     </div>
@@ -362,12 +362,15 @@
         else video.pause();
       }
 
+      // body{zoom} on big screens scales fixed elements: clientX / getBoundingClientRect are in
+      // RENDERED px while style.left is in LAYOUT px — reconcile via the measured zoom factor.
+      function zoomF(){ var r=bubble.getBoundingClientRect(); return (r.width && bubble.offsetWidth) ? r.width/bubble.offsetWidth : 1; }
       // pointer drag; a tap (no real movement) triggers onTap (sound / play-pause)
       var down=false, moved=false, sx=0, sy=0, ox=0, oy=0, TH=6;
       bubble.addEventListener('pointerdown', function(e){
         down=true; moved=false; sx=e.clientX; sy=e.clientY;
-        var r=bubble.getBoundingClientRect(); ox=r.left; oy=r.top;
-        bubble.style.left=r.left+'px'; bubble.style.top=r.top+'px';
+        var r=bubble.getBoundingClientRect(), z=zoomF(); ox=r.left; oy=r.top;
+        bubble.style.left=(r.left/z)+'px'; bubble.style.top=(r.top/z)+'px';
         bubble.style.right='auto'; bubble.style.bottom='auto';
         if (bubble.setPointerCapture){ try { bubble.setPointerCapture(e.pointerId); } catch (err) {} }
       });
@@ -376,10 +379,10 @@
         var dx=e.clientX-sx, dy=e.clientY-sy;
         if (!moved && (Math.abs(dx)>TH || Math.abs(dy)>TH)){ moved=true; bubble.classList.add('dragging'); }
         if (moved){
-          var w=bubble.offsetWidth, h=bubble.offsetHeight;
-          var nx=Math.min(Math.max(0, ox+dx), window.innerWidth  - w);
-          var ny=Math.min(Math.max(0, oy+dy), window.innerHeight - h);
-          bubble.style.left=nx+'px'; bubble.style.top=ny+'px';
+          var z=zoomF(), rw=bubble.offsetWidth*z, rh=bubble.offsetHeight*z;
+          var nx=Math.min(Math.max(0, ox+dx), window.innerWidth  - rw);
+          var ny=Math.min(Math.max(0, oy+dy), window.innerHeight - rh);
+          bubble.style.left=(nx/z)+'px'; bubble.style.top=(ny/z)+'px';
         }
       });
       function endDrag(){ if (!down) return; down=false; bubble.classList.remove('dragging'); if (!moved) onTap(); }
@@ -388,9 +391,10 @@
 
       window.addEventListener('resize', function(){
         if (!bubble.style.left) return;
-        var w=bubble.offsetWidth, h=bubble.offsetHeight;
-        bubble.style.left=Math.max(0,Math.min(parseFloat(bubble.style.left), window.innerWidth  - w))+'px';
-        bubble.style.top =Math.max(0,Math.min(parseFloat(bubble.style.top),  window.innerHeight - h))+'px';
+        var z=zoomF(), rw=bubble.offsetWidth*z, rh=bubble.offsetHeight*z;
+        var lx=Math.max(0,Math.min(parseFloat(bubble.style.left)*z, window.innerWidth  - rw));
+        var ly=Math.max(0,Math.min(parseFloat(bubble.style.top)*z,  window.innerHeight - rh));
+        bubble.style.left=(lx/z)+'px'; bubble.style.top=(ly/z)+'px';
       });
     })();
   </script>
