@@ -114,13 +114,15 @@
   @media(min-width:640px){.consult .short{display:none}.consult .full{display:inline}}
 
   /* ===== Content: roadmap (scrolls) ===== */
-  main{min-height:100dvh;padding:6rem 1rem 3rem}
-  @media(min-width:640px){main{padding:7rem 2rem 4rem}}
+  main{min-height:100dvh;padding:6rem 1rem 8rem}
+  @media(min-width:640px){main{padding:7rem 2rem 5rem}}
   .wrap{max-width:48rem;margin:0 auto;animation:fadeUp .5s ease both}
   .title{text-align:center;font-size:clamp(1.5rem,5vw,2.25rem);font-weight:900;line-height:1.1;letter-spacing:-.03em}
   .title .line2{display:block}
 
-  .list{list-style:none;margin:2rem 0 0;padding:0;display:flex;flex-direction:column;gap:.625rem}
+  /* single-column grid with equal rows → all module cards are the same height (sized to the tallest) */
+  .list{list-style:none;margin:2rem 0 0;padding:0;display:grid;grid-template-columns:1fr;grid-auto-rows:1fr;gap:.625rem}
+  .list li{display:flex}
   .module{
     display:flex;align-items:flex-start;gap:1rem;width:100%;text-align:left;
     border:1px solid var(--card-border);background:var(--card-bg);box-shadow:var(--card-shadow);
@@ -152,6 +154,18 @@
   .menu-legal a{color:var(--navitem);font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;transition:color .3s ease}
   .menu-legal .sep{color:var(--divider);font-size:12px;user-select:none}
   .menu-copy{margin:0;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap;text-align:center}
+
+  /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
+  .bubble{position:fixed;right:1rem;bottom:1rem;z-index:40;width:clamp(132px,30vw,200px);height:clamp(132px,30vw,200px);touch-action:none;user-select:none;-webkit-user-select:none}
+  @media(min-width:640px){.bubble{right:2rem;bottom:2rem}}
+  .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
+  .bubble.dragging .inner{cursor:grabbing}
+  .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
+  .bubble video{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}
+  .bubble-sound{position:absolute;z-index:3;left:50%;bottom:8%;transform:translateX(-50%);display:inline-flex;align-items:center;justify-content:center;height:1.5rem;min-width:1.5rem;padding:0 .4rem;border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font-size:.72rem;pointer-events:none;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);transition:opacity .2s ease}
+  .bubble.paused .bubble-sound{opacity:0}
+  .bubble-play{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.9rem;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity .2s ease;pointer-events:none}
+  .bubble.paused .bubble-play{opacity:1}
 </style>
 </head>
 <body>
@@ -256,6 +270,16 @@
     </div>
   </main>
 
+  <!-- VIDEO BUBBLE (talking head — drag to move; tap = sound, then play/pause; swap the src later) -->
+  <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
+    <div class="inner">
+      <div class="grad"></div>
+      <video id="bubble-video" src="https://github.com/andre-kuzminykh/andre-ait-page/raw/refs/heads/main/andre-ai-web-small.mp4" loop muted autoplay playsinline preload="auto"></video>
+      <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><i class="fa-solid fa-volume-xmark"></i></div>
+      <div class="bubble-play" aria-hidden="true"><i class="fa-solid fa-play"></i></div>
+    </div>
+  </div>
+
   <!-- MOBILE MENU -->
   <div class="menu" id="mobileMenu">
     <div class="top">
@@ -312,6 +336,63 @@
     var menu = document.getElementById('mobileMenu');
     document.getElementById('burger').addEventListener('click', function(){ menu.classList.add('open'); });
     document.getElementById('closeMenu').addEventListener('click', function(){ menu.classList.remove('open'); });
+
+    // ===== Video bubble: tap = sound, then play/pause; drag to move (same as welcome) =====
+    (function(){
+      var bubble = document.getElementById('bubble');
+      var video  = document.getElementById('bubble-video');
+      var sound  = document.getElementById('bubble-sound');
+      if (!bubble || !video) return;
+
+      video.muted = true; video.loop = true;
+      var pr = video.play && video.play(); if (pr && pr.catch) pr.catch(function(){});
+      function syncSound(){
+        bubble.classList.toggle('muted', video.muted);
+        if (sound) sound.innerHTML = '<i class="fa-solid fa-volume-' + (video.muted ? 'xmark' : 'high') + '"></i>';
+      }
+      video.addEventListener('play',  function(){ bubble.classList.remove('paused'); });
+      video.addEventListener('pause', function(){ bubble.classList.add('paused'); });
+      video.addEventListener('volumechange', syncSound);
+      setTimeout(function(){ if (video.paused) bubble.classList.add('paused'); syncSound(); }, 400);
+
+      // tap: first turn the SOUND on (unmute — allowed inside the user gesture); then toggle play/pause
+      function onTap(){
+        if (video.muted){ video.muted = false; if (video.paused){ var q = video.play(); if (q && q.catch) q.catch(function(){}); } }
+        else if (video.paused){ var p2 = video.play(); if (p2 && p2.catch) p2.catch(function(){}); }
+        else video.pause();
+      }
+
+      // pointer drag; a tap (no real movement) triggers onTap (sound / play-pause)
+      var down=false, moved=false, sx=0, sy=0, ox=0, oy=0, TH=6;
+      bubble.addEventListener('pointerdown', function(e){
+        down=true; moved=false; sx=e.clientX; sy=e.clientY;
+        var r=bubble.getBoundingClientRect(); ox=r.left; oy=r.top;
+        bubble.style.left=r.left+'px'; bubble.style.top=r.top+'px';
+        bubble.style.right='auto'; bubble.style.bottom='auto';
+        if (bubble.setPointerCapture){ try { bubble.setPointerCapture(e.pointerId); } catch (err) {} }
+      });
+      bubble.addEventListener('pointermove', function(e){
+        if (!down) return;
+        var dx=e.clientX-sx, dy=e.clientY-sy;
+        if (!moved && (Math.abs(dx)>TH || Math.abs(dy)>TH)){ moved=true; bubble.classList.add('dragging'); }
+        if (moved){
+          var w=bubble.offsetWidth, h=bubble.offsetHeight;
+          var nx=Math.min(Math.max(0, ox+dx), window.innerWidth  - w);
+          var ny=Math.min(Math.max(0, oy+dy), window.innerHeight - h);
+          bubble.style.left=nx+'px'; bubble.style.top=ny+'px';
+        }
+      });
+      function endDrag(){ if (!down) return; down=false; bubble.classList.remove('dragging'); if (!moved) onTap(); }
+      bubble.addEventListener('pointerup', endDrag);
+      bubble.addEventListener('pointercancel', endDrag);
+
+      window.addEventListener('resize', function(){
+        if (!bubble.style.left) return;
+        var w=bubble.offsetWidth, h=bubble.offsetHeight;
+        bubble.style.left=Math.max(0,Math.min(parseFloat(bubble.style.left), window.innerWidth  - w))+'px';
+        bubble.style.top =Math.max(0,Math.min(parseFloat(bubble.style.top),  window.innerHeight - h))+'px';
+      });
+    })();
   </script>
 </body>
 </html>
