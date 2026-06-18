@@ -347,7 +347,12 @@
       function rememberSound(){ try { localStorage.setItem('welcome-audio', '1'); } catch (e) {} }
       video.muted = !WANT_SOUND;
       // start ASAP; if we wanted sound but the browser blocked it, fall back to muted autoplay
-      function tryPlay(){ var p = video.play && video.play(); if (p && p.catch) p.catch(function(){ if (!video.muted){ video.muted = true; var q = video.play && video.play(); if (q && q.catch) q.catch(function(){}); } }); }
+      // Only the autoplay-policy block (NotAllowedError) means "sound isn't allowed on this fresh page"
+      // → only THEN fall back to muted. Transient rejections (AbortError from an interrupted load) must
+      // NOT mute, otherwise we'd kill sound the browser would actually allow (e.g. Chrome after the user
+      // enabled sound earlier — media-engagement lets later pages start unmuted on their own).
+      var soundBlocked = false;
+      function tryPlay(){ var p = video.play && video.play(); if (p && p.catch) p.catch(function(err){ if (!video.muted && !soundBlocked && err && err.name === 'NotAllowedError'){ soundBlocked = true; video.muted = true; var q = video.play && video.play(); if (q && q.catch) q.catch(function(){}); } }); }
       tryPlay();
       video.addEventListener('loadedmetadata', tryPlay);
       video.addEventListener('loadeddata', tryPlay);
