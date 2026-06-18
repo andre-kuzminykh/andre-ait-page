@@ -72,7 +72,8 @@
   .row>*{pointer-events:auto}
 
   .logo-btn{display:inline-flex;align-items:center;gap:.5rem;background:none;border:0;padding:0;justify-self:start;cursor:pointer}
-  .logo-btn img{height:clamp(2.85rem,9vw,3.6rem);width:auto;object-fit:contain;transition:transform .2s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+  .logo-btn img{height:clamp(2.85rem,12vw,3.7rem);width:auto;object-fit:contain;transition:transform .2s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+  @media(min-width:1024px){.logo-btn img{height:3.6rem}}
   .logo-btn:hover img{transform:scale(1.05)}
 
   .navpill{
@@ -89,7 +90,8 @@
 
   .right{grid-column:3;display:flex;align-items:center;justify-self:end;gap:.5rem}
   @media(min-width:640px){.right{gap:.75rem}}
-  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:clamp(2.5rem,5vw,3rem);width:clamp(2.5rem,5vw,3rem);border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:clamp(1.05rem,1.4vw,1.35rem);line-height:1;flex-shrink:0;transition:background .2s ease}
+  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:clamp(2.5rem,11vw,3.3rem);width:clamp(2.5rem,11vw,3.3rem);border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:clamp(1.15rem,3.6vw,1.4rem);line-height:1;flex-shrink:0;transition:background .2s ease}
+  @media(min-width:1024px){.ctrl{height:3rem;width:3rem;font-size:1.2rem}}
   .ctrl:hover{background:rgba(255,255,255,.10)}
   .burger{display:inline-flex}
   @media(min-width:1280px){.burger{display:none}}
@@ -106,7 +108,8 @@
     color:#fff;box-shadow:0 10px 25px -5px rgba(136,84,243,.45);transform:translateY(-2px);
     animation:gradientShimmer 4.5s ease infinite;
   }
-  .consult{height:clamp(2.5rem,5vw,3rem);padding:0 clamp(1rem,2.2vw,1.6rem);font-size:clamp(11px,1.05vw,13px)}
+  .consult{height:clamp(2.5rem,11vw,3.3rem);padding:0 clamp(1rem,2.2vw,1.6rem);font-size:clamp(11px,1.05vw,13px)}
+  @media(min-width:1024px){.consult{height:3rem}}
   @media(min-width:640px){.consult{padding:0 1rem}}
   /* large screens: scale the whole UI up (like the main site) — otherwise everything looks tiny on big monitors */
   @media(min-width:1600px){body{zoom:1.15}}
@@ -140,7 +143,10 @@
   .module.locked .ico{background:rgba(140,140,150,.12);color:var(--muted)}
   .module.locked .lbl{color:var(--muted)}
   @media(hover:hover){.module.locked:hover{transform:none;border-color:var(--card-border);box-shadow:var(--card-shadow)}}
-  .module .go.date{font-size:11px;font-weight:600;letter-spacing:.04em;white-space:nowrap;color:var(--muted)}
+  /* module 2 "available from" date — sits at the BOTTOM of the card (not in the arrow slot),
+     so on mobile the wide date no longer stretches/squeezes the row */
+  .module .when{display:flex;align-items:center;gap:.45rem;margin-top:.7rem;font-size:clamp(11px,1vw,12.5px);font-weight:600;letter-spacing:.03em;color:var(--muted)}
+  .module .when i{color:#F97316;font-size:.95em}
 
   /* ===== Mobile fullscreen menu ===== */
   .menu{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;background:var(--bg)}
@@ -226,8 +232,9 @@
         <li><a class="module locked">
           <span class="ico"><i class="fa-solid fa-diagram-project"></i></span>
           <span class="body"><span class="lbl">Модуль 2</span><h3>Моделирование бизнес-процессов с ИИ-агентами</h3>
-          <p>Вы научитесь анализировать бизнес-процессы, выявлять узкие места и точки автоматизации, а также проектировать новые процессы, в которых человек и ИИ-агенты работают как единая система.</p></span>
-          <span class="go date">19 июня 2026</span>
+          <p>Вы научитесь анализировать бизнес-процессы, выявлять узкие места и точки автоматизации, а также проектировать новые процессы, в которых человек и ИИ-агенты работают как единая система.</p>
+          <span class="when"><i class="fa-solid fa-clock"></i> Старт 19 июня 2026</span></span>
+          <span class="go"><i class="fa-solid fa-lock"></i></span>
         </a></li>
 
         <li><a class="module locked">
@@ -349,8 +356,18 @@
       var sound  = document.getElementById('bubble-sound');
       if (!bubble || !video) return;
 
-      video.muted = true; video.loop = true;
-      var pr = video.play && video.play(); if (pr && pr.catch) pr.catch(function(){});
+      // ONE journey-wide audio memory (same flag as welcome/roles/skills): if the user enabled
+      // sound earlier in the path, the roadmap video starts WITH sound too (best-effort; falls back
+      // to muted if the browser blocks unmuted autoplay — one tap re-enables).
+      var WANT_SOUND = false;
+      try { WANT_SOUND = localStorage.getItem('welcome-audio') === '1'; } catch (e) {}
+      function rememberSound(){ try { localStorage.setItem('welcome-audio', '1'); } catch (e) {} }
+      video.loop = true; video.muted = !WANT_SOUND;
+      function tryPlay(){ var p = video.play && video.play(); if (p && p.catch) p.catch(function(){ if (!video.muted){ video.muted = true; var q = video.play && video.play(); if (q && q.catch) q.catch(function(){}); } }); }
+      tryPlay();
+      video.addEventListener('loadedmetadata', tryPlay);
+      video.addEventListener('loadeddata', tryPlay);
+      video.addEventListener('canplay', tryPlay);
       function syncSound(){
         bubble.classList.toggle('muted', video.muted);
         if (sound) sound.innerHTML = '<i class="fa-solid fa-volume-' + (video.muted ? 'xmark' : 'high') + '"></i>';
@@ -358,11 +375,13 @@
       video.addEventListener('play',  function(){ bubble.classList.remove('paused'); });
       video.addEventListener('pause', function(){ bubble.classList.add('paused'); });
       video.addEventListener('volumechange', syncSound);
-      setTimeout(function(){ if (video.paused) bubble.classList.add('paused'); syncSound(); }, 400);
+      syncSound();
+      // safety net: show ▶ only if playback genuinely never started (rare with the muted fallback)
+      setTimeout(function(){ if (video.paused && video.currentTime < 0.1) bubble.classList.add('paused'); }, 2500);
 
       // tap: first turn the SOUND on (unmute — allowed inside the user gesture); then toggle play/pause
       function onTap(){
-        if (video.muted){ video.muted = false; if (video.paused){ var q = video.play(); if (q && q.catch) q.catch(function(){}); } }
+        if (video.muted){ video.muted = false; rememberSound(); try { video.currentTime = 0; } catch (e) {} var q = video.play(); if (q && q.catch) q.catch(function(){}); } // включили звук → видео с начала
         else if (video.paused){ var p2 = video.play(); if (p2 && p2.catch) p2.catch(function(){}); }
         else video.pause();
       }
