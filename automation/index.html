@@ -17,12 +17,11 @@
 
 <style>
   /* ============================================================
-     Andre AIT — Welcome / course landing (plain HTML).
-     Matches the main site: JetBrains Mono, dark #050505,
-     #8854F3 (purple) + #F97316 (orange), Font Awesome, btn-white shimmer.
-     Opened from the "Process Automation" card on AI Education.
+     Andre AIT — Course intro, STEP 1 of 3 (welcome.html).
+     Single non-scrolling screen. Step 1 (hero) -> welcome-2.html
+     (для кого) -> welcome-3.html (чему научитесь) -> /automation/main.
+     The talking-head video auto-advances to the next screen when it ends.
      ============================================================ */
-  /* dark = default (matches the site); .light is toggled by the background switch */
   :root{
     --bg:#050505; --fg:#E5E7EB; --muted:rgba(255,255,255,.55);
     --card-bg:rgba(255,255,255,.04); --card-border:rgba(255,255,255,.10); --card-shadow:none;
@@ -43,7 +42,7 @@
   *{box-sizing:border-box}
   html,body{margin:0}
   body{
-    background:var(--bg); color:var(--fg); overflow-x:hidden;
+    background:var(--bg); color:var(--fg); overflow:hidden;
     transition:background .25s ease,color .25s ease;
     font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
     -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
@@ -60,6 +59,7 @@
   @keyframes gradientShimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
   @keyframes floatY{0%{transform:translateY(0)}50%{transform:translateY(-9px)}100%{transform:translateY(0)}}
+  @keyframes press{0%{transform:scale(1)}45%{transform:scale(.94)}100%{transform:scale(1)}}
 
   /* ===== Grain overlay (same as main site) ===== */
   .grain{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.06;mix-blend-mode:screen;
@@ -108,25 +108,30 @@
     color:#fff;box-shadow:0 10px 25px -5px rgba(136,84,243,.45);transform:translateY(-2px);
     animation:gradientShimmer 4.5s ease infinite;
   }
+  /* auto-press feedback when the video finishes and the next step opens */
+  .btn-white.pressed{
+    background:linear-gradient(100deg,#8854F3 0%,#F97316 50%,#8854F3 100%);background-size:250% 250%;
+    color:#fff;box-shadow:0 10px 25px -5px rgba(136,84,243,.45);
+    animation:gradientShimmer 4.5s ease infinite, press .42s ease;
+  }
   .consult{height:2.5rem;padding:0 .95rem;font-size:11px}
   @media(min-width:640px){.consult{padding:0 1rem}}
-  /* large screens: scale the whole UI up (like the main site) — otherwise everything looks tiny on big monitors */
+  /* large screens: scale the whole UI up (like the main site) */
   @media(min-width:1600px){body{zoom:1.15}}
   @media(min-width:1900px){body{zoom:1.3}}
   @media(min-width:2300px){body{zoom:1.5}}
 
-  /* ===== Content ===== */
-  main{min-height:100dvh;padding:5rem 1rem 0}
-  @media(min-width:640px){main{padding:6rem 2rem 0}}
-  .wrap{max-width:64rem;margin:0 auto;display:flex;flex-direction:column;padding-bottom:3rem;animation:fadeUp .5s ease both}
-  .center{max-width:48rem;margin:0 auto;text-align:center}
+  /* ===== Content: single non-scrolling screen, centred ===== */
+  main{height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 1rem 1.5rem}
+  @media(min-width:640px){main{padding:6rem 2rem 2rem}}
+  .wrap{width:100%;max-width:56rem;margin:0 auto;text-align:center;animation:fadeUp .5s ease both}
 
   .hero{font-size:clamp(1.5rem,5.2vw,3rem);font-weight:800;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;padding-top:.5rem}
   .hero span.line{display:block}
   .hero .nowrap{display:block;white-space:nowrap}
   .desc{color:var(--muted);max-width:42rem;margin:1.5rem auto 0;font-size:clamp(.875rem,1.6vw,1rem);line-height:1.7}
 
-  /* decorative floating icon tiles above the hero (same style as the main site) */
+  /* decorative floating icon tiles above the hero */
   .float-row{display:flex;justify-content:center;align-items:flex-end;gap:.85rem;transform:scale(.82);margin:0 0 .25rem}
   @media(min-width:640px){.float-row{transform:none;margin-bottom:.85rem}}
   .tile{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#15151b;border-radius:1rem;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:floatY 4s ease-in-out infinite}
@@ -136,8 +141,8 @@
   .tile.sm .bar{width:1.6rem}
   .tile.lg .bar{width:2rem}
 
-  section.block{margin-top:3rem}
-  .h2{text-align:center;font-size:clamp(1.25rem,3vw,1.5rem);font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+  section.block{margin-top:0}
+  .h2{text-align:center;font-size:clamp(1.25rem,3vw,1.6rem);font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
 
   .roles{margin-top:1.5rem;display:grid;grid-template-columns:1fr;gap:1rem}
   @media(min-width:640px){.roles{grid-template-columns:repeat(3,1fr)}}
@@ -150,16 +155,15 @@
   .role h3{font-size:1rem;font-weight:700;text-transform:uppercase}
   .role p{color:var(--muted);margin:.5rem 0 0;font-size:.75rem;line-height:1.6}
 
-  .learn{margin-top:1.5rem;max-width:56rem;margin-left:auto;margin-right:auto;display:grid;grid-template-columns:1fr;gap:.5rem;list-style:none;padding:0}
-  @media(min-width:640px){.learn{grid-template-columns:repeat(2,1fr)}}
-  .learn li{display:flex;align-items:center;gap:.75rem;padding:.75rem;border-radius:1rem;border:1px solid var(--card-border);background:var(--card-bg)}
-  .learn .ico{height:2.25rem;width:2.25rem;border-radius:.5rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
-  .learn p{margin:0;font-size:.8125rem;line-height:1.35}
+  .learn{margin-top:1.25rem;max-width:56rem;margin-left:auto;margin-right:auto;display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;list-style:none;padding:0;text-align:left}
+  .learn li{display:flex;align-items:center;gap:.7rem;padding:.7rem;border-radius:1rem;border:1px solid var(--card-border);background:var(--card-bg)}
+  .learn .ico{height:2.2rem;width:2.2rem;border-radius:.5rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.05rem}
+  .learn p{margin:0;font-size:clamp(.7rem,1.4vw,.8125rem);line-height:1.3}
 
-  .cta-row{margin:2.5rem 0 1rem;display:flex;justify-content:center}
+  .cta-row{margin:2rem 0 0;display:flex;justify-content:center}
   .cta-row .btn-white{padding:0 2rem;height:3rem;font-size:14px;letter-spacing:.1em}
 
-  /* ===== Video bubble (talking head): tap = sound / play-pause, draggable ===== */
+  /* ===== Video bubble (talking head): tap = sound / play-pause, draggable, auto-advance on end ===== */
   .bubble{position:fixed;right:1rem;bottom:1rem;z-index:40;width:clamp(150px,30vw,232px);height:clamp(150px,30vw,232px);touch-action:none;user-select:none;-webkit-user-select:none}
   @media(min-width:640px){.bubble{right:2rem;bottom:2rem}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
@@ -180,7 +184,6 @@
   .menu nav a{display:flex;align-items:center;gap:1rem;padding:1.25rem 0;border-bottom:1px solid var(--card-border);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:1.125rem}
   .menu nav a .go{margin-left:auto;color:var(--muted);font-size:1rem}
   .menu-x{background:none;border:0;color:var(--fg);font-size:1.6rem;line-height:1;padding:.25rem;cursor:pointer}
-  /* menu footer: socials -> Privacy·Terms -> copyright */
   .menu-foot{display:flex;flex-direction:column;align-items:center;gap:.85rem;padding:1.1rem 1.5rem calc(1.6rem + env(safe-area-inset-bottom,0px))}
   .menu-social{display:flex;align-items:center;justify-content:center;gap:1.1rem}
   .social{color:var(--navitem);font-size:21px;transition:color .3s ease,transform .3s ease}
@@ -225,88 +228,33 @@
     </div>
   </header>
 
-  <!-- WELCOME CONTENT -->
+  <!-- STEP 1: HERO -->
   <main>
     <div class="wrap">
-
-      <!-- HERO -->
-      <div class="center">
-        <div class="float-row">
-          <div class="tile sm" style="border:1px solid rgba(136,84,243,0.3)"><i class="fa-solid fa-magnifying-glass-chart" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,0.5)"></div></div>
-          <div class="tile lg" style="border:1px solid rgba(249,115,22,0.5);box-shadow:0 10px 30px rgba(249,115,22,0.16);animation-delay:.2s"><i class="fa-solid fa-robot" style="font-size:38px;color:#F97316"></i><div class="bar" style="background:rgba(249,115,22,0.5)"></div></div>
-          <div class="tile sm" style="border:1px solid rgba(136,84,243,0.3);animation-delay:.4s"><i class="fa-solid fa-gears" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,0.5)"></div></div>
-        </div>
-        <h1 class="hero">
-          <span class="line">Добро пожаловать на курс</span>
-          <span class="line">по автоматизации</span>
-          <span class="nowrap"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span>
-        </h1>
-        <p class="desc">Вы узнаете, как трансформировать свой бизнес в ИИ-First компанию: моделировать бизнес-процессы, автоматизировать их с помощью ИИ-агентов и масштабироваться без роста штата с измеримым экономическим эффектом</p>
+      <div class="float-row">
+        <div class="tile sm" style="border:1px solid rgba(136,84,243,0.3)"><i class="fa-solid fa-magnifying-glass-chart" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,0.5)"></div></div>
+        <div class="tile lg" style="border:1px solid rgba(249,115,22,0.5);box-shadow:0 10px 30px rgba(249,115,22,0.16);animation-delay:.2s"><i class="fa-solid fa-robot" style="font-size:38px;color:#F97316"></i><div class="bar" style="background:rgba(249,115,22,0.5)"></div></div>
+        <div class="tile sm" style="border:1px solid rgba(136,84,243,0.3);animation-delay:.4s"><i class="fa-solid fa-gears" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,0.5)"></div></div>
       </div>
-
-      <!-- START CTA -->
-      <div class="cta-row" style="margin:2rem 0 0">
-        <button class="btn-white" onclick="location.href='https://andre.technology/automation/main'">
-          Начать обучение
-          <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
-        </button>
-      </div>
-
-      <!-- ДЛЯ КОГО -->
-      <section class="block">
-        <h2 class="h2">Для кого <span class="plum">этот курс</span></h2>
-        <div class="roles">
-          <article class="card role">
-            <div class="ico p"><i class="fa-solid fa-compass"></i></div>
-            <h3>ИИ-консультант</h3>
-            <p>Находит процессы для ИИ-автоматизации</p>
-          </article>
-          <article class="card role">
-            <div class="ico f"><i class="fa-solid fa-wrench"></i></div>
-            <h3>ИИ-инженер по автоматизации</h3>
-            <p>Автоматизирует бизнес с ИИ-агентами</p>
-          </article>
-          <article class="card role">
-            <div class="ico p"><i class="fa-solid fa-rocket"></i></div>
-            <h3>ИИ-основатель</h3>
-            <p>Строит бизнес с помощью ИИ-агентов</p>
-          </article>
-        </div>
-      </section>
-
-      <!-- ЧЕМУ НАУЧИТЕСЬ -->
-      <section class="block">
-        <h2 class="h2">Чему вы <span class="flame">научитесь</span></h2>
-        <ol class="learn">
-          <li><span class="ico p"><i class="fa-solid fa-brain"></i></span><p>Управлять компанией как потоком данных</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-magnifying-glass"></i></span><p>Находить процессы для автоматизации</p></li>
-          <li><span class="ico p"><i class="fa-solid fa-clipboard-list"></i></span><p>Описывать текущий AS-IS процесс</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-pen-ruler"></i></span><p>Проектировать будущую TO-BE модель</p></li>
-          <li><span class="ico p"><i class="fa-solid fa-user-gear"></i></span><p>Определять роль ИИ-агента в процессе</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-robot"></i></span><p>Создавать ИИ-агентов</p></li>
-          <li><span class="ico p"><i class="fa-solid fa-network-wired"></i></span><p>Понимать логику работы мультиагентных систем</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-shield-halved"></i></span><p>Проверять качество и безопасность ИИ-решений</p></li>
-          <li><span class="ico p"><i class="fa-solid fa-arrow-trend-up"></i></span><p>Оценивать эффект от автоматизации</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-rocket"></i></span><p>Внедрить первого ИИ-агента в бизнес</p></li>
-        </ol>
-      </section>
-
-      <!-- CTA -->
+      <h1 class="hero">
+        <span class="line">Добро пожаловать на курс</span>
+        <span class="line">по автоматизации</span>
+        <span class="nowrap"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span>
+      </h1>
+      <p class="desc">Вы узнаете, как трансформировать свой бизнес в ИИ-First компанию: моделировать бизнес-процессы, автоматизировать их с помощью ИИ-агентов и масштабироваться без роста штата с измеримым экономическим эффектом</p>
       <div class="cta-row">
-        <button class="btn-white" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')">
-          Освоить новую профессию
-          <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
+        <button class="btn-white" id="next-btn" onclick="location.href='welcome-2.html'">
+          Для кого? <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
         </button>
       </div>
-
     </div>
   </main>
 
-  <!-- VIDEO BUBBLE (talking head — drag to move; tap = sound, then play/pause; swap the src later) -->
-  <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
+  <!-- VIDEO BUBBLE (talking head — drag to move; tap = sound/play-pause; auto-advances when it ends) -->
+  <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук/пауза">
     <div class="inner">
       <div class="grad"></div>
-      <video id="bubble-video" src="https://github.com/andre-kuzminykh/andre-ait-page/raw/refs/heads/main/andre-ai-web-small.mp4" loop muted autoplay playsinline preload="auto"></video>
+      <video id="bubble-video" src="https://github.com/andre-kuzminykh/andre-ait-page/raw/refs/heads/main/andre-ai-web-small.mp4" muted autoplay playsinline preload="auto"></video>
       <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><i class="fa-solid fa-volume-xmark"></i></div>
       <div class="bubble-play" aria-hidden="true"><i class="fa-solid fa-play"></i></div>
     </div>
@@ -327,7 +275,6 @@
       <a href="https://andre.technology"><span class="flame" style="font-size:1.25rem"><i class="fa-solid fa-boxes-stacked"></i></span><span>AI Products</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
       <a href="https://andre.technology"><span class="plum" style="font-size:1.25rem"><i class="fa-solid fa-graduation-cap"></i></span><span>AI Education</span><span class="go"><i class="fa-solid fa-arrow-right"></i></span></a>
     </nav>
-    <!-- menu footer: socials, legal links, copyright (placeholders #) -->
     <div class="menu-foot">
       <div class="menu-social">
         <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE"><i class="fa-brands fa-telegram"></i></a>
@@ -369,15 +316,16 @@
       sync();
     })();
 
-    // ===== Video bubble: tap = sound, then play/pause; drag to move =====
+    // ===== Video bubble: tap = sound/play-pause, drag, AUTO-ADVANCE to the next step when it ends =====
     (function(){
-      var bubble = document.getElementById('bubble');
-      var video  = document.getElementById('bubble-video');
-      var sound  = document.getElementById('bubble-sound');
+      var bubble  = document.getElementById('bubble');
+      var video   = document.getElementById('bubble-video');
+      var sound   = document.getElementById('bubble-sound');
+      var nextBtn = document.getElementById('next-btn');
       if (!bubble || !video) return;
 
-      // autoplay muted loop (muted is required for autoplay); reflect state in classes
-      video.muted = true; video.loop = true;
+      // play once (NOT loop) so 'ended' fires; muted is required for autoplay
+      video.muted = true; video.loop = false;
       var pr = video.play && video.play(); if (pr && pr.catch) pr.catch(function(){});
       function syncSound(){
         bubble.classList.toggle('muted', video.muted);
@@ -388,6 +336,14 @@
       video.addEventListener('volumechange', syncSound);
       setTimeout(function(){ if (video.paused) bubble.classList.add('paused'); syncSound(); }, 400);
 
+      // когда говорящая голова договорила — авто-нажатие кнопки и переход на следующий экран
+      var advanced = false;
+      video.addEventListener('ended', function(){
+        if (advanced || !nextBtn) return; advanced = true;
+        nextBtn.classList.add('pressed');           // анимация нажатия
+        setTimeout(function(){ nextBtn.click(); }, 430);
+      });
+
       // tap: first turn the SOUND on (unmute — allowed inside the user gesture); then toggle play/pause
       function onTap(){
         if (video.muted){ video.muted = false; if (video.paused){ var q = video.play(); if (q && q.catch) q.catch(function(){}); } }
@@ -395,12 +351,14 @@
         else video.pause();
       }
 
-      // pointer drag; a tap (no real movement) triggers onTap (sound / play-pause)
+      // body{zoom} scales fixed elements; reconcile rendered (clientX/rect) vs layout (style.left) px
+      function zoomF(){ var r = bubble.getBoundingClientRect(); return (r.width && bubble.offsetWidth) ? r.width / bubble.offsetWidth : 1; }
       var down = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0, TH = 6;
       bubble.addEventListener('pointerdown', function(e){
         down = true; moved = false; sx = e.clientX; sy = e.clientY;
-        var r = bubble.getBoundingClientRect(); ox = r.left; oy = r.top;
-        bubble.style.left = r.left + 'px'; bubble.style.top = r.top + 'px';
+        var r = bubble.getBoundingClientRect(), z = zoomF();
+        ox = r.left; oy = r.top;
+        bubble.style.left = (r.left / z) + 'px'; bubble.style.top = (r.top / z) + 'px';
         bubble.style.right = 'auto'; bubble.style.bottom = 'auto';
         if (bubble.setPointerCapture) { try { bubble.setPointerCapture(e.pointerId); } catch (err) {} }
       });
@@ -409,26 +367,26 @@
         var dx = e.clientX - sx, dy = e.clientY - sy;
         if (!moved && (Math.abs(dx) > TH || Math.abs(dy) > TH)) { moved = true; bubble.classList.add('dragging'); }
         if (moved){
-          var w = bubble.offsetWidth, h = bubble.offsetHeight;
-          var nx = Math.min(Math.max(0, ox + dx), window.innerWidth  - w);
-          var ny = Math.min(Math.max(0, oy + dy), window.innerHeight - h);
-          bubble.style.left = nx + 'px'; bubble.style.top = ny + 'px';
+          var z = zoomF(), rw = bubble.offsetWidth * z, rh = bubble.offsetHeight * z;
+          var nx = Math.min(Math.max(0, ox + dx), window.innerWidth  - rw);
+          var ny = Math.min(Math.max(0, oy + dy), window.innerHeight - rh);
+          bubble.style.left = (nx / z) + 'px'; bubble.style.top = (ny / z) + 'px';
         }
       });
       function endDrag(){
         if (!down) return; down = false;
         bubble.classList.remove('dragging');
-        if (!moved) onTap();   // a tap, not a drag
+        if (!moved) onTap();
       }
       bubble.addEventListener('pointerup', endDrag);
       bubble.addEventListener('pointercancel', endDrag);
 
-      // keep the bubble inside the viewport after it has been moved
       window.addEventListener('resize', function(){
         if (!bubble.style.left) return;
-        var w = bubble.offsetWidth, h = bubble.offsetHeight;
-        bubble.style.left = Math.max(0, Math.min(parseFloat(bubble.style.left), window.innerWidth  - w)) + 'px';
-        bubble.style.top  = Math.max(0, Math.min(parseFloat(bubble.style.top),  window.innerHeight - h)) + 'px';
+        var z = zoomF(), rw = bubble.offsetWidth * z, rh = bubble.offsetHeight * z;
+        var lx = Math.max(0, Math.min(parseFloat(bubble.style.left) * z, window.innerWidth  - rw));
+        var ly = Math.max(0, Math.min(parseFloat(bubble.style.top)  * z, window.innerHeight - rh));
+        bubble.style.left = (lx / z) + 'px'; bubble.style.top = (ly / z) + 'px';
       });
     })();
   </script>
