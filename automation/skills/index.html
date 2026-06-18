@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -72,7 +73,8 @@
   .row>*{pointer-events:auto}
 
   .logo-btn{display:inline-flex;align-items:center;gap:.5rem;background:none;border:0;padding:0;justify-self:start;cursor:pointer}
-  .logo-btn img{height:clamp(2.85rem,9vw,3.6rem);width:auto;object-fit:contain;transition:transform .2s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+  .logo-btn img{height:clamp(2.85rem,12vw,3.7rem);width:auto;object-fit:contain;transition:transform .2s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+  @media(min-width:1024px){.logo-btn img{height:3.6rem}}
   .logo-btn:hover img{transform:scale(1.05)}
 
   .navpill{
@@ -89,7 +91,8 @@
 
   .right{grid-column:3;display:flex;align-items:center;justify-self:end;gap:.5rem}
   @media(min-width:640px){.right{gap:.75rem}}
-  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:clamp(2.5rem,5vw,3rem);width:clamp(2.5rem,5vw,3rem);border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:clamp(1.05rem,1.4vw,1.35rem);line-height:1;flex-shrink:0;transition:background .2s ease}
+  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:clamp(2.5rem,11vw,3.3rem);width:clamp(2.5rem,11vw,3.3rem);border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:clamp(1.15rem,3.6vw,1.4rem);line-height:1;flex-shrink:0;transition:background .2s ease}
+  @media(min-width:1024px){.ctrl{height:3rem;width:3rem;font-size:1.2rem}}
   .ctrl:hover{background:rgba(255,255,255,.10)}
   .burger{display:inline-flex}
   @media(min-width:1280px){.burger{display:none}}
@@ -112,7 +115,8 @@
     color:#fff;box-shadow:0 10px 25px -5px rgba(136,84,243,.45);
     animation:gradientShimmer 4.5s ease infinite, press .42s ease;
   }
-  .consult{height:clamp(2.5rem,5vw,3rem);padding:0 clamp(1rem,2.2vw,1.6rem);font-size:clamp(11px,1.05vw,13px)}
+  .consult{height:clamp(2.5rem,11vw,3.3rem);padding:0 clamp(1rem,2.2vw,1.6rem);font-size:clamp(11px,1.05vw,13px)}
+  @media(min-width:1024px){.consult{height:3rem}}
   @media(min-width:640px){.consult{padding:0 1rem}}
   /* large screens: scale the whole UI up (like the main site) */
   @media(min-width:1600px){body{zoom:1.15}}
@@ -128,10 +132,11 @@
   @media(min-width:2300px){main{height:calc(100dvh / 1.5)}}
   .wrap{width:100%;max-width:62rem;margin:0 auto;text-align:center;animation:fadeUp .5s ease both}
 
-  .hero{font-size:clamp(1.7rem,5.6vw,3.6rem);font-weight:800;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;padding-top:.5rem}
+  .hero{font-size:clamp(1.55rem,4.6vw,3rem);font-weight:800;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;padding-top:.5rem}
   .hero span.line{display:block}
-  .hero .nowrap{display:block;white-space:nowrap}
-  .desc{color:var(--muted);max-width:46rem;margin:1.5rem auto 0;font-size:clamp(.95rem,1.7vw,1.2rem);line-height:1.7}
+  .hero .nowrap{display:block}
+  .hero .plum,.hero .flame{white-space:nowrap}
+  .desc{color:var(--muted);max-width:40rem;margin:1.5rem auto 0;font-size:clamp(.9rem,1.55vw,1.1rem);line-height:1.7}
 
   /* decorative floating icon tiles above the hero */
   .float-row{display:flex;justify-content:center;align-items:flex-end;gap:.85rem;transform:scale(.82);margin:0 0 .25rem}
@@ -166,8 +171,8 @@
   .cta-row .btn-white{padding:0 clamp(2rem,3vw,2.8rem);height:clamp(3rem,5vw,3.6rem);font-size:clamp(14px,1.2vw,16px);letter-spacing:.1em}
 
   /* ===== Video bubble (talking head): tap = sound / play-pause, draggable, auto-advance on end ===== */
-  .bubble{position:fixed;right:1rem;bottom:1rem;z-index:40;width:clamp(150px,30vw,232px);height:clamp(150px,30vw,232px);touch-action:none;user-select:none;-webkit-user-select:none}
-  @media(min-width:640px){.bubble{right:2rem;bottom:2rem}}
+  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(140px,22vw,280px);height:clamp(140px,22vw,280px);touch-action:none;user-select:none;-webkit-user-select:none}
+  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:150px;height:150px}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
   .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
@@ -260,7 +265,7 @@
   <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук/пауза">
     <div class="inner">
       <div class="grad"></div>
-      <video id="bubble-video" src="https://github.com/andre-kuzminykh/andre-ait-page/raw/refs/heads/main/andre-ai-web-small.mp4" muted autoplay playsinline preload="auto"></video>
+      <video id="bubble-video" src="https://raw.githubusercontent.com/andre-kuzminykh/andre-ait-page/refs/heads/main/automation/skills/_3.mp4" muted autoplay playsinline preload="auto"></video>
       <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><i class="fa-solid fa-volume-xmark"></i></div>
       <div class="bubble-play" aria-hidden="true"><i class="fa-solid fa-play"></i></div>
     </div>
