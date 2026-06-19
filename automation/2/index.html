@@ -1,0 +1,2614 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Переход к процессному подходу</title>
+    <meta name="description" content="Лекция 2: Переход к процессному подходу. Как автоматизация начинается с понимания процессов и создания ценности.">
+    <meta name="theme-color" content="#8B5CF6">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Переход к процессному подходу">
+    <meta property="og:description" content="Лекция 2: Как автоматизация начинается с понимания процессов и создания ценности">
+    <meta property="og:image" content="https://i.ibb.co/bgy2DKDc/Chat-GPT-Image-Apr-21-2026-12-16-42-PM.png">
+    <meta property="og:image:secure_url" content="https://i.ibb.co/bgy2DKDc/Chat-GPT-Image-Apr-21-2026-12-16-42-PM.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:site_name" content="Anthropolis">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Переход к процессному подходу">
+    <meta name="twitter:description" content="Лекция 2: Как автоматизация начинается с понимания процессов и создания ценности">
+    <meta name="twitter:image" content="https://i.ibb.co/bgy2DKDc/Chat-GPT-Image-Apr-21-2026-12-16-42-PM.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        solar: '#8B5CF6',
+                        grayBase: '#E9E9E9',
+                        black: '#000000',
+                        white: '#FFFFFF',
+                    }
+                }
+            }
+        }
+    </script>
+
+<style>
+    html {
+        background: #ffffff !important;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        user-select: none;
+        overflow: hidden;
+        background-color: #ffffff !important;
+        margin: 0;
+        width: 100vw;
+        height: 100dvh;
+        color: #000000;
+    }
+
+    .slide-container {
+        transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: #ffffff;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .slide-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .content-z {
+        position: relative;
+        z-index: 10;
+        margin: auto;
+        width: 100%;
+        padding: 1rem 1rem 120px 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100%;
+    }
+
+    @media (min-width: 768px) {
+        .content-z {
+            padding: 3rem 2rem 6rem 2rem;
+        }
+    }
+
+    .gradient-text {
+        color: #8B5CF6 !important;
+    }
+
+    .bg-solar-glow {
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+
+    .bg-glow-1, .bg-glow-2 {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.4;
+    }
+
+    .bg-glow-1 {
+        top: -10%;
+        left: -10%;
+        width: 50vw;
+        height: 50vw;
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .bg-glow-2 {
+        bottom: -10%;
+        right: -10%;
+        width: 40vw;
+        height: 40vw;
+        background: rgba(139, 92, 246, 0.15) !important;
+    }
+
+    @keyframes pulse-slow {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.05); }
+    }
+
+    .animate-pulse-slow {
+        animation: pulse-slow 4s ease-in-out infinite;
+    }
+
+    /* --- Стили Кружка с Видео --- */
+    #video-bubble {
+        position: fixed;
+        bottom: clamp(1.5rem, 5vh, 3rem);
+        right: clamp(1.5rem, 5vw, 4rem);
+        width: clamp(140px, 22vw, 280px);
+        height: clamp(140px, 22vw, 280px);
+        border-radius: 50%;
+        -webkit-mask-image: -webkit-radial-gradient(white, black);
+        mask-image: radial-gradient(white, black);
+        overflow: hidden;
+        z-index: 9999;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        background: #000;
+        transition: opacity 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+        #video-bubble {
+            width: 120px;
+            height: 120px;
+            bottom: 15px;
+            right: 15px;
+        }
+    }
+
+    /* Режим экспорта в PDF */
+    body.pdf-export-mode {
+        overflow: auto !important;
+        height: auto !important;
+    }
+
+    body.pdf-export-mode .bg-glow-1,
+    body.pdf-export-mode .bg-glow-2,
+    body.pdf-export-mode #progress-container,
+    body.pdf-export-mode .nav-arrow,
+    body.pdf-export-mode #video-bubble,
+    body.pdf-export-mode #lecture-header,
+    body.pdf-export-mode #start-overlay {
+        display: none !important;
+    }
+
+    body.pdf-export-mode .slide-container {
+        position: relative !important;
+        height: auto !important;
+        min-height: 100vh;
+        opacity: 1 !important;
+        transform: none !important;
+        pointer-events: auto !important;
+        overflow: visible !important;
+        page-break-after: always;
+        break-after: page;
+    }
+
+    @page { size: A4 landscape; margin: 10mm; }
+    @media print {
+        html, body { overflow: visible !important; height: auto !important; background: #ffffff !important; print-color-adjust: exact; }
+        .bg-glow-1, .bg-glow-2, #progress-container, .nav-arrow, #video-bubble, #lecture-header, #start-overlay { display: none !important; }
+        .slide-container { position: relative !important; height: auto !important; min-height: 100vh; opacity: 1 !important; transform: none !important; page-break-after: always; break-after: page; }
+    }
+</style>
+
+<style id="portal-deck">
+/* Сплошные оранжевые акцентные блоки и границы (исходно теал/мята → оранжевый);
+   ровный перенос инлайн-выделений по строкам (FR-LECTURE-10) */
+[class~="bg-solar"] {
+  background-color:#F97316 !important;
+  -webkit-box-decoration-break:clone; box-decoration-break:clone;
+}
+[class*="border-solar"] { border-color:#F97316 !important; }
+
+/* Emphasis-карточки: глубокий фиолетовый фон + двойное гало (FR-LECTURE-05) */
+[class~="bg-black"] {
+  background-color:#2E1065 !important;
+  border-color:rgba(139,92,246,0.40) !important;
+  box-shadow:0 20px 50px -15px rgba(139,92,246,0.45), 0 0 0 1px rgba(249,115,22,0.20) !important;
+}
+
+/* В emphasis-карточках (но НЕ когда bg-black висит на самом слайде, как slide-42)
+   иконка и заголовок (.text-solar) — оранжевые; тинты bg-solar/* — оранжевые. (FR-LECTURE-13) */
+[class~="bg-black"]:not(.slide-container) .text-solar {
+  color:#F97316 !important;
+  -webkit-text-fill-color:#F97316 !important;
+}
+[class~="bg-black"]:not(.slide-container) [class*="bg-solar/"] {
+  background-color:rgba(249,115,22,0.18) !important;
+}
+
+/* Градиент purple→orange в заголовках — даёт оранжевому равноправный голос (FR-LECTURE-02) */
+h1 .text-solar, h2 .text-solar {
+  background-image: linear-gradient(90deg, #8B5CF6 0%, #F97316 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+
+/* Индикатор прогресса — градиент purple→orange (FR-LECTURE-03) */
+#progress-bar {
+  background: linear-gradient(90deg, #8B5CF6 0%, #F97316 100%) !important;
+}
+/* FR-LECTURE-32 — серой полосы трекa прогресса быть НЕ должно (на мобиле
+   bg-grayBase #E9E9E9 читался как «серая полоса снизу»). Трек прозрачный — видна
+   только цветная заполненная часть. */
+#progress-container { background: transparent !important; }
+
+/* FR-LECTURE-20 — контент слайда НЕ реагирует на hover/focus/active: ни движений,
+   ни переходов, ни смены цвета/тени. Пуленепробиваем: глушим и Tailwind-переменные
+   transform (--tw-translate-*, --tw-scale-*, --tw-rotate), и сам transform/filter. */
+.slide-container .content-z *,
+.slide-container .content-z *:hover,
+.slide-container .content-z *:focus,
+.slide-container .content-z *:focus-visible,
+.slide-container .content-z *:active,
+.slide-container .content-z *::before,
+.slide-container .content-z *::after,
+.slide-container .content-z *:hover::before,
+.slide-container .content-z *:hover::after { transition: none !important; }
+.slide-container *:hover,
+.slide-container *:focus,
+.slide-container *:focus-visible,
+.slide-container *:active {
+  transform: none !important;
+  filter: none !important;
+  --tw-translate-x: 0 !important;
+  --tw-translate-y: 0 !important;
+  --tw-scale-x: 1 !important;
+  --tw-scale-y: 1 !important;
+  --tw-rotate: 0 !important;
+  --tw-skew-x: 0 !important;
+  --tw-skew-y: 0 !important;
+}
+
+/* Стартовый оверлей убран — портал автозапускает деку */
+#start-overlay { display:none !important; }
+
+/* Колонки flex/grid могут ужиматься — нет горизонтального переполнения (FR-LECTURE-08) */
+.slide-container [class*="grid-cols"] > *,
+.slide-container [class*="flex-row"] > * { min-width: 0 !important; }
+
+/* Безопасность: дети content-z не выходят за ширину слайда */
+.slide-container .content-z > * { max-width: 100% !important; }
+
+/* Длинные слова в заголовках переносятся (FR-LECTURE-11) */
+/* h1/h2 (крупные заголовки) — слова переносятся ЦЕЛИКОМ, без дефисов
+   («революции» не должно превращаться в «револю-ции») (FR-LECTURE-31) */
+.slide-container h1, .slide-container h2 {
+  overflow-wrap: normal; word-break: normal; hyphens: none;
+  text-wrap: balance;
+}
+/* h3/h4 (узкие заголовки карточек) — допускаем перенос по слогам, чтобы влезали */
+.slide-container h3, .slide-container h4 {
+  overflow-wrap: break-word; word-break: normal; hyphens: auto;
+}
+/* FR-LECTURE-21 — перенос длинных слов везде, не только в заголовках */
+.slide-container p, .slide-container li, .slide-container span {
+  overflow-wrap: break-word; word-break: normal;
+}
+
+/* FR-LECTURE-24 — радиальные диаграммы компактные, подписи-спутники в одну строку.
+   (Глобальное «кольцо-орбита» FR-LECTURE-19 отменено: на разных слайдах рендерилось
+   огромным и не проходило через спутники.) */
+[class*="aspect-square"]:has(.bg-black.rounded-full) {
+  max-width: 440px !important; margin-left: auto !important; margin-right: auto !important;
+}
+.slide-container [class*="aspect-square"] p,
+.slide-container [class*="aspect-square"] h3,
+.slide-container [class*="aspect-square"] h4 { white-space: nowrap !important; }
+
+/* FR-LECTURE-22 — однозначная обратная связь в квизе: верно — зелёный, неверно — оранжевый */
+#quiz-modal .quiz-option[class~="border-solar"] {
+  background-color: rgba(16,185,129,0.18) !important;
+  border-color: #10B981 !important;
+}
+#quiz-modal .quiz-option[class~="border-solar"] .quiz-option-letter {
+  background-color: #10B981 !important;
+  border-color: #10B981 !important;
+  color: #ffffff !important;
+}
+#quiz-modal .quiz-option[class*="border-red-500"] {
+  background-color: rgba(249,115,22,0.18) !important;
+  border-color: #F97316 !important;
+}
+#quiz-modal .quiz-option[class*="border-red-500"] .quiz-option-letter {
+  background-color: #F97316 !important;
+  border-color: #F97316 !important;
+  color: #ffffff !important;
+}
+#quiz-explanation-icon.ph-check-circle,
+#quiz-explanation-icon.text-solar { color: #10B981 !important; }
+#quiz-explanation-icon.ph-x-circle,
+#quiz-explanation-icon[class*="text-red"] { color: #F97316 !important; }
+#quiz-explanation-title.text-solar { color: #10B981 !important; -webkit-text-fill-color: #10B981 !important; }
+#quiz-explanation-title[class*="text-red"] { color: #F97316 !important; -webkit-text-fill-color: #F97316 !important; }
+
+/* Премиальное «оживление» контента при показе слайда — каскадный fade-rise (FR-LECTURE-14).
+   Класс .is-active ставит скрипт portal-fit при каждой смене слайда. */
+@keyframes deckRise { from { opacity:0; transform: translateY(22px) scale(0.985); } to { opacity:1; transform:none; } }
+@keyframes deckZoom { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform:none; } }
+@keyframes deckSlideX { from { opacity:0; transform: translateX(-28px); } to { opacity:1; transform:none; } }
+@keyframes deckFlip { from { opacity:0; transform: perspective(900px) rotateX(12deg) translateY(14px); } to { opacity:1; transform:none; } }
+/* Заголовки никогда не должны быть невидимыми из-за анимации (FR-LECTURE-25) */
+.slide-container h1, .slide-container h2, .slide-container h3, .slide-container h4 { opacity:1 !important; }
+/* FR-LECTURE-28 — вертикальное центрирование + СИММЕТРИЧНЫЙ резерв сверху/снизу,
+   синхронизированный с размером видео-кружка (FR-LECTURE-29): и сверху, и снизу
+   одинаково — контент остаётся ровно по геометрическому центру слайда (никакого
+   «приподняты выше»), а нижняя плашка гарантированно не уходит под кружок.
+   flex-direction НЕ переопределяем — иначе ломаются слайды с md:flex-row прямо
+   на content-z (например радар ИИ-индекса). Если контент не влезает после
+   резерва, скрипт portal-fit ужимает через zoom (FR-LECTURE-07/30). */
+.slide-container .content-z {
+  justify-content: center !important;
+  padding-block: clamp(40px, 7vh, 96px) !important;
+}
+/* Тематические переходы (FR-LECTURE-27): 4 варианта появления, чередуются по
+   слайдам (класс anim-0..3 ставит portal-fit по индексу слайда). */
+.slide-container.is-active.anim-0 .content-z > * { animation-name: deckRise; }
+.slide-container.is-active.anim-1 .content-z > * { animation-name: deckZoom; }
+.slide-container.is-active.anim-2 .content-z > * { animation-name: deckSlideX; }
+.slide-container.is-active.anim-3 .content-z > * { animation-name: deckFlip; }
+/* уровень 1 — крупные блоки слайда (заголовок, подзаголовок, основной блок) */
+.slide-container.is-active .content-z > * { animation: deckRise .6s cubic-bezier(0.22,1,0.36,1) both; }
+.slide-container.is-active .content-z > *:nth-child(2) { animation-delay:.08s; }
+.slide-container.is-active .content-z > *:nth-child(3) { animation-delay:.16s; }
+.slide-container.is-active .content-z > *:nth-child(4) { animation-delay:.24s; }
+.slide-container.is-active .content-z > *:nth-child(n+5) { animation-delay:.3s; }
+/* уровень 2 — отдельные карточки в сетках/рядах. Исключаем заголовки h1..h4,
+   чтобы анимация уровня 2 не накладывалась на уровень 1 и не «гасила» заголовки. */
+.slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4),
+.slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4) { animation: deckRise .5s cubic-bezier(0.22,1,0.36,1) both; }
+.slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(2),
+.slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(2) { animation-delay:.1s; }
+.slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(3),
+.slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(3) { animation-delay:.18s; }
+.slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(4),
+.slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(4) { animation-delay:.26s; }
+.slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(n+5),
+.slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(n+5) { animation-delay:.34s; }
+@media (prefers-reduced-motion: reduce){
+  .slide-container.is-active .content-z > *,
+  .slide-container.is-active [class*="grid-cols"] > *,
+  .slide-container.is-active [class*="md:flex-row"] > * { animation:none !important; opacity:1 !important; }
+}
+
+/* Нижняя панель управления на ВСЕХ экранах: стрелки — внизу СПРАВА,
+   говорящая голова — внизу СЛЕВА и компактная (FR-LECTURE-01/29). */
+#nav-prev, #nav-next {
+  top:auto !important; bottom:22px !important; transform:none !important;
+  width:48px !important; height:48px !important;
+  background-color:#8B5CF6 !important; box-shadow:0 8px 20px rgba(0,0,0,0.25) !important;
+}
+#nav-prev { right:80px !important; left:auto !important; }
+#nav-next { right:20px !important; left:auto !important; }
+#nav-prev i, #nav-next i { color:#FFFFFF !important; }
+#video-bubble {
+  width: clamp(140px, 22vw, 280px) !important; height: clamp(140px, 22vw, 280px) !important;
+  left: clamp(1.5rem, 5vw, 4rem) !important; right:auto !important;
+  top:auto !important; bottom: clamp(1.5rem, 5vh, 3rem) !important;
+}
+@media (max-width:1023px){
+  #nav-prev, #nav-next { width:46px !important; height:46px !important; bottom:16px !important; }
+  #nav-prev { right:66px !important; }
+  #nav-next { right:12px !important; }
+  #video-bubble { width:150px !important; height:150px !important; left:15px !important; bottom:15px !important; }
+  .slide-container .content-z {
+    padding-block: 72px !important;
+    padding-left:1rem !important; padding-right:1rem !important;
+  }
+}
+</style>
+<style id="portal-dark">
+html.dark { background:#0A0A0A !important; color-scheme:dark; }
+html.dark body { background:#0A0A0A !important; color:#FAFAFA; }
+html.dark .slide-container { background:#0A0A0A !important; }
+html.dark [class~="bg-white"] { background-color:#141414 !important; }
+html.dark [class*="bg-grayBase"] { background-color:rgba(255,255,255,0.06) !important; }
+html.dark [class~="text-black"] { color:#FAFAFA !important; }
+html.dark [class*="text-black/"] { color:rgba(250,250,250,0.62) !important; }
+html.dark [class~="text-grayBase"] { color:rgba(255,255,255,0.5) !important; }
+html.dark [class*="border-grayBase"] { border-color:rgba(255,255,255,0.12) !important; }
+html.dark [class*="border-black"] { border-color:rgba(255,255,255,0.18) !important; }
+</style>
+<style id="lecture-chrome">
+/* Шапка лекции: лого AIT слева, переключатель темы + «Консультация» справа (без меню).
+   Фиксированная, поверх слайдов, но ниже стартового оверлея/квиза. */
+#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:clamp(.55rem,2vw,1rem) clamp(.9rem,3.2vw,2rem); pointer-events:none; }
+#lecture-header > *{ pointer-events:auto; }
+#lecture-header .lec-logo{ display:inline-flex; align-items:center; }
+#lecture-header .lec-logo img{ height:clamp(2.3rem,9vw,3.2rem); width:auto; display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+#lecture-header .lec-right{ display:flex; align-items:center; gap:clamp(.5rem,2.2vw,.8rem); }
+#lecture-header .lec-ctrl{ display:inline-flex; align-items:center; justify-content:center; height:clamp(2.3rem,9vw,3rem); width:clamp(2.3rem,9vw,3rem); border-radius:999px; border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:clamp(1.05rem,4vw,1.3rem); line-height:1; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:background .2s ease,color .2s ease; }
+#lecture-header .lec-ctrl:hover{ background:#f1f1f1; }
+#lecture-header .lec-consult{ display:inline-flex; align-items:center; gap:.5rem; height:clamp(2.3rem,9vw,3rem); padding:0 clamp(1rem,3.4vw,1.6rem); border-radius:999px; background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:clamp(10px,2.6vw,13px); white-space:nowrap; box-shadow:0 10px 24px -6px rgba(139,92,246,.5); transition:transform .2s ease,box-shadow .2s ease; }
+#lecture-header .lec-consult:hover{ transform:translateY(-1px); box-shadow:0 14px 30px -6px rgba(139,92,246,.6); }
+html.dark #lecture-header .lec-ctrl{ background:#141414; color:#fafafa; border-color:rgba(255,255,255,.18); box-shadow:0 6px 16px rgba(0,0,0,.5); }
+html.dark #lecture-header .lec-ctrl:hover{ background:#1f1f1f; }
+</style>
+<script id="portal-theme">
+(function(){
+  function apply(dark){ document.documentElement.classList.toggle('dark', !!dark); }
+  var urlT = null;
+  try { urlT = new URLSearchParams(location.search).get('theme'); } catch (e) {}
+  if (urlT === 'dark' || urlT === 'light') {
+    apply(urlT === 'dark');
+  } else {
+    // единая тема всего клиентского пути (общий ключ 'welcome-theme', как welcome/roadmap):
+    // путь по умолчанию ТЁМНЫЙ → лекция тёмная, пока явно не выбрана светлая; лекция запоминает
+    // тон, в котором была раньше (тумблер пишет тот же ключ).
+    var saved = null; try { saved = localStorage.getItem('welcome-theme'); } catch (e) {}
+    apply(saved !== 'light');
+  }
+  window.addEventListener('message', function(e){
+    if (e && e.data && e.data.type === 'portal-theme') apply(e.data.theme === 'dark');
+  });
+})();
+</script>
+<script id="portal-autostart">
+window.addEventListener('load', function(){
+  setTimeout(function(){ var o = document.getElementById('start-overlay'); if (o) o.click(); }, 50);
+});
+</script>
+<script id="portal-fit">
+(function(){
+  function fitOne(slide){
+    var c = slide.querySelector('.content-z');
+    if(!c) return;
+    try{
+      c.style.zoom = '';
+      var availH = slide.clientHeight, availW = slide.clientWidth;
+      if(!availH || !availW) return;
+      // scrollHeight ловит переполнение flex-центрированного контента
+      // (когда content-z имеет min-height:100% и offsetHeight = availH, но
+      // дети визуально вылезают за рамку из-за justify-content:center).
+      var natH = Math.max(c.offsetHeight, c.scrollHeight, slide.scrollHeight);
+      var natW = Math.max(c.scrollWidth, slide.scrollWidth);
+      if(!natH || !natW) return;
+      var s = Math.min(availH / natH, availW / natW, 1);
+      // запас 4% — чтобы высокий контент гарантированно влезал и заголовок не уходил за край
+      if(s < 0.999) c.style.zoom = s * 0.96;
+    }catch(e){}
+  }
+  function fitAll(){
+    var nodes = document.querySelectorAll('.slide-container');
+    for(var i=0;i<nodes.length;i++) fitOne(nodes[i]);
+  }
+  // Помечаем активный слайд классом is-active — это перезапускает каскадное
+  // появление контента (FR-LECTURE-14) при каждой смене слайда.
+  function markActive(){
+    var nodes = document.querySelectorAll('.slide-container');
+    for(var i=0;i<nodes.length;i++){
+      var active = nodes[i].classList.contains('opacity-100');
+      nodes[i].classList.toggle('is-active', active);
+      if(active){
+        // тематический вариант появления по индексу слайда (FR-LECTURE-27)
+        nodes[i].classList.remove('anim-0','anim-1','anim-2','anim-3');
+        nodes[i].classList.add('anim-' + (i % 4));
+      }
+    }
+  }
+  var t;
+  function soon(){ clearTimeout(t); t = setTimeout(fitAll, 60); }
+  window.addEventListener('load', function(){
+    fitAll(); markActive();
+    if(typeof window.updateSlides === 'function'){
+      var orig = window.updateSlides;
+      window.updateSlides = function(){ var r = orig.apply(this, arguments); requestAnimationFrame(function(){ fitAll(); markActive(); }); return r; };
+    }
+    [250, 700, 1500].forEach(function(d){ setTimeout(fitAll, d); });
+  });
+  window.addEventListener('resize', soon);
+  window.addEventListener('orientationchange', function(){ setTimeout(fitAll, 150); });
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(fitAll); }
+})();
+</script>
+</head>
+<body class="font-sans selection:bg-solar selection:text-black">
+
+    <!-- Шапка лекции: лого AIT слева, переключатель темы + «Консультация» справа (без меню) -->
+    <header id="lecture-header">
+        <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
+            <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
+        </a>
+        <div class="lec-right">
+            <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить тему (тёмная/светлая)"><i class="ph-fill ph-moon"></i></button>
+            <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Консультация <i class="ph-bold ph-arrow-right"></i></a>
+        </div>
+    </header>
+    <script>
+    (function(){
+        var btn = document.getElementById('lec-theme');
+        if (!btn) return;
+        function sync(){
+            var dark = document.documentElement.classList.contains('dark');
+            btn.innerHTML = '<i class="ph-fill ph-' + (dark ? 'sun' : 'moon') + '"></i>';
+        }
+        btn.addEventListener('click', function(){
+            var dark = document.documentElement.classList.toggle('dark');
+            try { localStorage.setItem('welcome-theme', dark ? 'dark' : 'light'); } catch (e) {}
+            sync();
+        });
+        sync();
+    })();
+    </script>
+
+    <!-- Окно старта -->
+    <div id="start-overlay" class="fixed inset-0 z-[10000] bg-black text-white flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500">
+        <i class="ph-fill ph-play-circle text-[80px] md:text-[100px] text-solar mb-6 animate-pulse-slow"></i>
+        <h2 class="text-2xl md:text-4xl font-black text-center px-4">Нажмите, чтобы начать</h2>
+        <p class="text-sm md:text-base text-white/60 mt-4 font-medium">Включите звук. Видео будет переключать слайды.</p>
+    </div>
+
+    <!-- Плавающий кружок с видео -->
+    <div id="video-bubble" class="cursor-grab" style="display: none; transform: translate3d(0,0,0);">
+        <video id="head-video" playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
+
+        <div id="video-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 transition-opacity text-white group z-20">
+            <i id="video-icon" class="ph-fill ph-pause-circle text-4xl md:text-6xl drop-shadow-md transition-transform transform group-hover:scale-110"></i>
+        </div>
+
+        <div id="video-loader" class="absolute inset-0 flex items-center justify-center bg-black z-30 transition-opacity duration-300 opacity-0 pointer-events-none">
+            <i class="ph-bold ph-spinner animate-spin text-4xl md:text-5xl text-solar"></i>
+        </div>
+    </div>
+
+    <!-- Декоративный фон -->
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+
+    <!-- Индикатор прогресса -->
+    <div id="progress-container" class="absolute bottom-0 left-0 h-1.5 bg-grayBase w-full z-50">
+        <div id="progress-bar" class="h-full bg-solar w-0 transition-all duration-300"></div>
+    </div>
+
+    <!-- Стрелки навигации -->
+    <div id="nav-prev" class="nav-arrow fixed top-1/2 left-2 md:left-6 z-50 cursor-pointer w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-grayBase/80 hover:bg-solar rounded-full transition-colors transform -translate-y-1/2 text-black shadow-sm" onclick="prevSlide()">
+        <i class="ph-bold ph-caret-left text-xl md:text-2xl"></i>
+    </div>
+    <div id="nav-next" class="nav-arrow fixed top-1/2 right-2 md:right-6 z-50 cursor-pointer w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-grayBase/80 hover:bg-solar rounded-full transition-colors transform -translate-y-1/2 text-black shadow-sm" onclick="nextSlide()">
+        <i class="ph-bold ph-caret-right text-xl md:text-2xl"></i>
+    </div>
+
+
+    <!-- СЛАЙД 1 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-100 translate-y-0" id="slide-0">
+        <div class="content-z text-center max-w-6xl">
+            <div class="bg-grayBase/30 border border-grayBase rounded-full px-4 py-1.5 md:py-2 mx-auto shadow-sm mb-4 md:mb-12 inline-block">
+                <p class="text-black font-bold uppercase tracking-widest text-[8px] md:text-sm m-0">Лекция 2: Процессный подход</p>
+            </div>
+            <h1 class="text-2xl sm:text-4xl md:text-5xl lg:text-[60px] font-black mb-4 md:mb-8 leading-tight tracking-tight text-black drop-shadow-sm">
+                Переход к <span class="text-solar">процессному подходу</span>
+            </h1>
+            <p class="text-black/60 font-medium text-[11px] md:text-xl mb-8 md:mb-12 max-w-3xl mx-auto">Автоматизация в компании начинается не с выбора ИИ-инструмента, модели или агента. Она начинается с понимания того, как в компании на самом деле создаётся ценность и как устроена работа</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 w-full max-w-4xl mx-auto text-left">
+                <div class="bg-white p-4 md:p-6 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase flex flex-col items-center text-center h-full">
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center mb-2 md:mb-4 text-black"><i class="ph-fill ph-tree-structure text-xl md:text-3xl"></i></div>
+                    <h3 class="font-bold text-xs md:text-base text-black mb-1 md:mb-3">Процессы</h3>
+                    <p class="text-[9px] md:text-xs text-black/55 leading-snug m-0">Как на самом деле устроена работа и где создаётся ценность</p>
+                </div>
+                <div class="bg-white p-4 md:p-6 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase flex flex-col items-center text-center h-full">
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-solar/30 rounded-full flex items-center justify-center mb-2 md:mb-4 text-black"><i class="ph-fill ph-database text-xl md:text-3xl"></i></div>
+                    <h3 class="font-bold text-xs md:text-base text-black mb-1 md:mb-3">Данные</h3>
+                    <p class="text-[9px] md:text-xs text-black/55 leading-snug m-0">Что компания знает и где это знание реально живёт</p>
+                </div>
+                <div class="bg-black text-white p-4 md:p-6 rounded-[20px] md:rounded-3xl shadow-sm border-2 border-solar flex flex-col items-center text-center h-full">
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mb-2 md:mb-4 text-solar"><i class="ph-fill ph-robot text-xl md:text-3xl"></i></div>
+                    <h3 class="font-bold text-xs md:text-base text-solar mb-1 md:mb-3">Автоматизация</h3>
+                    <p class="text-[9px] md:text-xs text-white/60 leading-snug m-0">ИИ-агенты ускоряют то, что уже выстроено как процесс</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- СЛАЙД 2 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-1">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-12 text-center text-black">Ограничения <span class="text-solar">функционального мышления</span></h2>
+
+            <div class="flex flex-col md:flex-row gap-4 md:gap-8 items-stretch justify-center w-full">
+                <div class="bg-white border border-grayBase rounded-[24px] md:rounded-3xl p-5 md:p-8 flex-1 shadow-sm text-center flex flex-col h-full w-full">
+                    <h3 class="font-black text-base md:text-2xl text-black mb-4 border-b border-grayBase pb-4">Отделы и функции</h3>
+                    <div class="flex justify-center gap-2 mb-4">
+                        <div class="bg-grayBase w-12 h-12 rounded flex items-center justify-center"><i class="ph-fill ph-users"></i></div>
+                        <div class="bg-grayBase w-12 h-12 rounded flex items-center justify-center"><i class="ph-fill ph-users"></i></div>
+                        <div class="bg-grayBase w-12 h-12 rounded flex items-center justify-center"><i class="ph-fill ph-users"></i></div>
+                    </div>
+                    <p class="text-[10px] md:text-sm text-black/60 leading-relaxed text-left">Когда компания управляет только отделами и локальными задачами, она не видит, как работает весь поток создания ценности. Каждый улучшает свой участок, но общая система остаётся медленной</p>
+                </div>
+
+                <div class="flex items-center justify-center text-2xl md:text-4xl font-black text-grayBase">VS</div>
+
+                <div class="bg-black border-2 border-solar rounded-[24px] md:rounded-3xl p-5 md:p-8 flex-1 shadow-2xl text-center flex flex-col h-full w-full z-10 md:scale-105 text-white">
+                    <h3 class="font-black text-base md:text-2xl text-solar mb-4 border-b border-white/20 pb-4">Сквозной поток ценности</h3>
+                    <div class="flex justify-center items-center gap-1 mb-4 text-solar">
+                        <div class="border border-solar/30 w-8 h-8 rounded-full flex items-center justify-center"><i class="ph-fill ph-arrow-right"></i></div>
+                        <div class="border border-solar/50 w-8 h-8 rounded-full flex items-center justify-center"><i class="ph-fill ph-arrow-right"></i></div>
+                        <div class="bg-solar text-black w-10 h-10 rounded-full flex items-center justify-center shadow-[0_0_10px_#8B5CF6]"><i class="ph-fill ph-flag-checkered text-xl"></i></div>
+                    </div>
+                    <p class="text-[10px] md:text-sm text-white/80 leading-relaxed text-left font-medium">Процессный подход объединяет разрозненные действия в единый управляемый поток, ориентированный на результат для клиента</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 3 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-2">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Что такое <span class="text-solar">процесс</span></h2>
+            <p class="text-center text-black/60 mb-10 md:mb-16 text-[11px] md:text-xl font-medium">Процесс — это последовательность действий, которая преобразует вход в результат и создаёт ценность. У процесса есть логика, начало, конец и понятный выход</p>
+
+            <div class="flex flex-row items-center justify-center w-full max-w-4xl mx-auto bg-white border border-grayBase p-4 md:p-12 rounded-[24px] md:rounded-[40px] shadow-sm">
+                <div class="flex flex-col items-center flex-1">
+                    <div class="w-12 h-12 md:w-20 md:h-20 bg-grayBase rounded-full flex items-center justify-center text-black shadow-inner mb-2 md:mb-4"><i class="ph-fill ph-sign-in text-2xl md:text-4xl"></i></div>
+                    <h3 class="font-bold text-xs md:text-xl">Вход</h3>
+                </div>
+                <div class="flex-1 flex justify-center text-grayBase text-2xl md:text-5xl"><i class="ph-bold ph-arrow-right"></i></div>
+                <div class="flex flex-col items-center flex-1">
+                    <div class="w-16 h-16 md:w-24 md:h-24 bg-black rounded-full flex items-center justify-center text-solar shadow-xl mb-2 md:mb-4 border-2 border-solar/30"><i class="ph-fill ph-gear-six text-3xl md:text-5xl"></i></div>
+                    <h3 class="font-black text-sm md:text-2xl">Действия</h3>
+                </div>
+                <div class="flex-1 flex justify-center text-grayBase text-2xl md:text-5xl"><i class="ph-bold ph-arrow-right"></i></div>
+                <div class="flex flex-col items-center flex-1">
+                    <div class="w-12 h-12 md:w-20 md:h-20 bg-solar/20 border border-solar rounded-full flex items-center justify-center text-black shadow-sm mb-2 md:mb-4"><i class="ph-fill ph-flag-checkered text-2xl md:text-4xl"></i></div>
+                    <h3 class="font-bold text-xs md:text-xl">Результат</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 4 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-3">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-8 text-center text-black">Из чего состоит <span class="text-solar">любой процесс</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-12 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">У любого бизнес-процесса есть обязательные элементы. Когда они описаны, процесс становится управляемой системой</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 w-full max-w-4xl mx-auto">
+                <div class="bg-white border border-grayBase p-3 md:p-5 rounded-[16px] md:rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
+                    <i class="ph-fill ph-target text-xl md:text-3xl text-solar mb-1 md:mb-2"></i>
+                    <h4 class="font-bold text-[11px] md:text-base">Цель</h4>
+                </div>
+                <div class="bg-white border border-grayBase p-3 md:p-5 rounded-[16px] md:rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
+                    <i class="ph-fill ph-sign-in text-xl md:text-3xl text-black/60 mb-1 md:mb-2"></i>
+                    <h4 class="font-bold text-[11px] md:text-base">Вход</h4>
+                </div>
+                <div class="bg-white border border-grayBase p-3 md:p-5 rounded-[16px] md:rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
+                    <i class="ph-fill ph-gear text-xl md:text-3xl text-black mb-1 md:mb-2"></i>
+                    <h4 class="font-bold text-[11px] md:text-base">Операция</h4>
+                </div>
+                <div class="bg-white border border-grayBase p-3 md:p-5 rounded-[16px] md:rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
+                    <i class="ph-fill ph-sign-out text-xl md:text-3xl text-black/60 mb-1 md:mb-2"></i>
+                    <h4 class="font-bold text-[11px] md:text-base">Выход</h4>
+                </div>
+                <div class="bg-white border border-grayBase p-3 md:p-5 rounded-[16px] md:rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
+                    <i class="ph-fill ph-file-text text-xl md:text-3xl text-black/60 mb-1 md:mb-2"></i>
+                    <h4 class="font-bold text-[11px] md:text-base">Артефакт</h4>
+                </div>
+                <div class="bg-white border border-grayBase p-3 md:p-5 rounded-[16px] md:rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
+                    <i class="ph-fill ph-user text-xl md:text-3xl text-black mb-1 md:mb-2"></i>
+                    <h4 class="font-bold text-[11px] md:text-base">Участник</h4>
+                </div>
+                <div class="bg-black border border-solar p-3 md:p-5 rounded-[16px] md:rounded-2xl shadow-lg text-center flex flex-col items-center justify-center text-white col-span-2 md:col-span-2">
+                    <i class="ph-fill ph-chart-line-up text-xl md:text-3xl text-solar mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-solar text-[12px] md:text-lg">Метрика</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 5 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-4">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-10 text-center text-black">Почему <span class="text-solar">метрика</span> обязательна</h2>
+            <p class="text-center text-black/60 mb-8 md:mb-12 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Без метрики процессом невозможно управлять. Только через измерение мы понимаем, работает процесс хорошо или плохо</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4 w-full">
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center justify-center">
+                    <i class="ph-fill ph-clock text-2xl md:text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm uppercase tracking-widest text-black/50 mb-1">Скорость</h4>
+                    <p class="text-lg md:text-2xl font-black">Cycle time</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center justify-center">
+                    <i class="ph-fill ph-currency-dollar text-2xl md:text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm uppercase tracking-widest text-black/50 mb-1">Стоимость</h4>
+                    <p class="text-lg md:text-2xl font-black">Cost</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center justify-center">
+                    <i class="ph-fill ph-target text-2xl md:text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm uppercase tracking-widest text-black/50 mb-1">Точность</h4>
+                    <p class="text-lg md:text-2xl font-black">Error rate</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center justify-center">
+                    <i class="ph-fill ph-star text-2xl md:text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm uppercase tracking-widest text-black/50 mb-1">Качество</h4>
+                    <p class="text-lg md:text-2xl font-black">Quality</p>
+                </div>
+                <div class="bg-black border border-solar/30 p-4 md:p-6 rounded-[20px] shadow-xl flex flex-col items-center text-center justify-center text-white col-span-2 md:col-span-1 md:scale-105 z-10">
+                    <i class="ph-fill ph-smiley text-2xl md:text-4xl text-solar mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm uppercase tracking-widest text-white/50 mb-1">Опыт</h4>
+                    <p class="text-lg md:text-2xl font-black text-solar">NPS / CSI</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 6 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-5">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Механизм <span class="text-solar">создания ценности</span></h2>
+
+            <div class="bg-grayBase/20 border border-grayBase p-6 md:p-12 rounded-[24px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 w-full max-w-5xl mx-auto">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-grayBase flex flex-col items-center w-full md:w-1/3 text-center">
+                    <i class="ph-fill ph-file-search text-3xl md:text-5xl text-black/50 mb-3"></i>
+                    <h3 class="font-bold text-sm md:text-xl text-black mb-2">Запрос / Данные</h3>
+                    <p class="text-[10px] md:text-sm text-black/60">Исходный ресурс или потребность</p>
+                </div>
+
+                <i class="ph-bold ph-arrow-right text-grayBase text-4xl hidden md:block"></i><i class="ph-bold ph-arrow-down text-grayBase text-2xl md:hidden"></i>
+
+                <div class="bg-black text-white p-8 rounded-3xl shadow-xl border-2 border-solar flex flex-col items-center w-full md:w-1/3 text-center md:scale-110 z-10">
+                    <i class="ph-fill ph-gear-six text-4xl md:text-6xl text-solar mb-3"></i>
+                    <h3 class="font-black text-lg md:text-2xl text-solar mb-2">Процесс</h3>
+                    <p class="text-[10px] md:text-sm text-white/80 font-medium">Трансформация входа в результат</p>
+                </div>
+
+                <i class="ph-bold ph-arrow-right text-grayBase text-4xl hidden md:block"></i><i class="ph-bold ph-arrow-down text-grayBase text-2xl md:hidden"></i>
+
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-grayBase flex flex-col items-center w-full md:w-1/3 text-center">
+                    <i class="ph-fill ph-gift text-3xl md:text-5xl text-black mb-3"></i>
+                    <h3 class="font-bold text-sm md:text-xl text-black mb-2">Ценность</h3>
+                    <p class="text-[10px] md:text-sm text-black/60">Полезный результат для клиента и бизнеса</p>
+                </div>
+            </div>
+            <p class="text-center mt-6 md:mt-10 text-black/50 text-[10px] md:text-base font-bold uppercase tracking-widest">Процесс важен не сам по себе, а ради результата</p>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 7 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-6">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Процесс как <span class="text-solar">поток данных</span></h2>
+            <p class="text-center text-black/60 mb-8 md:mb-12 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Если смотреть глубже, процесс — это не только действия людей, но и движение данных. Данные входят в процесс, меняют состояние и превращаются в результат</p>
+
+            <div class="bg-white border border-grayBase p-6 md:p-12 rounded-[24px] md:rounded-[40px] shadow-sm w-full max-w-4xl mx-auto flex flex-col gap-4">
+                <div class="flex items-center gap-4 bg-grayBase/30 p-4 rounded-2xl">
+                    <div class="w-10 h-10 bg-black text-solar rounded-full flex items-center justify-center shrink-0 font-bold">1</div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm md:text-lg">Сырые данные</h4>
+                        <p class="text-[10px] md:text-sm text-black/50">Вход в систему (заявка, текст, письмо)</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 bg-grayBase/30 p-4 rounded-2xl ml-4 md:ml-8 border-l-4 border-solar">
+                    <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center shrink-0 font-bold">2</div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm md:text-lg">Обогащение</h4>
+                        <p class="text-[10px] md:text-sm text-black/50">Добавление контекста и связи с другими системами</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 bg-grayBase/30 p-4 rounded-2xl ml-8 md:ml-16 border-l-4 border-solar">
+                    <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center shrink-0 font-bold">3</div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm md:text-lg">Трансформация</h4>
+                        <p class="text-[10px] md:text-sm text-black/50">Изменение состояния (счёт сформирован, статус изменен)</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 bg-black text-white p-4 rounded-2xl ml-12 md:ml-24 shadow-xl border border-solar/30">
+                    <div class="w-10 h-10 bg-solar text-black rounded-full flex items-center justify-center shrink-0 font-bold">4</div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm md:text-lg text-solar">Результат</h4>
+                        <p class="text-[10px] md:text-sm text-white/70">Готовый цифровой актив или действие</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 8 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-7">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-16 text-center text-black">Пример <span class="text-solar">потока данных</span></h2>
+
+            <!-- Mobile: горизонтальная компактная цепочка из иконок + подписи снизу -->
+            <div class="md:hidden w-full max-w-lg mx-auto">
+                <div class="flex items-center justify-between gap-1 w-full">
+                    <div class="flex-1 bg-white border border-grayBase rounded-xl p-2 text-center shadow-sm flex flex-col items-center">
+                        <i class="ph-fill ph-globe text-xl text-black"></i>
+                        <h4 class="font-bold text-[9px] mt-1">Сайт</h4>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-grayBase text-sm shrink-0"></i>
+                    <div class="flex-1 bg-white border border-grayBase rounded-xl p-2 text-center shadow-sm flex flex-col items-center">
+                        <i class="ph-fill ph-database text-xl text-black"></i>
+                        <h4 class="font-bold text-[9px] mt-1">CRM</h4>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-grayBase text-sm shrink-0"></i>
+                    <div class="flex-1 bg-white border border-grayBase rounded-xl p-2 text-center shadow-sm flex flex-col items-center">
+                        <i class="ph-fill ph-user-circle text-xl text-black"></i>
+                        <h4 class="font-bold text-[9px] mt-1">Менеджер</h4>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-grayBase text-sm shrink-0"></i>
+                    <div class="flex-1 bg-white border border-grayBase rounded-xl p-2 text-center shadow-sm flex flex-col items-center">
+                        <i class="ph-fill ph-file-text text-xl text-black"></i>
+                        <h4 class="font-bold text-[9px] mt-1">Финсист.</h4>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-grayBase text-sm shrink-0"></i>
+                    <div class="flex-1 bg-black border border-solar rounded-xl p-2 text-center shadow-lg flex flex-col items-center text-white">
+                        <i class="ph-fill ph-check-circle text-xl text-solar"></i>
+                        <h4 class="font-bold text-[9px] mt-1 text-solar">Оплата</h4>
+                    </div>
+                </div>
+                <ul class="mt-4 space-y-1.5 text-[10px] text-black/70">
+                    <li class="flex items-start gap-2"><i class="ph-fill ph-globe text-black mt-0.5"></i><span><b>Сайт</b> — клиент оставляет заявку</span></li>
+                    <li class="flex items-start gap-2"><i class="ph-fill ph-database text-black mt-0.5"></i><span><b>CRM</b> — фиксация данных</span></li>
+                    <li class="flex items-start gap-2"><i class="ph-fill ph-user-circle text-black mt-0.5"></i><span><b>Менеджер</b> — уточнение деталей</span></li>
+                    <li class="flex items-start gap-2"><i class="ph-fill ph-file-text text-black mt-0.5"></i><span><b>Финсистема</b> — формирование счёта</span></li>
+                    <li class="flex items-start gap-2"><i class="ph-fill ph-check-circle text-solar mt-0.5"></i><span><b>Оплата</b> — фиксация оплаты</span></li>
+                </ul>
+            </div>
+
+            <!-- Desktop: горизонтальная схема как раньше -->
+            <div class="hidden md:flex flex-row items-center justify-between w-full max-w-5xl mx-auto gap-0 relative">
+                <div class="absolute top-1/2 left-0 w-full h-1 bg-grayBase -translate-y-1/2 z-0"></div>
+
+                <div class="bg-white border border-grayBase w-32 p-4 rounded-2xl text-center shadow-sm z-10">
+                    <i class="ph-fill ph-globe text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-xs">Сайт</h4>
+                    <p class="text-[8px] text-black/50 mt-1">Клиент оставляет заявку</p>
+                </div>
+                <div class="bg-white border border-grayBase w-32 p-4 rounded-2xl text-center shadow-sm z-10">
+                    <i class="ph-fill ph-database text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-xs">CRM</h4>
+                    <p class="text-[8px] text-black/50 mt-1">Фиксация данных</p>
+                </div>
+                <div class="bg-white border border-grayBase w-32 p-4 rounded-2xl text-center shadow-sm z-10">
+                    <i class="ph-fill ph-user-circle text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-xs">Менеджер</h4>
+                    <p class="text-[8px] text-black/50 mt-1">Уточнение деталей</p>
+                </div>
+                <div class="bg-white border border-grayBase w-32 p-4 rounded-2xl text-center shadow-sm z-10">
+                    <i class="ph-fill ph-file-text text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-xs">Финсистема</h4>
+                    <p class="text-[8px] text-black/50 mt-1">Формирование счёта</p>
+                </div>
+                <div class="bg-black border border-solar w-32 p-4 rounded-2xl text-center shadow-xl z-10 text-white">
+                    <i class="ph-fill ph-check-circle text-4xl text-solar mb-2"></i>
+                    <h4 class="font-bold text-xs text-solar">Оплата</h4>
+                    <p class="text-[8px] text-white/70 mt-1">Фиксация оплаты</p>
+                </div>
+            </div>
+
+            <div class="mt-4 md:mt-16 text-center text-[10px] md:text-base text-black/70 font-medium bg-grayBase/30 py-2 md:py-3 px-4 md:px-6 rounded-xl border border-grayBase max-w-2xl mx-auto">
+                Единый поток данных, проходящий через всю компанию
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 9 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-8">
+        <div class="content-z w-full max-w-4xl mx-auto">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-14 text-center text-black">Эволюция <span class="text-solar">автоматизации</span></h2>
+            <p class="text-center text-black/60 mb-8 md:mb-12 text-[10px] md:text-lg font-medium">От действий к мышлению</p>
+
+            <div class="relative border-l-2 md:border-l-4 border-grayBase ml-4 md:ml-12 space-y-4 md:space-y-10 pb-2 md:pb-4 w-full">
+                <div class="relative pl-5 md:pl-12">
+                    <div class="absolute -left-[9px] md:-left-[14px] top-1 w-4 h-4 md:w-6 md:h-6 bg-white border-4 border-grayBase rounded-full"></div>
+                    <span class="text-black/40 font-bold text-[10px] md:text-sm tracking-widest mb-0.5 md:mb-1 block">Этап 1</span>
+                    <h3 class="text-sm md:text-2xl font-bold text-black">Механизация</h3>
+                    <p class="text-[10px] md:text-base text-black/60 mt-0.5 md:mt-2">Автоматизация физического труда</p>
+                </div>
+
+                <div class="relative pl-5 md:pl-12">
+                    <div class="absolute -left-[9px] md:-left-[14px] top-1 w-4 h-4 md:w-6 md:h-6 bg-white border-4 border-grayBase rounded-full"></div>
+                    <span class="text-black/40 font-bold text-[10px] md:text-sm tracking-widest mb-0.5 md:mb-1 block">Этап 2</span>
+                    <h3 class="text-sm md:text-2xl font-bold text-black">Учётные системы</h3>
+                    <p class="text-[10px] md:text-base text-black/60 mt-0.5 md:mt-2">Автоматизация расчётов и офисных операций</p>
+                </div>
+
+                <div class="relative pl-5 md:pl-12">
+                    <div class="absolute -left-[9px] md:-left-[14px] top-1 w-4 h-4 md:w-6 md:h-6 bg-white border-4 border-grayBase rounded-full"></div>
+                    <span class="text-black/40 font-bold text-[10px] md:text-sm tracking-widest mb-0.5 md:mb-1 block">Этап 3</span>
+                    <h3 class="text-sm md:text-2xl font-bold text-black">Цифровые процессы</h3>
+                    <p class="text-[10px] md:text-base text-black/60 mt-0.5 md:mt-2">Сквозная интеграция и управление на основе данных (ERP/CRM)</p>
+                </div>
+
+                <div class="relative pl-5 md:pl-12">
+                    <div class="absolute -left-[11px] md:-left-[18px] top-0 w-5 h-5 md:w-8 md:h-8 bg-solar rounded-full border-4 border-white shadow-lg"></div>
+                    <span class="text-solar bg-black px-2 md:px-3 py-0.5 md:py-1 rounded-lg font-black text-[8px] md:text-xs mb-1 md:mb-3 inline-block uppercase tracking-widest">Сегодня</span>
+                    <h3 class="text-base md:text-3xl font-black text-black leading-tight">AI Automation</h3>
+                    <p class="text-[11px] md:text-lg text-black/80 font-medium mt-1 md:mt-2">Автоматизация интеллектуальной работы и принятия решений</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 10 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-9">
+        <div class="content-z w-full max-w-6xl">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Четыре уровня <span class="text-solar">автоматизации</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Эти уровни нельзя смешивать: они решают задачи разной природы</p>
+
+            <div class="flex flex-col md:flex-row items-end justify-center h-auto md:h-80 gap-2 md:gap-3 w-full border-b-2 border-grayBase pb-0">
+                <div class="flex-1 w-full bg-grayBase/30 rounded-t-xl md:rounded-t-2xl p-3 md:p-6 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[40%]">
+                    <span class="text-black/40 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 1</span>
+                    <h3 class="font-bold text-black text-[11px] md:text-base mt-1 md:mt-2">Rules / Скрипты</h3>
+                    <p class="text-[8px] md:text-xs text-black/50 mt-2 hidden md:block">Жесткая логика IF-THEN</p>
+                </div>
+                <div class="flex-1 w-full bg-grayBase/60 rounded-t-xl md:rounded-t-2xl p-3 md:p-6 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[60%]">
+                    <span class="text-black/50 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 2</span>
+                    <h3 class="font-bold text-black text-[11px] md:text-base mt-1 md:mt-2">RPA</h3>
+                    <p class="text-[8px] md:text-xs text-black/60 mt-2 hidden md:block">Имитация ручных действий в интерфейсах</p>
+                </div>
+                <div class="flex-1 w-full bg-grayBase rounded-t-xl md:rounded-t-2xl p-3 md:p-6 flex flex-col justify-start text-center h-full md:h-[80%]">
+                    <span class="text-black/60 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 3</span>
+                    <h3 class="font-bold text-black text-[11px] md:text-base mt-1 md:mt-2">Process Automation</h3>
+                    <p class="text-[8px] md:text-xs text-black/70 mt-2 hidden md:block">BPM-системы и API-интеграции</p>
+                </div>
+                <div class="flex-1 w-full bg-black rounded-t-xl md:rounded-t-2xl p-3 md:p-6 flex flex-col justify-start text-center h-full md:h-[100%] shadow-xl transform md:scale-105 z-10 relative">
+                    <span class="text-solar font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 4</span>
+                    <h3 class="font-black text-white text-[12px] md:text-lg mt-1 md:mt-2 text-solar">AI Automation</h3>
+                    <p class="text-[9px] md:text-sm text-white/80 mt-2 hidden md:block">Агенты, понимающие контекст и принимающие решения</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 11 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-10">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-12 text-center text-black">Два подхода к <span class="text-solar">автоматизации</span></h2>
+
+            <div class="flex flex-col md:flex-row gap-2 md:gap-8 items-stretch justify-center w-full">
+                <!-- Незрелый -->
+                <div class="bg-grayBase/30 border border-grayBase rounded-[18px] md:rounded-3xl p-3 md:p-8 flex-1 shadow-sm flex flex-col items-center text-center h-full w-full">
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center mb-2 md:mb-5 shadow-sm text-red-500"><i class="ph-fill ph-warning-circle text-xl md:text-3xl"></i></div>
+                    <h3 class="font-black text-sm md:text-2xl text-black mb-1 md:mb-4">Technology-first</h3>
+                    <p class="text-[9px] md:text-sm text-black/60 mb-2 md:mb-4">Незрелый подход</p>
+                    <div class="bg-white border border-grayBase p-2 md:p-4 rounded-lg md:rounded-xl w-full text-left mb-2 md:mb-3">
+                        <span class="text-black/40 font-bold text-[8px] md:text-xs uppercase block mb-0.5 md:mb-1">Вопрос</span>
+                        <p class="text-[10px] md:text-sm font-medium leading-tight">"Давайте попробуем внедрить AI"</p>
+                    </div>
+                    <ul class="space-y-1 md:space-y-2 text-[9px] md:text-sm text-black/70 w-full text-left mt-auto">
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-x text-red-400 mt-0.5 shrink-0"></i> Фокус на инструменте</li>
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-x text-red-400 mt-0.5 shrink-0"></i> Непонятен бизнес-результат</li>
+                    </ul>
+                </div>
+
+                <div class="hidden md:flex items-center justify-center text-3xl font-black text-grayBase">VS</div>
+
+                <!-- Зрелый -->
+                <div class="bg-black text-white border-2 border-solar rounded-[18px] md:rounded-3xl p-3 md:p-8 flex-1 shadow-2xl relative md:transform md:scale-105 z-10 flex flex-col items-center text-center w-full">
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mb-2 md:mb-5 mt-1 md:mt-2"><i class="ph-fill ph-check-circle text-xl md:text-3xl text-solar"></i></div>
+                    <h3 class="font-black text-sm md:text-2xl text-solar mb-1 md:mb-4">Process-first</h3>
+                    <p class="text-[9px] md:text-sm text-white/50 mb-2 md:mb-4">Зрелый подход</p>
+                    <div class="bg-white/10 border border-white/20 p-2 md:p-4 rounded-lg md:rounded-xl w-full text-left mb-2 md:mb-3">
+                        <span class="text-solar/60 font-bold text-[8px] md:text-xs uppercase block mb-0.5 md:mb-1">Вопрос</span>
+                        <p class="text-[10px] md:text-sm font-medium leading-tight">"Какой участок работы мы улучшаем и по каким метрикам?"</p>
+                    </div>
+                    <ul class="space-y-1 md:space-y-2 text-[9px] md:text-sm text-white/80 w-full text-left mt-auto">
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-check text-solar mt-0.5 shrink-0"></i> Фокус на метриках и ценности</li>
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-check text-solar mt-0.5 shrink-0"></i> Инструмент подбирается под задачу</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 12 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-11">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Почему <span class="text-solar">нужен процесс</span></h2>
+
+            <div class="flex flex-col md:flex-row gap-4 md:gap-8 items-stretch justify-center w-full h-auto md:h-72">
+                <div class="bg-white border border-grayBase rounded-[24px] md:rounded-3xl p-6 flex-1 shadow-sm flex flex-col justify-center text-center">
+                    <i class="ph-duotone ph-tornado text-4xl md:text-6xl text-red-400 mb-4"></i>
+                    <h3 class="font-black text-sm md:text-xl text-black mb-2">Хаос без процесса</h3>
+                    <p class="text-[10px] md:text-sm text-black/60">Если не понимать, как создаётся результат и где принимаются решения, внедрение AI превращается в хаотичную автоматизацию без эффекта</p>
+                </div>
+
+                <i class="ph-bold ph-arrow-right text-grayBase text-4xl hidden md:block self-center"></i><i class="ph-bold ph-arrow-down text-grayBase text-2xl md:hidden self-center"></i>
+
+                <div class="bg-black border border-solar/50 rounded-[24px] md:rounded-3xl p-6 flex-1 shadow-xl flex flex-col justify-center text-center text-white md:scale-105">
+                    <i class="ph-fill ph-circles-three text-4xl md:text-6xl text-solar mb-4"></i>
+                    <h3 class="font-black text-sm md:text-xl text-solar mb-2">Управляемая система</h3>
+                    <p class="text-[10px] md:text-sm text-white/80">Описанный процесс позволяет найти узкие места и точечно применить AI там, где он даст максимальный измеримый результат</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 13 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-12">
+        <div class="content-z w-full max-w-6xl">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Модель <span class="text-solar">деятельности компании</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Первая зона автоматизации чаще всего находится в RUN</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8 w-full">
+                <!-- RUN -->
+                <div class="bg-black border-2 border-solar p-4 md:p-8 rounded-[20px] md:rounded-3xl shadow-xl relative flex flex-col text-center h-full text-white md:transform md:scale-105 z-10 w-full">
+                    <div class="absolute -top-3 md:-top-4 left-1/2 transform -translate-x-1/2 bg-solar text-black text-[8px] md:text-[10px] font-bold px-2 md:px-4 py-0.5 md:py-1.5 rounded-full uppercase tracking-widest shadow-md">Первый шаг AI</div>
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-5 shrink-0"><i class="ph-fill ph-gear-six text-xl md:text-3xl text-solar"></i></div>
+                    <h3 class="font-black text-sm md:text-3xl text-solar mb-0.5 md:mb-2">RUN</h3>
+                    <p class="text-[8px] md:text-[11px] font-bold text-white/50 uppercase tracking-widest mb-2 md:mb-4">Операционка</p>
+                    <p class="text-[9px] md:text-sm text-white/80">Текущая стабильная работа, рутина и массовые операции (наибольший потенциал автоматизации)</p>
+                </div>
+                <!-- CHANGE -->
+                <div class="bg-grayBase/30 border border-grayBase p-4 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col text-center h-full w-full">
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-2 md:mb-5 shadow-sm shrink-0"><i class="ph-fill ph-arrows-merge text-xl md:text-3xl text-black/60"></i></div>
+                    <h3 class="font-black text-sm md:text-3xl text-black mb-0.5 md:mb-2">CHANGE</h3>
+                    <p class="text-[8px] md:text-[11px] font-bold text-black/40 uppercase tracking-widest mb-2 md:mb-4">Изменения</p>
+                    <p class="text-[9px] md:text-sm text-black/60">Оптимизация и развитие существующих процессов, проектная работа</p>
+                </div>
+                <!-- DISRUPT -->
+                <div class="bg-grayBase/30 border border-grayBase p-4 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col text-center h-full w-full">
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-2 md:mb-5 shadow-sm shrink-0"><i class="ph-fill ph-rocket text-xl md:text-3xl text-black/60"></i></div>
+                    <h3 class="font-black text-sm md:text-3xl text-black mb-0.5 md:mb-2">DISRUPT</h3>
+                    <p class="text-[8px] md:text-[11px] font-bold text-black/40 uppercase tracking-widest mb-2 md:mb-4">Инновации</p>
+                    <p class="text-[9px] md:text-sm text-black/60">Эксперименты, создание новых продуктов и бизнес-моделей</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 14 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-13">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Процесс внутри <span class="text-solar">архитектуры</span></h2>
+            <p class="text-center text-black/60 mb-8 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Отдельный процесс встроен в широкую систему создания ценности. Если оптимизировать только локальный участок, можно почти не повлиять на итоговый результат для клиента</p>
+
+            <!-- Value chain diagram -->
+            <div class="w-full flex flex-col items-center max-w-5xl mx-auto relative mt-4 md:mt-8">
+                <div class="hidden md:block absolute top-1/2 left-0 w-full h-2 bg-grayBase -translate-y-1/2 z-0 rounded-full"></div>
+
+                <div class="flex flex-col md:flex-row gap-2 md:gap-4 justify-between w-full relative z-10">
+                    <div class="bg-white border border-grayBase p-3 md:p-5 rounded-2xl text-center shadow-sm w-full md:w-1/4">
+                        <span class="text-[10px] md:text-xs font-bold text-black/40 uppercase tracking-wider block mb-1">Шаг 1</span>
+                        <h4 class="font-bold text-xs md:text-sm text-black">Привлечение</h4>
+                    </div>
+
+                    <div class="bg-black border-2 border-solar p-3 md:p-5 rounded-2xl text-center shadow-2xl w-full md:w-1/4 md:scale-110 relative text-white">
+                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-solar text-black px-2 py-0.5 rounded text-[8px] font-bold uppercase whitespace-nowrap">Локальный процесс</div>
+                        <span class="text-solar font-bold text-[10px] md:text-xs uppercase tracking-wider block mb-1">Шаг 2</span>
+                        <h4 class="font-bold text-xs md:text-sm text-white">Обработка заказа</h4>
+                    </div>
+
+                    <div class="bg-white border border-grayBase p-3 md:p-5 rounded-2xl text-center shadow-sm w-full md:w-1/4">
+                        <span class="text-[10px] md:text-xs font-bold text-black/40 uppercase tracking-wider block mb-1">Шаг 3</span>
+                        <h4 class="font-bold text-xs md:text-sm text-black">Производство</h4>
+                    </div>
+
+                    <div class="bg-white border border-grayBase p-3 md:p-5 rounded-2xl text-center shadow-sm w-full md:w-1/4">
+                        <span class="text-[10px] md:text-xs font-bold text-black/40 uppercase tracking-wider block mb-1">Шаг 4</span>
+                        <h4 class="font-bold text-xs md:text-sm text-black">Доставка</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 md:mt-16 bg-solar/20 border-l-4 border-solar p-4 md:p-6 rounded-r-2xl w-full max-w-3xl mx-auto text-center">
+                <p class="text-[11px] md:text-base font-bold text-black">Ускорение Шага 2 не принесёт пользы клиенту, если производство (Шаг 3) всё равно работает медленно</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 15 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-14">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Два уровня <span class="text-solar">анализа</span></h2>
+
+            <div class="flex flex-col md:flex-row gap-4 md:gap-8 items-stretch justify-center w-full">
+                <div class="bg-white border border-grayBase rounded-[24px] md:rounded-3xl p-6 md:p-10 flex-1 shadow-sm text-center flex flex-col h-full items-center">
+                    <div class="w-14 h-14 bg-grayBase rounded-full flex items-center justify-center mb-4"><i class="ph-fill ph-magnifying-glass-plus text-2xl text-black"></i></div>
+                    <h3 class="font-black text-lg md:text-2xl text-black mb-2">Локальный уровень</h3>
+                    <p class="text-[10px] md:text-sm text-black/50 font-bold uppercase tracking-widest mb-4">Сам процесс</p>
+                    <ul class="text-[11px] md:text-sm text-black/70 text-left space-y-2 mt-auto">
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-check mt-1 text-black/40 shrink-0"></i> Как процесс устроен внутри</li>
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-check mt-1 text-black/40 shrink-0"></i> Кто участвует и какие данные использует</li>
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-check mt-1 text-black/40 shrink-0"></i> Где возникают внутренние ошибки</li>
+                    </ul>
+                </div>
+
+                <div class="bg-black text-white border-2 border-solar rounded-[24px] md:rounded-3xl p-6 md:p-10 flex-1 shadow-xl text-center flex flex-col h-full items-center md:scale-105 z-10">
+                    <div class="w-14 h-14 bg-solar rounded-full flex items-center justify-center mb-4 text-black"><i class="ph-fill ph-circles-three-plus text-2xl"></i></div>
+                    <h3 class="font-black text-lg md:text-2xl text-solar mb-2">Системный уровень</h3>
+                    <p class="text-[10px] md:text-sm text-white/50 font-bold uppercase tracking-widest mb-4">Влияние на цепочку</p>
+                    <ul class="text-[11px] md:text-sm text-white/80 text-left space-y-2 mt-auto font-medium">
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-check mt-1 text-solar shrink-0"></i> Как процесс влияет на всю цепочку ценности</li>
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-check mt-1 text-solar shrink-0"></i> Не создаёт ли оптимизация проблем соседним отделам</li>
+                        <li class="flex items-start gap-2"><i class="ph-bold ph-check mt-1 text-solar shrink-0"></i> Решает ли улучшение глобальную бизнес-задачу</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 16 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-15">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Какие процессы выбирать <span class="text-solar">для первых шагов</span></h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 w-full max-w-5xl mx-auto">
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-arrows-clockwise text-3xl md:text-4xl text-black mb-3"></i>
+                    <h4 class="font-bold text-[11px] md:text-sm text-black mb-1">Высокая повторяемость</h4>
+                    <p class="text-[9px] md:text-xs text-black/60">Рутинные частые задачи</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-chart-line-up text-3xl md:text-4xl text-black mb-3"></i>
+                    <h4 class="font-bold text-[11px] md:text-sm text-black mb-1">Понятные метрики</h4>
+                    <p class="text-[9px] md:text-xs text-black/60">Можно измерить ДО и ПОСЛЕ</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-users-three text-3xl md:text-4xl text-black mb-3"></i>
+                    <h4 class="font-bold text-[11px] md:text-sm text-black mb-1">Большая нагрузка</h4>
+                    <p class="text-[9px] md:text-xs text-black/60">Тратится много человеко-часов</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-warning-circle text-3xl md:text-4xl text-black mb-3"></i>
+                    <h4 class="font-bold text-[11px] md:text-sm text-black mb-1">Дорогие ошибки</h4>
+                    <p class="text-[9px] md:text-xs text-black/60">Человеческий фактор стоит дорого</p>
+                </div>
+            </div>
+
+            <div class="bg-black text-white p-4 md:p-6 rounded-2xl max-w-2xl mx-auto text-center mt-6 md:mt-10 shadow-xl border border-solar/30">
+                <p class="text-xs md:text-lg font-bold"><i class="ph-fill ph-rocket text-solar mr-2"></i>Цель — получить <span class="text-solar">быстрый и измеримый</span> эффект, чтобы доказать ценность подхода</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 17 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-16">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-10 text-center text-black">Как собирать <span class="text-solar">реальную картину</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-12 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Один метод редко даёт полную картину (обычно комбинируют 2-3 метода)</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 w-full max-w-5xl mx-auto">
+                <div class="bg-white border border-grayBase p-4 rounded-[20px] shadow-sm flex items-start gap-3">
+                    <div class="bg-grayBase rounded-full w-10 h-10 flex items-center justify-center shrink-0"><i class="ph-fill ph-microphone-stage text-xl text-black"></i></div>
+                    <div>
+                        <h4 class="font-bold text-[11px] md:text-sm mb-1">Интервью</h4>
+                        <p class="text-[9px] md:text-xs text-black/60">Опрос исполнителей</p>
+                    </div>
+                </div>
+                <div class="bg-white border border-grayBase p-4 rounded-[20px] shadow-sm flex items-start gap-3">
+                    <div class="bg-grayBase rounded-full w-10 h-10 flex items-center justify-center shrink-0"><i class="ph-fill ph-eye text-xl text-black"></i></div>
+                    <div>
+                        <h4 class="font-bold text-[11px] md:text-sm mb-1">Наблюдение</h4>
+                        <p class="text-[9px] md:text-xs text-black/60">Теневой анализ работы</p>
+                    </div>
+                </div>
+                <div class="bg-white border border-grayBase p-4 rounded-[20px] shadow-sm flex items-start gap-3">
+                    <div class="bg-grayBase rounded-full w-10 h-10 flex items-center justify-center shrink-0"><i class="ph-fill ph-files text-xl text-black"></i></div>
+                    <div>
+                        <h4 class="font-bold text-[11px] md:text-sm mb-1">Анализ документов</h4>
+                        <p class="text-[9px] md:text-xs text-black/60">Регламенты и инструкции</p>
+                    </div>
+                </div>
+                <div class="bg-white border border-grayBase p-4 rounded-[20px] shadow-sm flex items-start gap-3">
+                    <div class="bg-grayBase rounded-full w-10 h-10 flex items-center justify-center shrink-0"><i class="ph-fill ph-chalkboard-teacher text-xl text-black"></i></div>
+                    <div>
+                        <h4 class="font-bold text-[11px] md:text-sm mb-1">Воркшопы</h4>
+                        <p class="text-[9px] md:text-xs text-black/60">Групповое моделирование</p>
+                    </div>
+                </div>
+                <div class="bg-white border border-grayBase p-4 rounded-[20px] shadow-sm flex items-start gap-3">
+                    <div class="bg-grayBase rounded-full w-10 h-10 flex items-center justify-center shrink-0"><i class="ph-fill ph-list-checks text-xl text-black"></i></div>
+                    <div>
+                        <h4 class="font-bold text-[11px] md:text-sm mb-1">Опросы</h4>
+                        <p class="text-[9px] md:text-xs text-black/60">Массовый сбор деталей</p>
+                    </div>
+                </div>
+                <div class="bg-black text-white p-4 rounded-[20px] shadow-md flex items-start gap-3 border border-solar/50">
+                    <div class="bg-solar rounded-full w-10 h-10 flex items-center justify-center shrink-0"><i class="ph-fill ph-desktop text-xl text-black"></i></div>
+                    <div>
+                        <h4 class="font-bold text-[11px] md:text-sm mb-1 text-solar">Анализ систем</h4>
+                        <p class="text-[9px] md:text-xs text-white/70">Логи (Process Mining)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 18 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-17">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Как выбирать <span class="text-solar">метод анализа</span></h2>
+
+            <div class="flex flex-col md:flex-row gap-4 justify-center w-full max-w-5xl mx-auto items-stretch">
+                <div class="bg-white border border-grayBase p-5 rounded-[20px] shadow-sm flex-1 flex flex-col text-center">
+                    <h3 class="font-black text-sm md:text-lg mb-2">Неформализованные</h3>
+                    <p class="text-[9px] md:text-xs text-black/60 mb-4 h-8">Мало инструкций, много ручного труда</p>
+                    <div class="bg-grayBase/50 p-3 rounded-xl mt-auto text-[11px] md:text-sm font-bold">Интервью + Наблюдение</div>
+                </div>
+                <div class="bg-white border border-grayBase p-5 rounded-[20px] shadow-sm flex-1 flex flex-col text-center">
+                    <h3 class="font-black text-sm md:text-lg mb-2">Кросс-функциональные</h3>
+                    <p class="text-[9px] md:text-xs text-black/60 mb-4 h-8">Много участников из разных отделов</p>
+                    <div class="bg-grayBase/50 p-3 rounded-xl mt-auto text-[11px] md:text-sm font-bold">Воркшопы + Опросы</div>
+                </div>
+                <div class="bg-black border-2 border-solar p-5 rounded-[20px] shadow-xl flex-1 flex flex-col text-center text-white md:scale-105 z-10">
+                    <h3 class="font-black text-sm md:text-lg text-solar mb-2">Цифровые</h3>
+                    <p class="text-[9px] md:text-xs text-white/70 mb-4 h-8">Следы остаются в ИТ-системах</p>
+                    <div class="bg-white/10 p-3 rounded-xl mt-auto text-[11px] md:text-sm font-bold text-solar">Process Mining</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 19 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-18">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Когнитивный анализ <span class="text-solar">процесса</span></h2>
+            <p class="text-center text-black/60 mb-8 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Процесс состоит не только из действий, но и из скрытых решений. Нужно выяснять не только что делает человек, но и по каким критериям он делает выбор</p>
+
+            <div class="flex flex-col md:flex-row items-center justify-center gap-6 w-full max-w-4xl mx-auto bg-grayBase/20 p-6 md:p-12 rounded-[24px] md:rounded-[40px] border border-grayBase">
+                <div class="bg-white border border-grayBase p-6 rounded-2xl text-center shadow-sm w-full md:w-1/3">
+                    <i class="ph-fill ph-hand-pointing text-4xl text-black mb-2"></i>
+                    <h3 class="font-black text-sm md:text-lg">Видимое действие</h3>
+                    <p class="text-[10px] text-black/50">"Отправка письма"</p>
+                </div>
+
+                <div class="text-grayBase text-3xl hidden md:block"><i class="ph-bold ph-plus"></i></div>
+                <div class="text-grayBase text-2xl md:hidden"><i class="ph-bold ph-plus"></i></div>
+
+                <div class="bg-black border-2 border-solar p-6 rounded-2xl text-center shadow-xl text-white w-full md:w-2/3">
+                    <i class="ph-fill ph-brain text-4xl text-solar mb-2"></i>
+                    <h3 class="font-black text-sm md:text-lg text-solar mb-3">Скрытые микро-решения</h3>
+                    <ul class="text-[10px] md:text-xs text-left space-y-2 text-white/80 w-fit mx-auto">
+                        <li><i class="ph-bold ph-check text-solar mr-1"></i> Оценить тон клиента</li>
+                        <li><i class="ph-bold ph-check text-solar mr-1"></i> Проверить историю заказов</li>
+                        <li><i class="ph-bold ph-check text-solar mr-1"></i> Выбрать шаблон ответа</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 20 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-19">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Исполнение и решение — <span class="text-solar">разные операции</span></h2>
+
+            <div class="flex flex-col md:flex-row gap-6 md:gap-12 items-stretch justify-center w-full max-w-5xl mx-auto">
+                <div class="bg-white border border-grayBase p-6 md:p-10 rounded-[24px] md:rounded-3xl shadow-sm flex-1 text-center">
+                    <div class="w-16 h-16 bg-grayBase rounded text-black flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-gear text-3xl"></i></div>
+                    <h3 class="font-black text-lg md:text-2xl mb-2">Action (Действие)</h3>
+                    <p class="text-[11px] md:text-sm text-black/60 mb-4">Простое выполнение алгоритма</p>
+                    <div class="bg-grayBase/30 px-3 py-2 rounded text-[10px] md:text-xs font-bold text-black/70">Легко автоматизировать (RPA/Скрипты)</div>
+                </div>
+
+                <div class="bg-black border-2 border-solar p-6 md:p-10 rounded-[24px] md:rounded-3xl shadow-xl flex-1 text-center text-white relative md:scale-105 z-10">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-solar text-black px-3 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold uppercase tracking-widest shadow-md">Зона AI</div>
+                    <div class="w-16 h-16 bg-white/10 rounded-full text-solar flex items-center justify-center mx-auto mb-4 transform rotate-45 border-2 border-solar"><i class="ph-fill ph-split-vertical text-3xl -rotate-45"></i></div>
+                    <h3 class="font-black text-lg md:text-2xl mb-2 text-solar">Decision (Решение)</h3>
+                    <p class="text-[11px] md:text-sm text-white/70 mb-4 font-medium">Оценка контекста и выбор маршрута</p>
+                    <div class="bg-white/10 border border-white/20 px-3 py-2 rounded text-[10px] md:text-xs font-bold text-white">Требует человека или ИИ-модель</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 21 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-20">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Process Mining: <span class="text-solar">процесс по следам</span></h2>
+            <p class="text-center text-black/60 mb-8 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Люди часто описывают процесс не так, как он работает реально. Process Mining позволяет восстановить фактический маршрут по журналам событий</p>
+
+            <div class="flex flex-col gap-6 w-full max-w-4xl mx-auto">
+                <div class="bg-white border border-grayBase p-5 md:p-8 rounded-[20px] shadow-sm flex items-center gap-4 md:gap-8">
+                    <div class="w-16 md:w-24 shrink-0 text-center">
+                        <span class="text-[9px] md:text-xs font-bold uppercase tracking-widest text-black/40 block mb-1">Ожидание</span>
+                        <i class="ph-fill ph-ruler text-2xl md:text-4xl text-black"></i>
+                    </div>
+                    <div class="flex-1 flex items-center justify-center gap-2 text-black/40 text-xl md:text-3xl">
+                        <i class="ph-fill ph-circle text-black"></i><i class="ph-bold ph-arrow-right"></i>
+                        <i class="ph-fill ph-circle text-black"></i><i class="ph-bold ph-arrow-right"></i>
+                        <i class="ph-fill ph-circle text-black"></i>
+                    </div>
+                </div>
+
+                <div class="bg-black border-2 border-solar p-5 md:p-8 rounded-[20px] shadow-xl flex items-center gap-4 md:gap-8 text-white relative">
+                    <div class="absolute top-2 right-4 text-[8px] md:text-[10px] text-solar font-bold uppercase tracking-widest">Анализ логов</div>
+                    <div class="w-16 md:w-24 shrink-0 text-center">
+                        <span class="text-[9px] md:text-xs font-bold uppercase tracking-widest text-solar/60 block mb-1">Реальность</span>
+                        <i class="ph-fill ph-chart-line-up text-2xl md:text-4xl text-solar"></i>
+                    </div>
+                    <div class="flex-1 relative h-14 md:h-24 flex items-center justify-center">
+                        <!-- Запутанный фактический маршрут (восстановлен по логам). meet => кружки круглые, ничего не растягивается -->
+                        <svg class="w-full h-full" viewBox="0 0 600 90" preserveAspectRatio="xMidYMid meet">
+                            <!-- ожидаемый прямой маршрут (фон) -->
+                            <line x1="40" y1="50" x2="560" y2="50" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
+                            <!-- фактический «петляющий» путь -->
+                            <path d="M40,50 C100,50 110,25 170,25 C230,25 240,63 300,63 C360,63 370,30 430,30 C490,30 500,50 560,50" fill="none" stroke="#8B5CF6" stroke-width="5" stroke-linecap="round"/>
+                            <!-- аномальный возврат, найденный в данных -->
+                            <path d="M170,25 C260,6 360,6 430,30" fill="none" stroke="#ff6b6b" stroke-width="3" stroke-dasharray="7 7" stroke-linecap="round"/>
+                            <!-- узлы -->
+                            <circle cx="40" cy="50" r="7" fill="#fff"/>
+                            <circle cx="170" cy="25" r="7" fill="#fff"/>
+                            <circle cx="300" cy="63" r="7" fill="#fff"/>
+                            <circle cx="430" cy="30" r="7" fill="#fff"/>
+                            <circle cx="560" cy="50" r="7" fill="#fff"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 22 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-21">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-12 text-center text-black">Чем <span class="text-solar">моделировать</span> процесс</h2>
+            <p class="text-center text-black/60 mb-4 md:mb-12 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Цель не в нотации, а в ясной модели, понятной бизнесу и разработчикам</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 w-full">
+                <div class="bg-white border border-grayBase p-3 md:p-6 rounded-[14px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <h3 class="font-black text-base md:text-2xl mb-1 md:mb-2 text-black">BPMN</h3>
+                    <div class="bg-grayBase text-black px-2 md:px-3 py-0.5 md:py-1 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-wider mb-2 md:mb-4">Стандарт</div>
+                    <p class="text-[10px] md:text-sm text-black/70 leading-tight">Для подробного описания событий, задач, шлюзов (решений) и потоков данных</p>
+                </div>
+                <div class="bg-white border border-grayBase p-3 md:p-6 rounded-[14px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <h3 class="font-black text-base md:text-2xl mb-1 md:mb-2 text-black">S-BPM</h3>
+                    <div class="bg-grayBase text-black px-2 md:px-3 py-0.5 md:py-1 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-wider mb-2 md:mb-4">Субъекты</div>
+                    <p class="text-[10px] md:text-sm text-black/70 leading-tight">Фокус на том, КТО участвует и КАК они общаются между собой</p>
+                </div>
+                <div class="bg-black border-2 border-solar p-3 md:p-6 rounded-[14px] md:rounded-[20px] shadow-xl flex flex-col items-center text-center text-white relative md:scale-105 z-10">
+                    <h3 class="font-black text-base md:text-2xl mb-1 md:mb-2 text-solar">Mermaid</h3>
+                    <div class="bg-solar/20 text-solar border border-solar/50 px-2 md:px-3 py-0.5 md:py-1 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-wider mb-2 md:mb-4">Код</div>
+                    <p class="text-[10px] md:text-sm text-white/80 font-medium leading-tight">Быстрая текстовая визуализация, удобна для работы совместно с LLM-агентами</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 23 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-22">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">AS-IS: <span class="text-solar">честная модель</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">AS-IS — это модель того, как процесс реально работает сейчас. Не в идеале, не по регламенту, а в жизни</p>
+
+            <div class="bg-white border border-grayBase p-6 md:p-10 rounded-[24px] md:rounded-[40px] shadow-sm w-full relative overflow-hidden flex flex-col items-center">
+                <!-- Абстрактная схема процесса -->
+                <div class="flex items-center gap-2 md:gap-6 text-black relative z-10">
+                    <div class="bg-grayBase w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center font-bold">1</div>
+                    <i class="ph-bold ph-arrow-right text-grayBase text-xl md:text-3xl"></i>
+                    <div class="bg-grayBase w-12 h-12 md:w-16 md:h-16 rounded flex items-center justify-center font-bold">2</div>
+                    <i class="ph-bold ph-arrow-right text-grayBase text-xl md:text-3xl"></i>
+                    <div class="bg-red-100 border-2 border-red-400 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center text-red-500 font-bold relative">
+                        3
+                        <span class="absolute -top-6 -right-6 md:-top-8 md:-right-10 bg-red-500 text-white text-[8px] md:text-[10px] px-2 py-1 rounded">Задержка</span>
+                    </div>
+                    <i class="ph-bold ph-arrow-right text-grayBase text-xl md:text-3xl"></i>
+                    <div class="bg-black text-solar w-12 h-12 md:w-16 md:h-16 rounded flex items-center justify-center font-bold relative">
+                        4
+                        <span class="absolute left-1/2 -translate-x-1/2 -bottom-6 md:-bottom-9 bg-black text-solar text-[8px] md:text-[10px] px-2 py-1 rounded whitespace-nowrap">Возврат</span>
+                    </div>
+                </div>
+
+                <svg class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none z-0" viewBox="0 0 500 200">
+                    <path d="M 350 120 C 350 160, 250 160, 250 120" fill="none" stroke="#000" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#000" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 24 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-23">
+        <div class="content-z max-w-5xl w-full mx-auto">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Что должно быть <span class="text-solar">в хорошем AS-IS</span></h2>
+
+            <div class="bg-black border-2 border-solar p-6 md:p-12 rounded-[24px] md:rounded-[40px] shadow-2xl text-white relative">
+                <div class="absolute -top-4 right-8 bg-solar text-black w-12 h-12 rounded-full flex items-center justify-center shadow-lg"><i class="ph-fill ph-list-checks text-2xl"></i></div>
+
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 md:gap-y-6 text-[11px] md:text-base font-medium">
+                    <li class="flex items-center gap-3"><i class="ph-bold ph-check text-solar text-lg md:text-xl shrink-0"></i> Фактические операции</li>
+                    <li class="flex items-center gap-3"><i class="ph-bold ph-check text-solar text-lg md:text-xl shrink-0"></i> Роли участников</li>
+                    <li class="flex items-center gap-3"><i class="ph-bold ph-check text-solar text-lg md:text-xl shrink-0"></i> Входы и выходы</li>
+                    <li class="flex items-center gap-3"><i class="ph-bold ph-check text-solar text-lg md:text-xl shrink-0"></i> Артефакты</li>
+                    <li class="flex items-center gap-3"><i class="ph-bold ph-check text-solar text-lg md:text-xl shrink-0"></i> Данные и системы</li>
+                    <li class="flex items-center gap-3"><i class="ph-bold ph-check text-solar text-lg md:text-xl shrink-0"></i> Точки принятия решений</li>
+                    <li class="flex items-center gap-3"><i class="ph-bold ph-check text-solar text-lg md:text-xl shrink-0"></i> Текущие метрики</li>
+                    <li class="flex items-center gap-3"><i class="ph-bold ph-check text-solar text-lg md:text-xl shrink-0"></i> Нестандартные сценарии</li>
+                </ul>
+                <div class="mt-8 border-t border-white/20 pt-4 text-[10px] md:text-sm text-white/60 text-center">
+                    Это рабочая модель бизнеса, пригодная для анализа
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 25 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-24">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Почему нельзя рисовать <span class="text-solar">только happy path</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Исключения, возвраты и эскалации часто создают основные задержки, ошибки и скрытые затраты</p>
+
+            <div class="bg-white border border-grayBase p-6 md:p-12 rounded-[24px] md:rounded-[40px] shadow-sm flex items-center justify-center relative w-full h-48 md:h-64">
+                <!-- SVG path representing main vs exceptions -->
+                <svg class="w-full max-w-2xl h-full" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet">
+                    <!-- Happy Path -->
+                    <path d="M 50 100 L 550 100" fill="none" stroke="#000" stroke-width="8" stroke-linecap="round"/>
+                    <text x="300" y="85" text-anchor="middle" font-family="Montserrat" font-weight="800" font-size="14" fill="#000">Happy Path (Идеальный путь)</text>
+
+                    <!-- Exception 1 -->
+                    <path d="M 150 100 C 150 160, 250 160, 250 100" fill="none" stroke="#ff6b6b" stroke-width="4" stroke-dasharray="6 6"/>
+                    <text x="200" y="175" text-anchor="middle" font-family="Montserrat" font-weight="600" font-size="12" fill="#ff6b6b">Возврат</text>
+
+                    <!-- Exception 2 -->
+                    <path d="M 350 100 C 350 30, 450 30, 450 100" fill="none" stroke="#8B5CF6" stroke-width="4" stroke-dasharray="6 6"/>
+                    <text x="400" y="20" text-anchor="middle" font-family="Montserrat" font-weight="600" font-size="12" fill="#000">Эскалация руководителю</text>
+
+                    <!-- Nodes -->
+                    <circle cx="50" cy="100" r="12" fill="#000"/>
+                    <circle cx="150" cy="100" r="8" fill="#fff" stroke="#000" stroke-width="3"/>
+                    <circle cx="250" cy="100" r="8" fill="#fff" stroke="#000" stroke-width="3"/>
+                    <circle cx="350" cy="100" r="8" fill="#fff" stroke="#000" stroke-width="3"/>
+                    <circle cx="450" cy="100" r="8" fill="#fff" stroke="#000" stroke-width="3"/>
+                    <circle cx="550" cy="100" r="12" fill="#8B5CF6"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 26 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-25">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-12 text-center text-black">От AS-IS к <span class="text-solar">точкам автоматизации</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-10 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">После описания честного процесса определяем: что автоматизировать классически, что отдать AI, а что оставить человеку</p>
+
+            <div class="grid grid-cols-3 md:flex md:flex-row gap-2 md:gap-6 items-stretch justify-center w-full">
+                <div class="bg-white border-2 border-grayBase p-2 md:p-8 rounded-[14px] md:rounded-3xl shadow-sm text-center md:flex-1">
+                    <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mx-auto mb-1 md:mb-3"><i class="ph-fill ph-gear text-base md:text-2xl text-black"></i></div>
+                    <h3 class="font-bold text-[11px] md:text-xl mb-1 md:mb-2 leading-tight">Авто<br class="md:hidden">матизация</h3>
+                    <p class="text-[8px] md:text-xs text-black/60 leading-tight">Детерминированные правила</p>
+                </div>
+                <div class="bg-black border-2 border-solar p-2 md:p-8 rounded-[14px] md:rounded-3xl shadow-xl text-center md:flex-1 text-white relative z-10 md:scale-105">
+                    <div class="w-8 h-8 md:w-12 md:h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-1 md:mb-3 text-solar"><i class="ph-fill ph-brain text-base md:text-2xl"></i></div>
+                    <h3 class="font-bold text-[11px] md:text-xl mb-1 md:mb-2 text-solar leading-tight">Усиление AI</h3>
+                    <p class="text-[8px] md:text-xs text-white/70 leading-tight">Вероятностные операции</p>
+                </div>
+                <div class="bg-white border-2 border-grayBase p-2 md:p-8 rounded-[14px] md:rounded-3xl shadow-sm text-center md:flex-1">
+                    <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mx-auto mb-1 md:mb-3"><i class="ph-fill ph-user text-base md:text-2xl text-black"></i></div>
+                    <h3 class="font-bold text-[11px] md:text-xl mb-1 md:mb-2 leading-tight">Человек</h3>
+                    <p class="text-[8px] md:text-xs text-black/60 leading-tight">Эмпатия, ответственность</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 27 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-26">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-10 text-center text-black">Детерминированные <span class="text-solar">операции</span></h2>
+            <p class="text-center text-black/60 mb-8 md:mb-12 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Шаги, где результат можно однозначно определить по чётким правилам. Здесь лучше работает классическая автоматизация, а не сложный AI</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full">
+                <div class="bg-white border border-grayBase p-5 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-check-square-offset text-3xl md:text-5xl text-black mb-3 md:mb-4"></i>
+                    <h4 class="font-black text-sm md:text-xl mb-2">Проверка полей</h4>
+                    <p class="text-[10px] md:text-xs text-black/60">Все ли данные заполнены в форме</p>
+                </div>
+                <div class="bg-white border border-grayBase p-5 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-arrows-left-right text-3xl md:text-5xl text-black mb-3 md:mb-4"></i>
+                    <h4 class="font-black text-sm md:text-xl mb-2">Смена статуса</h4>
+                    <p class="text-[10px] md:text-xs text-black/60">Перевод лида на следующий этап при оплате</p>
+                </div>
+                <div class="bg-white border border-grayBase p-5 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-paper-plane-tilt text-3xl md:text-5xl text-black mb-3 md:mb-4"></i>
+                    <h4 class="font-black text-sm md:text-xl mb-2">Отправка уведомлений</h4>
+                    <p class="text-[10px] md:text-xs text-black/60">Авто-письмо по триггеру в CRM</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 28 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-27">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-10 text-center text-black">Вероятностные <span class="text-solar">операции</span></h2>
+            <p class="text-center text-black/60 mb-8 md:mb-12 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Требуют интерпретации контекста, оценки паттернов и экспертной логики. Именно здесь появляется пространство для AI</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full">
+                <div class="bg-black text-white border border-solar/30 p-5 md:p-8 rounded-[20px] md:rounded-3xl shadow-xl flex flex-col items-center text-center">
+                    <i class="ph-fill ph-folders text-3xl md:text-5xl text-solar mb-3 md:mb-4"></i>
+                    <h4 class="font-black text-sm md:text-xl mb-2 text-solar">Классификация</h4>
+                    <p class="text-[10px] md:text-xs text-white/70">Определить суть письма: жалоба или запрос счёта</p>
+                </div>
+                <div class="bg-black text-white border border-solar/30 p-5 md:p-8 rounded-[20px] md:rounded-3xl shadow-xl flex flex-col items-center text-center md:scale-105 z-10">
+                    <i class="ph-fill ph-warning-octagon text-3xl md:text-5xl text-solar mb-3 md:mb-4"></i>
+                    <h4 class="font-black text-sm md:text-xl mb-2 text-solar">Оценка риска</h4>
+                    <p class="text-[10px] md:text-xs text-white/70">Поиск аномалий в поведении или тексте договора</p>
+                </div>
+                <div class="bg-black text-white border border-solar/30 p-5 md:p-8 rounded-[20px] md:rounded-3xl shadow-xl flex flex-col items-center text-center">
+                    <i class="ph-fill ph-magnifying-glass-plus text-3xl md:text-5xl text-solar mb-3 md:mb-4"></i>
+                    <h4 class="font-black text-sm md:text-xl mb-2 text-solar">Анализ обращения</h4>
+                    <p class="text-[10px] md:text-xs text-white/70">Извлечение дат, имён и сумм из свободной речи</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 29 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-28">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Карта <span class="text-solar">точек автоматизации</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Результат анализа — реестр. Для каждой точки нужно понимать суть, эффект, риски и метрики</p>
+
+            <div class="bg-white border border-grayBase rounded-[20px] md:rounded-[32px] p-4 md:p-8 shadow-sm w-full overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                        <tr class="border-b-2 border-black">
+                            <th class="py-3 px-4 font-black text-xs md:text-sm uppercase tracking-wider text-black">Точка (Узел)</th>
+                            <th class="py-3 px-4 font-black text-xs md:text-sm uppercase tracking-wider text-black">Тип</th>
+                            <th class="py-3 px-4 font-black text-xs md:text-sm uppercase tracking-wider text-black">Ожидаемый эффект</th>
+                            <th class="py-3 px-4 font-black text-xs md:text-sm uppercase tracking-wider text-black">Сложность</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-[10px] md:text-sm font-medium text-black/80">
+                        <tr class="border-b border-grayBase hover:bg-grayBase/20 transition-colors">
+                            <td class="py-4 px-4 font-bold">Сортировка входящих заявок</td>
+                            <td class="py-4 px-4"><span class="bg-solar/30 text-black px-2 py-1 rounded text-[9px] uppercase tracking-widest">AI / Вероятн.</span></td>
+                            <td class="py-4 px-4">-2 часа работы менеджера в день</td>
+                            <td class="py-4 px-4">Средняя (нужен Prompt Engineering)</td>
+                        </tr>
+                        <tr class="border-b border-grayBase hover:bg-grayBase/20 transition-colors">
+                            <td class="py-4 px-4 font-bold">Проверка наличия ИНН</td>
+                            <td class="py-4 px-4"><span class="bg-grayBase text-black px-2 py-1 rounded text-[9px] uppercase tracking-widest">IT / Детерм.</span></td>
+                            <td class="py-4 px-4">Исключение пустых заявок в CRM</td>
+                            <td class="py-4 px-4">Низкая (скрипт)</td>
+                        </tr>
+                        <tr class="hover:bg-grayBase/20 transition-colors">
+                            <td class="py-4 px-4 font-bold">Составление драфта ответа</td>
+                            <td class="py-4 px-4"><span class="bg-solar text-black font-bold px-2 py-1 rounded text-[9px] uppercase tracking-widest">AI Agent</span></td>
+                            <td class="py-4 px-4">Ускорение ответа клиенту в 3 раза</td>
+                            <td class="py-4 px-4">Высокая (доступ к базе знаний)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 30 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-29">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Критерии выбора <span class="text-solar">точек автоматизации</span></h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 w-full">
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-star text-2xl md:text-4xl text-solar mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm text-black mb-1">Ценность</h4>
+                    <p class="text-[8px] md:text-[10px] text-black/50">Бизнес-польза</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-arrows-clockwise text-2xl md:text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm text-black mb-1">Частота</h4>
+                    <p class="text-[8px] md:text-[10px] text-black/50">Как часто происходит</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-circles-three-plus text-2xl md:text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm text-black mb-1">Влияние</h4>
+                    <p class="text-[8px] md:text-[10px] text-black/50">На весь процесс</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-warning-octagon text-2xl md:text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm text-black mb-1">Риск ошибки</h4>
+                    <p class="text-[8px] md:text-[10px] text-black/50">Цена неверного решения</p>
+                </div>
+                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[20px] shadow-sm flex flex-col items-center text-center col-span-2 md:col-span-1">
+                    <i class="ph-fill ph-wrench text-2xl md:text-4xl text-black mb-2"></i>
+                    <h4 class="font-bold text-[10px] md:text-sm text-black mb-1">Сложность</h4>
+                    <p class="text-[8px] md:text-[10px] text-black/50">Трудозатраты ИТ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 31 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-30">
+        <div class="content-z max-w-5xl w-full mx-auto">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Матрица <span class="text-solar">«Ценность против сложности»</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[10px] md:text-lg font-medium">Для приоритизации: что брать в работу в первую очередь</p>
+
+            <div class="relative w-full max-w-2xl mx-auto aspect-square md:aspect-video bg-white border-2 border-grayBase rounded-[20px] p-2 md:p-8 flex items-center justify-center">
+                <!-- О́си -->
+                <div class="absolute left-4 md:left-8 top-8 bottom-8 w-1 bg-grayBase rounded-full"></div>
+                <div class="absolute bottom-4 md:bottom-8 left-8 right-8 h-1 bg-grayBase rounded-full"></div>
+                <span class="absolute left-1 md:left-3 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] md:text-xs font-bold text-black/50 whitespace-nowrap">ЦЕННОСТЬ</span>
+                <span class="absolute bottom-1 md:bottom-3 left-1/2 -translate-x-1/2 text-[10px] md:text-xs font-bold text-black/50 whitespace-nowrap">СЛОЖНОСТЬ</span>
+
+                <!-- 2x2 Grid -->
+                <div class="w-full h-full pl-6 md:pl-12 pb-6 md:pb-12 grid grid-cols-2 grid-rows-2 gap-2 md:gap-4 relative z-10">
+                    <div class="bg-black border-2 border-solar rounded-xl md:rounded-2xl flex items-center justify-center text-center p-2 shadow-lg">
+                        <div>
+                            <h4 class="font-black text-[11px] md:text-lg text-solar">Быстрые победы</h4>
+                            <p class="text-[8px] md:text-xs text-white/70">Высокая ценность, Низкая сложность</p>
+                        </div>
+                    </div>
+                    <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl flex items-center justify-center text-center p-2">
+                        <div>
+                            <h4 class="font-bold text-[11px] md:text-lg text-black">Стратегические</h4>
+                            <p class="text-[8px] md:text-xs text-black/60">Высокая ценность, Высокая сложность</p>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl flex items-center justify-center text-center p-2">
+                        <div>
+                            <h4 class="font-bold text-[11px] md:text-lg text-black/50">Малозначимые</h4>
+                            <p class="text-[8px] md:text-xs text-black/40">Низкая ценность, Низкая сложность</p>
+                        </div>
+                    </div>
+                    <div class="bg-grayBase/10 border border-grayBase/50 rounded-xl md:rounded-2xl flex items-center justify-center text-center p-2 opacity-50">
+                        <div>
+                            <h4 class="font-bold text-[11px] md:text-lg text-black/40">Не брать в работу</h4>
+                            <p class="text-[8px] md:text-xs text-black/40">Низкая ценность, Высокая сложность</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 32 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-31">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Готовность процесса <span class="text-solar">к автоматизации</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Даже если точки найдены, процесс может быть не готов к внедрению</p>
+
+            <div class="bg-black text-white p-6 md:p-10 rounded-[24px] md:rounded-[40px] shadow-2xl border border-solar/20 w-full max-w-3xl mx-auto">
+                <ul class="space-y-4 md:space-y-6 text-[11px] md:text-base font-medium">
+                    <li class="flex items-center gap-4"><i class="ph-fill ph-check-circle text-solar text-xl md:text-2xl shrink-0"></i> <span>Есть Владелец процесса, готовый к изменениям</span></li>
+                    <li class="flex items-center gap-4"><i class="ph-fill ph-check-circle text-solar text-xl md:text-2xl shrink-0"></i> <span>Понятны границы (где начало и конец)</span></li>
+                    <li class="flex items-center gap-4"><i class="ph-fill ph-check-circle text-solar text-xl md:text-2xl shrink-0"></i> <span>Процесс стабилен (не меняется каждый день)</span></li>
+                    <li class="flex items-center gap-4"><i class="ph-fill ph-check-circle text-solar text-xl md:text-2xl shrink-0"></i> <span>Данные доступны в цифровом виде</span></li>
+                    <li class="flex items-center gap-4"><i class="ph-fill ph-check-circle text-solar text-xl md:text-2xl shrink-0"></i> <span>Снимаются базовые метрики (есть с чем сравнить)</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 33 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-32">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">TO-BE: <span class="text-solar">целевая модель</span></h2>
+            <p class="text-center text-black/60 mb-8 md:mb-16 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Модель того, как процесс должен работать после изменений. Здесь задаётся новая логика: что убрать, автоматизировать и где оставить человека</p>
+
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 w-full">
+                <div class="bg-grayBase/30 border border-grayBase p-6 md:p-10 rounded-[24px] md:rounded-3xl shadow-sm text-center flex-1 w-full">
+                    <h3 class="font-black text-xl md:text-3xl text-black/50 mb-2">AS-IS</h3>
+                    <p class="text-[10px] md:text-sm text-black/50 uppercase tracking-widest font-bold">Как есть сейчас</p>
+                </div>
+
+                <div class="bg-solar text-black px-6 py-3 rounded-full font-black text-sm md:text-xl shadow-[0_0_20px_#8B5CF6] z-10 md:scale-110 uppercase tracking-widest flex items-center gap-2">
+                    <i class="ph-bold ph-magic-wand"></i> Редизайн
+                </div>
+                <div class="text-2xl md:text-4xl text-grayBase md:hidden my-2"><i class="ph-bold ph-arrow-down"></i></div>
+
+                <div class="bg-black border-2 border-solar p-6 md:p-10 rounded-[24px] md:rounded-3xl shadow-xl text-center flex-1 text-white w-full">
+                    <h3 class="font-black text-xl md:text-3xl text-solar mb-2">TO-BE</h3>
+                    <p class="text-[10px] md:text-sm text-white/50 uppercase tracking-widest font-bold">Целевое состояние</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 34 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-33">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Как проектируется <span class="text-solar">TO-BE</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Нельзя просто встроить AI в старую схему. Нужна пересборка процесса</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 w-full">
+                <div class="bg-white border border-grayBase p-5 md:p-8 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-trash text-3xl md:text-4xl text-red-400 mb-3"></i>
+                    <h4 class="font-bold text-[11px] md:text-base text-black mb-1">Delete</h4>
+                    <p class="text-[9px] md:text-xs text-black/60">Устранить лишние шаги и согласования</p>
+                </div>
+                <div class="bg-white border border-grayBase p-5 md:p-8 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-arrows-merge text-3xl md:text-4xl text-black mb-3"></i>
+                    <h4 class="font-bold text-[11px] md:text-base text-black mb-1">Merge</h4>
+                    <p class="text-[9px] md:text-xs text-black/60">Объединить этапы, сократив передачи</p>
+                </div>
+                <div class="bg-white border border-grayBase p-5 md:p-8 rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-scissors text-3xl md:text-4xl text-black mb-3"></i>
+                    <h4 class="font-bold text-[11px] md:text-base text-black mb-1">Simplify</h4>
+                    <p class="text-[9px] md:text-xs text-black/60">Упростить поток данных и формы</p>
+                </div>
+                <div class="bg-black border border-solar p-5 md:p-8 rounded-[20px] shadow-xl flex flex-col items-center text-center text-white">
+                    <i class="ph-fill ph-robot text-3xl md:text-4xl text-solar mb-3"></i>
+                    <h4 class="font-bold text-[11px] md:text-base text-solar mb-1">Automate</h4>
+                    <p class="text-[9px] md:text-xs text-white/70">Добавить агентов и скрипты</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 35 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-34">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Гибридный интеллект: <span class="text-solar">новая модель</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Будущий процесс обычно не полностью человеческий и не полностью автоматический</p>
+
+            <div class="bg-grayBase/20 border border-grayBase p-6 md:p-12 rounded-[24px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 w-full max-w-4xl mx-auto">
+                <div class="flex flex-col items-center text-center flex-1">
+                    <div class="w-20 h-20 md:w-28 md:h-28 bg-black text-solar rounded-full flex items-center justify-center shadow-lg mb-4 border-4 border-solar/30"><i class="ph-fill ph-robot text-4xl md:text-6xl"></i></div>
+                    <h3 class="font-black text-lg md:text-2xl text-black mb-2">ИИ-Агент</h3>
+                    <p class="text-[10px] md:text-sm text-black/60">Берёт рутину, сбор данных и первичную когнитивную обработку</p>
+                </div>
+
+                <div class="text-4xl md:text-6xl text-grayBase font-black"><i class="ph-bold ph-plus"></i></div>
+
+                <div class="flex flex-col items-center text-center flex-1">
+                    <div class="w-20 h-20 md:w-28 md:h-28 bg-white border-4 border-grayBase rounded-full flex items-center justify-center shadow-lg mb-4"><i class="ph-fill ph-user text-4xl md:text-6xl text-black"></i></div>
+                    <h3 class="font-black text-lg md:text-2xl text-black mb-2">Человек</h3>
+                    <p class="text-[10px] md:text-sm text-black/60">Удерживает ответственность, эмпатию и решает сложные нестандартные кейсы</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 36 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-35">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-12 text-center text-black">Новая роль <span class="text-solar">человека в процессе</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-16 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">С появлением автоматизации человек перестаёт быть главным исполнителем каждой операции</p>
+
+            <div class="flex flex-col items-center justify-center w-full">
+                <div class="bg-grayBase/30 border border-grayBase px-4 md:px-6 py-2 md:py-4 rounded-xl md:rounded-2xl text-center mb-2 md:mb-10 w-full max-w-sm">
+                    <span class="text-[9px] md:text-[10px] uppercase tracking-widest font-bold text-black/40 block">Раньше</span>
+                    <h3 class="font-bold text-sm md:text-lg text-black">Исполнитель</h3>
+                </div>
+
+                <i class="ph-bold ph-arrow-down text-xl md:text-3xl text-grayBase mb-2 md:mb-10"></i>
+
+                <div class="grid grid-cols-3 gap-2 md:gap-6 w-full max-w-4xl">
+                    <div class="bg-black text-white p-2 md:p-8 rounded-[14px] md:rounded-3xl shadow-xl flex flex-col items-center text-center border-t-4 border-solar">
+                        <i class="ph-fill ph-eyeglasses text-xl md:text-4xl text-solar mb-1 md:mb-3"></i>
+                        <h4 class="font-bold text-[11px] md:text-xl text-solar mb-1 md:mb-2">Супервайзер</h4>
+                        <p class="text-[8px] md:text-xs text-white/70 leading-tight">Контролирует качество работы агентов</p>
+                    </div>
+                    <div class="bg-black text-white p-2 md:p-8 rounded-[14px] md:rounded-3xl shadow-xl flex flex-col items-center text-center border-t-4 border-solar">
+                        <i class="ph-fill ph-certificate text-xl md:text-4xl text-solar mb-1 md:mb-3"></i>
+                        <h4 class="font-bold text-[11px] md:text-xl text-solar mb-1 md:mb-2">Эксперт</h4>
+                        <p class="text-[8px] md:text-xs text-white/70 leading-tight">Берёт на себя самые сложные задачи</p>
+                    </div>
+                    <div class="bg-black text-white p-2 md:p-8 rounded-[14px] md:rounded-3xl shadow-xl flex flex-col items-center text-center border-t-4 border-solar">
+                        <i class="ph-fill ph-sliders text-xl md:text-4xl text-solar mb-1 md:mb-3"></i>
+                        <h4 class="font-bold text-[11px] md:text-xl text-solar mb-1 md:mb-2">Оператор</h4>
+                        <p class="text-[8px] md:text-xs text-white/70 leading-tight">Менеджер гибридной системы</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 37 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-36">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Когнитивные функции <span class="text-solar">агента</span></h2>
+            <p class="text-center text-black/60 mb-8 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">ИИ-агента удобно проектировать через когнитивные функции. У каждой функции есть вход, логика обработки, выход и метрика качества</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-5 w-full">
+                <div class="bg-white border border-grayBase p-3 md:p-7 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
+                    <div class="w-10 h-10 md:w-14 md:h-14 bg-grayBase rounded-full text-black flex items-center justify-center mb-2 md:mb-4"><i class="ph-fill ph-sign-in text-xl md:text-3xl"></i></div>
+                    <h4 class="font-black text-xs md:text-lg mb-0.5 md:mb-2">Вход</h4>
+                    <p class="text-[9px] md:text-xs text-black/60 leading-tight">Какие данные получает агент: текст, лог, событие</p>
+                </div>
+                <div class="bg-white border border-grayBase p-3 md:p-7 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
+                    <div class="w-10 h-10 md:w-14 md:h-14 bg-grayBase rounded-full text-black flex items-center justify-center mb-2 md:mb-4"><i class="ph-fill ph-brain text-xl md:text-3xl"></i></div>
+                    <h4 class="font-black text-xs md:text-lg mb-0.5 md:mb-2">Логика</h4>
+                    <p class="text-[9px] md:text-xs text-black/60 leading-tight">Правила, промпты и критерии принятия решения</p>
+                </div>
+                <div class="bg-white border border-grayBase p-3 md:p-7 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
+                    <div class="w-10 h-10 md:w-14 md:h-14 bg-grayBase rounded-full text-black flex items-center justify-center mb-2 md:mb-4"><i class="ph-fill ph-sign-out text-xl md:text-3xl"></i></div>
+                    <h4 class="font-black text-xs md:text-lg mb-0.5 md:mb-2">Выход</h4>
+                    <p class="text-[9px] md:text-xs text-black/60 leading-tight">Результат: классификация, действие, черновик</p>
+                </div>
+                <div class="bg-black border border-solar p-3 md:p-7 rounded-[16px] md:rounded-3xl shadow-xl flex flex-col items-center text-center text-white">
+                    <div class="w-10 h-10 md:w-14 md:h-14 bg-white/10 rounded-full text-solar flex items-center justify-center mb-2 md:mb-4"><i class="ph-fill ph-chart-line-up text-xl md:text-3xl"></i></div>
+                    <h4 class="font-black text-xs md:text-lg mb-0.5 md:mb-2 text-solar">Метрика</h4>
+                    <p class="text-[9px] md:text-xs text-white/70 leading-tight">Как мы поймём, что функция работает хорошо</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 38 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-37">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-12 text-center text-black">Граф навыков <span class="text-solar">ИИ-агента</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Отдельные функции собираются в граф: каждый навык атомарен, измерим и связан с другими через последовательность, параллельность или обратную связь</p>
+
+            <div class="bg-black border-2 border-solar p-4 md:p-10 rounded-[20px] md:rounded-[40px] shadow-2xl text-white w-full relative">
+                <span class="hidden md:block absolute top-4 left-6 text-xs font-bold text-solar uppercase tracking-widest">Граф навыков</span>
+
+                <!-- Компактная горизонтальная цепочка (mobile + desktop) -->
+                <div class="flex items-center justify-center gap-1 md:gap-4 mt-0 md:mt-10 mb-4 md:mb-8">
+                    <div class="bg-white/10 border border-white/20 p-2 md:p-4 rounded-lg md:rounded-xl text-center flex-1">
+                        <i class="ph-fill ph-envelope-simple text-lg md:text-3xl mb-0.5 md:mb-2 text-white/70 block"></i>
+                        <p class="text-[8px] md:text-xs font-bold leading-tight">Чтение<br class="md:hidden"> обращения</p>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-solar text-sm md:text-xl shrink-0"></i>
+                    <div class="bg-solar/20 border border-solar p-2 md:p-4 rounded-lg md:rounded-xl text-center flex-1">
+                        <i class="ph-fill ph-magnifying-glass text-lg md:text-3xl mb-0.5 md:mb-2 text-solar block"></i>
+                        <p class="text-[8px] md:text-xs font-bold text-solar leading-tight">Классиф.</p>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-solar text-sm md:text-xl shrink-0"></i>
+                    <div class="bg-white/10 border border-white/20 p-2 md:p-4 rounded-lg md:rounded-xl text-center flex-1">
+                        <i class="ph-fill ph-database text-lg md:text-3xl mb-0.5 md:mb-2 text-white/70 block"></i>
+                        <p class="text-[8px] md:text-xs font-bold leading-tight">Поиск<br class="md:hidden"> в CRM</p>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-solar text-sm md:text-xl shrink-0"></i>
+                    <div class="bg-white/10 border border-white/20 p-2 md:p-4 rounded-lg md:rounded-xl text-center flex-1">
+                        <i class="ph-fill ph-paper-plane-tilt text-lg md:text-3xl mb-0.5 md:mb-2 text-white/70 block"></i>
+                        <p class="text-[8px] md:text-xs font-bold leading-tight">Черновик</p>
+                    </div>
+                </div>
+
+                <!-- Типы связей -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 pt-3 md:pt-6 border-t border-white/10">
+                    <div class="flex items-center gap-2 md:gap-3 text-left">
+                        <i class="ph-bold ph-arrows-horizontal text-solar text-base md:text-2xl shrink-0"></i>
+                        <div class="min-w-0">
+                            <p class="font-bold text-[10px] md:text-sm text-solar">Последовательность</p>
+                            <p class="text-[8px] md:text-xs text-white/60">Выход одного → вход другого</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 md:gap-3 text-left">
+                        <i class="ph-bold ph-split-horizontal text-solar text-base md:text-2xl shrink-0"></i>
+                        <div class="min-w-0">
+                            <p class="font-bold text-[10px] md:text-sm text-solar">Параллельность</p>
+                            <p class="text-[8px] md:text-xs text-white/60">Несколько навыков одновременно</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 md:gap-3 text-left">
+                        <i class="ph-bold ph-arrow-u-up-left text-solar text-base md:text-2xl shrink-0"></i>
+                        <div class="min-w-0">
+                            <p class="font-bold text-[10px] md:text-sm text-solar">Обратная связь</p>
+                            <p class="text-[8px] md:text-xs text-white/60">Корректировка улучшает систему</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СЛАЙД 39 -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-38">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-10 text-center text-black">Риски <span class="text-solar">внедрения ИИ</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Большинство проектов проваливается не из-за слабой модели, а из-за организационной незрелости</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4 w-full">
+                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-database text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Плохие данные</h4>
+                    <p class="text-[8px] md:text-xs text-black/60 leading-tight">Грязные, неполные, недоступные</p>
+                </div>
+                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-waveform text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Нестабильный процесс</h4>
+                    <p class="text-[8px] md:text-xs text-black/60 leading-tight">Автоматизация хаоса усиливает хаос</p>
+                </div>
+                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-plug text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Legacy-системы</h4>
+                    <p class="text-[8px] md:text-xs text-black/60 leading-tight">Нет API и возможностей интеграции</p>
+                </div>
+                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-shield-warning text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Слабое управление</h4>
+                    <p class="text-[8px] md:text-xs text-black/60 leading-tight">Нет governance, ролей и безопасности</p>
+                </div>
+                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center col-span-2 md:col-span-1">
+                    <i class="ph-fill ph-users-three text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Неготовность людей</h4>
+                    <p class="text-[8px] md:text-xs text-black/60 leading-tight">Сопротивление и недоверие к агентам</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- СЛАЙД 40: Заключение -->
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8 bg-black text-white" id="slide-39">
+        <div class="content-z max-w-6xl mx-auto w-full h-full flex flex-col justify-center relative overflow-hidden">
+            <div class="relative z-10 w-full text-center">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-[50px] font-black mb-8 md:mb-12 tracking-tight leading-tight">
+                    От процесса к <br><span class="text-solar font-black">AI-First компании</span>
+                </h2>
+
+                <div class="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 mb-10 w-full max-w-5xl mx-auto">
+                    <div class="bg-white/10 p-3 md:p-4 rounded-xl text-center flex-1 w-full text-[10px] md:text-sm font-bold border border-white/20">1. Понять AS-IS</div>
+                    <i class="ph-bold ph-arrow-right text-solar hidden md:block"></i><i class="ph-bold ph-arrow-down text-solar md:hidden"></i>
+                    <div class="bg-white/10 p-3 md:p-4 rounded-xl text-center flex-1 w-full text-[10px] md:text-sm font-bold border border-white/20">2. Найти точки AI</div>
+                    <i class="ph-bold ph-arrow-right text-solar hidden md:block"></i><i class="ph-bold ph-arrow-down text-solar md:hidden"></i>
+                    <div class="bg-white/10 p-3 md:p-4 rounded-xl text-center flex-1 w-full text-[10px] md:text-sm font-bold border border-white/20">3. TO-BE модель</div>
+                    <i class="ph-bold ph-arrow-right text-solar hidden md:block"></i><i class="ph-bold ph-arrow-down text-solar md:hidden"></i>
+                    <div class="bg-solar text-black p-3 md:p-4 rounded-xl text-center flex-1 w-full text-[10px] md:text-sm font-black uppercase tracking-widest shadow-[0_0_15px_#8B5CF6]">4. Гибридная система</div>
+                </div>
+
+                <button id="open-quiz-btn" type="button" class="mt-8 md:mt-12 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar text-black font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-5 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:scale-105 transition-transform uppercase tracking-widest">
+                    <i class="ph-fill ph-graduation-cap text-lg md:text-2xl"></i>
+                    Пройти тест
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно теста -->
+    <div id="quiz-modal" class="fixed inset-0 z-[10001] bg-black text-white hidden flex-col overflow-y-auto">
+        <div class="w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-10 py-8 md:py-14 flex flex-col min-h-full">
+            <!-- Шапка -->
+            <div class="flex items-center justify-between mb-6 md:mb-10 shrink-0">
+                <div class="flex items-center gap-2 md:gap-3">
+                    <div class="w-9 h-9 md:w-12 md:h-12 bg-solar rounded-full flex items-center justify-center shadow-md"><i class="ph-fill ph-graduation-cap text-lg md:text-2xl text-black"></i></div>
+                    <div>
+                        <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/50">Финальный тест</p>
+                        <p id="quiz-progress" class="text-sm md:text-lg font-black text-white">Вопрос 1 из 10</p>
+                    </div>
+                </div>
+                <button id="quiz-close-btn" type="button" class="w-9 h-9 md:w-11 md:h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors text-white"><i class="ph-bold ph-x text-lg md:text-2xl"></i></button>
+            </div>
+
+            <!-- Прогресс-бар -->
+            <div class="w-full h-1 md:h-1.5 bg-white/10 rounded-full overflow-hidden mb-6 md:mb-10">
+                <div id="quiz-progress-bar" class="h-full bg-solar rounded-full transition-all duration-300" style="width: 10%;"></div>
+            </div>
+
+            <!-- Блок вопроса -->
+            <div id="quiz-question-block" class="flex-1 flex flex-col">
+                <h2 id="quiz-question-text" class="text-base sm:text-xl md:text-3xl font-black leading-tight mb-6 md:mb-10"></h2>
+                <div id="quiz-options" class="flex flex-col gap-2 md:gap-3 mb-6 md:mb-8"></div>
+                <div id="quiz-explanation" class="hidden bg-white/5 border border-white/10 rounded-[20px] md:rounded-3xl p-4 md:p-6 mb-6 md:mb-8">
+                    <div class="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                        <i id="quiz-explanation-icon" class="text-xl md:text-2xl"></i>
+                        <h3 id="quiz-explanation-title" class="font-black text-sm md:text-lg"></h3>
+                    </div>
+                    <p id="quiz-explanation-text" class="text-[11px] md:text-base text-white/80 leading-snug md:leading-relaxed"></p>
+                </div>
+                <button id="quiz-next-btn" type="button" class="hidden bg-solar text-black font-black text-sm md:text-lg px-6 md:px-10 py-3 md:py-4 rounded-full shadow-lg hover:scale-[1.02] transition-transform uppercase tracking-widest self-start">
+                    Далее <i class="ph-bold ph-arrow-right ml-1"></i>
+                </button>
+            </div>
+
+            <!-- Блок результата -->
+            <div id="quiz-result-block" class="hidden flex-1 flex flex-col items-center justify-center text-center py-8">
+                <div id="quiz-result-icon-wrap" class="w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center mb-5 md:mb-8 shadow-2xl">
+                    <i id="quiz-result-icon" class="text-4xl md:text-6xl"></i>
+                </div>
+                <p class="text-[10px] md:text-sm font-bold uppercase tracking-widest text-white/50 mb-2 md:mb-3">Ваш результат</p>
+                <div class="mb-3 md:mb-5">
+                    <span id="quiz-result-score" class="text-5xl md:text-7xl font-black text-solar"></span>
+                    <span class="text-xl md:text-3xl font-black text-white/40"> / 10</span>
+                </div>
+                <h3 id="quiz-result-title" class="text-lg md:text-3xl font-black mb-2 md:mb-4"></h3>
+                <p id="quiz-result-desc" class="text-xs md:text-base text-white/70 max-w-xl mx-auto mb-8 md:mb-10"></p>
+                <div class="flex flex-col sm:flex-row gap-3 md:gap-4">
+                    <button id="quiz-restart-btn" type="button" class="bg-solar text-black font-black text-sm md:text-base px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg hover:scale-[1.02] transition-transform uppercase tracking-widest">
+                        <i class="ph-bold ph-arrow-clockwise mr-1"></i> Пройти ещё раз
+                    </button>
+                    <button id="quiz-finish-btn" type="button" class="bg-white/10 hover:bg-white/20 text-white font-bold text-sm md:text-base px-6 md:px-8 py-3 md:py-4 rounded-full transition-colors uppercase tracking-widest">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const totalSlides = 40;
+        let currentSlide = 0;
+        const progressBar = document.getElementById('progress-bar');
+        const body = document.body;
+        const params = new URLSearchParams(window.location.search);
+        const exportMode =
+            params.has('pdf') ||
+            params.get('mode') === 'pdf' ||
+            window.location.hash === '#pdf';
+
+        // Идентификаторы видео Vimeo (40 штук, по одному на каждый слайд)
+        const videoIds = [
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/1.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/2.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/3.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/4.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/5.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/6.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/7.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/8.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/9.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/10.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/11.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/12.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/13.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/14.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/15.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/16.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/17.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/18.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/19.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/20.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/21.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/22.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/23.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/24.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/25.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/26.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/27.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/28.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/29.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/30.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/31.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/32.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/33.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/34.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/35.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/36.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/37.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/38.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/39.mp4',
+            'https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l2/videos/40.mp4'
+        ];
+
+        let player = null;
+        // Нативный mp4-плеер с Vimeo-совместимым API (on/loadVideo/play/pause/getPaused/ready)
+        function makeNativePlayer(el) {
+            const H = {};
+            ["ended","play","pause","timeupdate"].forEach(function(ev){
+                el.addEventListener(ev, function(){ (H[ev]||[]).forEach(function(fn){ fn(); }); });
+            });
+            return {
+                ready: function(){ return Promise.resolve(); },
+                on: function(ev, cb){ (H[ev] = H[ev] || []).push(cb); },
+                loadVideo: function(url){ return new Promise(function(res, rej){
+                    function ok(){ cl(); res(); } function bad(){ cl(); rej(new Error("load")); }
+                    function cl(){ el.removeEventListener("canplay", ok); el.removeEventListener("error", bad); }
+                    el.addEventListener("canplay", ok, { once:true });
+                    el.addEventListener("error", bad, { once:true });
+                    try { el.src = url; el.load(); } catch(e){ bad(); }
+                }); },
+                play: function(){ var p = el.play(); return (p && p.then) ? p : Promise.resolve(); },
+                pause: function(){ el.pause(); return Promise.resolve(); },
+                getPaused: function(){ return Promise.resolve(el.paused); }
+            };
+        }
+        let isLoadingVideo = false;
+        let desiredSlideIdx = -1;
+        let loadedSlideIdx = -1;
+        let overlayTimeout;
+
+        function triggerOverlayAutoFade() {
+            const overlay = document.getElementById('video-overlay');
+            if (!overlay || !player) return;
+            overlay.classList.remove('opacity-0');
+            clearTimeout(overlayTimeout);
+            player.getPaused().then(paused => {
+                if (!paused) {
+                    overlayTimeout = setTimeout(() => overlay.classList.add('opacity-0'), 1500);
+                }
+            }).catch(() => {});
+        }
+
+        function setupPlayerEvents(p) {
+            p.on('ended', () => {
+                if (currentSlide < totalSlides - 1) nextSlide();
+            });
+            p.on('play', () => {
+                const icon = document.getElementById('video-icon');
+                if (icon) icon.className = 'ph-fill ph-pause-circle text-4xl md:text-6xl drop-shadow-md';
+                const overlay = document.getElementById('video-overlay');
+                if (overlay) overlay.classList.add('opacity-0');
+                clearTimeout(overlayTimeout);
+                const loader = document.getElementById('video-loader');
+                if (loader) loader.classList.add('opacity-0');
+            });
+            p.on('timeupdate', () => {
+                const loader = document.getElementById('video-loader');
+                if (loader && !loader.classList.contains('opacity-0')) {
+                    loader.classList.add('opacity-0');
+                }
+            });
+            p.on('pause', () => {
+                const icon = document.getElementById('video-icon');
+                if (icon) icon.className = 'ph-fill ph-play-circle text-4xl md:text-6xl drop-shadow-md';
+                const overlay = document.getElementById('video-overlay');
+                if (overlay) overlay.classList.remove('opacity-0');
+                clearTimeout(overlayTimeout);
+            });
+        }
+
+        function updateProgress() {
+            if (!progressBar) return;
+            progressBar.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+        }
+
+        function showLoaderInstant() {
+            const loader = document.getElementById('video-loader');
+            if (!loader) return;
+            loader.style.transition = 'none';
+            loader.classList.remove('opacity-0');
+            void loader.offsetWidth;
+            loader.style.transition = '';
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById('video-loader');
+            if (loader) loader.classList.add('opacity-0');
+        }
+
+        function showPlayPrompt() {
+            const overlay = document.getElementById('video-overlay');
+            const icon = document.getElementById('video-icon');
+            if (overlay) overlay.classList.remove('opacity-0');
+            if (icon) icon.className = 'ph-fill ph-play-circle text-4xl md:text-6xl drop-shadow-md';
+        }
+
+        function switchVideo(slideIdx) {
+            if (!player) return;
+            desiredSlideIdx = slideIdx;
+            showLoaderInstant();
+            const overlay = document.getElementById('video-overlay');
+            if (overlay) overlay.classList.add('opacity-0');
+            if (!isLoadingVideo) runLoadCycle(); else { /*video-watchdog*/ try{clearTimeout(window.__dvw);}catch(e){} window.__dvw=setTimeout(function(){ if(isLoadingVideo){ isLoadingVideo=false; runLoadCycle(); } },4000); }
+        }
+
+        function runLoadCycle() {
+            if (!player || desiredSlideIdx < 0) return;
+            if (desiredSlideIdx === loadedSlideIdx) {
+                isLoadingVideo = false;
+                player.play().catch(() => showPlayPrompt());
+                return;
+            }
+
+            const targetIdx = desiredSlideIdx;
+            isLoadingVideo = true;
+
+            player.ready().then(function(){ return player.loadVideo(videoIds[targetIdx]); }).then(() => {
+                return player.play();
+            }).then(() => {
+                finalizeCycle(targetIdx, null);
+            }).catch((err) => {
+                finalizeCycle(targetIdx, err);
+            });
+        }
+
+        function finalizeCycle(loadedIdx, err) {
+            isLoadingVideo = false;
+            loadedSlideIdx = err ? -1 : loadedIdx;
+
+            if (desiredSlideIdx !== loadedIdx) {
+                runLoadCycle();
+                return;
+            }
+
+            if (err) {
+                console.warn('Vimeo switch error:', err);
+                hideLoader();
+                showPlayPrompt();
+            } else {
+                hideLoader();
+            }
+        }
+
+        window.updateSlides = function() {
+            for (let i = 0; i < totalSlides; i++) {
+                const slide = document.getElementById(`slide-${i}`);
+                if (!slide) continue;
+                if (i === currentSlide) {
+                    slide.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-8', '-translate-y-8');
+                    slide.classList.add('opacity-100', 'translate-y-0');
+                } else if (i < currentSlide) {
+                    slide.classList.remove('opacity-100', 'translate-y-0', 'translate-y-8');
+                    slide.classList.add('opacity-0', 'pointer-events-none', '-translate-y-8');
+                } else {
+                    slide.classList.remove('opacity-100', 'translate-y-0', '-translate-y-8');
+                    slide.classList.add('opacity-0', 'pointer-events-none', 'translate-y-8');
+                }
+            }
+            updateProgress();
+
+            const navPrev = document.getElementById('nav-prev');
+            const navNext = document.getElementById('nav-next');
+            if (navPrev) navPrev.style.display = currentSlide === 0 ? 'none' : 'flex';
+            if (navNext) navNext.style.display = currentSlide === totalSlides - 1 ? 'none' : 'flex';
+
+            if (!exportMode && player) switchVideo(currentSlide);
+        };
+
+        window.nextSlide = function() { if (currentSlide < totalSlides - 1) { currentSlide++; updateSlides(); } };
+        window.prevSlide = function() { if (currentSlide > 0) { currentSlide--; updateSlides(); } };
+
+        document.getElementById('start-overlay').addEventListener('click', function() {
+            this.style.opacity = '0';
+            setTimeout(() => this.style.display = 'none', 500);
+            if (!exportMode) {
+                document.getElementById('video-bubble').style.display = 'block';
+
+                player = makeNativePlayer(document.getElementById('head-video'));
+                setupPlayerEvents(player);
+                loadedSlideIdx = -1;
+                desiredSlideIdx = 0;
+                switchVideo(0);
+                triggerOverlayAutoFade();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            else if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        const videoOverlay = document.getElementById('video-overlay');
+        if (videoOverlay) {
+            videoOverlay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (player) player.getPaused().then(paused => paused ? player.play() : player.pause());
+            });
+        }
+
+        const bubble = document.getElementById('video-bubble');
+        let isDragging = false, currentX = 0, currentY = 0, initialX = 0, initialY = 0, xOffset = 0, yOffset = 0;
+
+        bubble.addEventListener("mousedown", dragStart);
+        document.addEventListener("mouseup", () => isDragging = false);
+        document.addEventListener("mousemove", drag);
+        bubble.addEventListener("touchstart", dragStart, {passive: false});
+        document.addEventListener("touchend", () => isDragging = false);
+        document.addEventListener("touchmove", drag, {passive: false});
+
+        function dragStart(e) {
+            initialX = (e.type === "touchstart" ? e.touches[0].clientX : e.clientX) - xOffset;
+            initialY = (e.type === "touchstart" ? e.touches[0].clientY : e.clientY) - yOffset;
+            if (e.target === bubble || bubble.contains(e.target)) isDragging = true;
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            currentX = (e.type === "touchmove" ? e.touches[0].clientX : e.clientX) - initialX;
+            currentY = (e.type === "touchmove" ? e.touches[0].clientY : e.clientY) - initialY;
+            xOffset = currentX; yOffset = currentY;
+            bubble.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+        }
+
+        // ---- Свайп-навигация: листать слайды пальцем (влево/вверх = вперёд, вправо/вниз = назад) ----
+        (function(){
+            var sx = 0, sy = 0, st = 0, tracking = false;
+            var THRESH = 45;   // мин. длина свайпа, px (короче — это тап)
+            var SLOPE = 1.25;  // насколько доминирующая ось должна превышать вторую
+            function inExcluded(t){
+                if (!t || !t.closest) return false;
+                // не мешаем: перетаскиванию кружка, стрелкам, открытому тесту и прокручиваемым зонам (таблица)
+                if (t.closest('#video-bubble') || t.closest('.nav-arrow') ||
+                    t.closest('#quiz-modal') || t.closest('.overflow-x-auto') ||
+                    t.closest('.overflow-y-auto')) return true;
+                var qm = document.getElementById('quiz-modal');
+                return !!(qm && !qm.classList.contains('hidden'));
+            }
+            document.addEventListener('touchstart', function(e){
+                if (exportMode || e.touches.length !== 1 || inExcluded(e.target)) { tracking = false; return; }
+                tracking = true;
+                sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now();
+            }, { passive: true });
+            document.addEventListener('touchend', function(e){
+                if (!tracking) return;
+                tracking = false;
+                var t = e.changedTouches && e.changedTouches[0];
+                if (!t || (Date.now() - st) > 800) return;        // слишком медленно — не свайп
+                var dx = t.clientX - sx, dy = t.clientY - sy;
+                var adx = Math.abs(dx), ady = Math.abs(dy);
+                if (adx < THRESH && ady < THRESH) return;          // слишком коротко — это тап
+                if (adx >= ady * SLOPE) { if (dx < 0) nextSlide(); else prevSlide(); }       // гориз.: влево → вперёд
+                else if (ady >= adx * SLOPE) { if (dy < 0) nextSlide(); else prevSlide(); }  // вертик.: вверх → вперёд
+            }, { passive: true });
+        })();
+
+        if (exportMode) body.classList.add('pdf-export-mode');
+        else updateSlides();
+
+        // ==================== ТЕСТ ====================
+        const quizQuestions = [
+            {
+                q: 'Что наиболее точно описывает бизнес-процесс?',
+                options: [
+                    'Любая активность сотрудников в течение дня',
+                    'Последовательность действий, которая преобразует вход в результат и создаёт ценность',
+                    'Только цифровой маршрут в CRM',
+                    'Любая коммуникация между отделами'
+                ],
+                correct: 1,
+                explanation: 'Бизнес-процесс — это структурированная последовательность действий: у него есть вход (ресурсы, данные, запрос), чёткая логика преобразования и выход в виде ценности для клиента или бизнеса. Не всё, что делают сотрудники, является процессом — и не всякая цифровая активность тоже.'
+            },
+            {
+                q: 'Какие элементы обязательно должны быть у бизнес-процесса?',
+                options: [
+                    'Цель, вход, операции, выход, участники, артефакты, метрики',
+                    'Только сотрудники, задачи и документы',
+                    'Только данные, интерфейсы и отчёты',
+                    'Цель, бюджет и оргструктура'
+                ],
+                correct: 0,
+                explanation: 'Полноценный процесс описывается через все перечисленные элементы: зачем он существует (цель), что входит, какие операции выполняются, что получаем на выходе, кто участвует, какие создаются артефакты и как мы измеряем результат. Без метрик процессом нельзя управлять.'
+            },
+            {
+                q: 'Какие процессы обычно автоматизируют первыми?',
+                options: [
+                    'Самые творческие и нестандартные',
+                    'Процессы с высокой повторяемостью, измеримостью и понятным эффектом',
+                    'Только процессы топ-менеджмента',
+                    'Любые процессы, где можно использовать AI'
+                ],
+                correct: 1,
+                explanation: 'Первыми автоматизируют то, что даёт быстрый и измеримый эффект: рутинные частые операции, где понятны метрики ДО и ПОСЛЕ, тратится много человеко-часов и цена ошибки высока. Это доказывает ценность подхода и даёт базу для более сложных кейсов.'
+            },
+            {
+                q: 'Какой подход к сбору информации о процессе является наиболее зрелым?',
+                options: [
+                    'Опираться только на регламент',
+                    'Спросить только руководителя процесса',
+                    'Использовать комбинацию интервью, наблюдения, документов, воркшопов и данных из систем',
+                    'Ограничиться одной схемой из презентации'
+                ],
+                correct: 2,
+                explanation: 'Один метод почти никогда не даёт полной картины: регламент описывает идеал, руководитель — свой взгляд сверху, исполнители — свою рутину. Зрелый подход комбинирует 2-3 метода: интервью, наблюдение, анализ документов, воркшопы, опросы и Process Mining по логам систем.'
+            },
+            {
+                q: 'От чего зависит выбор метода анализа процесса?',
+                options: [
+                    'От того, какой инструмент сейчас моднее',
+                    'От привычки аналитика',
+                    'От природы процесса: количества участников, уровня формализации, числа систем и цели анализа',
+                    'Только от доступности BPMN'
+                ],
+                correct: 2,
+                explanation: 'Метод подбирается под задачу. Неформализованные процессы требуют интервью и наблюдения. Кросс-функциональные — воркшопов и опросов. Цифровые процессы с логами в ИТ-системах — Process Mining. Универсального рецепта нет — важна природа процесса, а не мода на инструмент.'
+            },
+            {
+                q: 'Что обязательно должно быть отражено в хорошей модели AS-IS?',
+                options: [
+                    'Только идеальный сценарий процесса',
+                    'Фактические шаги, роли, данные, decision points, исключения, возвраты и метрики',
+                    'Только названия подразделений',
+                    'Только список проблем процесса'
+                ],
+                correct: 1,
+                explanation: 'AS-IS — это честная модель, показывающая как процесс работает на самом деле, а не по регламенту. В ней обязательно фиксируются реальные шаги, роли, входы и выходы, артефакты, данные и системы, точки принятия решений, текущие метрики и нестандартные сценарии (исключения, возвраты, эскалации).'
+            },
+            {
+                q: 'Как правильно выявлять точки автоматизации?',
+                options: [
+                    'Автоматизировать все шаги подряд',
+                    'Искать только те шаги, где уже есть ИИ-инструменты',
+                    'Анализировать природу шагов, узкие места, повторяемость, стоимость, риск и тип операций',
+                    'Выбирать только самые сложные этапы процесса'
+                ],
+                correct: 2,
+                explanation: 'Точки автоматизации выбираются по совокупности критериев: ценность, частота, влияние на процесс, риск ошибки и сложность реализации. Детерминированные операции лучше отдать классическим скриптам и RPA, вероятностные — AI, а сложные неоднозначные кейсы оставить человеку.'
+            },
+            {
+                q: 'Что такое TO-BE?',
+                options: [
+                    'Подробное описание текущего процесса',
+                    'Целевая модель будущего процесса после редизайна и автоматизации',
+                    'Список цифровых инструментов компании',
+                    'Финальный отчёт по проекту'
+                ],
+                correct: 1,
+                explanation: 'TO-BE — это целевая модель того, как процесс должен работать после изменений. Нельзя просто встроить AI в старую схему: процесс пересобирается — лишнее удаляется (Delete), шаги объединяются (Merge), поток упрощается (Simplify), часть операций автоматизируется (Automate).'
+            },
+            {
+                q: 'Как меняется роль человека в автоматизированном процессе?',
+                options: [
+                    'Человек полностью исчезает из процесса',
+                    'Человек остаётся только наблюдателем и не влияет на результат',
+                    'Человек смещается от рутинного исполнения к контролю, управлению, экспертной оценке и работе с исключениями',
+                    'Человек делает всё то же самое, только быстрее'
+                ],
+                correct: 2,
+                explanation: 'Человек перестаёт быть главным исполнителем каждой операции и становится супервайзером (контролирует качество работы агентов), экспертом (берёт сложные кейсы) и оператором гибридной системы (настраивает логику). Ответственность, эмпатия и нестандартные решения остаются за человеком.'
+            },
+            {
+                q: 'Что лучше всего описывает навыки ИИ-агента?',
+                options: [
+                    'Это одна универсальная функция без структуры',
+                    'Это набор отдельных когнитивных функций с входом, логикой, выходом и метрикой качества',
+                    'Это просто список промптов',
+                    'Это копия оргструктуры компании'
+                ],
+                correct: 1,
+                explanation: 'Роль AI раскладывается на отдельные когнитивные функции: у каждого навыка есть свой вход (как получает данные), логика (промпты и правила), выход (действие в системе) и метрика качества. Эти навыки затем собираются в граф — последовательность или сеть взаимосвязанных действий.'
+            }
+        ];
+
+        let quizIndex = 0;
+        let quizScore = 0;
+        let quizAnswered = false;
+
+        const quizModal = document.getElementById('quiz-modal');
+        const quizQuestionText = document.getElementById('quiz-question-text');
+        const quizOptions = document.getElementById('quiz-options');
+        const quizExplanation = document.getElementById('quiz-explanation');
+        const quizExplanationIcon = document.getElementById('quiz-explanation-icon');
+        const quizExplanationTitle = document.getElementById('quiz-explanation-title');
+        const quizExplanationText = document.getElementById('quiz-explanation-text');
+        const quizNextBtn = document.getElementById('quiz-next-btn');
+        const quizProgress = document.getElementById('quiz-progress');
+        const quizProgressBar = document.getElementById('quiz-progress-bar');
+        const quizQuestionBlock = document.getElementById('quiz-question-block');
+        const quizResultBlock = document.getElementById('quiz-result-block');
+
+        function openQuiz() {
+            quizIndex = 0;
+            quizScore = 0;
+            quizAnswered = false;
+            quizModal.classList.remove('hidden');
+            quizModal.classList.add('flex');
+            quizQuestionBlock.classList.remove('hidden');
+            quizQuestionBlock.classList.add('flex');
+            quizResultBlock.classList.add('hidden');
+            quizResultBlock.classList.remove('flex');
+            renderQuestion();
+            if (player) player.pause().catch(() => {});
+        }
+
+        function closeQuiz() {
+            quizModal.classList.add('hidden');
+            quizModal.classList.remove('flex');
+        }
+
+        function renderQuestion() {
+            quizAnswered = false;
+            const cur = quizQuestions[quizIndex];
+            quizProgress.textContent = `Вопрос ${quizIndex + 1} из ${quizQuestions.length}`;
+            quizProgressBar.style.width = `${((quizIndex + 1) / quizQuestions.length) * 100}%`;
+            quizQuestionText.textContent = cur.q;
+
+            quizOptions.innerHTML = '';
+            cur.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'quiz-option text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-[16px] md:rounded-2xl p-3 md:p-5 flex items-start gap-3 md:gap-4 transition-all text-white';
+                btn.innerHTML = `
+                    <span class="quiz-option-letter shrink-0 w-7 h-7 md:w-9 md:h-9 rounded-full border border-white/20 flex items-center justify-center text-[11px] md:text-sm font-black">${String.fromCharCode(65 + i)}</span>
+                    <span class="quiz-option-text text-[12px] md:text-base font-medium leading-snug pt-0.5 md:pt-1">${opt}</span>
+                `;
+                btn.addEventListener('click', () => handleAnswer(i, btn));
+                quizOptions.appendChild(btn);
+            });
+
+            quizExplanation.classList.add('hidden');
+            quizNextBtn.classList.add('hidden');
+        }
+
+        function handleAnswer(chosenIdx, btnEl) {
+            if (quizAnswered) return;
+            quizAnswered = true;
+
+            const cur = quizQuestions[quizIndex];
+            const buttons = quizOptions.querySelectorAll('.quiz-option');
+            buttons.forEach((b, i) => {
+                b.disabled = true;
+                b.classList.remove('hover:bg-white/10');
+                if (i === cur.correct) {
+                    b.classList.remove('bg-white/5', 'border-white/10');
+                    b.classList.add('bg-solar/20', 'border-solar');
+                    const letter = b.querySelector('.quiz-option-letter');
+                    letter.classList.remove('border-white/20');
+                    letter.classList.add('bg-solar', 'text-black', 'border-solar');
+                } else if (i === chosenIdx) {
+                    b.classList.remove('bg-white/5', 'border-white/10');
+                    b.classList.add('bg-red-500/15', 'border-red-500/60');
+                    const letter = b.querySelector('.quiz-option-letter');
+                    letter.classList.remove('border-white/20');
+                    letter.classList.add('bg-red-500/80', 'text-white', 'border-red-500');
+                }
+            });
+
+            const isCorrect = chosenIdx === cur.correct;
+            if (isCorrect) quizScore++;
+
+            quizExplanation.classList.remove('hidden');
+            if (isCorrect) {
+                quizExplanationIcon.className = 'ph-fill ph-check-circle text-xl md:text-2xl text-solar';
+                quizExplanationTitle.textContent = 'Верно!';
+                quizExplanationTitle.className = 'font-black text-sm md:text-lg text-solar';
+            } else {
+                quizExplanationIcon.className = 'ph-fill ph-x-circle text-xl md:text-2xl text-red-400';
+                quizExplanationTitle.textContent = 'Неверно — вот как правильно';
+                quizExplanationTitle.className = 'font-black text-sm md:text-lg text-red-400';
+            }
+            quizExplanationText.textContent = cur.explanation;
+
+            quizNextBtn.classList.remove('hidden');
+            if (quizIndex === quizQuestions.length - 1) {
+                quizNextBtn.innerHTML = 'Посмотреть результат <i class="ph-bold ph-arrow-right ml-1"></i>';
+            } else {
+                quizNextBtn.innerHTML = 'Далее <i class="ph-bold ph-arrow-right ml-1"></i>';
+            }
+        }
+
+        function nextQuestion() {
+            if (!quizAnswered) return;
+            if (quizIndex < quizQuestions.length - 1) {
+                quizIndex++;
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizQuestionBlock.classList.add('hidden');
+            quizQuestionBlock.classList.remove('flex');
+            quizResultBlock.classList.remove('hidden');
+            quizResultBlock.classList.add('flex');
+
+            const score = quizScore;
+            document.getElementById('quiz-result-score').textContent = score;
+
+            const resultIconWrap = document.getElementById('quiz-result-icon-wrap');
+            const resultIcon = document.getElementById('quiz-result-icon');
+            const resultTitle = document.getElementById('quiz-result-title');
+            const resultDesc = document.getElementById('quiz-result-desc');
+
+            let title, desc, iconClass, wrapClass;
+            if (score >= 9) {
+                title = 'Превосходно!';
+                desc = 'Вы отлично понимаете процессный подход: от AS-IS и точек автоматизации до TO-BE и гибридной системы.';
+                iconClass = 'ph-fill ph-trophy text-black';
+                wrapClass = 'bg-solar';
+            } else if (score >= 7) {
+                title = 'Отличный результат';
+                desc = 'Вы уверенно владеете ключевыми концептами. Небольшие пробелы — пересмотрите спорные моменты в лекции.';
+                iconClass = 'ph-fill ph-medal text-solar';
+                wrapClass = 'bg-solar/20 border-2 border-solar';
+            } else if (score >= 5) {
+                title = 'Неплохо, но есть над чем поработать';
+                desc = 'Основы вы уловили, но стоит освежить AS-IS/TO-BE, детерминированные/вероятностные операции и роль человека.';
+                iconClass = 'ph-fill ph-chart-line-up text-solar';
+                wrapClass = 'bg-white/10 border-2 border-solar/50';
+            } else {
+                title = 'Стоит вернуться к материалу';
+                desc = 'Процессный подход — фундамент автоматизации. Пересмотрите ключевые слайды и попробуйте ещё раз.';
+                iconClass = 'ph-fill ph-book-open text-solar';
+                wrapClass = 'bg-white/10 border-2 border-white/20';
+            }
+
+            resultIconWrap.className = 'w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center mb-5 md:mb-8 shadow-2xl ' + wrapClass;
+            resultIcon.className = iconClass + ' text-4xl md:text-6xl';
+            resultTitle.textContent = title;
+            resultDesc.textContent = desc;
+        }
+
+        document.getElementById('open-quiz-btn').addEventListener('click', openQuiz);
+        document.getElementById('quiz-close-btn').addEventListener('click', closeQuiz);
+        document.getElementById('quiz-finish-btn').addEventListener('click', closeQuiz);
+        document.getElementById('quiz-restart-btn').addEventListener('click', openQuiz);
+        quizNextBtn.addEventListener('click', nextQuestion);
+    });
+</script>
+
+</body>
+</html>
