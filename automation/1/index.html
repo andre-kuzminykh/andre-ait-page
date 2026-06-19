@@ -481,8 +481,11 @@ html.dark #lecture-header .lec-ctrl:hover{ background:#1f1f1f; }
   if (urlT === 'dark' || urlT === 'light') {
     apply(urlT === 'dark');
   } else {
-    var saved = null; try { saved = localStorage.getItem('lecture-theme'); } catch (e) {}
-    apply(saved === 'dark');           // по умолчанию — светлая (белая) тема
+    // единая тема всего клиентского пути (общий ключ 'welcome-theme', как welcome/roadmap):
+    // путь по умолчанию ТЁМНЫЙ → лекция тёмная, пока явно не выбрана светлая; лекция запоминает
+    // тон, в котором была раньше (тумблер пишет тот же ключ).
+    var saved = null; try { saved = localStorage.getItem('welcome-theme'); } catch (e) {}
+    apply(saved !== 'light');
   }
   window.addEventListener('message', function(e){
     if (e && e.data && e.data.type === 'portal-theme') apply(e.data.theme === 'dark');
@@ -570,7 +573,7 @@ window.addEventListener('load', function(){
         }
         btn.addEventListener('click', function(){
             var dark = document.documentElement.classList.toggle('dark');
-            try { localStorage.setItem('lecture-theme', dark ? 'dark' : 'light'); } catch (e) {}
+            try { localStorage.setItem('welcome-theme', dark ? 'dark' : 'light'); } catch (e) {}
             sync();
         });
         sync();
@@ -2521,6 +2524,38 @@ window.addEventListener('load', function(){
             xOffset = currentX; yOffset = currentY;
             bubble.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
         }
+
+        // ---- Свайп-навигация: листать слайды пальцем (влево/вверх = вперёд, вправо/вниз = назад) ----
+        (function(){
+            var sx = 0, sy = 0, st = 0, tracking = false;
+            var THRESH = 45;   // мин. длина свайпа, px (короче — это тап)
+            var SLOPE = 1.25;  // насколько доминирующая ось должна превышать вторую
+            function inExcluded(t){
+                if (!t || !t.closest) return false;
+                // не мешаем: перетаскиванию кружка, стрелкам, открытому тесту и прокручиваемым зонам
+                if (t.closest('#video-bubble') || t.closest('.nav-arrow') ||
+                    t.closest('#quiz-modal') || t.closest('.overflow-x-auto') ||
+                    t.closest('.overflow-y-auto')) return true;
+                var qm = document.getElementById('quiz-modal');
+                return !!(qm && !qm.classList.contains('hidden'));
+            }
+            document.addEventListener('touchstart', function(e){
+                if (exportMode || e.touches.length !== 1 || inExcluded(e.target)) { tracking = false; return; }
+                tracking = true;
+                sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now();
+            }, { passive: true });
+            document.addEventListener('touchend', function(e){
+                if (!tracking) return;
+                tracking = false;
+                var t = e.changedTouches && e.changedTouches[0];
+                if (!t || (Date.now() - st) > 800) return;        // слишком медленно — не свайп
+                var dx = t.clientX - sx, dy = t.clientY - sy;
+                var adx = Math.abs(dx), ady = Math.abs(dy);
+                if (adx < THRESH && ady < THRESH) return;          // слишком коротко — это тап
+                if (adx >= ady * SLOPE) { if (dx < 0) nextSlide(); else prevSlide(); }       // гориз.: влево → вперёд
+                else if (ady >= adx * SLOPE) { if (dy < 0) nextSlide(); else prevSlide(); }  // вертик.: вверх → вперёд
+            }, { passive: true });
+        })();
 
         if (exportMode) body.classList.add('pdf-export-mode');
         else updateSlides();
