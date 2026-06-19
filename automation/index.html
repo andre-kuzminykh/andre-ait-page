@@ -42,7 +42,7 @@
   *{box-sizing:border-box}
   html,body{margin:0}
   body{
-    background:var(--bg); color:var(--fg); overflow:hidden;
+    background:var(--bg); color:var(--fg); overflow-x:hidden;
     transition:background .25s ease,color .25s ease;
     font-family:'Montserrat',ui-sans-serif,system-ui,-apple-system,sans-serif;
     -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
@@ -124,12 +124,15 @@
   @media(min-width:2300px){body{zoom:1.5}}
 
   /* ===== Content: single non-scrolling screen, centred ===== */
-  main{height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 1rem}
-  @media(min-width:640px){main{padding:5.5rem 2rem}}
+  /* min-height (not fixed) + page can scroll: on tall phones the screen is centered and doesn't scroll;
+     on SHORT viewports (in-app browsers — Instagram/Threads webview) the content grows the page and
+     scrolls instead of overflowing UPWARD under the fixed header (title was colliding with the buttons). */
+  main{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5.75rem 1rem 2rem}
+  @media(min-width:640px){main{padding:6rem 2rem 2.5rem}}
   /* body{zoom} scales 100dvh taller than the screen → correct the height so content stays vertically centred */
-  @media(min-width:1600px){main{height:calc(100dvh / 1.15)}}
-  @media(min-width:1900px){main{height:calc(100dvh / 1.3)}}
-  @media(min-width:2300px){main{height:calc(100dvh / 1.5)}}
+  @media(min-width:1600px){main{min-height:calc(100dvh / 1.15)}}
+  @media(min-width:1900px){main{min-height:calc(100dvh / 1.3)}}
+  @media(min-width:2300px){main{min-height:calc(100dvh / 1.5)}}
   .wrap{width:100%;max-width:62rem;margin:0 auto;text-align:center;animation:fadeUp .5s ease both}
   /* 3 wizard steps live in ONE document (SPA); only the active screen is shown. The video bubble
      below never reloads, so sound (once enabled) keeps playing across step changes. */
