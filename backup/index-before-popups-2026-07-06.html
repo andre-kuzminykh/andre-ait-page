@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<meta name="color-scheme" content="dark">
+<title>Andre AI Technologies — AI Transformation of your Business</title>
+<meta name="description" content="Andre AI — AI Transformation of your Business">
+<meta property="og:title" content="Andre AI — AI Transformation of your Business">
+<meta property="og:description" content="Andre AI — AI Transformation of your Business">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  /* ============================================================
+     Andre AIT — plain HTML/CSS/vanilla-JS rebuild (no dc-runtime).
+     Mobile-first: base styles = mobile (<1024px),
+     @media (min-width:1024px) = desktop overrides.
+     ============================================================ */
+
+  html, body {
+    margin: 0; padding: 0; background: #050505; color-scheme: dark;
+    font-family: 'JetBrains Mono', monospace; color: #E5E7EB;
+    overflow: hidden; width: 100vw; height: 100vh; height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+  }
+  *:focus-visible { outline: 2px solid #8854F3; outline-offset: 2px; }
+  ::selection { background: #8854F3; color: #ffffff; }
+  ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  a { text-decoration: none; }
+  button { font-family: inherit; }
+
+  @keyframes slideInPanel { from { opacity: 0; transform: translateY(44px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes gradientShimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+  @keyframes soundWave { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.2); opacity: 0; } }
+  @keyframes floatY { 0% { transform: translateY(0); } 50% { transform: translateY(-9px); } 100% { transform: translateY(0); } }
+  @keyframes pulseGlow { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes auraPulse { 0%, 100% { opacity: 0.45; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.12); } }
+
+  /* ===== Background video ===== */
+  .scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #050505; }
+  #hero-video { position: absolute; top: 0; left: 0; width: 100vw; height: 64dvh; object-fit: cover; object-position: center; cursor: pointer; transition: opacity 0.4s ease; }
+  .video-shadow { position: absolute; top: 0; left: 0; width: 100%; height: 64dvh; pointer-events: none; z-index: 2;
+    background: linear-gradient(to bottom, transparent 6%, rgba(5,5,5,0.04) 20%, rgba(5,5,5,0.12) 33%, rgba(5,5,5,0.26) 45%, rgba(5,5,5,0.45) 57%, rgba(5,5,5,0.66) 69%, rgba(5,5,5,0.85) 81%, #050505 94%); }
+  @media (min-width:1024px) {
+    #hero-video { width: 67%; height: 100%; transform: translateX(-6%); }
+    .video-shadow { height: 100%; background: linear-gradient(to top, #050505 0%, rgba(5,5,5,0.35) 7%, rgba(5,5,5,0) 16%); }
+  }
+
+  /* ===== Grain overlay ===== */
+  .grain { position: fixed; inset: 0; z-index: 4; pointer-events: none; opacity: 0.06; mix-blend-mode: screen;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-size: 180px 180px; }
+
+  /* ===== Header ===== */
+  header { position: fixed; top: 0; left: 0; right: 0; z-index: 30; pointer-events: none; padding: 1.1rem; }
+  @media (min-width:1024px) { header { padding: 2rem; } }
+  .header-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .header-left { pointer-events: auto; display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+  .header-right { pointer-events: auto; display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+  .logo-btn { cursor: pointer; flex-shrink: 0; }
+  .logo-img { width: clamp(2.85rem, 12vw, 3.7rem); height: clamp(2.85rem, 12vw, 3.7rem); object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+  @media (min-width:1024px) { .logo-img { width: 3.6rem; height: 3.6rem; } }
+
+  /* Speaker badge (fixed over the video on both breakpoints) */
+  .speaker { position: fixed; left: 50%; top: 60dvh; transform: translate(-50%, -100%); z-index: 30;
+    display: flex; align-items: center; gap: 0.4rem; background: rgba(0,0,0,0.45);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.10);
+    color: #ffffff; padding: 0.3rem 0.3rem 0.3rem 0.65rem; border-radius: 999px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    white-space: nowrap; pointer-events: auto; }
+  @media (min-width:1024px) { .speaker { left: 29%; top: auto; bottom: 8%; transform: translateX(-50%); padding: 0.375rem 0.375rem 0.375rem 0.9rem; gap: 0.6rem; } }
+  .speaker h3 { margin: 0; font-size: 13px; font-weight: 700; line-height: 1; white-space: nowrap; }
+  .speaker-emoji { font-size: 15px; line-height: 1; }
+  .speaker .sep { color: rgba(255,255,255,0.3); font-size: 13px; line-height: 1; }
+  .speaker .role { margin: 0; font-size: 13px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.08em; line-height: 1; white-space: nowrap; }
+  .mic-btn { width: 2rem; height: 2rem; border-radius: 999px; background: #000000; border: 1px solid rgba(255,255,255,0.05); color: #ffffff;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: inset 0 2px 6px rgba(0,0,0,0.6); padding: 0; }
+  @media (min-width:1024px) { .mic-btn { width: 2.25rem; height: 2.25rem; } }
+  @media (hover:hover) { .mic-btn:hover { background: #111111; } }
+  .mic-wave { position: absolute; inset: 0; }
+  .mic-wave::before, .mic-wave::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1px solid #8854F3; animation: soundWave 2s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+  .mic-wave::after { animation-delay: 1s; }
+
+  /* Center nav (desktop bar / mobile fullscreen menu) */
+  .nav { display: none; }
+  @media (max-width:1023px) {
+    .nav.open { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 5rem 1.75rem calc(5rem + env(safe-area-inset-bottom, 0px)); z-index: 50;
+      background: #050505; overflow-y: auto; pointer-events: auto; }
+  }
+  @media (min-width:1024px) {
+    .nav { display: flex; align-items: center; gap: 0.4rem; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      background: rgba(10,10,16,0.5); border: 1px solid rgba(255,255,255,0.10); border-radius: 999px; padding: 0.6rem 1.2rem;
+      -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 4px 30px rgba(0,0,0,0.3); pointer-events: auto; }
+  }
+  .nav-close { display: none; }
+  @media (max-width:1023px) {
+    .nav.open .nav-close { display: flex; position: absolute; top: 1.35rem; right: 1.35rem; width: 2.6rem; height: 2.6rem; align-items: center; justify-content: center;
+      border-radius: 0; background: transparent; border: 0; color: #ffffff; box-shadow: none; cursor: pointer; z-index: 1; }
+  }
+  .nav-tab { background: transparent; border: 0; cursor: pointer; text-transform: uppercase; font-weight: 700; white-space: nowrap;
+    color: #cbd5e1; padding: 0.55rem 1rem; font-size: 26px; letter-spacing: 0.12em; transition: color 0.3s ease; }
+  .nav-tab.active { color: #ffffff; background: linear-gradient(var(--ul), var(--ul)) no-repeat bottom center / 55% 2px; }
+  @media (hover:hover) { .nav-tab:hover { color: var(--hover, #8854F3); } }
+  /* left icon + right arrow appear only inside the mobile menu */
+  .nav-ic, .nav-go { display: none; }
+  @media (max-width:1023px) {
+    /* elegant list: no backgrounds, thin hairline between rows, icon left, arrow right */
+    .nav.open .nav-tab { display: flex; align-items: center; gap: 1.15rem; width: 100%; max-width: 23rem; text-align: left;
+      background: transparent; border: 0; border-top: 1px solid rgba(255,255,255,0.14); border-radius: 0; padding: 1.55rem 0.25rem;
+      color: #ffffff; font-size: 21px; letter-spacing: 0.1em; box-shadow: none; transition: color 0.25s ease; }
+    .nav.open .nav-tab:last-of-type { border-bottom: 1px solid rgba(255,255,255,0.14); }
+    .nav.open .nav-ic { display: inline-flex; align-items: center; justify-content: center; width: 2rem; flex-shrink: 0; font-size: 22px; color: var(--ic); background: none; }
+    .nav.open .nav-label { flex: 1; min-width: 0; color: #ffffff; }
+    .nav.open .nav-go { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; flex-shrink: 0; font-size: 13px; color: rgba(255,255,255,0.45); background: none; transition: color 0.25s ease; }
+    .nav.open .nav-tab.active .nav-label, .nav.open .nav-tab.active .nav-go { color: var(--ic); }
+  }
+  @media (max-width:1023px) and (hover:hover) {
+    .nav.open .nav-tab:hover .nav-label, .nav.open .nav-tab:hover .nav-ic, .nav.open .nav-tab:hover .nav-go { color: var(--ic); }
+  }
+  @media (min-width:1024px) {
+    .nav-tab { font-size: 12.5px; letter-spacing: 0.06em; padding: 0.32rem 0.62rem 0.46rem 0.62rem; color: #94a3b8; position: relative; }
+    .nav-tab.active { background: linear-gradient(var(--ul), var(--ul)) no-repeat bottom center / 70% 2px; }
+  }
+  .nav-divider { display: none; }
+  @media (min-width:1024px) { .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12.5px; padding: 0 0.12rem; user-select: none; pointer-events: none; } }
+  /* mid widths (1024–1279): shrink the centred nav pill so it can't collide with the right-side CTA */
+  @media (min-width:1024px) and (max-width:1279px) { .nav { transform: translate(-50%, -50%) scale(0.78); } }
+
+  /* Menu footer: socials → Privacy·Terms → copyright, pinned to the bottom (mobile only) */
+  .nav-foot { display: none; }
+  @media (max-width:1023px) {
+    .nav.open .nav-foot { display: flex; flex-direction: column; align-items: center; gap: 0.8rem;
+      position: absolute; left: 1.5rem; right: 1.5rem; bottom: calc(1.3rem + env(safe-area-inset-bottom, 0px)); }
+  }
+  .nav-social { display: flex; align-items: center; justify-content: center; gap: 1.1rem; }
+  .nav-copy { margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.45); white-space: nowrap; text-align: center; }
+  .nav-legal { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.7rem; }
+  .nav-legal-link { color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; transition: color 0.3s ease; }
+  .nav-legal-sep { color: rgba(255,255,255,0.3); font-size: 12px; user-select: none; }
+  @media (hover:hover) { .nav-legal-link:hover { color: #ffffff; } }
+
+  .menu-btn { display: flex; align-items: center; justify-content: center; width: clamp(2.5rem, 11vw, 3.3rem); height: clamp(2.5rem, 11vw, 3.3rem); border-radius: 999px;
+    background: rgba(10,10,16,0.55); border: 1px solid rgba(255,255,255,0.10); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+    color: #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.35); cursor: pointer; flex-shrink: 0; }
+  @media (min-width:1024px) { .menu-btn { display: none; } }
+
+  /* ===== Caption ===== */
+  .caption { position: fixed; left: 50%; top: calc(60dvh - 3.6rem); transform: translate(-50%, -100%); white-space: nowrap; text-align: center; z-index: 29; pointer-events: none; }
+  @media (min-width:1024px) { .caption { left: 29%; top: auto; bottom: calc(8% + 3.9rem); transform: translateX(-50%); } }
+  .caption span { color: rgba(229,231,235,0.52); font-size: 15px; font-weight: 500; line-height: 1.4; letter-spacing: 0.02em; text-shadow: 0 1px 6px rgba(0,0,0,0.78); }
+
+  /* ===== Content layer / panel / scroll ===== */
+  .content-layer { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; pointer-events: none; justify-content: flex-end; }
+  @media (min-width:1024px) { .content-layer { justify-content: center; } }
+  .panel { width: 100%; height: 46dvh; padding: 0 1rem calc(4rem + env(safe-area-inset-bottom, 0px)) 1rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
+  @media (min-width:1024px) { .panel { width: 40%; height: auto; margin-left: auto; padding: 0 2rem; display: block; } }
+  /* overview (first block): lift the headline + CTA a bit higher on mobile */
+  @media (max-width:1023px) { [data-screen="overview"] { transform: translateY(-1.8rem); } }
+  /* blocks with a header + cards (AI Transformation, Employees, Products, Education): a touch lower on mobile */
+  @media (max-width:1023px) { [data-screen="roadmap"], [data-screen="employees"], [data-screen="products"], [data-screen="education"] { transform: translateY(1.5rem); } }
+  .panel.leaving { opacity: 0; transform: translateY(-28px); transition: opacity 0.24s ease, transform 0.24s ease; }
+  .panel.entering { animation: slideInPanel 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+  .scroll { display: flex; flex-direction: column; align-items: center; gap: 1rem; pointer-events: auto; scrollbar-width: none;
+    max-height: 100%; justify-content: center; padding: 0.5rem 0 0 0; overflow: visible; }
+  @media (min-width:1024px) { .scroll { max-height: calc(100dvh - 13rem); padding: 1.75rem 0.25rem; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; } }
+  .scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+  /* ===== Screens ===== */
+  .screen { display: none; flex-direction: column; align-items: center; width: 100%; }
+  .screen.active { display: flex; }
+
+  /* Responsive utility groups (mirror the original style getters) */
+  .sec, .sec-wide, .group { width: 100%; align-items: center; max-width: 36rem; gap: 0.85rem; }
+  @media (min-width:1024px) {
+    .sec { max-width: 30rem; gap: 1.35rem; }
+    .sec-wide, .group { max-width: 30rem; gap: 1.1rem; }
+  }
+  .group { display: flex; flex-direction: column; }
+  .roadmap-col { width: 100%; align-items: center; gap: 1.6rem; max-width: 36rem; }
+  @media (min-width:1024px) { .roadmap-col { gap: 0.8rem; max-width: 34rem; } }
+
+  .hero-size { font-size: clamp(1.5rem, 8.6vw, 2.6rem); }
+  @media (min-width:1024px) { .hero-size { font-size: clamp(1.7rem, 3.2vw, 2.8rem); } }
+  .h2-size { font-size: 1.65rem; }
+  @media (min-width:1024px) { .h2-size { font-size: clamp(2.1rem, 2.3vw, 3.5rem); } }
+  /* AI Transformation (roadmap) title: always one line, never squish the icon */
+  .rm-title { font-size: 1.5rem; white-space: nowrap; }
+  @media (min-width:1024px) { .rm-title { font-size: clamp(1.5rem, 1.9vw, 2.5rem); } }
+
+  .overview-aura { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); width: min(85%, 32rem); height: 15rem;
+    background: radial-gradient(closest-side, rgba(136,84,243,0.4), rgba(249,115,22,0.14), transparent 72%); filter: blur(34px); z-index: 0; pointer-events: none; animation: auraPulse 5.5s ease-in-out infinite; }
+
+  .float-row { display: flex; justify-content: center; align-items: flex-end; gap: 0.85rem; transform: scale(0.74); margin: -0.7rem 0; }
+  @media (min-width:1024px) { .float-row { transform: none; margin: 0; } }
+  .tile { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #15151b; border-radius: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.25); animation: floatY 4s ease-in-out infinite; }
+  .tile.sm { width: 3.6rem; height: 5.4rem; gap: 0.55rem; }
+  .tile.lg { width: 4.5rem; height: 6.6rem; gap: 0.6rem; border-radius: 1.1rem; }
+  .tile .bar { height: 3px; border-radius: 2px; }
+  .tile.sm .bar { width: 1.6rem; }
+  .tile.lg .bar { width: 2rem; }
+
+  .desc { margin: 0; font-size: 14.5px; line-height: 1.6; color: #cbd5e1; max-width: 30rem; }
+  @media (min-width:1024px) { .desc { font-size: clamp(15px, 1.05vw, 21px); max-width: 34rem; } }
+
+  .swipe-hint { margin: 0; margin-top: 1.3rem; transform: translateY(1.8rem); font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.5); text-align: center; }
+  @media (min-width:1024px) { .swipe-hint { display: none; } }
+
+  /* Rails: horizontal scroll on mobile, vertical column on desktop */
+  .rail { display: flex; gap: 0.55rem; width: 100vw; margin-inline: calc(50% - 50vw); --cw: min(82vw, 23rem); overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    padding: 0.65rem 0 0.9rem calc((100vw - var(--cw)) / 2); scroll-padding-inline: calc((100vw - var(--cw)) / 2); }
+  .rail::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  /* trailing spacer: gives the LAST card enough range to snap to centre (flex scroll containers don't always count padding-right) */
+  .rail::after { content: ''; flex: 0 0 calc((100vw - var(--cw)) / 2); }
+  @media (min-width:1024px) { .rail { flex-direction: column; align-self: auto; align-items: stretch; gap: 0.75rem; width: 100%; max-width: var(--railmax, 30rem); margin: 0 auto; overflow: visible; padding: 0; transform: none; } .rail::after { display: none; } }
+  .rail-item { flex: 0 0 var(--cw); scroll-snap-align: center; scroll-snap-stop: always; box-sizing: border-box; }
+  @media (min-width:1024px) { .rail-item { flex: initial; width: 100%; } }
+
+  /* Cards */
+  .card { border: 1px solid rgba(255,255,255,0.10); border-radius: 1rem; background: #15151b; -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25); cursor: pointer; transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; }
+  @media (hover:hover) { .card:hover { border-color: var(--accent, #8854F3); transform: translateY(-2px); } }
+
+  /* right-arrow action on list cards: bare accent-coloured arrow, no circle/background, no label */
+  .card-go { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    color: var(--accent, #8854F3); font-size: 16px; text-decoration: none; line-height: 1;
+    transition: transform 0.25s ease, opacity 0.25s ease; }
+  @media (hover:hover) { .card-go:hover { transform: translateX(3px); opacity: 0.8; } }
+  /* "in development" indicator: spinning loader replaces the arrow; card/CTA not interactive */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .card-loading { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.2rem; height: 1.2rem; }
+  .card-loading::after { content: ''; box-sizing: border-box; width: 1.05rem; height: 1.05rem; border-radius: 999px;
+    border: 2px solid transparent; border-top-color: var(--accent, #8854F3); border-right-color: var(--accent, #8854F3);
+    animation: spin 0.8s linear infinite; }
+  .card:has(.card-loading) { cursor: default; }
+  @media (hover:hover) { .card:has(.card-loading):hover { transform: none; border-color: var(--card-border, rgba(255,255,255,0.10)); } }
+  .btn-white:disabled { opacity: 0.55; pointer-events: none; }
+  /* card titles: always one line (ellipsis if needed); descriptions: up to 2 lines */
+  .card h3, .card h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* White pill button + shimmer hover */
+  .btn-white { background: #ffffff; color: #050505; border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; font-weight: 700; text-transform: uppercase;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; box-shadow: 0 4px 15px rgba(0,0,0,0.18); cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
+  @media (hover:hover) { .btn-white:hover { background: linear-gradient(100deg, #8854F3 0%, #F97316 50%, #8854F3 100%); background-size: 250% 250%; color: #ffffff; border-color: transparent;
+      box-shadow: 0 10px 25px -5px rgba(136,84,243,0.45); transform: translateY(-2px); animation: gradientShimmer 4.5s ease infinite; } }
+  .cta { padding: clamp(0.62rem, 2.2vw, 0.95rem) clamp(0.85rem, 3.2vw, 1.35rem); font-size: clamp(9px, 2.7vw, 12.5px); letter-spacing: clamp(0.06em, 0.4vw, 0.1em); gap: clamp(0.4rem, 1.2vw, 0.6rem); }
+  @media (min-width:1024px) { .cta { padding: 0.72rem 1.35rem; font-size: 11.5px; letter-spacing: 0.15em; gap: 0.55rem; } }
+
+  /* ===== Contact screen (hero centered like other blocks, footer pinned) ===== */
+  .contact-screen { position: relative; width: 100%; min-height: 40dvh; transform: translateY(2.8rem); }
+  @media (min-width:1024px) {
+    /* Contact fills the full viewport via %-heights cascading from the fixed, edge-pinned
+       .content-layer (inset:0) — NOT 100dvh. body{zoom} on large screens scales viewport
+       units, so a 100dvh block renders ~15-50% taller than the screen and its bottom rows
+       (Privacy·Terms, copyright, then even the icons) get clipped off the bottom. Percent
+       heights of an edge-pinned ancestor stay exactly one screen tall at any zoom.
+       Hero stays centred; footer pinned to the very bottom. */
+    .panel:has(.contact-screen.active) { height: 100%; }
+    .scroll:has(.contact-screen.active) { max-height: 100%; height: 100%; padding-top: 0; padding-bottom: 0; }
+    .contact-screen { min-height: 100%; justify-content: center; transform: none; }
+  }
+  .contact-hero { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 32rem; margin: auto 0; position: relative; top: 1.4rem; }
+  @media (min-width:1024px) { .contact-hero { gap: clamp(1.4rem, 1.6vw, 2.4rem); margin: 0; top: 0; } }
+  .contact-title { font-size: 2rem; letter-spacing: 0.04em; }
+  @media (min-width:1024px) { .contact-title { font-size: clamp(2.1rem, 2.4vw, 3.6rem); } }
+
+  /* Footer: column (icons on top → Privacy·Terms → copyright); legal hidden on mobile (lives in menu) */
+  .contact-footer { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.65rem; padding-top: 1.1rem; padding-bottom: 0.4rem; }
+  @media (min-width:1024px) { .contact-footer { position: absolute; left: 0; right: 0; bottom: 0; flex-direction: column; align-items: center; gap: 0.9rem; padding-bottom: 1.25rem; } }
+  .contact-social { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+  @media (min-width:1024px) { .contact-social { gap: clamp(1.1rem, 1.5vw, 1.9rem); } }
+  .social { color: #94a3b8; transition: color 0.3s ease, transform 0.3s ease; font-size: 21px; }
+  @media (min-width:1024px) { .social { font-size: clamp(20px, 1.6vw, 28px); } }
+  @media (hover:hover) { .social:hover { color: var(--brand); transform: scale(1.12); } }
+  .contact-legal { display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+  @media (max-width:1023px) { .contact-legal { display: none; } }
+  .legal-link { color: rgba(255,255,255,0.55); font-size: clamp(11px, 0.78vw, 14px); text-transform: uppercase; letter-spacing: 0.08em; transition: color 0.3s ease; white-space: nowrap; }
+  @media (hover:hover) { .legal-link:hover { color: #ffffff; } }
+  .legal-sep { color: rgba(255,255,255,0.3); font-size: 13px; }
+  .copyright { margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.45); white-space: nowrap; text-align: center; }
+  @media (min-width:1024px) { .copyright { font-size: clamp(11px, 0.78vw, 14px); letter-spacing: 0.1em; } }
+
+  /* ===== Landscape phones (short + wide): split layout (video | content) so the hero,
+     speaker badge and caption stop overlapping the way they do in the portrait layout.
+     Uses horizontal space instead of cramming everything into a short height. ===== */
+  @media (max-width:1023px) and (orientation: landscape) {
+    /* video fills the left side, full height; its right edge fades into the black content side */
+    #hero-video { width: 60%; height: 100dvh; transform: none; }
+    .video-shadow { width: 60%; height: 100dvh;
+      background: linear-gradient(to right, transparent 35%, rgba(5,5,5,0.5) 62%, #050505 86%); }
+
+    /* content centred in the right column */
+    .content-layer { justify-content: center; }
+    .panel { width: 44%; height: auto; margin-left: auto; padding: 0 1.4rem; display: block; }
+    .scroll { max-height: 100dvh; justify-content: flex-start; padding: 3.25rem 0.25rem 1rem; overflow-y: auto; }
+
+    /* badge + caption over the video, lower-left — clear of the heading on the right */
+    .speaker { left: 30%; top: auto; bottom: 7%; transform: translateX(-50%); }
+    .caption { left: 30%; top: auto; bottom: calc(7% + 3.3rem); transform: translateX(-50%); }
+
+    /* drop the portrait vertical nudges that cause the overlap */
+    [data-screen="overview"],
+    [data-screen="roadmap"], [data-screen="employees"], [data-screen="products"], [data-screen="education"] { transform: none; }
+
+    /* fit type to the shorter, narrower column */
+    .hero-size { font-size: clamp(1.2rem, 3vw, 1.95rem); }
+    .h2-size  { font-size: clamp(1.25rem, 2.9vw, 1.9rem); }
+    .rm-title { font-size: clamp(1.25rem, 2.5vw, 1.8rem); }
+    .contact-title { font-size: clamp(1.3rem, 3vw, 1.9rem); }
+    .desc { font-size: 12px; line-height: 1.4; }
+
+    /* cards stack vertically inside the panel (no full-bleed horizontal rail) */
+    .rail { flex-direction: column; align-items: stretch; gap: 0.5rem; width: 100%; max-width: 100%;
+      margin: 0; margin-inline: 0; overflow: visible; padding: 0; transform: none; scroll-snap-type: none; }
+    .rail::after { display: none; }
+    .rail-item { flex: initial; width: 100%; scroll-snap-align: none; }
+    .swipe-hint { display: none; }
+
+    /* smaller floating tiles so section blocks fit a short viewport */
+    .float-row { transform: scale(0.6); margin: -1.1rem 0; }
+
+    /* contact: centred hero, footer right under it (normal flow) */
+    .contact-screen { min-height: auto; transform: none; }
+    .contact-hero { top: 0; margin: 0; }
+  }
+
+  /* Scale the whole UI up on large desktop screens so nothing looks tiny
+     (zoom lifts fixed-px elements too — cards, nav, badge — unlike vw units). */
+  @media (min-width:1600px) { body { zoom: 1.15; } }
+  @media (min-width:1900px) { body { zoom: 1.3; } }
+  @media (min-width:2300px) { body { zoom: 1.5; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== Background video ===== -->
+  <div class="scene">
+    <video id="hero-video" src="https://github.com/andre-kuzminykh/andre-ait-page/raw/refs/heads/main/andre-ai-web-small.mp4" loop muted autoplay playsinline preload="auto"></video>
+    <div class="video-shadow" aria-hidden="true"></div>
+  </div>
+
+  <!-- ===== Grain overlay ===== -->
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ===== Header ===== -->
+  <header>
+    <div class="header-row">
+      <div class="header-left">
+        <div class="logo-btn" data-action="home" role="button" tabindex="0" aria-label="Home">
+          <img class="logo-img" src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
+        </div>
+        <div class="speaker">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="speaker-emoji" aria-hidden="true">🤖</span>
+            <h3>Andre AI</h3>
+            <span class="sep">|</span>
+            <p class="role">Chief AI Officer</p>
+          </div>
+          <button class="mic-btn" data-action="mic" aria-label="Toggle voice">
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+              <i id="mic-icon" class="fa-solid fa-microphone-lines-slash" style="font-size: 11px; color: rgba(255,255,255,0.5);"></i>
+              <div id="mic-wave" class="mic-wave" style="display: none;"></div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav" aria-label="Sections">
+        <button class="nav-close" data-action="close-menu" aria-label="Close menu"><i class="fa-solid fa-xmark" style="font-size: 26px;"></i></button>
+        <button class="nav-tab" data-action="tab" data-target="strategy"  style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-chess-knight"></i></span><span class="nav-label">AI Strategy</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
+        <span class="nav-divider" aria-hidden="true">|</span>
+        <button class="nav-tab" data-action="tab" data-target="platform"  style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-layer-group"></i></span><span class="nav-label">AI Business OS</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
+        <span class="nav-divider" aria-hidden="true">|</span>
+        <button class="nav-tab" data-action="tab" data-target="employees" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-robot"></i></span><span class="nav-label">AI Employees</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
+        <span class="nav-divider" aria-hidden="true">|</span>
+        <button class="nav-tab" data-action="tab" data-target="products"  style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-boxes-stacked"></i></span><span class="nav-label">AI Products</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
+        <span class="nav-divider" aria-hidden="true">|</span>
+        <button class="nav-tab" data-action="tab" data-target="education" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-graduation-cap"></i></span><span class="nav-label">AI Education</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
+        <!-- menu footer (mobile only): socials, legal links, copyright; placeholders (#) -->
+        <div class="nav-foot">
+          <div class="nav-social">
+            <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE;"><i class="fa-brands fa-telegram"></i></a>
+            <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3;"><i class="fa-solid fa-globe"></i></a>
+            <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="YouTube" style="--brand:#FF0000;"><i class="fa-brands fa-youtube"></i></a>
+            <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2;"><i class="fa-brands fa-linkedin"></i></a>
+          </div>
+          <div class="nav-legal">
+            <a class="nav-legal-link" href="#" data-action="close-menu" rel="noopener">Privacy Policy</a>
+            <span class="nav-legal-sep" aria-hidden="true">&middot;</span>
+            <a class="nav-legal-link" href="#" data-action="close-menu" rel="noopener">Terms of Use</a>
+          </div>
+          <p class="nav-copy">2026 &copy; Andre AI Technologies LTD</p>
+        </div>
+      </nav>
+
+      <div class="header-right">
+        <button class="menu-btn" data-action="menu" aria-label="Menu"><i id="menu-icon" class="fa-solid fa-bars" style="font-size: clamp(14px, 4vw, 18px);"></i></button>
+        <button class="btn-white cta" data-action="contact">Free AI Diagnostic <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Caption ===== -->
+  <div class="caption"><span id="caption-text"></span></div>
+
+  <!-- ===== Content ===== -->
+  <div class="content-layer">
+    <div class="panel" id="panel">
+      <div class="scroll">
+
+        <!-- OVERVIEW -->
+        <section class="screen active" data-screen="overview" style="position: relative; gap: 1.75rem; max-width: 38rem; text-align: center;">
+          <div class="overview-aura" aria-hidden="true"></div>
+          <h1 class="hero-size" style="position: relative; z-index: 1; margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.12; color: #ffffff; animation: floatSlow 6s ease-in-out infinite;">
+            <span style="display: block; white-space: nowrap;"><span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">AI</span> <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">Transformation</span></span>
+            <span style="display: block; white-space: nowrap;">of your <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">Business</span></span>
+          </h1>
+          <button class="btn-white" data-action="contact" style="padding: 1.05rem 2.1rem; letter-spacing: 0.15em; font-size: 12px; gap: 0.75rem; width: fit-content;">
+            Start AI Transformation <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </section>
+
+        <!-- ROADMAP -->
+        <section class="screen roadmap-col" data-screen="roadmap">
+          <div style="display: flex; align-items: center; gap: 1rem; justify-content: center;">
+            <div style="width: 2.9rem; height: 2.9rem; flex-shrink: 0; border-radius: 0.8rem; background: rgba(136,84,243,0.2); color: #8854F3; display: flex; align-items: center; justify-content: center; font-size: 19px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 8px 24px rgba(0,0,0,0.3);"><i class="fa-solid fa-route"></i></div>
+            <h2 class="rm-title" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; text-shadow: 0 2px 8px rgba(0,0,0,0.5); color: #ffffff;">AI Transformation</h2>
+          </div>
+          <div class="rail" data-rail style="--railmax: 34rem;">
+            <div class="card rail-item" data-action="tab" data-target="strategy" style="--accent:#F97316; display: flex; align-items: center; gap: 0.85rem; padding: 0.72rem 1rem;">
+              <div style="width: 2.9rem; height: 2.9rem; flex-shrink: 0; border-radius: 0.75rem; background: rgba(249,115,22,0.2); color: #F97316; display: flex; align-items: center; justify-content: center; font-size: 19px;"><i class="fa-solid fa-chess-knight"></i></div>
+              <div style="flex: 1; min-width: 0; text-align: left;"><h4 style="margin: 0 0 0.2rem 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ffffff; line-height: 1.1;">AI Strategy</h4><p style="margin: 0; font-size: 10.5px; color: #94a3b8; line-height: 1.35; text-transform: uppercase; letter-spacing: 0.04em;">Diagnose and Design AI-First Processes</p></div>
+              <div style="width: 1.9rem; height: 1.9rem; flex-shrink: 0; border-radius: 999px; background: rgba(249,115,22,0.12); color: #F97316; display: flex; align-items: center; justify-content: center; font-size: 12px;"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+            <div class="card rail-item" data-action="tab" data-target="platform" style="--accent:#8854F3; display: flex; align-items: center; gap: 0.85rem; padding: 0.72rem 1rem;">
+              <div style="width: 2.9rem; height: 2.9rem; flex-shrink: 0; border-radius: 0.75rem; background: rgba(136,84,243,0.2); color: #8854F3; display: flex; align-items: center; justify-content: center; font-size: 19px;"><i class="fa-solid fa-layer-group"></i></div>
+              <div style="flex: 1; min-width: 0; text-align: left;"><h4 style="margin: 0 0 0.2rem 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ffffff; line-height: 1.1;">AI Business OS</h4><p style="margin: 0; font-size: 10.5px; color: #94a3b8; line-height: 1.35; text-transform: uppercase; letter-spacing: 0.04em;">Create a Digital Twin of Your Company</p></div>
+              <div style="width: 1.9rem; height: 1.9rem; flex-shrink: 0; border-radius: 999px; background: rgba(136,84,243,0.12); color: #8854F3; display: flex; align-items: center; justify-content: center; font-size: 12px;"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+            <div class="card rail-item" data-action="tab" data-target="employees" style="--accent:#F97316; display: flex; align-items: center; gap: 0.85rem; padding: 0.72rem 1rem;">
+              <div style="width: 2.9rem; height: 2.9rem; flex-shrink: 0; border-radius: 0.75rem; background: rgba(249,115,22,0.2); color: #F97316; display: flex; align-items: center; justify-content: center; font-size: 19px;"><i class="fa-solid fa-robot"></i></div>
+              <div style="flex: 1; min-width: 0; text-align: left;"><h4 style="margin: 0 0 0.2rem 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ffffff; line-height: 1.1;">AI Employees</h4><p style="margin: 0; font-size: 10.5px; color: #94a3b8; line-height: 1.35; text-transform: uppercase; letter-spacing: 0.04em;">Hire AI Agents for Business Operations</p></div>
+              <div style="width: 1.9rem; height: 1.9rem; flex-shrink: 0; border-radius: 999px; background: rgba(249,115,22,0.12); color: #F97316; display: flex; align-items: center; justify-content: center; font-size: 12px;"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+            <div class="card rail-item" data-action="tab" data-target="products" style="--accent:#8854F3; display: flex; align-items: center; gap: 0.85rem; padding: 0.72rem 1rem;">
+              <div style="width: 2.9rem; height: 2.9rem; flex-shrink: 0; border-radius: 0.75rem; background: rgba(136,84,243,0.2); color: #8854F3; display: flex; align-items: center; justify-content: center; font-size: 19px;"><i class="fa-solid fa-boxes-stacked"></i></div>
+              <div style="flex: 1; min-width: 0; text-align: left;"><h4 style="margin: 0 0 0.2rem 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ffffff; line-height: 1.1;">AI Products</h4><p style="margin: 0; font-size: 10.5px; color: #94a3b8; line-height: 1.35; text-transform: uppercase; letter-spacing: 0.04em;">Gain Superpowers for Human Good</p></div>
+              <div style="width: 1.9rem; height: 1.9rem; flex-shrink: 0; border-radius: 999px; background: rgba(136,84,243,0.12); color: #8854F3; display: flex; align-items: center; justify-content: center; font-size: 12px;"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+            <div class="card rail-item" data-action="tab" data-target="education" style="--accent:#F97316; display: flex; align-items: center; gap: 0.85rem; padding: 0.72rem 1rem;">
+              <div style="width: 2.9rem; height: 2.9rem; flex-shrink: 0; border-radius: 0.75rem; background: rgba(249,115,22,0.2); color: #F97316; display: flex; align-items: center; justify-content: center; font-size: 19px;"><i class="fa-solid fa-graduation-cap"></i></div>
+              <div style="flex: 1; min-width: 0; text-align: left;"><h4 style="margin: 0 0 0.2rem 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ffffff; line-height: 1.1;">AI Education</h4><p style="margin: 0; font-size: 10.5px; color: #94a3b8; line-height: 1.35; text-transform: uppercase; letter-spacing: 0.04em;">Develop AI Skills for New Roles</p></div>
+              <div style="width: 1.9rem; height: 1.9rem; flex-shrink: 0; border-radius: 999px; background: rgba(249,115,22,0.12); color: #F97316; display: flex; align-items: center; justify-content: center; font-size: 12px;"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+          </div>
+          <p class="swipe-hint"><i class="fa-solid fa-arrows-left-right"></i> Swipe</p>
+        </section>
+
+        <!-- AI STRATEGY -->
+        <section class="screen sec" data-screen="strategy" style="text-align: center;">
+          <div class="float-row">
+            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-magnifying-glass-chart" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+            <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-network-wired" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
+            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-chess-knight" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+          </div>
+          <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Strategy</h2>
+          <p class="desc">Learn How to Become an AI Company</p>
+          <button class="btn-white" data-action="contact" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Get AI Strategy <i class="fa-solid fa-arrow-right"></i></button>
+        </section>
+
+        <!-- AI BUSINESS OS -->
+        <section class="screen sec" data-screen="platform" style="text-align: center;">
+          <div class="float-row">
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-database" style="font-size: 26px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
+            <div class="tile lg" style="border: 1px solid rgba(136,84,243,0.5); box-shadow: 0 10px 30px rgba(136,84,243,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-brain" style="font-size: 38px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-server" style="font-size: 26px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
+          </div>
+          <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Business OS</h2>
+          <p class="desc">Create a Digital Twin of Your Company</p>
+          <button class="btn-white" disabled aria-label="AI Business OS — в разработке" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Get AI Platform <span class="card-loading"></span></button>
+        </section>
+
+        <!-- AI EMPLOYEES -->
+        <section class="screen" data-screen="employees">
+          <div class="group" data-part="intro" style="text-align: center;">
+            <div class="float-row">
+              <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3);"><i class="fa-solid fa-chart-line" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+              <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); animation-delay: 0.2s;"><i class="fa-solid fa-robot" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
+              <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); animation-delay: 0.4s;"><i class="fa-solid fa-laptop-code" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+            </div>
+            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Employees</h2>
+            <p class="desc">Hire AI Workforce for Business Automation</p>
+            <button class="btn-white" data-action="toggle-employees" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Employees <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+          <div class="group" data-part="list" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 0.85rem; justify-content: center; cursor: pointer;" data-action="toggle-employees">
+              <div style="width: 2.9rem; height: 2.9rem; border-radius: 0.8rem; background: rgba(249,115,22,0.2); color: #F97316; display: flex; align-items: center; justify-content: center; font-size: 19px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);"><i class="fa-solid fa-robot"></i></div>
+              <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5); white-space: nowrap;">AI Employees</h2>
+            </div>
+            <div class="rail" data-rail>
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-user-tie" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Manager</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Manages tasks and work</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-user-group" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI HR</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Develops and supports humans</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-bullhorn" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Marketer</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Executes marketing campaigns</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-hashtag" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI SMM</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Produces social media content</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-handshake" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Sales</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Generates leads and supports sales</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-headset" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Support</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Assists customers and resolves issues</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-chart-line" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Analyst</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Analyzes data and provides insights</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-palette" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Designer</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Creates visuals and presentations</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-code" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Developer</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Builds applications and automations</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-gears" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Engineer</h3><p style="margin: 0.15rem 0 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Supports systems and integrations</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+            </div>
+            <p class="swipe-hint"><i class="fa-solid fa-arrows-left-right"></i> Swipe</p>
+          </div>
+        </section>
+
+        <!-- AI PRODUCTS -->
+        <section class="screen" data-screen="products">
+          <div class="group" data-part="intro" style="text-align: center;">
+            <div class="float-row">
+              <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3);"><i class="fa-solid fa-boxes-stacked" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+              <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); animation-delay: 0.2s;"><i class="fa-solid fa-wand-magic-sparkles" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
+              <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); animation-delay: 0.4s;"><i class="fa-solid fa-brain" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+            </div>
+            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Products</h2>
+            <p class="desc">Build AI Products for Human Good</p>
+            <button class="btn-white" data-action="toggle-products" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Products <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+          <div class="group" data-part="list" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 0.85rem; justify-content: center; cursor: pointer;" data-action="toggle-products">
+              <div style="width: 2.9rem; height: 2.9rem; border-radius: 0.8rem; background: rgba(249,115,22,0.2); color: #F97316; display: flex; align-items: center; justify-content: center; font-size: 19px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+              <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5); white-space: nowrap;">AI Products</h2>
+            </div>
+            <div class="rail" data-rail>
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.95rem; text-align: left;">
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;"><i class="fa-solid fa-boxes-stacked" style="font-size: 30px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-size: 15px; font-weight: 700; text-transform: uppercase;">Dataist AI</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Education Assistant</p></div></div>
+                <span class="card-go"><i class="fa-solid fa-arrow-right"></i></span>
+              </div>
+              <div class="card rail-item" style="--accent:#F97316; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.95rem; text-align: left;">
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;"><i class="fa-solid fa-wand-magic-sparkles" style="font-size: 30px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-size: 15px; font-weight: 700; text-transform: uppercase;">Landao AI</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Personal Assistant</p></div></div>
+                <span class="card-go"><i class="fa-solid fa-arrow-right"></i></span>
+              </div>
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.95rem; text-align: left;">
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;"><i class="fa-solid fa-brain" style="font-size: 30px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-size: 15px; font-weight: 700; text-transform: uppercase;">Neurolady AI</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Conversational Assistant</p></div></div>
+                <span class="card-go"><i class="fa-solid fa-arrow-right"></i></span>
+              </div>
+            </div>
+            <p class="swipe-hint"><i class="fa-solid fa-arrows-left-right"></i> Swipe</p>
+          </div>
+        </section>
+
+        <!-- AI EDUCATION -->
+        <section class="screen" data-screen="education">
+          <div class="group" data-part="intro" style="text-align: center;">
+            <div class="float-row">
+              <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3);"><i class="fa-solid fa-user-tie" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+              <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); animation-delay: 0.2s;"><i class="fa-solid fa-graduation-cap" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
+              <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); animation-delay: 0.4s;"><i class="fa-solid fa-laptop-code" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+            </div>
+            <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Education</h2>
+            <p class="desc">Master Human Skills AI Can’t Replace</p>
+            <button class="btn-white" data-action="toggle-education" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Courses <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+          <div class="group" data-part="list" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 0.85rem; justify-content: center; cursor: pointer;" data-action="toggle-education">
+              <div style="width: 2.9rem; height: 2.9rem; border-radius: 0.8rem; background: rgba(249,115,22,0.2); color: #F97316; display: flex; align-items: center; justify-content: center; font-size: 19px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);"><i class="fa-solid fa-graduation-cap"></i></div>
+              <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5); white-space: nowrap;">AI Education</h2>
+            </div>
+            <div class="rail" data-rail>
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-user-tie" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Executive Management</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Strategic leadership in AI transformation</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <a href="https://andre.technology/automation/" rel="noopener" aria-label="Открыть курс по ИИ-автоматизации" style="display: flex; align-items: center; gap: 0.9rem; color: inherit;"><i class="fa-solid fa-gears" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Process Automation</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Automating business workflows with AI agents</p></div><span class="card-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+              </div>
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-box-open" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Product Development</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Create New Products End-to-End with AI</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+              <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-laptop-code" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">AI Engineering</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Designing and deploying high-load AI systems</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
+              </div>
+            </div>
+            <p class="swipe-hint"><i class="fa-solid fa-arrows-left-right"></i> Swipe</p>
+          </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section class="screen contact-screen" data-screen="contact" style="text-align: center;">
+          <div class="contact-hero">
+            <h2 class="h2-size contact-title" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.12; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);"><span style="color: #ffffff;">Start</span><br><span style="white-space: nowrap;"><span style="color: #8854F3;">AI</span> <span style="color: #F97316;">Transformation</span></span></h2>
+            <button class="btn-white" data-action="contact" style="padding: clamp(1.05rem, 0.9vw, 1.4rem) clamp(2.1rem, 1.8vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(13px, 0.85vw, 16px); width: fit-content;">Free AI Diagnostic <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+          <div class="contact-footer">
+            <div class="contact-social">
+              <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE;"><i class="fa-brands fa-telegram"></i></a>
+              <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3;"><i class="fa-solid fa-globe"></i></a>
+              <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="YouTube" style="--brand:#FF0000;"><i class="fa-brands fa-youtube"></i></a>
+              <a class="social" href="https://t.me/andre_andreevich" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2;"><i class="fa-brands fa-linkedin"></i></a>
+            </div>
+            <!-- legal links: placeholders (#) — replace href with real Privacy/Terms URLs; hidden on mobile (shown in menu) -->
+            <div class="contact-legal">
+              <a class="legal-link" href="#" rel="noopener">Privacy Policy</a>
+              <span class="legal-sep" aria-hidden="true">&middot;</span>
+              <a class="legal-link" href="#" rel="noopener">Terms of Use</a>
+            </div>
+            <p class="copyright">2026 &copy; Andre AI Technologies LTD</p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* roadmap is a detour block: reached only via the overview CTA / its own cards, NOT in the scroll sequence */
+  var ORDER = ['overview', 'strategy', 'platform', 'employees', 'products', 'education', 'contact'];
+  /* all reachable screens (roadmap is reachable via the CTA/cards though it's out of ORDER) */
+  var SCREENS = ['overview', 'roadmap', 'strategy', 'platform', 'employees', 'products', 'education', 'contact'];
+  var CONTACT_URL = 'https://t.me/andre_andreevich';
+  var CUES = [
+    { t: 0.0,  text: "Hi I'm Andre AI" },
+    { t: 2.6,  text: "your Chief AI Officer" },
+    { t: 5.0,  text: "I'll help you" },
+    { t: 7.0,  text: "diagnose your company's AI Maturity" },
+    { t: 9.0,  text: "design your AI Transformation Strategy" },
+    { t: 11.0, text: "and build an AI Operating System" },
+    { t: 14.0, text: "with more than 100 AI employees" },
+    { t: 17.0, text: "Together we'll turn your business" },
+    { t: 19.0, text: "into an AI Company" },
+    { t: 21.0, text: "so you can master the new AI professions" },
+    { t: 24.0, text: "and create products for Human Good" }
+  ];
+
+  var state = { tab: 'overview', isMuted: true, menuOpen: false, expanded: {} };
+
+  var panel = document.getElementById('panel');
+  var video = document.getElementById('hero-video');
+  var caption = document.getElementById('caption-text');
+  var nav = document.getElementById('nav');
+  var micIcon = document.getElementById('mic-icon');
+  var micWave = document.getElementById('mic-wave');
+  var menuIcon = document.getElementById('menu-icon');
+  var mqDesktop = window.matchMedia('(min-width: 1024px)');
+
+  function screenEls() { return document.querySelectorAll('[data-screen]'); }
+  function showScreen(id) {
+    screenEls().forEach(function (s) { s.classList.toggle('active', s.getAttribute('data-screen') === id); });
+  }
+  function setActiveNav(id) {
+    document.querySelectorAll('.nav-tab').forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-target') === id); });
+  }
+
+  /* ---- screen switching with leave/enter animation ---- */
+  var swapT, enterT;
+  function openTab(id) {
+    if (SCREENS.indexOf(id) < 0) return;
+    if (id === state.tab) { closeMenu(); return; }
+    closeMenu();
+    panel.classList.add('leaving');
+    clearTimeout(swapT); clearTimeout(enterT);
+    swapT = setTimeout(function () {
+      state.tab = id;
+      state.expanded = {};
+      applyExpanded();
+      showScreen(id);
+      setActiveNav(id);
+      panel.classList.remove('leaving');
+      panel.classList.add('entering');
+      enterT = setTimeout(function () { panel.classList.remove('entering'); }, 560);
+      setTimeout(alignRails, 80);
+      setTimeout(alignRails, 600);
+    }, 240);
+  }
+  function navStep(dir) {
+    /* roadmap is out of ORDER: scrolling forward goes to the first section, back to overview */
+    if (state.tab === 'roadmap') { openTab(dir > 0 ? 'strategy' : 'overview'); return; }
+    var i = ORDER.indexOf(state.tab);
+    var ni = i + dir;
+    if (ni < 0 || ni >= ORDER.length) return;
+    openTab(ORDER[ni]);
+  }
+
+  /* ---- inner-scroll detection (so rails / long content keep their own scroll) ---- */
+  function scrollableInAxis(target, horizontal) {
+    var node = target;
+    while (node && node !== document.body) {
+      if (node.nodeType === 1) {
+        var span = horizontal ? (node.scrollWidth - node.clientWidth) : (node.scrollHeight - node.clientHeight);
+        if (span > 4) {
+          var ov = getComputedStyle(node)[horizontal ? 'overflowX' : 'overflowY'];
+          if (ov === 'auto' || ov === 'scroll') return node;
+        }
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  /* ---- wheel ---- */
+  var lastWheel = 0;
+  window.addEventListener('wheel', function (e) {
+    if (state.menuOpen) return;
+    var sc = scrollableInAxis(e.target, false);
+    if (sc) {
+      var canDown = sc.scrollTop + sc.clientHeight < sc.scrollHeight - 2;
+      var canUp = sc.scrollTop > 2;
+      if ((e.deltaY > 0 && canDown) || (e.deltaY < 0 && canUp)) return;
+    }
+    if (Math.abs(e.deltaY) < 30) return;
+    var now = Date.now();
+    if (now - lastWheel < 900) return;
+    lastWheel = now;
+    navStep(e.deltaY > 0 ? 1 : -1);
+  }, { passive: true });
+
+  /* ---- touch ---- */
+  var tx = null, ty = null, lastSwipe = 0;
+  window.addEventListener('touchstart', function (e) {
+    if (!e.touches || !e.touches[0]) return;
+    tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+  }, { passive: true });
+  window.addEventListener('touchend', function (e) {
+    if (state.menuOpen) return;
+    var t = e.changedTouches && e.changedTouches[0];
+    if (!t || tx == null) return;
+    var dx = t.clientX - tx, dy = t.clientY - ty;
+    var adx = Math.abs(dx), ady = Math.abs(dy);
+    if (Math.max(adx, ady) < 45) return;
+    var horizontal = adx > ady;
+    if (scrollableInAxis(e.target, horizontal)) return;
+    var now = Date.now();
+    if (now - lastSwipe < 700) return;
+    lastSwipe = now;
+    navStep((horizontal ? dx : dy) < 0 ? 1 : -1);
+  }, { passive: true });
+
+  /* ---- keyboard ---- */
+  window.addEventListener('keydown', function (e) {
+    if (state.menuOpen) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navStep(1);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navStep(-1);
+  });
+
+  /* ---- mic / audio ---- */
+  function setMuted(m) {
+    state.isMuted = m;
+    video.muted = m;
+    micIcon.className = 'fa-solid ' + (m ? 'fa-microphone-lines-slash' : 'fa-microphone-lines');
+    micIcon.style.color = m ? 'rgba(255,255,255,0.5)' : '#8854F3';
+    micWave.style.display = m ? 'none' : 'block';
+    try { video.currentTime = 0; } catch (err) {}
+    var p = video.play && video.play();
+    if (p && p.catch) p.catch(function () {});
+  }
+  function toggleMic() { setMuted(!state.isMuted); }
+
+  /* ---- menu (mobile) ---- */
+  function toggleMenu() {
+    state.menuOpen = !state.menuOpen;
+    nav.classList.toggle('open', state.menuOpen);
+    menuIcon.className = 'fa-solid ' + (state.menuOpen ? 'fa-xmark' : 'fa-bars');
+  }
+  function closeMenu() {
+    if (!state.menuOpen) return;
+    state.menuOpen = false;
+    nav.classList.remove('open');
+    menuIcon.className = 'fa-solid fa-bars';
+  }
+
+  /* ---- expand/collapse products & education ---- */
+  function applyExpanded() {
+    ['employees', 'products', 'education'].forEach(function (k) {
+      var sec = document.querySelector('[data-screen="' + k + '"]');
+      if (!sec) return;
+      var open = !!state.expanded[k];
+      var intro = sec.querySelector('[data-part="intro"]');
+      var list = sec.querySelector('[data-part="list"]');
+      if (intro) intro.style.display = open ? 'none' : 'flex';
+      if (list) list.style.display = open ? 'flex' : 'none';
+    });
+  }
+  function toggleExpand(k) {
+    state.expanded[k] = !state.expanded[k];
+    applyExpanded();
+    setTimeout(alignRails, 40);
+  }
+
+  /* ---- contact CTA ---- */
+  function openContact() { window.open(CONTACT_URL, '_blank', 'noopener'); }
+
+  /* ---- rails are full-bleed via pure CSS (align-self:start + negative margin); clear any stale transform ---- */
+  function alignRails() {
+    document.querySelectorAll('[data-rail]').forEach(function (r) { r.style.transform = 'none'; });
+  }
+
+  /* ---- desktop video mask ---- */
+  function applyVideoMask() {
+    var m = mqDesktop.matches
+      ? 'linear-gradient(to right, #000 0%, #000 56%, rgba(0,0,0,0.72) 70%, rgba(0,0,0,0.32) 84%, transparent 96%)'
+      : 'none';
+    video.style.webkitMaskImage = m;
+    video.style.maskImage = m;
+  }
+
+  /* ---- captions synced to video time ---- */
+  function capTick() {
+    var ct = video.currentTime || 0, cur = '';
+    for (var i = 0; i < CUES.length; i++) {
+      if (ct >= CUES[i].t) cur = CUES[i].text; else break;
+    }
+    if (caption.textContent !== cur) caption.textContent = cur;
+  }
+
+  /* ---- event wiring (delegated) ---- */
+  function handleAction(el, e) {
+    var a = el.getAttribute('data-action');
+    if (a === 'home') openTab('overview');
+    else if (a === 'mic') toggleMic();
+    else if (a === 'menu') toggleMenu();
+    else if (a === 'close-menu') closeMenu();
+    else if (a === 'contact') { if (e) e.stopPropagation(); openContact(); }
+    else if (a === 'tab') openTab(el.getAttribute('data-target'));
+    else if (a === 'toggle-employees') toggleExpand('employees');
+    else if (a === 'toggle-products') toggleExpand('products');
+    else if (a === 'toggle-education') toggleExpand('education');
+  }
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-action]');
+    if (el) handleAction(el, e);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var el = e.target.closest && e.target.closest('[data-action]');
+    if (el && el.tagName !== 'BUTTON') { e.preventDefault(); handleAction(el, e); }
+  });
+  video.addEventListener('click', toggleMic);
+
+  /* ---- init ---- */
+  function init() {
+    showScreen('overview');
+    setActiveNav('overview');
+    applyExpanded();
+    setMuted(true);
+    applyVideoMask();
+    alignRails();
+
+    video.loop = true;
+    video.muted = true;
+    var p = video.play && video.play();
+    if (p && p.catch) p.catch(function () {});
+    video.addEventListener('ended', function () {
+      try { video.currentTime = 0; } catch (err) {}
+      video.muted = state.isMuted;
+      var p2 = video.play && video.play();
+      if (p2 && p2.catch) p2.catch(function () {});
+    });
+
+    setInterval(capTick, 110);
+
+    var onResize = function () { applyVideoMask(); alignRails(); };
+    window.addEventListener('resize', onResize);
+    if (mqDesktop.addEventListener) mqDesktop.addEventListener('change', onResize);
+    else if (mqDesktop.addListener) mqDesktop.addListener(onResize);
+  }
+
+  if (document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
