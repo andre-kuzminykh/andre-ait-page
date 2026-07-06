@@ -346,8 +346,6 @@
   .cookie-banner[hidden] { display: none; }
   .cookie-banner p { margin: 0; flex: 1; font-size: 11.5px; line-height: 1.5; color: #cbd5e1; text-align: left; }
   .cookie-ok { padding: 0.55rem 1.35rem; font-size: 11px; letter-spacing: 0.12em; flex-shrink: 0; }
-  /* while the banner is up on mobile, lift the bottom-anchored content so the banner can't cover the primary CTA */
-  @media (max-width:1023px) { body.cookie-open .content-layer { padding-bottom: 7rem; } }
 
   /* ===== Early-access popup ===== */
   /* overlay scrolls and the card uses margin:auto so it stays fully reachable
@@ -904,14 +902,11 @@
   var cookieBanner = document.getElementById('cookie-banner');
   function initCookieBanner() {
     if (!cookieBanner || storeGet(COOKIE_KEY) === '1') return;
-    setTimeout(function () {
-      cookieBanner.hidden = false;
-      document.body.classList.add('cookie-open');
-    }, 500);
+    /* the banner overlays the bottom of the page; it must NOT shift any content */
+    setTimeout(function () { cookieBanner.hidden = false; }, 500);
   }
   function acceptCookies() {
     storeSet(COOKIE_KEY, '1');
-    document.body.classList.remove('cookie-open');
     if (cookieBanner) cookieBanner.hidden = true;
   }
 
