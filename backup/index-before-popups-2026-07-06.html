@@ -336,48 +336,6 @@
   @media (min-width:1900px) { body { zoom: 1.3; } }
   @media (min-width:2300px) { body { zoom: 1.5; } }
 
-  /* ===== Cookie consent banner ===== */
-  @keyframes bannerIn { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
-  .cookie-banner { position: fixed; left: 50%; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
-    z-index: 40; display: flex; align-items: center; gap: 0.9rem; width: min(92vw, 34rem); box-sizing: border-box;
-    background: rgba(21,21,27,0.92); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.12); border-radius: 1rem; padding: 0.85rem 1rem;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5); animation: bannerIn 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
-  .cookie-banner[hidden] { display: none; }
-  .cookie-banner p { margin: 0; flex: 1; font-size: 11.5px; line-height: 1.5; color: #cbd5e1; text-align: left; }
-  .cookie-ok { padding: 0.55rem 1.35rem; font-size: 11px; letter-spacing: 0.12em; flex-shrink: 0; }
-  /* while the banner is up on mobile, lift the bottom-anchored content so the banner can't cover the primary CTA */
-  @media (max-width:1023px) { body.cookie-open .content-layer { padding-bottom: 7rem; } }
-
-  /* ===== Early-access popup ===== */
-  /* overlay scrolls and the card uses margin:auto so it stays fully reachable
-     even when taller than a short (landscape / keyboard-open) viewport */
-  .modal-overlay { position: fixed; inset: 0; z-index: 100; display: flex; overflow-y: auto; -webkit-overflow-scrolling: touch;
-    background: rgba(5,5,5,0.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-    padding: max(1rem, env(safe-area-inset-top, 0px)) 1.25rem max(1rem, env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
-  .modal-overlay[hidden] { display: none; }
-  @keyframes modalIn { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-  .modal { position: relative; width: min(100%, 24rem); margin: auto; box-sizing: border-box; background: #15151b;
-    border: 1px solid rgba(255,255,255,0.12); border-radius: 1.1rem; padding: 2rem 1.6rem 1.75rem; text-align: center;
-    box-shadow: 0 24px 70px rgba(0,0,0,0.6), 0 0 60px rgba(136,84,243,0.10); animation: modalIn 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
-  .modal-close { position: absolute; top: 0.7rem; right: 0.7rem; width: 2.1rem; height: 2.1rem; display: flex; align-items: center; justify-content: center;
-    background: transparent; border: 0; border-radius: 999px; color: rgba(255,255,255,0.55); font-size: 17px; cursor: pointer; transition: color 0.25s ease; padding: 0; }
-  @media (hover:hover) { .modal-close:hover { color: #ffffff; } }
-  .modal h3 { margin: 0 0 0.5rem; font-size: 1.25rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #ffffff; }
-  .modal-sub { margin: 0 0 1.35rem; font-size: 13px; line-height: 1.55; color: #cbd5e1; }
-  .lead-form { display: flex; flex-direction: column; gap: 0.7rem; }
-  .lead-input { width: 100%; box-sizing: border-box; background: #0d0d12; border: 1px solid rgba(255,255,255,0.14); border-radius: 0.7rem;
-    color: #E5E7EB; font-family: inherit; font-size: 13.5px; padding: 0.85rem 1rem; transition: border-color 0.25s ease; }
-  .lead-input::placeholder { color: rgba(229,231,235,0.4); }
-  .lead-input:focus { outline: none; border-color: #8854F3; }
-  .lead-input.invalid { border-color: #ef4444; }
-  .lead-error { margin: -0.2rem 0 0; font-size: 11px; color: #f87171; text-align: left; }
-  .lead-error[hidden] { display: none; }
-  .lead-submit { margin-top: 0.35rem; padding: 0.9rem 1.5rem; font-size: 12px; letter-spacing: 0.14em; width: 100%; }
-  .lead-submit:disabled { opacity: 0.6; pointer-events: none; }
-  .thanks-icon { width: 3.2rem; height: 3.2rem; margin: 0 auto 1rem; border-radius: 999px; display: flex; align-items: center; justify-content: center;
-    background: rgba(136,84,243,0.18); color: #a071ff; font-size: 22px; }
-
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; }
   }
@@ -529,7 +487,7 @@
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Business OS</h2>
           <p class="desc">Create a Digital Twin of Your Company</p>
-          <button class="btn-white" data-action="lead-open" data-source="AI Business OS" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Get AI Platform <i class="fa-solid fa-arrow-right"></i></button>
+          <button class="btn-white" disabled aria-label="AI Business OS — в разработке" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Get AI Platform <span class="card-loading"></span></button>
         </section>
 
         <!-- AI EMPLOYEES -->
@@ -603,15 +561,15 @@
               <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5); white-space: nowrap;">AI Products</h2>
             </div>
             <div class="rail" data-rail>
-              <div class="card rail-item" data-action="lead-open" data-source="Dataist AI" role="button" tabindex="0" style="--accent:#8854F3; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.95rem; text-align: left;">
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.95rem; text-align: left;">
                 <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;"><i class="fa-solid fa-boxes-stacked" style="font-size: 30px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-size: 15px; font-weight: 700; text-transform: uppercase;">Dataist AI</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Education Assistant</p></div></div>
                 <span class="card-go"><i class="fa-solid fa-arrow-right"></i></span>
               </div>
-              <div class="card rail-item" data-action="lead-open" data-source="Landao AI" role="button" tabindex="0" style="--accent:#F97316; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.95rem; text-align: left;">
+              <div class="card rail-item" style="--accent:#F97316; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.95rem; text-align: left;">
                 <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;"><i class="fa-solid fa-wand-magic-sparkles" style="font-size: 30px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-size: 15px; font-weight: 700; text-transform: uppercase;">Landao AI</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Personal Assistant</p></div></div>
                 <span class="card-go"><i class="fa-solid fa-arrow-right"></i></span>
               </div>
-              <div class="card rail-item" data-action="lead-open" data-source="Neurolady AI" role="button" tabindex="0" style="--accent:#8854F3; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.95rem; text-align: left;">
+              <div class="card rail-item" style="--accent:#8854F3; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.95rem; text-align: left;">
                 <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;"><i class="fa-solid fa-brain" style="font-size: 30px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-size: 15px; font-weight: 700; text-transform: uppercase;">Neurolady AI</h3><p style="margin: 0; font-size: 11px; color: #94a3b8;">Conversational Assistant</p></div></div>
                 <span class="card-go"><i class="fa-solid fa-arrow-right"></i></span>
               </div>
@@ -682,36 +640,6 @@
     </div>
   </div>
 
-  <!-- ===== Cookie consent banner (shown once per user) ===== -->
-  <div class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Cookie notice" hidden>
-    <p>We use cookies to improve your experience. By continuing to use this website, you agree to our use of cookies.</p>
-    <button class="btn-white cookie-ok" data-action="cookie-ok" type="button">OK</button>
-  </div>
-
-  <!-- ===== Early-access lead popup ===== -->
-  <div class="modal-overlay" id="lead-modal" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="lead-title">
-      <button class="modal-close" data-action="lead-close" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
-      <div id="lead-step-form">
-        <h3 id="lead-title">Coming soon</h3>
-        <p class="modal-sub">Leave your email to get early access.</p>
-        <form class="lead-form" id="lead-form" novalidate>
-          <input class="lead-input" id="lead-name" type="text" name="name" placeholder="Your name" autocomplete="name">
-          <input class="lead-input" id="lead-email" type="email" name="email" placeholder="Your email *" autocomplete="email" required aria-required="true">
-          <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position: absolute; left: -5000px; width: 1px; height: 1px; opacity: 0;">
-          <p class="lead-error" id="lead-error" hidden>Please enter a valid email address.</p>
-          <button class="btn-white lead-submit" id="lead-submit" type="submit">Contact me</button>
-        </form>
-      </div>
-      <div id="lead-step-thanks" hidden>
-        <div class="thanks-icon"><i class="fa-solid fa-check"></i></div>
-        <h3>Thank you!</h3>
-        <p class="modal-sub" style="margin-bottom: 1.1rem;">We&rsquo;ll contact you soon.</p>
-        <button class="btn-white lead-submit" data-action="lead-close" type="button" style="margin-top: 0;">OK</button>
-      </div>
-    </div>
-  </div>
-
 <script>
 (function () {
   "use strict";
@@ -720,12 +648,7 @@
   var ORDER = ['overview', 'strategy', 'platform', 'employees', 'products', 'education', 'contact'];
   /* all reachable screens (roadmap is reachable via the CTA/cards though it's out of ORDER) */
   var SCREENS = ['overview', 'roadmap', 'strategy', 'platform', 'employees', 'products', 'education', 'contact'];
-  /* Leads are e-mailed via FormSubmit; first submission triggers a one-time
-     activation e-mail to this address — confirm it once and leads flow in. */
-  var LEAD_ENDPOINT = 'https://formsubmit.co/ajax/admin@andre.technology';
-  var COOKIE_KEY = 'ait_cookie_ok';
-  var LEADS_KEY = 'ait_leads';
-  var QUEUE_KEY = 'ait_lead_queue';
+  var CONTACT_URL = 'https://t.me/andre_andreevich';
   var CUES = [
     { t: 0.0,  text: "Hi I'm Andre AI" },
     { t: 2.6,  text: "your Chief AI Officer" },
@@ -740,7 +663,7 @@
     { t: 24.0, text: "and create products for Human Good" }
   ];
 
-  var state = { tab: 'overview', isMuted: true, menuOpen: false, expanded: {}, leadOpen: false, leadSource: '', leadGen: 0 };
+  var state = { tab: 'overview', isMuted: true, menuOpen: false, expanded: {} };
 
   var panel = document.getElementById('panel');
   var video = document.getElementById('hero-video');
@@ -808,7 +731,7 @@
   /* ---- wheel ---- */
   var lastWheel = 0;
   window.addEventListener('wheel', function (e) {
-    if (state.menuOpen || state.leadOpen) return;
+    if (state.menuOpen) return;
     var sc = scrollableInAxis(e.target, false);
     if (sc) {
       var canDown = sc.scrollTop + sc.clientHeight < sc.scrollHeight - 2;
@@ -829,7 +752,7 @@
     tx = e.touches[0].clientX; ty = e.touches[0].clientY;
   }, { passive: true });
   window.addEventListener('touchend', function (e) {
-    if (state.menuOpen || state.leadOpen) return;
+    if (state.menuOpen) return;
     var t = e.changedTouches && e.changedTouches[0];
     if (!t || tx == null) return;
     var dx = t.clientX - tx, dy = t.clientY - ty;
@@ -845,7 +768,6 @@
 
   /* ---- keyboard ---- */
   window.addEventListener('keydown', function (e) {
-    if (state.leadOpen) { if (e.key === 'Escape') closeLead(); return; }
     if (state.menuOpen) return;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navStep(1);
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navStep(-1);
@@ -895,162 +817,8 @@
     setTimeout(alignRails, 40);
   }
 
-  /* ---- safe localStorage (private mode / blocked storage falls back to no-op) ---- */
-  function storeGet(k) { try { return localStorage.getItem(k); } catch (err) { return null; } }
-  function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (err) {} }
-  function storeJSON(k) { try { return JSON.parse(storeGet(k)) || []; } catch (err) { return []; } }
-
-  /* ---- cookie consent (shown once per user) ---- */
-  var cookieBanner = document.getElementById('cookie-banner');
-  function initCookieBanner() {
-    if (!cookieBanner || storeGet(COOKIE_KEY) === '1') return;
-    setTimeout(function () {
-      cookieBanner.hidden = false;
-      document.body.classList.add('cookie-open');
-    }, 500);
-  }
-  function acceptCookies() {
-    storeSet(COOKIE_KEY, '1');
-    document.body.classList.remove('cookie-open');
-    if (cookieBanner) cookieBanner.hidden = true;
-  }
-
-  /* ---- early-access lead popup ---- */
-  var leadModal = document.getElementById('lead-modal');
-  var leadForm = document.getElementById('lead-form');
-  var leadStepForm = document.getElementById('lead-step-form');
-  var leadStepThanks = document.getElementById('lead-step-thanks');
-  var leadName = document.getElementById('lead-name');
-  var leadEmail = document.getElementById('lead-email');
-  var leadError = document.getElementById('lead-error');
-  var leadSubmit = document.getElementById('lead-submit');
-
-  function openLead(source) {
-    closeMenu();
-    state.leadOpen = true;
-    state.leadGen++;
-    state.leadSource = source || 'General';
-    leadForm.reset();
-    leadStepForm.hidden = false;
-    leadStepThanks.hidden = true;
-    leadError.hidden = true;
-    leadEmail.classList.remove('invalid');
-    leadSubmit.disabled = false;
-    leadSubmit.textContent = 'Contact me';
-    leadModal.hidden = false;
-    setTimeout(function () { try { leadEmail.focus(); } catch (err) {} }, 80);
-  }
-  function closeLead() {
-    state.leadOpen = false;
-    state.leadGen++;
-    leadModal.hidden = true;
-    /* swallow residual trackpad wheel inertia (which keeps firing ~1s after the
-       gesture) so it can't jump sections the instant the modal closes; touch
-       swipes have no phantom events, so they are not debounced here */
-    lastWheel = Date.now();
-  }
-
-  function sendLead(lead) {
-    if (!window.fetch) throw new Error('fetch unavailable');
-    return fetch(LEAD_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        name: lead.name || '—',
-        email: lead.email,
-        interested_in: lead.source,
-        page: lead.page,
-        submitted_at: lead.when,
-        _subject: 'New early-access lead — andre.technology',
-        _template: 'table',
-        _captcha: 'false'
-      })
-    }).then(function (r) { if (!r.ok) throw new Error('lead send failed: ' + r.status); return r; });
-  }
-  /* leads that failed to send are queued and retried on the next visit */
-  function queueLead(lead) {
-    var q = storeJSON(QUEUE_KEY);
-    q.push(lead);
-    storeSet(QUEUE_KEY, JSON.stringify(q));
-  }
-  /* stable identity for a queued lead so we remove the one we actually sent */
-  function leadKey(l) { return (l && l.when) + '|' + (l && l.email); }
-  function flushLeadQueue() {
-    try {
-      var q = storeJSON(QUEUE_KEY);
-      if (!q.length) return;
-      var head = q[0];
-      sendLead(head).then(function () {
-        /* re-read: a lead queued while this send was in flight must not be lost */
-        var fresh = storeJSON(QUEUE_KEY).filter(function (l) { return leadKey(l) !== leadKey(head); });
-        storeSet(QUEUE_KEY, JSON.stringify(fresh));
-        flushLeadQueue();
-      }).catch(function () {});
-    } catch (err) {}
-  }
-
-  function submitLead(e) {
-    if (e) e.preventDefault();
-    /* honeypot: real users never fill this hidden field — silently thank bots */
-    if (leadForm.elements._honey && leadForm.elements._honey.value) { showLeadThanks(state.leadGen); return; }
-    var email = (leadEmail.value || '').trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      leadError.hidden = false;
-      leadEmail.classList.add('invalid');
-      try { leadEmail.focus(); } catch (err) {}
-      return;
-    }
-    leadError.hidden = true;
-    leadEmail.classList.remove('invalid');
-    var lead = {
-      name: (leadName.value || '').trim(),
-      email: email,
-      source: state.leadSource,
-      page: location.href,
-      when: new Date().toISOString()
-    };
-    /* local backup copy of every lead submitted from this browser */
-    var all = storeJSON(LEADS_KEY);
-    all.push(lead);
-    storeSet(LEADS_KEY, JSON.stringify(all));
-
-    /* pin this submission to the current open session so a late-settling
-       request can't flip a form the user has since reopened */
-    var gen = state.leadGen;
-    leadSubmit.disabled = true;
-    leadSubmit.textContent = 'Sending...';
-    /* the visitor always gets the thank-you screen: a lead that failed to
-       send stays in the retry queue and in the local backup */
-    try {
-      sendLead(lead)
-        .catch(function () { queueLead(lead); })
-        .then(function () { showLeadThanks(gen); });
-    } catch (err) { queueLead(lead); showLeadThanks(gen); }
-  }
-  function showLeadThanks(gen) {
-    /* ignore a stale response for a session the user already left/reopened */
-    if (gen !== undefined && (gen !== state.leadGen || !state.leadOpen)) return;
-    leadStepForm.hidden = true;
-    leadStepThanks.hidden = false;
-    leadForm.reset();
-    leadSubmit.disabled = false;
-    leadSubmit.textContent = 'Contact me';
-  }
-
-  /* console helper: download all leads submitted from this browser as a .txt file */
-  window.AIT_downloadLeads = function () {
-    var rows = storeJSON(LEADS_KEY).map(function (l) {
-      return [l.when, l.email, l.name || '-', l.source, l.page].join(' | ');
-    });
-    var blob = new Blob([rows.join('\n') || 'no leads yet'], { type: 'text/plain' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'ait-leads.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
-  };
+  /* ---- contact CTA ---- */
+  function openContact() { window.open(CONTACT_URL, '_blank', 'noopener'); }
 
   /* ---- rails are full-bleed via pure CSS (align-self:start + negative margin); clear any stale transform ---- */
   function alignRails() {
@@ -1077,18 +845,12 @@
 
   /* ---- event wiring (delegated) ---- */
   function handleAction(el, e) {
-    /* while the popup is open, only actions inside it are allowed (keeps keyboard
-       Enter/Space on background controls from acting behind the modal) */
-    if (state.leadOpen && !leadModal.contains(el)) return;
     var a = el.getAttribute('data-action');
     if (a === 'home') openTab('overview');
     else if (a === 'mic') toggleMic();
     else if (a === 'menu') toggleMenu();
     else if (a === 'close-menu') closeMenu();
-    else if (a === 'contact') { if (e) e.stopPropagation(); openLead(el.getAttribute('data-source') || (el.textContent || '').trim()); }
-    else if (a === 'lead-open') { if (e) e.stopPropagation(); openLead(el.getAttribute('data-source') || (el.textContent || '').trim()); }
-    else if (a === 'lead-close') closeLead();
-    else if (a === 'cookie-ok') acceptCookies();
+    else if (a === 'contact') { if (e) e.stopPropagation(); openContact(); }
     else if (a === 'tab') openTab(el.getAttribute('data-target'));
     else if (a === 'toggle-employees') toggleExpand('employees');
     else if (a === 'toggle-products') toggleExpand('products');
@@ -1104,17 +866,6 @@
     if (el && el.tagName !== 'BUTTON') { e.preventDefault(); handleAction(el, e); }
   });
   video.addEventListener('click', toggleMic);
-  leadForm.addEventListener('submit', submitLead);
-  /* click on the dimmed backdrop (outside the card) closes the popup — but only
-     when the gesture both starts and ends on the backdrop, so selecting text
-     inside an input and releasing over the backdrop doesn't dismiss it */
-  var downOnBackdrop = false;
-  var downEvt = window.PointerEvent ? 'pointerdown' : 'mousedown';
-  leadModal.addEventListener(downEvt, function (e) { downOnBackdrop = (e.target === leadModal); });
-  leadModal.addEventListener('click', function (e) {
-    if (e.target === leadModal && downOnBackdrop) closeLead();
-    downOnBackdrop = false;
-  });
 
   /* ---- init ---- */
   function init() {
@@ -1142,9 +893,6 @@
     window.addEventListener('resize', onResize);
     if (mqDesktop.addEventListener) mqDesktop.addEventListener('change', onResize);
     else if (mqDesktop.addListener) mqDesktop.addListener(onResize);
-
-    initCookieBanner();
-    flushLeadQueue();
   }
 
   if (document.readyState !== 'loading') init();
