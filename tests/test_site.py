@@ -92,17 +92,28 @@ def test_list_open_scroll_is_full_viewport():
 
 def test_nav_font_readable():
     html = _html()
-    # базовый размер пункта меню на десктопе — 14px (было 12px → мелко)
-    assert re.search(r"\.nav-tab\s*\{\s*font-size:\s*14px;", html), \
-        "десктопный .nav-tab должен быть font-size: 14px"
+    # базовый размер пункта меню на десктопе — 14px, НЕ жирный (font-weight:500)
+    assert re.search(r"\.nav-tab\s*\{\s*font-size:\s*14px;\s*font-weight:\s*500;", html), \
+        "десктопный .nav-tab должен быть font-size:14px; font-weight:500 (не жирный)"
     assert "font-size: 12px; letter-spacing: 0.03em;" not in html, \
         "старый мелкий десктоп-размер 12px должен быть заменён"
-    # жёсткие скейлы, ронявшие шрифт до ~8px, убраны
-    assert "scale(0.66)" not in html, "scale(0.66) роняет шрифт до 8px — убрать"
-    assert "scale(0.85)" not in html, "scale(0.85) — заменён на 0.95"
-    # мягкие скейлы с читаемым «полом» присутствуют
-    assert "scale(0.86)" in html and "scale(0.95)" in html, \
-        "мид-скейлы должны держать эффективный шрифт ≥12px"
+    # НИКАКОГО transform:scale на .nav — он менял высоту и ронял шрифт до 8px
+    for s in ("scale(0.66)", "scale(0.85)", "scale(0.86)", "scale(0.95)"):
+        assert s not in html, "transform:scale на nav убран (%s), высота бара постоянна" % s
+    # бар навигации и CTA — ОДНОЙ высоты (обе 2.85rem, box-sizing:border-box)
+    assert re.search(r"\.nav\s*\{[^}]*height:\s*2\.85rem;[^}]*box-sizing:\s*border-box", html), \
+        ".nav должен иметь фиксированную высоту 2.85rem и border-box"
+    assert re.search(r"\.cta\s*\{\s*height:\s*2\.85rem;\s*box-sizing:\s*border-box;", html), \
+        "десктопный .cta должен быть той же высоты 2.85rem"
+
+
+def test_nav_dividers_never_hidden_on_desktop():
+    html = _html()
+    # разделители «·» видны на всех десктоп-ширинах: внутри мид-брейкпоинта
+    # 1024–1319 НЕТ правила `.nav-divider { display: none }`
+    mid = html.split("@media (min-width:1024px) and (max-width:1319px) {", 1)[1].split("}")[0]
+    assert "display: none" not in mid, \
+        "на узком десктопе разделители не должны пропадать (нет display:none)"
 
 
 if __name__ == "__main__":

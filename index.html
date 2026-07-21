@@ -103,7 +103,8 @@
   }
   @media (min-width:1024px) {
     .nav { display: flex; align-items: center; gap: 0.3rem; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-      background: rgba(10,10,16,0.5); border: 1px solid rgba(255,255,255,0.10); border-radius: 999px; padding: 0.5rem 1rem;
+      height: 2.85rem; box-sizing: border-box;
+      background: rgba(10,10,16,0.5); border: 1px solid rgba(255,255,255,0.10); border-radius: 999px; padding: 0 1rem;
       -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 4px 30px rgba(0,0,0,0.3); pointer-events: auto; }
   }
   .nav-close { display: none; }
@@ -132,22 +133,26 @@
     .nav.open .nav-tab:hover .nav-label, .nav.open .nav-tab:hover .nav-ic, .nav.open .nav-tab:hover .nav-go { color: var(--ic); }
   }
   @media (min-width:1024px) {
-    /* FR-SITE4: навигация ЧИТАЕМАЯ — базовый размер крупнее (было 12px → мелко) */
-    .nav-tab { font-size: 14px; letter-spacing: 0.015em; padding: 0.3rem 0.45rem 0.42rem 0.45rem; color: #94a3b8; position: relative; }
+    /* FR-SITE4: навигация ЧИТАЕМАЯ и НЕ жирная (было 12px/700 → мелко и жирно) */
+    .nav-tab { font-size: 14px; font-weight: 500; letter-spacing: 0.015em; padding: 0.3rem 0.45rem; color: #94a3b8; position: relative; }
     .nav-tab.active { background: linear-gradient(var(--ul), var(--ul)) no-repeat bottom center / 70% 2px; }
   }
   .nav-divider { display: none; }
+  /* FR-SITE4: вертикальные разделители «·» видны на ВСЕХ десктоп-ширинах (не пропадают при сжатии) */
   @media (min-width:1024px) { .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12px; padding: 0 0.06rem; user-select: none; pointer-events: none; } }
-  /* FR-SITE4: на средних десктоп-ширинах пилюля из 6 пунктов не должна
-     сталкиваться с правым CTA — НО и не должна ужиматься до 8px. Ужимаем МЯГКО
-     (скейл держим ≥0.86 → эффективный шрифт ≥12px), плюс на самых узких прячем
-     разделители «·», чтобы выиграть ширину без потери читабельности. */
+  /* FR-SITE4·h: на средних десктоп-ширинах пилюля из 6 пунктов уплотняется по
+     ГОРИЗОНТАЛИ (меньше шрифт/трекинг/зазор), но НЕ масштабируется (transform:scale
+     менял высоту) — высота пилюли постоянна (2.85rem) и равна высоте CTA;
+     разделители остаются видны. */
   @media (min-width:1024px) and (max-width:1319px) {
-    .nav { transform: translate(-50%, -50%) scale(0.86); gap: 0.15rem; }
-    .nav-divider { display: none; }
-    .nav-tab { padding-left: 0.35rem; padding-right: 0.35rem; }
+    .nav { gap: 0.12rem; padding-left: 0.7rem; padding-right: 0.7rem; }
+    .nav-tab { font-size: 12px; letter-spacing: 0.005em; padding-left: 0.28rem; padding-right: 0.28rem; }
+    .nav-divider { padding: 0 0.01rem; }
   }
-  @media (min-width:1320px) and (max-width:1479px) { .nav { transform: translate(-50%, -50%) scale(0.95); } }
+  @media (min-width:1320px) and (max-width:1479px) {
+    .nav { gap: 0.22rem; }
+    .nav-tab { font-size: 13px; padding-left: 0.4rem; padding-right: 0.4rem; }
+  }
 
   /* Menu footer: socials → Privacy·Terms → copyright, pinned to the bottom (mobile only) */
   .nav-foot { display: none; }
@@ -286,11 +291,12 @@
   @media (hover:hover) { .btn-white:hover { background: linear-gradient(100deg, #8854F3 0%, #F97316 50%, #8854F3 100%); background-size: 250% 250%; color: #ffffff; border-color: transparent;
       box-shadow: 0 10px 25px -5px rgba(136,84,243,0.45); transform: translateY(-2px); animation: gradientShimmer 4.5s ease infinite; } }
   .cta { padding: clamp(0.62rem, 2.2vw, 0.95rem) clamp(0.85rem, 3.2vw, 1.35rem); font-size: clamp(9px, 2.7vw, 12.5px); letter-spacing: clamp(0.06em, 0.4vw, 0.1em); gap: clamp(0.4rem, 1.2vw, 0.6rem); }
-  @media (min-width:1024px) { .cta { padding: 0.72rem 1.35rem; font-size: 11.5px; letter-spacing: 0.15em; gap: 0.55rem; } }
-  /* CTA сужается В ТАКТ с навигацией (nav масштабируется на этих же брейкпоинтах),
-     чтобы кнопка справа не была крупнее сжатого меню при неполном окне */
-  @media (min-width:1024px) and (max-width:1319px) { .cta { padding: 0.5rem 0.95rem; font-size: 9px; letter-spacing: 0.08em; gap: 0.4rem; } }
-  @media (min-width:1320px) and (max-width:1479px) { .cta { padding: 0.62rem 1.15rem; font-size: 10.5px; letter-spacing: 0.12em; gap: 0.5rem; } }
+  /* FR-SITE4·h: правая кнопка-диагностика (CTA) ВСЕГДА одной высоты с баром
+     навигации (height:2.85rem, box-sizing:border-box) — на всех десктоп-ширинах.
+     На узких ужимаем ТОЛЬКО по горизонтали (padding/шрифт), высоту не трогаем. */
+  @media (min-width:1024px) { .cta { height: 2.85rem; box-sizing: border-box; padding: 0 1.4rem; font-size: 11.5px; letter-spacing: 0.15em; gap: 0.55rem; } }
+  @media (min-width:1024px) and (max-width:1319px) { .cta { padding: 0 0.95rem; font-size: 10px; letter-spacing: 0.08em; gap: 0.4rem; } }
+  @media (min-width:1320px) and (max-width:1479px) { .cta { padding: 0 1.15rem; font-size: 11px; letter-spacing: 0.12em; gap: 0.5rem; } }
 
   /* ===== Contact screen (hero centered like other blocks, footer pinned) ===== */
   .contact-screen { position: relative; width: 100%; min-height: 40dvh; transform: translateY(2.8rem); }
