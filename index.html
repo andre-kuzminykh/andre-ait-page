@@ -102,8 +102,8 @@
       background: #050505; overflow-y: auto; pointer-events: auto; }
   }
   @media (min-width:1024px) {
-    .nav { display: flex; align-items: center; gap: 0.4rem; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-      background: rgba(10,10,16,0.5); border: 1px solid rgba(255,255,255,0.10); border-radius: 999px; padding: 0.6rem 1.2rem;
+    .nav { display: flex; align-items: center; gap: 0.3rem; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      background: rgba(10,10,16,0.5); border: 1px solid rgba(255,255,255,0.10); border-radius: 999px; padding: 0.5rem 1rem;
       -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 4px 30px rgba(0,0,0,0.3); pointer-events: auto; }
   }
   .nav-close { display: none; }
@@ -132,14 +132,22 @@
     .nav.open .nav-tab:hover .nav-label, .nav.open .nav-tab:hover .nav-ic, .nav.open .nav-tab:hover .nav-go { color: var(--ic); }
   }
   @media (min-width:1024px) {
-    .nav-tab { font-size: 12px; letter-spacing: 0.03em; padding: 0.32rem 0.5rem 0.46rem 0.5rem; color: #94a3b8; position: relative; }
+    /* FR-SITE4: навигация ЧИТАЕМАЯ — базовый размер крупнее (было 12px → мелко) */
+    .nav-tab { font-size: 14px; letter-spacing: 0.015em; padding: 0.3rem 0.45rem 0.42rem 0.45rem; color: #94a3b8; position: relative; }
     .nav-tab.active { background: linear-gradient(var(--ul), var(--ul)) no-repeat bottom center / 70% 2px; }
   }
   .nav-divider { display: none; }
-  @media (min-width:1024px) { .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12px; padding: 0 0.08rem; user-select: none; pointer-events: none; } }
-  /* mid widths: shrink the centred nav pill (now 6 items) so it can't collide with the right-side CTA */
-  @media (min-width:1024px) and (max-width:1319px) { .nav { transform: translate(-50%, -50%) scale(0.66); } }
-  @media (min-width:1320px) and (max-width:1479px) { .nav { transform: translate(-50%, -50%) scale(0.85); } }
+  @media (min-width:1024px) { .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12px; padding: 0 0.06rem; user-select: none; pointer-events: none; } }
+  /* FR-SITE4: на средних десктоп-ширинах пилюля из 6 пунктов не должна
+     сталкиваться с правым CTA — НО и не должна ужиматься до 8px. Ужимаем МЯГКО
+     (скейл держим ≥0.86 → эффективный шрифт ≥12px), плюс на самых узких прячем
+     разделители «·», чтобы выиграть ширину без потери читабельности. */
+  @media (min-width:1024px) and (max-width:1319px) {
+    .nav { transform: translate(-50%, -50%) scale(0.86); gap: 0.15rem; }
+    .nav-divider { display: none; }
+    .nav-tab { padding-left: 0.35rem; padding-right: 0.35rem; }
+  }
+  @media (min-width:1320px) and (max-width:1479px) { .nav { transform: translate(-50%, -50%) scale(0.95); } }
 
   /* Menu footer: socials → Privacy·Terms → copyright, pinned to the bottom (mobile only) */
   .nav-foot { display: none; }

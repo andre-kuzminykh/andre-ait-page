@@ -88,6 +88,23 @@ def test_list_open_scroll_is_full_viewport():
         "body.list-open .scroll должно быть в @media (min-width:1024px)"
 
 
+# ── FR-SITE4 ──────────────────────────────────────────────────────────────
+
+def test_nav_font_readable():
+    html = _html()
+    # базовый размер пункта меню на десктопе — 14px (было 12px → мелко)
+    assert re.search(r"\.nav-tab\s*\{\s*font-size:\s*14px;", html), \
+        "десктопный .nav-tab должен быть font-size: 14px"
+    assert "font-size: 12px; letter-spacing: 0.03em;" not in html, \
+        "старый мелкий десктоп-размер 12px должен быть заменён"
+    # жёсткие скейлы, ронявшие шрифт до ~8px, убраны
+    assert "scale(0.66)" not in html, "scale(0.66) роняет шрифт до 8px — убрать"
+    assert "scale(0.85)" not in html, "scale(0.85) — заменён на 0.95"
+    # мягкие скейлы с читаемым «полом» присутствуют
+    assert "scale(0.86)" in html and "scale(0.95)" in html, \
+        "мид-скейлы должны держать эффективный шрифт ≥12px"
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:
