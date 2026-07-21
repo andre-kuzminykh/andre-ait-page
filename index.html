@@ -178,6 +178,25 @@
   .scroll { display: flex; flex-direction: column; align-items: center; gap: 1rem; pointer-events: auto; scrollbar-width: none;
     max-height: 100%; justify-content: center; padding: 0.5rem 0 0 0; overflow: visible; }
   @media (min-width:1024px) { .scroll { max-height: calc(100dvh - 13rem); padding: 1.75rem 0.25rem; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; } }
+  /* FR-SITE3 «раз и навсегда»: когда РАСКРЫТ список карточек (AI-сотрудники /
+     продукты / курсы), контент выше экрана. Раньше .scroll оставался боксом
+     max-height:calc(100dvh - 13rem), центрированным по вертикали (.content-layer
+     justify-content:center) → сверху и снизу ~6.5rem «мёртвых» полей, и карточки
+     резались ВНУТРИ этих полей, а НЕ по краю экрана (юзер: «обрезается и сверху и
+     снизу… только краями экрана, не надо вообще обрезок»). Теперь при раскрытом
+     списке (body.list-open, ставит applyExpanded) бокс прокрутки = ВСЯ высота
+     вьюпорта: контент прижат к верху с отступом под фикс-шапку, снизу воздух.
+     Помещается — виден целиком; не помещается — нативная прокрутка в самом
+     полноэкранном боксе, и линия отреза строго по краю экрана. Короткие экраны
+     (список свёрнут) по-прежнему центрируются. */
+  @media (min-width:1024px) {
+    /* box-sizing:border-box ОБЯЗАТЕЛЕН: .scroll по умолчанию content-box, и тогда
+       max-height:100dvh ограничивает только контент, а padding (6rem+2rem)
+       добавляется сверху → бокс становится ВЫШЕ вьюпорта и вылезает за оба края
+       экрана. С border-box бокс = ровно одна высота экрана, прокрутка внутри. */
+    body.list-open .scroll { box-sizing: border-box; max-height: 100dvh; height: 100dvh;
+      justify-content: flex-start; padding-top: 6rem; padding-bottom: 2rem; }
+  }
   .scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
   /* ===== Screens ===== */
@@ -906,15 +925,21 @@
 
   /* ---- expand/collapse products & education ---- */
   function applyExpanded() {
+    var anyOpen = false;
     ['employees', 'products', 'education'].forEach(function (k) {
       var sec = document.querySelector('[data-screen="' + k + '"]');
       if (!sec) return;
       var open = !!state.expanded[k];
+      if (open) anyOpen = true;
       var intro = sec.querySelector('[data-part="intro"]');
       var list = sec.querySelector('[data-part="list"]');
       if (intro) intro.style.display = open ? 'none' : 'flex';
       if (list) list.style.display = open ? 'flex' : 'none';
     });
+    /* раскрытый список карточек выше экрана — переключаем зону прокрутки в
+       полноэкранный режим (см. CSS body.list-open .scroll): режет только край
+       экрана, без «мёртвых» полей сверху/снизу */
+    document.body.classList.toggle('list-open', anyOpen);
   }
   function toggleExpand(k) {
     state.expanded[k] = !state.expanded[k];

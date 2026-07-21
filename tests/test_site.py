@@ -60,6 +60,34 @@ def test_role_and_subtitle_are_ai_consultant():
         "подпись героя должна быть «your AI Consultant»"
 
 
+# ── FR-SITE3 ──────────────────────────────────────────────────────────────
+
+def test_apply_expanded_toggles_list_open():
+    html = _html()
+    # applyExpanded помечает раскрытый список классом body.list-open
+    body = html[html.find("function applyExpanded"):html.find("function toggleExpand")]
+    assert "anyOpen" in body, "applyExpanded должен считать, открыт ли хоть один список"
+    assert re.search(r"classList\.toggle\(\s*'list-open'\s*,\s*anyOpen\s*\)", body), \
+        "applyExpanded должен тогглить body.list-open по anyOpen"
+
+
+def test_list_open_scroll_is_full_viewport():
+    html = _html()
+    # правило full-viewport для раскрытого списка — внутри @media (min-width:1024px)
+    assert "body.list-open .scroll" in html, "нужно правило body.list-open .scroll"
+    rule = html.split("body.list-open .scroll {")[1].split("}")[0]
+    # box-sizing:border-box обязателен — иначе бокс с padding вылезает за края экрана
+    assert "box-sizing: border-box" in rule
+    assert "max-height: 100dvh" in rule and "height: 100dvh" in rule
+    assert "padding-top: 6rem" in rule and "padding-bottom: 2rem" in rule
+    assert "justify-content: flex-start" in rule
+    # правило действует ТОЛЬКО на десктопе: ближайший @media перед ним — min-width:1024px
+    before = html.split("body.list-open .scroll {")[0]
+    nearest_media = before.rfind("@media (")
+    assert "min-width:1024px" in before[nearest_media:nearest_media + 40], \
+        "body.list-open .scroll должно быть в @media (min-width:1024px)"
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:
