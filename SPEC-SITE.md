@@ -3,21 +3,25 @@
 Требования с ID и привязкой к тестам (`tests/test_site.py`). Сайт — статический
 `index.html`, деплой через GitHub Pages (CNAME `andre.technology`) с ветки `main`.
 
-## FR-SITE1 — «Free AI Diagnostic» ведёт в кабинет ИИ-стратегии
+## FR-SITE1 — «Free AI Diagnostic» ведёт на бесплатную диагностику AI-зрелости (maturity.)
 
 **Story.** Как посетитель andre.technology, я хочу по кнопке «Free AI Diagnostic»
-попасть на `strategy.andre.technology`, чтобы начать с ИИ-стратегии; если я не
-авторизован — сам кабинет уводит меня на бесплатную диагностику
-(`maturity.andre.technology`).
+попасть на `maturity.andre.technology` — бесплатную оценку AI-зрелости компании.
+Это первый шаг воронки; ИИ-стратегия (`strategy.andre.technology`) — следующий шаг.
 
-**Требование.** ВСЕ кнопки/ссылки с текстом «Free AI Diagnostic» — это ссылки
-`<a href="https://strategy.andre.technology/">` (не `data-action="contact"`).
-Редирект неавторизованного на maturity. обеспечивает сам кабинет (FR-W16 в
-andre-ai-maturity), сайту достаточно вести на `strategy.andre.technology/`.
+**Требование (SEO-архитектура экосистемы).** ВСЕ кнопки/ссылки, относящиеся к
+диагностике/оценке («Free AI Diagnostic», «Start AI Transformation», «Assess AI
+Maturity», «Check AI Readiness»), — это ссылки
+`<a href="https://maturity.andre.technology/">` (не `data-action="contact"` и НЕ
+strategy.). Все CTA, относящиеся к стратегии («Open AI Strategy», «Build AI
+Strategy», «Analyze Business Processes»), ведут на корень
+`https://strategy.andre.technology/` (без внутренних путей вида /ai-strategy).
 
 **Тесты (tests/test_site.py):**
-- `[FE]` test_free_diagnostic_links_to_strategy — каждая «Free AI Diagnostic» — это `<a href=strategy.>`.
+- `[FE]` test_free_diagnostic_links_to_maturity — каждая «Free AI Diagnostic» — это `<a href=maturity.>`.
+- `[FE]` test_free_diagnostic_never_links_to_strategy — «Free AI Diagnostic» никогда не ведёт на strategy.
 - `[FE]` test_no_free_diagnostic_button_with_contact — нет кнопки «Free AI Diagnostic» с `data-action="contact"`.
+- Полная SEO-проверка (метаданные, canonical, sitemap, ссылки) — `scripts/check-seo.py`.
 
 ## FR-SITE2 — роль/подпись «AI Consultant», а не «Chief AI Officer»
 
