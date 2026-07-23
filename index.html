@@ -440,9 +440,16 @@
     /* smaller floating tiles so section blocks fit a short viewport */
     .float-row { transform: scale(0.6); margin: -1.1rem 0; }
 
-    /* contact: centred hero, footer right under it (normal flow) */
-    .contact-screen { min-height: auto; transform: none; }
-    .contact-hero { top: 0; margin: 0; }
+    /* contact: как на десктопе — герой по центру ЭКРАНА, футер (иконки +
+       Privacy·Terms + копирайт) прижат к низу. Экран занимает всю высоту;
+       герой центрируется auto-полями, футер уходит в самый низ; на очень
+       коротких экранах контент выше вьюпорта — работает нативный скролл. */
+    .panel:has(.contact-screen.active) { height: 100%; }
+    .scroll:has(.contact-screen.active) { max-height: 100%; height: 100%; padding: 0; }
+    .contact-screen { min-height: 100%; transform: none; }
+    .contact-hero { top: 0; margin: auto 0; }
+    .contact-footer { padding-bottom: 1.1rem; }
+    .contact-legal { display: flex; }
   }
 
   /* Scale the whole UI up on large desktop screens so nothing looks tiny
