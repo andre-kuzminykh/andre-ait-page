@@ -92,6 +92,10 @@
     font-family: 'JetBrains Mono', monospace; color: #E5E7EB;
     overflow: hidden; width: 100vw; height: 100vh; height: 100dvh;
     -webkit-tap-highlight-color: transparent;
+    /* iOS Safari в ландшафте «умно» раздувает мелкий текст (font boosting) —
+       из-за этого кнопки становились шире панели и резались краем экрана.
+       Фиксируем размеры ровно как в макете. */
+    -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
   }
   *:focus-visible { outline: 2px solid #8854F3; outline-offset: 2px; }
   ::selection { background: #8854F3; color: #ffffff; }
@@ -416,6 +420,15 @@
     .rm-title { font-size: clamp(1.25rem, 2.5vw, 1.8rem); }
     .contact-title { font-size: clamp(1.3rem, 3vw, 1.9rem); }
     .desc { font-size: 12px; line-height: 1.4; }
+
+    /* кнопки экранов НИКОГДА не шире узкой (44%) панели: как FR-SITE4 для
+       верхней CTA — ужимаем ТОЛЬКО по горизонтали (padding/шрифт/трекинг).
+       !important перекрывает инлайн-стили самих кнопок. */
+    .screen .btn-white { max-width: 100%; box-sizing: border-box;
+      padding-left: clamp(0.9rem, 1.7vw, 2.1rem) !important;
+      padding-right: clamp(0.9rem, 1.7vw, 2.1rem) !important;
+      font-size: clamp(9.5px, 1.3vw, 12px) !important;
+      letter-spacing: clamp(0.05em, 0.28vw, 0.15em) !important; }
 
     /* cards stack vertically inside the panel (no full-bleed horizontal rail) */
     .rail { flex-direction: column; align-items: stretch; gap: 0.5rem; width: 100%; max-width: 100%;
