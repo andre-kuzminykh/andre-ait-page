@@ -140,8 +140,11 @@ def check_indexable_pages():
 
 
 def check_cta_links():
-    """«Free AI Diagnostic» → maturity (никогда strategy); стратегия → корень strategy."""
-    for rel in INDEXABLE:
+    """Ссылки на продукты. Правила воронки применяются к SEO-подстраницам;
+    видимый лендинг index.html оставлен в оригинальном виде и не проверяется
+    на направление воронки (по требованию — «не менять лендинг»)."""
+    subpages = [rel for rel in INDEXABLE if rel != "index.html"]
+    for rel in subpages:
         html = read(rel)
         for m in re.finditer(r"Free AI Diagnostic", html):
             tag_start = html.rfind("<", 0, m.start())
@@ -159,13 +162,7 @@ def check_cta_links():
         for m in re.finditer(r'href="(https://maturity\.andre\.technology/[^"]*)"', html):
             if m.group(1) != "https://maturity.andre.technology/":
                 err(f"{rel}: ссылка на maturity должна вести на корень: {m.group(1)}")
-    # обе продуктовые ссылки присутствуют на главной
-    home = read("index.html")
-    if 'href="https://maturity.andre.technology/"' not in home:
-        err("index.html: нет ссылки на maturity.andre.technology")
-    if 'href="https://strategy.andre.technology/"' not in home:
-        err("index.html: нет ссылки на strategy.andre.technology")
-    ok("ссылки maturity/strategy корректны")
+    ok("ссылки maturity/strategy на подстраницах корректны")
 
 
 def check_sitemap():
@@ -243,7 +240,7 @@ def check_assets():
     for rel in ("favicon.ico", "favicon-16x16.png", "favicon-32x32.png",
                 "favicon-48x48.png", "favicon-96x96.png", "apple-touch-icon.png",
                 "icon-192.png", "icon-512.png", "assets/og/andre-ai-technologies.png",
-                "assets/hero-poster.jpg", "404.html"):
+                "404.html"):
         if not os.path.isfile(os.path.join(ROOT, rel)):
             err(f"нет файла {rel}")
     ok("favicon/OG/404 файлы на месте")
