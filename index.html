@@ -11,6 +11,9 @@
 <link rel="canonical" href="https://andre.technology/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 
+<!-- Постер первого экрана грузим первым приоритетом: он должен появиться раньше видео -->
+<link rel="preload" as="image" href="/assets/hero-poster.jpg" fetchpriority="high">
+
 <!-- Favicons (AIT logo) -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
@@ -77,8 +80,16 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<!-- Шрифт и иконки грузим НЕ блокируя первую отрисовку: раньше страница ждала
+     оба CDN и до этого показывала чёрный экран. media="print" снимает блокировку,
+     onload возвращает стиль странице; <noscript> — фолбэк без JS. -->
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all';this.onload=null">
+<noscript>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</noscript>
 
 <style>
   /* ============================================================
@@ -113,7 +124,11 @@
 
   /* ===== Background video ===== */
   .scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #050505; }
-  #hero-video { position: absolute; top: 0; left: 0; width: 100vw; height: 64dvh; object-fit: cover; object-position: center; cursor: pointer; transition: opacity 0.4s ease; }
+  /* LQIP: размытый первый кадр (418 байт) зашит прямо в CSS — рисуется мгновенно,
+     без единого сетевого запроса, пока грузятся poster и само видео. */
+  #hero-video { position: absolute; top: 0; left: 0; width: 100vw; height: 64dvh; object-fit: cover; object-position: center; cursor: pointer; transition: opacity 0.4s ease;
+    background-image: url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABMNDhEODBMRDxEVFBMXHTAfHRoaHToqLCMwRT1JR0Q9Q0FMVm1dTFFoUkFDX4JgaHF1e3x7SlyGkIV3j214e3b/2wBDARQVFR0ZHTgfHzh2T0NPdnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnb/wAARCAAYABgDASIAAhEBAxEB/8QAGAABAQADAAAAAAAAAAAAAAAAAAUBAwb/xAAhEAABBAICAgMAAAAAAAAAAAABAAIDEQQSITEFIhMyQf/EABgBAAIDAAAAAAAAAAAAAAAAAAAEAQID/8QAHBEAAgICAwAAAAAAAAAAAAAAAAECAxESIjFB/9oADAMBAAIRAxEAPwDn4oL6Co4vhzNAZHSC6+tdLEcFROdXQtbML4mxySSN9OCPblXtubfFjDjqSpoNSRSKlkQ7t3AoHlExG2MlkHWS352TNTGO0DjVBW8bwc97TPAYBZpESmqMXJvslnLljJaH20fh5REU4QKcl6f/2Q==");
+    background-size: cover; background-position: center; background-repeat: no-repeat; }
   .video-shadow { position: absolute; top: 0; left: 0; width: 100%; height: 64dvh; pointer-events: none; z-index: 2;
     background: linear-gradient(to bottom, transparent 6%, rgba(5,5,5,0.04) 20%, rgba(5,5,5,0.12) 33%, rgba(5,5,5,0.26) 45%, rgba(5,5,5,0.45) 57%, rgba(5,5,5,0.66) 69%, rgba(5,5,5,0.85) 81%, #050505 94%); }
   @media (min-width:1024px) {
