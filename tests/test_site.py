@@ -257,6 +257,36 @@ def test_no_underscore_asset_paths():
             "ресурс с «_» в пути не будет опубликован Jekyll: " + m.group(1)
 
 
+# ── FR-SITE12 ─────────────────────────────────────────────────────────────
+
+_MOBILE_SCREENS = ("overview", "roadmap", "strategy", "platform",
+                   "employees", "products", "education")
+
+
+def test_mobile_screens_share_one_offset():
+    """На мобилке контент прижат к низу панели, поэтому ОДИН общий сдвиг для всех
+    экранов = одинаковая нижняя линия (кнопки на одном уровне) и одинаковый
+    воздух под плашкой «Andre AI»."""
+    html = _html()
+    m = re.search(r"@media \(max-width:1023px\) \{\s*(\[data-screen[^{]+)\{ transform: translateY\(1\.5rem\); \}", html)
+    assert m, "нужно ОДНО общее правило translateY(1.5rem) для мобильных экранов"
+    for s in _MOBILE_SCREENS:
+        assert '[data-screen="%s"]' % s in m.group(1), \
+            "экран «%s» должен быть в общем правиле сдвига" % s
+    assert "translateY(-1.8rem)" not in html, \
+        "старого подъёма первого экрана быть не должно — из-за него заголовок упирался в плашку"
+
+
+def test_landscape_resets_mobile_offsets():
+    """В ландшафте телефона сдвиги сбрасываются — иначе контент лезет на плашку."""
+    html = _html()
+    m = re.search(r"(\[data-screen[^{]+)\{ transform: none; \}", html)
+    assert m, "в ландшафтном блоке должен быть сброс сдвигов"
+    for s in _MOBILE_SCREENS:
+        assert '[data-screen="%s"]' % s in m.group(1), \
+            "экран «%s» должен сбрасывать сдвиг в ландшафте" % s
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:

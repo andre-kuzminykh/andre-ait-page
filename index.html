@@ -304,10 +304,15 @@
   @media (min-width:1024px) { .content-layer { justify-content: center; } }
   .panel { width: 100%; height: 46dvh; padding: 0 1rem calc(4rem + env(safe-area-inset-bottom, 0px)) 1rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
   @media (min-width:1024px) { .panel { width: 40%; height: auto; margin-left: auto; padding: 0 2rem; display: block; } }
-  /* overview (first block): lift the headline + CTA a bit higher on mobile */
-  @media (max-width:1023px) { [data-screen="overview"] { transform: translateY(-1.8rem); } }
-  /* blocks with a header + cards (AI Transformation, Employees, Products, Education): a touch lower on mobile */
-  @media (max-width:1023px) { [data-screen="roadmap"], [data-screen="employees"], [data-screen="products"], [data-screen="education"] { transform: translateY(1.5rem); } }
+  /* FR-SITE12: на мобилке контент прижат к НИЗУ панели, поэтому единый сдвиг для
+     ВСЕХ экранов = одинаковая нижняя линия (кнопки на одном уровне) и одинаковый
+     воздух под плашкой «Andre AI». Раньше первый экран поднимали на -1.8rem, и
+     после появления ссылки «About me» (блок стал выше) заголовок почти упирался
+     в плашку; эталон — экран AI Employees. */
+  @media (max-width:1023px) {
+    [data-screen="overview"], [data-screen="roadmap"], [data-screen="strategy"], [data-screen="platform"],
+    [data-screen="employees"], [data-screen="products"], [data-screen="education"] { transform: translateY(1.5rem); }
+  }
   .panel.leaving { opacity: 0; transform: translateY(-28px); transition: opacity 0.24s ease, transform 0.24s ease; }
   .panel.entering { animation: slideInPanel 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
   .scroll { display: flex; flex-direction: column; align-items: center; gap: 1rem; pointer-events: auto; scrollbar-width: none;
@@ -486,8 +491,8 @@
     .caption { left: 30%; top: auto; bottom: calc(7% + 3.3rem); transform: translateX(-50%); }
 
     /* drop the portrait vertical nudges that cause the overlap */
-    [data-screen="overview"],
-    [data-screen="roadmap"], [data-screen="employees"], [data-screen="products"], [data-screen="education"] { transform: none; }
+    [data-screen="overview"], [data-screen="roadmap"], [data-screen="strategy"], [data-screen="platform"],
+    [data-screen="employees"], [data-screen="products"], [data-screen="education"] { transform: none; }
 
     /* fit type to the shorter, narrower column */
     .hero-size { font-size: clamp(1.2rem, 3vw, 1.95rem); }
