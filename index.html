@@ -205,9 +205,11 @@
      менял высоту) — высота пилюли постоянна (2.85rem) и равна высоте CTA;
      разделители остаются видны. */
   @media (min-width:1024px) and (max-width:1319px) {
-    .nav { gap: 0.12rem; padding-left: 0.7rem; padding-right: 0.7rem; }
-    .nav-tab { font-size: 12px; letter-spacing: 0.005em; padding-left: 0.28rem; padding-right: 0.28rem; }
-    .nav-divider { padding: 0 0.01rem; }
+    /* FR-SITE9: «My contacts» длиннее «Contacts» — на 1024px пилюля упиралась в
+       CTA; ужимаем ТОЛЬКО по горизонтали ещё на ~25px (высота нетронута) */
+    .nav { gap: 0.1rem; padding-left: 0.55rem; padding-right: 0.55rem; }
+    .nav-tab { font-size: 12px; letter-spacing: 0; padding-left: 0.22rem; padding-right: 0.22rem; }
+    .nav-divider { padding: 0; }
   }
   @media (min-width:1320px) and (max-width:1479px) {
     .nav { gap: 0.22rem; }
@@ -304,6 +306,11 @@
 
   .overview-aura { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); width: min(85%, 32rem); height: 15rem;
     background: radial-gradient(closest-side, rgba(136,84,243,0.4), rgba(249,115,22,0.14), transparent 72%); filter: blur(34px); z-index: 0; pointer-events: none; animation: auraPulse 5.5s ease-in-out infinite; }
+
+  /* «About me» под CTA героя: не кнопка, а серая текстовая ссылка (FR-SITE7) */
+  .about-link { position: relative; z-index: 1; margin-top: -0.65rem; font-size: 12px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.12em; color: rgba(255,255,255,0.5); transition: color 0.3s ease; }
+  @media (hover:hover) { .about-link:hover { color: #ffffff; } }
 
   .float-row { display: flex; justify-content: center; align-items: flex-end; gap: 0.85rem; transform: scale(0.74); margin: -0.7rem 0; }
   @media (min-width:1024px) { .float-row { transform: none; margin: 0; } }
@@ -567,7 +574,7 @@
         <span class="nav-divider" aria-hidden="true">|</span>
         <button class="nav-tab" data-action="tab" data-target="education" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-graduation-cap"></i></span><span class="nav-label">AI Education</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
         <span class="nav-divider" aria-hidden="true">|</span>
-        <button class="nav-tab" data-action="tab" data-target="contact"  style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-address-book"></i></span><span class="nav-label">Contacts</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
+        <button class="nav-tab" data-action="tab" data-target="contact"  style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-address-book"></i></span><span class="nav-label">My contacts</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
         <!-- menu footer (mobile only): socials, legal links, copyright; placeholders (#) -->
         <div class="nav-foot">
           <div class="nav-social">
@@ -609,9 +616,11 @@
             <span style="display: block; white-space: nowrap;"><span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">AI</span> <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">Transformation</span></span>
             <span style="display: block; white-space: nowrap;">of your <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">Business</span></span>
           </h1>
-          <button class="btn-white" data-action="contact" style="padding: 1.05rem 2.1rem; letter-spacing: 0.15em; font-size: 12px; gap: 0.75rem; width: fit-content;">
+          <!-- Ведёт в кабинет ИИ-стратегии (strategy.); неавторизованного он уводит на бесплатную диагностику (maturity.) -->
+          <a class="btn-white" href="https://strategy.andre.technology/" rel="noopener" style="padding: 1.05rem 2.1rem; letter-spacing: 0.15em; font-size: 12px; gap: 0.75rem; width: fit-content; text-decoration: none; display: inline-flex; align-items: center;">
             Start AI Transformation <i class="fa-solid fa-arrow-right"></i>
-          </button>
+          </a>
+          <a class="about-link" href="https://andre.technology/about/" rel="noopener">About me</a>
         </section>
 
         <!-- ROADMAP -->
@@ -660,7 +669,7 @@
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Strategy</h2>
           <p class="desc">Learn How to Become an AI Company</p>
           <!-- Открывает кабинет ИИ-стратегии; если диагностика не пройдена — начнётся с неё -->
-          <a class="btn-white" href="https://strategy.andre.technology/ai-strategy" rel="noopener" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;">Open AI Strategy <i class="fa-solid fa-arrow-right"></i></a>
+          <a class="btn-white" href="https://strategy.andre.technology/ai-strategy" rel="noopener" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;">Get AI Strategy <i class="fa-solid fa-arrow-right"></i></a>
         </section>
 
         <!-- AI BUSINESS OS -->
@@ -685,7 +694,7 @@
             </div>
             <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Employees</h2>
             <p class="desc">Hire AI Workforce for Business Automation</p>
-            <button class="btn-white" data-action="toggle-employees" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Employees <i class="fa-solid fa-arrow-right"></i></button>
+            <button class="btn-white" data-action="lead-open" data-source="AI Employees" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Employees <i class="fa-solid fa-arrow-right"></i></button>
           </div>
           <div class="group" data-part="list" style="display: none;">
             <div style="display: flex; align-items: center; gap: 0.85rem; justify-content: center; cursor: pointer;" data-action="toggle-employees">
@@ -738,7 +747,7 @@
             </div>
             <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Products</h2>
             <p class="desc">Build AI Products for Human Good</p>
-            <button class="btn-white" data-action="toggle-products" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Products <i class="fa-solid fa-arrow-right"></i></button>
+            <button class="btn-white" data-action="lead-open" data-source="AI Products" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Products <i class="fa-solid fa-arrow-right"></i></button>
           </div>
           <div class="group" data-part="list" style="display: none;">
             <div style="display: flex; align-items: center; gap: 0.85rem; justify-content: center; cursor: pointer;" data-action="toggle-products">
@@ -773,7 +782,7 @@
             </div>
             <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">AI Education</h2>
             <p class="desc">Master Human Skills AI Can’t Replace</p>
-            <button class="btn-white" data-action="toggle-education" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Courses <i class="fa-solid fa-arrow-right"></i></button>
+            <button class="btn-white" data-action="lead-open" data-source="AI Education" style="padding: clamp(0.85rem, 0.85vw, 1.35rem) clamp(1.7rem, 1.7vw, 2.7rem); letter-spacing: 0.15em; font-size: clamp(11px, 0.78vw, 16px); width: fit-content;">Explore Courses <i class="fa-solid fa-arrow-right"></i></button>
           </div>
           <div class="group" data-part="list" style="display: none;">
             <div style="display: flex; align-items: center; gap: 0.85rem; justify-content: center; cursor: pointer;" data-action="toggle-education">

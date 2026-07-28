@@ -53,9 +53,10 @@ andre-ai-maturity), сайту достаточно вести на `strategy.an
 - `applyExpanded()` ставит на `<body>` класс **`list-open`**, если открыт хотя
   бы один из списков (employees/products/education), и снимает иначе.
 - CSS (внутри `@media (min-width:1024px)`):
-  `body.list-open .scroll { box-sizing: border-box; max-height: 100dvh; height: 100dvh; justify-content: flex-start; padding-top: 6rem; padding-bottom: 2rem; }`.
+  `body.list-open .scroll { box-sizing: border-box; max-height: 100dvh; height: 100dvh; justify-content: flex-start; padding-top: 6rem; padding-bottom: 6rem; }`.
   `box-sizing: border-box` обязателен — иначе `max-height:100dvh` ограничивает
   только контент, а padding добавляется сверху и бокс вылезает за оба края экрана.
+  Паддинги симметричны (6rem/6rem) — см. FR-SITE5 (центрирование).
 - Помещается — виден целиком; не помещается — нативная прокрутка В САМОМ
   полноэкранном боксе, линия отреза строго по краю экрана, без «мёртвых» полей.
 - Короткие экраны (список свёрнут, `body` без `list-open`) по-прежнему
@@ -110,3 +111,92 @@ andre-ai-maturity), сайту достаточно вести на `strategy.an
 **Тесты (tests/test_site.py):**
 - `[FE]` test_nav_font_readable — `.nav-tab` десктопа = `font-size:14px; font-weight:500`; `scale(0.66|0.85|0.86|0.95)` в CSS НЕТ; `.nav` и `.cta` — `height:2.85rem; box-sizing:border-box`.
 - `[FE]` test_nav_dividers_never_hidden_on_desktop — в мид-брейкпоинте 1024–1319 нет `.nav-divider { display: none }`.
+
+## FR-SITE5 — раскрытый список, помещающийся в экран, центрируется по вертикали
+
+**Story.** Как посетитель andre.technology на компе, я раскрываю список карточек
+(AI Education — 4 карточки, AI Products — 3) и хочу видеть его по центру экрана,
+а не прижатым к верху (жалоба: «справа всё по верху, а надо по середине»).
+
+**Требование.** На десктопе (≥1024px) активный экран внутри `body.list-open .scroll`
+имеет `margin-top: auto; margin-bottom: auto` (приём «safe center», как у `.modal`):
+- помещается в экран → auto-поля поровну делят свободное место, список ровно по
+  центру вьюпорта (паддинги бокса симметричны, 6rem/6rem);
+- НЕ помещается (AI Employees, 10 карточек) → свободного места нет, поля = 0,
+  работает режим FR-SITE3: прижат к верху под шапку + нативная прокрутка,
+  срез строго по краю экрана.
+
+**Проверено Playwright:** education/products центрируются (равные зазоры
+сверху/снизу, 259/259 на 1440×900), employees сохраняет прокрутку (последняя
+карточка достижима), интро-экраны и мобилка не изменились, `body{zoom}`-экраны
+(1920×1080) корректны.
+
+**Тесты (tests/test_site.py):**
+- `[FE]` test_list_open_scroll_is_full_viewport — паддинги 6rem/6rem в правиле `body.list-open .scroll`.
+- `[FE]` test_list_open_content_centered_when_fits — правило `body.list-open .scroll > .screen.active { margin-top/bottom: auto }` в `@media (min-width:1024px)`.
+
+## FR-SITE6 — страницы /automation/ в стиле главной, без меню и теней
+
+**Story.** Как владелец бренда, я хочу, чтобы страницы курса (`/automation/`,
+`/automation/roles`, `/automation/skills`, `/automation/main`) выглядели как
+главная: тот же шрифт и размеры, шапка выровнена как на главной, без
+навигационного меню «AI Strategy | …» и без теней за иконками героя.
+
+**Требование.**
+- Шрифт — **JetBrains Mono** (Google Fonts, веса 400/500/700/800); Montserrat нигде нет.
+- **Меню убрано полностью**: ни `.navpill`, ни мобильного бургер-меню
+  (`#mobileMenu`, `#burger`) — ни в разметке, ни в CSS, ни в JS.
+- Шапка на всю ширину (без `max-width:80rem`), паддинги как на главной
+  (1.1rem, на десктопе 2rem); лого слева, кнопки справа; CTA «Консультация» на
+  десктопе = метрики CTA главной (высота 2.85rem, 11.5px/.15em).
+- У плиток-иконок героя (`.tile`) НЕТ `box-shadow` (включая инлайновые).
+- Лекции `/automation/1`, `/automation/2` — отдельные слайд-страницы, их стиль
+  и Montserrat НЕ трогаем.
+
+**Тесты (tests/test_automation.py):** test_no_nav_menu, test_jetbrains_mono_font,
+test_no_tile_shadows, test_header_full_width_and_cta.
+
+## FR-SITE7 — hero-CTA ведёт в стратегию; под ним ссылка «About me»
+
+**Story.** Как посетитель, нажимая «Start AI Transformation», я хочу попасть в
+кабинет ИИ-стратегии (`strategy.andre.technology`), а не в попап «Coming soon»;
+под кнопкой хочу видеть скромную ссылку «About me» на страницу об авторе.
+
+**Требование.**
+- «Start AI Transformation» — ссылка `<a href="https://strategy.andre.technology/">`
+  (НЕ `data-action="contact"`), стиль `.btn-white` как раньше.
+- Под кнопкой — текстовая ссылка `<a class="about-link" href="https://andre.technology/about/">About me</a>`:
+  серая (`rgba(255,255,255,0.5)`), тот же шрифт, не кнопка; корректна на
+  мобилке и десктопе (не ломает переключение экранов).
+
+**Тесты (tests/test_site.py):** test_start_transformation_links_to_strategy,
+test_about_me_link.
+
+## FR-SITE8 — «Get AI Strategy»; кнопки Explore открывают «Coming soon»
+
+**Story.** Как владелец, я хочу назвать кнопку стратегии «Get AI Strategy»
+(не «Open AI Strategy»), а кнопки «Explore Employees» / «Explore Products» /
+«Explore Courses» — пока продукты в разработке — должны открывать тот же
+попап «Coming soon» (лид-форма) с правильным источником.
+
+**Требование.**
+- Кнопка на экране AI Strategy — текст «Get AI Strategy» (ссылка на
+  `strategy.andre.technology/ai-strategy` как раньше); «Open AI Strategy» нет.
+- «Explore Employees» → `data-action="lead-open" data-source="AI Employees"`;
+  «Explore Products» → `data-source="AI Products"`;
+  «Explore Courses» → `data-source="AI Education"`.
+- Разметка/JS раскрывающихся списков (FR-SITE3/5) остаётся в коде «спящей» —
+  вернуть списки можно, снова поставив `data-action="toggle-*"`.
+
+**Тесты (tests/test_site.py):** test_get_ai_strategy_label,
+test_explore_buttons_open_lead_modal.
+
+## FR-SITE9 — пункт навигации «My contacts»
+
+**Story.** Как владелец, я хочу пункт меню «My contacts» вместо «Contacts».
+
+**Требование.** В навигации (`.nav-label` таба `data-target="contact"`) — текст
+«My contacts»; голого «Contacts» нет. Пилюля навигации не переполняется на
+десктоп-ширинах (FR-SITE4 сохраняется).
+
+**Тесты (tests/test_site.py):** test_nav_label_my_contacts.

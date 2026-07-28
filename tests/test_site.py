@@ -133,6 +133,64 @@ def test_nav_dividers_never_hidden_on_desktop():
         "на узком десктопе разделители не должны пропадать (нет display:none)"
 
 
+# ── FR-SITE7 ──────────────────────────────────────────────────────────────
+
+def test_start_transformation_links_to_strategy():
+    html = _html()
+    # «Start AI Transformation» — ссылка на strategy., НЕ кнопка contact
+    bad = re.search(r'<button[^>]*data-action="contact"[^>]*>\s*Start AI Transformation', html)
+    assert bad is None, "«Start AI Transformation» не должна быть кнопкой contact (coming soon)"
+    pos = html.find("Start AI Transformation")
+    assert pos > 0, "на сайте должна быть кнопка «Start AI Transformation»"
+    tag_start = html.rfind("<", 0, pos)
+    el = html[tag_start:pos]
+    assert el.lstrip().startswith("<a "), \
+        "«Start AI Transformation» должна быть ссылкой <a>: " + el[:60]
+    assert "https://strategy.andre.technology/" in el, \
+        "«Start AI Transformation» должна вести на strategy.andre.technology"
+
+
+def test_about_me_link():
+    html = _html()
+    # серая текстовая ссылка «About me» под hero-CTA → /about/
+    m = re.search(r'<a class="about-link" href="https://andre\.technology/about/"[^>]*>About me</a>', html)
+    assert m, "под «Start AI Transformation» должна быть ссылка «About me» на /about/"
+    assert re.search(r"\.about-link\s*\{[^}]*color:\s*rgba\(255,255,255,0\.5\)", html), \
+        "ссылка «About me» должна быть серой (rgba(255,255,255,0.5))"
+
+
+# ── FR-SITE8 ──────────────────────────────────────────────────────────────
+
+def test_get_ai_strategy_label():
+    html = _html()
+    assert "Get AI Strategy" in html, "кнопка стратегии должна называться «Get AI Strategy»"
+    assert "Open AI Strategy" not in html, "старого названия «Open AI Strategy» быть не должно"
+
+
+def test_explore_buttons_open_lead_modal():
+    html = _html()
+    for label, source in (("Explore Employees", "AI Employees"),
+                          ("Explore Products", "AI Products"),
+                          ("Explore Courses", "AI Education")):
+        pos = html.find(label)
+        assert pos > 0, "должна быть кнопка «%s»" % label
+        el = html[html.rfind("<", 0, pos):pos]
+        assert 'data-action="lead-open"' in el, \
+            "«%s» должна открывать попап coming soon (lead-open): %s" % (label, el[:80])
+        assert 'data-source="%s"' % source in el, \
+            "«%s» должна передавать источник «%s»" % (label, source)
+
+
+# ── FR-SITE9 ──────────────────────────────────────────────────────────────
+
+def test_nav_label_my_contacts():
+    html = _html()
+    assert re.search(r'<span class="nav-label">My contacts</span>', html), \
+        "пункт навигации должен называться «My contacts»"
+    assert not re.search(r'<span class="nav-label">Contacts</span>', html), \
+        "голого пункта «Contacts» быть не должно"
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:
