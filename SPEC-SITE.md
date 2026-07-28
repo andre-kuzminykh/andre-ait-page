@@ -309,3 +309,30 @@ AI Employees — 75 px.
 
 **Тесты (tests/test_site.py):** test_mobile_screens_share_one_offset,
 test_landscape_resets_mobile_offsets.
+
+## FR-SITE13 — лекции 3–8 курса в «портальном» стиле лекций 1–2
+
+**Story.** Как студент курса, я открываю из дорожной карты `/automation/main`
+любой из модулей 3–8 и попадаю в лекцию-презентацию, оформленную так же, как
+лекции 1 и 2: фиолетовый + оранжевый, тёмная/светлая тема, шапка AIT,
+говорящая голова в кружке слева-снизу, стрелки справа-снизу, свайпы на мобилке.
+
+**Контекст.** Контент лекций 3–8 перенесён из репозитория `aisala`
+(`ai-agents-corp/3..8`, старый мятный стиль `#35F0C7`) и перегнан в портальный
+стиль тем же способом, каким лекции 1–2 получены из `ai-agents-corp/1..2`.
+
+**Требование.**
+- `/automation/3..8/index.html` — самостоятельные слайд-страницы в портальном
+  стиле: палитра `solar #8B5CF6` + оранжевый `#F97316` (мяты не осталось),
+  портальные блоки `portal-deck`/`portal-dark`/`lecture-chrome`/`portal-theme`/
+  `portal-autostart`/`portal-fit`, шапка `lecture-header`, свайп-навигация.
+- Видео-головы: лекции 3–5 — Vimeo (id в `videoIds`); лекции 6–8 — mp4 c CDN
+  `raw.githubusercontent.com/andre-kuzminykh/automation/<sha>/corp/<N>/videos/`
+  (ветка `ai-agents-corp-videos`, видео пережаты до 640×640).
+- Число слайдов в разметке сходится с `totalSlides` (константа или подсчёт DOM).
+- Дорожная карта `/automation/main`: модули 3–8 разлочены и ведут на
+  `/automation/3..8` (замков и плашки «Старт …» нет).
+
+**Тесты (tests/test_lectures.py):** test_portal_palette,
+test_portal_blocks_present, test_slider_api_and_swipe, test_video_sources,
+test_total_slides_consistent.
