@@ -56,14 +56,17 @@
 Пуш тегов запрещён прокси, поэтому фиксация — по SHA (и аннотированные
 `checkpoint/*`-теги локально, если доступны).
 
-| Чекпоинт | SHA | Состояние |
+SHA ниже — состояния ветки `main` (точки отката).
+
+| Чекпоинт | SHA в main | Состояние |
 |---|---|---|
-| `main-baseline` | `7a3cabf` | main до PR #14 |
-| `center-lists` | `cd2450e` | раскрытые списки карточек центрируются (FR-SITE3/5) |
-| `automation-style` | `5c0dff9` | /automation в стиле главной, без меню и теней (FR-SITE6) |
-| `cta-links-spec` | `5f05bb3` | CTA-переходы, About me, My contacts, спека+тесты (FR-SITE7..9) |
-| `pr14-merged` | `7d147b2` | main после мержа PR #14 |
-| `lang-logo` | HEAD ветки после PR #14 | переключатель EN\|RU, лого из /assets (FR-SITE10..11) |
+| `baseline` | `7a3cabf` | до серии правок (PR #14) |
+| `pr14` | `7d147b2` | центрирование списков, /automation в стиле главной, CTA-переходы, About me, My contacts, AGENTS.md + спека (FR-SITE5..9) |
+| `pr15` | `bf32687` | переключатель EN\|RU (FR-SITE10) |
+| `pr16` | `7691350` | тексты: Get Your Personal AI Transformation Roadmap, Get AI Business OS |
+| `pr17` | `01a3fa1` | первый экран без чёрноты: неблокирующие CSS, preload постера, LQIP |
+| `pr18` | `930c9d6` | лого назад на рабочий адрес, EN\|RU сдвинут влево (FR-SITE11 переписан) |
+| `pr19` | HEAD | мобильные экраны по одной нижней линии (FR-SITE12) |
 
 Откат одного изменения: `git revert <sha>`.
 Откат файла к чекпоинту: `git checkout <sha> -- <путь>` + коммит.
