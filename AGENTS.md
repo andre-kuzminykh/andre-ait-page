@@ -61,7 +61,9 @@
 | `main-baseline` | `7a3cabf` | main до PR #14 |
 | `center-lists` | `cd2450e` | раскрытые списки карточек центрируются (FR-SITE3/5) |
 | `automation-style` | `5c0dff9` | /automation в стиле главной, без меню и теней (FR-SITE6) |
-| `cta-links-spec` | HEAD ветки PR #14 | CTA-переходы, About me, My contacts, спека+тесты (FR-SITE7..9) |
+| `cta-links-spec` | `5f05bb3` | CTA-переходы, About me, My contacts, спека+тесты (FR-SITE7..9) |
+| `pr14-merged` | `7d147b2` | main после мержа PR #14 |
+| `lang-logo` | HEAD ветки после PR #14 | переключатель EN\|RU, лого из /assets (FR-SITE10..11) |
 
 Откат одного изменения: `git revert <sha>`.
 Откат файла к чекпоинту: `git checkout <sha> -- <путь>` + коммит.

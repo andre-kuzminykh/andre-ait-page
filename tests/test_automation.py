@@ -65,6 +65,14 @@ def test_header_full_width_and_cta():
             rel + ": десктопная CTA «Консультация» = метрики CTA главной"
 
 
+# ── FR-SITE11: лого из /assets, не с i.ibb.co ─────────────────────────────
+
+def test_logo_self_hosted():
+    for rel, html in _pages():
+        assert "i.ibb.co" not in html, rel + ": внешнего хостинга картинок быть не должно"
+        assert 'src="/assets/_ait_logo.png"' in html, rel + ": лого должно грузиться из /assets/_ait_logo.png"
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:
