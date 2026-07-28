@@ -65,12 +65,25 @@ def test_header_full_width_and_cta():
             rel + ": десктопная CTA «Консультация» = метрики CTA главной"
 
 
-# ── FR-SITE11: лого из /assets, не с i.ibb.co ─────────────────────────────
+# ── FR-SITE11: единый рабочий адрес лого на всех страницах ────────────────
 
-def test_logo_self_hosted():
+LOGO_URL = "https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png"
+
+
+def test_logo_url():
     for rel, html in _pages():
-        assert "i.ibb.co" not in html, rel + ": внешнего хостинга картинок быть не должно"
-        assert 'src="/assets/_ait_logo.png"' in html, rel + ": лого должно грузиться из /assets/_ait_logo.png"
+        assert 'src="%s"' % LOGO_URL in html, rel + ": лого должно грузиться с " + LOGO_URL
+        assert "/assets/_ait_logo.png" not in html, \
+            rel + ": путь с ведущим «_» Jekyll не публикует (см. FR-SITE11)"
+
+
+def test_no_underscore_asset_paths():
+    """Jekyll (GitHub Pages) не публикует файлы/папки, чьи имена начинаются с «_»."""
+    for rel, html in _pages():
+        for m in re.finditer(r'(?:src|href)="(/[^"]*)"', html):
+            parts = [p for p in m.group(1).split("/") if p]
+            assert not any(p.startswith("_") for p in parts), \
+                rel + ": ресурс с «_» в пути не будет опубликован: " + m.group(1)
 
 
 if __name__ == "__main__":

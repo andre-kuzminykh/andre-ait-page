@@ -177,7 +177,9 @@
       background: #050505; overflow-y: auto; pointer-events: auto; }
   }
   @media (min-width:1024px) {
-    .nav { display: flex; align-items: center; gap: 0.3rem; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    /* пилюля смещена левее геометрического центра: справа от неё живут переключатель
+       языка и CTA, слева — только лого, поэтому «оптический» центр сдвинут (FR-SITE10) */
+    .nav { display: flex; align-items: center; gap: 0.3rem; position: absolute; left: calc(50% - 3.5rem); top: 50%; transform: translate(-50%, -50%);
       height: 2.85rem; box-sizing: border-box;
       background: rgba(10,10,16,0.5); border: 1px solid rgba(255,255,255,0.10); border-radius: 999px; padding: 0 1rem;
       -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 4px 30px rgba(0,0,0,0.3); pointer-events: auto; }
@@ -223,22 +225,22 @@
     /* FR-SITE9/10: «My contacts» и переключатель EN|RU добавили ширины справа —
        пилюля уезжает на 2rem влево (слева у лого запас ~120px) и дожимается
        ТОЛЬКО по горизонтали; шрифт 12px и высота 2.85rem не тронуты (FR-SITE4) */
-    .nav { left: calc(50% - 2.5rem); gap: 0.06rem; padding-left: 0.5rem; padding-right: 0.5rem; }
+    .nav { left: calc(50% - 5.5rem); gap: 0.06rem; padding-left: 0.5rem; padding-right: 0.5rem; }
     .nav-tab { font-size: 12px; letter-spacing: 0; padding-left: 0.16rem; padding-right: 0.16rem; }
     .nav-divider { padding: 0; }
   }
   @media (min-width:1320px) and (max-width:1479px) {
-    .nav { left: calc(50% - 2rem); gap: 0.22rem; }
+    .nav { left: calc(50% - 5rem); gap: 0.22rem; }
     .nav-tab { font-size: 13px; padding-left: 0.4rem; padding-right: 0.4rem; }
   }
   /* body{zoom} (≥1600) сжимает вьюпорт вёрстки на 15–30%, а типографика тут полная —
      без дожима пилюля упирается в EN|RU+CTA; логика та же: сдвиг влево + горизонтальное сжатие */
   @media (min-width:1600px) and (max-width:1899px) {
-    .nav { left: calc(50% - 2rem); gap: 0.22rem; }
+    .nav { left: calc(50% - 4.5rem); gap: 0.22rem; }
     .nav-tab { font-size: 13px; padding-left: 0.4rem; padding-right: 0.4rem; }
   }
   @media (min-width:1900px) and (max-width:2299px) {
-    .nav { left: calc(50% - 1rem); }
+    .nav { left: calc(50% - 4.5rem); }
   }
 
   /* Menu footer: socials → Privacy·Terms → copyright, pinned to the bottom (mobile only) */
@@ -261,15 +263,36 @@
 
   /* FR-SITE10: компактный ТЕКСТОВЫЙ переключатель языка EN | RU между меню и CTA
      (не кнопки — просто текст; активный язык белый, второй серый) */
-  .lang-switch { display: flex; align-items: center; gap: 0.3rem; margin-right: 0.25rem; flex-shrink: 0; }
+  /* margin-right отодвигает переключатель ВЛЕВО от соседа справа (бургер на мобилке,
+     CTA на десктопе): на мобилке зазор растёт с шириной экрана, чтобы на 320px
+     шапка не переполнилась */
+  .lang-switch { display: flex; align-items: center; gap: 0.3rem; margin-right: clamp(0.5rem, 3.5vw, 1.4rem); flex-shrink: 0; }
+  /* Мобилка: свободное место в шапке — СЛЕВА (между лого и кнопками), поэтому
+     переключатель уходит туда: header-right растягивается, а margin-right:auto
+     съедает остаток и прижимает бургер с CTA обратно вправо. */
+  @media (max-width:1023px) {
+    .header-right { flex: 1 0 auto; }
+    .lang-switch { margin-left: clamp(0.5rem, 2.2vw, 1.5rem); margin-right: auto; }
+  }
+  /* ≤380px (SE, узкие складные): четыре элемента в строку не помещаются —
+     компактная шапка без авто-отступа, иначе переключатель наезжает на логотип */
+  @media (max-width:380px) {
+    header { padding: 0.85rem 0.6rem; }
+    .header-right { flex: 0 0 auto; gap: 0.3rem; }
+    .lang-switch { margin-left: 0; margin-right: 0.25rem; gap: 0.12rem; }
+    .lang-opt { font-size: 10px; letter-spacing: 0.03em; }
+    .logo-img { width: 2.5rem; height: 2.5rem; }
+    .menu-btn { width: 2.3rem; height: 2.3rem; }
+    .cta { padding: 0.6rem 0.55rem; font-size: 8px; letter-spacing: 0.02em; }
+  }
   .lang-opt { background: none; border: 0; padding: 0.2rem 0.05rem; cursor: pointer; font-size: 11px; font-weight: 500;
     letter-spacing: 0.08em; color: rgba(255,255,255,0.45); transition: color 0.3s ease; }
   .lang-opt.active { color: #ffffff; font-weight: 700; }
   @media (hover:hover) { .lang-opt:hover { color: #ffffff; } }
   .lang-sep { color: rgba(255,255,255,0.25); font-size: 10px; user-select: none; }
-  @media (min-width:1024px) { .lang-opt { font-size: 12px; } }
+  @media (min-width:1024px) { .lang-opt { font-size: 12px; } .lang-switch { margin-right: 2rem; } }
   /* на самом узком десктопе (1024–1319) шапке тесно — ужимаем переключатель по горизонтали */
-  @media (min-width:1024px) and (max-width:1319px) { .lang-switch { gap: 0.12rem; margin-right: 0.05rem; } .lang-opt { font-size: 11px; letter-spacing: 0; } }
+  @media (min-width:1024px) and (max-width:1319px) { .lang-switch { gap: 0.12rem; margin-right: 1rem; } .lang-opt { font-size: 11px; letter-spacing: 0; } }
 
   /* ===== Caption ===== */
   .caption { position: fixed; left: 50%; top: calc(60dvh - 3.6rem); transform: translate(-50%, -100%); white-space: nowrap; text-align: center; z-index: 29; pointer-events: none; }
@@ -581,7 +604,7 @@
     <div class="header-row">
       <div class="header-left">
         <div class="logo-btn" data-action="home" role="button" tabindex="0" aria-label="Home">
-          <img class="logo-img" src="/assets/_ait_logo.png" alt="AIT">
+          <img class="logo-img" src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
         </div>
         <div class="speaker">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
