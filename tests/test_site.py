@@ -79,13 +79,30 @@ def test_list_open_scroll_is_full_viewport():
     # box-sizing:border-box обязателен — иначе бокс с padding вылезает за края экрана
     assert "box-sizing: border-box" in rule
     assert "max-height: 100dvh" in rule and "height: 100dvh" in rule
-    assert "padding-top: 6rem" in rule and "padding-bottom: 2rem" in rule
+    # паддинги СИММЕТРИЧНЫ: auto-поля центрируют помещающийся список ровно
+    # по центру вьюпорта (см. test_list_open_content_centered_when_fits)
+    assert "padding-top: 6rem" in rule and "padding-bottom: 6rem" in rule
     assert "justify-content: flex-start" in rule
     # правило действует ТОЛЬКО на десктопе: ближайший @media перед ним — min-width:1024px
     before = html.split("body.list-open .scroll {")[0]
     nearest_media = before.rfind("@media (")
     assert "min-width:1024px" in before[nearest_media:nearest_media + 40], \
         "body.list-open .scroll должно быть в @media (min-width:1024px)"
+
+
+def test_list_open_content_centered_when_fits():
+    html = _html()
+    # раскрытый список, помещающийся в экран, центрируется по вертикали
+    # auto-полями активного экрана (приём .modal: margin auto = safe center);
+    # при переполнении поля схлопываются в 0 и остаётся режим FR-SITE3
+    assert re.search(
+        r"body\.list-open \.scroll > \.screen\.active\s*\{\s*margin-top:\s*auto;\s*margin-bottom:\s*auto;",
+        html), "нужно правило body.list-open .scroll > .screen.active { margin-top/bottom: auto }"
+    # правило действует ТОЛЬКО на десктопе: ближайший @media перед ним — min-width:1024px
+    before = html.split("body.list-open .scroll > .screen.active")[0]
+    nearest_media = before.rfind("@media (")
+    assert "min-width:1024px" in before[nearest_media:nearest_media + 40], \
+        "центрирование list-open должно быть в @media (min-width:1024px)"
 
 
 # ── FR-SITE4 ──────────────────────────────────────────────────────────────

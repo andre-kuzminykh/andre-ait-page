@@ -268,7 +268,15 @@
        добавляется сверху → бокс становится ВЫШЕ вьюпорта и вылезает за оба края
        экрана. С border-box бокс = ровно одна высота экрана, прокрутка внутри. */
     body.list-open .scroll { box-sizing: border-box; max-height: 100dvh; height: 100dvh;
-      justify-content: flex-start; padding-top: 6rem; padding-bottom: 2rem; }
+      justify-content: flex-start; padding-top: 6rem; padding-bottom: 6rem; }
+    /* Раскрытый список, который ПОМЕЩАЕТСЯ в экран, центрируется по вертикали:
+       auto-поля активного экрана поровну забирают свободное место сверху/снизу
+       (тот же приём, что у .modal). Паддинги симметричны (6rem/6rem), поэтому
+       центр совпадает с центром вьюпорта — как у остальных экранов. Если контент
+       выше экрана — свободного места нет, auto-поля = 0, и работает прежний
+       режим FR-SITE3: прижат к верху под фикс-шапку + нативная прокрутка,
+       срез строго по краю экрана. */
+    body.list-open .scroll > .screen.active { margin-top: auto; margin-bottom: auto; }
   }
   .scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
