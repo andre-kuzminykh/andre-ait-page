@@ -185,10 +185,44 @@ def test_explore_buttons_open_lead_modal():
 
 def test_nav_label_my_contacts():
     html = _html()
-    assert re.search(r'<span class="nav-label">My contacts</span>', html), \
+    assert re.search(r'<span class="nav-label"[^>]*>My contacts</span>', html), \
         "пункт навигации должен называться «My contacts»"
-    assert not re.search(r'<span class="nav-label">Contacts</span>', html), \
+    assert not re.search(r'<span class="nav-label"[^>]*>Contacts</span>', html), \
         "голого пункта «Contacts» быть не должно"
+
+
+# ── FR-SITE10 ─────────────────────────────────────────────────────────────
+
+def test_lang_switch_is_text_between_nav_and_cta():
+    html = _html()
+    # текстовый переключатель EN | RU: два «текстовых» пункта + разделитель
+    assert '<button class="lang-opt active" data-action="lang" data-lang="en">EN</button>' in html
+    assert '<button class="lang-opt" data-action="lang" data-lang="ru">RU</button>' in html
+    # не кнопка: без фона и рамки
+    assert re.search(r"\.lang-opt \{ background: none; border: 0;", html), \
+        "пункты переключателя должны выглядеть текстом (без фона/рамки)"
+    # позиция: в header-right ПЕРЕД CTA «Free AI Diagnostic» → визуально между меню и CTA
+    i_hr = html.find('<div class="header-right">')
+    i_ls = html.find('class="lang-switch"')
+    i_cta = html.find('class="btn-white cta"')
+    assert 0 < i_hr < i_ls < i_cta, "переключатель должен стоять в header-right перед CTA"
+
+
+def test_lang_ru_dictionary_complete():
+    html = _html()
+    assert "var RU_TEXT" in html and "'ait_lang'" in html and "var CUES_RU" in html, \
+        "нужны словарь RU_TEXT, ключ ait_lang и RU-подписи CUES_RU"
+    # каждый размеченный ключ имеет перевод
+    for k in set(re.findall(r'data-i18n(?:-ph)?="([^"]+)"', html)):
+        assert ("'%s':" % k) in html, "нет перевода для ключа " + k
+
+
+# ── FR-SITE11 ─────────────────────────────────────────────────────────────
+
+def test_logo_self_hosted():
+    html = _html()
+    assert 'src="/assets/_ait_logo.png"' in html, "лого должно грузиться из /assets/_ait_logo.png"
+    assert "i.ibb.co" not in html, "внешнего хостинга картинок i.ibb.co быть не должно"
 
 
 if __name__ == "__main__":
