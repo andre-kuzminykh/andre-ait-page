@@ -3065,13 +3065,13 @@ window.addEventListener('load', function(){
 /* 1. Иконка не должна совпадать по цвету со своей подложкой.
    Было: text-solar на bg-solar/20 — иконка растворялась в плашке.
    Стало: плашка сплошная, иконка белая — контраст в обеих темах. */
-.slide-container [class*="bg-solar/"]:has(> i){
+.slide-container [class*="bg-solar/"]:has(> i:only-child){
   background-color:#8B5CF6 !important;
   color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
 }
 .slide-container [class*="bg-solar/"] > i{ color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important; }
 /* внутри тёмных emphasis-карточек акцент оранжевый (как и весь портальный тинт) */
-.slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i){
+.slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i:only-child){
   background-color:#F97316 !important;
 }
 /* text-solar на самом тёмном элементе (круг «Старт»): фон #2E1065 + фиолетовая
@@ -3168,8 +3168,8 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
    практически невидимы. В тёмной теме override уже был. */
 html:not(.dark) .slide-container [class~="text-grayBase"]{ color:rgba(0,0,0,.30) !important; }
 
-.slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i),
-.slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i) *{
+.slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i:only-child),
+.slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i:only-child) *{
   color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
 }
 
@@ -3217,6 +3217,35 @@ html:not(.dark) .slide-container [class~="text-grayBase"]{ color:rgba(0,0,0,.30)
 .slide-container[class~="bg-black"] [class*="bg-grayBase"]{
   background-color:rgba(255,255,255,.14) !important;
 }
+
+/* 17. Тёмная тема матчила bg-grayBase ПОДСТРОЧНО, поэтому под правило попадали
+   и hover:bg-grayBase / md:bg-grayBase — элемент молча становился
+   полупрозрачным (так пропадало кольцо на схеме AgentOps). Матчим точно. */
+html.dark .slide-container [class~="bg-grayBase"],
+html.dark .slide-container [class*="bg-grayBase/"]{ background-color:rgba(255,255,255,.06) !important; }
+html.dark .slide-container [class*="hover:bg-grayBase"]:not([class~="bg-grayBase"]):not([class*="bg-grayBase/"]){
+  background-color:transparent !important;
+}
+
+/* 18. Белые кружки иконок на светло-серых карточках в тёмной теме сливались
+   (#141414 на #191919) — делаем их различимыми. */
+html.dark .slide-container [class~="bg-white"][class*="rounded-full"]{
+  background-color:rgba(255,255,255,.14) !important;
+}
+
+/* 19. portal-deck давал min-width:0 только детям grid-cols/flex-row, а все
+   горизонтальные цепочки в деках собраны на flex + justify-between + flex-1.
+   После укрупнения шрифтов такие ячейки переставали ужиматься и вылезали
+   за край карточки — это была причина всех вылезаний в лекции 4. */
+.slide-container [class*="justify-between"] > *,
+.slide-container [class*="flex-1"]{ min-width:0 !important; }
+
+/* 20. Мелкие подписи-рубрики были слишком бледными: text-black/30..40 на белом
+   давало ~2.8:1. Поднимаем до читаемого, не трогая основной текст. */
+html:not(.dark) .slide-container [class*="text-black/3"],
+html:not(.dark) .slide-container [class*="text-black/4"]{ color:rgba(0,0,0,.58) !important; }
+html.dark .slide-container [class*="text-white/3"],
+html.dark .slide-container [class*="text-white/4"]{ color:rgba(255,255,255,.62) !important; }
 </style>
 
 <style id="notes-panel-style">
