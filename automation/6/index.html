@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI-агент в продакшене: от демо к промышленной системе</title>
-    <meta name="description" content="Лекция 6: AI-агент в продакшене. Зрелость, метрики, тестирование, мониторинг, безопасность и governance.">
+    <meta name="description" content="Лекция 6: AI-агент в продакшене. Зрелость, метрики, тестирование, мониторинг, безопасность и управление.">
     <meta name="theme-color" content="#8B5CF6">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="AI-агент в продакшене: от демо к промышленной системе">
-    <meta property="og:description" content="Лекция 6: Зрелость, метрики, тестирование, мониторинг, безопасность и governance">
+    <meta property="og:description" content="Лекция 6: Зрелость, метрики, тестирование, мониторинг, безопасность и управление">
     <meta property="og:image" content="https://i.ibb.co/gbBpPmwc/7a3366f2-e9ab-4814-a8d2-e785f9473cea.png">
     <meta property="og:image:secure_url" content="https://i.ibb.co/gbBpPmwc/7a3366f2-e9ab-4814-a8d2-e785f9473cea.png">
     <meta property="og:image:type" content="image/png">
@@ -20,7 +20,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AI-агент в продакшене: от демо к промышленной системе">
-    <meta name="twitter:description" content="Лекция 6: Зрелость, метрики, тестирование, мониторинг, безопасность и governance">
+    <meta name="twitter:description" content="Лекция 6: Зрелость, метрики, тестирование, мониторинг, безопасность и управление">
     <meta name="twitter:image" content="https://i.ibb.co/gbBpPmwc/7a3366f2-e9ab-4814-a8d2-e785f9473cea.png">
 
     <!-- Tailwind CSS -->
@@ -569,6 +569,11 @@ window.addEventListener('load', function(){
     }
 
     /* Кружок: обёртка нативного видео (из исходника урока) */
+    /* Радиальные схемы (раунд 2): узлы-круги непрозрачны — иначе пунктирное
+       кольцо просвечивает сквозь них в тёмной теме. */
+    .radial-node { background:#FFFFFF !important; }
+    html.dark .radial-node { background:#1A1A1A !important; }
+
     .video-wrapper {
         width: 100%;
         height: 100%;
@@ -674,7 +679,7 @@ window.addEventListener('load', function(){
             <p class="text-black/70 font-bold text-[11px] md:text-2xl mb-2 md:mb-6 max-w-3xl mx-auto">AI-агент переходит из прототипа в промышленную систему</p>
             <p class="text-black/50 font-medium text-[10px] md:text-base mb-4 md:mb-12 max-w-3xl mx-auto">В продакшене появляются пользователи, данные, интеграции, ошибки, стоимость и ответственность</p>
 
-            <div class="grid grid-cols-2 md:grid-cols-6 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-6">
                 <div class="bg-white border border-grayBase rounded-2xl p-2 md:p-4 text-center shadow-sm">
                     <i class="ph-fill ph-users-three text-solar text-lg md:text-2xl mb-1 md:mb-2"></i>
                     <p class="font-bold text-[10px] md:text-sm">Пользователи</p>
@@ -791,7 +796,7 @@ window.addEventListener('load', function(){
                     <div class="bg-white/5 border border-solar/40 rounded-xl p-3 md:p-4 flex items-center gap-2 md:gap-3"><i class="ph-fill ph-lock-key text-solar text-lg md:text-2xl"></i><span class="font-bold text-[11px] md:text-sm">Безопасность</span></div>
                     <div class="bg-white/5 border border-solar/40 rounded-xl p-3 md:p-4 flex items-center gap-2 md:gap-3"><i class="ph-fill ph-sliders text-solar text-lg md:text-2xl"></i><span class="font-bold text-[11px] md:text-sm">Управляемость</span></div>
                     <div class="bg-white/5 border border-solar/40 rounded-xl p-3 md:p-4 flex items-center gap-2 md:gap-3"><i class="ph-fill ph-hand-palm text-solar text-lg md:text-2xl"></i><span class="font-bold text-[11px] md:text-sm">Контроль действий</span></div>
-                    <div class="bg-white/5 border border-solar/40 rounded-xl p-3 md:p-4 flex items-center gap-2 md:gap-3"><i class="ph-fill ph-list-bullets text-solar text-lg md:text-2xl"></i><span class="font-bold text-[11px] md:text-sm">Логи</span></div>
+                    <div class="bg-white/5 border border-solar/40 rounded-xl p-3 md:p-4 flex items-center gap-2 md:gap-3"><i class="ph-fill ph-list-bullets text-solar text-lg md:text-2xl"></i><span class="font-bold text-[11px] md:text-sm">Журналы</span></div>
                     <div class="bg-solar text-black rounded-xl p-3 md:p-4 flex items-center gap-2 md:gap-3"><i class="ph-fill ph-chart-line text-lg md:text-2xl"></i><span class="font-black text-[11px] md:text-sm">Метрики · Правила</span></div>
                 </div>
             </div>
@@ -823,7 +828,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-center gap-2"><i class="ph-bold ph-dot-outline text-solar"></i>Выбирает следующий шаг</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-dot-outline text-solar"></i>Использует инструменты</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-dot-outline text-solar"></i>Обращается к данным</li>
-                        <li class="flex items-center gap-2"><i class="ph-bold ph-dot-outline text-solar"></i>Запускает workflow</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-dot-outline text-solar"></i>Запускает процессы</li>
                     </ul>
                 </div>
             </div>
@@ -913,19 +918,19 @@ window.addEventListener('load', function(){
                 </div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm">
                     <i class="ph-fill ph-sliders-horizontal text-solar text-lg md:text-2xl mb-1 md:mb-2"></i>
-                    <p class="font-bold text-[11px] md:text-sm">Неверные параметры</p>
+                    <p class="font-bold text-[11px] md:text-xs lg:text-sm">Неверные параметры</p>
                 </div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm">
                     <i class="ph-fill ph-database text-solar text-lg md:text-2xl mb-1 md:mb-2"></i>
-                    <p class="font-bold text-[11px] md:text-sm">Не та база данных</p>
+                    <p class="font-bold text-[11px] md:text-xs lg:text-sm">Не та база данных</p>
                 </div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm">
                     <i class="ph-fill ph-flow-arrow text-solar text-lg md:text-2xl mb-1 md:mb-2"></i>
-                    <p class="font-bold text-[11px] md:text-sm">Неверный workflow</p>
+                    <p class="font-bold text-[11px] md:text-xs lg:text-sm">Неверный процесс</p>
                 </div>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 text-center shadow-xl text-white col-span-2 md:col-span-1">
                     <i class="ph-fill ph-prohibit text-solar text-lg md:text-2xl mb-1 md:mb-2"></i>
-                    <p class="font-black text-[11px] md:text-sm text-solar">Нарушение процесса</p>
+                    <p class="font-black text-[11px] md:text-xs lg:text-sm text-solar">Нарушение процесса</p>
                 </div>
             </div>
 
@@ -1062,8 +1067,8 @@ window.addEventListener('load', function(){
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-puzzle-piece text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Сложные кейсы</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-magnifying-glass text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Редкие случаи</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-question text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Нестандартные запросы</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-shield-check text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Safety-сценарии</p></div>
-                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-3 lg:p-4 shadow-xl text-white flex items-center gap-2 md:gap-3"><i class="ph-fill ph-wrench text-solar text-xl md:text-2xl"></i><p class="font-black text-[11px] md:text-sm text-solar">Корректность tool-calls</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-shield-check text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Сценарии безопасности</p></div>
+                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-3 lg:p-4 shadow-xl text-white flex items-center gap-2 md:gap-3"><i class="ph-fill ph-wrench text-solar text-xl md:text-2xl"></i><p class="font-black text-[11px] md:text-sm text-solar">Корректность вызовов инструментов</p></div>
             </div>
 
             <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Снижает риск слепого запуска</div>
@@ -1111,18 +1116,108 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Важно найти не только ошибку, но и её источник</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Причина может быть в</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-cpu text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Модели</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-chat-circle-text text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Промпте</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-database text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Данных</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-magnifying-glass text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Retrieval</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-wrench text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Tool-calls</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-flow-arrow text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Workflow</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-plugs-connected text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Интеграции</p></div>
-                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-tree-structure text-solar text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm text-solar">Архитектуре</p></div>
+            <div class="md:hidden w-full max-w-sm mx-auto mb-[0.9rem]">
+              <div class="flex justify-center mb-3">
+                <div class="w-[104px] h-[104px] rounded-full bg-black border-2 border-solar shadow-xl text-white flex flex-col items-center justify-center text-center px-2">
+                  <i class="ph-fill ph-bug-beetle text-solar text-2xl"></i>
+                  <span class="font-black text-[11px] leading-tight text-solar mt-0.5">Источник ошибки</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-cpu text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Модели</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-chat-circle-text text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Промпте</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-database text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Данных</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-magnifying-glass text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Поиске</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-wrench text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Инструментах</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-flow-arrow text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Процессе</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-plugs-connected text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Интеграции</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-tree-structure text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Архитектуре</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Нужны логи, метрики и трейсинг</div>
+            <div class="hidden md:block relative mx-auto my-1" style="width:470px;height:470px">
+              <svg class="absolute inset-0 w-full h-full pointer-events-none text-grayBase" viewBox="0 0 500 500" aria-hidden="true">
+                <circle cx="250" cy="250" r="190.0" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="10 13"/>
+              </svg>
+              <div class="absolute rounded-full bg-black border-2 border-solar shadow-xl text-white flex flex-col items-center justify-center text-center px-3 z-10" style="width:150px;height:150px;left:calc(50% - 75px);top:calc(50% - 75px)">
+                <i class="ph-fill ph-bug-beetle text-solar text-3xl mb-1"></i>
+                <span class="font-black text-[13px] lg:text-sm leading-tight text-solar">Источник<br>ошибки</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:98px;height:98px;left:calc(50.00% - 49px);top:calc(12.00% - 49px)">
+                <i class="ph-fill ph-cpu text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Модели</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:98px;height:98px;left:calc(76.87% - 49px);top:calc(23.13% - 49px)">
+                <i class="ph-fill ph-chat-circle-text text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Промпте</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:98px;height:98px;left:calc(88.00% - 49px);top:calc(50.00% - 49px)">
+                <i class="ph-fill ph-database text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Данных</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:98px;height:98px;left:calc(76.87% - 49px);top:calc(76.87% - 49px)">
+                <i class="ph-fill ph-magnifying-glass text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Поиске</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:98px;height:98px;left:calc(50.00% - 49px);top:calc(88.00% - 49px)">
+                <i class="ph-fill ph-wrench text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Инструментах</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:98px;height:98px;left:calc(23.13% - 49px);top:calc(76.87% - 49px)">
+                <i class="ph-fill ph-flow-arrow text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Процессе</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:98px;height:98px;left:calc(12.00% - 49px);top:calc(50.00% - 49px)">
+                <i class="ph-fill ph-plugs-connected text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Интеграции</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:98px;height:98px;left:calc(23.13% - 49px);top:calc(23.13% - 49px)">
+                <i class="ph-fill ph-tree-structure text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Архитектуре</span>
+              </div>
+            </div>
+
+            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Нужны журналы, метрики и трассировка</div>
         </div>
     </div>
 
@@ -1132,27 +1227,73 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Формула <span class="text-solar">надёжного агента</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Четыре опоры промышленного агента</p>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 shadow-sm">
-                    <i class="ph-fill ph-anchor text-solar text-2xl md:text-3xl mb-2"></i>
-                    <h3 class="font-black text-[12px] md:text-base mb-1">Стабильность</h3>
-                    <p class="text-[10px] md:text-xs text-black/60">Повторяемое качество</p>
+            <div class="md:hidden w-full max-w-sm mx-auto mb-[0.9rem]">
+              <div class="flex justify-center mb-3">
+                <div class="w-[104px] h-[104px] rounded-full bg-black border-2 border-solar shadow-xl text-white flex flex-col items-center justify-center text-center px-2">
+                  <i class="ph-fill ph-certificate text-solar text-2xl"></i>
+                  <span class="font-black text-[11px] leading-tight text-solar mt-0.5">Надёжный агент</span>
                 </div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 shadow-sm">
-                    <i class="ph-fill ph-chart-line text-solar text-2xl md:text-3xl mb-2"></i>
-                    <h3 class="font-black text-[12px] md:text-base mb-1">Измеримость</h3>
-                    <p class="text-[10px] md:text-xs text-black/60">Качество · Стоимость · Задержка</p>
+              </div>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-anchor text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Стабильность</p>
+                    <p class="text-[10px] leading-tight text-black/60">Повторяемое качество</p>
+                  </div>
                 </div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 shadow-sm">
-                    <i class="ph-fill ph-sliders text-solar text-2xl md:text-3xl mb-2"></i>
-                    <h3 class="font-black text-[12px] md:text-base mb-1">Управляемость</h3>
-                    <p class="text-[10px] md:text-xs text-black/60">Понимание поведения</p>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-chart-line text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Измеримость</p>
+                    <p class="text-[10px] leading-tight text-black/60">Качество · Стоимость · Задержка</p>
+                  </div>
                 </div>
-                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-5 shadow-xl text-white">
-                    <i class="ph-fill ph-shield-check text-solar text-2xl md:text-3xl mb-2"></i>
-                    <h3 class="font-black text-[12px] md:text-base mb-1 text-solar">Безопасность</h3>
-                    <p class="text-[10px] md:text-xs text-white/70">Ограничения · Контроль рисков</p>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-sliders text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Управляемость</p>
+                    <p class="text-[10px] leading-tight text-black/60">Понимание поведения</p>
+                  </div>
                 </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-shield-check text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Безопасность</p>
+                    <p class="text-[10px] leading-tight text-black/60">Ограничения и контроль рисков</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hidden md:block relative mx-auto my-1" style="width:500px;height:500px">
+              <svg class="absolute inset-0 w-full h-full pointer-events-none text-grayBase" viewBox="0 0 500 500" aria-hidden="true">
+                <circle cx="250" cy="250" r="175.0" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="10 13"/>
+              </svg>
+              <div class="absolute rounded-full bg-black border-2 border-solar shadow-xl text-white flex flex-col items-center justify-center text-center px-3 z-10" style="width:142px;height:142px;left:calc(50% - 71px);top:calc(50% - 71px)">
+                <i class="ph-fill ph-certificate text-solar text-3xl mb-1"></i>
+                <span class="font-black text-[13px] lg:text-sm leading-tight text-solar">Надёжный<br>агент</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:140px;height:140px;left:calc(50.00% - 70px);top:calc(15.00% - 70px)">
+                <i class="ph-fill ph-anchor text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Стабильность</span>
+                <span class="text-[10px] leading-tight text-black/60 mt-0.5">Повторяемое качество</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:140px;height:140px;left:calc(85.00% - 70px);top:calc(50.00% - 70px)">
+                <i class="ph-fill ph-chart-line text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Измеримость</span>
+                <span class="text-[10px] leading-tight text-black/60 mt-0.5">Качество · Стоимость · Задержка</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:140px;height:140px;left:calc(50.00% - 70px);top:calc(85.00% - 70px)">
+                <i class="ph-fill ph-sliders text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Управляемость</span>
+                <span class="text-[10px] leading-tight text-black/60 mt-0.5">Понимание поведения</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:140px;height:140px;left:calc(15.00% - 70px);top:calc(50.00% - 70px)">
+                <i class="ph-fill ph-shield-check text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Безопасность</span>
+                <span class="text-[10px] leading-tight text-black/60 mt-0.5">Ограничения и контроль рисков</span>
+              </div>
             </div>
 
             <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Стабильный · Измеримый · Управляемый · Безопасный</div>
@@ -1166,12 +1307,75 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Повторяемое качество в разных условиях</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Агент должен работать на разных</p>
-            <div class="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
-                <div class="bg-white border border-grayBase rounded-2xl px-2 py-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-chat-circle text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Запросах</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl px-1 py-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-users-three text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Пользователях</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl px-2 py-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-database text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Данных</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl px-2 py-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-puzzle-piece text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Сценариях</p></div>
-                <div class="bg-black border-2 border-solar rounded-2xl px-2 py-3 md:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-trend-up text-solar text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm text-solar">Нагрузках</p></div>
+            <div class="md:hidden w-full max-w-sm mx-auto mb-[0.9rem]">
+              <div class="flex justify-center mb-3">
+                <div class="w-[104px] h-[104px] rounded-full bg-black border-2 border-solar shadow-xl text-white flex flex-col items-center justify-center text-center px-2">
+                  <i class="ph-fill ph-anchor text-solar text-2xl"></i>
+                  <span class="font-black text-[11px] leading-tight text-solar mt-0.5">Стабильность</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-chat-circle text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Запросах</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-users-three text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Пользователях</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-database text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Данных</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-puzzle-piece text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Сценариях</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-trend-up text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Нагрузках</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hidden md:block relative mx-auto my-1" style="width:450px;height:450px">
+              <svg class="absolute inset-0 w-full h-full pointer-events-none text-grayBase" viewBox="0 0 500 500" aria-hidden="true">
+                <circle cx="250" cy="250" r="175.0" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="10 13"/>
+              </svg>
+              <div class="absolute rounded-full bg-black border-2 border-solar shadow-xl text-white flex flex-col items-center justify-center text-center px-3 z-10" style="width:138px;height:138px;left:calc(50% - 69px);top:calc(50% - 69px)">
+                <i class="ph-fill ph-anchor text-solar text-3xl mb-1"></i>
+                <span class="font-black text-[13px] lg:text-sm leading-tight text-solar">Стабильность</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:112px;height:112px;left:calc(50.00% - 56px);top:calc(15.00% - 56px)">
+                <i class="ph-fill ph-chat-circle text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Запросах</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:112px;height:112px;left:calc(83.29% - 56px);top:calc(39.18% - 56px)">
+                <i class="ph-fill ph-users-three text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Пользователях</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:112px;height:112px;left:calc(70.57% - 56px);top:calc(78.32% - 56px)">
+                <i class="ph-fill ph-database text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Данных</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:112px;height:112px;left:calc(29.43% - 56px);top:calc(78.32% - 56px)">
+                <i class="ph-fill ph-puzzle-piece text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Сценариях</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:112px;height:112px;left:calc(16.71% - 56px);top:calc(39.18% - 56px)">
+                <i class="ph-fill ph-trend-up text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Нагрузках</span>
+              </div>
             </div>
 
             <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full text-white text-center mb-3">
@@ -1190,31 +1394,31 @@ window.addEventListener('load', function(){
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Метрики</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-check-square text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Правильность</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-trophy text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Success rate</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-wrench text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Tool-calls</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-currency-circle-dollar text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Стоимость</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-clock-countdown text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Задержка</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-x-circle text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Error rate</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-smiley text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Satisfaction</p></div>
-                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-chart-line text-solar text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm text-solar">Сравнение версий</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 text-center shadow-sm"><i class="ph-fill ph-check-square text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-[11px] lg:text-sm">Правильность</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 text-center shadow-sm"><i class="ph-fill ph-trophy text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-[11px] lg:text-sm">Доля успеха</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 text-center shadow-sm"><i class="ph-fill ph-wrench text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-[11px] lg:text-sm">Вызовы инструментов</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 text-center shadow-sm"><i class="ph-fill ph-currency-circle-dollar text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-[11px] lg:text-sm">Стоимость</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 text-center shadow-sm"><i class="ph-fill ph-clock-countdown text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-[11px] lg:text-sm">Задержка</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 text-center shadow-sm"><i class="ph-fill ph-x-circle text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-[11px] lg:text-sm">Доля ошибок</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 text-center shadow-sm"><i class="ph-fill ph-smiley text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-[11px] lg:text-sm">Удовлетворённость</p></div>
+                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-3 lg:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-chart-line text-solar text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm text-solar">Сравнение версий</p></div>
             </div>
 
             <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Метрики позволяют принимать решения на данных</div>
         </div>
     </div>
 
-    <!-- СЛАЙД 18: Управляемость через логи и версии -->
+    <!-- СЛАЙД 18: Управляемость через журналы и версии -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-17">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Управляемость через <span class="text-solar">логи и версии</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Управляемость через <span class="text-solar">журналы и версии</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Команда должна понимать, что делает агент и почему он ошибается</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Нужно знать</p>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-cpu text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Модель</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-chat-circle-text text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Промпт</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-flow-arrow text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Workflow</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-flow-arrow text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Процессы</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-wrench text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Инструменты</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-database text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Контекст</p></div>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-3 lg:p-4 shadow-xl text-white flex items-center gap-2 md:gap-3"><i class="ph-fill ph-git-branch text-solar text-xl md:text-2xl"></i><p class="font-black text-[11px] md:text-sm text-solar">Версии</p></div>
@@ -1252,7 +1456,7 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Guardrails — рамки автономности</div>
+            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Защитные ограничения — рамки автономности</div>
         </div>
     </div>
 
@@ -1296,7 +1500,7 @@ window.addEventListener('load', function(){
                 <div class="flex items-center justify-between gap-1 md:gap-2">
                     <div class="flex-1 h-10 md:h-14 bg-grayBase/50 rounded-lg flex items-center justify-center text-[8px] md:text-xs font-bold text-black/70 px-0.5 md:px-1 text-center break-words">Контекст</div>
                     <i class="ph-bold ph-caret-right text-solar text-base md:text-xl shrink-0 hidden sm:block"></i>
-                    <div class="flex-1 h-10 md:h-14 bg-grayBase/50 rounded-lg flex items-center justify-center text-[8px] md:text-xs font-bold text-black/70 px-0.5 md:px-1 text-center break-words">Tools</div>
+                    <div class="flex-1 h-10 md:h-14 bg-grayBase/50 rounded-lg flex items-center justify-center text-[8px] md:text-xs font-bold text-black/70 px-0.5 md:px-1 text-center break-words">Инструменты</div>
                     <i class="ph-bold ph-caret-right text-solar text-base md:text-xl shrink-0 hidden sm:block"></i>
                     <div class="flex-1 h-10 md:h-14 bg-grayBase/50 rounded-lg flex items-center justify-center text-[8px] md:text-xs font-bold text-black/70 px-0.5 md:px-1 text-center break-words">База</div>
                     <i class="ph-bold ph-caret-right text-solar text-base md:text-xl shrink-0 hidden sm:block"></i>
@@ -1310,7 +1514,7 @@ window.addEventListener('load', function(){
                 <p class="font-black text-[11px] md:text-base text-solar">Задержка часто возникает на цепочке шагов</p>
             </div>
 
-            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Производительность измеряется на уровне workflow</div>
+            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Производительность измеряется на уровне всего процесса</div>
         </div>
     </div>
 
@@ -1321,12 +1525,12 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Время от запроса до результата</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Измеряем</p>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-timer text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Среднюю задержку</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-hourglass-high text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Долгие кейсы</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-magnifying-glass text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Долгий поиск</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-arrows-clockwise text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Повторные tool-calls</p></div>
-                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-3 lg:p-4 shadow-xl text-white flex items-center gap-2 md:gap-3 col-span-2 md:col-span-1"><i class="ph-fill ph-warning-octagon text-solar text-xl md:text-2xl"></i><p class="font-black text-[11px] md:text-xs lg:text-sm text-solar">Зависания</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-arrows-clockwise text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Повторные вызовы инструментов</p></div>
+                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-3 lg:p-4 shadow-xl text-white flex items-center gap-2 md:gap-3 col-span-2 md:col-span-2 lg:col-span-1"><i class="ph-fill ph-warning-octagon text-solar text-xl md:text-2xl"></i><p class="font-black text-[11px] md:text-xs lg:text-sm text-solar">Зависания</p></div>
             </div>
 
             <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Показывает пригодность агента для реальной работы</div>
@@ -1337,17 +1541,17 @@ window.addEventListener('load', function(){
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-22">
         <div class="content-z max-w-6xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Пропускная <span class="text-solar">способность</span></h2>
-            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Throughput — сколько задач за единицу времени</p>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Сколько задач система обрабатывает за единицу времени</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Система должна</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl px-2 py-3 md:p-4 shadow-sm flex items-center gap-1.5 md:gap-3"><i class="ph-fill ph-stack text-solar text-xl md:text-2xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0 break-words">Параллельные запросы</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl px-2 py-3 md:p-4 shadow-sm flex items-center gap-1.5 md:gap-3"><i class="ph-fill ph-lock-open text-solar text-xl md:text-2xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0 break-words">Не блокироваться</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl px-2 py-3 md:p-4 shadow-sm flex items-center gap-1.5 md:gap-3"><i class="ph-fill ph-share-network text-solar text-xl md:text-2xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0 break-words">Распределять нагрузку</p></div>
                 <div class="bg-black border-2 border-solar rounded-2xl px-2 py-3 md:p-4 shadow-xl text-white flex items-center gap-1.5 md:gap-3"><i class="ph-fill ph-arrow-square-out text-solar text-xl md:text-2xl shrink-0"></i><p class="font-black text-[10px] md:text-sm text-solar min-w-0 break-words">Масштабироваться</p></div>
             </div>
 
-            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Без контроля throughput агент ломается при росте</div>
+            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Без контроля пропускной способности агент ломается при росте</div>
         </div>
     </div>
 
@@ -1359,14 +1563,14 @@ window.addEventListener('load', function(){
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Стоимость складывается из</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-coin text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Токенов</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-cpu text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Моделей</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-wrench text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Инструментов</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-globe text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Внешних API</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-magnifying-glass text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Retrieval</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-database text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Хранения</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-cloud text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Инфраструктуры</p></div>
-                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-receipt text-solar text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm text-solar">Полный сценарий</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-coin text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Токенов</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-cpu text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Моделей</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-wrench text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Инструментов</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-globe text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Внешних API</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-magnifying-glass text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Поиска</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-database text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Хранения</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-cloud text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Инфраструктуры</p></div>
+                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-receipt text-solar text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-xs lg:text-sm text-solar">Полный сценарий</p></div>
             </div>
 
             <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Агент должен быть экономически оправданным</div>
@@ -1377,13 +1581,13 @@ window.addEventListener('load', function(){
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-24">
         <div class="content-z max-w-6xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Компромисс: <span class="text-solar">качество, скорость, затраты</span></h2>
-            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">У агентов всегда есть trade-off</p>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">У агентов всегда есть компромисс</p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-sm">
                     <div class="flex items-center gap-2 mb-2 md:mb-3">
                         <i class="ph-fill ph-star text-solar text-xl md:text-2xl"></i>
-                        <h3 class="font-black text-sm md:text-lg">Quality</h3>
+                        <h3 class="font-black text-sm md:text-lg">Качество</h3>
                     </div>
                     <ul class="space-y-1 text-[11px] md:text-sm font-medium text-black/80">
                         <li class="flex items-center gap-2"><i class="ph-fill ph-stack text-solar shrink-0"></i>Больше контекста</li>
@@ -1394,7 +1598,7 @@ window.addEventListener('load', function(){
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-sm">
                     <div class="flex items-center gap-2 mb-2 md:mb-3">
                         <i class="ph-fill ph-lightning text-solar text-xl md:text-2xl"></i>
-                        <h3 class="font-black text-sm md:text-lg">Speed</h3>
+                        <h3 class="font-black text-sm md:text-lg">Скорость</h3>
                     </div>
                     <ul class="space-y-1 text-[11px] md:text-sm font-medium text-black/80">
                         <li class="flex items-center gap-2"><i class="ph-fill ph-fast-forward text-solar shrink-0"></i>Меньше проверок</li>
@@ -1405,7 +1609,7 @@ window.addEventListener('load', function(){
                 <div class="bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-xl text-white">
                     <div class="flex items-center gap-2 mb-2 md:mb-3">
                         <i class="ph-fill ph-currency-circle-dollar text-solar text-xl md:text-2xl"></i>
-                        <h3 class="font-black text-sm md:text-lg text-solar">Cost</h3>
+                        <h3 class="font-black text-sm md:text-lg text-solar">Стоимость</h3>
                     </div>
                     <ul class="space-y-1 text-[11px] md:text-sm font-medium text-white/80">
                         <li class="flex items-center gap-2"><i class="ph-fill ph-list-numbers text-solar shrink-0"></i>Ограничение шагов</li>
@@ -1426,12 +1630,12 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Оценивать нужно не только финальный ответ</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-red-500 mb-3 md:mb-4 text-center">Агент может</p>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-2 lg:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-2 md:gap-2 lg:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-chat-circle-text text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Красиво ответить</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-wrench text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Не тот инструмент</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-skip-forward text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Пропустить шаг</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-database text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Не те данные</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3 col-span-2 md:col-span-1"><i class="ph-fill ph-x-circle text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Не завершить</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3 col-span-2 md:col-span-2 lg:col-span-1"><i class="ph-fill ph-x-circle text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-xs lg:text-sm">Не завершить</p></div>
             </div>
 
             <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full text-white text-center mb-3">
@@ -1458,7 +1662,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-center gap-2"><i class="ph-fill ph-warning text-red-500 shrink-0"></i>Технические сбои</li>
                         <li class="flex items-center gap-2"><i class="ph-fill ph-warning text-red-500 shrink-0"></i>Проблемы данных</li>
                         <li class="flex items-center gap-2"><i class="ph-fill ph-warning text-red-500 shrink-0"></i>Ошибки интеграций</li>
-                        <li class="flex items-center gap-2"><i class="ph-fill ph-warning text-red-500 shrink-0"></i>Неверные tool-calls</li>
+                        <li class="flex items-center gap-2"><i class="ph-fill ph-warning text-red-500 shrink-0"></i>Неверные вызовы инструментов</li>
                         <li class="flex items-center gap-2"><i class="ph-fill ph-warning text-red-500 shrink-0"></i>Отказ внешнего сервиса</li>
                     </ul>
                 </div>
@@ -1480,13 +1684,13 @@ window.addEventListener('load', function(){
         </div>
     </div>
 
-    <!-- СЛАЙД 28: UX и доверие пользователя -->
+    <!-- СЛАЙД 28: Прозрачность и доверие пользователя -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-27">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">UX и <span class="text-solar">доверие пользователя</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Прозрачность и <span class="text-solar">доверие пользователя</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Доверие зависит от понятности работы агента</p>
 
-            <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">AI UX должен показывать</p>
+            <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Интерфейс агента должен показывать</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-database text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Какие данные</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-files text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Какие документы</p></div>
@@ -1506,7 +1710,7 @@ window.addEventListener('load', function(){
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-28">
         <div class="content-z max-w-6xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Эскалация <span class="text-solar">к человеку</span></h2>
-            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Human-in-the-loop — признак зрелой системы</p>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Человек в контуре — признак зрелой системы</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-sm">
@@ -1538,7 +1742,7 @@ window.addEventListener('load', function(){
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-29">
         <div class="content-z max-w-6xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Используют ли агента <span class="text-solar">реально</span></h2>
-            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Adoption показывает, стал ли агент рабочим инструментом</p>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Освоение показывает, стал ли агент рабочим инструментом</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Смотрим</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
@@ -1564,24 +1768,24 @@ window.addEventListener('load', function(){
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-red-500 mb-2">Только точность</p>
+                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-red-500 mb-2 flex items-center gap-1.5"><i class="ph-fill ph-crosshair text-red-500 text-sm md:text-base shrink-0"></i>Только точность</p>
                     <p class="text-[11px] md:text-sm text-black/70">Не видно стоимости и задержки</p>
                 </div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-red-500 mb-2">Только скорость</p>
+                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-red-500 mb-2 flex items-center gap-1.5"><i class="ph-fill ph-lightning text-red-500 text-sm md:text-base shrink-0"></i>Только скорость</p>
                     <p class="text-[11px] md:text-sm text-black/70">Теряется глубина анализа</p>
                 </div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-red-500 mb-2">Только безопасность</p>
+                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-red-500 mb-2 flex items-center gap-1.5"><i class="ph-fill ph-lock-key text-red-500 text-sm md:text-base shrink-0"></i>Только безопасность</p>
                     <p class="text-[11px] md:text-sm text-black/70">Агент становится слишком жёстким</p>
                 </div>
             </div>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Приоритеты зависят от сценария</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
-                <div class="bg-grayBase/40 rounded-xl p-3 md:p-4 flex items-center gap-2"><i class="ph-fill ph-headset text-solar text-lg md:text-xl"></i><p class="font-bold text-[11px] md:text-sm">Поддержка — скорость · satisfaction</p></div>
+                <div class="bg-grayBase/40 rounded-xl p-3 md:p-4 flex items-center gap-2"><i class="ph-fill ph-headset text-solar text-lg md:text-xl"></i><p class="font-bold text-[11px] md:text-sm">Поддержка — скорость · удовлетворённость</p></div>
                 <div class="bg-grayBase/40 rounded-xl p-3 md:p-4 flex items-center gap-2"><i class="ph-fill ph-chart-pie-slice text-solar text-lg md:text-xl"></i><p class="font-bold text-[11px] md:text-sm">Аналитика — точность · объяснимость</p></div>
-                <div class="bg-black border-2 border-solar rounded-xl p-3 md:p-4 flex items-center gap-2 text-white"><i class="ph-fill ph-shield-check text-solar text-lg md:text-xl"></i><p class="font-black text-[11px] md:text-sm text-solar">Операции — workflow · безопасность</p></div>
+                <div class="bg-black border-2 border-solar rounded-xl p-3 md:p-4 flex items-center gap-2 text-white"><i class="ph-fill ph-shield-check text-solar text-lg md:text-xl"></i><p class="font-black text-[11px] md:text-sm text-solar">Операции — процесс · безопасность</p></div>
             </div>
 
             <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full mb-14 md:mb-0">Зрелый подход — система метрик</div>
@@ -1598,9 +1802,9 @@ window.addEventListener('load', function(){
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-list-checks text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Типовые сценарии</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-puzzle-piece text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Сложные кейсы</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-magnifying-glass-plus text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Edge cases</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-magnifying-glass-plus text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Граничные случаи</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-text-aa text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Форматные требования</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-shield-check text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Safety-сценарии</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-shield-check text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Сценарии безопасности</p></div>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-arrows-counter-clockwise text-solar text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm text-solar">Регрессионные тесты</p></div>
             </div>
 
@@ -1618,8 +1822,8 @@ window.addEventListener('load', function(){
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-clock-countdown text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Задержку</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-currency-circle-dollar text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Стоимость</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-trophy text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Success rate</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-wrench text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Ошибки tools</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-trophy text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Доля успеха</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-wrench text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Ошибки инструментов</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-chats text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Обратную связь</p></div>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-3 lg:p-4 shadow-xl text-white flex items-center gap-2 md:gap-3"><i class="ph-fill ph-warning-octagon text-solar text-xl md:text-2xl"></i><p class="font-black text-[11px] md:text-sm text-solar">Инциденты</p></div>
             </div>
@@ -1629,14 +1833,14 @@ window.addEventListener('load', function(){
                 <div class="bg-solar/15 border border-solar rounded-xl p-3 md:p-4 text-center"><p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/60 mb-1 flex items-center justify-center gap-1.5"><i class="ph-fill ph-pulse text-solar text-sm md:text-base shrink-0"></i>Онлайн</p><p class="font-black text-[11px] md:text-sm">Остаётся ли качественным</p></div>
             </div>
 
-            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Live dashboard агента</div>
+            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Панель показателей в реальном времени</div>
         </div>
     </div>
 
-    <!-- СЛАЙД 34: Fine-tuning -->
+    <!-- СЛАЙД 34: Тонкая настройка -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-33">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Fine-tuning: <span class="text-solar">точная настройка</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Тонкая настройка: <span class="text-solar">адаптация модели</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Донастройка модели на данных компании</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-4">
@@ -1668,7 +1872,7 @@ window.addEventListener('load', function(){
                 <div class="grid grid-cols-3 md:grid-cols-6 gap-1 md:gap-2 text-center text-[9px] md:text-xs font-bold">
                     <div class="bg-grayBase/40 rounded-lg p-1.5 md:p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-table text-solar text-xs md:text-base shrink-0"></i>Датасет</div>
                     <div class="bg-grayBase/40 rounded-lg p-1.5 md:p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-graduation-cap text-solar text-xs md:text-base shrink-0"></i>Дообучение</div>
-                    <div class="bg-grayBase/40 rounded-lg p-1.5 md:p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-flag-checkered text-solar text-xs md:text-base shrink-0"></i>Baseline</div>
+                    <div class="bg-grayBase/40 rounded-lg p-1.5 md:p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-flag-checkered text-solar text-xs md:text-base shrink-0"></i>Базовый уровень</div>
                     <div class="bg-grayBase/40 rounded-lg p-1.5 md:p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-chart-line text-solar text-xs md:text-base shrink-0"></i>Метрики</div>
                     <div class="bg-grayBase/40 rounded-lg p-1.5 md:p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-wrench text-solar text-xs md:text-base shrink-0"></i>Доработка</div>
                     <div class="bg-solar/20 border border-solar rounded-lg p-1.5 md:p-2 font-black flex items-center justify-center gap-1"><i class="ph-fill ph-arrows-clockwise text-black text-xs md:text-base shrink-0"></i>Повтор</div>
@@ -1692,7 +1896,7 @@ window.addEventListener('load', function(){
                         <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-chat-circle-text text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Промпта</p></div>
                         <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-cpu text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Модели</p></div>
                         <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-magnifying-glass text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">RAG</p></div>
-                        <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-flow-arrow text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Workflow</p></div>
+                        <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-flow-arrow text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Процесса</p></div>
                         <div class="bg-solar/20 border border-solar rounded-xl p-2 md:p-3 text-center col-span-2"><i class="ph-fill ph-wrench text-black text-base md:text-2xl mb-1"></i><p class="font-black text-[10px] md:text-sm">Инструментов</p></div>
                     </div>
                 </div>
@@ -1702,7 +1906,7 @@ window.addEventListener('load', function(){
                     <ul class="space-y-1 md:space-y-1.5 text-[12px] md:text-sm font-medium text-white/80">
                         <li class="flex items-center gap-2"><i class="ph-bold ph-arrow-up text-solar shrink-0"></i>Выросло ли качество</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-arrow-down text-solar shrink-0"></i>Снизились ли ошибки</li>
-                        <li class="flex items-center gap-2"><i class="ph-bold ph-arrow-up text-solar shrink-0"></i>Улучшился ли UX</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-arrow-up text-solar shrink-0"></i>Улучшился ли пользовательский опыт</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-equals text-solar shrink-0"></i>Не выросла задержка</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-equals text-solar shrink-0"></i>Не выросла стоимость</li>
                     </ul>
@@ -1721,7 +1925,7 @@ window.addEventListener('load', function(){
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Примеры гипотез</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-trophy text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Промпт повысит success rate</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-trophy text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Промпт повысит долю успеха</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-currency-circle-dollar text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Версия снизит стоимость</p></div>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-3 lg:p-4 shadow-xl text-white flex items-center gap-2 md:gap-3"><i class="ph-fill ph-shield-check text-solar text-xl md:text-2xl"></i><p class="font-black text-[11px] md:text-sm text-solar">Логика снизит ошибки</p></div>
             </div>
@@ -1739,10 +1943,10 @@ window.addEventListener('load', function(){
         </div>
     </div>
 
-    <!-- СЛАЙД 37: Метрики и логирование A/B-теста -->
+    <!-- СЛАЙД 37: Метрики и журналы A/B-теста -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-36">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Метрики и логирование <span class="text-solar">A/B-теста</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Метрики и журналы <span class="text-solar">A/B-теста</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Понять не только кто победил, но и почему</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-4">
@@ -1750,17 +1954,17 @@ window.addEventListener('load', function(){
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4">Метрики</p>
                     <div class="grid grid-cols-2 gap-1.5 md:gap-2 text-[10px] md:text-xs font-bold">
                         <div class="bg-grayBase/40 rounded-lg p-2 text-center flex items-center justify-center gap-1.5"><i class="ph-fill ph-star text-solar text-sm md:text-base shrink-0"></i>Качество</div>
-                        <div class="bg-grayBase/40 rounded-lg p-2 text-center flex items-center justify-center gap-1.5"><i class="ph-fill ph-trophy text-solar text-sm md:text-base shrink-0"></i>Success rate</div>
+                        <div class="bg-grayBase/40 rounded-lg p-2 text-center flex items-center justify-center gap-1.5"><i class="ph-fill ph-trophy text-solar text-sm md:text-base shrink-0"></i>Доля успеха</div>
                         <div class="bg-grayBase/40 rounded-lg p-2 text-center flex items-center justify-center gap-1.5"><i class="ph-fill ph-clock-countdown text-solar text-sm md:text-base shrink-0"></i>Задержка</div>
                         <div class="bg-grayBase/40 rounded-lg p-2 text-center flex items-center justify-center gap-1.5"><i class="ph-fill ph-currency-circle-dollar text-solar text-sm md:text-base shrink-0"></i>Стоимость</div>
-                        <div class="bg-grayBase/40 rounded-lg p-2 text-center flex items-center justify-center gap-1.5"><i class="ph-fill ph-x-circle text-solar text-sm md:text-base shrink-0"></i>Error rate</div>
-                        <div class="bg-grayBase/40 rounded-lg p-2 text-center flex items-center justify-center gap-1.5"><i class="ph-fill ph-smiley text-solar text-sm md:text-base shrink-0"></i>Satisfaction</div>
-                        <div class="bg-solar/20 border border-solar rounded-lg p-2 text-center col-span-2 flex items-center justify-center gap-1.5"><i class="ph-fill ph-wrench text-black text-sm md:text-base shrink-0"></i>Корректность tool-calls</div>
+                        <div class="bg-grayBase/40 rounded-lg p-2 text-center flex items-center justify-center gap-1.5"><i class="ph-fill ph-x-circle text-solar text-sm md:text-base shrink-0"></i>Доля ошибок</div>
+                        <div class="bg-grayBase/40 rounded-lg p-2 text-center flex items-center justify-center gap-1.5"><i class="ph-fill ph-smiley text-solar text-sm md:text-base shrink-0"></i>Удовлетворённость</div>
+                        <div class="bg-solar/20 border border-solar rounded-lg p-2 text-center col-span-2 flex items-center justify-center gap-1.5"><i class="ph-fill ph-wrench text-black text-sm md:text-base shrink-0"></i>Корректность вызовов инструментов</div>
                     </div>
                 </div>
 
                 <div class="bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-xl text-white">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar/70 mb-3 md:mb-4">Логируем</p>
+                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar/70 mb-3 md:mb-4">Записываем в журнал</p>
                     <ul class="space-y-1 text-[12px] md:text-sm font-medium text-white/80">
                         <li class="flex items-center gap-2"><i class="ph-fill ph-arrow-right text-solar shrink-0"></i>Входы и выходы</li>
                         <li class="flex items-center gap-2"><i class="ph-fill ph-arrow-right text-solar shrink-0"></i>Версии промптов и моделей</li>
@@ -1783,8 +1987,8 @@ window.addEventListener('load', function(){
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border-2 border-red-300 rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-warning-octagon text-red-500 text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Маленькая выборка</p></div>
-                <div class="bg-white border-2 border-red-300 rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-warning-octagon text-red-500 text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Нет baseline</p></div>
-                <div class="bg-white border-2 border-red-300 rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-warning-octagon text-red-500 text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Слабое логирование</p></div>
+                <div class="bg-white border-2 border-red-300 rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-warning-octagon text-red-500 text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Нет базового уровня</p></div>
+                <div class="bg-white border-2 border-red-300 rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-warning-octagon text-red-500 text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Слабые журналы</p></div>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-warning-octagon text-yellow-300 text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm text-solar">Много изменений сразу</p></div>
             </div>
 
@@ -1817,8 +2021,8 @@ window.addEventListener('load', function(){
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-magnifying-glass text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">RAG-стратегии</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-database text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Источники данных</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-list-numbers text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Порядок шагов</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-wrench text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Tool-calls</p></div>
-                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-user-circle-check text-solar text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm text-solar">Human-in-the-loop</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-wrench text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Вызовы инструментов</p></div>
+                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 text-center shadow-xl text-white"><i class="ph-fill ph-user-circle-check text-solar text-lg md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm text-solar">Человек в контуре</p></div>
             </div>
 
             <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full text-white text-center mb-3">
@@ -1838,15 +2042,15 @@ window.addEventListener('load', function(){
             <div class="grid grid-cols-3 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 text-center shadow-sm">
                     <i class="ph-fill ph-flask text-solar text-2xl md:text-3xl mb-1 md:mb-2"></i>
-                    <p class="font-black text-[12px] md:text-base">Dev</p>
+                    <p class="font-black text-[12px] md:text-base">Разработка</p>
                 </div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 text-center shadow-sm">
                     <i class="ph-fill ph-test-tube text-solar text-2xl md:text-3xl mb-1 md:mb-2"></i>
-                    <p class="font-black text-[12px] md:text-base">Test</p>
+                    <p class="font-black text-[12px] md:text-base">Тестирование</p>
                 </div>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-5 text-center shadow-xl text-white">
                     <i class="ph-fill ph-rocket-launch text-solar text-2xl md:text-3xl mb-1 md:mb-2"></i>
-                    <p class="font-black text-[12px] md:text-base text-solar">Production</p>
+                    <p class="font-black text-[12px] md:text-base text-solar">Рабочая среда</p>
                 </div>
             </div>
 
@@ -1854,9 +2058,9 @@ window.addEventListener('load', function(){
             <div class="grid grid-cols-3 md:grid-cols-6 gap-1.5 md:gap-2 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-chat-circle-text text-solar text-xs md:text-base shrink-0"></i>Промпты</div>
                 <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-cpu text-solar text-xs md:text-base shrink-0"></i>Модели</div>
-                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-flow-arrow text-solar text-xs md:text-base shrink-0"></i>Workflow</div>
+                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-flow-arrow text-solar text-xs md:text-base shrink-0"></i>Процессы</div>
                 <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-magnifying-glass text-solar text-xs md:text-base shrink-0"></i>RAG</div>
-                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-wrench text-solar text-xs md:text-base shrink-0"></i>Tools</div>
+                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-wrench text-solar text-xs md:text-base shrink-0"></i>Инструменты</div>
                 <div class="bg-solar/20 border border-solar rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-black flex items-center justify-center gap-1"><i class="ph-fill ph-sliders text-black text-xs md:text-base shrink-0"></i>Конфиги</div>
             </div>
 
@@ -1870,18 +2074,80 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Наблюдаемость <span class="text-solar">на масштабе</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">При росте системы ручной поиск проблем не работает</p>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 text-center shadow-sm"><i class="ph-fill ph-list-bullets text-solar text-2xl md:text-3xl mb-1 md:mb-2"></i><p class="font-black text-[12px] md:text-base">Логи</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 text-center shadow-sm"><i class="ph-fill ph-chart-line text-solar text-2xl md:text-3xl mb-1 md:mb-2"></i><p class="font-black text-[12px] md:text-base">Метрики</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 text-center shadow-sm"><i class="ph-fill ph-tree-structure text-solar text-2xl md:text-3xl mb-1 md:mb-2"></i><p class="font-black text-[12px] md:text-base">Трейсинг</p></div>
-                <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-5 text-center shadow-xl text-white"><i class="ph-fill ph-bell-ringing text-solar text-2xl md:text-3xl mb-1 md:mb-2"></i><p class="font-black text-[12px] md:text-base text-solar">Алертинг</p></div>
+            <div class="md:hidden w-full max-w-sm mx-auto mb-[0.9rem]">
+              <div class="flex justify-center mb-3">
+                <div class="w-[104px] h-[104px] rounded-full bg-black border-2 border-solar shadow-xl text-white flex flex-col items-center justify-center text-center px-2">
+                  <i class="ph-fill ph-eye text-solar text-2xl"></i>
+                  <span class="font-black text-[11px] leading-tight text-solar mt-0.5">Наблюдаемость</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-list-bullets text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Журналы</p>
+                    <p class="text-[10px] leading-tight text-black/60">Что произошло</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-chart-line text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Метрики</p>
+                    <p class="text-[10px] leading-tight text-black/60">Как ведёт себя система</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-tree-structure text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Трассировка</p>
+                    <p class="text-[10px] leading-tight text-black/60">Как прошла задача</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-11 h-11 radial-node rounded-full border-2 border-grayBase shadow-sm flex items-center justify-center shrink-0"><i class="ph-fill ph-bell-ringing text-solar text-lg"></i></div>
+                  <div class="min-w-0">
+                    <p class="font-black text-[11px] leading-tight">Оповещения</p>
+                    <p class="text-[10px] leading-tight text-black/60">Когда вмешаться</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hidden md:block relative mx-auto my-1" style="width:500px;height:500px">
+              <svg class="absolute inset-0 w-full h-full pointer-events-none text-grayBase" viewBox="0 0 500 500" aria-hidden="true">
+                <circle cx="250" cy="250" r="175.0" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="10 13"/>
+              </svg>
+              <div class="absolute rounded-full bg-black border-2 border-solar shadow-xl text-white flex flex-col items-center justify-center text-center px-3 z-10" style="width:142px;height:142px;left:calc(50% - 71px);top:calc(50% - 71px)">
+                <i class="ph-fill ph-eye text-solar text-3xl mb-1"></i>
+                <span class="font-black text-[13px] lg:text-sm leading-tight text-solar">Наблюдаемость</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:140px;height:140px;left:calc(50.00% - 70px);top:calc(15.00% - 70px)">
+                <i class="ph-fill ph-list-bullets text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Журналы</span>
+                <span class="text-[10px] leading-tight text-black/60 mt-0.5">Что произошло</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:140px;height:140px;left:calc(85.00% - 70px);top:calc(50.00% - 70px)">
+                <i class="ph-fill ph-chart-line text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Метрики</span>
+                <span class="text-[10px] leading-tight text-black/60 mt-0.5">Как ведёт себя система</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:140px;height:140px;left:calc(50.00% - 70px);top:calc(85.00% - 70px)">
+                <i class="ph-fill ph-tree-structure text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Трассировка</span>
+                <span class="text-[10px] leading-tight text-black/60 mt-0.5">Как прошла задача</span>
+              </div>
+              <div class="absolute radial-node rounded-full border-2 border-grayBase shadow-md flex flex-col items-center justify-center text-center px-3 z-20" style="width:140px;height:140px;left:calc(15.00% - 70px);top:calc(50.00% - 70px)">
+                <i class="ph-fill ph-bell-ringing text-solar text-2xl mb-0.5"></i>
+                <span class="font-black text-[12px] lg:text-[13px] leading-tight">Оповещения</span>
+                <span class="text-[10px] leading-tight text-black/60 mt-0.5">Когда вмешаться</span>
+              </div>
             </div>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Наблюдаемость показывает</p>
             <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3">
                 <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-lightning text-solar text-sm md:text-base shrink-0"></i>Что сделал</div>
                 <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-database text-solar text-sm md:text-base shrink-0"></i>Какие данные</div>
-                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-wrench text-solar text-sm md:text-base shrink-0"></i>Какие tools</div>
+                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-wrench text-solar text-sm md:text-base shrink-0"></i>Какие инструменты</div>
                 <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-path text-solar text-sm md:text-base shrink-0"></i>Какой путь</div>
                 <div class="bg-solar/20 border border-solar rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-black flex items-center justify-center gap-1.5 col-span-2 md:col-span-1"><i class="ph-fill ph-warning-octagon text-black text-sm md:text-base shrink-0"></i>Где сбой</div>
             </div>
@@ -1890,18 +2156,18 @@ window.addEventListener('load', function(){
         </div>
     </div>
 
-    <!-- СЛАЙД 42: Логирование как память системы -->
+    <!-- СЛАЙД 42: Журналы как память системы -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-41">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Логирование как <span class="text-solar">память системы</span></h2>
-            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Логи — историческая память агента</p>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Журналы как <span class="text-solar">память системы</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Журналы — историческая память агента</p>
 
-            <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">В логах должны быть</p>
+            <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">В журналах должны быть</p>
             <div class="grid grid-cols-3 md:grid-cols-3 gap-1.5 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl px-1.5 py-2.5 md:p-4 shadow-sm flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left"><i class="ph-fill ph-arrow-square-in text-solar text-base md:text-xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0">Запрос</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl px-1.5 py-2.5 md:p-4 shadow-sm flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left"><i class="ph-fill ph-arrow-square-out text-solar text-base md:text-xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0">Ответ</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl px-1.5 py-2.5 md:p-4 shadow-sm flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left"><i class="ph-fill ph-stack text-solar text-base md:text-xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0">Контекст</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl px-1.5 py-2.5 md:p-4 shadow-sm flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left"><i class="ph-fill ph-wrench text-solar text-base md:text-xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0">Tools</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl px-1.5 py-2.5 md:p-4 shadow-sm flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left"><i class="ph-fill ph-wrench text-solar text-base md:text-xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0">Инструменты</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl px-1.5 py-2.5 md:p-4 shadow-sm flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left"><i class="ph-fill ph-sliders-horizontal text-solar text-base md:text-xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0">Параметры</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl px-1.5 py-2.5 md:p-4 shadow-sm flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left"><i class="ph-fill ph-check-circle text-solar text-base md:text-xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0">Результаты</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl px-1.5 py-2.5 md:p-4 shadow-sm flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left"><i class="ph-fill ph-warning text-solar text-base md:text-xl shrink-0"></i><p class="font-bold text-[10px] md:text-sm min-w-0">Ошибки</p></div>
@@ -1909,14 +2175,14 @@ window.addEventListener('load', function(){
                 <div class="bg-black border-2 border-solar rounded-2xl px-1.5 py-2.5 md:p-4 shadow-xl text-white flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left"><i class="ph-fill ph-git-branch text-solar text-base md:text-xl shrink-0"></i><p class="font-black text-[10px] md:text-sm text-solar min-w-0">Версии</p></div>
             </div>
 
-            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Без логов невозможны отладка, аудит и расследование</div>
+            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Без журналов невозможны отладка, аудит и расследование</div>
         </div>
     </div>
 
-    <!-- СЛАЙД 43: Трейсинг — путь агента -->
+    <!-- СЛАЙД 43: Трассировка — путь агента -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-42">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Трейсинг: <span class="text-solar">путь агента</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Трассировка: <span class="text-solar">путь агента</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Показывает путь агента внутри задачи</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-4">
@@ -1958,14 +2224,14 @@ window.addEventListener('load', function(){
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-stack text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Какой контекст</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-cpu text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Какая модель</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-chat-circle-text text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Какой промпт</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-wrench text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Какие tools</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-3 lg:p-4 shadow-sm flex items-center gap-2 md:gap-3"><i class="ph-fill ph-wrench text-solar text-xl md:text-2xl"></i><p class="font-bold text-[11px] md:text-sm">Какие инструменты</p></div>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-3 lg:p-4 shadow-xl text-white flex items-center gap-2 md:gap-3"><i class="ph-fill ph-warning-octagon text-solar text-xl md:text-2xl"></i><p class="font-black text-[11px] md:text-sm text-solar">Где сбой</p></div>
             </div>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Нужны</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3">
-                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-list-bullets text-solar text-sm md:text-base shrink-0"></i>Логи</div>
-                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-tree-structure text-solar text-sm md:text-base shrink-0"></i>Трейсинг</div>
+                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-list-bullets text-solar text-sm md:text-base shrink-0"></i>Журналы</div>
+                <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-tree-structure text-solar text-sm md:text-base shrink-0"></i>Трассировка</div>
                 <div class="bg-grayBase/40 rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-arrows-clockwise text-solar text-sm md:text-base shrink-0"></i>Повтор сценария</div>
                 <div class="bg-solar/20 border border-solar rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-black flex items-center justify-center gap-1.5"><i class="ph-fill ph-play-circle text-black text-sm md:text-base shrink-0"></i>Воспроизведение</div>
             </div>
@@ -1974,18 +2240,18 @@ window.addEventListener('load', function(){
         </div>
     </div>
 
-    <!-- СЛАЙД 45: Алертинг -->
+    <!-- СЛАЙД 45: Оповещения -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-44">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Алертинг и <span class="text-solar">обнаружение проблем</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Оповещения и <span class="text-solar">обнаружение проблем</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Узнать о проблемах раньше пользователей</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Сигналы</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-clock-countdown text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Рост задержки</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-warning text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Рост ошибок</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-trend-down text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Падение success rate</p></div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-wrench text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Сбои tool-calls</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-trend-down text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Падение доли успеха</p></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-wrench text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Сбои вызовов инструментов</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-currency-circle-dollar text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Скачки стоимости</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-coins text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Расход токенов</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 text-center shadow-sm"><i class="ph-fill ph-question text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Аномалии</p></div>
@@ -1996,15 +2262,15 @@ window.addEventListener('load', function(){
         </div>
     </div>
 
-    <!-- СЛАЙД 46: Guardrails -->
+    <!-- СЛАЙД 46: Защитные ограничения -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-45">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Guardrails, <span class="text-solar">доступы и безопасность</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Защитные ограничения: <span class="text-solar">доступы и безопасность</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Чем автономнее агент, тем важнее ограничения</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4">Guardrails определяют</p>
+                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4">Ограничения определяют</p>
                     <ul class="space-y-1 md:space-y-1.5 text-[12px] md:text-sm font-medium text-black/80">
                         <li class="flex items-center gap-2"><i class="ph-fill ph-check-circle text-solar shrink-0"></i>Что разрешено</li>
                         <li class="flex items-center gap-2"><i class="ph-fill ph-prohibit text-solar shrink-0"></i>Что запрещено</li>
@@ -2019,8 +2285,8 @@ window.addEventListener('load', function(){
                         <li class="flex items-center gap-2"><i class="ph-fill ph-arrows-in text-solar shrink-0"></i>Контроль входа и выхода</li>
                         <li class="flex items-center gap-2"><i class="ph-fill ph-wrench text-solar shrink-0"></i>Ограничения инструментов</li>
                         <li class="flex items-center gap-2"><i class="ph-fill ph-flask text-solar shrink-0"></i>Песочница</li>
-                        <li class="flex items-center gap-2"><i class="ph-fill ph-list-bullets text-solar shrink-0"></i>Аудит логов</li>
-                        <li class="flex items-center gap-2"><i class="ph-fill ph-user-plus text-solar shrink-0"></i>Human-in-the-loop</li>
+                        <li class="flex items-center gap-2"><i class="ph-fill ph-list-bullets text-solar shrink-0"></i>Аудит журналов</li>
+                        <li class="flex items-center gap-2"><i class="ph-fill ph-user-plus text-solar shrink-0"></i>Человек в контуре</li>
                     </ul>
                 </div>
             </div>
@@ -2032,26 +2298,26 @@ window.addEventListener('load', function(){
     <!-- СЛАЙД 47: AIOps -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-46">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">AIOps и <span class="text-solar">дашборд управления</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">AIOps и <span class="text-solar">панель показателей</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Объединение управления эксплуатацией агента</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Компоненты</p>
             <div class="grid grid-cols-3 md:grid-cols-6 gap-1.5 md:gap-2 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm text-[10px] md:text-xs font-bold"><i class="ph-fill ph-pulse text-solar text-base md:text-xl mb-1"></i><br>Мониторинг</div>
-                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm text-[10px] md:text-xs font-bold"><i class="ph-fill ph-list-bullets text-solar text-base md:text-xl mb-1"></i><br>Логи</div>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm text-[10px] md:text-xs font-bold"><i class="ph-fill ph-list-bullets text-solar text-base md:text-xl mb-1"></i><br>Журналы</div>
                 <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm text-[10px] md:text-xs font-bold"><i class="ph-fill ph-chart-line text-solar text-base md:text-xl mb-1"></i><br>Метрики</div>
-                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm text-[10px] md:text-xs font-bold"><i class="ph-fill ph-tree-structure text-solar text-base md:text-xl mb-1"></i><br>Трейсы</div>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm text-[10px] md:text-xs font-bold"><i class="ph-fill ph-tree-structure text-solar text-base md:text-xl mb-1"></i><br>Трассировки</div>
                 <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm text-[10px] md:text-xs font-bold"><i class="ph-fill ph-bell-ringing text-solar text-base md:text-xl mb-1"></i><br>События</div>
                 <div class="bg-solar/20 border border-solar rounded-xl p-2 md:p-3 text-center text-[10px] md:text-xs font-black"><i class="ph-fill ph-warning-octagon text-black text-base md:text-xl mb-1"></i><br>Аномалии</div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-5xl mx-auto w-full mb-3">
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-5 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-3">Дашборд для инженеров</p>
+                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-3">Панель для инженеров</p>
                     <p class="text-[11px] md:text-sm text-black/70">Ошибки · Задержки · Причины деградации</p>
                 </div>
                 <div class="bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-5 shadow-xl text-white">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar/70 mb-2 md:mb-3">Дашборд для бизнеса</p>
+                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar/70 mb-2 md:mb-3">Панель для бизнеса</p>
                     <p class="text-[11px] md:text-sm text-white/70">Стоимость · Использование · Эффективность · ROI</p>
                 </div>
             </div>
@@ -2060,10 +2326,10 @@ window.addEventListener('load', function(){
         </div>
     </div>
 
-    <!-- СЛАЙД 48: AI Governance -->
+    <!-- СЛАЙД 48: Управление ИИ -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-47">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">AI Governance: <span class="text-solar">правила и ответственность</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Управление ИИ: <span class="text-solar">правила и ответственность</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Делает AI управляемым в компании</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-4">
@@ -2083,21 +2349,21 @@ window.addEventListener('load', function(){
                     <div class="grid grid-cols-2 gap-2 md:gap-3">
                         <div class="bg-white/5 border border-solar/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-key text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Доступы</p></div>
                         <div class="bg-white/5 border border-solar/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-code text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Код</p></div>
-                        <div class="bg-white/5 border border-solar/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-check-circle text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Валидация</p></div>
+                        <div class="bg-white/5 border border-solar/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-check-circle text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Проверка</p></div>
                         <div class="bg-white/5 border border-solar/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-flow-arrow text-solar text-base md:text-2xl mb-1"></i><p class="font-bold text-[11px] md:text-sm">Маршрутизация</p></div>
-                        <div class="bg-solar text-black rounded-xl p-2 md:p-3 text-center col-span-2"><i class="ph-fill ph-shield-check text-base md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm">Guardrails и политики</p></div>
+                        <div class="bg-solar text-black rounded-xl p-2 md:p-3 text-center col-span-2"><i class="ph-fill ph-shield-check text-base md:text-2xl mb-1"></i><p class="font-black text-[11px] md:text-sm">Защитные ограничения</p></div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full mb-14 md:mb-0">Governance — механизм, а не декларация</div>
+            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full mb-14 md:mb-0">Управление — механизм, а не декларация</div>
         </div>
     </div>
 
-    <!-- СЛАЙД 49: Data Governance -->
+    <!-- СЛАЙД 49: Управление данными -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-48">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Data Governance: <span class="text-solar">данные как актив</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Управление данными: <span class="text-solar">данные как актив</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Управление данными, на которых работает агент</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Включает</p>
@@ -2128,14 +2394,14 @@ window.addEventListener('load', function(){
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Этапы</p>
             <div class="w-full max-w-5xl mx-auto bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-6 shadow-sm mb-3 md:mb-4">
-                <div class="grid grid-cols-4 md:grid-cols-7 gap-1 md:gap-2 text-center text-[9px] md:text-[11px] lg:text-xs font-bold">
-                    <div class="bg-grayBase/40 rounded-lg p-2">Задача</div>
-                    <div class="bg-grayBase/40 rounded-lg p-2">Данные</div>
-                    <div class="bg-grayBase/40 rounded-lg p-2">Обучение</div>
-                    <div class="bg-grayBase/40 rounded-lg p-2">Валидация</div>
-                    <div class="bg-grayBase/40 rounded-lg p-2">Деплой</div>
-                    <div class="bg-grayBase/40 rounded-lg p-2">Версии</div>
-                    <div class="bg-solar/20 border border-solar rounded-lg p-2 col-span-4 md:col-span-1">Мониторинг</div>
+                <div class="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-7 gap-1 md:gap-2 text-center text-[9px] md:text-[11px] lg:text-xs font-bold">
+                    <div class="bg-grayBase/40 rounded-lg p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-target text-solar text-xs md:text-base shrink-0"></i>Задача</div>
+                    <div class="bg-grayBase/40 rounded-lg p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-database text-solar text-xs md:text-base shrink-0"></i>Данные</div>
+                    <div class="bg-grayBase/40 rounded-lg p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-graduation-cap text-solar text-xs md:text-base shrink-0"></i>Обучение</div>
+                    <div class="bg-grayBase/40 rounded-lg p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-check-square text-solar text-xs md:text-base shrink-0"></i>Проверка</div>
+                    <div class="bg-grayBase/40 rounded-lg p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-rocket-launch text-solar text-xs md:text-base shrink-0"></i>Развёртывание</div>
+                    <div class="bg-grayBase/40 rounded-lg p-2 flex items-center justify-center gap-1"><i class="ph-fill ph-git-branch text-solar text-xs md:text-base shrink-0"></i>Версии</div>
+                    <div class="bg-solar/20 border border-solar rounded-lg p-2 col-span-3 md:col-span-3 lg:col-span-1 flex items-center justify-center gap-1"><i class="ph-fill ph-pulse text-black text-xs md:text-base shrink-0"></i>Мониторинг</div>
                 </div>
             </div>
 
@@ -2158,36 +2424,36 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Жизненный цикл данных</p>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Сюда входят</p>
-            <div class="grid grid-cols-3 md:grid-cols-7 gap-1.5 md:gap-1 lg:gap-2 max-w-5xl mx-auto w-full mb-3 md:mb-4">
+            <div class="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-7 gap-1.5 md:gap-1 lg:gap-2 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-grayBase/40 rounded-lg p-2 md:p-1.5 lg:p-3 text-center text-[10px] md:text-[10px] lg:text-xs font-bold">Сбор</div>
                 <div class="bg-grayBase/40 rounded-lg p-2 md:p-1.5 lg:p-3 text-center text-[10px] md:text-[10px] lg:text-xs font-bold">Подготовка</div>
                 <div class="bg-grayBase/40 rounded-lg p-2 md:p-1.5 lg:p-3 text-center text-[10px] md:text-[10px] lg:text-xs font-bold">Проверка</div>
                 <div class="bg-grayBase/40 rounded-lg p-2 md:p-1.5 lg:p-3 text-center text-[10px] md:text-[10px] lg:text-xs font-bold">Обновление</div>
                 <div class="bg-grayBase/40 rounded-lg p-2 md:p-1.5 lg:p-3 text-center text-[10px] md:text-[10px] lg:text-xs font-bold">Доставка</div>
                 <div class="bg-grayBase/40 rounded-lg p-2 md:p-1.5 lg:p-3 text-center text-[10px] md:text-[10px] lg:text-xs font-bold">Использование</div>
-                <div class="bg-solar/20 border border-solar rounded-lg p-2 md:p-1.5 lg:p-3 text-center text-[10px] md:text-[10px] lg:text-xs font-black">Контроль</div>
+                <div class="bg-solar/20 border border-solar rounded-lg p-2 md:p-1.5 lg:p-3 text-center text-[10px] md:text-[10px] lg:text-xs font-black col-span-3 md:col-span-3 lg:col-span-1">Контроль</div>
             </div>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Источники данных</p>
-            <div class="grid grid-cols-3 md:grid-cols-7 gap-1.5 md:gap-2 max-w-5xl mx-auto w-full mb-3 md:mb-4">
+            <div class="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-7 gap-1.5 md:gap-2 max-w-5xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 text-center shadow-sm text-[10px] md:text-[11px] lg:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-address-book text-solar text-xs md:text-base shrink-0"></i>CRM</div>
                 <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 text-center shadow-sm text-[10px] md:text-[11px] lg:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-buildings text-solar text-xs md:text-base shrink-0"></i>ERP</div>
                 <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 text-center shadow-sm text-[10px] md:text-[11px] lg:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-files text-solar text-xs md:text-base shrink-0"></i>Документы</div>
-                <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 text-center shadow-sm text-[10px] md:text-[11px] lg:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-list-bullets text-solar text-xs md:text-base shrink-0"></i>Логи</div>
+                <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 text-center shadow-sm text-[10px] md:text-[11px] lg:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-list-bullets text-solar text-xs md:text-base shrink-0"></i>Журналы</div>
                 <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 text-center shadow-sm text-[10px] md:text-[11px] lg:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-books text-solar text-xs md:text-base shrink-0"></i>Базы знаний</div>
                 <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 text-center shadow-sm text-[10px] md:text-[11px] lg:text-xs font-bold flex items-center justify-center gap-1"><i class="ph-fill ph-lightning text-solar text-xs md:text-base shrink-0"></i>События</div>
-                <div class="bg-black border-2 border-solar rounded-xl px-1.5 py-2 text-center shadow-xl text-white text-[10px] md:text-[11px] lg:text-xs font-black text-solar flex items-center justify-center gap-1"><i class="ph-fill ph-globe text-solar text-xs md:text-base shrink-0"></i>API</div>
+                <div class="bg-black border-2 border-solar rounded-xl px-1.5 py-2 text-center shadow-xl text-white text-[10px] md:text-[11px] lg:text-xs font-black text-solar flex items-center justify-center gap-1 col-span-3 md:col-span-3 lg:col-span-1"><i class="ph-fill ph-globe text-solar text-xs md:text-base shrink-0"></i>API</div>
             </div>
 
             <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Без DataOps — устаревшие и противоречивые данные</div>
         </div>
     </div>
 
-    <!-- СЛАЙД 52: Чеклист готовности к релизу -->
+    <!-- СЛАЙД 52: Контрольный список готовности к релизу -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-51">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Чеклист <span class="text-solar">готовности к релизу</span></h2>
-            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Production readiness checklist</p>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Контрольный список <span class="text-solar">готовности к релизу</span></h2>
+            <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Что проверить перед выходом в промышленную эксплуатацию</p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-4">
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-5 shadow-sm">
@@ -2197,7 +2463,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Сложные кейсы</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Редкие случаи</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Безопасность</li>
-                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Baseline качества</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Базовый уровень качества</li>
                     </ul>
                 </div>
 
@@ -2205,10 +2471,10 @@ window.addEventListener('load', function(){
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-2 md:mb-3">Настроено</p>
                     <ul class="space-y-1 text-[11px] md:text-sm font-medium text-black/80">
                         <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>A/B-тесты</li>
-                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Логи · Метрики · Трейсинг</li>
-                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Алерты · Дашборд</li>
-                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Guardrails</li>
-                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Human-in-the-loop</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Журналы · Метрики · Трассировка</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Оповещения · Панель показателей</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Защитные ограничения</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar shrink-0"></i>Человек в контуре</li>
                     </ul>
                 </div>
 
@@ -2223,7 +2489,7 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full mb-14 md:mb-0">Production readiness checklist</div>
+            <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full mb-14 md:mb-0">Готовность к промышленной эксплуатации</div>
         </div>
     </div>
 
@@ -2249,7 +2515,7 @@ window.addEventListener('load', function(){
                     <div class="bg-white/10 p-2 md:p-2.5 rounded-xl text-center text-[10px] md:text-xs lg:text-sm font-bold border border-white/20 flex items-center justify-center gap-1.5"><i class="ph-fill ph-sliders text-solar text-sm md:text-base shrink-0"></i>Управляемым</div>
                     <div class="bg-white/10 p-2 md:p-2.5 rounded-xl text-center text-[10px] md:text-xs lg:text-sm font-bold border border-white/20 flex items-center justify-center gap-1.5"><i class="ph-fill ph-currency-circle-dollar text-solar text-sm md:text-base shrink-0"></i>Экономически оправданным</div>
                     <div class="bg-white/10 p-2 md:p-2.5 rounded-xl text-center text-[10px] md:text-xs lg:text-sm font-bold border border-white/20 flex items-center justify-center gap-1.5"><i class="ph-fill ph-arrows-out text-solar text-sm md:text-base shrink-0"></i>Масштабируемым</div>
-                    <div class="bg-solar text-black p-2 md:p-2.5 rounded-xl text-center text-[10px] md:text-sm font-black uppercase tracking-widest shadow-[0_0_15px_#8B5CF6] flex items-center justify-center gap-1.5"><i class="ph-fill ph-gavel text-sm md:text-base shrink-0"></i>В governance</div>
+                    <div class="bg-solar text-black p-2 md:p-2.5 rounded-xl text-center text-[10px] md:text-sm font-black uppercase tracking-widest shadow-[0_0_15px_#8B5CF6] flex items-center justify-center gap-1.5"><i class="ph-fill ph-gavel text-sm md:text-base shrink-0"></i>В системе управления</div>
                 </div>
 
                 <p class="text-[10px] md:text-sm font-bold uppercase tracking-widest text-white/50 mb-3">Проверьте понимание</p>
@@ -2563,7 +2829,7 @@ window.addEventListener('load', function(){
             {
                 q: 'Что такое два контура контроля AI-агента?',
                 options: [
-                    'Frontend и backend',
+                    'Клиент и сервер',
                     'До релиза и после релиза',
                     'Пользователь и администратор',
                     'Промпт и модель'
@@ -2576,7 +2842,7 @@ window.addEventListener('load', function(){
                 options: [
                     'Только точность ответа',
                     'Только количество пользователей',
-                    'Качество, success rate, задержка, стоимость, ошибки, satisfaction, tool-calls',
+                    'Качество, доля успеха, задержка, стоимость, ошибки, удовлетворённость, вызовы инструментов',
                     'Только стоимость токенов'
                 ],
                 correct: 2,
@@ -2605,7 +2871,7 @@ window.addEventListener('load', function(){
                 explanation: 'Офлайн-оценка проверяет готовность версии до запуска, а онлайн-мониторинг показывает, как агент ведёт себя после релиза в реальной среде.'
             },
             {
-                q: 'Когда fine-tuning действительно полезен?',
+                q: 'Когда тонкая настройка модели действительно полезна?',
                 options: [
                     'Когда нужны доменная терминология, стиль, формат и повторяемые задачи',
                     'Когда знания часто меняются',
@@ -2613,32 +2879,32 @@ window.addEventListener('load', function(){
                     'Когда проблему решает простой промпт'
                 ],
                 correct: 0,
-                explanation: 'Fine-tuning помогает настроить модель на устойчивое поведение в повторяемых сценариях, закрепить доменную лексику, стиль и формат, но не заменяет RAG, промпты и мониторинг.'
+                explanation: 'Тонкая настройка помогает настроить модель на устойчивое поведение в повторяемых сценариях, закрепить доменную лексику, стиль и формат, но не заменяет RAG, промпты и мониторинг.'
             },
             {
                 q: 'Зачем проводить A/B-тестирование агента?',
                 options: [
                     'Чтобы выбрать вариант по вкусу команды',
                     'Чтобы сравнить версии по данным',
-                    'Чтобы заменить логи',
-                    'Чтобы не делать baseline'
+                    'Чтобы заменить журналы',
+                    'Чтобы обойтись без базового уровня'
                 ],
                 correct: 1,
                 explanation: 'A/B-тестирование позволяет объективно сравнить версии агента и понять, улучшились ли качество, стоимость, задержка, ошибки и пользовательский опыт.'
             },
             {
-                q: 'Чем отличаются AI Governance и AIOps?',
+                q: 'Чем отличаются управление ИИ и AIOps?',
                 options: [
                     'Это одно и то же',
-                    'Governance — правила и ответственность, AIOps — эксплуатационный мониторинг и управление',
-                    'Governance отвечает только за данные',
+                    'Управление ИИ — правила и ответственность, AIOps — эксплуатационный мониторинг',
+                    'Управление ИИ отвечает только за данные',
                     'AIOps отвечает только за юридические риски'
                 ],
                 correct: 1,
-                explanation: 'AI Governance определяет правила, роли, ответственность и управление рисками, а AIOps помогает наблюдать за агентами в эксплуатации и быстрее реагировать на проблемы.'
+                explanation: 'Управление ИИ определяет правила, роли, ответственность и управление рисками, а AIOps помогает наблюдать за агентами в эксплуатации и быстрее реагировать на проблемы.'
             },
             {
-                q: 'Зачем агенту нужны Data Governance и DataOps?',
+                q: 'Зачем агенту нужны управление данными и DataOps?',
                 options: [
                     'Чтобы данные были красивыми',
                     'Чтобы управлять качеством, доступами, происхождением и жизненным циклом данных',
@@ -2784,22 +3050,22 @@ window.addEventListener('load', function(){
             let title, desc, iconClass, wrapClass;
             if (score >= 9) {
                 title = 'Превосходно!';
-                desc = 'Вы отлично понимаете, как сделать AI-агента зрелым для продакшена: риски, метрики, тестирование, мониторинг, governance и DataOps.';
+                desc = 'Вы отлично понимаете, как сделать AI-агента зрелым для продакшена: риски, метрики, тестирование, мониторинг, управление и DataOps.';
                 iconClass = 'ph-fill ph-trophy text-black';
                 wrapClass = 'bg-solar';
             } else if (score >= 7) {
                 title = 'Отличный результат';
-                desc = 'Вы уверенно владеете ключевыми принципами промышленной эксплуатации AI-агентов. Небольшие пробелы — пересмотрите блоки про метрики, A/B-тесты и governance.';
+                desc = 'Вы уверенно владеете ключевыми принципами промышленной эксплуатации AI-агентов. Небольшие пробелы — пересмотрите блоки про метрики, A/B-тесты и управление.';
                 iconClass = 'ph-fill ph-medal text-solar';
                 wrapClass = 'bg-solar/20 border-2 border-solar';
             } else if (score >= 5) {
                 title = 'Неплохо, но есть над чем поработать';
-                desc = 'Базу вы уловили, но стоит освежить классификацию рисков, контуры контроля, fine-tuning, A/B-тесты и роль AIOps/Governance.';
+                desc = 'Базу вы уловили, но стоит освежить классификацию рисков, контуры контроля, fine-tuning, A/B-тесты и роль AIOps и управления ИИ.';
                 iconClass = 'ph-fill ph-chart-line-up text-solar';
                 wrapClass = 'bg-white/10 border-2 border-solar/50';
             } else {
                 title = 'Стоит вернуться к материалу';
-                desc = 'Промышленный AI-агент — это контроль, наблюдаемость, безопасность, метрики и governance. Пересмотрите ключевые слайды и попробуйте ещё раз.';
+                desc = 'Промышленный AI-агент — это контроль, наблюдаемость, безопасность, метрики и управление. Пересмотрите ключевые слайды и попробуйте ещё раз.';
                 iconClass = 'ph-fill ph-book-open text-solar';
                 wrapClass = 'bg-white/10 border-2 border-white/20';
             }
