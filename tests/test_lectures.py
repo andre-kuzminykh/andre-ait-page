@@ -158,6 +158,71 @@ def test_shared_blocks_identical():
             "блок %s разъехался между лекциями: %s" % (block, list(seen.values()))
 
 
+# ── FR-SITE16: термины панели и книги — по-русски, как на слайдах ─────────
+
+_BOOK = "automation/AI_Automation Engineer_Book.txt"
+
+# Англицизмы, у которых есть принятый русский эквивалент (см. FR-SITE16).
+_ANGLICISMS = (
+    "baseline", "payback", "hard savings", "cost avoidance", "capacity value",
+    "unit economics", "governance", "guardrail", "human-in-the-loop", "human review",
+    "adoption", "fine-tuning", "revenue uplift", "fully loaded", "utilization factor",
+    "gross margin", "scalability ratio", "workflow", "reasoning", "retrieval",
+    "backend", "webhook", "backlog", "circuit breaker", "refinement loop",
+    "task grooming", "task grooming",
+)
+
+# Имена продуктов, нод и расшифровки аббревиатур латиницей остаются, плюс
+# сознательно оставленные пояснения в скобках.
+_TERM_KEEP = (
+    "Retrieval-Augmented Generation", "Custom n8n Workflow Tool",
+    "MCP Server Trigger", "MCP Client Tool",
+    "идеальный путь (happy path)", "(touch time)", "(lead time)",
+)
+
+# «AI» остаётся только там, где это часть имени.
+_AI_KEEP = (
+    "AI-First", "AI-first", "AI-Native", "AI-native", "AI-Driven", "AI-driven",
+    "AI-powered", "AI Maturity", "Chief AI Officer", "AI Product",
+    "AI Automation Engineer", "AI Agent",
+)
+
+
+def _strip_keep(text, extra=()):
+    for keep in sorted(_TERM_KEEP + tuple(extra), key=len, reverse=True):
+        text = text.replace(keep, " ")
+    return text
+
+
+def _notes_text(html):
+    import json
+    data = json.loads(re.search(r'<script id="slide-notes"[^>]*>(.*?)</script>',
+                                html, re.S).group(1))
+    return json.dumps(data, ensure_ascii=False)
+
+
+def test_notes_terms_are_russian():
+    """Термин в панели должен читаться так же, как на слайде."""
+    for rel, html in _pages():
+        blob = _strip_keep(_notes_text(html))
+        for word in _ANGLICISMS:
+            assert not re.search(re.escape(word), blob, re.I), \
+                "%s: в тексте панели остался англицизм %r" % (rel, word)
+        blob = _strip_keep(blob, _AI_KEEP)
+        assert not re.search(r"\bAI\b", blob), rel + ": в тексте панели остался «AI» вместо «ИИ»"
+
+
+def test_book_terms_are_russian():
+    """Книга — первоисточник панели, правится синхронно с ней."""
+    with open(os.path.join(_ROOT, _BOOK), encoding="utf-8-sig") as f:
+        blob = _strip_keep(f.read())
+    for word in _ANGLICISMS:
+        assert not re.search(re.escape(word), blob, re.I), \
+            "книга: остался англицизм %r — панель и книга разъедутся" % word
+    blob = _strip_keep(blob, _AI_KEEP)
+    assert not re.search(r"\bAI\b", blob), "книга: остался «AI» вместо «ИИ»"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

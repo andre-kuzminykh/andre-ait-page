@@ -450,12 +450,63 @@ test_notes_data_valid, test_notes_coverage.
   ни на телефоне, ни на десктопе.
 
 **Известные ограничения (НЕ регрессия).**
-- Текст панели — это текст книги, и в нём остались англицизмы (Governance,
-  guardrails, baseline, adoption). Слайды переведены, панель — нет; полное
-  совпадение требует правки первоисточника.
 - `portal-fit` не ловит переполнение вверх: контент центрирован, `scrollHeight`
   меряет только низ, поэтому вместо `zoom` слайд может обрезаться сверху.
   Закрыто верхним резервом, но сам механизм остаётся.
 
 **Тесты (tests/test_lectures.py):** test_no_shadows, test_shared_blocks_identical
 (блоки не должны разъезжаться между лекциями — они правятся по отдельности).
+
+
+## FR-SITE16 — термины лекций, панели и книги совпадают дословно
+
+**Проблема.** Слайды перевели на русский, а панель «Текст к слайду» осталась
+англоязычной: на слайде «Управление», в панели «Governance». Учащийся видит два
+разных термина для одного понятия и не понимает, одно это или разное.
+
+**Требование.** Термин на слайде, в тексте панели и в книге
+`automation/AI_Automation Engineer_Book.txt` — **один и тот же**. Правка
+англицизма всегда идёт **синхронно** в книгу и в данные панели
+(`<script id="slide-notes">` всех восьми лекций), иначе сверка «книга ↔ панель»
+разъезжается и текст лекции перестаёт быть текстом книги.
+
+**Канон перевода.**
+
+| было | стало |
+|---|---|
+| AI | ИИ |
+| Governance · AI Governance · Data Governance | Управление · управление ИИ · управление данными |
+| guardrails | защитные ограничения |
+| human-in-the-loop · human review | человек в контуре · проверка человеком |
+| adoption · fine-tuning | освоение · тонкая настройка |
+| workflow · reasoning · retrieval | воркфлоу · рассуждение · извлечение |
+| backend · webhook · backlog | бэкенд · вебхук · бэклог |
+| circuit breaker · refinement loop · task grooming | размыкатель цепи · цикл доработки · проработка задач |
+| happy path | идеальный путь |
+| baseline | точка отсчёта (лекция 8) · базовый уровень (остальные) |
+| hard savings · cost avoidance · capacity value | прямая экономия · предотвращённые затраты · ценность высвобождённой мощности |
+| revenue uplift · unit economics · payback | рост выручки · юнит-экономика · окупаемость |
+| fully loaded cost · utilization factor | полная стоимость · коэффициент реализации |
+| gross margin · scalability ratio | валовая маржа · коэффициент масштабируемости |
+| touch time · lead time | время реальной работы · полное время от входа до результата |
+
+**Латиницей остаются** имена и аббревиатуры: `AI-First`, `AI-Native`, `AI-Driven`,
+`AI-powered`, `AIOps/MLOps/DataOps/DevOps`, `AgentOps`, `Chief AI Officer`,
+`AI Product Manager`, `AI Automation Engineer`, `AI Maturity Index`,
+`As Is / To Be`, `RUN/CHANGE/DISRUPT`, `ROI, TCO, NPV, FTE, CAC, LTV, SLA, KPI`,
+`RAG, MCP, A2A, API, CRM, ERP, LLM, JSON, HTTP, SQL, RPA, IDE`, `n8n`,
+названия паттернов рассуждения (`ReAct`, `Chain-of-Thought`, …), `User Story`,
+`Use Case`, `Process Mining`, `Given/When/Then`, имена нод n8n
+(`Custom n8n Workflow Tool`, `MCP Server Trigger`, `MCP Client Tool`) и
+расшифровка `Retrieval-Augmented Generation`.
+
+**Как правится.** Единый словарь — `tools/translit.py`; применяется к книге и ко
+всем восьми панелям одним проходом `python3 tools/apply_terms.py` (из корня
+репозитория; `--dry` — только показать, что изменится). Правила
+упорядочены: сначала точные словосочетания с падежным согласованием, потом
+общее слово в именительном падеже. Разметка `**жирный**` в панели переносится
+на новые слова, а не теряется (`ANCHOR` в замене отмечает, куда её перенести).
+
+**Тесты (tests/test_lectures.py):** `test_notes_terms_are_russian`,
+`test_book_terms_are_russian`. Сверка книга↔панель: `verify_text2.py` —
+выдумано 0, потеряно 0.
