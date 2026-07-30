@@ -140,6 +140,24 @@ def test_notes_lists_are_cards():
             rel + ": пункты списка должны быть флекс-карточками"
 
 
+def test_shared_blocks_identical():
+    """FR-SITE15: общие блоки во всех лекциях побайтово одинаковы.
+
+    Лекции правятся по отдельности, и блок легко разъезжается: часть правил
+    попадает в одни файлы и не попадает в другие. Тест ловит это сразу.
+    """
+    import hashlib
+    for block, tag in (("slide-polish", "style"), ("notes-panel-style", "style"),
+                       ("notes-panel-script", "script")):
+        seen = {}
+        for rel, html in _pages():
+            m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, block, tag), html, re.S)
+            assert m, "%s: нет блока %s" % (rel, block)
+            seen.setdefault(hashlib.md5(m.group(1).encode()).hexdigest(), []).append(rel)
+        assert len(seen) == 1, \
+            "блок %s разъехался между лекциями: %s" % (block, list(seen.values()))
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
