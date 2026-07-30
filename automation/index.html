@@ -113,8 +113,8 @@
   /* min-height (not fixed) + page can scroll: on tall phones the screen is centered and doesn't scroll;
      on SHORT viewports (in-app browsers — Instagram/Threads webview) the content grows the page and
      scrolls instead of overflowing UPWARD under the fixed header (title was colliding with the buttons). */
-  main{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5.75rem 1rem 2rem}
-  @media(min-width:640px){main{padding:6rem 2rem 2.5rem}}
+  main{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4.5rem 1rem 11rem}
+  @media(min-width:640px){main{padding:5rem 2rem 7rem}}
   /* body{zoom} scales 100dvh taller than the screen → correct the height so content stays vertically centred */
   @media(min-width:1600px){main{min-height:calc(100dvh / 1.15)}}
   @media(min-width:1900px){main{min-height:calc(100dvh / 1.3)}}
@@ -181,6 +181,10 @@
 *, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
 [class*="drop-shadow"]{ filter:none !important; }
 .logo-btn img, header img{ filter:none !important; }
+
+/* Говорящая голова — СПРАВА на всех страницах курса (как в лекциях) */
+.bubble{ left:auto !important; right:clamp(1.5rem,5vw,4rem) !important; }
+@media(max-width:768px){ .bubble{ left:auto !important; right:15px !important; } }
 </style>
 </head>
 <body>
@@ -220,7 +224,7 @@
         <span class="line">по автоматизации</span>
         <span class="nowrap"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span>
       </h1>
-      <p class="desc">Вы узнаете, как трансформировать свой бизнес в ИИ-First компанию: моделировать бизнес-процессы, автоматизировать их с помощью ИИ-агентов и масштабироваться без роста штата с измеримым экономическим эффектом</p>
+      <p class="desc">Вы узнаете, как трансформировать свой бизнес в AI-First компанию: моделировать бизнес-процессы, автоматизировать их с помощью ИИ-агентов и масштабироваться без роста штата с измеримым экономическим эффектом</p>
       <div class="cta-row">
         <button class="btn-white next-btn" data-go="2">
           Для кого? <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
