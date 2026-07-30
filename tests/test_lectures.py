@@ -83,6 +83,63 @@ def test_total_slides_consistent():
         assert real >= 30, "%s: подозрительно мало слайдов (%d)" % (rel, real)
 
 
+
+
+# ── FR-SITE14: панель «Текст к слайду» ────────────────────────────────────
+
+def test_notes_panel_present():
+    for rel, html in _pages():
+        for part in ('id="notes-panel-style"', 'id="notes-panel"', 'id="notes-panel-script"',
+                     'id="notes-toggle"', 'id="notes-close"', 'id="slide-notes"'):
+            assert part in html, "%s: нет части панели текста (%s)" % (rel, part)
+        # кнопка живёт в шапке лекции, слева от переключателя темы
+        assert re.search(r'<button id="notes-toggle".*?<button id="lec-theme"', html, re.S), \
+            rel + ": кнопка текста должна стоять в шапке перед переключателем темы"
+
+
+def test_notes_data_valid():
+    import json
+    for rel, html in _pages():
+        m = re.search(r'<script id="slide-notes"[^>]*>(.*?)</script>', html, re.S)
+        assert m, rel + ": нет данных slide-notes"
+        data = json.loads(m.group(1))
+        total = html.count('class="slide-container')
+        for key, note in data.items():
+            assert key.isdigit() and int(key) < total, \
+                "%s: ключ %r вне диапазона слайдов (0..%d)" % (rel, key, total - 1)
+            for b in note.get("blocks", []):
+                assert b.get("t") in ("p", "h", "ul", "ol", "note"), \
+                    "%s: слайд %s — неизвестный тип блока %r" % (rel, key, b.get("t"))
+                assert b.get("v"), "%s: слайд %s — пустой блок" % (rel, key)
+
+
+def test_notes_coverage():
+    import json
+    for rel, html in _pages():
+        data = json.loads(re.search(r'<script id="slide-notes"[^>]*>(.*?)</script>', html, re.S).group(1))
+        total = html.count('class="slide-container')
+        # допускаем один непокрытый слайд (финальный экран с кнопкой теста)
+        assert len(data) >= total - 1, \
+            "%s: текст есть только к %d слайдам из %d" % (rel, len(data), total)
+
+
+def test_no_shadows():
+    """FR-SITE14: теней нет нигде — правило-глушитель есть на каждой странице."""
+    for rel, html in _pages():
+        assert "box-shadow:none !important" in html, rel + ": нет правила, снимающего тени"
+        assert "text-shadow:none !important" in html, rel + ": нет правила, снимающего text-shadow"
+        assert '[class*="drop-shadow"]{ filter:none !important; }' in html, \
+            rel + ": drop-shadow-утилиты Tailwind не сняты"
+
+
+def test_notes_lists_are_cards():
+    """FR-SITE14: пункты перечислений — карточки, маркер на уровне первой строки."""
+    for rel, html in _pages():
+        assert 'class="n-li"' in html, rel + ": содержимое пункта не обёрнуто (жирный ломает флекс)"
+        assert re.search(r'\.notes-body ul\.n-ul li[^{]*\{[^}]*display:flex', html), \
+            rel + ": пункты списка должны быть флекс-карточками"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
@@ -90,7 +147,7 @@ if __name__ == "__main__":
             try:
                 fn()
                 print("ok   %s" % name)
-            except AssertionError as e:
+            except Exception as e:  # AssertionError и любые сбои разбора
                 failed += 1
-                print("FAIL %s: %s" % (name, e))
+                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
     raise SystemExit(1 if failed else 0)
