@@ -130,6 +130,23 @@ def test_notes_coverage():
             "%s: текст есть только к %d слайдам из %d" % (rel, len(data), total)
 
 
+def test_no_shadows():
+    """FR-SITE14: теней нет нигде — правило-глушитель есть на каждой странице."""
+    for rel, html in _pages():
+        assert "box-shadow:none !important" in html, rel + ": нет правила, снимающего тени"
+        assert "text-shadow:none !important" in html, rel + ": нет правила, снимающего text-shadow"
+        assert '[class*="drop-shadow"]{ filter:none !important; }' in html, \
+            rel + ": drop-shadow-утилиты Tailwind не сняты"
+
+
+def test_notes_lists_are_cards():
+    """FR-SITE14: пункты перечислений — карточки, маркер на уровне первой строки."""
+    for rel, html in _pages():
+        assert 'class="n-li"' in html, rel + ": содержимое пункта не обёрнуто (жирный ломает флекс)"
+        assert re.search(r'\.notes-body ul\.n-ul li[^{]*\{[^}]*display:flex', html), \
+            rel + ": пункты списка должны быть флекс-карточками"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

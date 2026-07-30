@@ -3045,6 +3045,7 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
   width:.5em; height:.5em; border-radius:50%; background:#8B5CF6;
   box-shadow:0 0 0 3px rgba(139,92,246,.16);
 }
+.notes-body .n-li{ min-width:0; flex:1 1 auto; }
 .notes-body ol.n-ol li{ counter-increment:n; }
 .notes-body ol.n-ol li::before{
   content:counter(n); flex:0 0 auto; margin-top:.06em;
@@ -3128,6 +3129,12 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
   /* при открытой панели голова не закрывает текст (звук продолжает идти) */
   body.notes-open #video-bubble{ opacity:0; pointer-events:none; }
 }
+
+/* Теней нет нигде (требование заказчика): гасим и Tailwind-утилиты shadow-*/
+/* drop-shadow-*, и собственные box-shadow в стилях лекции и панели. */
+*, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
+[class*="drop-shadow"]{ filter:none !important; }
+#lecture-header .lec-logo img{ filter:none !important; }
 </style>
 
 <!-- Панель с текстом к слайду -->
@@ -3182,7 +3189,7 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
         var alt = (listSeen++ % 2) === 1 ? ' n-alt' : '';
         var tag = b.t === 'ul' ? 'ul' : 'ol';
         html += '<' + tag + ' class="n-' + b.t + alt + '">' +
-          (b.v || []).map(function(i){ return '<li>' + rich(i) + '</li>'; }).join('') +
+          (b.v || []).map(function(i){ return '<li><span class="n-li">' + rich(i) + '</span></li>'; }).join('') +
           '</' + tag + '>';
         return;
       }
