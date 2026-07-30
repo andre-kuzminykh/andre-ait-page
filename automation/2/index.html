@@ -2105,30 +2105,53 @@ window.addEventListener('load', function(){
             <div class="bg-black border-2 border-solar p-4 md:p-10 rounded-[20px] md:rounded-[40px] shadow-2xl text-white w-full relative">
                 <span class="hidden md:block absolute top-4 left-6 text-xs font-bold text-solar uppercase tracking-widest">Граф навыков</span>
 
-                <!-- Компактная горизонтальная цепочка (mobile + desktop) -->
-                <div class="flex items-center justify-center gap-1 md:gap-4 mt-0 md:mt-10 mb-4 md:mb-8">
-                    <div class="bg-white/10 border border-white/20 p-2 md:p-3 lg:p-4 rounded-lg md:rounded-xl text-center flex-1">
-                        <i class="ph-fill ph-envelope-simple text-lg md:text-3xl mb-0.5 md:mb-2 text-white/70 block"></i>
-                        <p class="text-[8px] md:text-[11px] lg:text-xs font-bold leading-tight">Чтение<br class="md:hidden"> обращения</p>
+                <!-- Мобилка: цепочка идёт сверху вниз. В четыре колонки на 390px узлы
+                     сжимались до ~46px и подписи рвались посреди слова. -->
+                <div class="md:hidden flex flex-col gap-1.5 mb-4">
+                    <div class="bg-white/10 border border-white/20 p-2 rounded-xl flex items-center gap-2.5">
+                        <i class="ph-fill ph-envelope-simple text-xl text-white/70 shrink-0"></i>
+                        <p class="text-[10px] font-bold leading-tight m-0">Чтение обращения</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-solar text-sm md:text-xl shrink-0"></i>
+                    <i class="ph-bold ph-caret-down text-solar text-sm mx-auto"></i>
                     <!-- Заказчик: «у второго элемента забыт значок». Лупа читалась как «поиск»
                          и дублировала соседний узел «Поиск в CRM»; ставим ярлык-метку —
-                         классификация = присвоить категорию. Инлайновый color:#111 убран:
-                         на подложке узла подпись должна быть белой, как у соседей. -->
-                    <div class="bg-solar/20 border border-solar p-2 md:p-3 lg:p-4 rounded-lg md:rounded-xl text-center flex-1">
-                        <i class="ph-fill ph-tag text-lg md:text-3xl mb-0.5 md:mb-2 block"></i>
-                        <p class="text-[8px] md:text-[11px] lg:text-xs font-bold leading-tight"><span class="lg:hidden">Классиф.</span><span class="hidden lg:inline">Классификация</span></p>
+                         классификация = присвоить категорию. -->
+                    <div class="bg-solar/20 border border-solar p-2 rounded-xl flex items-center gap-2.5">
+                        <i class="ph-fill ph-tag text-xl shrink-0"></i>
+                        <p class="text-[10px] font-bold leading-tight m-0">Классификация</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-solar text-sm md:text-xl shrink-0"></i>
-                    <div class="bg-white/10 border border-white/20 p-2 md:p-3 lg:p-4 rounded-lg md:rounded-xl text-center flex-1">
-                        <i class="ph-fill ph-database text-lg md:text-3xl mb-0.5 md:mb-2 text-white/70 block"></i>
-                        <p class="text-[8px] md:text-[11px] lg:text-xs font-bold leading-tight">Поиск<br class="md:hidden"> в CRM</p>
+                    <i class="ph-bold ph-caret-down text-solar text-sm mx-auto"></i>
+                    <div class="bg-white/10 border border-white/20 p-2 rounded-xl flex items-center gap-2.5">
+                        <i class="ph-fill ph-database text-xl text-white/70 shrink-0"></i>
+                        <p class="text-[10px] font-bold leading-tight m-0">Поиск в CRM</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-solar text-sm md:text-xl shrink-0"></i>
-                    <div class="bg-white/10 border border-white/20 p-2 md:p-3 lg:p-4 rounded-lg md:rounded-xl text-center flex-1">
-                        <i class="ph-fill ph-paper-plane-tilt text-lg md:text-3xl mb-0.5 md:mb-2 text-white/70 block"></i>
-                        <p class="text-[8px] md:text-[11px] lg:text-xs font-bold leading-tight">Черновик</p>
+                    <i class="ph-bold ph-caret-down text-solar text-sm mx-auto"></i>
+                    <div class="bg-white/10 border border-white/20 p-2 rounded-xl flex items-center gap-2.5">
+                        <i class="ph-fill ph-paper-plane-tilt text-xl text-white/70 shrink-0"></i>
+                        <p class="text-[10px] font-bold leading-tight m-0">Черновик ответа</p>
+                    </div>
+                </div>
+
+                <!-- md+ : горизонтальная цепочка -->
+                <div class="hidden md:flex items-center justify-center gap-4 mt-10 mb-8">
+                    <div class="bg-white/10 border border-white/20 p-3 lg:p-4 rounded-xl text-center flex-1">
+                        <i class="ph-fill ph-envelope-simple text-3xl mb-2 text-white/70 block"></i>
+                        <p class="text-[11px] lg:text-xs font-bold leading-tight">Чтение обращения</p>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-solar text-xl shrink-0"></i>
+                    <div class="bg-solar/20 border border-solar p-3 lg:p-4 rounded-xl text-center flex-1">
+                        <i class="ph-fill ph-tag text-3xl mb-2 block"></i>
+                        <p class="text-[11px] lg:text-xs font-bold leading-tight"><span class="lg:hidden">Классиф.</span><span class="hidden lg:inline">Классификация</span></p>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-solar text-xl shrink-0"></i>
+                    <div class="bg-white/10 border border-white/20 p-3 lg:p-4 rounded-xl text-center flex-1">
+                        <i class="ph-fill ph-database text-3xl mb-2 text-white/70 block"></i>
+                        <p class="text-[11px] lg:text-xs font-bold leading-tight">Поиск в CRM</p>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-solar text-xl shrink-0"></i>
+                    <div class="bg-white/10 border border-white/20 p-3 lg:p-4 rounded-xl text-center flex-1">
+                        <i class="ph-fill ph-paper-plane-tilt text-3xl mb-2 text-white/70 block"></i>
+                        <p class="text-[11px] lg:text-xs font-bold leading-tight">Черновик</p>
                     </div>
                 </div>
 
