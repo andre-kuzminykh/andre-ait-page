@@ -169,7 +169,11 @@ _ANGLICISMS = (
     "adoption", "fine-tuning", "revenue uplift", "fully loaded", "utilization factor",
     "gross margin", "scalability ratio", "workflow", "reasoning", "retrieval",
     "backend", "webhook", "backlog", "circuit breaker", "refinement loop",
-    "task grooming", "task grooming",
+    "task grooming", "throughput", "headcount", "forecast", "follow-up", "upsell",
+    "change management", "change request", "break-even", "infrastructure cost",
+    "code generation", "fallback", "summarization", "polling", "Bearer Token",
+    "Data Stewards", "Data lineage", "продакшен", "чекпоинт", "снапшот",
+    "scoring-модул", "Quick wins", "Mid-term", "Long-term",
 )
 
 # Имена продуктов, нод и расшифровки аббревиатур латиницей остаются, плюс
