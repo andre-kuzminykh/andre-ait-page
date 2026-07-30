@@ -597,6 +597,7 @@ window.addEventListener('load', function(){
             <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
         </a>
         <div class="lec-right">
+            <button id="notes-toggle" class="lec-ctrl" type="button" aria-label="Текст к слайду" aria-expanded="false"><i class="ph-fill ph-book-open-text"></i></button>
             <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить тему (тёмная/светлая)"><i class="ph-fill ph-moon"></i></button>
             <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Консультация <i class="ph-bold ph-arrow-right"></i></a>
         </div>
@@ -2815,6 +2816,266 @@ window.addEventListener('load', function(){
         document.getElementById('quiz-restart-btn').addEventListener('click', openQuiz);
         quizNextBtn.addEventListener('click', nextQuestion);
     });
+</script>
+
+<script id="slide-notes" type="application/json">
+{}
+</script>
+<style id="notes-panel-style">
+/* Панель «Текст к слайду» (FR-SITE14).
+   Десктоп: док справа, инфографика ужимается влево. Мобилка: полноэкранный
+   слой поверх всего, стрелка «следующий слайд» остаётся сверху. */
+:root { --notes-w: clamp(340px, 33vw, 560px); }
+
+#notes-panel{
+  position:fixed; top:0; right:0; height:100dvh; width:var(--notes-w);
+  z-index:9500; display:flex; flex-direction:column;
+  background:#FFFFFF; color:#000000;
+  border-left:1px solid rgba(0,0,0,.10);
+  box-shadow:-24px 0 60px -30px rgba(0,0,0,.35);
+  transform:translateX(101%); visibility:hidden;
+  transition:transform .38s cubic-bezier(.22,1,.36,1), visibility 0s linear .38s;
+  font-family:'Montserrat',sans-serif;
+}
+body.notes-open #notes-panel{ transform:none; visibility:visible; transition:transform .38s cubic-bezier(.22,1,.36,1), visibility 0s; }
+@media (prefers-reduced-motion: reduce){ #notes-panel{ transition:none; } }
+
+/* Шапка панели: крестик СЛЕВА сверху (требование), счётчик и заголовок */
+.notes-head{
+  flex:0 0 auto; display:flex; align-items:flex-start; gap:.75rem;
+  padding:clamp(.9rem,2.4vw,1.35rem) clamp(1rem,2.6vw,1.6rem) .85rem;
+  border-bottom:1px solid rgba(0,0,0,.09);
+  background:linear-gradient(180deg, rgba(139,92,246,.07), rgba(139,92,246,0));
+}
+#notes-close{
+  flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
+  width:2.35rem; height:2.35rem; border-radius:999px; cursor:pointer;
+  border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:1.05rem;
+  box-shadow:0 4px 12px rgba(0,0,0,.10); transition:background .2s ease, color .2s ease;
+}
+#notes-close:hover{ background:#8B5CF6; color:#fff; border-color:#8B5CF6; }
+.notes-meta{ min-width:0; padding-top:.15rem; }
+.notes-counter{
+  display:inline-block; font-size:clamp(9px,2.2vw,10.5px); font-weight:800;
+  letter-spacing:.16em; text-transform:uppercase; color:#8B5CF6; margin-bottom:.3rem;
+}
+.notes-title{
+  margin:0; font-size:clamp(.98rem,2.9vw,1.18rem); font-weight:800; line-height:1.28;
+  color:#000; overflow-wrap:break-word; hyphens:none;
+}
+
+/* Тело: прокрутка справа — «слайдер», если текст не влезает */
+.notes-body{
+  flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain;
+  padding:clamp(.9rem,2.6vw,1.4rem) clamp(1rem,2.6vw,1.6rem) clamp(2rem,6vh,3rem);
+  scrollbar-width:thin; scrollbar-color:#8B5CF6 rgba(0,0,0,.07);
+}
+.notes-body::-webkit-scrollbar{ width:9px; }
+.notes-body::-webkit-scrollbar-track{ background:rgba(0,0,0,.06); border-radius:999px; }
+.notes-body::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#8B5CF6 0%,#F97316 100%);
+  border-radius:999px; border:2px solid transparent; background-clip:padding-box;
+}
+
+/* Типографика текста */
+.notes-body p{
+  margin:0 0 .9em; font-size:clamp(.86rem,2.5vw,.95rem); line-height:1.72;
+  color:rgba(0,0,0,.80); overflow-wrap:break-word;
+}
+.notes-body p:last-child{ margin-bottom:0; }
+.notes-body strong{ font-weight:800; color:#000; }
+.notes-body .n-h{
+  margin:1.5em 0 .7em; font-size:clamp(10px,2.4vw,11.5px); font-weight:800;
+  letter-spacing:.14em; text-transform:uppercase; color:#8B5CF6;
+  display:flex; align-items:center; gap:.6rem;
+}
+.notes-body .n-h::after{ content:''; flex:1; height:1px; background:linear-gradient(90deg, rgba(139,92,246,.35), transparent); }
+.notes-body > *:first-child{ margin-top:0; }
+
+/* Списки: фиолетовые точки; каждый второй список — оранжевые (разнообразие) */
+.notes-body ul.n-ul{ list-style:none; margin:0 0 1.05em; padding:0; }
+.notes-body ul.n-ul li{
+  position:relative; padding-left:1.5em; margin-bottom:.52em;
+  font-size:clamp(.84rem,2.45vw,.93rem); line-height:1.62; color:rgba(0,0,0,.80);
+}
+.notes-body ul.n-ul li::before{
+  content:''; position:absolute; left:.15em; top:.62em;
+  width:.46em; height:.46em; border-radius:50%; background:#8B5CF6;
+  box-shadow:0 0 0 3px rgba(139,92,246,.14);
+}
+.notes-body ul.n-ul.n-alt li::before{ background:#F97316; box-shadow:0 0 0 3px rgba(249,115,22,.15); }
+
+/* Нумерованные: оранжевые кружки с цифрой */
+.notes-body ol.n-ol{ list-style:none; margin:0 0 1.05em; padding:0; counter-reset:n; }
+.notes-body ol.n-ol li{
+  position:relative; padding-left:2.1em; margin-bottom:.6em; counter-increment:n;
+  font-size:clamp(.84rem,2.45vw,.93rem); line-height:1.62; color:rgba(0,0,0,.80);
+}
+.notes-body ol.n-ol li::before{
+  content:counter(n); position:absolute; left:0; top:.06em;
+  width:1.45em; height:1.45em; border-radius:50%;
+  background:#F97316; color:#fff; font-size:.72em; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+.notes-body ol.n-ol.n-alt li::before{ background:#8B5CF6; }
+
+/* Врезка-акцент */
+.notes-body .n-note{
+  margin:0 0 1.05em; padding:.8rem .95rem; border-left:3px solid #F97316;
+  border-radius:0 .7rem .7rem 0; background:rgba(249,115,22,.09);
+  font-size:clamp(.84rem,2.45vw,.92rem); line-height:1.62; color:rgba(0,0,0,.85);
+}
+.notes-body .n-note.n-alt{ border-left-color:#8B5CF6; background:rgba(139,92,246,.10); }
+
+/* Тёмная тема */
+html.dark #notes-panel{ background:#101010; color:#FAFAFA; border-left-color:rgba(255,255,255,.10); }
+html.dark .notes-head{ border-bottom-color:rgba(255,255,255,.10); background:linear-gradient(180deg, rgba(139,92,246,.14), rgba(139,92,246,0)); }
+html.dark #notes-close{ background:#1b1b1b; color:#fafafa; border-color:rgba(255,255,255,.18); }
+html.dark .notes-title{ color:#FAFAFA; }
+html.dark .notes-body p, html.dark .notes-body ul.n-ul li, html.dark .notes-body ol.n-ol li{ color:rgba(250,250,250,.78); }
+html.dark .notes-body strong{ color:#fff; }
+html.dark .notes-body .n-note{ color:rgba(250,250,250,.86); }
+html.dark .notes-body{ scrollbar-color:#8B5CF6 rgba(255,255,255,.08); }
+html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08); }
+
+/* --- Раскладка при открытой панели --- */
+/* Десктоп: инфографика, шапка и прогресс ужимаются влево на ширину панели */
+@media (min-width:1024px){
+  body.notes-open .slide-container{ width:calc(100% - var(--notes-w)); }
+  body.notes-open #lecture-header{ right:var(--notes-w); }
+  body.notes-open #progress-container{ width:calc(100% - var(--notes-w)); }
+  /* стрелки уезжают влево, чтобы не лежать поверх текста */
+  body.notes-open #nav-prev{ right:calc(80px + var(--notes-w)) !important; }
+  body.notes-open #nav-next{ right:calc(20px + var(--notes-w)) !important; }
+}
+/* Слайд стал уже — слова НЕ должны рваться посреди («Автономност|ь»).
+   Переносим только по пробелам, а вписывание берёт на себя portal-fit (zoom). */
+@media (min-width:1024px){
+  body.notes-open .slide-container h1, body.notes-open .slide-container h2,
+  body.notes-open .slide-container h3, body.notes-open .slide-container h4,
+  body.notes-open .slide-container p,  body.notes-open .slide-container li,
+  body.notes-open .slide-container span{
+    overflow-wrap:normal !important; word-break:normal !important; hyphens:none !important;
+  }
+}
+/* Мобилка: панель на весь экран поверх всего */
+@media (max-width:1023px){
+  #notes-panel{ width:100%; border-left:none; }
+  /* запас снизу, чтобы стрелки листания не закрывали последнюю строку */
+  .notes-body{ padding-bottom:96px; }
+  /* кружок с говорящей головой не должен закрывать текст (звук продолжает идти) */
+  body.notes-open #video-bubble{ opacity:0; pointer-events:none; }
+}
+/* Стрелки листания — поверх панели на всех экранах (FR-SITE14) */
+#nav-prev, #nav-next{ z-index:9600 !important; }
+</style>
+
+<!-- Панель с текстом к слайду -->
+<aside id="notes-panel" aria-hidden="true" aria-label="Текст к слайду">
+    <div class="notes-head">
+        <button id="notes-close" type="button" aria-label="Закрыть текст"><i class="ph-bold ph-x"></i></button>
+        <div class="notes-meta">
+            <span class="notes-counter" id="notes-counter"></span>
+            <h2 class="notes-title" id="notes-title"></h2>
+        </div>
+    </div>
+    <div class="notes-body" id="notes-body"></div>
+</aside>
+
+<script id="notes-panel-script">
+(function(){
+  var panel  = document.getElementById('notes-panel');
+  var toggle = document.getElementById('notes-toggle');
+  var closeB = document.getElementById('notes-close');
+  var bodyEl = document.getElementById('notes-body');
+  var titleEl= document.getElementById('notes-title');
+  var cntEl  = document.getElementById('notes-counter');
+  var dataEl = document.getElementById('slide-notes');
+  if(!panel || !toggle || !dataEl) return;
+
+  var NOTES = {};
+  try { NOTES = JSON.parse(dataEl.textContent || '{}'); } catch(e){ NOTES = {}; }
+  // Нет текста ни к одному слайду — кнопку не показываем вовсе
+  if(!Object.keys(NOTES).length){ toggle.style.display = 'none'; return; }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  // Единственная разрешённая инлайн-разметка — **жирный**
+  function rich(s){ return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); }
+
+  function render(idx){
+    var n = NOTES[String(idx)];
+    var total = document.querySelectorAll('.slide-container').length;
+    cntEl.textContent = 'Слайд ' + (idx + 1) + ' / ' + total;
+    if(!n){
+      titleEl.textContent = '';
+      bodyEl.innerHTML = '<p style="opacity:.55">К этому слайду текста нет.</p>';
+      bodyEl.scrollTop = 0; return;
+    }
+    titleEl.textContent = n.title || '';
+    var html = '', listSeen = 0;
+    (n.blocks || []).forEach(function(b){
+      if(b.t === 'h'){ html += '<div class="n-h">' + esc(b.v) + '</div>'; return; }
+      if(b.t === 'note'){ html += '<div class="n-note' + (b.alt ? ' n-alt' : '') + '">' + rich(b.v) + '</div>'; return; }
+      if(b.t === 'ul' || b.t === 'ol'){
+        // чередуем фиолетовые/оранжевые маркеры, чтобы списки не сливались
+        var alt = (listSeen++ % 2) === 1 ? ' n-alt' : '';
+        var tag = b.t === 'ul' ? 'ul' : 'ol';
+        html += '<' + tag + ' class="n-' + b.t + alt + '">' +
+          (b.v || []).map(function(i){ return '<li>' + rich(i) + '</li>'; }).join('') +
+          '</' + tag + '>';
+        return;
+      }
+      html += '<p>' + rich(b.v) + '</p>';
+    });
+    bodyEl.innerHTML = html;
+    bodyEl.scrollTop = 0; // новый слайд — читаем с начала
+  }
+
+  function activeIdx(){
+    var nodes = document.querySelectorAll('.slide-container');
+    for(var i = 0; i < nodes.length; i++){
+      if(nodes[i].classList.contains('opacity-100')) return i;
+    }
+    return 0;
+  }
+
+  function setOpen(open){
+    document.body.classList.toggle('notes-open', open);
+    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.innerHTML = '<i class="ph-fill ph-' + (open ? 'book-open-text' : 'book-open-text') + '"></i>';
+    if(open) render(activeIdx());
+    // Пересчёт вписывания слайда: ширина слайда изменилась (portal-fit слушает resize)
+    setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 40);
+    setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 420);
+  }
+
+  toggle.addEventListener('click', function(){ setOpen(!document.body.classList.contains('notes-open')); });
+  closeB.addEventListener('click', function(){ setOpen(false); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && document.body.classList.contains('notes-open')) setOpen(false);
+  });
+
+  // Панель не должна listать слайды свайпом — гасим жесты внутри неё
+  ['touchstart','touchmove','touchend'].forEach(function(ev){
+    panel.addEventListener(ev, function(e){ e.stopPropagation(); }, {passive:true});
+  });
+
+  // Смена слайда обновляет текст, но НЕ закрывает панель (требование)
+  window.addEventListener('load', function(){
+    if(typeof window.updateSlides === 'function'){
+      var orig = window.updateSlides;
+      window.updateSlides = function(){
+        var r = orig.apply(this, arguments);
+        if(document.body.classList.contains('notes-open')){
+          requestAnimationFrame(function(){ render(activeIdx()); });
+        }
+        return r;
+      };
+    }
+  });
+})();
 </script>
 
 </body>
