@@ -2818,14 +2818,13 @@ window.addEventListener('load', function(){
     });
 </script>
 
-<!-- Панель с текстом к слайду -->
 <script id="slide-notes" type="application/json">
 {}
 </script>
 <style id="notes-panel-style">
 /* Панель «Текст к слайду» (FR-SITE14).
-   Десктоп: док справа, инфографика ужимается влево. Мобилка: полноэкранный
-   слой поверх всего, стрелка «следующий слайд» остаётся сверху. */
+   Десктоп: док СЛЕВА, инфографика сдвигается вправо. Мобилка: полноэкранный
+   слой поверх всего, стрелки листания остаются сверху. */
 :root { --notes-w: clamp(340px, 33vw, 560px); }
 
 #notes-panel{
@@ -2849,13 +2848,15 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
   border-bottom:1px solid rgba(0,0,0,.09);
   background:linear-gradient(180deg, rgba(139,92,246,.07), rgba(139,92,246,0));
 }
+/* Крестик без круглой подложки — только иконка */
 #notes-close{
   flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
-  width:2.35rem; height:2.35rem; border-radius:999px; cursor:pointer;
-  border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:1.05rem;
-  box-shadow:0 4px 12px rgba(0,0,0,.10); transition:background .2s ease, color .2s ease;
+  width:2rem; height:2rem; padding:0; cursor:pointer;
+  border:none; background:none; box-shadow:none; border-radius:0;
+  color:rgba(0,0,0,.55); font-size:1.25rem; line-height:1;
+  transition:color .2s ease;
 }
-#notes-close:hover{ background:#8B5CF6; color:#fff; border-color:#8B5CF6; }
+#notes-close:hover{ color:#8B5CF6; }
 .notes-meta{ min-width:0; padding-top:.15rem; }
 .notes-counter{
   display:inline-block; font-size:clamp(9px,2.2vw,10.5px); font-weight:800;
@@ -2900,20 +2901,23 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
   list-style:none; margin:0 0 1.1em; padding:0; display:grid; gap:.5rem;
 }
 .notes-body ol.n-ol{ counter-reset:n; }
+/* Маркер — флекс-элемент, поэтому стоит РОВНО на уровне первой строки текста,
+   а перенос строк выравнивается сам по себе. */
 .notes-body ul.n-ul li, .notes-body ol.n-ol li{
-  position:relative; padding:.72rem .9rem .72rem 2.6rem; border-radius:.9rem;
+  display:flex; align-items:flex-start; gap:.6rem;
+  padding:.72rem .9rem; border-radius:.9rem;
   background:rgba(139,92,246,.07); border:1px solid rgba(139,92,246,.18);
   font-size:clamp(.83rem,2.4vw,.92rem); line-height:1.6; color:rgba(0,0,0,.82);
   overflow-wrap:break-word;
 }
 .notes-body ul.n-ul li::before{
-  content:''; position:absolute; left:1.05rem; top:1.28em;
+  content:''; flex:0 0 auto; margin-top:.58em;
   width:.5em; height:.5em; border-radius:50%; background:#8B5CF6;
   box-shadow:0 0 0 3px rgba(139,92,246,.16);
 }
 .notes-body ol.n-ol li{ counter-increment:n; }
 .notes-body ol.n-ol li::before{
-  content:counter(n); position:absolute; left:.62rem; top:.6rem;
+  content:counter(n); flex:0 0 auto; margin-top:.06em;
   width:1.5em; height:1.5em; border-radius:50%;
   background:#8B5CF6; color:#fff; font-size:.74em; font-weight:800;
   display:flex; align-items:center; justify-content:center;
@@ -2934,9 +2938,10 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
 .notes-body .n-note.n-alt{ border-left-color:#8B5CF6; background:rgba(139,92,246,.10); }
 
 /* Тёмная тема */
-html.dark #notes-panel{ background:#101010; color:#FAFAFA; border-left-color:rgba(255,255,255,.10); }
+html.dark #notes-panel{ background:#101010; color:#FAFAFA; border-right-color:rgba(255,255,255,.10); }
 html.dark .notes-head{ border-bottom-color:rgba(255,255,255,.10); background:linear-gradient(180deg, rgba(139,92,246,.14), rgba(139,92,246,0)); }
-html.dark #notes-close{ background:#1b1b1b; color:#fafafa; border-color:rgba(255,255,255,.18); }
+html.dark #notes-close{ background:none; border:none; color:rgba(250,250,250,.6); }
+html.dark #notes-close:hover{ color:#A78BFA; }
 html.dark .notes-title{ color:#FAFAFA; }
 html.dark .notes-body p, html.dark .notes-body ul.n-ul li, html.dark .notes-body ol.n-ol li{ color:rgba(250,250,250,.78); }
 html.dark .notes-body ul.n-ul li, html.dark .notes-body ol.n-ol li{
@@ -2953,11 +2958,12 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 /* --- Раскладка хрома лекции (действует всегда, не только при открытой панели) --- */
 /* Логотип AIT остаётся видимым НАД панелью, поэтому шапка выше панели по слою */
 #lecture-header{ z-index:9700 !important; }
-/* Говорящая голова — в правом нижнем углу НАД стрелками «назад/вперёд» */
+/* Говорящая голова — в правом нижнем углу НАД стрелками «назад/вперёд»,
+   правым краем ровно по краю стрелки «вперёд» (#nav-next: right:20px). */
 #video-bubble{
-  left:auto !important; right:clamp(1rem,3vw,1.6rem) !important;
+  left:auto !important; right:20px !important;
   bottom:calc(22px + 48px + 14px) !important; top:auto !important;
-  width:clamp(120px,16vw,200px) !important; height:clamp(120px,16vw,200px) !important;
+  width:clamp(140px,13vw,190px) !important; height:clamp(140px,13vw,190px) !important;
 }
 /* Стрелки листания — поверх панели */
 #nav-prev, #nav-next{ z-index:9600 !important; }
@@ -2983,10 +2989,11 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
   #notes-panel{ width:100%; border-right:none; }
   /* запас снизу, чтобы стрелки листания не закрывали последнюю строку */
   .notes-body{ padding-bottom:96px; }
-  /* голова тоже справа над стрелками, но компактнее */
+  /* голова над стрелками и РОВНО по ширине их пары:
+     от левого края «назад» (right:66+46=112px) до правого края «вперёд» (right:12px) */
   #video-bubble{
     right:12px !important; bottom:calc(16px + 46px + 10px) !important;
-    width:104px !important; height:104px !important;
+    width:100px !important; height:100px !important;
   }
   /* при открытой панели голова не закрывает текст (звук продолжает идти) */
   body.notes-open #video-bubble{ opacity:0; pointer-events:none; }
@@ -3038,7 +3045,7 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
     titleEl.textContent = n.title || '';
     var html = '', listSeen = 0;
     (n.blocks || []).forEach(function(b){
-      if(b.t === 'h'){ html += '<div class="n-h">' + esc(b.v) + '</div>'; return; }
+      if(b.t === 'h'){ html += '<div class="n-h">' + rich(b.v) + '</div>'; return; }
       if(b.t === 'note'){ html += '<div class="n-note' + (b.alt ? ' n-alt' : '') + '">' + rich(b.v) + '</div>'; return; }
       if(b.t === 'ul' || b.t === 'ol'){
         // чередуем фиолетовые/оранжевые маркеры, чтобы списки не сливались
