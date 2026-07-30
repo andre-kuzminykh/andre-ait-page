@@ -3065,7 +3065,10 @@ window.addEventListener('load', function(){
 /* 1. Иконка не должна совпадать по цвету со своей подложкой.
    Было: text-solar на bg-solar/20 — иконка растворялась в плашке.
    Стало: плашка сплошная, иконка белая — контраст в обеих темах. */
-.slide-container [class*="bg-solar/"]:has(> i){ background-color:#8B5CF6 !important; }
+.slide-container [class*="bg-solar/"]:has(> i){
+  background-color:#8B5CF6 !important;
+  color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
+}
 .slide-container [class*="bg-solar/"] > i{ color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important; }
 /* внутри тёмных emphasis-карточек акцент оранжевый (как и весь портальный тинт) */
 .slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i){
@@ -3090,16 +3093,24 @@ window.addEventListener('load', function(){
    буквы, из-за чего текст казался смещённым влево от центра овала */
 .slide-container [class*="rounded-full"] > [class*="tracking-wid"]{ text-indent:.16em; }
 
-/* 4. Тёмные emphasis-карточки были залиты глубоким фиолетовым (#2E1065):
-   фиолетовые подписи и вложенные плашки на нём сливались. Делаем фон
-   нейтрально-тёмным — акценты снова читаются. */
+/* 4. Emphasis-карточки — насыщенно-фиолетовые с БЕЛЫМ текстом (решение
+   заказчика: «вместо чёрного фона фиолетовый, там тоже белый текст»).
+   Прежний #2E1065 плох был не фиолетовым как таковым, а тем, что на нём
+   лежали фиолетовые подписи; теперь весь текст белый, акценты — оранжевые. */
 .slide-container [class~="bg-black"]:not(.slide-container){
-  background-color:#141414 !important;
-  border-color:rgba(139,92,246,.45) !important;
+  background-color:#4C1D95 !important;
+  border-color:rgba(167,139,250,.55) !important;
+  color:#FFFFFF !important;
 }
-html.dark .slide-container [class~="bg-black"]:not(.slide-container){ background-color:#1C1C1C !important; }
-/* слайд целиком на bg-black (финальные «обложки») — тоже без фиолетовой заливки */
-.slide-container[class~="bg-black"]{ background:#0A0A0A !important; }
+html.dark .slide-container [class~="bg-black"]:not(.slide-container){ background-color:#4C1D95 !important; }
+.slide-container [class~="bg-black"]:not(.slide-container) [class~="text-black"],
+.slide-container [class~="bg-black"]:not(.slide-container) [class*="text-white/"]{
+  color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
+}
+/* Финальные слайды-обложки (bg-black на самом слайде) — фиолетовый фон
+   в ОБЕИХ темах, как просил заказчик. */
+.slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
+html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
 /* вложенные плашки внутри тёмной карточки должны отличаться от её фона */
 .slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-white/"],
 .slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-black/"]{
@@ -3116,6 +3127,95 @@ html.dark .slide-container [class~="bg-black"]:not(.slide-container){ background
 @media (min-width:768px){
   .slide-container h1{ font-size:clamp(2.3rem,4.3vw,3.75rem) !important; line-height:1.1 !important; }
   .slide-container h2{ font-size:clamp(1.8rem,3.3vw,2.9rem) !important; line-height:1.15 !important; }
+}
+
+/* 6. Резерв под говорящую голову. Базовый стиль давал .content-z 120px снизу
+   именно под кружок, но portal-deck перебивал его симметричным padding-block
+   (72px на мобилке) — из-за этого нижние плашки уезжали под голову почти на
+   каждой лекции. Возвращаем асимметричный нижний резерв. */
+@media (max-width:1023px){
+  .slide-container .content-z{ padding-bottom:184px !important; }
+}
+
+/* 8. portal-deck глушил max-w-* у прямых детей .content-z правилом
+   max-width:100% !important — плашки растягивались во всю ширину и правым
+   углом заезжали под кружок. Возвращаем стандартные ограничения Tailwind. */
+.slide-container .content-z > [class~="max-w-xl"]{ max-width:36rem !important; }
+.slide-container .content-z > [class~="max-w-2xl"]{ max-width:42rem !important; }
+.slide-container .content-z > [class~="max-w-3xl"]{ max-width:48rem !important; }
+.slide-container .content-z > [class~="max-w-4xl"]{ max-width:56rem !important; }
+.slide-container .content-z > [class~="max-w-5xl"]{ max-width:64rem !important; }
+.slide-container .content-z > [class~="max-w-6xl"]{ max-width:72rem !important; }
+
+/* 9. Акцент внутри тёмных карточек ловился только у точного класса .text-solar,
+   а варианты с прозрачностью (text-solar/70) оставались фиолетовыми на почти
+   чёрном фоне — контраст 2.4:1. */
+.slide-container [class~="bg-black"]:not(.slide-container) [class*="text-solar"]{
+  color:#F97316 !important; -webkit-text-fill-color:#F97316 !important;
+}
+
+/* 10. На сплошной оранжевой заливке — БЕЛЫЙ текст и белые иконки (решение
+   заказчика). portal-deck задаёт -webkit-text-fill-color, а оно наследуется
+   потомками, поэтому перекрываем и его, иначе иконка внутри оранжевого
+   кружка красится в оранжевый и пропадает. */
+.slide-container [class~="bg-solar"],
+.slide-container [class~="bg-solar"] *{
+  color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
+}
+
+/* 11. text-grayBase (#E9E9E9) в СВЕТЛОЙ теме сливался с белым фоном
+   (контраст 1.15:1) — все декоративные стрелки, «VS» и разделители были
+   практически невидимы. В тёмной теме override уже был. */
+html:not(.dark) .slide-container [class~="text-grayBase"]{ color:rgba(0,0,0,.30) !important; }
+
+.slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i),
+.slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i) *{
+  color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
+}
+
+/* 12. Подзаголовок под заголовком слайда — крупнее, и после него больше воздуха. */
+.slide-container h1 + p, .slide-container h2 + p,
+.slide-container h1 + div > p:first-child{
+  font-size:clamp(.92rem,3.4vw,1.2rem) !important;
+  line-height:1.45 !important;
+  margin-bottom:clamp(1.1rem,3.4vw,1.9rem) !important;
+}
+
+/* 13. Полоса прогресса: под градиентной заполненной частью виден фиолетовый трек. */
+#progress-container{ background:#8B5CF6 !important; }
+
+/* 14. Десктоп: стрелки листания стоят РОВНО под кружком с головой и
+   отцентрованы по его ширине (кружок: right:20px, ширина --bub). */
+@media (min-width:1024px){
+  :root{ --bub: clamp(140px,13vw,190px); }
+  #nav-next{ right: calc(20px + var(--bub)/2 - 52px) !important; }
+  #nav-prev{ right: calc(20px + var(--bub)/2 + 4px) !important; }
+}
+
+/* 15. Панель: в конце текста было слишком много пустоты. */
+@media (max-width:1023px){ .notes-body{ padding-bottom:72px !important; } }
+
+/* 16. Слайд-обложка целиком фиолетовый — значит и весь контент на нём должен
+   быть светлым: градиентный заголовок и фиолетовые подписи на #4C1D95 тонули. */
+.slide-container[class~="bg-black"] h1,
+.slide-container[class~="bg-black"] h2,
+.slide-container[class~="bg-black"] h3{
+  color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
+  background-image:none !important;
+}
+.slide-container[class~="bg-black"] [class*="text-solar"]{
+  color:#FDBA74 !important; -webkit-text-fill-color:#FDBA74 !important;
+  background-image:none !important;
+}
+.slide-container[class~="bg-black"] [class*="text-black"],
+.slide-container[class~="bg-black"] [class~="text-grayBase"]{
+  color:rgba(255,255,255,.78) !important; -webkit-text-fill-color:rgba(255,255,255,.78) !important;
+}
+.slide-container[class~="bg-black"] [class*="border-solar"]{ border-color:#FDBA74 !important; }
+/* плашки на обложке — полупрозрачные светлые, а не тёмные */
+.slide-container[class~="bg-black"] [class*="bg-white/"],
+.slide-container[class~="bg-black"] [class*="bg-grayBase"]{
+  background-color:rgba(255,255,255,.14) !important;
 }
 </style>
 
