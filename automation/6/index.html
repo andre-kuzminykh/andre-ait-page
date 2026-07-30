@@ -2818,6 +2818,7 @@ window.addEventListener('load', function(){
     });
 </script>
 
+<!-- Панель с текстом к слайду -->
 <script id="slide-notes" type="application/json">
 {}
 </script>
@@ -2828,22 +2829,23 @@ window.addEventListener('load', function(){
 :root { --notes-w: clamp(340px, 33vw, 560px); }
 
 #notes-panel{
-  position:fixed; top:0; right:0; height:100dvh; width:var(--notes-w);
+  position:fixed; top:0; left:0; height:100dvh; width:var(--notes-w);
   z-index:9500; display:flex; flex-direction:column;
   background:#FFFFFF; color:#000000;
-  border-left:1px solid rgba(0,0,0,.10);
-  box-shadow:-24px 0 60px -30px rgba(0,0,0,.35);
-  transform:translateX(101%); visibility:hidden;
+  border-right:1px solid rgba(0,0,0,.10);
+  box-shadow:24px 0 60px -30px rgba(0,0,0,.35);
+  transform:translateX(-101%); visibility:hidden;
   transition:transform .38s cubic-bezier(.22,1,.36,1), visibility 0s linear .38s;
   font-family:'Montserrat',sans-serif;
 }
 body.notes-open #notes-panel{ transform:none; visibility:visible; transition:transform .38s cubic-bezier(.22,1,.36,1), visibility 0s; }
 @media (prefers-reduced-motion: reduce){ #notes-panel{ transition:none; } }
 
-/* Шапка панели: крестик СЛЕВА сверху (требование), счётчик и заголовок */
+/* Шапка панели: счётчик и заголовок слева, крестик — у правого края панели */
 .notes-head{
-  flex:0 0 auto; display:flex; align-items:flex-start; gap:.75rem;
-  padding:clamp(.9rem,2.4vw,1.35rem) clamp(1rem,2.6vw,1.6rem) .85rem;
+  flex:0 0 auto; display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem;
+  /* сверху резерв под логотип AIT: он остаётся видимым НАД панелью */
+  padding:calc(clamp(2.3rem,9vw,3.2rem) + clamp(1.1rem,4vw,1.7rem)) clamp(1rem,2.6vw,1.6rem) .85rem;
   border-bottom:1px solid rgba(0,0,0,.09);
   background:linear-gradient(180deg, rgba(139,92,246,.07), rgba(139,92,246,0));
 }
@@ -2892,32 +2894,36 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
 .notes-body .n-h::after{ content:''; flex:1; height:1px; background:linear-gradient(90deg, rgba(139,92,246,.35), transparent); }
 .notes-body > *:first-child{ margin-top:0; }
 
-/* Списки: фиолетовые точки; каждый второй список — оранжевые (разнообразие) */
-.notes-body ul.n-ul{ list-style:none; margin:0 0 1.05em; padding:0; }
-.notes-body ul.n-ul li{
-  position:relative; padding-left:1.5em; margin-bottom:.52em;
-  font-size:clamp(.84rem,2.45vw,.93rem); line-height:1.62; color:rgba(0,0,0,.80);
+/* Перечисления — отдельными карточками, а не строчками с точками.
+   Соседние списки чередуют фиолетовый и оранжевый акцент. */
+.notes-body ul.n-ul, .notes-body ol.n-ol{
+  list-style:none; margin:0 0 1.1em; padding:0; display:grid; gap:.5rem;
+}
+.notes-body ol.n-ol{ counter-reset:n; }
+.notes-body ul.n-ul li, .notes-body ol.n-ol li{
+  position:relative; padding:.72rem .9rem .72rem 2.6rem; border-radius:.9rem;
+  background:rgba(139,92,246,.07); border:1px solid rgba(139,92,246,.18);
+  font-size:clamp(.83rem,2.4vw,.92rem); line-height:1.6; color:rgba(0,0,0,.82);
+  overflow-wrap:break-word;
 }
 .notes-body ul.n-ul li::before{
-  content:''; position:absolute; left:.15em; top:.62em;
-  width:.46em; height:.46em; border-radius:50%; background:#8B5CF6;
-  box-shadow:0 0 0 3px rgba(139,92,246,.14);
+  content:''; position:absolute; left:1.05rem; top:1.28em;
+  width:.5em; height:.5em; border-radius:50%; background:#8B5CF6;
+  box-shadow:0 0 0 3px rgba(139,92,246,.16);
 }
-.notes-body ul.n-ul.n-alt li::before{ background:#F97316; box-shadow:0 0 0 3px rgba(249,115,22,.15); }
-
-/* Нумерованные: оранжевые кружки с цифрой */
-.notes-body ol.n-ol{ list-style:none; margin:0 0 1.05em; padding:0; counter-reset:n; }
-.notes-body ol.n-ol li{
-  position:relative; padding-left:2.1em; margin-bottom:.6em; counter-increment:n;
-  font-size:clamp(.84rem,2.45vw,.93rem); line-height:1.62; color:rgba(0,0,0,.80);
-}
+.notes-body ol.n-ol li{ counter-increment:n; }
 .notes-body ol.n-ol li::before{
-  content:counter(n); position:absolute; left:0; top:.06em;
-  width:1.45em; height:1.45em; border-radius:50%;
-  background:#F97316; color:#fff; font-size:.72em; font-weight:800;
+  content:counter(n); position:absolute; left:.62rem; top:.6rem;
+  width:1.5em; height:1.5em; border-radius:50%;
+  background:#8B5CF6; color:#fff; font-size:.74em; font-weight:800;
   display:flex; align-items:center; justify-content:center;
 }
-.notes-body ol.n-ol.n-alt li::before{ background:#8B5CF6; }
+/* оранжевый вариант — каждый второй список на слайде */
+.notes-body ul.n-ul.n-alt li, .notes-body ol.n-ol.n-alt li{
+  background:rgba(249,115,22,.08); border-color:rgba(249,115,22,.22);
+}
+.notes-body ul.n-ul.n-alt li::before{ background:#F97316; box-shadow:0 0 0 3px rgba(249,115,22,.17); }
+.notes-body ol.n-ol.n-alt li::before{ background:#F97316; }
 
 /* Врезка-акцент */
 .notes-body .n-note{
@@ -2933,20 +2939,34 @@ html.dark .notes-head{ border-bottom-color:rgba(255,255,255,.10); background:lin
 html.dark #notes-close{ background:#1b1b1b; color:#fafafa; border-color:rgba(255,255,255,.18); }
 html.dark .notes-title{ color:#FAFAFA; }
 html.dark .notes-body p, html.dark .notes-body ul.n-ul li, html.dark .notes-body ol.n-ol li{ color:rgba(250,250,250,.78); }
+html.dark .notes-body ul.n-ul li, html.dark .notes-body ol.n-ol li{
+  background:rgba(139,92,246,.14); border-color:rgba(139,92,246,.30);
+}
+html.dark .notes-body ul.n-ul.n-alt li, html.dark .notes-body ol.n-ol.n-alt li{
+  background:rgba(249,115,22,.13); border-color:rgba(249,115,22,.32);
+}
 html.dark .notes-body strong{ color:#fff; }
 html.dark .notes-body .n-note{ color:rgba(250,250,250,.86); }
 html.dark .notes-body{ scrollbar-color:#8B5CF6 rgba(255,255,255,.08); }
 html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08); }
 
+/* --- Раскладка хрома лекции (действует всегда, не только при открытой панели) --- */
+/* Логотип AIT остаётся видимым НАД панелью, поэтому шапка выше панели по слою */
+#lecture-header{ z-index:9700 !important; }
+/* Говорящая голова — в правом нижнем углу НАД стрелками «назад/вперёд» */
+#video-bubble{
+  left:auto !important; right:clamp(1rem,3vw,1.6rem) !important;
+  bottom:calc(22px + 48px + 14px) !important; top:auto !important;
+  width:clamp(120px,16vw,200px) !important; height:clamp(120px,16vw,200px) !important;
+}
+/* Стрелки листания — поверх панели */
+#nav-prev, #nav-next{ z-index:9600 !important; }
+
 /* --- Раскладка при открытой панели --- */
-/* Десктоп: инфографика, шапка и прогресс ужимаются влево на ширину панели */
+/* Десктоп: панель слева, инфографика и прогресс сдвигаются вправо на её ширину */
 @media (min-width:1024px){
-  body.notes-open .slide-container{ width:calc(100% - var(--notes-w)); }
-  body.notes-open #lecture-header{ right:var(--notes-w); }
-  body.notes-open #progress-container{ width:calc(100% - var(--notes-w)); }
-  /* стрелки уезжают влево, чтобы не лежать поверх текста */
-  body.notes-open #nav-prev{ right:calc(80px + var(--notes-w)) !important; }
-  body.notes-open #nav-next{ right:calc(20px + var(--notes-w)) !important; }
+  body.notes-open .slide-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
+  body.notes-open #progress-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
 }
 /* Слайд стал уже — слова НЕ должны рваться посреди («Автономност|ь»).
    Переносим только по пробелам, а вписывание берёт на себя portal-fit (zoom). */
@@ -2960,24 +2980,27 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 }
 /* Мобилка: панель на весь экран поверх всего */
 @media (max-width:1023px){
-  #notes-panel{ width:100%; border-left:none; }
+  #notes-panel{ width:100%; border-right:none; }
   /* запас снизу, чтобы стрелки листания не закрывали последнюю строку */
   .notes-body{ padding-bottom:96px; }
-  /* кружок с говорящей головой не должен закрывать текст (звук продолжает идти) */
+  /* голова тоже справа над стрелками, но компактнее */
+  #video-bubble{
+    right:12px !important; bottom:calc(16px + 46px + 10px) !important;
+    width:104px !important; height:104px !important;
+  }
+  /* при открытой панели голова не закрывает текст (звук продолжает идти) */
   body.notes-open #video-bubble{ opacity:0; pointer-events:none; }
 }
-/* Стрелки листания — поверх панели на всех экранах (FR-SITE14) */
-#nav-prev, #nav-next{ z-index:9600 !important; }
 </style>
 
 <!-- Панель с текстом к слайду -->
 <aside id="notes-panel" aria-hidden="true" aria-label="Текст к слайду">
     <div class="notes-head">
-        <button id="notes-close" type="button" aria-label="Закрыть текст"><i class="ph-bold ph-x"></i></button>
         <div class="notes-meta">
             <span class="notes-counter" id="notes-counter"></span>
             <h2 class="notes-title" id="notes-title"></h2>
         </div>
+        <button id="notes-close" type="button" aria-label="Закрыть текст"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="notes-body" id="notes-body"></div>
 </aside>
