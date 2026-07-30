@@ -1832,10 +1832,15 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
       bodyEl.scrollTop = 0; return;
     }
     titleEl.textContent = n.title || '';
-    var html = '', listSeen = 0;
+    var html = '', listSeen = 0, noteSeen = 0;
     (n.blocks || []).forEach(function(b){
       if(b.t === 'h'){ html += '<div class="n-h">' + rich(b.v) + '</div>'; return; }
-      if(b.t === 'note'){ html += '<div class="n-note' + (b.alt ? ' n-alt' : '') + '">' + rich(b.v) + '</div>'; return; }
+      if(b.t === 'note'){
+        // соседние врезки чередуют оранжевый и фиолетовый, иначе сливаются
+        var nAlt = b.alt || (noteSeen++ % 2) === 1;
+        html += '<div class="n-note' + (nAlt ? ' n-alt' : '') + '">' + rich(b.v) + '</div>';
+        return;
+      }
       if(b.t === 'ul' || b.t === 'ol'){
         // чередуем фиолетовые/оранжевые маркеры, чтобы списки не сливались
         var alt = (listSeen++ % 2) === 1 ? ' n-alt' : '';
@@ -1863,7 +1868,7 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
     document.body.classList.toggle('notes-open', open);
     panel.setAttribute('aria-hidden', open ? 'false' : 'true');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.innerHTML = '<i class="ph-fill ph-' + (open ? 'book-open-text' : 'book-open-text') + '"></i>';
+    toggle.innerHTML = '<i class="ph-fill ph-book-open-text"></i>';
     if(open) render(activeIdx());
     // Пересчёт вписывания слайда: ширина слайда изменилась (portal-fit слушает resize)
     setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 40);
