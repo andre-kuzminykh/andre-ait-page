@@ -87,9 +87,6 @@ def test_total_slides_consistent():
 
 # ── FR-SITE14: панель «Текст к слайду» ────────────────────────────────────
 
-_NO_BOOK_CHAPTER = ("automation/6/index.html",)  # главы для лекции 6 в книге нет
-
-
 def test_notes_panel_present():
     for rel, html in _pages():
         for part in ('id="notes-panel-style"', 'id="notes-panel"', 'id="notes-panel-script"',
@@ -121,10 +118,6 @@ def test_notes_coverage():
     for rel, html in _pages():
         data = json.loads(re.search(r'<script id="slide-notes"[^>]*>(.*?)</script>', html, re.S).group(1))
         total = html.count('class="slide-container')
-        if rel in _NO_BOOK_CHAPTER:
-            # текста нет — данные пустые, кнопку скрывает сам скрипт панели
-            assert not data, rel + ": для этой лекции текста в книге нет, данные должны быть пустыми"
-            continue
         # допускаем один непокрытый слайд (финальный экран с кнопкой теста)
         assert len(data) >= total - 1, \
             "%s: текст есть только к %d слайдам из %d" % (rel, len(data), total)
