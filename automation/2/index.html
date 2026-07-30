@@ -2912,7 +2912,7 @@ window.addEventListener('load', function(){
   background-color:#8B5CF6 !important;
   color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
 }
-.slide-container [class*="bg-solar/"] > i{ color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important; }
+.slide-container [class*="bg-solar/"]:has(> i:only-child) > i{ color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important; }
 /* внутри тёмных emphasis-карточек акцент оранжевый (как и весь портальный тинт) */
 .slide-container [class~="bg-black"]:not(.slide-container) [class*="bg-solar/"]:has(> i:only-child){
   background-color:#F97316 !important;
@@ -2926,6 +2926,7 @@ window.addEventListener('load', function(){
 
 /* 2. Мелкий текст на мобилке: 8-11px читались с трудом на телефоне */
 @media (max-width:767px){
+  .slide-container [class~="text-[7px]"]{ font-size:10.5px !important; }
   .slide-container [class~="text-[8px]"]{ font-size:11px !important; }
   .slide-container [class~="text-[9px]"]{ font-size:11.5px !important; }
   .slide-container [class~="text-[10px]"]{ font-size:12px !important; }
@@ -2977,7 +2978,7 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
    (72px на мобилке) — из-за этого нижние плашки уезжали под голову почти на
    каждой лекции. Возвращаем асимметричный нижний резерв. */
 @media (max-width:1023px){
-  .slide-container .content-z{ padding-bottom:184px !important; }
+  .slide-container .content-z{ padding-top:68px !important; padding-bottom:184px !important; }
 }
 
 /* 8. portal-deck глушил max-w-* у прямых детей .content-z правилом
@@ -3089,6 +3090,33 @@ html:not(.dark) .slide-container [class*="text-black/3"],
 html:not(.dark) .slide-container [class*="text-black/4"]{ color:rgba(0,0,0,.58) !important; }
 html.dark .slide-container [class*="text-white/3"],
 html.dark .slide-container [class*="text-white/4"]{ color:rgba(255,255,255,.62) !important; }
+
+/* 21. ПРИЧИНА «скачков при наведении» на радиальных схемах: portal-deck гасит
+   любой transform на :hover, включая тот, которым элемент ЦЕНТРИРУЕТСЯ
+   (-translate-x-1/2). Спутник под курсором прыгал на полразмера.
+   Возвращаем именно центрирующий сдвиг. */
+.slide-container [class*="-translate-x-1/2"][class*="-translate-y-1/2"]:hover{
+  transform:translate(-50%,-50%) !important;
+}
+.slide-container [class*="-translate-x-1/2"]:not([class*="-translate-y-1/2"]):hover{
+  transform:translateX(-50%) !important;
+}
+.slide-container [class*="-translate-y-1/2"]:not([class*="-translate-x-1/2"]):hover{
+  transform:translateY(-50%) !important;
+}
+
+/* 22. Автоперенос рвал русские слова без дефиса («Неформализован/ные»):
+   у браузера нет словаря переносов для русского. Переносим только по
+   явным мягким переносам. */
+.slide-container h1, .slide-container h2,
+.slide-container h3, .slide-container h4{ hyphens:manual !important; }
+
+/* 23. При открытой панели слайд сжимается вправо, а кружок с головой остаётся
+   на месте — широкие нижние плашки доезжали до него правым краем.
+   Отводим контент от зоны кружка. */
+@media (min-width:1024px){
+  body.notes-open .slide-container .content-z{ padding-right:calc(var(--bub) + 36px) !important; }
+}
 </style>
 
 <style id="notes-panel-style">
