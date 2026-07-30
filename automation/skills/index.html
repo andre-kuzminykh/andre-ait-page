@@ -175,9 +175,16 @@
 [class*="drop-shadow"]{ filter:none !important; }
 .logo-btn img, header img{ filter:none !important; }
 
-/* Говорящая голова — СПРАВА на всех страницах курса (как в лекциях) */
-.bubble{ left:auto !important; right:clamp(1.5rem,5vw,4rem) !important; }
-@media(max-width:768px){ .bubble{ left:auto !important; right:15px !important; } }
+
+/* Говорящая голова — СПРАВА и того же размера, что в лекциях
+   (там clamp(140px,13vw,190px) на десктопе и 100px на мобилке). */
+.bubble{
+  left:auto !important; right:20px !important;
+  width:clamp(140px,13vw,190px) !important; height:clamp(140px,13vw,190px) !important;
+}
+@media(max-width:768px){
+  .bubble{ left:auto !important; right:12px !important; width:100px !important; height:100px !important; }
+}
 </style>
 </head>
 <body>
