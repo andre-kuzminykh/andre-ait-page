@@ -3778,7 +3778,17 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
    (72px на мобилке) — из-за этого нижние плашки уезжали под голову почти на
    каждой лекции. Возвращаем асимметричный нижний резерв. */
 @media (max-width:1023px){
-  .slide-container .content-z{ padding-top:68px !important; padding-bottom:184px !important; }
+  /* Верхний резерв = РОВНО высота шапки плюс воздух. Фиксированные 68px были
+     меньше шапки на планшете (там она 3rem + 2×1rem = 80px), и заголовок
+     заезжал под кнопки. Формула повторяет размеры из lecture-chrome. */
+  .slide-container .content-z{
+    padding-top:calc(clamp(2.3rem,9vw,3rem) + 2*clamp(.55rem,2vw,1rem) + 14px) !important;
+    padding-bottom:184px !important;
+  }
+  /* Тот же ограничитель ширины заголовка, что и на десктопе: на планшете
+     кнопки шапки занимают правую треть, и широкий h2 доезжал до них. */
+  .slide-container .content-z > h1,
+  .slide-container .content-z > h2{ max-width:min(100%, 34rem); }
 }
 
 /* 8. portal-deck глушил max-w-* у прямых детей .content-z правилом
