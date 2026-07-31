@@ -2555,12 +2555,18 @@ window.addEventListener('load', function(){
             if (!isLoadingVideo) runLoadCycle(); else { /*video-watchdog*/ try{clearTimeout(window.__dvw);}catch(e){} window.__dvw=setTimeout(function(){ if(isLoadingVideo){ isLoadingVideo=false; runLoadCycle(); } },4000); }
         }
 
+        // Голова говорит ровно тогда, когда её включил пользователь. Раньше
+        // каждая смена слайда безусловно вызывала play(): выключенная голова
+        // оживала сама, а выключенный звук не переживал листание. Флаг помнит
+        // намерение; сам звук (muted) — свойство <video> и живёт между src сам.
+        var wantsPlay = false;
+
         function runLoadCycle() {
             if (!player || desiredSlideIdx < 0) return;
             if (desiredSlideIdx === loadedSlideIdx) {
                 // Уже загружено именно то, что нужно — просто перезапустим воспроизведение
                 isLoadingVideo = false;
-                player.play().catch(() => showPlayPrompt());
+                if (wantsPlay) player.play().catch(() => showPlayPrompt());
                 return;
             }
 
@@ -2569,7 +2575,7 @@ window.addEventListener('load', function(){
 
             player.ready().then(function(){ return player.loadVideo(videoIds[targetIdx]); }).then(() => {
                 // Запуск воспроизведения
-                return player.play();
+                return wantsPlay ? player.play() : Promise.resolve();
             }).then(() => {
                 finalizeCycle(targetIdx, null);
             }).catch((err) => {
@@ -2640,6 +2646,7 @@ window.addEventListener('load', function(){
                 setupPlayerEvents(player);
                 loadedSlideIdx = -1;
                 desiredSlideIdx = 0;
+                wantsPlay = true;
                 switchVideo(0);
                 triggerOverlayAutoFade();
             }
@@ -2654,7 +2661,10 @@ window.addEventListener('load', function(){
         if (videoOverlay) {
             videoOverlay.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (player) player.getPaused().then(paused => paused ? player.play() : player.pause());
+                if (player) player.getPaused().then(paused => {
+                    wantsPlay = paused;
+                    return paused ? player.play() : player.pause();
+                });
             });
         }
 
@@ -3175,15 +3185,13 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
    (72px на мобилке) — из-за этого нижние плашки уезжали под голову почти на
    каждой лекции. Возвращаем асимметричный нижний резерв. */
 @media (max-width:1023px){
-  /* Верхний резерв = РОВНО высота шапки плюс воздух. Фиксированные 68px были
-     меньше шапки на планшете (там она 3rem + 2×1rem = 80px), и заголовок
-     заезжал под кнопки. Формула повторяет размеры из lecture-chrome. */
+  /* Инфографика стоит РОВНО по центру слайда: сверху и снизу одинаково.
+     Раньше низ был втрое больше верха — резерв под говорящую голову, — и
+     контент visibly уезжал вверх. Голова теперь просто лежит поверх него. */
   .slide-container .content-z{
     padding-top:calc(clamp(2.3rem,9vw,3rem) + 2*clamp(.55rem,2vw,1rem) + 14px) !important;
-    padding-bottom:184px !important;
+    padding-bottom:calc(clamp(2.3rem,9vw,3rem) + 2*clamp(.55rem,2vw,1rem) + 14px) !important;
   }
-  /* Тот же ограничитель ширины заголовка, что и на десктопе: на планшете
-     кнопки шапки занимают правую треть, и широкий h2 доезжал до них. */
   .slide-container .content-z > h1,
   .slide-container .content-z > h2{ max-width:min(100%, 34rem); }
 }
@@ -3235,36 +3243,39 @@ html:not(.dark) .slide-container [class~="text-grayBase"]{ color:rgba(0,0,0,.30)
 /* 13. Полоса прогресса: заполненная часть — градиент, а трек под ней сливается
    с фоном страницы (белый в светлой теме, чёрный в тёмной). Фиолетовый трек
    читался как вторая полоса и спорил с градиентом. */
-#progress-container{ background:#FFFFFF !important; }
-html.dark #progress-container{ background:#0A0A0A !important; }
+#progress-container{ background:#D9D9D9 !important; }
+html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
 
-/* 14. Десктоп: стрелки листания стоят РОВНО под кружком с головой и
-   отцентрованы по его ширине (кружок: right:20px, ширина --bub). */
-@media (min-width:1024px){
-  :root{ --bub: clamp(140px,13vw,190px); }
-  /* Резерв под кружок и на десктопе: раньше его не было, и нижняя плашка
-     широкого слайда заезжала под голову. Сверху резерв меньше — там только
-     шапка. */
-  .slide-container .content-z{
-    padding-top:clamp(88px,11vh,132px) !important;
-    /* Базовый низ — стрелки листания и полоса прогресса. Полный резерв под
-       голову добавляется точечно, см. .head-reserve ниже. */
-    padding-bottom:clamp(104px,13vh,150px) !important;
-  }
-  /* Заголовок во всю ширину 1440 доезжал до кнопок шапки справа. Ограничиваем
-     ширину самого заголовка — глушить кегль из slide-polish нельзя, он и так
-     задан через !important. */
-  .slide-container .content-z > h1,
-  .slide-container .content-z > h2{ max-width:min(100%, 60rem); }
-  /* Полный резерв под голову включает сам portal-fit — классом .head-reserve
-     и только тем слайдам, чей отрисованный контент реально задевает диск
-     кружка. Судить по классам вёрстки нельзя: узкая колонка до головы не
-     достаёт, но после роста в 1.4× отрисовывается шире и уже достаёт. */
-  .slide-container.head-reserve .content-z{
-    padding-bottom:calc(var(--bub) + 100px) !important;
-  }
-  #nav-next{ right: calc(20px + var(--bub)/2 - 52px) !important; }
-  #nav-prev{ right: calc(20px + var(--bub)/2 + 4px) !important; }
+/* 14. Нижний блок управления: голова КРУПНЕЕ, кнопки листания крупнее, и
+   пара кнопок стоит РОВНО под центром головы. Раньше кнопки были прижаты к
+   правому краю, а голова — своим правым краем к ним же, поэтому её центр
+   уезжал левее пары. Считаем от центра головы, а не от края экрана. */
+:root{
+  --bub:clamp(176px,15.5vw,236px);   /* диаметр говорящей головы */
+  --arw:58px;                        /* диаметр кнопки листания */
+  --arw-gap:14px;                    /* просвет между кнопками */
+  --arw-pair:calc(2*var(--arw) + var(--arw-gap));
+  --bub-right:20px;                  /* отступ головы от правого края */
+}
+#video-bubble{
+  width:var(--bub) !important; height:var(--bub) !important;
+  left:auto !important; right:var(--bub-right) !important;
+  top:auto !important; bottom:calc(22px + var(--arw) + 16px) !important;
+}
+#nav-prev, #nav-next{
+  top:auto !important; bottom:22px !important; transform:none !important;
+  width:var(--arw) !important; height:var(--arw) !important;
+  left:auto !important;
+}
+/* правый край пары = центр головы + половина пары */
+#nav-next{ right:calc(var(--bub-right) + var(--bub)/2 - var(--arw-pair)/2) !important; }
+#nav-prev{ right:calc(var(--bub-right) + var(--bub)/2 - var(--arw-pair)/2 + var(--arw) + var(--arw-gap)) !important; }
+#nav-prev i, #nav-next i{ font-size:1.35rem !important; }
+
+@media (max-width:1023px){
+  :root{ --bub:clamp(128px,32vw,168px); --arw:52px; --arw-gap:12px; --bub-right:14px; }
+  #video-bubble{ bottom:calc(16px + var(--arw) + 12px) !important; }
+  #nav-prev, #nav-next{ bottom:16px !important; }
 }
 
 /* 15. Панель: в конце текста было слишком много пустоты. */
@@ -3649,5 +3660,16 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 })();
 </script>
 
+/* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
+   съедали высоту подписи и заставляли ломать слова. Сама фигура и всё
+   внутри кружков — строго по центру. */
+.radial-fig .rf-num{ display:none !important; }
+.radial-fig{ margin-left:auto !important; margin-right:auto !important; }
+.radial-core, .radial-sat{ align-items:center !important; justify-content:center !important; text-align:center !important; }
+
+/* 16. Финальный слайд-обложка: фиолетовый доходит до самого низа, под полосой
+   прогресса не остаётся чужой полоски фона. */
+.slide-container[class~="bg-black"]{ padding-bottom:0 !important; }
+</style>
 </body>
 </html>
