@@ -148,7 +148,8 @@ def test_shared_blocks_identical():
     """
     import hashlib
     for block, tag in (("slide-polish", "style"), ("notes-panel-style", "style"),
-                       ("notes-panel-script", "script")):
+                       ("notes-panel-script", "script"), ("radial-fig", "style"),
+                       ("portal-fit", "script")):
         seen = {}
         for rel, html in _pages():
             m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, block, tag), html, re.S)
