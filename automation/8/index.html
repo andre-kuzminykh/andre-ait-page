@@ -495,15 +495,30 @@ window.addEventListener('load', function(){
     // Реальная «чернильная» высота: объединённый bbox прямых детей content-z.
     // offsetHeight тут бесполезен — у content-z min-height:100%, он всегда
     // равен высоте слайда, и по нему нельзя понять, сколько занято на самом деле.
-    var top = Infinity, bot = -Infinity, w = 0, k = c.children, i, r;
+    var top = Infinity, bot = -Infinity, left = Infinity, right = -Infinity;
+    var k = c.children, i, r, w = 0;
     for(i = 0; i < k.length; i++){
       r = k[i].getBoundingClientRect();
       if(!r.height || !r.width) continue;
       if(r.top < top) top = r.top;
       if(r.bottom > bot) bot = r.bottom;
+      if(r.left < left) left = r.left;
+      if(r.right > right) right = r.right;
       if(r.width > w) w = r.width;
     }
-    return (bot > top) ? { h: bot - top, w: w } : null;
+    return (bot > top) ? { h: bot - top, w: w, top: top, bottom: bot, left: left, right: right } : null;
+  }
+  // Пересекается ли прямоугольник с ДИСКОМ говорящей головы. Кружок круглый:
+  // сравнение прямоугольников давало и ложные тревоги, и пропуски.
+  function hitsHead(box){
+    var b = document.getElementById('video-bubble');
+    if(!b) return false;
+    var r = b.getBoundingClientRect();
+    if(r.width < 8 || getComputedStyle(b).display === 'none') return false;
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2, rad = r.width / 2 + 6;
+    var nx = Math.max(box.left, Math.min(cx, box.right));
+    var ny = Math.max(box.top, Math.min(cy, box.bottom));
+    return (nx - cx) * (nx - cx) + (ny - cy) * (ny - cy) < rad * rad;
   }
   function fitOne(slide){
     var c = slide.querySelector('.content-z');
@@ -511,6 +526,7 @@ window.addEventListener('load', function(){
     try{
       c.style.zoom = '';
       c.style.minHeight = '';
+      if(!arguments[1]) slide.classList.remove('head-reserve');
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
       // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
@@ -546,6 +562,15 @@ window.addEventListener('load', function(){
         if(Math.abs(next - z) < 0.01) break;
         z = next;
         apply(z);
+      }
+      // Резерв под голову даём по факту, а не по классам вёрстки. Узкая
+      // колонка до кружка не достаёт — и нижнюю треть слайда занимать ей
+      // никто не мешает. Но после роста в 1.4× та же колонка отрисовывается
+      // шире и уже достаёт, поэтому судить можно только по реальному боксу.
+      var fin = inkBox(c);
+      if(fin && hitsHead(fin) && !slide.classList.contains('head-reserve')){
+        slide.classList.add('head-reserve');
+        fitOne(slide, true);
       }
     }catch(e){}
 
