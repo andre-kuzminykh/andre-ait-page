@@ -3791,13 +3791,9 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 /* --- Раскладка хрома лекции (действует всегда, не только при открытой панели) --- */
 /* Логотип AIT остаётся видимым НАД панелью, поэтому шапка выше панели по слою */
 #lecture-header{ z-index:9700 !important; }
-/* Говорящая голова — в правом нижнем углу НАД стрелками «назад/вперёд»,
-   правым краем ровно по краю стрелки «вперёд» (#nav-next: right:20px). */
-#video-bubble{
-  left:auto !important; right:20px !important;
-  bottom:calc(22px + 48px + 14px) !important; top:auto !important;
-  width:clamp(140px,13vw,190px) !important; height:clamp(140px,13vw,190px) !important;
-}
+/* Геометрия кружка и стрелок задана в slide-polish (правило 14) — здесь её
+   дублировать нельзя: этот блок вставляется ПОЗЖЕ и перебивал новые размеры
+   старыми, из-за чего голова оставалась прежней, а кнопки уезжали от неё. */
 /* Стрелки листания — поверх панели */
 #nav-prev, #nav-next{ z-index:9600 !important; }
 
@@ -3822,12 +3818,6 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
   #notes-panel{ width:100%; border-right:none; }
   /* запас снизу, чтобы стрелки листания не закрывали последнюю строку */
   .notes-body{ padding-bottom:96px; }
-  /* голова над стрелками и РОВНО по ширине их пары:
-     от левого края «назад» (right:66+46=112px) до правого края «вперёд» (right:12px) */
-  #video-bubble{
-    right:12px !important; bottom:calc(16px + 46px + 10px) !important;
-    width:100px !important; height:100px !important;
-  }
   /* при открытой панели голова не закрывает текст (звук продолжает идти) */
   body.notes-open #video-bubble{ opacity:0; pointer-events:none; }
 }
