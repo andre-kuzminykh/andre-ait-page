@@ -494,6 +494,7 @@ window.addEventListener('load', function(){
     if(!c) return;
     try{
       c.style.zoom = '';
+      c.style.minHeight = '';
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
       // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
@@ -504,22 +505,39 @@ window.addEventListener('load', function(){
       var st = window.getComputedStyle(c);
       var padY = (parseFloat(st.paddingTop) || 0) + (parseFloat(st.paddingBottom) || 0);
       var padX = (parseFloat(st.paddingLeft) || 0) + (parseFloat(st.paddingRight) || 0);
-      var innerH = availH - padY, innerW = availW - padX;
       var ink = inkBox(c);
-      if(!ink || ink.h < 40 || innerH <= 0 || innerW <= 0) return;
-      var k = Math.min(innerH / ink.h, innerW / ink.w);
-      if(k < 0.999){
-        // запас 4% — чтобы высокий контент гарантированно влезал
-        c.style.zoom = k * 0.96;
-        return;
+      if(!ink || ink.h < 40) return;
+      if(availH - padY <= 0 || availW - padX <= 0) return;
+      var z = Math.min((availH - padY) / ink.h, (availW - padX) / ink.w);
+      z = (z < 0.999) ? z * 0.96
+        : (window.innerWidth < 768 ? 1 : Math.min(z, MAX_GROW) * 0.97);
+      if(z > 0.999 && z < 1.04) return;
+      apply(z);
+      // Второй проход обязателен: zoom сжимает CSS-ширину content-z, текст
+      // переносится иначе, и чернила становятся выше, чем были при замере, —
+      // выросший слайд после первого прохода уезжал верхом под шапку.
+      // Паддинги zoom тоже масштабирует, поэтому доступную полосу считаем
+      // в отрисованных пикселях: availH - padY*z.
+      for(var pass = 0; pass < 3; pass++){
+        var re = inkBox(c);
+        if(!re) break;
+        var over = Math.max(re.h / Math.max(1, availH - padY * z),
+                            re.w / Math.max(1, availW - padX * z));
+        if(over <= 1.005) break;
+        z = z / over * 0.99;
+        apply(z);
       }
-      // Контент влезает — проверяем обратное: не тонет ли он в пустоте.
-      // Планшет тоже растим: на 768 сетки уже раскрыты, а контент оставался
-      // таким же мелким, как на телефоне, и слайд выглядел полупустым.
-      if(window.innerWidth < 768) return;
-      var g = Math.min(k, MAX_GROW);
-      if(g > 1.04) c.style.zoom = g * 0.97;
     }catch(e){}
+
+    function apply(z){
+      c.style.zoom = z;
+      // zoom масштабирует и рамку content-z. У неё min-height:100% = высота
+      // слайда, после zoom это 900×z — слайд (overflow-y:auto) становится
+      // прокручиваемым, и от остаточного скролла контент уезжал под шапку.
+      // Компенсируем: делим min-height ровно на коэффициент.
+      c.style.minHeight = (100 / z) + '%';
+      slide.scrollTop = 0;
+    }
   }
   function fitAll(){
     var nodes = document.querySelectorAll('.slide-container');
@@ -2890,10 +2908,13 @@ window.addEventListener('load', function(){
 /* Телефон: композиция остаётся круговой, ужимаются размеры и кегль подписи.
    Разваливать круг в сетку нельзя — круг нужен и на мобилке. */
 @media (max-width:520px){
+  /* !important обязателен: --sat/--core почти всегда заданы инлайном на самой
+     фигуре, а инлайн бьёт обычное правило таблицы стилей — без !important
+     телефонные размеры просто не применялись. */
   .radial-fig{
-    --orbit:37%;
-    --sat:clamp(64px, 23%, 96px);
-    --core:clamp(76px, 26%, 108px);
+    --orbit:37% !important;
+    --sat:clamp(64px, 23%, 96px) !important;
+    --core:clamp(76px, 26%, 108px) !important;
   }
   .radial-sat .rf-label{ font-size:10px !important; line-height:1.1 !important; }
   .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }

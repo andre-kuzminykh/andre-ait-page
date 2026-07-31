@@ -519,6 +519,7 @@ window.addEventListener('load', function(){
     if(!c) return;
     try{
       c.style.zoom = '';
+      c.style.minHeight = '';
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
       // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
@@ -529,22 +530,39 @@ window.addEventListener('load', function(){
       var st = window.getComputedStyle(c);
       var padY = (parseFloat(st.paddingTop) || 0) + (parseFloat(st.paddingBottom) || 0);
       var padX = (parseFloat(st.paddingLeft) || 0) + (parseFloat(st.paddingRight) || 0);
-      var innerH = availH - padY, innerW = availW - padX;
       var ink = inkBox(c);
-      if(!ink || ink.h < 40 || innerH <= 0 || innerW <= 0) return;
-      var k = Math.min(innerH / ink.h, innerW / ink.w);
-      if(k < 0.999){
-        // запас 4% — чтобы высокий контент гарантированно влезал
-        c.style.zoom = k * 0.96;
-        return;
+      if(!ink || ink.h < 40) return;
+      if(availH - padY <= 0 || availW - padX <= 0) return;
+      var z = Math.min((availH - padY) / ink.h, (availW - padX) / ink.w);
+      z = (z < 0.999) ? z * 0.96
+        : (window.innerWidth < 768 ? 1 : Math.min(z, MAX_GROW) * 0.97);
+      if(z > 0.999 && z < 1.04) return;
+      apply(z);
+      // Второй проход обязателен: zoom сжимает CSS-ширину content-z, текст
+      // переносится иначе, и чернила становятся выше, чем были при замере, —
+      // выросший слайд после первого прохода уезжал верхом под шапку.
+      // Паддинги zoom тоже масштабирует, поэтому доступную полосу считаем
+      // в отрисованных пикселях: availH - padY*z.
+      for(var pass = 0; pass < 3; pass++){
+        var re = inkBox(c);
+        if(!re) break;
+        var over = Math.max(re.h / Math.max(1, availH - padY * z),
+                            re.w / Math.max(1, availW - padX * z));
+        if(over <= 1.005) break;
+        z = z / over * 0.99;
+        apply(z);
       }
-      // Контент влезает — проверяем обратное: не тонет ли он в пустоте.
-      // Планшет тоже растим: на 768 сетки уже раскрыты, а контент оставался
-      // таким же мелким, как на телефоне, и слайд выглядел полупустым.
-      if(window.innerWidth < 768) return;
-      var g = Math.min(k, MAX_GROW);
-      if(g > 1.04) c.style.zoom = g * 0.97;
     }catch(e){}
+
+    function apply(z){
+      c.style.zoom = z;
+      // zoom масштабирует и рамку content-z. У неё min-height:100% = высота
+      // слайда, после zoom это 900×z — слайд (overflow-y:auto) становится
+      // прокручиваемым, и от остаточного скролла контент уезжал под шапку.
+      // Компенсируем: делим min-height ровно на коэффициент.
+      c.style.minHeight = (100 / z) + '%';
+      slide.scrollTop = 0;
+    }
   }
   function fitAll(){
     var nodes = document.querySelectorAll('.slide-container');
@@ -604,19 +622,6 @@ window.addEventListener('load', function(){
        кольцо просвечивает сквозь них в тёмной теме. */
     .radial-node { background:#FFFFFF !important; }
     html.dark .radial-node { background:#1A1A1A !important; }
-
-    /* Резерв под говорящую голову на десктопе.
-       slide-polish закладывает calc(var(--bub) + 44px), но кружок стоит НЕ у
-       самого низа экрана: #video-bubble{ bottom: calc(22px + 48px + 14px) } = 84px.
-       Резерв выходил на 40px короче кружка, а portal-fit в режиме УВЕЛИЧЕНИЯ
-       множит паддинг на zoom и одновременно раздувает контент — нижняя плашка
-       стабильно заезжала под голову. Считаем резерв от реального верха кружка.
-       Селектор длиннее, чем в slide-polish, чтобы перебить его !important. */
-    @media (min-width: 1024px) {
-        html body .slide-container .content-z {
-            padding-bottom: calc(var(--bub) + 88px) !important;
-        }
-    }
 
     /* Кружок: обёртка нативного видео (из исходника урока) */
     .video-wrapper {
@@ -1167,8 +1172,8 @@ window.addEventListener('load', function(){
             <!-- Круговая схема + легенда: одна композиция на все ширины (компонент .radial-fig).
                  Подписи-спутники — одно слово; подписи «ПРИЧИНА МОЖЕТ БЫТЬ В» над схемой нет:
                  она дублировала ядро «Источник ошибки». -->
-            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-6 mb-3 md:mb-4">
-              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,318px,35vh)">
+            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-10 mb-3 md:mb-4">
+              <div class="radial-fig shrink-0 mb-3 lg:mb-0 lg:!mx-0" style="width:min(100%,300px,33vh)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                   <circle cx="50" cy="50" r="38" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1178,27 +1183,27 @@ window.addEventListener('load', function(){
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.0%;--y:12.0%">
                   <i class="ph-fill ph-cpu text-lg md:text-xl text-solar"></i>
-                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Модели</span>
+                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Модель</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:76.87%;--y:23.13%">
                   <i class="ph-fill ph-chat-circle-text text-lg md:text-xl text-solar"></i>
-                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Промпте</span>
+                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Промпт</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:88.0%;--y:50.0%">
                   <i class="ph-fill ph-database text-lg md:text-xl text-solar"></i>
-                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Данных</span>
+                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Данные</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:76.87%;--y:76.87%">
                   <i class="ph-fill ph-magnifying-glass text-lg md:text-xl text-solar"></i>
-                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Поиске</span>
+                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Поиск</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.0%;--y:88.0%">
                   <i class="ph-fill ph-wrench text-lg md:text-xl text-solar"></i>
-                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Инстру&shy;ментах</span>
+                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Инстру&shy;менты</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:23.13%;--y:76.87%">
                   <i class="ph-fill ph-flow-arrow text-lg md:text-xl text-solar"></i>
-                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Процессе</span>
+                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Процесс</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:12.0%;--y:50.0%">
                   <i class="ph-fill ph-plugs-connected text-lg md:text-xl text-solar"></i>
@@ -1206,7 +1211,7 @@ window.addEventListener('load', function(){
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:23.13%;--y:23.13%">
                   <i class="ph-fill ph-tree-structure text-lg md:text-xl text-solar"></i>
-                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Архи&shy;тектуре</span>
+                  <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Архи&shy;тектура</span>
                 </div>
               </div>
               <div class="w-full lg:flex-1 lg:max-w-md">
@@ -1248,8 +1253,8 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Четыре опоры промышленного агента</p>
 
             <!-- Круговая схема + легенда: одна композиция на все ширины (компонент .radial-fig). -->
-            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-6 mb-3 md:mb-4">
-              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,318px,35vh)">
+            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-10 mb-3 md:mb-4">
+              <div class="radial-fig shrink-0 mb-3 lg:mb-0 lg:!mx-0" style="width:min(100%,300px,33vh)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                   <circle cx="50" cy="50" r="38" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1319,8 +1324,8 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Повторяемое качество в разных условиях</p>
 
             <!-- Круговая схема + вывод рядом: одна композиция на все ширины (компонент .radial-fig). -->
-            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-6 mb-3 md:mb-4">
-              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,318px,35vh)">
+            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-10 mb-3 md:mb-4">
+              <div class="radial-fig shrink-0 mb-3 lg:mb-0 lg:!mx-0" style="width:min(100%,300px,33vh)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                   <circle cx="50" cy="50" r="38" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1330,27 +1335,27 @@ window.addEventListener('load', function(){
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.0%;--y:12.0%">
                   <i class="ph-fill ph-chat-circle text-xl md:text-2xl text-solar"></i>
-                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Запросах</span>
+                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Запросы</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:86.14%;--y:38.26%">
                   <i class="ph-fill ph-users-three text-xl md:text-2xl text-solar"></i>
-                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Пользо&shy;вателях</span>
+                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Пользо&shy;ватели</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:72.34%;--y:80.74%">
                   <i class="ph-fill ph-database text-xl md:text-2xl text-solar"></i>
-                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Данных</span>
+                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Данные</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:27.66%;--y:80.74%">
                   <i class="ph-fill ph-puzzle-piece text-xl md:text-2xl text-solar"></i>
-                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Сценариях</span>
+                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Сце&shy;нарии</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:13.86%;--y:38.26%">
                   <i class="ph-fill ph-trend-up text-xl md:text-2xl text-solar"></i>
-                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Нагрузках</span>
+                  <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Нагрузки</span>
                 </div>
               </div>
               <div class="w-full lg:flex-1 lg:max-w-md">
-                <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-3 text-center lg:text-left">Агент должен работать на разных</p>
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-3 text-center lg:text-left">Главное требование</p>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 w-full text-white text-center lg:text-left">
                   <p class="font-black text-[11px] md:text-sm text-solar">Не должен резко менять поведение от небольших изменений промпта или контекста</p>
                 </div>
@@ -1534,10 +1539,10 @@ window.addEventListener('load', function(){
             </div>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Чем это обеспечивается</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-4xl mx-auto w-full mb-3 md:mb-4">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 max-w-4xl mx-auto w-full mb-3 md:mb-4">
                 <div class="bg-grayBase/40 border border-grayBase rounded-2xl px-2 py-3 md:p-4 text-center"><i class="ph-fill ph-queue text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Очереди</p></div>
                 <div class="bg-grayBase/40 border border-grayBase rounded-2xl px-2 py-3 md:p-4 text-center"><i class="ph-fill ph-users-three text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Процессы-обработчики</p></div>
-                <div class="bg-grayBase/40 border border-grayBase rounded-2xl px-2 py-3 md:p-4 text-center"><i class="ph-fill ph-gauge text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Лимит параллельных задач</p></div>
+                <div class="bg-grayBase/40 border border-grayBase rounded-2xl px-2 py-3 md:p-4 text-center"><i class="ph-fill ph-gauge text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Лимит одновременных задач</p></div>
                 <div class="bg-grayBase/40 border border-grayBase rounded-2xl px-2 py-3 md:p-4 text-center"><i class="ph-fill ph-sort-ascending text-solar text-lg md:text-2xl mb-1"></i><p class="font-bold text-[10px] md:text-sm">Приоритеты</p></div>
             </div>
 
@@ -2065,8 +2070,8 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">При росте системы ручной поиск проблем не работает</p>
 
             <!-- Круговая схема + легенда: одна композиция на все ширины (компонент .radial-fig). -->
-            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-6 mb-3 md:mb-4">
-              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,318px,35vh)">
+            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-10 mb-3 md:mb-4">
+              <div class="radial-fig shrink-0 mb-3 lg:mb-0 lg:!mx-0" style="width:min(100%,300px,33vh)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                   <circle cx="50" cy="50" r="38" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -3125,10 +3130,13 @@ window.addEventListener('load', function(){
 /* Телефон: композиция остаётся круговой, ужимаются размеры и кегль подписи.
    Разваливать круг в сетку нельзя — круг нужен и на мобилке. */
 @media (max-width:520px){
+  /* !important обязателен: --sat/--core почти всегда заданы инлайном на самой
+     фигуре, а инлайн бьёт обычное правило таблицы стилей — без !important
+     телефонные размеры просто не применялись. */
   .radial-fig{
-    --orbit:37%;
-    --sat:clamp(64px, 23%, 96px);
-    --core:clamp(76px, 26%, 108px);
+    --orbit:37% !important;
+    --sat:clamp(64px, 23%, 96px) !important;
+    --core:clamp(76px, 26%, 108px) !important;
   }
   .radial-sat .rf-label{ font-size:10px !important; line-height:1.1 !important; }
   .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }

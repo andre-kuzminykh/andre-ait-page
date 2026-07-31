@@ -521,6 +521,7 @@ window.addEventListener('load', function(){
     if(!c) return;
     try{
       c.style.zoom = '';
+      c.style.minHeight = '';
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
       // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
@@ -531,22 +532,39 @@ window.addEventListener('load', function(){
       var st = window.getComputedStyle(c);
       var padY = (parseFloat(st.paddingTop) || 0) + (parseFloat(st.paddingBottom) || 0);
       var padX = (parseFloat(st.paddingLeft) || 0) + (parseFloat(st.paddingRight) || 0);
-      var innerH = availH - padY, innerW = availW - padX;
       var ink = inkBox(c);
-      if(!ink || ink.h < 40 || innerH <= 0 || innerW <= 0) return;
-      var k = Math.min(innerH / ink.h, innerW / ink.w);
-      if(k < 0.999){
-        // запас 4% — чтобы высокий контент гарантированно влезал
-        c.style.zoom = k * 0.96;
-        return;
+      if(!ink || ink.h < 40) return;
+      if(availH - padY <= 0 || availW - padX <= 0) return;
+      var z = Math.min((availH - padY) / ink.h, (availW - padX) / ink.w);
+      z = (z < 0.999) ? z * 0.96
+        : (window.innerWidth < 768 ? 1 : Math.min(z, MAX_GROW) * 0.97);
+      if(z > 0.999 && z < 1.04) return;
+      apply(z);
+      // Второй проход обязателен: zoom сжимает CSS-ширину content-z, текст
+      // переносится иначе, и чернила становятся выше, чем были при замере, —
+      // выросший слайд после первого прохода уезжал верхом под шапку.
+      // Паддинги zoom тоже масштабирует, поэтому доступную полосу считаем
+      // в отрисованных пикселях: availH - padY*z.
+      for(var pass = 0; pass < 3; pass++){
+        var re = inkBox(c);
+        if(!re) break;
+        var over = Math.max(re.h / Math.max(1, availH - padY * z),
+                            re.w / Math.max(1, availW - padX * z));
+        if(over <= 1.005) break;
+        z = z / over * 0.99;
+        apply(z);
       }
-      // Контент влезает — проверяем обратное: не тонет ли он в пустоте.
-      // Планшет тоже растим: на 768 сетки уже раскрыты, а контент оставался
-      // таким же мелким, как на телефоне, и слайд выглядел полупустым.
-      if(window.innerWidth < 768) return;
-      var g = Math.min(k, MAX_GROW);
-      if(g > 1.04) c.style.zoom = g * 0.97;
     }catch(e){}
+
+    function apply(z){
+      c.style.zoom = z;
+      // zoom масштабирует и рамку content-z. У неё min-height:100% = высота
+      // слайда, после zoom это 900×z — слайд (overflow-y:auto) становится
+      // прокручиваемым, и от остаточного скролла контент уезжал под шапку.
+      // Компенсируем: делим min-height ровно на коэффициент.
+      c.style.minHeight = (100 / z) + '%';
+      slide.scrollTop = 0;
+    }
   }
   function fitAll(){
     var nodes = document.querySelectorAll('.slide-container');
@@ -1123,6 +1141,10 @@ window.addEventListener('load', function(){
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-0.5">Файлы</span>
                 </div>
             </div>
+
+            <div class="w-full max-w-2xl mx-auto mt-3 md:mt-4 bg-solar/15 border border-solar rounded-2xl p-2.5 md:p-4 text-center">
+                <p class="font-black text-[11px] md:text-base text-black">Инструменты превращают мышление агента в действие во внешних системах</p>
+            </div>
         </div>
     </div>
 
@@ -1520,7 +1542,7 @@ window.addEventListener('load', function(){
 
             <!-- Честная вертикальная цепочка вход → стрелка вниз → выход.
                  Раньше блоки стояли по диагонали и далеко друг от друга. -->
-            <div class="w-full max-w-xl mx-auto">
+            <div class="w-full max-w-2xl mx-auto">
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-5 shadow-sm">
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2">Вход — свободный текст</p>
                     <div class="bg-grayBase/30 rounded-lg p-2.5 md:p-3 text-[11px] md:text-sm text-black/70 italic leading-snug">
@@ -1703,7 +1725,7 @@ window.addEventListener('load', function(){
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-5 shadow-sm">
                     <div class="flex items-center gap-2 mb-2"><i class="ph-fill ph-line-segment text-solar text-lg md:text-2xl"></i><h3 class="font-black text-sm md:text-base">Chain-of-Thought</h3></div>
                     <p class="text-[11px] md:text-sm text-black/60 font-medium mb-3">Цепочка шагов</p>
-                    <svg class="w-full h-[52px] md:h-auto text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
+                    <svg class="w-full h-[68px] md:h-auto text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
                         <path d="M60 13 V39 M60 39 V65" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
                         <circle cx="60" cy="13" r="6.5" fill="currentColor"/>
                         <circle cx="60" cy="39" r="6.5" fill="currentColor"/>
@@ -1714,7 +1736,7 @@ window.addEventListener('load', function(){
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-5 shadow-sm">
                     <div class="flex items-center gap-2 mb-2"><i class="ph-fill ph-tree-structure text-solar text-lg md:text-2xl"></i><h3 class="font-black text-sm md:text-base">Tree-of-Thought</h3></div>
                     <p class="text-[11px] md:text-sm text-black/60 font-medium mb-3">Дерево вариантов</p>
-                    <svg class="w-full h-[52px] md:h-auto text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
+                    <svg class="w-full h-[68px] md:h-auto text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
                         <path d="M60 12 L32 39 M60 12 L88 39 M32 39 L16 66 M32 39 L46 66 M88 39 L74 66 M88 39 L104 66"
                               stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
                         <circle cx="60" cy="12" r="6.5" fill="currentColor"/>
@@ -1730,7 +1752,7 @@ window.addEventListener('load', function(){
                 <div class="bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-5 shadow-xl text-white">
                     <div class="flex items-center gap-2 mb-2"><i class="ph-fill ph-graph text-solar text-lg md:text-2xl"></i><h3 class="font-black text-sm md:text-base text-solar">Graph-of-Thought</h3></div>
                     <p class="text-[11px] md:text-sm text-white/60 font-medium mb-3">Сеть рассуждений</p>
-                    <svg class="w-full h-[52px] md:h-auto text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
+                    <svg class="w-full h-[68px] md:h-auto text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
                         <path d="M18 20 L60 10 M60 10 L102 22 M18 20 L60 42 M102 22 L60 42 M18 20 L22 60 M102 22 L98 58 M22 60 L60 42 M98 58 L60 42 M22 60 L60 70 M60 70 L98 58 M60 42 L60 70"
                               stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/>
                         <circle cx="60" cy="10" r="5.5" fill="currentColor"/>
@@ -2010,6 +2032,10 @@ window.addEventListener('load', function(){
                     <i class="ph-fill ph-shield text-lg md:text-2xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-0.5">Ограни&shy;чения</span>
                 </div>
+            </div>
+
+            <div class="w-full max-w-2xl mx-auto mt-3 md:mt-4 bg-solar/15 border border-solar rounded-2xl p-2.5 md:p-4 text-center">
+                <p class="font-black text-[11px] md:text-base text-black">Агент — точка управления: он решает, как использовать все остальные элементы</p>
             </div>
         </div>
     </div>
@@ -3261,10 +3287,13 @@ window.addEventListener('load', function(){
 /* Телефон: композиция остаётся круговой, ужимаются размеры и кегль подписи.
    Разваливать круг в сетку нельзя — круг нужен и на мобилке. */
 @media (max-width:520px){
+  /* !important обязателен: --sat/--core почти всегда заданы инлайном на самой
+     фигуре, а инлайн бьёт обычное правило таблицы стилей — без !important
+     телефонные размеры просто не применялись. */
   .radial-fig{
-    --orbit:37%;
-    --sat:clamp(64px, 23%, 96px);
-    --core:clamp(76px, 26%, 108px);
+    --orbit:37% !important;
+    --sat:clamp(64px, 23%, 96px) !important;
+    --core:clamp(76px, 26%, 108px) !important;
   }
   .radial-sat .rf-label{ font-size:10px !important; line-height:1.1 !important; }
   .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }

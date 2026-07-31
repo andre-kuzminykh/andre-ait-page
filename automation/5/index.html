@@ -521,6 +521,7 @@ window.addEventListener('load', function(){
     if(!c) return;
     try{
       c.style.zoom = '';
+      c.style.minHeight = '';
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
       // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
@@ -531,22 +532,39 @@ window.addEventListener('load', function(){
       var st = window.getComputedStyle(c);
       var padY = (parseFloat(st.paddingTop) || 0) + (parseFloat(st.paddingBottom) || 0);
       var padX = (parseFloat(st.paddingLeft) || 0) + (parseFloat(st.paddingRight) || 0);
-      var innerH = availH - padY, innerW = availW - padX;
       var ink = inkBox(c);
-      if(!ink || ink.h < 40 || innerH <= 0 || innerW <= 0) return;
-      var k = Math.min(innerH / ink.h, innerW / ink.w);
-      if(k < 0.999){
-        // запас 4% — чтобы высокий контент гарантированно влезал
-        c.style.zoom = k * 0.96;
-        return;
+      if(!ink || ink.h < 40) return;
+      if(availH - padY <= 0 || availW - padX <= 0) return;
+      var z = Math.min((availH - padY) / ink.h, (availW - padX) / ink.w);
+      z = (z < 0.999) ? z * 0.96
+        : (window.innerWidth < 768 ? 1 : Math.min(z, MAX_GROW) * 0.97);
+      if(z > 0.999 && z < 1.04) return;
+      apply(z);
+      // Второй проход обязателен: zoom сжимает CSS-ширину content-z, текст
+      // переносится иначе, и чернила становятся выше, чем были при замере, —
+      // выросший слайд после первого прохода уезжал верхом под шапку.
+      // Паддинги zoom тоже масштабирует, поэтому доступную полосу считаем
+      // в отрисованных пикселях: availH - padY*z.
+      for(var pass = 0; pass < 3; pass++){
+        var re = inkBox(c);
+        if(!re) break;
+        var over = Math.max(re.h / Math.max(1, availH - padY * z),
+                            re.w / Math.max(1, availW - padX * z));
+        if(over <= 1.005) break;
+        z = z / over * 0.99;
+        apply(z);
       }
-      // Контент влезает — проверяем обратное: не тонет ли он в пустоте.
-      // Планшет тоже растим: на 768 сетки уже раскрыты, а контент оставался
-      // таким же мелким, как на телефоне, и слайд выглядел полупустым.
-      if(window.innerWidth < 768) return;
-      var g = Math.min(k, MAX_GROW);
-      if(g > 1.04) c.style.zoom = g * 0.97;
     }catch(e){}
+
+    function apply(z){
+      c.style.zoom = z;
+      // zoom масштабирует и рамку content-z. У неё min-height:100% = высота
+      // слайда, после zoom это 900×z — слайд (overflow-y:auto) становится
+      // прокручиваемым, и от остаточного скролла контент уезжал под шапку.
+      // Компенсируем: делим min-height ровно на коэффициент.
+      c.style.minHeight = (100 / z) + '%';
+      slide.scrollTop = 0;
+    }
   }
   function fitAll(){
     var nodes = document.querySelectorAll('.slide-container');
@@ -836,7 +854,7 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Откуда появился <span class="text-solar">вайб-кодинг</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Фокус сместился с ручного кода на желаемый результат</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-4xl mx-auto mb-3 md:mb-6">
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-6 shadow-sm">
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4">Раньше — разработчик</p>
                     <div class="bg-grayBase/40 rounded-xl p-3 md:p-4 mb-2 md:mb-3 font-mono text-[10px] md:text-sm">
@@ -937,13 +955,13 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Первый результат появляется намного быстрее</p>
             <!-- Круговая схема цикла по эталону .radial-fig: круг остаётся кругом
                  и на телефоне (никаких сеточных запасных вариантов). -->
-            <div class="radial-fig mb-3 md:mb-4" style="width:min(100%,344px,40vh);--orbit:36%;--sat:clamp(80px,26%,112px);--core:clamp(88px,27%,120px)">
+            <div class="radial-fig mb-3 md:mb-4" style="width:min(100%,300px,34vh);--orbit:36%;--sat:clamp(78px,26%,104px);--core:clamp(84px,28%,112px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
                 <div class="radial-core bg-black border-4 border-solar">
                     <i class="ph-fill ph-arrows-clockwise text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[9px] md:text-[11px] text-solar uppercase tracking-wide mt-0.5">Цикл итераций</span>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-solar mt-0.5">Цикл итераций</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:13.5%">
                     <i class="ph-fill ph-lightbulb text-lg md:text-2xl text-solar"></i>
@@ -1211,65 +1229,34 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Экосистема <span class="text-solar">вайб-кодинга</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Это не один инструмент, а набор сред</p>
 
-            <div class="hidden md:flex justify-center w-full mb-3 md:mb-6">
-                <div class="relative w-[46vw] h-[46vw] max-w-[400px] max-h-[400px] shrink-0">
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full border-[3px] border-dashed border-solar/40"></div>
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[34%] h-[34%] rounded-full bg-black border-4 border-solar flex flex-col items-center justify-center text-center px-2 z-10">
-                    <i class="ph-fill ph-squares-four text-solar text-2xl lg:text-3xl mb-1"></i>
-                    <span class="w-full font-black text-[11px] lg:text-[12px] text-solar uppercase tracking-wide leading-tight">Вайб-<br>кодинг</span>
+            <!-- Круговая схема экосистемы по эталону .radial-fig: круг и на телефоне -->
+            <div class="radial-fig mb-3 md:mb-4" style="width:min(100%,300px,34vh);--orbit:36%;--sat:clamp(78px,26%,104px);--core:clamp(84px,28%,112px)">
+                <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                    <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                </svg>
+                <div class="radial-core bg-black border-4 border-solar">
+                    <i class="ph-fill ph-squares-four text-lg md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[9px] md:text-[11px] text-solar mt-0.5">Вайб-&shy;кодинг</span>
                 </div>
-                <div class="absolute -translate-x-1/2 -translate-y-1/2 w-[26%] h-[26%] rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-1.5 z-20" style="left:50.00%;top:15.00%">
-                    <i class="ph-fill ph-robot text-solar text-xl lg:text-2xl mb-0.5 lg:mb-1"></i>
-                    <span class="w-full font-bold text-[11px] lg:text-xs leading-tight">ИИ-ассистенты в IDE</span>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:14%">
+                    <i class="ph-fill ph-robot text-lg md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Ассис&shy;тенты</span>
                 </div>
-                <div class="absolute -translate-x-1/2 -translate-y-1/2 w-[26%] h-[26%] rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-1.5 z-20" style="left:83.29%;top:39.18%">
-                    <i class="ph-fill ph-code text-solar text-xl lg:text-2xl mb-0.5 lg:mb-1"></i>
-                    <span class="w-full font-bold text-[11px] lg:text-xs leading-tight">AI-powered IDE</span>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:84.24%;--y:38.88%">
+                    <i class="ph-fill ph-code text-lg md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">IDE</span>
                 </div>
-                <div class="absolute -translate-x-1/2 -translate-y-1/2 w-[26%] h-[26%] rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-1.5 z-20" style="left:70.57%;top:78.32%">
-                    <i class="ph-fill ph-rocket-launch text-solar text-xl lg:text-2xl mb-0.5 lg:mb-1"></i>
-                    <span class="w-full font-bold text-[11px] lg:text-xs leading-tight">Платформы быстрого MVP</span>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:71.16%;--y:79.12%">
+                    <i class="ph-fill ph-rocket-launch text-lg md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Плат&shy;формы</span>
                 </div>
-                <div class="absolute -translate-x-1/2 -translate-y-1/2 w-[26%] h-[26%] rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-1.5 z-20" style="left:29.43%;top:78.32%">
-                    <i class="ph-fill ph-cloud text-solar text-xl lg:text-2xl mb-0.5 lg:mb-1"></i>
-                    <span class="w-full font-bold text-[11px] lg:text-xs leading-tight">Облачная разработка</span>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:28.84%;--y:79.12%">
+                    <i class="ph-fill ph-cloud text-lg md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Облако</span>
                 </div>
-                <div class="absolute -translate-x-1/2 -translate-y-1/2 w-[26%] h-[26%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center px-1.5 z-20" style="left:16.71%;top:39.18%">
-                    <i class="ph-fill ph-puzzle-piece text-solar text-xl lg:text-2xl mb-0.5 lg:mb-1"></i>
-                    <span class="w-full font-black text-[11px] lg:text-xs text-solar leading-tight">No-code / Low-code с ИИ</span>
-                </div>
-                </div>
-            </div>
-            <div class="md:hidden w-full mb-3 md:mb-6">
-                <div class="flex justify-center mb-1">
-                    <div class="w-[72px] h-[72px] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center px-2">
-                        <i class="ph-fill ph-squares-four text-solar text-base"></i>
-                        <span class="w-full font-black text-[9px] text-solar leading-tight">Вайб-кодинг</span>
-                    </div>
-                </div>
-                <div class="flex justify-center gap-1 mb-1">
-                    <div class="w-[88px] h-[88px] shrink-0 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-1.5">
-                        <i class="ph-fill ph-robot text-solar text-base"></i>
-                        <span class="w-full font-bold text-[10px] leading-tight mt-0.5">ИИ-ассистенты в IDE</span>
-                    </div>
-                    <div class="w-[88px] h-[88px] shrink-0 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-1.5">
-                        <i class="ph-fill ph-code text-solar text-base"></i>
-                        <span class="w-full font-bold text-[10px] leading-tight mt-0.5">AI-powered IDE</span>
-                    </div>
-                    <div class="w-[88px] h-[88px] shrink-0 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-1.5">
-                        <i class="ph-fill ph-rocket-launch text-solar text-base"></i>
-                        <span class="w-full font-bold text-[10px] leading-tight mt-0.5">Платформы быстрого MVP</span>
-                    </div>
-                </div>
-                <div class="flex justify-center gap-1">
-                    <div class="w-[88px] h-[88px] shrink-0 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-1.5">
-                        <i class="ph-fill ph-cloud text-solar text-base"></i>
-                        <span class="w-full font-bold text-[10px] leading-tight mt-0.5">Облачная разработка</span>
-                    </div>
-                    <div class="w-[88px] h-[88px] shrink-0 rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center px-1.5">
-                        <i class="ph-fill ph-puzzle-piece text-solar text-base"></i>
-                        <span class="w-full font-black text-[9px] text-solar leading-tight mt-0.5">No-code / Low-code с ИИ</span>
-                    </div>
+                <div class="radial-sat bg-black border-2 border-solar" style="--x:15.76%;--y:38.88%">
+                    <i class="ph-fill ph-puzzle-piece text-lg md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-solar mt-0.5">No-code</span>
                 </div>
             </div>
             <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-3xl mx-auto w-full">Сила — правильно сочетать инструменты под задачу</div>
@@ -1830,13 +1817,13 @@ window.addEventListener('load', function(){
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Нужно описать</p>
             <!-- Круговая схема по эталону .radial-fig: одинаково круглая на телефоне и на десктопе -->
-            <div class="radial-fig" style="width:min(100%,344px,40vh);--orbit:36%;--sat:clamp(80px,26%,112px);--core:clamp(88px,27%,120px)">
+            <div class="radial-fig" style="width:min(100%,300px,34vh);--orbit:36%;--sat:clamp(78px,26%,104px);--core:clamp(84px,28%,112px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
                 <div class="radial-core bg-black border-4 border-solar">
                     <i class="ph-fill ph-flow-arrow text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[9px] md:text-[11px] text-solar uppercase tracking-wide mt-0.5">Поведение системы</span>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-solar mt-0.5">Поведение системы</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:13.5%">
                     <i class="ph-fill ph-cursor-click text-lg md:text-2xl text-solar"></i>
@@ -2326,13 +2313,13 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Отладка и <span class="text-solar">исправления</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Ошибка — нормальная часть процесса</p>
             <!-- Круговая схема цикла по эталону .radial-fig; шаги пронумерованы через .rf-num -->
-            <div class="radial-fig mb-3 md:mb-4" style="width:min(100%,344px,40vh);--orbit:36%;--sat:clamp(80px,26%,112px);--core:clamp(92px,28%,124px)">
+            <div class="radial-fig mb-3 md:mb-4" style="width:min(100%,300px,34vh);--orbit:36%;--sat:clamp(78px,26%,104px);--core:clamp(86px,29%,116px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
                 <div class="radial-core bg-black border-4 border-solar">
                     <i class="ph-fill ph-repeat text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[9px] md:text-[11px] text-solar uppercase tracking-wide mt-0.5">Цикл доработки</span>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-solar mt-0.5">Цикл доработки</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:13.5%">
                     <span class="rf-num text-black">1</span>
@@ -2732,13 +2719,13 @@ window.addEventListener('load', function(){
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-2 text-center">Важно для</p>
             <!-- Круговая схема по эталону .radial-fig: круг сохраняется на всех ширинах -->
-            <div class="radial-fig mb-2 md:mb-3" style="width:min(100%,326px,36vh);--orbit:36%;--sat:clamp(80px,26%,108px);--core:clamp(88px,27%,116px)">
+            <div class="radial-fig mb-2 md:mb-3" style="width:min(100%,300px,34vh);--orbit:36%;--sat:clamp(78px,26%,104px);--core:clamp(84px,28%,112px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
                 <div class="radial-core bg-black border-4 border-solar">
                     <i class="ph-fill ph-code text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[9px] md:text-[11px] text-solar uppercase tracking-wide mt-0.5">Кодовый блок</span>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-solar mt-0.5">Кодовый блок</span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:13.5%">
                     <i class="ph-fill ph-calculator text-base md:text-2xl text-solar"></i>
@@ -3598,10 +3585,13 @@ window.addEventListener('load', function(){
 /* Телефон: композиция остаётся круговой, ужимаются размеры и кегль подписи.
    Разваливать круг в сетку нельзя — круг нужен и на мобилке. */
 @media (max-width:520px){
+  /* !important обязателен: --sat/--core почти всегда заданы инлайном на самой
+     фигуре, а инлайн бьёт обычное правило таблицы стилей — без !important
+     телефонные размеры просто не применялись. */
   .radial-fig{
-    --orbit:37%;
-    --sat:clamp(64px, 23%, 96px);
-    --core:clamp(76px, 26%, 108px);
+    --orbit:37% !important;
+    --sat:clamp(64px, 23%, 96px) !important;
+    --core:clamp(76px, 26%, 108px) !important;
   }
   .radial-sat .rf-label{ font-size:10px !important; line-height:1.1 !important; }
   .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }
