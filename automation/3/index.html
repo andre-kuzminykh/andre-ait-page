@@ -562,7 +562,9 @@ window.addEventListener('load', function(){
         return grow ? Math.min(t, MAX_GROW) : Math.min(t, 1);
       }
       var z = target(ink.h, ink.w);
-      if(z > 0.999 && z < 1.04) return;
+      // Даже если масштабировать нечего, резерв под голову проверить надо:
+      // слайд мог доходить до кружка и в натуральную величину.
+      if(z > 0.999 && z < 1.04){ guardHead(); return; }
       apply(z);
       // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
       // и natH меняется. Обратно в CSS-пиксели — делением на текущий z.
@@ -578,12 +580,16 @@ window.addEventListener('load', function(){
       // колонка до кружка не достаёт — и нижнюю треть слайда занимать ей
       // никто не мешает. Но после роста в 1.4× та же колонка отрисовывается
       // шире и уже достаёт, поэтому судить можно только по реальному боксу.
+      guardHead();
+    }catch(e){}
+
+    function guardHead(){
       var fin = inkBox(c);
       if(fin && hitsHead(fin) && !slide.classList.contains('head-reserve')){
         slide.classList.add('head-reserve');
         fitOne(slide, true);
       }
-    }catch(e){}
+    }
 
     function apply(z){
       c.style.zoom = z;
@@ -3498,28 +3504,21 @@ html.dark #progress-container{ background:#0A0A0A !important; }
      шапка. */
   .slide-container .content-z{
     padding-top:clamp(88px,11vh,132px) !important;
-    /* По умолчанию — полный резерв под кружок: широкий блок доходит по
-       горизонтали до головы и обязан остановиться выше неё. */
-    padding-bottom:calc(var(--bub) + 100px) !important;
+    /* Базовый низ — стрелки листания и полоса прогресса. Полный резерв под
+       голову добавляется точечно, см. .head-reserve ниже. */
+    padding-bottom:clamp(104px,13vh,150px) !important;
   }
   /* Заголовок во всю ширину 1440 доезжал до кнопок шапки справа. Ограничиваем
      ширину самого заголовка — глушить кегль из slide-polish нельзя, он и так
      задан через !important. */
   .slide-container .content-z > h1,
   .slide-container .content-z > h2{ max-width:min(100%, 60rem); }
-  /* А узкой колонке полный резерв не нужен: max-w-4xl (56rem) по центру 1440
-     занимает x 272…1168, а кружок начинается с 1233 — до головы она не
-     достаёт, и нижняя треть слайда доставалась пустоте зря.
-     Ограничитель ширины бывает и на самом .content-z, и на его ребёнке. */
-  .slide-container .content-z[class~="max-w-xl"],
-  .slide-container .content-z[class~="max-w-2xl"],
-  .slide-container .content-z[class~="max-w-3xl"],
-  .slide-container .content-z[class~="max-w-4xl"],
-  .slide-container .content-z:has(> [class~="max-w-xl"]:only-child),
-  .slide-container .content-z:has(> [class~="max-w-2xl"]:only-child),
-  .slide-container .content-z:has(> [class~="max-w-3xl"]:only-child),
-  .slide-container .content-z:has(> [class~="max-w-4xl"]:only-child){
-    padding-bottom:clamp(104px,13vh,150px) !important;
+  /* Полный резерв под голову включает сам portal-fit — классом .head-reserve
+     и только тем слайдам, чей отрисованный контент реально задевает диск
+     кружка. Судить по классам вёрстки нельзя: узкая колонка до головы не
+     достаёт, но после роста в 1.4× отрисовывается шире и уже достаёт. */
+  .slide-container.head-reserve .content-z{
+    padding-bottom:calc(var(--bub) + 100px) !important;
   }
   #nav-next{ right: calc(20px + var(--bub)/2 - 52px) !important; }
   #nav-prev{ right: calc(20px + var(--bub)/2 + 4px) !important; }
