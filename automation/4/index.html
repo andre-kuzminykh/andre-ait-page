@@ -535,23 +535,27 @@ window.addEventListener('load', function(){
       var ink = inkBox(c);
       if(!ink || ink.h < 40) return;
       if(availH - padY <= 0 || availW - padX <= 0) return;
-      var z = Math.min((availH - padY) / ink.h, (availW - padX) / ink.w);
-      z = (z < 0.999) ? z * 0.96
-        : (window.innerWidth < 768 ? 1 : Math.min(z, MAX_GROW) * 0.97);
+      // Масштаб считается аналитически, а не подбором. Паддинги zoom тоже
+      // масштабирует, поэтому условие «чернила влезают» — это
+      //   natH*z + padY*z <= availH   →   z <= availH / (natH + padY),
+      // где natH — высота чернил в CSS-пикселях. Подбор вида z /= over только
+      // приближался снизу и на коротких слайдах недобирал процентов десять.
+      var grow = window.innerWidth >= 768;
+      function target(natH, natW){
+        var t = Math.min(availH / (natH + padY), availW / (natW + padX)) * 0.99;
+        return grow ? Math.min(t, MAX_GROW) : Math.min(t, 1);
+      }
+      var z = target(ink.h, ink.w);
       if(z > 0.999 && z < 1.04) return;
       apply(z);
-      // Второй проход обязателен: zoom сжимает CSS-ширину content-z, текст
-      // переносится иначе, и чернила становятся выше, чем были при замере, —
-      // выросший слайд после первого прохода уезжал верхом под шапку.
-      // Паддинги zoom тоже масштабирует, поэтому доступную полосу считаем
-      // в отрисованных пикселях: availH - padY*z.
-      for(var pass = 0; pass < 3; pass++){
+      // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
+      // и natH меняется. Обратно в CSS-пиксели — делением на текущий z.
+      for(var pass = 0; pass < 4; pass++){
         var re = inkBox(c);
         if(!re) break;
-        var over = Math.max(re.h / Math.max(1, availH - padY * z),
-                            re.w / Math.max(1, availW - padX * z));
-        if(over <= 1.005) break;
-        z = z / over * 0.99;
+        var next = target(re.h / z, re.w / z);
+        if(Math.abs(next - z) < 0.01) break;
+        z = next;
         apply(z);
       }
     }catch(e){}
@@ -621,15 +625,15 @@ window.addEventListener('load', function(){
         #slide-7 .content-z > * { zoom: 1.27; }
         #slide-9 .content-z > * { zoom: 1.56; }
         #slide-10 .content-z > * { zoom: 1.33; }
-        #slide-15 .content-z > * { zoom: 1.56; }
+        #slide-15 .content-z > * { zoom: 1.20; }
         #slide-16 .content-z > * { zoom: 1.23; }
         #slide-17 .content-z > * { zoom: 1.17; }
         #slide-18 .content-z > * { zoom: 1.29; }
         #slide-19 .content-z > * { zoom: 1.28; }
         #slide-20 .content-z > * { zoom: 1.30; }
         #slide-21 .content-z > * { zoom: 1.31; }
-        #slide-22 .content-z > * { zoom: 1.29; }
-        #slide-24 .content-z > * { zoom: 1.17; }
+        #slide-22 .content-z > * { zoom: 1.15; }
+        #slide-24 .content-z > * { zoom: 1.10; }
         #slide-26 .content-z > * { zoom: 1.31; }
         #slide-27 .content-z > * { zoom: 1.14; }
         #slide-28 .content-z > * { zoom: 1.17; }
@@ -637,7 +641,7 @@ window.addEventListener('load', function(){
         #slide-32 .content-z > * { zoom: 1.22; }
         #slide-33 .content-z > * { zoom: 1.04; }
         #slide-45 .content-z > * { zoom: 0.93; }
-        #slide-34 .content-z > * { zoom: 1.33; }
+        #slide-34 .content-z > * { zoom: 1.15; }
         #slide-35 .content-z > * { zoom: 1.09; }
         #slide-39 .content-z > * { zoom: 1.16; }
         #slide-41 .content-z > * { zoom: 1.47; }
@@ -972,7 +976,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая схема на компоненте .radial-fig: остаётся кругом и на 390px,
                  спутники позиционируются инлайновыми --x/--y (см. блок radial-fig). -->
-            <div class="radial-fig" style="width:min(100%,340px,33vh);--orbit:37%;--sat:clamp(68px,25%,132px);--core:clamp(82px,24%,148px)">
+            <div class="radial-fig" style="width:min(100%,340px,40vh);--orbit:37%;--sat:clamp(68px,25%,132px);--core:clamp(82px,24%,148px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="37" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1336,26 +1340,26 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Архитектура <span class="text-solar">агента</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент состоит из четырёх частей</p>
 
-            <div class="w-full max-w-2xl mx-auto bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-6 shadow-sm">
-                <div class="grid grid-cols-2 gap-2 md:flex md:items-center md:justify-between md:gap-3">
+            <div class="w-full max-w-4xl mx-auto bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-6 shadow-sm">
+                <div class="grid grid-cols-2 gap-2 md:gap-3 lg:flex lg:items-center lg:justify-between">
                     <div class="flex-1 bg-grayBase/40 rounded-2xl p-2 md:p-3 lg:p-4 text-center">
                         <i class="ph-fill ph-eye text-solar text-lg md:text-3xl mb-1 md:mb-2"></i>
                         <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40">1</p>
                         <p class="font-black text-[11px] md:text-sm lg:text-base">Восприятие</p>
                     </div>
-                    <i class="ph-bold ph-arrow-right text-solar text-base md:text-2xl hidden md:block"></i>
+                    <i class="ph-bold ph-arrow-right text-solar text-base md:text-2xl hidden lg:block"></i>
                     <div class="flex-1 bg-black border-2 border-solar rounded-2xl p-2 md:p-3 lg:p-4 text-center text-white shadow-xl">
                         <i class="ph-fill ph-brain text-solar text-lg md:text-3xl mb-1 md:mb-2"></i>
                         <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar/70">2</p>
                         <p class="font-black text-[11px] md:text-sm lg:text-base text-solar">Решение</p>
                     </div>
-                    <i class="ph-bold ph-arrow-right text-solar text-base md:text-2xl hidden md:block"></i>
+                    <i class="ph-bold ph-arrow-right text-solar text-base md:text-2xl hidden lg:block"></i>
                     <div class="flex-1 bg-grayBase/40 rounded-2xl p-2 md:p-3 lg:p-4 text-center">
                         <i class="ph-fill ph-rocket-launch text-solar text-lg md:text-3xl mb-1 md:mb-2"></i>
                         <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40">3</p>
                         <p class="font-black text-[11px] md:text-sm lg:text-base">Действие</p>
                     </div>
-                    <i class="ph-bold ph-arrow-right text-solar text-base md:text-2xl hidden md:block"></i>
+                    <i class="ph-bold ph-arrow-right text-solar text-base md:text-2xl hidden lg:block"></i>
                     <div class="flex-1 bg-grayBase/40 rounded-2xl p-2 md:p-3 lg:p-4 text-center">
                         <i class="ph-fill ph-database text-solar text-lg md:text-3xl mb-1 md:mb-2"></i>
                         <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40">4</p>
@@ -1434,7 +1438,7 @@ window.addEventListener('load', function(){
                     <i class="ph-bold ph-arrow-right text-solar text-xl md:text-3xl hidden md:block"></i>
                     <div class="flex-1 bg-grayBase/40 rounded-2xl px-0.5 py-3 md:p-5 text-center">
                         <i class="ph-fill ph-toolbox text-solar text-xl md:text-3xl"></i>
-                        <p class="font-black text-[11px] md:text-base mt-1">Инструменты</p>
+                        <p class="font-black text-[11px] md:text-xs lg:text-base mt-1">Инструменты</p>
                     </div>
                     <i class="ph-bold ph-arrow-right text-solar text-xl md:text-3xl hidden md:block"></i>
                     <div class="flex-1 bg-grayBase/40 rounded-2xl px-0.5 py-3 md:p-5 text-center">
@@ -1558,7 +1562,7 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Типовые <span class="text-solar">сценарии для ИИ</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Не каждая ИИ-задача требует агента</p>
 
-            <div class="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-5 gap-2 md:gap-3 max-w-2xl mx-auto w-full mb-4 md:mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-5 gap-2 md:gap-3 max-w-4xl mx-auto w-full mb-4 md:mb-6">
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 text-center shadow-sm md:col-span-2 lg:col-span-1"><i class="ph-fill ph-funnel text-solar text-xl md:text-3xl mb-1 md:mb-2"></i><p class="font-bold text-[10px] md:text-sm">Извлечение данных</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 text-center shadow-sm md:col-span-2 lg:col-span-1"><i class="ph-fill ph-tag text-solar text-xl md:text-3xl mb-1 md:mb-2"></i><p class="font-bold text-[10px] md:text-sm">Классификация</p></div>
                 <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 text-center shadow-sm md:col-span-2 lg:col-span-1"><i class="ph-fill ph-smiley text-solar text-xl md:text-3xl mb-1 md:mb-2"></i><p class="font-bold text-[10px] md:text-sm">Тональность</p></div>
@@ -1620,7 +1624,7 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Классификация <span class="text-solar">текста</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Модель определяет категорию и смысл сообщения</p>
 
-            <div class="w-full max-w-2xl mx-auto">
+            <div class="w-full max-w-4xl mx-auto">
                 <div class="flex justify-center mb-4 md:mb-6">
                     <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-5 shadow-sm w-full md:w-1/2 text-center">
                         <i class="ph-fill ph-envelope text-solar text-xl md:text-3xl mb-1 md:mb-2"></i>
@@ -1933,7 +1937,7 @@ window.addEventListener('load', function(){
                     <i class="ph-bold ph-caret-right text-black/30 hidden md:block"></i>
                     <div class="flex-1 bg-grayBase/40 rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-package text-solar text-base md:text-xl"></i><p class="text-[10px] md:text-sm font-bold mt-1">Результат</p></div>
                     <i class="ph-bold ph-caret-right text-black/30 hidden md:block"></i>
-                    <div class="flex-1 bg-black border-2 border-solar rounded-xl p-2 md:p-3 text-center text-white"><i class="ph-fill ph-magnifying-glass text-solar text-base md:text-xl"></i><p class="text-[10px] md:text-sm font-black mt-1 text-solar">Критическая проверка</p></div>
+                    <div class="flex-1 bg-black border-2 border-solar rounded-xl p-2 md:p-3 text-center text-white"><i class="ph-fill ph-magnifying-glass text-solar text-base md:text-xl"></i><p class="text-[10px] md:text-xs lg:text-sm font-black mt-1 text-solar">Критическая проверка</p></div>
                     <i class="ph-bold ph-caret-right text-black/30 hidden md:block"></i>
                     <div class="flex-1 bg-solar/15 border border-solar rounded-xl p-2 md:p-3 text-center"><i class="ph-fill ph-trend-up text-solar text-base md:text-xl"></i><p class="text-[10px] md:text-sm font-bold mt-1">Улучшение</p></div>
                 </div>
@@ -1991,7 +1995,7 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Размышление + <span class="text-solar">исполнение</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Ценность агента появляется, когда мысль становится действием</p>
 
-            <div class="w-full max-w-2xl mx-auto bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-6 shadow-sm">
+            <div class="w-full max-w-4xl mx-auto bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-6 shadow-sm">
                 <div class="grid grid-cols-6 gap-1.5 lg:flex lg:items-center lg:justify-between lg:gap-3">
                     <div class="flex-1 col-span-2 lg:col-span-1 min-w-[80px] bg-grayBase/40 rounded-xl px-1 py-2 md:p-4 text-center"><i class="ph-fill ph-magnifying-glass text-solar text-base md:text-2xl"></i><p class="text-[10px] md:text-sm font-bold mt-1">Понять</p></div>
                     <i class="ph-bold ph-arrow-right text-black/30 hidden lg:block"></i>

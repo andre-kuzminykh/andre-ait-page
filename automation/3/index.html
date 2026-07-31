@@ -535,23 +535,27 @@ window.addEventListener('load', function(){
       var ink = inkBox(c);
       if(!ink || ink.h < 40) return;
       if(availH - padY <= 0 || availW - padX <= 0) return;
-      var z = Math.min((availH - padY) / ink.h, (availW - padX) / ink.w);
-      z = (z < 0.999) ? z * 0.96
-        : (window.innerWidth < 768 ? 1 : Math.min(z, MAX_GROW) * 0.97);
+      // Масштаб считается аналитически, а не подбором. Паддинги zoom тоже
+      // масштабирует, поэтому условие «чернила влезают» — это
+      //   natH*z + padY*z <= availH   →   z <= availH / (natH + padY),
+      // где natH — высота чернил в CSS-пикселях. Подбор вида z /= over только
+      // приближался снизу и на коротких слайдах недобирал процентов десять.
+      var grow = window.innerWidth >= 768;
+      function target(natH, natW){
+        var t = Math.min(availH / (natH + padY), availW / (natW + padX)) * 0.99;
+        return grow ? Math.min(t, MAX_GROW) : Math.min(t, 1);
+      }
+      var z = target(ink.h, ink.w);
       if(z > 0.999 && z < 1.04) return;
       apply(z);
-      // Второй проход обязателен: zoom сжимает CSS-ширину content-z, текст
-      // переносится иначе, и чернила становятся выше, чем были при замере, —
-      // выросший слайд после первого прохода уезжал верхом под шапку.
-      // Паддинги zoom тоже масштабирует, поэтому доступную полосу считаем
-      // в отрисованных пикселях: availH - padY*z.
-      for(var pass = 0; pass < 3; pass++){
+      // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
+      // и natH меняется. Обратно в CSS-пиксели — делением на текущий z.
+      for(var pass = 0; pass < 4; pass++){
         var re = inkBox(c);
         if(!re) break;
-        var over = Math.max(re.h / Math.max(1, availH - padY * z),
-                            re.w / Math.max(1, availW - padX * z));
-        if(over <= 1.005) break;
-        z = z / over * 0.99;
+        var next = target(re.h / z, re.w / z);
+        if(Math.abs(next - z) < 0.01) break;
+        z = next;
         apply(z);
       }
     }catch(e){}
@@ -697,8 +701,8 @@ window.addEventListener('load', function(){
     <!-- СЛАЙД 1: Введение -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-100 translate-y-0" id="slide-0">
         <div class="content-z text-center max-w-3xl">
-            <div class="bg-grayBase/30 border border-grayBase rounded-full px-4 py-1.5 md:py-2 mx-auto shadow-sm mb-4 md:mb-8 inline-block">
-                <p class="text-black font-bold uppercase tracking-widest text-[8px] md:text-sm m-0">Лекция 3: ИИ-платформа</p>
+            <div class="bg-grayBase/30 border border-grayBase rounded-full px-4 py-1.5 md:py-2 lg:px-6 lg:py-3 mx-auto shadow-sm mb-4 md:mb-8 inline-block">
+                <p class="text-black font-bold uppercase tracking-widest text-[8px] md:text-sm lg:text-base m-0">Лекция 3: ИИ-платформа</p>
             </div>
             <h1 class="text-2xl sm:text-4xl md:text-5xl lg:text-[60px] font-black mb-3 md:mb-6 leading-tight tracking-tight text-black">
                 ИИ-автоматизация <span class="text-solar">процессов</span>
@@ -708,17 +712,20 @@ window.addEventListener('load', function(){
             <!-- Три тезиса лекции карточками: раньше это была тонкая строка через всю
                  ширину — слайд читался полупустым, а строка расползалась по горизонтали. -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3 max-w-3xl mx-auto w-full">
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 flex flex-col items-center gap-1.5 md:gap-2">
-                    <i class="ph-fill ph-robot text-solar text-lg md:text-2xl"></i>
-                    <p class="font-black text-[11px] md:text-sm leading-tight">Агент ≠ модель</p>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 lg:p-6 flex flex-col items-center gap-1.5 md:gap-2">
+                    <i class="ph-fill ph-robot text-solar text-lg md:text-2xl lg:text-4xl"></i>
+                    <p class="font-black text-[11px] md:text-sm lg:text-base leading-tight">Агент ≠ модель</p>
+                    <p class="text-[10px] lg:text-xs text-black/60 font-medium leading-tight">Модель отвечает, агент действует внутри процесса</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 flex flex-col items-center gap-1.5 md:gap-2">
-                    <i class="ph-fill ph-stack text-solar text-lg md:text-2xl"></i>
-                    <p class="font-black text-[11px] md:text-sm leading-tight">Платформа ≠ набор инструментов</p>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 lg:p-6 flex flex-col items-center gap-1.5 md:gap-2">
+                    <i class="ph-fill ph-stack text-solar text-lg md:text-2xl lg:text-4xl"></i>
+                    <p class="font-black text-[11px] md:text-sm lg:text-base leading-tight">Платформа ≠ набор инструментов</p>
+                    <p class="text-[10px] lg:text-xs text-black/60 font-medium leading-tight">Это среда исполнения, а не список сервисов</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 flex flex-col items-center gap-1.5 md:gap-2">
-                    <i class="ph-fill ph-shield-check text-solar text-lg md:text-2xl"></i>
-                    <p class="font-black text-[11px] md:text-sm leading-tight">Архитектура важнее агентов</p>
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 lg:p-6 flex flex-col items-center gap-1.5 md:gap-2">
+                    <i class="ph-fill ph-shield-check text-solar text-lg md:text-2xl lg:text-4xl"></i>
+                    <p class="font-black text-[11px] md:text-sm lg:text-base leading-tight">Архитектура важнее агентов</p>
+                    <p class="text-[10px] lg:text-xs text-black/60 font-medium leading-tight">Сначала схема процесса, потом инструменты</p>
                 </div>
             </div>
         </div>
@@ -730,35 +737,35 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Как из процесса <span class="text-solar">получить агента</span></h2>
             <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент появляется там, где правил уже недостаточно</p>
 
-            <div class="w-full max-w-5xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-4 md:p-8 shadow-sm">
+            <div class="w-full max-w-5xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-4 md:p-8 lg:p-10 shadow-sm">
                 <div class="flex items-center justify-between gap-1 md:gap-3 mb-4 md:mb-6">
-                    <div class="flex-1 h-10 md:h-16 bg-grayBase/50 rounded-lg flex items-center justify-center text-[10px] md:text-sm font-bold text-black/70">Шаг 1</div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-lg md:text-2xl"></i>
-                    <div class="flex-1 h-10 md:h-16 bg-grayBase/50 rounded-lg flex items-center justify-center text-[10px] md:text-sm font-bold text-black/70">Шаг 2</div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-lg md:text-2xl"></i>
-                    <div class="flex-1 h-10 md:h-16 bg-black border-2 border-solar rounded-lg flex items-center justify-center text-solar shadow-[0_0_20px_rgba(139,92,246,0.4)] relative">
-                        <i class="ph-fill ph-brain text-lg md:text-3xl"></i>
-                        <span class="absolute -top-2 -right-2 bg-solar text-black text-[8px] md:text-[10px] font-black px-1.5 md:px-2 py-0.5 rounded-full">ИИ</span>
+                    <div class="flex-1 h-10 md:h-16 lg:h-24 bg-grayBase/50 rounded-lg flex items-center justify-center text-[10px] md:text-sm lg:text-base font-bold text-black/70">Шаг 1</div>
+                    <i class="ph-bold ph-caret-right text-grayBase text-lg md:text-2xl lg:text-3xl"></i>
+                    <div class="flex-1 h-10 md:h-16 lg:h-24 bg-grayBase/50 rounded-lg flex items-center justify-center text-[10px] md:text-sm lg:text-base font-bold text-black/70">Шаг 2</div>
+                    <i class="ph-bold ph-caret-right text-grayBase text-lg md:text-2xl lg:text-3xl"></i>
+                    <div class="flex-1 h-10 md:h-16 lg:h-24 bg-black border-2 border-solar rounded-lg flex items-center justify-center text-solar shadow-[0_0_20px_rgba(139,92,246,0.4)] relative">
+                        <i class="ph-fill ph-brain text-lg md:text-3xl lg:text-5xl"></i>
+                        <span class="absolute -top-2 -right-2 bg-solar text-black text-[8px] md:text-[10px] lg:text-xs font-black px-1.5 md:px-2 py-0.5 rounded-full">ИИ</span>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-lg md:text-2xl"></i>
-                    <div class="flex-1 h-10 md:h-16 bg-grayBase/50 rounded-lg flex items-center justify-center text-[10px] md:text-sm font-bold text-black/70">Шаг 4</div>
+                    <i class="ph-bold ph-caret-right text-grayBase text-lg md:text-2xl lg:text-3xl"></i>
+                    <div class="flex-1 h-10 md:h-16 lg:h-24 bg-grayBase/50 rounded-lg flex items-center justify-center text-[10px] md:text-sm lg:text-base font-bold text-black/70">Шаг 4</div>
                 </div>
-                <p class="text-center text-[10px] md:text-sm text-black/50 font-medium">Агент встраивается в конкретный шаг процесса</p>
+                <p class="text-center text-[10px] md:text-sm lg:text-base text-black/50 font-medium">Агент встраивается в конкретный шаг процесса</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-4xl mx-auto w-full mt-6 md:mt-8">
-                <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 flex items-start gap-3 md:gap-4">
-                    <div class="w-10 h-10 md:w-12 md:h-12 bg-grayBase rounded-lg flex items-center justify-center shrink-0 text-black"><i class="ph-fill ph-list-checks text-lg md:text-2xl"></i></div>
+                <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 lg:p-6 flex items-start gap-3 md:gap-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 bg-grayBase rounded-lg flex items-center justify-center shrink-0 text-black"><i class="ph-fill ph-list-checks text-lg md:text-2xl lg:text-3xl"></i></div>
                     <div>
-                        <p class="font-bold text-[12px] md:text-base">Предсказуемые шаги</p>
-                        <p class="text-[10px] md:text-xs text-black/60 font-medium">Обычная автоматизация</p>
+                        <p class="font-bold text-[12px] md:text-base lg:text-lg">Предсказуемые шаги</p>
+                        <p class="text-[10px] md:text-xs lg:text-sm text-black/60 font-medium">Обычная автоматизация: шаги известны заранее</p>
                     </div>
                 </div>
-                <div class="bg-black text-white border-2 border-solar rounded-2xl p-4 md:p-5 flex items-start gap-3 md:gap-4">
-                    <div class="w-10 h-10 md:w-12 md:h-12 bg-solar/20 rounded-lg flex items-center justify-center shrink-0 text-solar"><i class="ph-fill ph-brain text-lg md:text-2xl"></i></div>
+                <div class="bg-black text-white border-2 border-solar rounded-2xl p-4 md:p-5 lg:p-6 flex items-start gap-3 md:gap-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 bg-solar/20 rounded-lg flex items-center justify-center shrink-0 text-solar"><i class="ph-fill ph-brain text-lg md:text-2xl lg:text-3xl"></i></div>
                     <div>
-                        <p class="font-bold text-[12px] md:text-base text-solar">Неопределённость и контекст</p>
-                        <p class="text-[10px] md:text-xs text-white/60 font-medium">Нужен агент</p>
+                        <p class="font-bold text-[12px] md:text-base lg:text-lg text-solar">Неопределённость и контекст</p>
+                        <p class="text-[10px] md:text-xs lg:text-sm text-white/60 font-medium">Нужен агент: решение принимается на месте</p>
                     </div>
                 </div>
             </div>
@@ -1207,39 +1214,39 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-4 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент нужен там, где появляется неоднозначность</p>
 
             <div class="grid grid-cols-2 md:grid-cols-5 gap-2 lg:gap-4 w-full max-w-5xl mx-auto mb-4 md:mb-8">
-                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-4 shadow-sm text-center">
-                    <i class="ph-fill ph-file-dashed text-solar text-xl md:text-2xl mb-1 md:mb-2"></i>
-                    <p class="font-bold text-[11px] lg:text-sm leading-tight">Неструктури&shy;рованные данные</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-5 shadow-sm text-center">
+                    <i class="ph-fill ph-file-dashed text-solar text-xl md:text-2xl lg:text-4xl mb-1 md:mb-2"></i>
+                    <p class="font-bold text-[11px] lg:text-base leading-tight">Неструктури&shy;рованные данные</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-4 shadow-sm text-center">
-                    <i class="ph-fill ph-graph text-solar text-xl md:text-2xl mb-1 md:mb-2"></i>
-                    <p class="font-bold text-[11px] lg:text-sm leading-tight">Сложный контекст</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-5 shadow-sm text-center">
+                    <i class="ph-fill ph-graph text-solar text-xl md:text-2xl lg:text-4xl mb-1 md:mb-2"></i>
+                    <p class="font-bold text-[11px] lg:text-base leading-tight">Сложный контекст</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-4 shadow-sm text-center">
-                    <i class="ph-fill ph-warning text-solar text-xl md:text-2xl mb-1 md:mb-2"></i>
-                    <p class="font-bold text-[11px] lg:text-sm leading-tight">Исключения</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-5 shadow-sm text-center">
+                    <i class="ph-fill ph-warning text-solar text-xl md:text-2xl lg:text-4xl mb-1 md:mb-2"></i>
+                    <p class="font-bold text-[11px] lg:text-base leading-tight">Исключения</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-4 shadow-sm text-center">
-                    <i class="ph-fill ph-question text-solar text-xl md:text-2xl mb-1 md:mb-2"></i>
-                    <p class="font-bold text-[11px] lg:text-sm leading-tight">Неполная информация</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-5 shadow-sm text-center">
+                    <i class="ph-fill ph-question text-solar text-xl md:text-2xl lg:text-4xl mb-1 md:mb-2"></i>
+                    <p class="font-bold text-[11px] lg:text-base leading-tight">Неполная информация</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-4 shadow-sm text-center col-span-2 md:col-span-1">
-                    <i class="ph-fill ph-check-fat text-solar text-xl md:text-2xl mb-1 md:mb-2"></i>
-                    <p class="font-bold text-[11px] lg:text-sm leading-tight">Выбор лучшего варианта</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-2.5 lg:p-5 shadow-sm text-center col-span-2 md:col-span-1">
+                    <i class="ph-fill ph-check-fat text-solar text-xl md:text-2xl lg:text-4xl mb-1 md:mb-2"></i>
+                    <p class="font-bold text-[11px] lg:text-base leading-tight">Выбор лучшего варианта</p>
                 </div>
             </div>
 
             <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6 w-full max-w-4xl mx-auto">
-                <div class="flex-1 bg-white border border-grayBase rounded-2xl p-3 md:p-6 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2">Правила</p>
-                    <code class="block bg-grayBase/40 rounded-lg p-2 md:p-3 text-[10px] md:text-xs font-mono leading-relaxed">if A → B<br>elif C → D<br>else → ???</code>
+                <div class="flex-1 bg-white border border-grayBase rounded-2xl p-3 md:p-6 lg:p-8 shadow-sm">
+                    <p class="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-black/40 mb-2">Правила</p>
+                    <code class="block bg-grayBase/40 rounded-lg p-2 md:p-3 lg:p-4 text-[10px] md:text-xs lg:text-sm font-mono leading-relaxed">if A → B<br>elif C → D<br>else → ???</code>
                 </div>
-                <i class="ph-bold ph-arrow-right text-solar text-2xl md:text-4xl"></i>
-                <div class="flex-1 bg-black border-2 border-solar rounded-2xl p-3 md:p-6 shadow-xl text-white">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-2">Агент</p>
+                <i class="ph-bold ph-arrow-right text-solar text-2xl md:text-4xl lg:text-5xl"></i>
+                <div class="flex-1 bg-black border-2 border-solar rounded-2xl p-3 md:p-6 lg:p-8 shadow-xl text-white">
+                    <p class="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-solar mb-2">Агент</p>
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 md:w-12 md:h-12 bg-solar/20 rounded-full flex items-center justify-center text-solar"><i class="ph-fill ph-brain text-lg md:text-xl"></i></div>
-                        <p class="text-[11px] md:text-sm font-bold">Понимает контекст и выбирает действие</p>
+                        <div class="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-solar/20 rounded-full flex items-center justify-center text-solar shrink-0"><i class="ph-fill ph-brain text-lg md:text-xl lg:text-3xl"></i></div>
+                        <p class="text-[11px] md:text-sm lg:text-base font-bold">Понимает контекст и выбирает действие</p>
                     </div>
                 </div>
             </div>
@@ -1362,39 +1369,48 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Агент <span class="text-solar">внутри процесса</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент — это не отдельная система рядом, а исполнитель внутри процесса</p>
 
-            <div class="w-full max-w-3xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-3 sm:p-5 md:p-8 shadow-sm">
+            <div class="w-full max-w-3xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-3 sm:p-5 md:p-8 lg:p-10 shadow-sm">
                 <div class="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
-                    <div class="flex-1 h-14 md:h-20 bg-grayBase/60 rounded-xl flex items-center justify-center text-[10px] md:text-sm font-bold text-black/70 px-1">
+                    <div class="flex-1 h-14 md:h-20 lg:h-28 bg-grayBase/60 rounded-xl flex items-center justify-center text-[10px] md:text-sm lg:text-lg font-bold text-black/70 px-1">
                         Вход
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-sm sm:text-xl md:text-3xl shrink-0"></i>
-                    <div class="flex-1 h-14 md:h-20 bg-grayBase/60 rounded-xl flex items-center justify-center text-[10px] md:text-sm font-bold text-black/70 px-1 text-center">
+                    <i class="ph-bold ph-caret-right text-grayBase text-sm sm:text-xl md:text-3xl lg:text-4xl shrink-0"></i>
+                    <div class="flex-1 h-14 md:h-20 lg:h-28 bg-grayBase/60 rounded-xl flex items-center justify-center text-[10px] md:text-sm lg:text-lg font-bold text-black/70 px-1 text-center">
                         Подготовка
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-sm sm:text-xl md:text-3xl shrink-0"></i>
-                    <div class="flex-1 h-14 md:h-20 bg-black rounded-xl flex flex-col items-center justify-center text-solar border-2 border-solar shadow-[0_0_20px_rgba(139,92,246,0.4)] relative px-1">
-                        <i class="ph-fill ph-robot text-base md:text-2xl"></i>
-                        <p class="text-[9px] md:text-xs font-black mt-0.5">Агент</p>
+                    <i class="ph-bold ph-caret-right text-grayBase text-sm sm:text-xl md:text-3xl lg:text-4xl shrink-0"></i>
+                    <div class="flex-1 h-14 md:h-20 lg:h-28 bg-black rounded-xl flex flex-col items-center justify-center text-solar border-2 border-solar shadow-[0_0_20px_rgba(139,92,246,0.4)] relative px-1">
+                        <i class="ph-fill ph-robot text-base md:text-2xl lg:text-4xl"></i>
+                        <p class="text-[9px] md:text-xs lg:text-sm font-black mt-0.5">Агент</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-sm sm:text-xl md:text-3xl shrink-0"></i>
-                    <div class="flex-1 h-14 md:h-20 bg-grayBase/60 rounded-xl flex items-center justify-center text-[10px] md:text-sm font-bold text-black/70 px-1">
+                    <i class="ph-bold ph-caret-right text-grayBase text-sm sm:text-xl md:text-3xl lg:text-4xl shrink-0"></i>
+                    <div class="flex-1 h-14 md:h-20 lg:h-28 bg-grayBase/60 rounded-xl flex items-center justify-center text-[10px] md:text-sm lg:text-lg font-bold text-black/70 px-1">
                         Выход
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-4 md:mt-6">
-                <div class="bg-white border border-grayBase rounded-xl p-3 md:p-4 flex items-center gap-3">
-                    <div class="w-8 h-8 md:w-10 md:h-10 bg-solar/20 rounded-full flex items-center justify-center text-solar shrink-0"><i class="ph-fill ph-arrow-down text-sm md:text-lg"></i></div>
-                    <p class="font-bold text-[11px] md:text-sm">Получает задачу</p>
+                <div class="bg-white border border-grayBase rounded-xl p-3 md:p-4 lg:p-5 flex items-center gap-3">
+                    <div class="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-solar/20 rounded-full flex items-center justify-center text-solar shrink-0"><i class="ph-fill ph-arrow-down text-sm md:text-lg lg:text-xl"></i></div>
+                    <div>
+                        <p class="font-bold text-[11px] md:text-sm lg:text-base">Получает задачу</p>
+                        <p class="text-[10px] lg:text-xs text-black/60 font-medium leading-tight">Вход приходит из предыдущего узла</p>
+                    </div>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl p-3 md:p-4 flex items-center gap-3">
-                    <div class="w-8 h-8 md:w-10 md:h-10 bg-solar/20 rounded-full flex items-center justify-center text-solar shrink-0"><i class="ph-fill ph-brain text-sm md:text-lg"></i></div>
-                    <p class="font-bold text-[11px] md:text-sm">Делает интеллектуальный шаг</p>
+                <div class="bg-white border border-grayBase rounded-xl p-3 md:p-4 lg:p-5 flex items-center gap-3">
+                    <div class="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-solar/20 rounded-full flex items-center justify-center text-solar shrink-0"><i class="ph-fill ph-brain text-sm md:text-lg lg:text-xl"></i></div>
+                    <div>
+                        <p class="font-bold text-[11px] md:text-sm lg:text-base">Делает интеллектуальный шаг</p>
+                        <p class="text-[10px] lg:text-xs text-black/60 font-medium leading-tight">Там, где правила не справляются</p>
+                    </div>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl p-3 md:p-4 flex items-center gap-3">
-                    <div class="w-8 h-8 md:w-10 md:h-10 bg-solar/20 rounded-full flex items-center justify-center text-solar shrink-0"><i class="ph-fill ph-arrow-up text-sm md:text-lg"></i></div>
-                    <p class="font-bold text-[11px] md:text-sm">Возвращает результат</p>
+                <div class="bg-white border border-grayBase rounded-xl p-3 md:p-4 lg:p-5 flex items-center gap-3">
+                    <div class="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-solar/20 rounded-full flex items-center justify-center text-solar shrink-0"><i class="ph-fill ph-arrow-up text-sm md:text-lg lg:text-xl"></i></div>
+                    <div>
+                        <p class="font-bold text-[11px] md:text-sm lg:text-base">Возвращает результат</p>
+                        <p class="text-[10px] lg:text-xs text-black/60 font-medium leading-tight">Процесс идёт дальше по схеме</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1734,38 +1750,38 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-5 md:mb-7 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Система не ждёт запроса, а сама сообщает о событии</p>
 
             <!-- Блоки сведены вплотную к «сигналу»: контейнер сужен, gap уменьшен. -->
-            <div class="w-full max-w-2xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-4 md:p-7 shadow-sm">
+            <div class="w-full max-w-2xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-4 md:p-7 lg:p-9 shadow-sm">
                 <div class="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-3 md:gap-4">
-                    <div class="flex-1 bg-black text-white rounded-2xl p-4 md:p-5 text-center">
-                        <i class="ph-fill ph-buildings text-solar text-2xl md:text-4xl mb-2"></i>
-                        <p class="font-black text-sm md:text-lg text-solar mb-1">Внешняя система</p>
-                        <p class="text-[10px] md:text-xs text-white/60 font-medium">Событие произошло</p>
+                    <div class="flex-1 bg-black text-white rounded-2xl p-4 md:p-5 lg:p-7 text-center">
+                        <i class="ph-fill ph-buildings text-solar text-2xl md:text-4xl lg:text-5xl mb-2"></i>
+                        <p class="font-black text-sm md:text-lg lg:text-xl text-solar mb-1">Внешняя система</p>
+                        <p class="text-[10px] md:text-xs lg:text-sm text-white/60 font-medium">Событие произошло</p>
                     </div>
 
                     <div class="flex flex-col items-center gap-1.5 md:gap-2 shrink-0">
-                        <i class="ph-bold ph-lightning text-solar text-3xl md:text-4xl"></i>
-                        <div class="bg-solar text-black rounded-full px-3 py-1 md:px-4 md:py-1.5 text-[10px] md:text-xs font-black uppercase tracking-widest">Сигнал</div>
-                        <i class="ph-bold ph-arrow-right text-solar text-2xl md:text-3xl hidden md:block"></i>
+                        <i class="ph-bold ph-lightning text-solar text-3xl md:text-4xl lg:text-5xl"></i>
+                        <div class="bg-solar text-black rounded-full px-3 py-1 md:px-4 md:py-1.5 lg:px-5 lg:py-2 text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-widest">Сигнал</div>
+                        <i class="ph-bold ph-arrow-right text-solar text-2xl md:text-3xl lg:text-4xl hidden md:block"></i>
                         <i class="ph-bold ph-arrow-down text-solar text-2xl md:text-3xl md:hidden"></i>
                     </div>
 
                     <!-- Подписи были text-white на светлом тинте bg-solar/10 — не читались. -->
-                    <div class="flex-1 bg-solar/10 border-2 border-solar rounded-2xl p-4 md:p-5 text-center">
-                        <span class="block"><i class="ph-fill ph-flow-arrow text-solar text-2xl md:text-4xl mb-2"></i></span>
-                        <p class="font-black text-sm md:text-lg mb-1 text-black">Наш процесс</p>
-                        <p class="text-[10px] md:text-xs text-black/60 font-medium">Запускается автоматически</p>
+                    <div class="flex-1 bg-solar/10 border-2 border-solar rounded-2xl p-4 md:p-5 lg:p-7 text-center">
+                        <span class="block"><i class="ph-fill ph-flow-arrow text-solar text-2xl md:text-4xl lg:text-5xl mb-2"></i></span>
+                        <p class="font-black text-sm md:text-lg lg:text-xl mb-1 text-black">Наш процесс</p>
+                        <p class="text-[10px] md:text-xs lg:text-sm text-black/60 font-medium">Запускается автоматически</p>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-2xl mx-auto mt-3 md:mt-5">
-                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-start gap-2">
-                    <i class="ph-fill ph-arrows-clockwise text-solar text-base md:text-lg shrink-0 mt-0.5"></i>
-                    <div><p class="font-bold text-[11px] md:text-sm">Опрос</p><p class="text-[10px] md:text-xs text-black/60 font-medium">Задержки и лишняя нагрузка</p></div>
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 lg:px-5 lg:py-4 flex items-start gap-2">
+                    <i class="ph-fill ph-arrows-clockwise text-solar text-base md:text-lg lg:text-2xl shrink-0 mt-0.5"></i>
+                    <div><p class="font-bold text-[11px] md:text-sm lg:text-base">Опрос</p><p class="text-[10px] md:text-xs lg:text-sm text-black/60 font-medium">Задержки и лишняя нагрузка</p></div>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-start gap-2">
-                    <i class="ph-fill ph-bell-ringing text-solar text-base md:text-lg shrink-0 mt-0.5"></i>
-                    <div><p class="font-bold text-[11px] md:text-sm">Вебхук</p><p class="text-[10px] md:text-xs text-black/60 font-medium">Реакция в момент события</p></div>
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 lg:px-5 lg:py-4 flex items-start gap-2">
+                    <i class="ph-fill ph-bell-ringing text-solar text-base md:text-lg lg:text-2xl shrink-0 mt-0.5"></i>
+                    <div><p class="font-bold text-[11px] md:text-sm lg:text-base">Вебхук</p><p class="text-[10px] md:text-xs lg:text-sm text-black/60 font-medium">Реакция в момент события</p></div>
                 </div>
             </div>
         </div>
@@ -1777,38 +1793,38 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Среда <span class="text-solar">исполнения</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Платформа — это среда исполнения процессов и агентов</p>
 
-            <div class="w-full max-w-3xl mx-auto bg-black rounded-[24px] md:rounded-[32px] p-2 sm:p-5 md:p-8 shadow-xl text-white relative">
-                <div class="absolute top-2 left-3 md:top-4 md:left-6 text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar">Холст процесса</div>
+            <div class="w-full max-w-3xl mx-auto bg-black rounded-[24px] md:rounded-[32px] p-2 sm:p-5 md:p-8 lg:p-10 shadow-xl text-white relative">
+                <div class="absolute top-2 left-3 md:top-4 md:left-6 text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-solar">Холст процесса</div>
 
                 <div class="relative mt-9 md:mt-10 grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 items-center">
-                    <div class="bg-solar/15 border border-solar rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 text-center">
-                        <i class="ph-fill ph-lightning text-solar text-base sm:text-lg md:text-2xl"></i>
-                        <p class="text-[9px] md:text-xs font-bold mt-1">Триггер</p>
+                    <div class="bg-solar/15 border border-solar rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 lg:p-5 text-center">
+                        <i class="ph-fill ph-lightning text-solar text-base sm:text-lg md:text-2xl lg:text-4xl"></i>
+                        <p class="text-[9px] md:text-xs lg:text-sm font-bold mt-1">Триггер</p>
                     </div>
-                    <div class="bg-white/5 border border-white/20 rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 text-center">
-                        <i class="ph-fill ph-funnel text-solar text-base sm:text-lg md:text-2xl"></i>
-                        <p class="text-[9px] md:text-xs font-bold mt-1">Условие</p>
+                    <div class="bg-white/5 border border-white/20 rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 lg:p-5 text-center">
+                        <i class="ph-fill ph-funnel text-solar text-base sm:text-lg md:text-2xl lg:text-4xl"></i>
+                        <p class="text-[9px] md:text-xs lg:text-sm font-bold mt-1">Условие</p>
                     </div>
-                    <div class="bg-white/5 border-2 border-solar rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 text-center shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-                        <i class="ph-fill ph-robot text-solar text-base sm:text-lg md:text-2xl"></i>
-                        <p class="text-[9px] md:text-xs font-black text-solar mt-1">Агент</p>
+                    <div class="bg-white/5 border-2 border-solar rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 lg:p-5 text-center shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+                        <i class="ph-fill ph-robot text-solar text-base sm:text-lg md:text-2xl lg:text-4xl"></i>
+                        <p class="text-[9px] md:text-xs lg:text-sm font-black text-solar mt-1">Агент</p>
                     </div>
-                    <div class="bg-white/5 border border-white/20 rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 text-center">
-                        <i class="ph-fill ph-plug text-solar text-base sm:text-lg md:text-2xl"></i>
-                        <p class="text-[9px] md:text-xs font-bold mt-1"><span class="md:hidden">Интегр.</span><span class="hidden md:inline">Интеграция</span></p>
+                    <div class="bg-white/5 border border-white/20 rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 lg:p-5 text-center">
+                        <i class="ph-fill ph-plug text-solar text-base sm:text-lg md:text-2xl lg:text-4xl"></i>
+                        <p class="text-[9px] md:text-xs lg:text-sm font-bold mt-1"><span class="md:hidden">Интегр.</span><span class="hidden md:inline">Интеграция</span></p>
                     </div>
-                    <div class="bg-white/5 border border-white/20 rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 text-center">
-                        <i class="ph-fill ph-rocket-launch text-solar text-base sm:text-lg md:text-2xl"></i>
-                        <p class="text-[9px] md:text-xs font-bold mt-1">Действие</p>
+                    <div class="bg-white/5 border border-white/20 rounded-lg px-0.5 py-1.5 sm:p-2 md:p-3 lg:p-5 text-center">
+                        <i class="ph-fill ph-rocket-launch text-solar text-base sm:text-lg md:text-2xl lg:text-4xl"></i>
+                        <p class="text-[9px] md:text-xs lg:text-sm font-bold mt-1">Действие</p>
                     </div>
                 </div>
 
-                <div class="mt-5 md:mt-6 grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 text-[10px] md:text-xs">
-                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-lightning text-solar shrink-0"></i>Триггеры</div>
-                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-funnel text-solar shrink-0"></i>Условия</div>
-                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-rocket-launch text-solar shrink-0"></i>Действия</div>
-                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-plug text-solar shrink-0"></i>Интеграции</div>
-                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 font-bold flex items-center justify-center gap-1.5 col-span-2 md:col-span-1"><i class="ph-fill ph-chart-line-up text-solar shrink-0"></i>Логи и метрики</div>
+                <div class="mt-5 md:mt-6 lg:mt-8 grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 text-[10px] md:text-xs lg:text-sm">
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 lg:p-4 font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-lightning text-solar shrink-0"></i>Триггеры</div>
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 lg:p-4 font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-funnel text-solar shrink-0"></i>Условия</div>
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 lg:p-4 font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-rocket-launch text-solar shrink-0"></i>Действия</div>
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 lg:p-4 font-bold flex items-center justify-center gap-1.5"><i class="ph-fill ph-plug text-solar shrink-0"></i>Интеграции</div>
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 lg:p-4 font-bold flex items-center justify-center gap-1.5 col-span-2 md:col-span-1"><i class="ph-fill ph-chart-line-up text-solar shrink-0"></i>Логи и метрики</div>
                 </div>
             </div>
         </div>
@@ -1848,47 +1864,49 @@ window.addEventListener('load', function(){
             </div>
 
             <!-- Десктоп: горизонтальная цепочка, собранная плотно (было max-w-5xl). -->
-            <div class="hidden md:block w-full max-w-3xl mx-auto mb-4 md:mb-6">
+            <!-- max-w-4xl без lg:-варианта: slide-polish задаёт max-w-3xl через
+                 !important, и брейкпойнтный класс до элемента не доходит. -->
+            <div class="hidden md:block w-full max-w-4xl mx-auto mb-4 md:mb-6 lg:mb-8">
                 <div class="flex items-center justify-between gap-2">
                     <div class="flex-1 bg-solar/15 border-2 border-solar rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
-                        <i class="ph-fill ph-play-circle text-solar text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight">Запуск</p>
+                        <i class="ph-fill ph-play-circle text-solar text-3xl lg:text-5xl"></i>
+                        <p class="text-[10px] lg:text-base font-bold mt-1 text-center px-1 leading-tight">Запуск</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-2xl shrink-0"></i>
+                    <i class="ph-bold ph-caret-right text-grayBase text-2xl lg:text-3xl shrink-0"></i>
                     <div class="flex-1 bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
-                        <i class="ph-fill ph-gear-six text-black text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight">Обработка</p>
+                        <i class="ph-fill ph-gear-six text-black text-3xl lg:text-5xl"></i>
+                        <p class="text-[10px] lg:text-base font-bold mt-1 text-center px-1 leading-tight">Обработка</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-2xl shrink-0"></i>
+                    <i class="ph-bold ph-caret-right text-grayBase text-2xl lg:text-3xl shrink-0"></i>
                     <div class="flex-1 bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
-                        <i class="ph-fill ph-check text-black text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight">Проверка</p>
+                        <i class="ph-fill ph-check text-black text-3xl lg:text-5xl"></i>
+                        <p class="text-[10px] lg:text-base font-bold mt-1 text-center px-1 leading-tight">Проверка</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-2xl shrink-0"></i>
+                    <i class="ph-bold ph-caret-right text-grayBase text-2xl lg:text-3xl shrink-0"></i>
                     <div class="flex-1 bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
-                        <i class="ph-fill ph-plug text-black text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight">Вызов</p>
+                        <i class="ph-fill ph-plug text-black text-3xl lg:text-5xl"></i>
+                        <p class="text-[10px] lg:text-base font-bold mt-1 text-center px-1 leading-tight">Вызов</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-2xl shrink-0"></i>
+                    <i class="ph-bold ph-caret-right text-grayBase text-2xl lg:text-3xl shrink-0"></i>
                     <div class="flex-1 bg-black text-white border-2 border-solar rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
-                        <i class="ph-fill ph-arrows-split text-solar text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight text-solar">Преобразование</p>
+                        <i class="ph-fill ph-arrows-split text-solar text-3xl lg:text-5xl"></i>
+                        <p class="text-[10px] lg:text-base font-bold mt-1 text-center px-1 leading-tight text-solar">Преобразо&shy;вание</p>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-3xl mx-auto mb-3 md:mb-4">
-                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-start gap-2">
-                    <i class="ph-fill ph-puzzle-piece text-solar text-base md:text-lg shrink-0 mt-0.5"></i>
-                    <div><p class="font-bold text-[11px] md:text-sm">Тип узла задаёт роль</p><p class="text-[10px] md:text-xs text-black/60 font-medium">Запуск, маршрут, данные, действие, смысл</p></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-4xl mx-auto mb-3 md:mb-4 lg:mb-6">
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 lg:px-6 lg:py-5 flex items-start gap-2 lg:gap-3">
+                    <i class="ph-fill ph-puzzle-piece text-solar text-base md:text-lg lg:text-3xl shrink-0 mt-0.5"></i>
+                    <div><p class="font-bold text-[11px] md:text-sm lg:text-lg">Тип узла задаёт роль</p><p class="text-[10px] md:text-xs lg:text-sm text-black/60 font-medium">Запуск, маршрут, данные, действие, смысл</p></div>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-start gap-2">
-                    <i class="ph-fill ph-graph text-solar text-base md:text-lg shrink-0 mt-0.5"></i>
-                    <div><p class="font-bold text-[11px] md:text-sm">Логика — в связях</p><p class="text-[10px] md:text-xs text-black/60 font-medium">Один набор узлов даёт разное поведение</p></div>
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 lg:px-6 lg:py-5 flex items-start gap-2 lg:gap-3">
+                    <i class="ph-fill ph-graph text-solar text-base md:text-lg lg:text-3xl shrink-0 mt-0.5"></i>
+                    <div><p class="font-bold text-[11px] md:text-sm lg:text-lg">Логика — в связях</p><p class="text-[10px] md:text-xs lg:text-sm text-black/60 font-medium">Один набор узлов даёт разное поведение</p></div>
                 </div>
             </div>
 
-            <p class="text-center text-[11px] md:text-sm text-black/60 font-medium max-w-3xl mx-auto">Узлы соединяются в цепочку как конструктор — каждый отвечает за один шаг</p>
+            <p class="text-center text-[11px] md:text-sm lg:text-lg text-black/60 font-medium max-w-3xl mx-auto">Узлы соединяются в цепочку как конструктор — каждый отвечает за один шаг</p>
         </div>
     </div>
 
@@ -1900,9 +1918,9 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Данные внутри процесса движутся как JSON-объекты</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-3xl mx-auto">
-                <div class="bg-black rounded-[20px] md:rounded-3xl p-4 md:p-6 text-white shadow-xl">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-3">JSON</p>
-                    <pre class="font-mono text-[10px] md:text-sm text-white/80 leading-relaxed overflow-x-auto">{
+                <div class="bg-black rounded-[20px] md:rounded-3xl p-4 md:p-6 lg:p-8 text-white shadow-xl">
+                    <p class="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-solar mb-3">JSON</p>
+                    <pre class="font-mono text-[10px] md:text-sm lg:text-lg text-white/80 leading-relaxed overflow-x-auto">{
   "order_id": 42,
   "customer": "ООО Ромашка",
   "items": [
@@ -1914,15 +1932,15 @@ window.addEventListener('load', function(){
                 </div>
 
                 <div class="flex flex-col gap-3 md:gap-4">
-                    <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 shadow-sm">
-                        <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2">Элементы</p>
-                        <div class="flex flex-col gap-1.5">
-                            <div class="bg-solar/15 border border-solar/40 rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold flex items-center gap-2"><span class="shrink-0"><i class="ph-fill ph-package text-solar"></i></span>Элемент 1</div>
-                            <div class="bg-solar/15 border border-solar/40 rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold flex items-center gap-2"><span class="shrink-0"><i class="ph-fill ph-package text-solar"></i></span>Элемент 2</div>
+                    <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 lg:p-7 shadow-sm">
+                        <p class="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-black/40 mb-2">Элементы</p>
+                        <div class="flex flex-col gap-1.5 lg:gap-2.5">
+                            <div class="bg-solar/15 border border-solar/40 rounded-lg px-3 py-1.5 md:px-4 md:py-2 lg:py-3 text-[10px] md:text-xs lg:text-base font-bold flex items-center gap-2"><span class="shrink-0"><i class="ph-fill ph-package text-solar"></i></span>Элемент 1</div>
+                            <div class="bg-solar/15 border border-solar/40 rounded-lg px-3 py-1.5 md:px-4 md:py-2 lg:py-3 text-[10px] md:text-xs lg:text-base font-bold flex items-center gap-2"><span class="shrink-0"><i class="ph-fill ph-package text-solar"></i></span>Элемент 2</div>
                         </div>
                     </div>
-                    <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 shadow-sm">
-                        <p class="text-[10px] md:text-xs text-black/70 font-medium">Узел обрабатывает каждый <span class="font-black">элемент</span> отдельно — это важно для массовых операций</p>
+                    <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 lg:p-7 shadow-sm">
+                        <p class="text-[10px] md:text-xs lg:text-base text-black/70 font-medium">Узел обрабатывает каждый <span class="font-black">элемент</span> отдельно — это важно для массовых операций</p>
                     </div>
                 </div>
             </div>
@@ -1985,8 +2003,11 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Ветвление <span class="text-solar">процесса</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Один процесс может идти по разным маршрутам</p>
 
-            <!-- Вход → развилка → три маршрута: блоки стоят плотно, gap уменьшен. -->
+            <!-- Два механизма ветвления, которые нельзя путать (см. текст лекции):
+                 альтернативное выбирает ОДИН маршрут, параллельное отправляет
+                 один результат сразу в НЕСКОЛЬКО независимых действий. -->
             <div class="w-full max-w-2xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-5 md:p-8 shadow-sm">
+                <p class="text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-widest text-black/40 mb-3 md:mb-4">Альтернативное — выбирается один маршрут</p>
                 <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
                     <div class="flex flex-col items-center gap-2">
                         <div class="w-14 h-14 md:w-20 md:h-20 bg-black rounded-full flex items-center justify-center text-solar border-2 border-solar"><i class="ph-fill ph-sign-in text-xl md:text-3xl"></i></div>
@@ -2012,6 +2033,30 @@ window.addEventListener('load', function(){
                         </div>
                     </div>
                 </div>
+
+                <div class="h-px bg-grayBase my-5 md:my-7"></div>
+
+                <p class="text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-widest text-black/40 mb-3 md:mb-4">Параллельное — результат уходит во все ветки сразу</p>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
+                    <div class="flex flex-col items-center gap-2 shrink-0">
+                        <div class="w-14 h-14 md:w-20 md:h-20 bg-black rounded-full flex items-center justify-center text-solar border-2 border-solar"><i class="ph-fill ph-check-circle text-xl md:text-3xl"></i></div>
+                        <p class="text-[10px] md:text-sm font-bold">Результат</p>
+                    </div>
+                    <i class="ph-bold ph-share-network text-grayBase text-2xl md:text-4xl hidden md:block"></i>
+                    <i class="ph-bold ph-arrow-down text-grayBase text-2xl md:text-4xl md:hidden"></i>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-2.5 w-full md:flex-1">
+                        <div class="bg-solar/15 border border-solar/40 rounded-xl px-3 py-2 md:px-3 md:py-3 flex items-center gap-2 text-[10px] md:text-xs lg:text-sm font-bold">
+                            <span class="shrink-0"><i class="ph-fill ph-database text-solar"></i></span>Обновить CRM
+                        </div>
+                        <div class="bg-solar/15 border border-solar/40 rounded-xl px-3 py-2 md:px-3 md:py-3 flex items-center gap-2 text-[10px] md:text-xs lg:text-sm font-bold">
+                            <span class="shrink-0"><i class="ph-fill ph-clipboard-text text-solar"></i></span>Записать в журнал
+                        </div>
+                        <div class="bg-solar/15 border border-solar/40 rounded-xl px-3 py-2 md:px-3 md:py-3 flex items-center gap-2 text-[10px] md:text-xs lg:text-sm font-bold">
+                            <span class="shrink-0"><i class="ph-fill ph-bell-ringing text-solar"></i></span>Уведомить сотрудника
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2023,37 +2068,37 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-4 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Интеллект нужен там, где уже недостаточно жёсткого правила</p>
 
             <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 w-full max-w-3xl mx-auto mb-3 md:mb-5">
-                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-7 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3">Правило</p>
-                    <code class="block bg-grayBase/40 rounded-lg p-3 text-[10px] md:text-sm font-mono leading-relaxed">if status === "new"<br>then route → "queue"</code>
+                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-7 lg:p-9 shadow-sm">
+                    <p class="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-black/40 mb-3">Правило</p>
+                    <code class="block bg-grayBase/40 rounded-lg p-3 lg:p-4 text-[10px] md:text-sm lg:text-base font-mono leading-relaxed">if status === "new"<br>then route → "queue"</code>
                 </div>
-                <i class="ph-bold ph-arrow-right text-solar text-3xl md:text-5xl self-center hidden md:block"></i>
+                <i class="ph-bold ph-arrow-right text-solar text-3xl md:text-5xl lg:text-6xl self-center hidden md:block"></i>
                 <i class="ph-bold ph-arrow-down text-solar text-sm md:text-5xl self-center md:hidden"></i>
-                <div class="flex-1 bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-7 shadow-xl text-white">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-3">Интеллектуальный узел</p>
-                    <div class="bg-white/5 border border-solar/30 rounded-lg p-3 flex items-center gap-3">
-                        <i class="ph-fill ph-brain text-solar text-xl md:text-2xl"></i>
-                        <p class="text-[11px] md:text-sm font-bold">Понять смысл запроса и выбрать маршрут</p>
+                <div class="flex-1 bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-7 lg:p-9 shadow-xl text-white">
+                    <p class="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-solar mb-3">Интеллектуальный узел</p>
+                    <div class="bg-white/5 border border-solar/30 rounded-lg p-3 lg:p-4 flex items-center gap-3">
+                        <i class="ph-fill ph-brain text-solar text-xl md:text-2xl lg:text-4xl"></i>
+                        <p class="text-[11px] md:text-sm lg:text-base font-bold">Понять смысл запроса и выбрать маршрут</p>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-3xl mx-auto">
-                <div class="bg-white border border-grayBase rounded-lg p-3 text-center">
-                    <i class="ph-fill ph-lightbulb text-solar text-lg md:text-xl mb-1"></i>
-                    <p class="font-bold text-[10px] md:text-sm">Понять смысл</p>
+                <div class="bg-white border border-grayBase rounded-lg p-3 lg:p-5 text-center">
+                    <i class="ph-fill ph-lightbulb text-solar text-lg md:text-xl lg:text-3xl mb-1"></i>
+                    <p class="font-bold text-[10px] md:text-sm lg:text-base">Понять смысл</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-lg p-3 text-center">
-                    <i class="ph-fill ph-graph text-solar text-lg md:text-xl mb-1"></i>
-                    <p class="font-bold text-[10px] md:text-sm">Учесть контекст</p>
+                <div class="bg-white border border-grayBase rounded-lg p-3 lg:p-5 text-center">
+                    <i class="ph-fill ph-graph text-solar text-lg md:text-xl lg:text-3xl mb-1"></i>
+                    <p class="font-bold text-[10px] md:text-sm lg:text-base">Учесть контекст</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-lg p-3 text-center">
-                    <i class="ph-fill ph-check-fat text-solar text-lg md:text-xl mb-1"></i>
-                    <p class="font-bold text-[10px] md:text-sm">Выбрать вариант</p>
+                <div class="bg-white border border-grayBase rounded-lg p-3 lg:p-5 text-center">
+                    <i class="ph-fill ph-check-fat text-solar text-lg md:text-xl lg:text-3xl mb-1"></i>
+                    <p class="font-bold text-[10px] md:text-sm lg:text-base">Выбрать вариант</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-lg p-3 text-center">
-                    <i class="ph-fill ph-chat-text text-solar text-lg md:text-xl mb-1"></i>
-                    <p class="font-bold text-[10px] md:text-sm">Сформулировать</p>
+                <div class="bg-white border border-grayBase rounded-lg p-3 lg:p-5 text-center">
+                    <i class="ph-fill ph-chat-text text-solar text-lg md:text-xl lg:text-3xl mb-1"></i>
+                    <p class="font-bold text-[10px] md:text-sm lg:text-base">Сформулировать</p>
                 </div>
             </div>
         </div>
@@ -2068,32 +2113,32 @@ window.addEventListener('load', function(){
             <!-- Воронка стоит между блоками вплотную: было max-w-5xl + gap-8 — дыра. -->
             <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4 w-full max-w-3xl mx-auto">
                 <div class="flex-1 relative">
-                    <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-sm">
-                        <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3">Шум</p>
-                        <div class="flex flex-wrap gap-1.5">
-                            <span class="bg-grayBase/60 text-[9px] md:text-xs px-2 py-1 rounded text-black/50">старые письма</span>
-                            <span class="bg-grayBase/60 text-[9px] md:text-xs px-2 py-1 rounded text-black/50">болтовня</span>
-                            <span class="bg-grayBase/60 text-[9px] md:text-xs px-2 py-1 rounded text-black/50">технические логи</span>
-                            <span class="bg-grayBase/60 text-[9px] md:text-xs px-2 py-1 rounded text-black/50">лишние факты</span>
-                            <span class="bg-grayBase/60 text-[9px] md:text-xs px-2 py-1 rounded text-black/50">мусор</span>
-                            <span class="bg-grayBase/60 text-[9px] md:text-xs px-2 py-1 rounded text-black/50">реклама</span>
+                    <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-sm">
+                        <p class="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-black/40 mb-3">Шум</p>
+                        <div class="flex flex-wrap gap-1.5 lg:gap-2">
+                            <span class="bg-grayBase/60 text-[9px] md:text-xs lg:text-sm px-2 py-1 lg:px-3 lg:py-1.5 rounded text-black/50">старые письма</span>
+                            <span class="bg-grayBase/60 text-[9px] md:text-xs lg:text-sm px-2 py-1 lg:px-3 lg:py-1.5 rounded text-black/50">болтовня</span>
+                            <span class="bg-grayBase/60 text-[9px] md:text-xs lg:text-sm px-2 py-1 lg:px-3 lg:py-1.5 rounded text-black/50">технические логи</span>
+                            <span class="bg-grayBase/60 text-[9px] md:text-xs lg:text-sm px-2 py-1 lg:px-3 lg:py-1.5 rounded text-black/50">лишние факты</span>
+                            <span class="bg-grayBase/60 text-[9px] md:text-xs lg:text-sm px-2 py-1 lg:px-3 lg:py-1.5 rounded text-black/50">мусор</span>
+                            <span class="bg-grayBase/60 text-[9px] md:text-xs lg:text-sm px-2 py-1 lg:px-3 lg:py-1.5 rounded text-black/50">реклама</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-center">
                     <div class="relative">
-                        <i class="ph-fill ph-funnel text-solar text-4xl md:text-6xl"></i>
+                        <i class="ph-fill ph-funnel text-solar text-4xl md:text-6xl lg:text-7xl"></i>
                     </div>
                 </div>
 
-                <div class="flex-1 bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-xl text-white">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-3">На вход модели</p>
-                    <div class="space-y-2">
-                        <div class="bg-white/5 border border-solar/30 rounded-lg px-3 py-2 text-[10px] md:text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-target text-solar"></i>Задача</div>
-                        <div class="bg-white/5 border border-solar/30 rounded-lg px-3 py-2 text-[10px] md:text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-book-bookmark text-solar"></i>Релевантный контекст</div>
-                        <div class="bg-white/5 border border-solar/30 rounded-lg px-3 py-2 text-[10px] md:text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-shield text-solar"></i>Ограничения</div>
-                        <div class="bg-white/5 border border-solar/30 rounded-lg px-3 py-2 text-[10px] md:text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-code text-solar"></i>Формат ответа</div>
+                <div class="flex-1 bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-xl text-white">
+                    <p class="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-solar mb-3">На вход модели</p>
+                    <div class="space-y-2 lg:space-y-3">
+                        <div class="bg-white/5 border border-solar/30 rounded-lg px-3 py-2 lg:px-4 lg:py-3 text-[10px] md:text-sm lg:text-base font-bold flex items-center gap-2"><i class="ph-fill ph-target text-solar"></i>Задача</div>
+                        <div class="bg-white/5 border border-solar/30 rounded-lg px-3 py-2 lg:px-4 lg:py-3 text-[10px] md:text-sm lg:text-base font-bold flex items-center gap-2"><i class="ph-fill ph-book-bookmark text-solar"></i>Релевантный контекст</div>
+                        <div class="bg-white/5 border border-solar/30 rounded-lg px-3 py-2 lg:px-4 lg:py-3 text-[10px] md:text-sm lg:text-base font-bold flex items-center gap-2"><i class="ph-fill ph-shield text-solar"></i>Ограничения</div>
+                        <div class="bg-white/5 border border-solar/30 rounded-lg px-3 py-2 lg:px-4 lg:py-3 text-[10px] md:text-sm lg:text-base font-bold flex items-center gap-2"><i class="ph-fill ph-code text-solar"></i>Формат ответа</div>
                     </div>
                 </div>
             </div>
@@ -2485,36 +2530,36 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-5 md:mb-7 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Пять ошибок, которые ломают автоматизацию</p>
 
             <div class="grid grid-cols-2 md:grid-cols-5 gap-2 lg:gap-3 w-full max-w-4xl mx-auto">
-                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-5 shadow-sm text-center">
-                    <div class="w-8 h-8 md:w-12 md:h-12 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl">1</span></div>
-                    <p class="font-black text-[11px] lg:text-sm mb-1 leading-tight">Нет схемы процесса</p>
-                    <p class="text-[9px] lg:text-xs text-black/60 font-medium leading-tight">Сразу в инструменты</p>
+                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-6 shadow-sm text-center">
+                    <div class="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl lg:text-3xl">1</span></div>
+                    <p class="font-black text-[11px] lg:text-base mb-1 leading-tight">Нет схемы процесса</p>
+                    <p class="text-[9px] lg:text-sm text-black/60 font-medium leading-tight">Сразу в инструменты</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-5 shadow-sm text-center">
-                    <div class="w-8 h-8 md:w-12 md:h-12 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl">2</span></div>
-                    <p class="font-black text-[11px] lg:text-sm mb-1 leading-tight">Агент там, где правил хватит</p>
-                    <p class="text-[9px] lg:text-xs text-black/60 font-medium leading-tight">Избыточная сложность</p>
+                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-6 shadow-sm text-center">
+                    <div class="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl lg:text-3xl">2</span></div>
+                    <p class="font-black text-[11px] lg:text-base mb-1 leading-tight">Агент там, где правил хватит</p>
+                    <p class="text-[9px] lg:text-sm text-black/60 font-medium leading-tight">Избыточная сложность</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-5 shadow-sm text-center">
-                    <div class="w-8 h-8 md:w-12 md:h-12 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl">3</span></div>
-                    <p class="font-black text-[11px] lg:text-sm mb-1 leading-tight">Плохой промпт</p>
-                    <p class="text-[9px] lg:text-xs text-black/60 font-medium leading-tight">Нет структуры и рамок</p>
+                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-6 shadow-sm text-center">
+                    <div class="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl lg:text-3xl">3</span></div>
+                    <p class="font-black text-[11px] lg:text-base mb-1 leading-tight">Плохой промпт</p>
+                    <p class="text-[9px] lg:text-sm text-black/60 font-medium leading-tight">Нет структуры и рамок</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-5 shadow-sm text-center">
-                    <div class="w-8 h-8 md:w-12 md:h-12 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl">4</span></div>
-                    <p class="font-black text-[11px] lg:text-sm mb-1 leading-tight">Нет защитного контура</p>
-                    <p class="text-[9px] lg:text-xs text-black/60 font-medium leading-tight">Риски без валидации</p>
+                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-6 shadow-sm text-center">
+                    <div class="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl lg:text-3xl">4</span></div>
+                    <p class="font-black text-[11px] lg:text-base mb-1 leading-tight">Нет защитного контура</p>
+                    <p class="text-[9px] lg:text-sm text-black/60 font-medium leading-tight">Риски без валидации</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-5 shadow-sm text-center col-span-2 md:col-span-1">
-                    <div class="w-8 h-8 md:w-12 md:h-12 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl">5</span></div>
-                    <p class="font-black text-[11px] lg:text-sm mb-1 leading-tight">Нет метрик</p>
-                    <p class="text-[9px] lg:text-xs text-black/60 font-medium leading-tight">Процесс как чёрный ящик</p>
+                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-6 shadow-sm text-center col-span-2 md:col-span-1">
+                    <div class="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl lg:text-3xl">5</span></div>
+                    <p class="font-black text-[11px] lg:text-base mb-1 leading-tight">Нет метрик</p>
+                    <p class="text-[9px] lg:text-sm text-black/60 font-medium leading-tight">Процесс как чёрный ящик</p>
                 </div>
             </div>
 
-            <div class="w-full max-w-4xl mx-auto mt-3 md:mt-5 bg-black text-white rounded-2xl px-4 py-3 md:px-6 md:py-4 flex items-center justify-center gap-3">
-                <i class="ph-fill ph-warning-circle text-solar text-xl md:text-2xl shrink-0"></i>
-                <p class="text-[11px] md:text-sm font-medium text-white/80">У всех пяти ошибок один источник — <span class="font-black text-solar">отсутствие архитектуры</span>: автоматизацию собрали как набор идей, а не спроектировали</p>
+            <div class="w-full max-w-4xl mx-auto mt-3 md:mt-5 bg-black text-white rounded-2xl px-4 py-3 md:px-6 md:py-4 lg:px-8 lg:py-6 flex items-center justify-center gap-3">
+                <i class="ph-fill ph-warning-circle text-solar text-xl md:text-2xl lg:text-4xl shrink-0"></i>
+                <p class="text-[11px] md:text-sm lg:text-base font-medium text-white/80">У всех пяти ошибок один источник — <span class="font-black text-solar">отсутствие архитектуры</span>: автоматизацию собрали как набор идей, а не спроектировали</p>
             </div>
         </div>
     </div>

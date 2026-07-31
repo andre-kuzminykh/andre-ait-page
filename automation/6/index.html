@@ -533,23 +533,27 @@ window.addEventListener('load', function(){
       var ink = inkBox(c);
       if(!ink || ink.h < 40) return;
       if(availH - padY <= 0 || availW - padX <= 0) return;
-      var z = Math.min((availH - padY) / ink.h, (availW - padX) / ink.w);
-      z = (z < 0.999) ? z * 0.96
-        : (window.innerWidth < 768 ? 1 : Math.min(z, MAX_GROW) * 0.97);
+      // Масштаб считается аналитически, а не подбором. Паддинги zoom тоже
+      // масштабирует, поэтому условие «чернила влезают» — это
+      //   natH*z + padY*z <= availH   →   z <= availH / (natH + padY),
+      // где natH — высота чернил в CSS-пикселях. Подбор вида z /= over только
+      // приближался снизу и на коротких слайдах недобирал процентов десять.
+      var grow = window.innerWidth >= 768;
+      function target(natH, natW){
+        var t = Math.min(availH / (natH + padY), availW / (natW + padX)) * 0.99;
+        return grow ? Math.min(t, MAX_GROW) : Math.min(t, 1);
+      }
+      var z = target(ink.h, ink.w);
       if(z > 0.999 && z < 1.04) return;
       apply(z);
-      // Второй проход обязателен: zoom сжимает CSS-ширину content-z, текст
-      // переносится иначе, и чернила становятся выше, чем были при замере, —
-      // выросший слайд после первого прохода уезжал верхом под шапку.
-      // Паддинги zoom тоже масштабирует, поэтому доступную полосу считаем
-      // в отрисованных пикселях: availH - padY*z.
-      for(var pass = 0; pass < 3; pass++){
+      // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
+      // и natH меняется. Обратно в CSS-пиксели — делением на текущий z.
+      for(var pass = 0; pass < 4; pass++){
         var re = inkBox(c);
         if(!re) break;
-        var over = Math.max(re.h / Math.max(1, availH - padY * z),
-                            re.w / Math.max(1, availW - padX * z));
-        if(over <= 1.005) break;
-        z = z / over * 0.99;
+        var next = target(re.h / z, re.w / z);
+        if(Math.abs(next - z) < 0.01) break;
+        z = next;
         apply(z);
       }
     }catch(e){}
