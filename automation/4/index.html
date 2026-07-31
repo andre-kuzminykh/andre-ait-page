@@ -594,7 +594,17 @@ window.addEventListener('load', function(){
     fitAll(); markActive();
     if(typeof window.updateSlides === 'function'){
       var orig = window.updateSlides;
-      window.updateSlides = function(){ var r = orig.apply(this, arguments); requestAnimationFrame(function(){ fitAll(); markActive(); }); return r; };
+      window.updateSlides = function(){
+        var r = orig.apply(this, arguments);
+        requestAnimationFrame(function(){ fitAll(); markActive(); });
+        // Обязательный повтор ПОСЛЕ каскада появления. Первый замер идёт в тот
+        // момент, когда на слайде только что встал .is-active и его дети
+        // анимируются (deckRise: 0.6s + до 0.34s задержки) — их боксы сдвинуты
+        // трансформом, ink меряется неверно, и именно активный слайд, который
+        // видит зритель, оставался с zoom≈1, пока соседние масштабировались.
+        setTimeout(fitAll, 1050);
+        return r;
+      };
     }
     [250, 700, 1500].forEach(function(d){ setTimeout(fitAll, d); });
   });
@@ -604,52 +614,6 @@ window.addEventListener('load', function(){
 })();
 </script>
 <style id="lesson-extra">
-
-    /* ДЕСКТОП: компенсация «пустоты».
-       portal-fit умеет увеличивать контент, но активный слайд он замеряет
-       в момент каскадного появления (класс .is-active только что поставлен),
-       поэтому именно тот слайд, который смотрит зритель, почти всегда остаётся
-       с zoom≈1 и выглядит мелким на 1440×900. Здесь для каждого «мелкого»
-       слайда задан собственный коэффициент: растут кегль и паддинги, сетка и
-       порядок блоков не меняются. Ширину ограничивает сам .content-z
-       (max-w-*), поэтому за рамку слайда ничего не выходит.
-       Значения подобраны так, чтобы «чернильная» высота слайда вышла на
-       ~560px — это потолок, который даёт полоса под говорящую голову. */
-    @media (min-width: 1024px) {
-        #slide-0 .content-z > * { zoom: 1.31; }
-        #slide-1 .content-z > * { zoom: 1.06; }
-        #slide-2 .content-z > * { zoom: 1.21; }
-        #slide-3 .content-z > * { zoom: 1.31; }
-        #slide-4 .content-z > * { zoom: 1.31; }
-        #slide-5 .content-z > * { zoom: 1.24; }
-        #slide-7 .content-z > * { zoom: 1.27; }
-        #slide-9 .content-z > * { zoom: 1.56; }
-        #slide-10 .content-z > * { zoom: 1.33; }
-        #slide-15 .content-z > * { zoom: 1.20; }
-        #slide-16 .content-z > * { zoom: 1.23; }
-        #slide-17 .content-z > * { zoom: 1.17; }
-        #slide-18 .content-z > * { zoom: 1.29; }
-        #slide-19 .content-z > * { zoom: 1.28; }
-        #slide-20 .content-z > * { zoom: 1.30; }
-        #slide-21 .content-z > * { zoom: 1.31; }
-        #slide-22 .content-z > * { zoom: 1.15; }
-        #slide-24 .content-z > * { zoom: 1.10; }
-        #slide-26 .content-z > * { zoom: 1.31; }
-        #slide-27 .content-z > * { zoom: 1.14; }
-        #slide-28 .content-z > * { zoom: 1.17; }
-        #slide-29 .content-z > * { zoom: 1.57; }
-        #slide-32 .content-z > * { zoom: 1.22; }
-        #slide-33 .content-z > * { zoom: 1.04; }
-        #slide-45 .content-z > * { zoom: 0.93; }
-        #slide-34 .content-z > * { zoom: 1.15; }
-        #slide-35 .content-z > * { zoom: 1.09; }
-        #slide-39 .content-z > * { zoom: 1.16; }
-        #slide-41 .content-z > * { zoom: 1.47; }
-        #slide-42 .content-z > * { zoom: 1.17; }
-        #slide-44 .content-z > * { zoom: 1.17; }
-        #slide-47 .content-z > * { zoom: 1.22; }
-        #slide-50 .content-z > * { zoom: 1.23; }
-    }
     /* Агрессивное уплотнение на мобиле — чтобы все слайды влезали в один экран */
     @media (max-width: 767px) {
         .content-z h1 { margin-bottom: 0.5rem !important; }

@@ -594,7 +594,17 @@ window.addEventListener('load', function(){
     fitAll(); markActive();
     if(typeof window.updateSlides === 'function'){
       var orig = window.updateSlides;
-      window.updateSlides = function(){ var r = orig.apply(this, arguments); requestAnimationFrame(function(){ fitAll(); markActive(); }); return r; };
+      window.updateSlides = function(){
+        var r = orig.apply(this, arguments);
+        requestAnimationFrame(function(){ fitAll(); markActive(); });
+        // Обязательный повтор ПОСЛЕ каскада появления. Первый замер идёт в тот
+        // момент, когда на слайде только что встал .is-active и его дети
+        // анимируются (deckRise: 0.6s + до 0.34s задержки) — их боксы сдвинуты
+        // трансформом, ink меряется неверно, и именно активный слайд, который
+        // видит зритель, оставался с zoom≈1, пока соседние масштабировались.
+        setTimeout(fitAll, 1050);
+        return r;
+      };
     }
     [250, 700, 1500].forEach(function(d){ setTimeout(fitAll, d); });
   });
@@ -2007,7 +2017,7 @@ window.addEventListener('load', function(){
                  альтернативное выбирает ОДИН маршрут, параллельное отправляет
                  один результат сразу в НЕСКОЛЬКО независимых действий. -->
             <div class="w-full max-w-3xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-5 md:p-8 shadow-sm">
-                <p class="text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-widest text-black/40 mb-2 md:mb-3">Альтернативное — выбирается один маршрут</p>
+                <p class="text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-widest text-black/40 mb-2 md:mb-3"><span class="md:hidden">Альтернативное</span><span class="hidden md:inline">Альтернативное — выбирается один маршрут</span></p>
                 <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
                     <div class="flex flex-col items-center gap-2">
                         <div class="w-14 h-14 md:w-20 md:h-20 bg-black rounded-full flex items-center justify-center text-solar border-2 border-solar"><i class="ph-fill ph-sign-in text-xl md:text-3xl"></i></div>
@@ -2034,29 +2044,39 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
 
-                <div class="h-px bg-grayBase my-4 md:my-5"></div>
+                <!-- Схема параллельного ветвления только с md: на 390px в карточке
+                     остаётся ~80px запаса до кружка с головой, вторая схема туда не
+                     помещается. Телефон получает тот же смысл строкой ниже. -->
+                <div class="hidden md:block">
+                    <div class="h-px bg-grayBase my-4 md:my-5"></div>
 
-                <p class="text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-widest text-black/40 mb-2 md:mb-3">Параллельное — результат уходит во все ветки сразу</p>
-                <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
-                    <div class="flex flex-col items-center gap-2 shrink-0">
-                        <div class="w-14 h-14 md:w-20 md:h-20 bg-black rounded-full flex items-center justify-center text-solar border-2 border-solar"><i class="ph-fill ph-check-circle text-xl md:text-3xl"></i></div>
-                        <p class="text-[10px] md:text-sm font-bold">Результат</p>
-                    </div>
-                    <i class="ph-bold ph-share-network text-grayBase text-2xl md:text-4xl hidden md:block"></i>
-                    <i class="ph-bold ph-arrow-down text-grayBase text-2xl md:text-4xl md:hidden"></i>
+                    <p class="text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-widest text-black/40 mb-2 md:mb-3">Параллельное — результат уходит во все ветки сразу</p>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
+                        <div class="flex flex-col items-center gap-2 shrink-0">
+                            <div class="w-14 h-14 md:w-20 md:h-20 bg-black rounded-full flex items-center justify-center text-solar border-2 border-solar"><i class="ph-fill ph-check-circle text-xl md:text-3xl"></i></div>
+                            <p class="text-[10px] md:text-sm font-bold">Результат</p>
+                        </div>
+                        <i class="ph-bold ph-share-network text-grayBase text-2xl md:text-4xl"></i>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-2.5 w-full md:w-auto">
-                        <div class="bg-solar/15 border border-solar/40 rounded-xl px-3 py-2 md:px-3 md:py-3 flex items-center gap-2 text-[10px] md:text-xs lg:text-sm font-bold">
-                            <span class="shrink-0"><i class="ph-fill ph-database text-solar"></i></span>Обновить CRM
-                        </div>
-                        <div class="bg-solar/15 border border-solar/40 rounded-xl px-3 py-2 md:px-3 md:py-3 flex items-center gap-2 text-[10px] md:text-xs lg:text-sm font-bold">
-                            <span class="shrink-0"><i class="ph-fill ph-clipboard-text text-solar"></i></span>Записать в журнал
-                        </div>
-                        <div class="bg-solar/15 border border-solar/40 rounded-xl px-3 py-2 md:px-3 md:py-3 flex items-center gap-2 text-[10px] md:text-xs lg:text-sm font-bold">
-                            <span class="shrink-0"><i class="ph-fill ph-bell-ringing text-solar"></i></span>Уведомить сотрудника
+                        <!-- На 768px три колонки не дают «Уведомить сотрудника» влезть
+                             в плашку — на планшете ветки идут столбиком, как в верхнем ряду. -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-2.5">
+                            <div class="bg-solar/15 border border-solar/40 rounded-xl px-3 py-2 md:px-3 md:py-3 flex items-center gap-2 text-[10px] md:text-xs lg:text-sm font-bold">
+                                <span class="shrink-0"><i class="ph-fill ph-database text-solar"></i></span>Обновить CRM
+                            </div>
+                            <div class="bg-solar/15 border border-solar/40 rounded-xl px-3 py-2 md:px-3 md:py-3 flex items-center gap-2 text-[10px] md:text-xs lg:text-sm font-bold">
+                                <span class="shrink-0"><i class="ph-fill ph-clipboard-text text-solar"></i></span>Записать в журнал
+                            </div>
+                            <div class="bg-solar/15 border border-solar/40 rounded-xl px-3 py-2 md:px-3 md:py-3 flex items-center gap-2 text-[10px] md:text-xs lg:text-sm font-bold">
+                                <span class="shrink-0"><i class="ph-fill ph-bell-ringing text-solar"></i></span>Уведомить сотрудника
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <p class="md:hidden mt-3 pt-3 border-t border-grayBase text-[10px] text-black/60 font-medium leading-snug">
+                    <span class="font-black text-black">Параллельное ветвление</span> отправляет результат сразу во все ветки: обновить CRM, записать в журнал, уведомить сотрудника.
+                </p>
             </div>
         </div>
     </div>

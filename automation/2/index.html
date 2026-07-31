@@ -567,7 +567,17 @@ window.addEventListener('load', function(){
     fitAll(); markActive();
     if(typeof window.updateSlides === 'function'){
       var orig = window.updateSlides;
-      window.updateSlides = function(){ var r = orig.apply(this, arguments); requestAnimationFrame(function(){ fitAll(); markActive(); }); return r; };
+      window.updateSlides = function(){
+        var r = orig.apply(this, arguments);
+        requestAnimationFrame(function(){ fitAll(); markActive(); });
+        // Обязательный повтор ПОСЛЕ каскада появления. Первый замер идёт в тот
+        // момент, когда на слайде только что встал .is-active и его дети
+        // анимируются (deckRise: 0.6s + до 0.34s задержки) — их боксы сдвинуты
+        // трансформом, ink меряется неверно, и именно активный слайд, который
+        // видит зритель, оставался с zoom≈1, пока соседние масштабировались.
+        setTimeout(fitAll, 1050);
+        return r;
+      };
     }
     [250, 700, 1500].forEach(function(d){ setTimeout(fitAll, d); });
   });
