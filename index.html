@@ -102,7 +102,7 @@
     margin: 0; padding: 0; background: #050505; color-scheme: dark;
     font-family: 'JetBrains Mono', monospace; color: #E5E7EB;
     overflow: hidden; width: 100vw; height: 100vh; height: 100dvh;
-    /* FR-SITE14: низ экрана ВСЕГДА чёрный. overscroll-behavior гасит «оттяжку»
+    /* FR-SITE18: низ экрана ВСЕГДА чёрный. overscroll-behavior гасит «оттяжку»
        браузера, за которой проглядывает его собственный светлый фон. */
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
@@ -111,7 +111,7 @@
        Фиксируем размеры ровно как в макете. */
     -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
   }
-  /* FR-SITE14: чёрная заливка зоны системной панели (viewport-fit=cover).
+  /* FR-SITE18: чёрная заливка зоны системной панели (viewport-fit=cover).
      Если браузер не красит её сам, снизу появлялась светлая полоса. */
   body::after { content: ''; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1;
     height: env(safe-area-inset-bottom, 0px); background: #050505; pointer-events: none; }
@@ -135,11 +135,11 @@
      без единого сетевого запроса, пока грузятся poster и само видео. */
   /* height дублируется в vh ПЕРЕД dvh: браузеры без поддержки dvh (старые
      Safari/Chrome) иначе получали height:auto → затемнение схлопывалось в ноль
-     и переход «видео → чёрное» становился резким (FR-SITE13). */
+     и переход «видео → чёрное» становился резким (FR-SITE17). */
   #hero-video { position: absolute; top: 0; left: 0; width: 100vw; height: 64vh; height: 64dvh; object-fit: cover; object-position: center; cursor: pointer; transition: opacity 0.4s ease;
     background-image: url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABMNDhEODBMRDxEVFBMXHTAfHRoaHToqLCMwRT1JR0Q9Q0FMVm1dTFFoUkFDX4JgaHF1e3x7SlyGkIV3j214e3b/2wBDARQVFR0ZHTgfHzh2T0NPdnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnb/wAARCAAYABgDASIAAhEBAxEB/8QAGAABAQADAAAAAAAAAAAAAAAAAAUBAwb/xAAhEAABBAICAgMAAAAAAAAAAAABAAIDEQQSITEFIhMyQf/EABgBAAIDAAAAAAAAAAAAAAAAAAAEAQID/8QAHBEAAgICAwAAAAAAAAAAAAAAAAECAxESIjFB/9oADAMBAAIRAxEAPwDn4oL6Co4vhzNAZHSC6+tdLEcFROdXQtbML4mxySSN9OCPblXtubfFjDjqSpoNSRSKlkQ7t3AoHlExG2MlkHWS352TNTGO0DjVBW8bwc97TPAYBZpESmqMXJvslnLljJaH20fh5REU4QKcl6f/2Q==");
     background-size: cover; background-position: center; background-repeat: no-repeat; }
-  /* FR-SITE13: затемнение КОРОЧЕ (начинается с 45%, а не с 6% — борода почти не
+  /* FR-SITE17: затемнение КОРОЧЕ (начинается с 45%, а не с 6% — борода почти не
      темнится) и ПЛАВНЕЕ (15 стопов S-кривой вместо 8, шаг альфы ≤0.09 — нет
      полос на слабых экранах). Сплошной #050505 ровно на 100% высоты видео,
      поэтому стык с чёрной страницей ниже незаметен. */
@@ -186,7 +186,7 @@
     display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: inset 0 2px 6px rgba(0,0,0,0.6); padding: 0; }
   @media (min-width:1024px) { .mic-btn { width: 2.25rem; height: 2.25rem; } }
   @media (hover:hover) { .mic-btn:hover { background: #111111; } }
-  /* FR-SITE15: фиолетовая пульсация микрофона. На десктопе она включается вместе
+  /* FR-SITE19: фиолетовая пульсация микрофона. На десктопе она включается вместе
      со звуком (класс .on ставит setMuted), на мобилке горит ВСЕГДА — как подсказка
      «нажми, чтобы включить звук». Видимостью управляет CSS, а не инлайн-стиль,
      иначе media-правило не смогло бы его перебить. */
@@ -323,7 +323,7 @@
   /* ===== Caption ===== */
   .caption { position: fixed; left: 50%; top: calc(60dvh - 3.6rem); transform: translate(-50%, -100%); white-space: nowrap; text-align: center; z-index: 29; pointer-events: none; }
   @media (min-width:1024px) { .caption { left: 29%; top: auto; bottom: calc(8% + 3.9rem); transform: translateX(-50%); } }
-  /* тень субтитра усилена: затемнение видео стало короче (FR-SITE13), и под
+  /* тень субтитра усилена: затемнение видео стало короче (FR-SITE17), и под
      текстом теперь более светлый кадр */
   .caption span { color: rgba(229,231,235,0.52); font-size: 15px; font-weight: 500; line-height: 1.4; letter-spacing: 0.02em; text-shadow: 0 1px 8px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.7); }
 
@@ -506,7 +506,7 @@
   @media (max-width:1023px) and (orientation: landscape) {
     /* video fills the left side, full height; its right edge fades into the black content side */
     #hero-video { width: 60%; height: 100vh; height: 100dvh; transform: none; }
-    /* тот же масштаб, больше стопов — мягче переход (FR-SITE13) */
+    /* тот же масштаб, больше стопов — мягче переход (FR-SITE17) */
     .video-shadow { width: 60%; height: 100vh; height: 100dvh;
       background: linear-gradient(to right, rgba(5,5,5,0) 35%, rgba(5,5,5,0.12) 46%, rgba(5,5,5,0.28) 55%,
         rgba(5,5,5,0.5) 62%, rgba(5,5,5,0.7) 70%, rgba(5,5,5,0.86) 77%, rgba(5,5,5,0.96) 83%, #050505 88%); }

@@ -103,8 +103,8 @@
   @media(min-width:2300px){body{zoom:1.5}}
 
   /* ===== Content: roadmap (scrolls) ===== */
-  main{min-height:100dvh;padding:6rem 1rem 8rem}
-  @media(min-width:640px){main{padding:7rem 2rem 5rem}}
+  main{min-height:100dvh;padding:6rem 1rem 3rem}
+  @media(min-width:640px){main{padding:7rem 2rem 3.5rem}}
   .wrap{max-width:64rem;margin:0 auto;animation:fadeUp .5s ease both}
   .title{text-align:center;font-size:clamp(1.7rem,5vw,2.8rem);font-weight:800;line-height:1.12;letter-spacing:-.02em}
   .title .line,.title .line2{display:block}
@@ -125,7 +125,7 @@
   .module h3{margin:.2rem 0 0;font-size:clamp(1.05rem,2.6vw,1.45rem);font-weight:700;line-height:1.25}
   .module p{margin:.5rem 0 0;color:var(--muted);font-size:clamp(.85rem,1.1vw,1rem);line-height:1.6}
   .module .go{flex-shrink:0;align-self:center;color:var(--muted);font-size:1rem}
-  /* locked modules (only module 1 is open) — minimalist grey/disabled */
+  /* locked modules (все модули открыты; стили оставлены на будущее) */
   .module.locked{opacity:.48;cursor:default}
   .module.locked .ico{background:rgba(140,140,150,.12);color:var(--muted)}
   .module.locked .lbl{color:var(--muted)}
@@ -147,6 +147,22 @@
   .bubble.paused .bubble-sound{opacity:0}
   .bubble-play{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.9rem;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity .2s ease;pointer-events:none}
   .bubble.paused .bubble-play{opacity:1}
+
+/* Теней нет нигде (требование заказчика): гасим и утилиты, и собственные стили */
+*, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
+[class*="drop-shadow"]{ filter:none !important; }
+.logo-btn img, header img{ filter:none !important; }
+
+
+/* Говорящая голова — СПРАВА и того же размера, что в лекциях
+   (там clamp(140px,13vw,190px) на десктопе и 100px на мобилке). */
+.bubble{
+  left:auto !important; right:20px !important;
+  width:clamp(140px,13vw,190px) !important; height:clamp(140px,13vw,190px) !important;
+}
+@media(max-width:768px){
+  .bubble{ left:auto !important; right:12px !important; width:100px !important; height:100px !important; }
+}
 </style>
 </head>
 <body>
@@ -192,47 +208,46 @@
           <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
         </a></li>
 
-        <li><a class="module locked">
+        <li><a class="module" href="https://andre.technology/automation/3">
           <span class="ico"><i class="fa-solid fa-robot"></i></span>
           <span class="body"><span class="lbl">Модуль 3</span><h3>Проектирование и разработка ИИ-агентов</h3>
-          <p>Вы освоите принципы создания ИИ-агентов, сможете спроектировать решение под конкретную бизнес-задачу и собрать работающего агента без глубокой технической подготовки.</p>
-          <span class="when"><i class="fa-solid fa-clock"></i> Старт 20 июня 2026</span></span>
-          <span class="go"><i class="fa-solid fa-lock"></i></span>
+          <p>Вы освоите принципы создания ИИ-агентов, сможете спроектировать решение под конкретную бизнес-задачу и собрать работающего агента без глубокой технической подготовки.</p></span>
+          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
         </a></li>
 
-        <li><a class="module locked">
+        <li><a class="module" href="https://andre.technology/automation/4">
           <span class="ico"><i class="fa-solid fa-network-wired"></i></span>
           <span class="body"><span class="lbl">Модуль 4</span><h3>Проектирование и разработка мультиагентных систем</h3>
           <p>Вы разберётесь, как организовать взаимодействие нескольких ИИ-агентов, распределять между ними задачи и создавать мультиагентные системы для автоматизации сложных процессов.</p></span>
-          <span class="go"><i class="fa-solid fa-lock"></i></span>
+          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
         </a></li>
 
-        <li><a class="module locked">
+        <li><a class="module" href="https://andre.technology/automation/5">
           <span class="ico"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
           <span class="body"><span class="lbl">Модуль 5</span><h3>Продвинутые техники разработки ИИ-сервисов</h3>
           <p>Вы научитесь расширять возможности ИИ-агентов с помощью интеграций, программной логики и пользовательских интерфейсов, превращая отдельные сценарии в полноценные цифровые сервисы.</p></span>
-          <span class="go"><i class="fa-solid fa-lock"></i></span>
+          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
         </a></li>
 
-        <li><a class="module locked">
+        <li><a class="module" href="https://andre.technology/automation/6">
           <span class="ico"><i class="fa-solid fa-server"></i></span>
           <span class="body"><span class="lbl">Модуль 6</span><h3>Тестирование, мониторинг и масштабирование ИИ-систем</h3>
           <p>Вы освоите подходы к тестированию и мониторингу ИИ-решений, научитесь контролировать качество работы агентов и подготовите систему к масштабированию внутри компании.</p></span>
-          <span class="go"><i class="fa-solid fa-lock"></i></span>
+          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
         </a></li>
 
-        <li><a class="module locked">
+        <li><a class="module" href="https://andre.technology/automation/7">
           <span class="ico"><i class="fa-solid fa-users"></i></span>
           <span class="body"><span class="lbl">Модуль 7</span><h3>Управление изменениями в компании</h3>
           <p>Вы поймёте, как меняются роли сотрудников и бизнес-процессы после внедрения ИИ, и сможете подготовить план организационных изменений, обучения и адаптации команды.</p></span>
-          <span class="go"><i class="fa-solid fa-lock"></i></span>
+          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
         </a></li>
 
-        <li><a class="module locked">
+        <li><a class="module" href="https://andre.technology/automation/8">
           <span class="ico"><i class="fa-solid fa-chart-line"></i></span>
           <span class="body"><span class="lbl">Модуль 8</span><h3>Оценка эффективности и экономического эффекта</h3>
           <p>Вы научитесь рассчитывать ROI и экономический эффект от внедрения ИИ, формировать обоснование инвестиций и презентовать результаты проекта руководству или заказчикам.</p></span>
-          <span class="go"><i class="fa-solid fa-lock"></i></span>
+          <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
         </a></li>
       </ol>
     </div>
