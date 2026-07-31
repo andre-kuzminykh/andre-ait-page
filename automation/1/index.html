@@ -524,23 +524,26 @@ window.addEventListener('load', function(){
       c.style.zoom = '';
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
-      // scrollHeight ловит переполнение flex-центрированного контента
-      // (когда content-z имеет min-height:100% и offsetHeight = availH, но
-      // дети визуально вылезают за рамку из-за justify-content:center).
-      var natH = Math.max(c.offsetHeight, c.scrollHeight, slide.scrollHeight);
-      var natW = Math.max(c.scrollWidth, slide.scrollWidth);
-      if(!natH || !natW) return;
-      var s = Math.min(availH / natH, availW / natW, 1);
-      // запас 4% — чтобы высокий контент гарантированно влезал и заголовок не уходил за край
-      if(s < 0.999){ c.style.zoom = s * 0.96; return; }
+      // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
+      // offsetHeight/scrollHeight тут врут: у content-z стоит min-height:100%,
+      // поэтому offsetHeight всегда равен высоте слайда, а scrollHeight не
+      // растёт от flex-центрированного контента — переполнение молча уезжало
+      // вверх под шапку вместо того, чтобы ужаться.
+      var st = window.getComputedStyle(c);
+      var padY = (parseFloat(st.paddingTop) || 0) + (parseFloat(st.paddingBottom) || 0);
+      var padX = (parseFloat(st.paddingLeft) || 0) + (parseFloat(st.paddingRight) || 0);
+      var innerH = availH - padY, innerW = availW - padX;
+      var ink = inkBox(c);
+      if(!ink || ink.h < 40 || innerH <= 0 || innerW <= 0) return;
+      var k = Math.min(innerH / ink.h, innerW / ink.w);
+      if(k < 0.999){
+        // запас 4% — чтобы высокий контент гарантированно влезал
+        c.style.zoom = k * 0.96;
+        return;
+      }
       // Контент влезает — проверяем обратное: не тонет ли он в пустоте.
       if(window.innerWidth < 1024) return;
-      var st = window.getComputedStyle(c);
-      var innerH = availH - (parseFloat(st.paddingTop) || 0) - (parseFloat(st.paddingBottom) || 0);
-      var innerW = availW - (parseFloat(st.paddingLeft) || 0) - (parseFloat(st.paddingRight) || 0);
-      var ink = inkBox(c);
-      if(!ink || ink.h < 40) return;
-      var g = Math.min(innerH / ink.h, innerW / ink.w, MAX_GROW);
+      var g = Math.min(k, MAX_GROW);
       if(g > 1.04) c.style.zoom = g * 0.97;
     }catch(e){}
   }
@@ -681,10 +684,10 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 2: Мир делится -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-1">
-        <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Мир делится на <span class="text-solar">два типа компаний</span></h2>
+        <div class="content-z max-w-6xl lg:max-w-4xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-10 text-center text-black">Мир делится на <br class="hidden md:block"><span class="text-solar">два типа компаний</span></h2>
 
-            <div class="flex flex-col md:flex-row gap-4 md:gap-8 items-stretch justify-center w-full md:mb-12">
+            <div class="flex flex-col md:flex-row gap-4 md:gap-6 items-stretch justify-center w-full">
                 <!-- ИИ First -->
                 <div class="bg-black text-white border-2 border-solar rounded-[24px] md:rounded-3xl p-5 md:p-10 flex-1 shadow-lg relative transform md:scale-105 z-10 flex flex-col items-center">
                     <div class="absolute -top-3 md:-top-4 left-0 right-0 mx-auto w-fit bg-solar text-[#0A0A0A] px-4 md:px-6 py-1 md:py-2 rounded-full text-[10px] md:text-xs font-bold uppercase whitespace-nowrap shadow-md">Лидеры</div>
@@ -755,7 +758,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 4: Почему именно ИИ-агенты -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-3">
-        <div class="content-z w-full max-w-6xl">
+        <div class="content-z w-full max-w-6xl lg:max-w-4xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-5 md:mb-16 text-center text-black">Почему именно <span class="text-solar">ИИ-агенты?</span></h2>
 
             <div class="flex flex-col md:flex-row gap-3 md:gap-8 items-stretch justify-center w-full">
@@ -794,7 +797,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 5: Кто такие ИИ-агенты -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-4">
-        <div class="content-z w-full max-w-6xl flex flex-col items-center">
+        <div class="content-z w-full max-w-6xl lg:max-w-4xl flex flex-col items-center">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-6 text-black text-center">Кто такие <span class="text-solar">ИИ-агенты?</span></h2>
             <p class="text-[11px] md:text-xl text-black/70 mb-6 md:mb-12 text-center max-w-4xl">
                 Субъект, который способен <b class="text-black bg-solar/30 px-1 md:px-2 py-0.5 rounded">самостоятельно</b> анализировать среду и действовать
@@ -829,10 +832,10 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 6: Базовая архитектура агента -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-5">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-4xl font-black mb-4 md:mb-8 text-center text-black">Базовая архитектура <span class="text-solar">ИИ-агента</span></h2>
 
-            <div class="bg-white border border-grayBase p-4 md:p-8 rounded-[24px] md:rounded-[32px] shadow-xl flex flex-col md:flex-row items-stretch gap-3 md:gap-6 w-full max-w-5xl mx-auto">
+            <div class="bg-white border border-grayBase p-4 md:p-8 rounded-[24px] md:rounded-[32px] shadow-xl flex flex-col md:flex-row items-stretch gap-3 md:gap-6 w-full max-w-5xl lg:max-w-3xl mx-auto">
                 <!-- Input -->
                 <div class="flex-1 bg-grayBase/30 rounded-[20px] md:rounded-3xl p-3 md:p-6 border border-grayBase flex flex-col items-center justify-center text-center h-full w-full min-h-[90px]">
                     <div class="w-10 h-10 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center mb-2 md:mb-4 text-black shadow-sm shrink-0"><i class="ph-fill ph-download-simple text-xl md:text-3xl"></i></div>
@@ -868,6 +871,12 @@ window.addEventListener('load', function(){
                         <li class="flex items-center gap-2"><i class="ph-fill ph-cloud-arrow-up text-black/40 text-base md:text-lg shrink-0"></i> Внешние API</li>
                     </ul>
                 </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-10">
+                <p class="text-[11px] md:text-xl text-black font-medium leading-snug">
+                    <i class="ph-fill ph-arrows-clockwise text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Цикл замыкается: агент наблюдает результат и <span class="font-black">корректирует план</span>
+                </p>
             </div>
         </div>
     </div>
@@ -1001,10 +1010,10 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 10: 5 уровней развития -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-9">
-        <div class="content-z w-full max-w-6xl">
+        <div class="content-z w-full max-w-6xl lg:max-w-4xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-16 text-center text-black">Пять уровней <span class="text-solar">развития ИИ</span></h2>
 
-            <div class="flex flex-col md:flex-row items-end justify-center h-auto md:h-80 gap-2 md:gap-3 w-full max-w-5xl mx-auto border-b-2 border-grayBase pb-0">
+            <div class="flex flex-col md:flex-row items-end justify-center h-auto md:h-80 lg:h-[22rem] gap-2 md:gap-3 w-full max-w-5xl lg:max-w-3xl mx-auto border-b-2 border-grayBase pb-0">
                 <div class="flex-1 w-full bg-grayBase/50 rounded-t-xl md:rounded-t-2xl p-3 md:p-6 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[40%] min-h-[50px] md:min-h-[70px]">
                     <span class="text-black/40 font-bold text-[8px] md:text-[10px] uppercase tracking-widest leading-none">Ур. 1</span>
                     <h3 class="font-bold text-black text-[10px] md:text-base mt-1 md:mt-2 leading-none">Разговорные</h3>
@@ -1027,13 +1036,19 @@ window.addEventListener('load', function(){
                     <h3 class="font-bold text-black text-[10px] md:text-base mt-1 md:mt-2 leading-none">Мультиагентные</h3>
                 </div>
             </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-5 md:mt-10">
+                <p class="text-[11px] md:text-xl text-black font-medium leading-snug">
+                    <i class="ph-fill ph-stack text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Переход на уровень выше — это не только модель, но и <span class="font-black">память, мониторинг и безопасность</span>
+                </p>
+            </div>
         </div>
     </div>
 
     <!-- СЛАЙД 11: Почему этот год -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-10">
-        <div class="content-z max-w-6xl">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Почему агенты, <br class="sm:hidden"><span class="text-solar">а не ассистенты?</span></h2>
+        <div class="content-z max-w-6xl lg:max-w-4xl">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Почему агенты, <br><span class="text-solar">а не ассистенты?</span></h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8 w-full">
                 <div class="bg-white p-4 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase text-center flex flex-col items-center h-full w-full">
@@ -1057,7 +1072,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 12: Что такое AI-First -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-11">
-        <div class="content-z max-w-5xl mx-auto w-full">
+        <div class="content-z max-w-5xl lg:max-w-4xl mx-auto w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Что такое <span class="text-solar">AI-First компания?</span></h2>
 
             <div class="bg-black text-white p-5 sm:p-10 md:p-16 rounded-[24px] md:rounded-[40px] shadow-2xl relative overflow-hidden w-full">
@@ -1088,7 +1103,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 13: Фреймворк RUN CHANGE DISRUPT -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-12">
-        <div class="content-z w-full max-w-6xl">
+        <div class="content-z w-full max-w-6xl lg:max-w-4xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Модель <span class="text-solar">создания ценности</span></h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8 w-full">
@@ -1122,7 +1137,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 14: Процессная архитектура -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-13">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-5 md:mb-12 text-center text-black">Процессная <span class="text-solar">архитектура</span></h2>
 
             <div class="flex flex-col md:grid md:grid-cols-3 gap-2 md:gap-8 w-full">
@@ -1152,7 +1167,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 15: ИИ как нервная система -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-14">
-        <div class="content-z w-full max-w-5xl">
+        <div class="content-z w-full max-w-5xl lg:max-w-3xl">
             <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-black mb-6 md:mb-12 text-center">ИИ как <span class="text-solar">нервная система</span> компании</h2>
 
             <div class="bg-white rounded-[24px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col md:flex-row w-full">
@@ -1389,7 +1404,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 18: Уровни зрелости бизнес-модели -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-20">
-        <div class="content-z w-full max-w-6xl">
+        <div class="content-z w-full max-w-6xl lg:max-w-4xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-12 text-center text-black">Уровни зрелости <span class="text-solar">бизнес-модели</span></h2>
 
             <div class="flex flex-col md:flex-row gap-3 md:gap-8 items-stretch justify-center w-full">
@@ -1474,9 +1489,9 @@ window.addEventListener('load', function(){
     <!-- МАКРО-БЛОКИ ИЗМЕРЕНИЙ ЗРЕЛОСТИ (20-26) -->
     <!-- СЛАЙД 20: 1 - Стратегия -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-22">
-        <div class="content-z max-w-5xl mx-auto">
+        <div class="content-z max-w-5xl lg:max-w-4xl mx-auto">
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col md:flex-row w-full">
-                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 1 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <div class="md:hidden w-8 h-8 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 shadow-md"><i class="ph-fill ph-target text-lg"></i></div>
@@ -1484,7 +1499,7 @@ window.addEventListener('load', function(){
                             <span class="text-solar">Стратегия и управление</span>
                         </h2>
                     </div>
-                    <ul class="space-y-2 md:space-y-4 text-[10px] md:text-base font-medium text-black/80 mt-1 md:mt-2 w-full">
+                    <ul class="space-y-2 md:space-y-4 lg:space-y-6 text-[10px] md:text-base lg:text-lg font-medium text-black/80 mt-1 md:mt-2 w-full">
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Есть ли у компании ИИ-стратегия</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Насколько вовлечено руководство</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Какой эффект от внедрения ИИ</span></li>
@@ -1492,9 +1507,9 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как ИИ встроен в операционную модель</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[45%] bg-solar flex justify-center items-center text-[#0A0A0A] hidden md:flex p-8 md:p-10 h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] bg-solar flex justify-center items-center text-[#0A0A0A] hidden md:flex p-8 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-24 h-24 md:w-32 md:h-32 bg-black rounded-full text-solar flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-target text-[40px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-target text-[200px] md:text-[300px] opacity-10 absolute -right-10 -bottom-10 pointer-events-none"></i>
+                    <i class="ph-duotone ph-target text-[200px] md:text-[300px] opacity-10 absolute -right-10 bottom-0 pointer-events-none"></i>
                 </div>
             </div>
         </div>
@@ -1502,9 +1517,9 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 21: 2 - Люди -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-23">
-        <div class="content-z max-w-5xl mx-auto">
+        <div class="content-z max-w-5xl lg:max-w-4xl mx-auto">
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col md:flex-row w-full">
-                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 2 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <div class="md:hidden w-8 h-8 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 shadow-md"><i class="ph-fill ph-users text-lg"></i></div>
@@ -1512,7 +1527,7 @@ window.addEventListener('load', function(){
                             <span class="text-solar">Люди и культура</span>
                         </h2>
                     </div>
-                    <ul class="space-y-2 md:space-y-4 text-[10px] md:text-base font-medium text-black/80 mt-1 md:mt-2 w-full">
+                    <ul class="space-y-2 md:space-y-4 lg:space-y-6 text-[10px] md:text-base lg:text-lg font-medium text-black/80 mt-1 md:mt-2 w-full">
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как компания привлекает ИИ-талантов</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как организована работа ИИ-команд</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как формируется культура взаимодействия</span></li>
@@ -1520,7 +1535,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как ИИ интегрирован в систему управления</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[45%] bg-black flex justify-center items-center text-solar hidden md:flex p-8 md:p-10 h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] bg-black flex justify-center items-center text-solar hidden md:flex p-8 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-24 h-24 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-white/10"><i class="ph-fill ph-users text-[40px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-users-three text-[200px] md:text-[300px] opacity-10 text-solar absolute -left-10 -bottom-10 pointer-events-none"></i>
                 </div>
@@ -1530,9 +1545,9 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 22: 3 - Инфраструктура -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-24">
-        <div class="content-z max-w-5xl mx-auto">
+        <div class="content-z max-w-5xl lg:max-w-4xl mx-auto">
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col md:flex-row w-full">
-                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 3 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <div class="md:hidden w-8 h-8 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 shadow-md"><i class="ph-fill ph-hard-drives text-lg"></i></div>
@@ -1540,7 +1555,7 @@ window.addEventListener('load', function(){
                             <span class="text-solar">Инфраструктура</span>
                         </h2>
                     </div>
-                    <ul class="space-y-2 md:space-y-4 text-[10px] md:text-base font-medium text-black/80 mt-1 md:mt-2 w-full">
+                    <ul class="space-y-2 md:space-y-4 lg:space-y-6 text-[10px] md:text-base lg:text-lg font-medium text-black/80 mt-1 md:mt-2 w-full">
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Насколько инфраструктура готова к ИИ-нагрузкам</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Насколько инфраструктура доступна командам</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как компания управляет инцидентами</span></li>
@@ -1548,9 +1563,9 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как обеспечивается уровень безопасности</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[45%] bg-black flex justify-center items-center text-white hidden md:flex p-8 md:p-10 h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] bg-black flex justify-center items-center text-white hidden md:flex p-8 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-24 h-24 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-hard-drives text-[40px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-hard-drives text-[200px] md:text-[300px] opacity-20 absolute -right-10 -bottom-10 text-solar pointer-events-none"></i>
+                    <i class="ph-duotone ph-hard-drives text-[200px] md:text-[300px] opacity-20 absolute -right-10 bottom-0 text-solar pointer-events-none"></i>
                 </div>
             </div>
         </div>
@@ -1558,9 +1573,9 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 23: 4 - Данные -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-25">
-        <div class="content-z max-w-5xl mx-auto">
+        <div class="content-z max-w-5xl lg:max-w-4xl mx-auto">
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col md:flex-row w-full">
-                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 4 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <div class="md:hidden w-8 h-8 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 shadow-md"><i class="ph-fill ph-database text-lg"></i></div>
@@ -1568,7 +1583,7 @@ window.addEventListener('load', function(){
                             <span class="text-solar">Данные</span>
                         </h2>
                     </div>
-                    <ul class="space-y-2 md:space-y-4 text-[10px] md:text-base font-medium text-black/80 mt-1 md:mt-2 w-full">
+                    <ul class="space-y-2 md:space-y-4 lg:space-y-6 text-[10px] md:text-base lg:text-lg font-medium text-black/80 mt-1 md:mt-2 w-full">
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как организовано управление данными</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Есть ли единая платформа данных</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как обеспечивается качество данных</span></li>
@@ -1576,7 +1591,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как данные поддерживают обучение моделей</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[45%] bg-solar flex justify-center items-center text-[#0A0A0A] hidden md:flex p-8 md:p-10 h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] bg-solar flex justify-center items-center text-[#0A0A0A] hidden md:flex p-8 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-24 h-24 md:w-32 md:h-32 bg-black rounded-full text-solar flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-white/10"><i class="ph-fill ph-database text-[40px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-database text-[200px] md:text-[300px] opacity-10 absolute -left-10 -bottom-10 pointer-events-none"></i>
                 </div>
@@ -1586,9 +1601,9 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 24: 5 - Модели -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-26">
-        <div class="content-z max-w-5xl mx-auto">
+        <div class="content-z max-w-5xl lg:max-w-4xl mx-auto">
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col md:flex-row w-full">
-                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 5 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <div class="md:hidden w-8 h-8 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 shadow-md"><i class="ph-fill ph-brain text-lg"></i></div>
@@ -1596,7 +1611,7 @@ window.addEventListener('load', function(){
                             <span class="text-solar">Модели</span>
                         </h2>
                     </div>
-                    <ul class="space-y-2 md:space-y-4 text-[10px] md:text-base font-medium text-black/80 mt-1 md:mt-2 w-full">
+                    <ul class="space-y-2 md:space-y-4 lg:space-y-6 text-[10px] md:text-base lg:text-lg font-medium text-black/80 mt-1 md:mt-2 w-full">
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Каков масштаб портфеля ИИ-моделей</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Какая доля моделей в промышленной эксплуатации</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Какова скорость вывода моделей</span></li>
@@ -1604,9 +1619,9 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Каково качество инженерных практик</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[45%] bg-black flex justify-center items-center text-white hidden md:flex p-8 md:p-10 h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] bg-black flex justify-center items-center text-white hidden md:flex p-8 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-24 h-24 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-brain text-[40px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-cpu text-[200px] md:text-[300px] opacity-20 absolute -right-10 -bottom-10 text-solar pointer-events-none"></i>
+                    <i class="ph-duotone ph-cpu text-[200px] md:text-[300px] opacity-20 absolute -right-10 bottom-0 text-solar pointer-events-none"></i>
                 </div>
             </div>
         </div>
@@ -1614,9 +1629,9 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 25: 6 - Внедрение -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-27">
-        <div class="content-z max-w-5xl mx-auto">
+        <div class="content-z max-w-5xl lg:max-w-4xl mx-auto">
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col md:flex-row w-full">
-                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 6 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <div class="md:hidden w-8 h-8 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 shadow-md"><i class="ph-fill ph-rocket text-lg"></i></div>
@@ -1624,7 +1639,7 @@ window.addEventListener('load', function(){
                             <span class="text-solar">Внедрение ИИ</span>
                         </h2>
                     </div>
-                    <ul class="space-y-2 md:space-y-4 text-[10px] md:text-base font-medium text-black/80 mt-1 md:mt-2 w-full">
+                    <ul class="space-y-2 md:space-y-4 lg:space-y-6 text-[10px] md:text-base lg:text-lg font-medium text-black/80 mt-1 md:mt-2 w-full">
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Доля процессов с ИИ в промышленной эксплуатации</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>ИИ-усиление бизнес-функций</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Охват клиентских путей ИИ</span></li>
@@ -1632,7 +1647,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Удовлетворённость сотрудников ИИ-инструментами</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[45%] bg-solar flex justify-center items-center text-[#0A0A0A] hidden md:flex p-8 md:p-10 h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] bg-solar flex justify-center items-center text-[#0A0A0A] hidden md:flex p-8 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-24 h-24 md:w-32 md:h-32 bg-black rounded-full text-solar flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-white/10"><i class="ph-fill ph-rocket text-[40px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-rocket-launch text-[200px] md:text-[300px] opacity-10 absolute -left-10 -bottom-10 pointer-events-none"></i>
                 </div>
@@ -1642,9 +1657,9 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 26: 7 - R&D -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-28">
-        <div class="content-z max-w-5xl mx-auto">
+        <div class="content-z max-w-5xl lg:max-w-4xl mx-auto">
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col md:flex-row w-full">
-                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] p-5 sm:p-8 md:p-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 7 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <div class="md:hidden w-8 h-8 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 shadow-md"><i class="ph-fill ph-flask text-lg"></i></div>
@@ -1652,7 +1667,7 @@ window.addEventListener('load', function(){
                             <span class="text-solar">Исследования и разработки</span>
                         </h2>
                     </div>
-                    <ul class="space-y-2 md:space-y-4 text-[10px] md:text-base font-medium text-black/80 mt-1 md:mt-2 w-full">
+                    <ul class="space-y-2 md:space-y-4 lg:space-y-6 text-[10px] md:text-base lg:text-lg font-medium text-black/80 mt-1 md:mt-2 w-full">
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Партнёрства с университетами</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Качество R&D-процесса</span></li>
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Доля исследовательских инициатив</span></li>
@@ -1660,9 +1675,9 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Активность в профессиональном сообществе</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[45%] bg-black flex justify-center items-center text-white hidden md:flex p-8 md:p-10 h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] bg-black flex justify-center items-center text-white hidden md:flex p-8 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-24 h-24 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-flask text-[40px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-flask text-[200px] md:text-[300px] opacity-20 text-solar absolute -right-10 -bottom-10 pointer-events-none"></i>
+                    <i class="ph-duotone ph-flask text-[200px] md:text-[300px] opacity-20 text-solar absolute -right-10 bottom-0 pointer-events-none"></i>
                 </div>
             </div>
         </div>
@@ -1670,7 +1685,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 27: Интерпретация -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-29">
-        <div class="content-z max-w-5xl mx-auto w-full">
+        <div class="content-z max-w-5xl lg:max-w-4xl mx-auto w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Что делать <span class="text-solar">с ИИ-индексом?</span></h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8 w-full">
@@ -1695,11 +1710,11 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 28: Стратегия внедрения (SWOT) -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-30">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-4 text-center text-black">Стратегия <span class="text-solar">внедрения ИИ</span></h2>
             <p class="text-center text-black/60 font-medium mb-6 lg:mb-12 text-[10px] md:text-xl">Начинается со SWOT-анализа</p>
 
-            <div class="flex flex-col lg:flex-row gap-4 lg:gap-12 items-center justify-center w-full">
+            <div class="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center justify-center w-full">
                 <div class="grid grid-cols-2 gap-2 md:gap-4 w-full max-w-2xl">
                     <div class="bg-white border border-grayBase p-3 md:p-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-trend-up text-lg md:text-2xl text-black"></i></div>
@@ -1733,7 +1748,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 29: Где строить свое -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-31">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Где строить своё, а где <span class="text-solar">готовое</span></h2>
 
             <div class="flex flex-col md:grid md:grid-cols-3 gap-2 md:gap-8 w-full">
@@ -1888,7 +1903,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 33: AgentOps 2 (Разработка) -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-35">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-12 text-center text-black">2. Разработка <span class="text-solar">ИИ-агента</span></h2>
 
             <div class="bg-grayBase/20 border border-grayBase p-3 md:p-12 rounded-[24px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-stretch gap-3 md:gap-8 w-full">
@@ -1916,51 +1931,85 @@ window.addEventListener('load', function(){
                     <p class="text-[9px] md:text-sm text-black/60 font-medium">Рабочий MVP, который может давать первые результаты</p>
                 </div>
             </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-10">
+                <p class="text-[11px] md:text-xl text-black font-medium leading-snug">
+                    <i class="ph-fill ph-wrench text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Сборка: <span class="font-black">LangChain и LangGraph</span> для кода, <span class="font-black">n8n</span> — для быстрых прототипов
+                </p>
+            </div>
         </div>
     </div>
 
     <!-- СЛАЙД 34: AgentOps 3 (Внедрение) -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-36">
-        <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-16 text-center text-black">3. Внедрение <span class="text-solar">ИИ-агента</span></h2>
+        <div class="content-z max-w-6xl lg:max-w-4xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">3. Внедрение <span class="text-solar">ИИ-агента</span></h2>
 
-            <div class="flex flex-col items-center justify-center relative w-full max-w-4xl mx-auto h-auto md:h-64 mt-2 md:mt-10">
-                <div class="flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-0 z-10 relative">
+            <!-- Поток: корпоративные системы → агент → оператор, и обратная связь
+                 назад. Связи нарисованы потоком (стрелки + пунктирная шина), без
+                 абсолютного позиционирования — раньше SVG-петля с зашитыми
+                 координатами не совпадала с узлами и накрывала подпись «Агент». -->
+            <div class="flex flex-col items-center w-full max-w-3xl mx-auto">
+                <div class="flex flex-col md:flex-row items-center justify-center w-full gap-3 md:gap-6 lg:gap-8">
                     <!-- Корпоративные системы -->
-                    <div class="flex flex-col items-center w-24 md:w-40 text-center">
-                        <div class="w-14 h-14 md:w-24 md:h-24 bg-grayBase rounded-full flex items-center justify-center mb-1 md:mb-4 shadow-sm"><i class="ph-fill ph-database text-xl md:text-4xl text-black"></i></div>
-                        <h4 class="font-bold text-[10px] md:text-sm text-black">Корп. Системы<br><span class="text-[8px] md:text-xs text-black/50 font-normal">(CRM, ERP)</span></h4>
+                    <div class="flex flex-col items-center w-28 md:w-40 text-center shrink-0">
+                        <div class="w-14 h-14 md:w-24 md:h-24 lg:w-28 lg:h-28 bg-grayBase rounded-full flex items-center justify-center mb-1 md:mb-4 shadow-sm"><i class="ph-fill ph-database text-xl md:text-4xl lg:text-5xl text-black"></i></div>
+                        <h4 class="font-bold text-[10px] md:text-sm lg:text-base text-black">Корп. Системы<br><span class="text-[8px] md:text-xs text-black/50 font-normal">(CRM, ERP)</span></h4>
                     </div>
 
-                    <i class="ph-bold ph-arrow-right text-grayBase text-4xl hidden md:block"></i>
+                    <i class="ph-bold ph-arrow-right text-grayBase text-4xl lg:text-5xl hidden md:block shrink-0"></i>
                     <i class="ph-bold ph-arrow-down text-grayBase text-xl md:hidden"></i>
 
                     <!-- Агент -->
-                    <div class="flex flex-col items-center w-32 md:w-48 text-center relative z-20">
-                        <div class="w-20 h-20 md:w-32 md:h-32 bg-black text-solar rounded-full flex items-center justify-center mb-1 md:mb-4 shadow-xl relative border-2 md:border-4 border-solar/30">
-                            <i class="ph-fill ph-robot text-3xl md:text-6xl"></i>
+                    <div class="flex flex-col items-center w-32 md:w-44 lg:w-52 text-center shrink-0">
+                        <div class="w-20 h-20 md:w-32 md:h-32 lg:w-40 lg:h-40 bg-black text-solar rounded-full flex items-center justify-center mb-1 md:mb-4 shadow-xl border-2 md:border-4 border-solar/30">
+                            <i class="ph-fill ph-robot text-3xl md:text-6xl lg:text-7xl"></i>
                         </div>
-                        <h4 class="font-black text-[13px] md:text-xl text-black">Агент<br><span class="text-[9px] md:text-sm font-medium text-black/50">в процессе</span></h4>
+                        <h4 class="font-black text-[13px] md:text-xl lg:text-2xl text-black">Агент<br><span class="text-[9px] md:text-sm font-medium text-black/50">в процессе</span></h4>
                     </div>
 
-                    <i class="ph-bold ph-arrow-right text-grayBase text-4xl hidden md:block"></i>
+                    <i class="ph-bold ph-arrow-right text-grayBase text-4xl lg:text-5xl hidden md:block shrink-0"></i>
                     <i class="ph-bold ph-arrow-down text-grayBase text-xl md:hidden"></i>
 
                     <!-- Оператор -->
-                    <div class="flex flex-col items-center w-24 md:w-40 text-center relative z-10">
-                        <div class="w-14 h-14 md:w-24 md:h-24 bg-grayBase rounded-full flex items-center justify-center mb-1 md:mb-4 shadow-sm"><i class="ph-fill ph-user-gear text-xl md:text-4xl text-black"></i></div>
-                        <h4 class="font-bold text-[10px] md:text-sm text-black">Оператор</h4>
+                    <div class="flex flex-col items-center w-28 md:w-40 text-center shrink-0">
+                        <div class="w-14 h-14 md:w-24 md:h-24 lg:w-28 lg:h-28 bg-grayBase rounded-full flex items-center justify-center mb-1 md:mb-4 shadow-sm"><i class="ph-fill ph-user-gear text-xl md:text-4xl lg:text-5xl text-black"></i></div>
+                        <h4 class="font-bold text-[10px] md:text-sm lg:text-base text-black">Оператор</h4>
                     </div>
                 </div>
 
-                <!-- Обратная связь SVG Arrow Desktop -->
-                <svg class="absolute bottom-[-60px] left-0 w-full h-32 pointer-events-none hidden md:block z-0">
-                    <path d="M 750 30 C 750 120, 480 120, 480 30" fill="none" stroke="#8B5CF6" stroke-width="4" stroke-dasharray="8 8" />
-                    <polygon points="480,20 470,35 490,35" fill="#8B5CF6" />
-                </svg>
+                <!-- Обратная связь: пунктирная шина со стрелкой влево, от оператора к агенту -->
+                <div class="hidden md:flex items-center gap-3 lg:gap-4 w-full mt-6 lg:mt-10">
+                    <i class="ph-bold ph-arrow-left text-solar text-2xl lg:text-3xl shrink-0"></i>
+                    <div class="flex-1 border-t-2 border-dashed border-solar"></div>
+                    <span class="shrink-0 bg-white px-4 py-1.5 rounded-full border border-grayBase text-[11px] lg:text-sm font-bold uppercase tracking-widest text-black">Сбор обратной связи</span>
+                    <div class="flex-1 border-t-2 border-dashed border-solar"></div>
+                </div>
 
-                <div class="hidden md:block absolute bottom-[-30px] left-1/2 right-0 mx-auto w-fit bg-white px-4 py-1.5 rounded-full border border-grayBase text-xs font-bold uppercase tracking-widest shadow-sm text-black z-10">
-                    Сбор обратной связи
+                <div class="md:hidden flex items-center gap-2 w-full mt-3">
+                    <i class="ph-bold ph-arrow-left text-solar text-lg shrink-0"></i>
+                    <div class="flex-1 border-t-2 border-dashed border-solar"></div>
+                    <span class="shrink-0 text-[9px] font-bold uppercase tracking-widest text-black">Обратная связь</span>
+                    <div class="flex-1 border-t-2 border-dashed border-solar"></div>
+                </div>
+
+                <!-- Чем агент подключается к компании (панель: RAG, MCP/API, права и журнал) -->
+                <div class="grid grid-cols-3 gap-2 md:gap-4 w-full mt-4 md:mt-8">
+                    <div class="bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center gap-1 md:gap-2 w-full">
+                        <i class="ph-fill ph-books text-lg md:text-2xl text-solar"></i>
+                        <h4 class="font-black text-[10px] md:text-base text-black leading-tight">RAG</h4>
+                        <p class="text-[8px] md:text-xs text-black/50 leading-tight">Корпоративная память: документы и базы</p>
+                    </div>
+                    <div class="bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center gap-1 md:gap-2 w-full">
+                        <i class="ph-fill ph-plugs-connected text-lg md:text-2xl text-solar"></i>
+                        <h4 class="font-black text-[10px] md:text-base text-black leading-tight">MCP и API</h4>
+                        <p class="text-[8px] md:text-xs text-black/50 leading-tight">Действия в CRM, почте, хранилищах</p>
+                    </div>
+                    <div class="bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center gap-1 md:gap-2 w-full">
+                        <i class="ph-fill ph-shield-check text-lg md:text-2xl text-solar"></i>
+                        <h4 class="font-black text-[10px] md:text-base text-black leading-tight">Права и журнал</h4>
+                        <p class="text-[8px] md:text-xs text-black/50 leading-tight">Минимум полномочий, каждое действие видно</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2099,30 +2148,30 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 40: Новые роли -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-40">
-        <div class="content-z max-w-6xl mx-auto w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-5 md:mb-10 text-center text-black">Новые роли: <span class="text-solar">Центр компетенций</span></h2>
+        <div class="content-z max-w-6xl lg:max-w-4xl mx-auto w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Новые роли: <br class="hidden md:block"><span class="text-solar">Центр компетенций</span></h2>
 
             <!-- Схема подчинения. Связи собраны на потоке (ствол → шина → отводы
                  со стрелками), без абсолютного позиционирования и без transform:
                  схема тянется по ширине и одинаково работает на телефоне. -->
             <div class="flex flex-col items-center w-full">
                 <!-- Уровень 1 -->
-                <div class="bg-black text-white p-3 md:p-6 lg:p-8 rounded-[20px] md:rounded-3xl shadow-xl w-52 md:w-80 lg:w-[24rem] text-center">
+                <div class="bg-black text-white p-3 md:p-6 lg:p-6 rounded-[20px] md:rounded-3xl shadow-xl w-52 md:w-80 lg:w-[24rem] text-center">
                     <div class="w-9 h-9 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-3 shrink-0"><i class="ph-fill ph-crown text-lg md:text-2xl lg:text-3xl text-solar"></i></div>
                     <h3 class="font-black text-[12px] md:text-xl lg:text-2xl text-solar mb-0.5 md:mb-1">Chief AI Officer</h3>
                     <p class="text-[9px] md:text-sm lg:text-base text-white/70 leading-tight">Стратегия и управление</p>
                 </div>
 
                 <!-- Связь «десктоп»: ствол вниз → горизонтальная шина → три стрелки -->
-                <div class="hidden md:block w-full max-w-[880px] lg:max-w-[1000px]" aria-hidden="true">
-                    <div class="flex justify-center"><div class="w-0.5 h-7 lg:h-9 bg-grayBase"></div></div>
+                <div class="hidden md:block w-full max-w-[880px] lg:max-w-[860px]" aria-hidden="true">
+                    <div class="flex justify-center"><div class="w-0.5 h-6 lg:h-7 bg-grayBase"></div></div>
                     <!-- Шина ровно от центра левой карточки до центра правой:
                          ширина ряда минус ширина одной карточки (с учётом gap). -->
                     <div class="mx-auto border-t-2 border-grayBase w-[calc(100%-(100%-3rem)/3)] lg:w-[calc(100%-(100%-4rem)/3)]"></div>
                     <div class="grid grid-cols-3 gap-6 lg:gap-8">
-                        <div class="flex flex-col items-center"><div class="w-0.5 h-6 lg:h-8 bg-grayBase"></div><i class="ph-fill ph-caret-down text-grayBase text-xl lg:text-2xl leading-none -mt-1"></i></div>
-                        <div class="flex flex-col items-center"><div class="w-0.5 h-6 lg:h-8 bg-grayBase"></div><i class="ph-fill ph-caret-down text-grayBase text-xl lg:text-2xl leading-none -mt-1"></i></div>
-                        <div class="flex flex-col items-center"><div class="w-0.5 h-6 lg:h-8 bg-grayBase"></div><i class="ph-fill ph-caret-down text-grayBase text-xl lg:text-2xl leading-none -mt-1"></i></div>
+                        <div class="flex flex-col items-center"><div class="w-0.5 h-5 lg:h-6 bg-grayBase"></div><i class="ph-fill ph-caret-down text-grayBase text-xl lg:text-2xl leading-none -mt-1"></i></div>
+                        <div class="flex flex-col items-center"><div class="w-0.5 h-5 lg:h-6 bg-grayBase"></div><i class="ph-fill ph-caret-down text-grayBase text-xl lg:text-2xl leading-none -mt-1"></i></div>
+                        <div class="flex flex-col items-center"><div class="w-0.5 h-5 lg:h-6 bg-grayBase"></div><i class="ph-fill ph-caret-down text-grayBase text-xl lg:text-2xl leading-none -mt-1"></i></div>
                     </div>
                 </div>
 
@@ -2133,22 +2182,22 @@ window.addEventListener('load', function(){
                 </div>
 
                 <!-- Уровень 2 -->
-                <div class="flex flex-col md:flex-row justify-between w-full max-w-[880px] lg:max-w-[1000px] gap-2.5 md:gap-6 lg:gap-8">
-                    <div class="bg-white border border-grayBase p-2.5 md:p-6 lg:p-8 rounded-[18px] md:rounded-3xl shadow-sm flex-1 flex flex-row md:flex-col items-center text-left md:text-center gap-3 md:gap-0 w-full">
+                <div class="flex flex-col md:flex-row justify-between w-full max-w-[880px] lg:max-w-[860px] gap-2.5 md:gap-6 lg:gap-8">
+                    <div class="bg-white border border-grayBase p-2.5 md:p-6 lg:p-6 rounded-[18px] md:rounded-3xl shadow-sm flex-1 flex flex-row md:flex-col items-center text-left md:text-center gap-3 md:gap-0 w-full">
                         <div class="w-9 h-9 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-grayBase rounded-full flex items-center justify-center md:mb-4 text-black shrink-0"><i class="ph-fill ph-briefcase text-lg md:text-2xl lg:text-3xl"></i></div>
                         <div class="min-w-0">
                             <h4 class="font-black text-black text-[11px] md:text-xl lg:text-2xl mb-0.5 md:mb-2">AI Product Manager</h4>
                             <p class="text-[9px] md:text-sm lg:text-base text-black/60 leading-tight">Продукты и бизнес-ценность</p>
                         </div>
                     </div>
-                    <div class="bg-white border border-grayBase p-2.5 md:p-6 lg:p-8 rounded-[18px] md:rounded-3xl shadow-sm flex-1 flex flex-row md:flex-col items-center text-left md:text-center gap-3 md:gap-0 w-full">
+                    <div class="bg-white border border-grayBase p-2.5 md:p-6 lg:p-6 rounded-[18px] md:rounded-3xl shadow-sm flex-1 flex flex-row md:flex-col items-center text-left md:text-center gap-3 md:gap-0 w-full">
                         <div class="w-9 h-9 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-grayBase rounded-full flex items-center justify-center md:mb-4 text-black shrink-0"><i class="ph-fill ph-code text-lg md:text-2xl lg:text-3xl"></i></div>
                         <div class="min-w-0">
                             <h4 class="font-black text-black text-[11px] md:text-xl lg:text-2xl mb-0.5 md:mb-2">ИИ-инженер</h4>
                             <p class="text-[9px] md:text-sm lg:text-base text-black/60 leading-tight">Создание агентов и автоматизация</p>
                         </div>
                     </div>
-                    <div class="bg-white border border-grayBase p-2.5 md:p-6 lg:p-8 rounded-[18px] md:rounded-3xl shadow-sm flex-1 flex flex-row md:flex-col items-center text-left md:text-center gap-3 md:gap-0 w-full">
+                    <div class="bg-white border border-grayBase p-2.5 md:p-6 lg:p-6 rounded-[18px] md:rounded-3xl shadow-sm flex-1 flex flex-row md:flex-col items-center text-left md:text-center gap-3 md:gap-0 w-full">
                         <div class="w-9 h-9 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-grayBase rounded-full flex items-center justify-center md:mb-4 text-black shrink-0"><i class="ph-fill ph-users-three text-lg md:text-2xl lg:text-3xl"></i></div>
                         <div class="min-w-0">
                             <h4 class="font-black text-black text-[11px] md:text-xl lg:text-2xl mb-0.5 md:mb-2">ИИ-оператор</h4>
@@ -2158,7 +2207,7 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="mt-4 md:mt-10 text-center w-full">
+            <div class="mt-4 md:mt-6 text-center w-full">
                 <p class="text-[10px] md:text-xl font-bold text-black">
                     AI-First компания — это <span class="bg-solar text-[#0A0A0A] px-2 md:px-3 py-1 rounded-[10px] md:rounded-xl block sm:inline mt-1 md:mt-0"><i class="ph-fill ph-handshake text-[#0A0A0A] text-sm md:text-lg align-[-2px] mr-1.5"></i>человек и ИИ, работающие вместе</span>
                 </p>
@@ -2874,6 +2923,96 @@ window.addEventListener('load', function(){
         quizNextBtn.addEventListener('click', nextQuestion);
     });
 </script>
+<style id="radial-fig">
+/* ЭТАЛОН круговой («радиальной») инфографики.
+   Образец применения — слайд «Фреймворк AgentOps». На него ориентируются
+   остальные лекции, поэтому блок самодостаточный: копируется целиком.
+
+   Почему компонент устроен именно так — три ловушки этого проекта:
+   1) НИКАКИХ transform для позиционирования. Глобальное правило FR-LECTURE-20
+      гасит transform на :hover (`.slide-container *:hover{transform:none}`),
+      поэтому круг, отцентрованный через `-translate-x-1/2 -translate-y-1/2`,
+      при наведении ПРЫГАЛ на половину своей ширины. Здесь центр задаётся
+      арифметикой: left:calc(<X> - <диаметр>/2).
+   2) НИКАКОГО класса `aspect-square`: под него подвязаны глобальные правила
+      (white-space:nowrap на p/h3/h4 и max-width:440px). Пропорцию 1:1 держим
+      свойством aspect-ratio.
+   3) Круги — это круги (border-radius:50%), а не карточки со скруглением.
+      Никаких прямоугольных подложек под ними.
+   Hover-эффектов у компонента нет вовсе: ни размера, ни сдвига, ни цвета. */
+
+.radial-fig{
+  position:relative;
+  width:100%;
+  aspect-ratio:1 / 1;
+  margin-left:auto; margin-right:auto;
+  --orbit:38%;                        /* радиус орбиты (в % от стороны) */
+  --sat:clamp(84px, 25%, 148px);      /* диаметр спутника */
+  --core:clamp(92px, 26%, 168px);     /* диаметр ядра */
+}
+.radial-fig > *{ position:absolute; }
+
+.radial-core,
+.radial-sat{
+  border-radius:50%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+  line-height:1.15;
+  overflow:hidden;
+}
+.radial-core{
+  width:var(--core); height:var(--core);
+  left:calc(50% - var(--core)/2);
+  top:calc(50% - var(--core)/2);
+  z-index:3;
+}
+.radial-sat{
+  width:var(--sat); height:var(--sat);
+  left:calc(var(--x) - var(--sat)/2);   /* --x/--y — центр спутника, инлайном */
+  top:calc(var(--y) - var(--sat)/2);
+  /* ВАЖНО: padding НЕ в процентах. У абсолютно спозиционированного элемента
+     процентный padding считается от ширины КОНТЕЙНЕРА (.radial-fig), а не от
+     самого круга, — внутренняя ширина падала втрое и подписи ломались. */
+  padding:calc(var(--sat) * 0.07);
+  z-index:2;
+}
+/* Пунктирное кольцо-орбита проходит РОВНО через центры спутников:
+   viewBox 0 0 100 100, r = значение --orbit в тех же единицах. */
+.radial-ring{
+  inset:0; width:100%; height:100%;
+  z-index:1; pointer-events:none;
+}
+/* Подписи внутри кругов. Правило: подпись — ОДНО слово (номер шага выносится
+   в .rf-num), тогда она встаёт в одну строку и круг не распирает.
+   Перенос по слогам оставлен страховкой для самых длинных слов. */
+.radial-sat .rf-label{
+  hyphens:auto; -webkit-hyphens:auto;
+  overflow-wrap:break-word; word-break:normal;
+  max-width:100%;
+}
+/* Номер шага — мелкой строкой над иконкой, чтобы не съедать ширину подписи. */
+.radial-sat .rf-num{
+  font-weight:900; line-height:1;
+  font-size:clamp(9px,2.2vw,12px);
+  opacity:.55;
+  margin-bottom:.15em;
+}
+/* Компонент не реагирует на указатель — он не интерактивный. */
+.radial-fig, .radial-fig *{ transition:none !important; }
+/* Телефон: композиция остаётся круговой, ужимаются размеры и кегль подписи.
+   Разваливать круг в сетку нельзя — круг нужен и на мобилке. */
+@media (max-width:520px){
+  .radial-fig{
+    --orbit:37%;
+    --sat:clamp(64px, 23%, 96px);
+    --core:clamp(76px, 26%, 108px);
+  }
+  .radial-sat .rf-label{ font-size:10px !important; line-height:1.1 !important; }
+  .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }
+  .radial-sat i, .radial-core i{ font-size:1.05rem !important; }
+}
+</style>
 <script id="slide-notes" type="application/json">
 {"0":{"title":"ИИ как операционная система бизнеса","blocks":[{"t":"h","v":"О чём эта лекция"},{"t":"p","v":"Искусственный интеллект уже нельзя рассматривать только как ещё один цифровой инструмент — такой же, как текстовый редактор, поисковая система или аналитическая платформа. Мы вступаем в период, когда ИИ становится самостоятельным участником бизнес-процессов: получает информацию, анализирует контекст, принимает решения, выполняет действия и взаимодействует с людьми и другими системами."},{"t":"p","v":"Это меняет сам предмет автоматизации. Раньше компания выбирала отдельную операцию и пыталась ускорить её с помощью программного обеспечения. Например, автоматизировала выставление счетов, рассылку писем, формирование отчётов или маршрутизацию обращений. Сегодня задача становится шире: нужно увидеть весь процесс целиком, определить его цель, входы и выходы, точки принятия решений, ограничения, метрики, роль человека — и только после этого понять, какую часть работы можно передать ИИ-агентам."},{"t":"p","v":"В этой главе мы последовательно разберём, кто такие ИИ-агенты, чем они отличаются от обычных программ и ассистентов, как устроена AI-First-компания и почему искусственный интеллект постепенно превращается в новый слой управления бизнесом. Затем рассмотрим, где ИИ создаёт наибольшую ценность, как оценить зрелость организации, разработать стратегию внедрения, построить цикл AgentOps и сформировать новую организационную структуру."},{"t":"note","v":"Главная идея главы проста: успешное внедрение ИИ начинается не с выбора модели, платформы или промта. Оно начинается с умения видеть компанию как **систему взаимосвязанных процессов и потоков данных**. Только в такой системе можно понять, где интеллект действительно нужен, какие решения ему можно делегировать и как измерить полученный результат."},{"t":"h","v":"ИИ как операционная система бизнеса"},{"t":"p","v":"Искусственный интеллект перестаёт быть внешним инструментом, к которому сотрудник обращается время от времени. Он постепенно становится **внутренним операционным слоем компании** — системой, через которую проходят данные, решения и действия."},{"t":"p","v":"Когда ИИ используется только для генерации текста или поиска идей, он повышает личную продуктивность отдельного сотрудника. Но когда он подключён к корпоративным данным, бизнес-правилам, календарям, CRM, ERP, аналитическим платформам и другим системам, его роль меняется. Он уже не просто отвечает на вопросы, а участвует в работе: анализирует ситуацию, предлагает или принимает решение, запускает следующий этап процесса, контролирует исполнение и фиксирует результат."},{"t":"p","v":"Именно здесь появляется понятие ИИ-агента. Агент получает цель, воспринимает состояние среды, выбирает действия и использует доступные инструменты для достижения результата. Один агент может работать с обращениями клиентов, другой — анализировать финансовые показатели, третий — контролировать исполнение проектов, четвёртый — координировать работу остальных."},{"t":"p","v":"Компания, которая умеет организовать такую систему, получает не просто набор автоматизаций. Она получает новый способ управления. Часть операций выполняется непрерывно, решения принимаются быстрее, а накопленные данные превращаются в контекст для следующих действий."},{"t":"p","v":"При этом роль человека не исчезает. Напротив, она становится более управленческой. Человек формулирует цели, задаёт правила, определяет границы автономности, проверяет качество и отвечает за последствия. ИИ берёт на себя анализ, подготовку решений и исполнение повторяемых действий, а человек проектирует систему и развивает её."},{"t":"p","v":"Поэтому ИИ-трансформация — это не внедрение одной технологии. Это перестройка операционной модели вокруг совместной работы человеческого и машинного интеллекта."}]},"1":{"title":"Два типа компаний","blocks":[{"t":"p","v":"По мере распространения искусственного интеллекта компании начинают различаться не только продуктами, капиталом или численностью команды. Всё более важным становится вопрос: встроен ли интеллект в саму бизнес-модель или используется лишь эпизодически?"},{"t":"p","v":"Условно рынок можно разделить на два типа участников. Первые строят процессы так, чтобы ИИ был частью их операционного ядра. Вторые продолжают работать по старой модели и постепенно становятся клиентами первых."},{"t":"p","v":"AI-First-компания способна быстрее обрабатывать информацию, персонализировать предложения, принимать решения и масштабировать операции. Там, где традиционной организации нужно нанимать дополнительных сотрудников, расширять отделы и увеличивать число уровней управления, AI-First-компания может наращивать объём работы за счёт агентов и автоматизированных процессов."},{"t":"p","v":"Это не означает, что она полностью отказывается от людей. Её преимущество заключается в другом: человеческое внимание используется только там, где оно действительно необходимо — в постановке целей, переговорах, ответственности, творчестве, этических и стратегических решениях. Повторяемая интеллектуальная работа делегируется системам."},{"t":"p","v":"В результате меняется характер конкуренции. Компании конкурируют уже не только качеством продукта, но и архитектурой исполнения. Два бизнеса могут предлагать одинаковую услугу, но один будет оказывать её быстрее, дешевле и стабильнее, потому что большая часть операций в нём выполняется автоматически."},{"t":"p","v":"Поэтому вопрос о внедрении ИИ становится вопросом долгосрочной конкурентоспособности. Организация может начать трансформацию сама, выстроив **собственный интеллектуальный слой**, либо покупать всё больше услуг у тех, кто уже сделал это раньше."}]},"2":{"title":"Четыре революции делегирования труда","blocks":[{"t":"p","v":"Историю экономики можно рассматривать как историю последовательного делегирования человеческого труда машинам."},{"t":"p","v":"Первая промышленная революция была механической. Паровой двигатель, фабрики, станки и железные дороги позволили заменить или многократно усилить физический труд. Машина выполняла действие, но человек непосредственно управлял ею."},{"t":"p","v":"Вторая революция была электрической. Электричество, конвейеры, телеграф и телефон сделали возможными массовое производство и масштабирование коммуникаций. В этот период возникли стандартизированные процессы, промышленный менеджмент, нормативы и показатели эффективности. Машины стали частью операционной системы предприятий."},{"t":"p","v":"Третья революция была цифровой. Компьютеры, интернет, базы данных, ERP- и CRM-системы позволили перевести процессы в программное обеспечение. Действия стали оставлять цифровой след, данные превратились в управленческий ресурс, а решения всё чаще начали приниматься на основе аналитики."},{"t":"p","v":"Сегодня начинается **четвёртая революция — интеллектуальная**. Теперь автоматизируется не только физическое действие и не только передача информации, но и часть мышления. ИИ-системы способны понимать язык, учитывать контекст, распознавать изображения, анализировать большие массивы данных, строить планы и выполнять последовательности действий."},{"t":"p","v":"Это качественный переход. Раньше человек управлял машиной или программой, пошагово указывая, что нужно сделать. Теперь он всё чаще задаёт цель и ограничения, а система самостоятельно определяет необходимые шаги."},{"t":"p","v":"Поэтому новая революция меняет не отдельные профессии, а саму форму организации труда. Человек постепенно становится архитектором интеллектуальной среды, в которой вместе работают люди, модели, данные, программные инструменты и автономные агенты."}]},"3":{"title":"Почему агенты — новая форма организации труда","blocks":[{"t":"p","v":"Традиционная автоматизация обычно начиналась с отдельной задачи. Компания создавала скрипт, настраивала интеграцию или внедряла систему, которая выполняла строго определённое действие. Если менялся контекст, правила приходилось переписывать. Сам процесс при этом оставался в руках человека."},{"t":"p","v":"ИИ-агенты меняют эту логику. Они могут воспринимать входящие сигналы, сопоставлять их с целью, учитывать контекст, выбирать подходящее действие и использовать различные инструменты. Благодаря этому агент способен брать на себя не одну операцию, а связанный фрагмент работы."},{"t":"p","v":"Например, обычная автоматизация может отправить письмо после изменения статуса сделки. Агентная система способна проанализировать историю клиента, определить причину задержки, сформировать персонализированное сообщение, выбрать канал коммуникации, создать задачу менеджеру и обновить прогноз продаж."},{"t":"p","v":"Поэтому агента можно рассматривать как **цифрового участника процесса** или цифрового сотрудника. Он не обязательно заменяет человека целиком, но способен выполнять значимую часть функциональной роли: анализировать документы, готовить решения, взаимодействовать с системами, контролировать сроки и инициировать действия."},{"t":"p","v":"Когда таких агентов становится много, организация начинает перестраиваться. Вместо цепочки, в которой каждый шаг ожидает внимания сотрудника, появляется система непрерывного исполнения. Люди управляют исключениями, сложными ситуациями и развитием процессов, а агенты выполняют повторяемую интеллектуальную работу."},{"t":"p","v":"Главное отличие агентной модели заключается именно в этом: она не только ускоряет существующую организацию, но и **позволяет спроектировать её заново**. Компания превращается в команду, где человеческий и машинный интеллект работают в едином контуре."}]},"4":{"title":"Кто такой ИИ-агент","blocks":[{"t":"p","v":"Агентом можно назвать субъекта, который действует в определённой среде для достижения поставленной цели. Он воспринимает состояние среды, принимает решение и совершает действие, способное изменить ситуацию."},{"t":"p","v":"ИИ-агент выполняет тот же цикл с помощью моделей искусственного интеллекта. В отличие от обычной программы, работающей по заранее заданной последовательности правил, агент способен интерпретировать контекст и выбирать способ действия в зависимости от обстоятельств."},{"t":"p","v":"Например, скрипт может отправить стандартное напоминание через три дня после выставления счёта. ИИ-агент может изучить историю взаимодействия с клиентом, сумму и срок платежа, предыдущие договорённости, тон коммуникации и только после этого решить, какое сообщение отправить, нужно ли привлечь менеджера или стоит временно отложить действие."},{"t":"p","v":"У агента обычно есть несколько основных компонентов: цель, модель, контекст, память, набор инструментов и правила поведения. Цель определяет желаемый результат. Модель отвечает за понимание и рассуждение. Контекст предоставляет информацию о текущей ситуации. Память сохраняет прошлые события и результаты. Инструменты позволяют воздействовать на внешние системы. Правила ограничивают автономность и задают допустимые действия."},{"t":"p","v":"**Автономность агента не означает бесконтрольность**. Она означает способность самостоятельно выбирать действия внутри заранее определённых границ. Чем выше цена ошибки, тем больше контроль человека и тем уже пространство самостоятельных решений."},{"t":"note","v":"Таким образом, **ИИ-агент — это не просто модель и не просто интерфейс чата**. Это целостная система, которая получает цель, понимает контекст и выполняет работу в реальной или цифровой среде."}]},"5":{"title":"Восприятие, мышление и действие","blocks":[{"t":"p","v":"Работу любого ИИ-агента можно описать через три базовых блока: восприятие, мышление и действие."},{"t":"p","v":"**Восприятие — это получение информации из внешнего мира**. Агент может читать текст и документы, анализировать изображения, распознавать голос, обрабатывать видео, получать данные из датчиков, баз данных, API и корпоративных систем. Чем шире и качественнее входной поток, тем точнее агент способен понимать ситуацию."},{"t":"p","v":"**Мышление — это обработка полученной информации**. Модель сопоставляет данные с целью, учитывает правила и ограничения, строит гипотезы, планирует шаги и выбирает подходящее действие. На этом уровне могут использоваться не только языковые модели, но и классические алгоритмы, аналитические модели, поисковые системы и бизнес-правила."},{"t":"p","v":"**Действие — это влияние на среду**. Агент может отправить письмо, изменить запись в CRM, сформировать документ, создать задачу, запустить скрипт, заказать товар, обновить отчёт, вызвать другой сервис или передать часть работы другому агенту."},{"t":"p","v":"Важна именно связка этих трёх элементов. Модель без доступа к данным не понимает текущего состояния бизнеса. Модель без инструментов может только рекомендовать, но не выполнять. Инструменты без мышления действуют по жёстким правилам и плохо адаптируются к нестандартным ситуациям."},{"t":"p","v":"Полноценный агент замыкает цикл: получает сигнал, интерпретирует его, действует, наблюдает результат и при необходимости корректирует план. Такой цикл может выполняться один раз или повторяться до достижения цели."},{"t":"note","v":"Именно поэтому агентная архитектура рассматривается как следующий этап развития автоматизации: система не просто запускает заранее заданную последовательность команд, а управляет собственным поведением в пределах установленной ответственности."}]},"6":{"title":"Шесть ключевых свойств ИИ-агента","blocks":[{"t":"p","v":"Чтобы система могла считаться полноценным ИИ-агентом, она должна обладать рядом свойств."},{"t":"ol","v":["Автономность. Агент способен выполнять работу без постоянных пошаговых указаний, самостоятельно разбивать цель на подзадачи и выбирать действия.","Реактивность. Агент отслеживает изменения среды и корректирует поведение. Если появились новые данные, изменился статус клиента или один из инструментов недоступен, он должен пересмотреть первоначальный план.","Проактивность. Агент не только отвечает на входящий запрос, но и способен инициировать действие. Например, предупредить о риске, предложить следующий шаг или запустить процесс до того, как проблема станет критической.","Обучаемость. Система должна улучшать качество работы на основе обратной связи, размеченных примеров, накопленного контекста и анализа собственных ошибок. Обучение не обязательно означает изменение параметров модели: иногда достаточно улучшения промтов, правил, памяти или набора инструментов.","Взаимодействие. Агент должен уметь работать с людьми, программными системами и другими агентами. В сложной организации почти ни одна функция не существует изолированно, поэтому способность передавать контекст и координировать действия становится критически важной.","Мультимодальность. Современный бизнес существует не только в тексте. Информация находится в таблицах, презентациях, изображениях, аудиозаписях, видео, логах, телеметрии и интерфейсах. Чем больше типов данных способен воспринимать агент, тем шире круг решаемых им задач."]},{"t":"p","v":"Сочетание этих свойств превращает ИИ из пассивного инструмента в активного участника процесса. При этом **степень выраженности каждого свойства зависит от задачи**: финансовый агент может иметь ограниченную автономность, но строгий контроль, а исследовательский агент — больше свободы для поиска и генерации гипотез."}]},"7":{"title":"Простой пример агентного поведения","blocks":[{"t":"p","v":"Представим, что человек собирается в командировку и просит цифрового помощника помочь с подготовкой. Обычный чат-бот составит универсальный список вещей: документы, одежда, зарядное устройство, средства гигиены."},{"t":"p","v":"ИИ-агент действует иначе. Сначала он уточняет или самостоятельно получает контекст: город назначения, даты поездки, цель командировки, прогноз погоды, расписание встреч и ограничения по багажу. Затем сопоставляет эти данные с информацией о пользователе."},{"t":"p","v":"Допустим, прогноз показывает дождь. Агент проверяет историю покупок или личный список вещей и понимает, что у пользователя нет подходящего зонта. Затем смотрит календарь и видит, что до вылета свободного времени для магазина не осталось. После этого агент находит подходящий товар, проверяет возможность доставки и оформляет заказ в отель или к месту проживания."},{"t":"p","v":"В этом примере нет принципиально новой отдельной технологии. Прогноз погоды, календарь, интернет-магазин и служба доставки существовали и раньше. Новизна заключается в том, что агент соединяет их вокруг цели человека и самостоятельно проходит весь путь от восприятия ситуации до действия."},{"t":"p","v":"Тот же принцип переносится в бизнес. Агент по дебиторской задолженности может увидеть просрочку, проверить договор, историю коммуникаций и финансовое состояние клиента, подготовить сценарий взаимодействия и запустить нужное действие. Агент службы поддержки может классифицировать обращение, найти ответ, проверить статус заказа, изменить данные и сообщить клиенту результат."},{"t":"p","v":"Именно способность **объединять разрозненные источники и инструменты в один целевой цикл** делает агентную систему более ценной, чем отдельный чат или автоматизированный сценарий."}]},"8":{"title":"Эволюция от правил к языковым моделям","blocks":[{"t":"p","v":"Современные ИИ-агенты стали возможны не внезапно. Они являются результатом нескольких этапов развития искусственного интеллекта."},{"t":"p","v":"Ранние экспертные системы работали на основе правил, сформулированных специалистами. Если выполнялось определённое условие, система выбирала заранее заданное действие. Такие решения применялись в медицине, инженерии и логистике, но плохо справлялись с изменением контекста: любое новое исключение требовало ручного обновления базы правил."},{"t":"p","v":"Следующим этапом стали реактивные системы. Они могли быстро отвечать на события по принципу «**сигнал — реакция**», но не имели полноценной внутренней модели мира. К ним можно отнести ранние торговые алгоритмы, системы навигации и управляющие программы."},{"t":"p","v":"Большой шаг вперёд обеспечило машинное обучение. Вместо ручного описания каждого правила системы начали находить закономерности в данных. Обучение с подкреплением позволило агентам формировать стратегии на основе награды и опыта. Победы Deep Blue в шахматах и AlphaGo в игре го стали символами способности алгоритмов принимать сложные решения в ограниченных средах."},{"t":"p","v":"Новый этап начался с развитием архитектуры трансформеров и больших языковых моделей. Такие модели научились работать с естественным языком как с универсальным интерфейсом к знаниям и задачам. Они способны анализировать контекст, объяснять выводы, писать код, интерпретировать документы и формировать планы."},{"t":"p","v":"Современный агент объединяет достижения всех предыдущих этапов. Он может использовать жёсткие бизнес-правила там, где нужна точность, статистические модели — для прогнозов, **языковые модели — для понимания контекста**, а инструменты — для выполнения действий. Поэтому агентная архитектура является не заменой всех прежних подходов, а способом собрать их в единую интеллектуальную систему."}]},"9":{"title":"Пять уровней развития интеллектуальных систем","blocks":[{"t":"p","v":"Развитие интеллектуальных систем удобно представить в виде пяти уровней."},{"t":"ol","v":["Разговорные системы. Они умеют поддерживать диалог и генерировать ответы, но работают преимущественно в рамках одного запроса. Их главная функция — коммуникация.","Рассуждающие модели. Они способны анализировать информацию, сопоставлять факты, строить аргументацию и решать сложные задачи. Однако результат их работы чаще всего остаётся рекомендацией или текстом.","Автономные агенты. Здесь модель получает цель, строит план, использует инструменты и выполняет последовательность действий. Система становится не только источником ответа, но и исполнителем.","Креативные или инновационные системы. Они способны формировать новые гипотезы, проектные решения, продукты и стратегии, комбинируя знания из разных областей. На этом уровне ИИ участвует не только в исполнении, но и в создании нового.","Мультиагентные системы. В них множество специализированных агентов взаимодействуют как команда или организация. Один агент ставит задачи, другой собирает данные, третий проводит анализ, четвёртый проверяет результат, пятый взаимодействует с человеком. Вместе они формируют коллективный интеллект."]},{"t":"p","v":"Эта классификация описывает направление развития, но не означает, что современные системы уже достигли полной автономности. Большинство агентов всё ещё зависит от качества контекста, доступа к инструментам и человеческого контроля. Они могут ошибаться, терять цель, неверно интерпретировать данные и не всегда способны обучаться непрерывно в реальной среде."},{"t":"p","v":"Поэтому **переход к более высокому уровню — это не только улучшение модели**. Он требует зрелой архитектуры, памяти, мониторинга, механизмов безопасности, ответственности и взаимодействия с человеком."}]},"10":{"title":"От ИИ-ассистентов к ИИ-агентам","blocks":[{"t":"p","v":"Первые массовые сценарии использования генеративного искусственного интеллекта были связаны с ассистентами. Пользователь задавал вопрос, а модель создавала текст, код, изображение, краткое содержание или рекомендацию. Это уже давало заметный прирост продуктивности, но сохраняло прежнюю организацию труда: человек оставался главным исполнителем и вручную переносил результат из чата в рабочий процесс."},{"t":"p","v":"Переход к агентам начинается тогда, когда модель получает инструменты и право выполнять действия. Она может обратиться к базе данных, прочитать документ, проверить календарь, запустить вычисление, изменить запись в системе, отправить сообщение или вызвать другой сервис. Человек задаёт не последовательность команд, а желаемый результат."},{"t":"p","v":"Второе важное изменение — **появление памяти и устойчивого контекста**. Ассистент отвечает на текущий запрос, тогда как агенту необходимо понимать историю процесса: что происходило раньше, какие решения уже принимались, какие ограничения действуют и как оценивался предыдущий результат."},{"t":"p","v":"Третье изменение связано с экономикой. Бизнесу недостаточно получать интересные ответы. Ему нужны системы, которые сокращают время цикла, снижают число ошибок, повышают выручку, улучшают клиентский опыт или уменьшают операционную нагрузку. Агент становится ценным тогда, когда встроен в процесс и влияет на измеримую метрику."},{"t":"p","v":"Поэтому различие между ассистентом и агентом проходит не по названию интерфейса. Ассистент помогает человеку выполнить работу. Агент берёт на себя ответственность за определённый участок процесса в установленных границах."},{"t":"p","v":"Следующий этап — **объединение агентов**. Когда разные цифровые специалисты начинают обмениваться задачами и контекстом, возникает новая операционная модель, в которой значительная часть исполнения происходит без постоянного ручного управления."}]},"11":{"title":"Что такое AI-First-компания","blocks":[{"t":"p","v":"**AI-First-компания — это организация, в которой искусственный интеллект встроен в операционную модель**, а не используется как набор отдельных дополнений."},{"t":"p","v":"В обычной компании сначала проектируется процесс для людей, а затем к нему добавляется цифровой инструмент. В AI-First-компании процесс изначально строится с учётом того, что часть восприятия, анализа, решений и действий будет выполняться машинным интеллектом."},{"t":"p","v":"Это меняет архитектуру работы. Данные должны быть доступны в момент принятия решения. Бизнес-правила должны быть формализованы. Действия агентов — наблюдаемы и проверяемы. Ответственность человека — определена заранее. Процессы проектируются не вокруг передачи документов между отделами, а вокруг движения информации и достижения результата."},{"t":"p","v":"В такой компании ИИ может распределять задачи, анализировать показатели, готовить решения, взаимодействовать с клиентами и координировать другие системы. Люди при этом переходят от роли постоянных исполнителей к ролям владельцев процессов, архитекторов, операторов и наставников интеллектуальных систем."},{"t":"p","v":"AI-First не означает, что каждое решение принимает алгоритм. В критических областях человек может сохранять финальное слово. Принцип заключается в другом: при проектировании любого процесса организация сначала задаёт вопрос, какую часть работы способен выполнить интеллект и где человеческое участие создаёт наибольшую ценность."},{"t":"p","v":"Это также не означает обязательной разработки всех технологий внутри компании. AI-First-организация может использовать внешние модели, платформы и сервисы. Её зрелость определяется не количеством собственных нейросетей, а тем, насколько системно интеллект встроен в бизнес и насколько измерим его эффект."},{"t":"note","v":"Таким образом, **AI-First — это прежде всего новый способ строить компанию и управлять ею**."}]},"12":{"title":"RUN, CHANGE и DISRUPT","blocks":[{"t":"p","v":"Чтобы понять, где именно применять искусственный интеллект, полезно разделить деятельность компании на три зоны: RUN, CHANGE и DISRUPT."},{"t":"p","v":"**RUN — это текущая операционная деятельность**. Сюда входят процессы, которые должны стабильно выполняться каждый день: бухгалтерия, логистика, поддержка клиентов, документооборот, управление инфраструктурой, обработка заказов. Степень неопределённости здесь относительно низкая, а правила и метрики обычно понятны. Именно в RUN-процессах проще всего получить быстрый экономический эффект за счёт сокращения ручного труда, ошибок и времени выполнения."},{"t":"p","v":"**CHANGE — это деятельность по изменению компании**. К ней относятся проекты внедрения систем, оптимизации процессов, перестройки подразделений, запуска новых каналов или изменения организационной структуры. Неопределённость здесь выше. ИИ может анализировать данные, моделировать сценарии, выявлять риски, помогать планировать и контролировать трансформацию."},{"t":"p","v":"**DISRUPT — зона создания принципиально нового**. Здесь компания ищет новые продукты, рынки и бизнес-модели. В этой области особенно полезны исследовательские и креативные агенты, способные собирать сигналы рынка, генерировать гипотезы, моделировать пользовательские сценарии и проводить быстрые эксперименты."},{"t":"p","v":"Эти три зоны не конкурируют между собой. RUN обеспечивает стабильность, CHANGE — адаптацию, DISRUPT — прорыв. Устойчивая компания должна уметь работать во всех трёх режимах."},{"t":"p","v":"Стратегия внедрения ИИ также должна учитывать различия между ними. В RUN важны надёжность и экономический эффект. В CHANGE — качество анализа и управление рисками. В DISRUPT — скорость обучения и способность создавать новые варианты."},{"t":"p","v":"Наиболее рациональный путь обычно начинается с процессов RUN: там проще зафиксировать исходное состояние, построить пилот и доказать результат. Но конечная цель заключается не только в сокращении затрат. Интеллект должен постепенно помогать компании изменяться и создавать новое."}]},"13":{"title":"Три типа бизнес-процессов","blocks":[{"t":"p","v":"Если рассматривать компанию как систему процессов, можно выделить три основных типа: **основные, поддерживающие и управленческие**."},{"t":"p","v":"Основные процессы непосредственно создают ценность для клиента и формируют выручку. В производственной компании это разработка и выпуск продукта, в торговой — закупка, продажа и доставка, в сервисной — оказание услуги и сопровождение клиента. Улучшение основных процессов влияет на скорость обслуживания, качество продукта, конверсию, удержание и доход."},{"t":"p","v":"Поддерживающие процессы обеспечивают работу организации. К ним относятся финансы, HR, юридическая функция, ИТ, закупки, информационная безопасность и административная деятельность. Они обычно не создают выручку напрямую, но без них основные процессы становятся нестабильными или невозможными."},{"t":"p","v":"Управленческие процессы связаны со стратегией, целями, планированием, контролем и распределением ресурсов. Это бюджетирование, управление портфелем проектов, оценка рисков, инвестиционные решения и анализ эффективности."},{"t":"p","v":"Такое разделение помогает правильно выбирать цель внедрения ИИ. В поддерживающих процессах основной эффект часто связан со снижением затрат и ошибок. В основных — с ростом выручки, улучшением клиентского опыта и масштабированием. В управленческих — с повышением скорости и качества решений."},{"t":"note","v":"Важно не путать тип процесса с названием отдела. Один и тот же департамент может участвовать в разных процессах. Например, аналитик может поддерживать продажи, участвовать в управленческой отчётности и создавать данные для нового продукта."},{"t":"p","v":"Поэтому внедрение ИИ следует начинать не с вопроса «какой отдел автоматизировать», а с вопроса «какой результат создаёт процесс, из каких операций он состоит и где возникают потери». Процессная карта даёт более точное представление о том, где агент действительно способен изменить экономику бизнеса."}]},"14":{"title":"ИИ как нервная система компании","blocks":[{"t":"p","v":"Компания похожа на живой организм не потому, что её подразделения напоминают органы, а потому, что её устойчивость зависит от качества передачи сигналов."},{"t":"p","v":"В традиционной организации информация движется через письма, встречи, отчёты, согласования и уровни иерархии. На каждом переходе возникает задержка. Данные устаревают, контекст сокращается, сообщения искажаются, а ответственность размывается. Решение может быть правильным в момент подготовки отчёта, но запоздалым к моменту утверждения."},{"t":"p","v":"Искусственный интеллект способен сформировать новый интеллектуальный слой управления. Он непрерывно получает сигналы из процессов, связывает их с историческими данными, выявляет отклонения, передаёт информацию нужному участнику и при наличии полномочий запускает действие."},{"t":"p","v":"В таком контуре агент по продажам видит изменения в поведении клиента, финансовый агент оценивает влияние сделки на денежный поток, агент по рискам проверяет ограничения, а управленческий агент обновляет прогноз. Вместо последовательной передачи документов возникает согласованная работа вокруг общего контекста."},{"t":"p","v":"Нервная система не заменяет органы организма. Она связывает их и обеспечивает координацию. Точно так же ИИ не обязан заменять все подразделения. Его ключевая функция — **уменьшать разрывы между данными, решениями и действиями**."},{"t":"p","v":"Для этого компания должна создать единый информационный контур: определить источники данных, права доступа, бизнес-сущности, события, правила и ответственность. Без этого агенты будут автоматизировать фрагменты, но не сформируют корпоративный интеллект."},{"t":"p","v":"AI-First-компания появляется тогда, когда ИИ связывает процессы в единую систему, а не существует в виде десятков независимых пилотов. Именно связанность превращает отдельные модели в операционное ядро."}]},"15":{"title":"Где ИИ создаёт наибольшую ценность","blocks":[{"t":"p","v":"ИИ создаёт наибольшую ценность не там, где его проще всего продемонстрировать, а там, где в процессе существуют узкие места и точки принятия решений."},{"t":"p","v":"**Узкое место — участок, на котором теряются время, качество или деньги**. Это может быть ручной поиск информации, ожидание согласования, повторный ввод данных, высокая доля ошибок, неравномерная загрузка или зависимость от одного специалиста."},{"t":"p","v":"**Точка принятия решения — момент, когда необходимо сопоставить данные и выбрать действие**. Утвердить заявку, определить приоритет лида, изменить цену, направить обращение, остановить операцию или выбрать следующий эксперимент. Именно здесь способность ИИ быстро анализировать большой контекст особенно полезна."},{"t":"p","v":"В финансах агенты могут прогнозировать денежные потоки, выявлять аномалии, контролировать расходы и готовить закрытие периода. В юридической функции — анализировать договоры, проверять риски и формировать документы. В менеджменте — следить за KPI, готовить сценарии и выявлять отклонения от целей."},{"t":"p","v":"В HR искусственный интеллект помогает в онбординге, оценке компетенций, планировании обучения и поддержке сотрудников. В маркетинге — исследует аудитории, персонализирует контент и анализирует кампании. В продажах — оценивает лиды, готовит предложения и прогнозирует спрос. В поддержке — классифицирует обращения, находит решения и выполняет действия в системах."},{"t":"p","v":"В аналитике агенты собирают данные, строят отчёты и формируют объяснения. В разработке — создают код, тесты и документацию. В ИТ и DevOps — анализируют логи, реагируют на инциденты и оптимизируют инфраструктуру. В R&D — помогают формулировать гипотезы и проектировать эксперименты."},{"t":"p","v":"Однако список функций сам по себе ничего не гарантирует. Внедрение имеет смысл только тогда, когда связано с конкретной метрикой: скоростью, стоимостью, качеством, выручкой, риском или удовлетворённостью. Наличие ИИ не является результатом. Результат — это измеримое изменение процесса."}]},"16":{"title":"Три трансформации бизнеса","blocks":[{"t":"p","v":"Современная операционная модель формировалась последовательно. Условно можно выделить три крупные трансформации: Agile, Digital и ИИ."},{"t":"p","v":"Agile-трансформация изменила способ организации людей. Компании начали переходить от жёсткой иерархии к кросс-функциональным командам, коротким циклам работы и постоянной обратной связи. Решения стали приниматься ближе к месту возникновения проблемы."},{"t":"p","v":"Цифровая трансформация изменила способ организации данных. Процессы начали переноситься в информационные системы, каждое действие стало оставлять цифровой след, а управление стало опираться на измерения, аналитику и единые платформы."},{"t":"p","v":"ИИ-трансформация меняет способ организации решений. Если на цифровом этапе данные помогают человеку, то на интеллектуальном этапе система сама анализирует их, формирует варианты и выполняет часть действий."},{"t":"p","v":"Эти трансформации не отменяют друг друга. Невозможно устойчиво внедрить ИИ в компанию, где процессы не определены, команды не умеют адаптироваться, данные фрагментированы, а решения не измеряются. Интеллектуальный слой опирается на результаты предыдущих этапов."},{"t":"p","v":"**Agile дал бизнесу гибкость, Digital — наблюдаемость, ИИ — способность масштабировать мышление и исполнение**. Вместе они формируют переход от механической организации к адаптивной интеллектуальной системе."},{"t":"p","v":"Поэтому ИИ-трансформация — не технологический проект одного подразделения. Она затрагивает структуру взаимодействий, данные, ответственность, роли, метрики и культуру. В противном случае компания получает отдельные удобные инструменты, но её операционная модель остаётся прежней."}]},"17":{"title":"Agile: от иерархии к адаптивности","blocks":[{"t":"p","v":"Классическая организация строилась как вертикальная пирамида. Решения принимались наверху, задачи передавались вниз, а информация о результатах поднималась обратно. Такая модель обеспечивала контроль в стабильной среде, но становилась медленной, когда рынок начинал быстро меняться."},{"t":"p","v":"Каждое нововведение требовало согласований между подразделениями. Ответственность была разделена по функциям, поэтому результат зависел от длинной цепочки участников. Чем больше становилась компания, тем сложнее ей было адаптироваться."},{"t":"p","v":"Agile предложил иную логику. Вместо управления исключительно через функциональные вертикали появились **кросс-функциональные команды**, объединённые вокруг продукта, клиента или результата. Работа стала итерационной: команда создаёт небольшой результат, получает обратную связь, проверяет гипотезу и корректирует дальнейшие действия."},{"t":"p","v":"Это привело к развитию матричных структур, в которых специалисты сохраняют профессиональную принадлежность, но работают в продуктовых или проектных командах. Решения принимаются ближе к данным и пользователю, а ответственность становится более распределённой."},{"t":"p","v":"Главное достижение Agile заключается не в ритуалах и встречах, а в переходе от контроля к адаптивности. Компания начинает воспринимать изменение не как исключение, а как нормальное состояние."},{"t":"p","v":"Для ИИ-трансформации это особенно важно. Агентов невозможно спроектировать один раз и считать задачу завершённой. Их нужно тестировать, получать обратную связь, улучшать и адаптировать к новым данным. Организация, не умеющая работать итерациями, будет слишком медленно развивать интеллектуальные системы."},{"t":"p","v":"Agile подготовил компании к следующему этапу: если работа организована как сеть команд и коротких циклов, её легче оцифровать, измерить и превратить в поток данных."}]},"18":{"title":"Digital: от процессов к данным","blocks":[{"t":"p","v":"Цифровая трансформация началась с оцифровки операций. Продажи переместились в CRM, ресурсы — в ERP, коммуникации — в корпоративные платформы, а управленческие показатели — в BI-системы."},{"t":"p","v":"Каждое действие стало оставлять цифровой след: звонок, транзакция, изменение статуса, обращение клиента, выполнение задачи. Благодаря этому компания получила возможность измерять процессы, сравнивать результаты и принимать решения на основе фактов."},{"t":"p","v":"Данные стали стратегическим активом. Однако их ценность возникает не из самого факта хранения. Они должны быть качественными, связанными, доступными и понятными. Фрагментированные базы и противоречивые показатели создают лишь иллюзию цифровой зрелости."},{"t":"p","v":"Цифровой этап также показал важное ограничение, описываемое законом Конвея: программные системы организации повторяют структуру её коммуникаций. Если подразделения изолированы, то и данные оказываются разделены; если решение требует длинной цепочки согласований, то программная архитектура обычно воспроизводит ту же зависимость."},{"t":"p","v":"Поэтому цифровая трансформация не может ограничиваться внедрением новых систем. Необходимо менять взаимодействие между функциями, стандарты данных и ответственность за процесс целиком."},{"t":"p","v":"Даже зрелая цифровая компания всё ещё зависит от человеческой интерпретации. Дашборд показывает отклонение, но не принимает решение. Отчёт содержит факты, но не запускает действие. Чем больше данных, тем выше нагрузка на внимание руководителей и аналитиков."},{"t":"p","v":"Именно здесь появляется **предел data-driven-модели**. Данные сделали бизнес наблюдаемым, но сами по себе не превратили наблюдение в действие. Следующий этап должен соединить данные с интеллектом."}]},"19":{"title":"ИИ: от данных к решениям","blocks":[{"t":"p","v":"ИИ-трансформация начинается в тот момент, когда система перестаёт только показывать данные и начинает участвовать в принятии решений."},{"t":"p","v":"В цифровой компании человек получает отчёт, интерпретирует показатели и выбирает действие. В интеллектуальной компании часть этого цикла выполняет агент: обнаруживает событие, связывает его с контекстом, оценивает варианты, предлагает решение или действует самостоятельно в пределах установленных правил."},{"t":"p","v":"Это **переход от data-driven к intelligence-driven-бизнесу**. Данные остаются основой, но поверх них появляется слой машинного интеллекта. Он способен работать непрерывно, обрабатывать больше сигналов и учитывать больше взаимосвязей, чем отдельный человек."},{"t":"p","v":"Например, цифровая система показывает снижение конверсии. Интеллектуальная система определяет сегменты, в которых возникло отклонение, связывает его с изменениями трафика и предложения, предлагает гипотезы, запускает эксперимент и отслеживает результат."},{"t":"p","v":"При этом качество решений зависит от качества данных, модели и архитектуры управления. ИИ не устраняет неопределённость и не освобождает компанию от ответственности. Он масштабирует как сильные, так и слабые стороны системы. Если данные неверны, цели противоречивы, а процесс плохо определён, агент будет быстрее воспроизводить эти проблемы."},{"t":"p","v":"Поэтому интеллектуальная трансформация требует формализации: нужно определить цель процесса, метрики, допустимые действия, границы автономности, правила эскалации и владельца результата."},{"t":"p","v":"Главное изменение заключается в скорости обратной связи. Компания начинает не только наблюдать за собой, но и реагировать почти в реальном времени. Так возникает предпосылка для самообучающейся организации."}]},"20":{"title":"AI-Driven, AI-First и AI-Native","blocks":[{"t":"p","v":"Зрелость компании в работе с искусственным интеллектом можно представить как движение через три модели: **AI-Driven**, **AI-First** и **AI-Native**."},{"t":"p","v":"AI-Driven-компания использует ИИ как инструмент повышения эффективности. Модели помогают анализировать данные, создавать материалы, прогнозировать показатели и автоматизировать отдельные операции. Однако архитектура бизнеса остаётся в основном человеческой, а ключевые решения принимает человек."},{"t":"p","v":"AI-First-компания строит процессы с учётом машинного интеллекта. Агенты становятся частью операционной модели, получают доступ к данным и инструментам, выполняют задачи и взаимодействуют друг с другом. Человек задаёт цели, контролирует качество и отвечает за развитие системы."},{"t":"p","v":"AI-Native-компания идёт ещё дальше: её продукт, технология и бизнес-модель изначально невозможны без искусственного интеллекта. ИИ здесь не поддерживает существующий бизнес, а является ядром создаваемой ценности. Это могут быть платформы моделей, агентные продукты, интеллектуальные среды или сервисы, полностью построенные вокруг автоматизированного исполнения."},{"t":"p","v":"Эти категории не являются строгой лестницей, по которой обязана пройти каждая организация. Существующий банк или промышленная компания может стать зрелой AI-First-организацией, но не обязана превращать сам ИИ в свой основной продукт. Стартап, напротив, может с первого дня быть AI-Native."},{"t":"note","v":"Важно другое: компания должна осознанно определить целевую модель. Если задача заключается только в повышении продуктивности сотрудников, достаточно AI-Driven-подхода. Если необходимо перестроить процессы и масштабировать исполнение, нужен AI-First. Если создаётся принципиально новый интеллектуальный продукт, речь идёт об AI-Native."},{"t":"p","v":"Такое различие помогает не подменять стратегию модными терминами. Уровень зрелости определяется не заявлениями, а тем, какую роль интеллект реально играет в создании ценности."}]},"21":{"title":"Зачем измерять ИИ-зрелость","blocks":[{"t":"p","v":"Многие компании заявляют, что внедряют искусственный интеллект, хотя на практике используют несколько разрозненных инструментов или проводят отдельные пилоты. Такие инициативы могут быть полезными, но сами по себе не означают системной трансформации."},{"t":"p","v":"Чтобы перейти от экспериментов к управляемому развитию, организации нужен способ оценить своё текущее состояние. Эту задачу решает **AI Maturity Index — индекс ИИ-зрелости**."},{"t":"p","v":"Его можно сравнить с рентгеном компании. Он показывает не только наличие технологий, но и системные ограничения. У организации могут быть сильные модели, но отсутствовать качественные данные. Может существовать современная инфраструктура, но не быть владельцев процессов. Руководство может поддерживать ИИ, однако сотрудники не умеют работать с агентами. Каждый такой разрыв ограничивает масштабирование."},{"t":"p","v":"Индекс переводит разговор об ИИ из области вдохновения в область измеряемых управленческих практик. Он помогает определить текущее состояние, выявить сильные и слабые стороны, сформировать общий язык между бизнесом и технологическими командами, поставить цели и построить дорожную карту."},{"t":"p","v":"Зрелость нельзя оценивать одной цифрой — например, количеством моделей или долей сотрудников, использующих чат-боты. ИИ-трансформация зависит сразу от стратегии, людей, инфраструктуры, данных, моделей, качества внедрения и способности организации создавать новое."},{"t":"p","v":"Поэтому индекс строится как профиль из семи измерений. Каждое из них оценивается по нескольким критериям. Важен не только общий балл, но и баланс системы: сильный отдельный блок не компенсирует критический провал в другом."},{"t":"p","v":"**Цель диагностики — не доказать, что компания современная**. Её задача — честно определить, какие изменения необходимы, чтобы интеллект стал устойчивой частью операционной модели."}]},"22":{"title":"Стратегия и управление","blocks":[{"t":"p","v":"Первое измерение ИИ-зрелости — **стратегия и управление**. Оно отвечает на вопрос: понимает ли компания, зачем ей искусственный интеллект и каким образом он должен создавать бизнес-ценность?"},{"t":"p","v":"ИИ-трансформация не начинается с технологии. Она начинается с ясного представления о целях. Компания должна определить, какие показатели она хочет изменить: снизить стоимость операций, ускорить цикл, повысить качество, увеличить выручку, уменьшить риск или создать новый продукт."},{"t":"p","v":"Без этой связи ИИ превращается в портфель пилотов. Команды запускают интересные решения, но не могут объяснить, почему именно эти процессы были выбраны, какие ресурсы нужны для масштабирования и кто отвечает за результат."},{"t":"p","v":"Зрелая стратегия задаёт приоритеты и границы. Она определяет, какие решения компания строит самостоятельно, какие покупает, где допускается автономное действие, а где требуется подтверждение человека. Она также связывает инвестиции в данные, инфраструктуру, обучение и разработку с ожидаемыми эффектами."},{"t":"p","v":"В этом блоке оценивается наличие понятной ИИ-стратегии, вовлечённость руководства, существование KPI, формальная структура управления и место ИИ в общей стратегии бизнеса."},{"t":"p","v":"Особенно важна роль руководства. Если искусственный интеллект остаётся инициативой технологического подразделения, он редко меняет операционную модель. Для трансформации необходимы владельцы на уровне бизнеса, готовые менять процессы, ответственность и способы работы."},{"t":"p","v":"Зрелость проявляется тогда, когда решения об ИИ принимаются не случайно, а в рамках управляемого портфеля. Компания понимает, какие инициативы дают быстрый эффект, какие создают фундамент, какие несут риск и как они вместе ведут к целевой модели."}]},"23":{"title":"Люди и культура","blocks":[{"t":"p","v":"Второе измерение — **люди и культура**. Даже самая сильная технология не создаст устойчивого эффекта, если сотрудники не понимают её назначения, не доверяют результатам или воспринимают ИИ исключительно как угрозу."},{"t":"p","v":"ИИ-трансформация требует изменения мышления. Сотрудник перестаёт быть только исполнителем и становится постановщиком задач, контролёром качества, оператором или наставником агента. Для этого нужны новые компетенции: умение формулировать цель, предоставлять контекст, оценивать результат, распознавать ошибки и понимать границы применения модели."},{"t":"p","v":"Зрелая культура не строится на лозунге «используйте ИИ». Компания должна создать безопасную среду для экспериментов, определить правила ответственного использования, обучить сотрудников и показать, как технология связана с их реальной работой."},{"t":"p","v":"В этом измерении оцениваются управление ИИ-талантами, организация работы специализированных команд, развитие компетенций, культура взаимодействия человека и машины, а также интеграция ИИ в повседневное управление и коммуникации."},{"t":"note","v":"Важно учитывать и эмоциональную сторону изменений. Если автоматизация внедряется без объяснения новой роли человека, сотрудники могут скрыто сопротивляться, не предоставлять обратную связь или продолжать работать по старой схеме. В результате формально внедрённый агент остаётся невостребованным."},{"t":"p","v":"Зрелая организация рассматривает интеллект как союзника. Она не обещает, что технология никогда не ошибается, а создаёт процессы проверки и обучения. Сотрудники понимают, где агент полезен, где требуется осторожность и за какой результат отвечают они сами."},{"t":"p","v":"Именно способность объединить человеческий и машинный интеллект отличает настоящую трансформацию от простой установки нового программного обеспечения."}]},"24":{"title":"Инфраструктура","blocks":[{"t":"p","v":"Третье измерение — инфраструктура. Это технологический фундамент, на котором работают данные, модели, агенты и системы мониторинга."},{"t":"p","v":"**Инфраструктура — не только серверы и вычислительные мощности**. Она включает среды разработки, доступ к моделям, управление версиями, интеграционные механизмы, безопасность, журналирование, наблюдаемость и процессы реагирования на инциденты."},{"t":"p","v":"Экспериментальный прототип можно запустить на ноутбуке. Промышленная система должна выдерживать нагрузку, обеспечивать доступность, защищать данные и позволять быстро обновлять компоненты без разрушения процесса."},{"t":"p","v":"Зрелая инфраструктура предоставляет командам самообслуживание. Разработчик или инженер может получить разрешённый доступ к данным, развернуть модель, подключить инструменты, запустить тест и настроить мониторинг по стандартному процессу. Чем больше действий зависит от ручных согласований и уникальных настроек, тем медленнее масштабируется ИИ."},{"t":"p","v":"В этом блоке оцениваются готовность к ИИ-нагрузкам, доступность инфраструктуры для команд, управление инцидентами, доступ к библиотекам и инструментам, а также безопасность и соответствие требованиям."},{"t":"p","v":"Отдельная задача — **управление стоимостью**. Интеллектуальные системы потребляют вычислительные ресурсы, токены, хранилища и сетевой трафик. Без наблюдаемости компания может получить технически работающий, но экономически неустойчивый продукт."},{"t":"p","v":"Зрелая инфраструктура поддерживает полный жизненный цикл: разработку, тестирование, развёртывание, мониторинг, обновление и вывод решения из эксплуатации. Только при таком фундаменте ИИ можно внедрять быстро, безопасно и системно."}]},"25":{"title":"Данные","blocks":[{"t":"p","v":"Четвёртое измерение — данные. Если модель является мозгом интеллектуальной системы, то данные выполняют роль памяти и сенсоров."},{"t":"p","v":"Без качественного контекста агент не понимает, что происходит в компании. Ему необходим доступ к клиентам, продуктам, операциям, документам, событиям и результатам прошлых решений. При этом данные должны быть не только доступны, но и управляемы."},{"t":"p","v":"Зрелая дата-инфраструктура объединяет источники в сквозные потоки. Компания знает происхождение показателей, контролирует качество, определяет владельцев, разграничивает доступ и отслеживает изменения. Данные движутся от систем к моделям, а результаты работы моделей возвращаются в бизнес и становятся новым источником обучения."},{"t":"p","v":"В этом блоке оцениваются управление данными, степень централизации платформы данных, качество, использование данных в управлении и готовность к обучению и поддержке моделей."},{"t":"p","v":"Особенно опасна ситуация, когда разные подразделения используют разные определения одной сущности. Если продажи, финансы и поддержка по-разному понимают активного клиента, агент не сможет сформировать согласованное решение. Поэтому перед автоматизацией часто требуется не новая модель, а нормализация данных и бизнес-терминов."},{"t":"p","v":"Качественные данные позволяют создать цифровое представление компании: карту клиентов, процессов, документов, решений и связей между ними. На такой основе можно построить **корпоративную память** и в перспективе — **цифрового двойника организации**."},{"t":"p","v":"Данные становятся стратегическим активом не тогда, когда их много, а когда на их основе можно надёжно принимать решения и выполнять действия."}]},"26":{"title":"Модели","blocks":[{"t":"p","v":"Пятое измерение — модели. Они превращают данные в прогнозы, объяснения, рекомендации и действия."},{"t":"p","v":"Компания может использовать разные классы моделей: традиционное машинное обучение, нейронные сети, большие языковые и мультимодальные модели, системы ранжирования, прогнозирования и оптимизации. Зрелость заключается не в выборе одной универсальной технологии, а в способности подобрать подходящий метод для конкретной задачи."},{"t":"p","v":"Не каждый процесс требует генеративного ИИ. Для точного расчёта лучше использовать детерминированный алгоритм. Для прогноза спроса — специализированную статистическую модель. Для анализа неструктурированных документов и общения — языковую модель. Агентная система может объединять эти компоненты."},{"t":"p","v":"В этом измерении оцениваются масштаб и разнообразие портфеля моделей, доля решений в промышленной эксплуатации, скорость вывода, качество мониторинга и зрелость инженерных практик."},{"t":"note","v":"Ключевой переход происходит тогда, когда компания перестаёт относиться к моделям как к экспериментам и начинает управлять ими как активами. Она знает, какие модели существуют, кто является владельцем, где они используются, на каких данных обучены, какой эффект дают и когда должны быть обновлены."},{"t":"p","v":"Промышленная модель нуждается в версионировании, тестах, контроле качества, журналировании и процедуре отката. Для генеративных систем дополнительно необходимы оценка ответов, защита от нежелательного поведения и контроль контекста."},{"t":"p","v":"**Зрелость моделей — это способность не только создать интеллектуальный компонент**, но и надёжно встроить его в бизнес, измерить влияние и постоянно улучшать."}]},"27":{"title":"Внедрение ИИ","blocks":[{"t":"p","v":"Шестое измерение — **внедрение**. Оно показывает, работает ли искусственный интеллект в реальных процессах или остаётся на уровне презентаций и прототипов."},{"t":"p","v":"Компания может иметь сильную исследовательскую команду и современные модели, но не получать эффекта, если решения не интегрированы в повседневную работу. Настоящая зрелость проявляется в изменении поведения организации."},{"t":"p","v":"В этом блоке оценивается доля процессов с ИИ в промышленной эксплуатации, степень усиления бизнес-функций, охват клиентских путей агентами, качество самого процесса внедрения и удовлетворённость сотрудников интеллектуальными инструментами."},{"t":"note","v":"Важно измерять не количество моделей, а глубину интеграции. Одно решение, которое изменило критический процесс, может быть ценнее десятков пилотов. Агент должен получать реальные данные, выполнять полезные действия, иметь владельца, метрики и поддержку."},{"t":"p","v":"Внедрение включает не только техническую интеграцию. Необходимо изменить регламенты, распределение ответственности, инструкции, интерфейсы и обучение сотрудников. Если новый агент существует параллельно старому процессу, люди часто продолжают работать привычным способом, а автоматизация создаёт дополнительный слой нагрузки."},{"t":"p","v":"Зрелая организация проектирует целевой процесс заново. Она определяет, какие операции выполняет агент, какие остаются человеку, где требуется подтверждение, как обрабатываются исключения и кто отвечает за результат."},{"t":"p","v":"В конечном счёте именно внедрение связывает стратегию, данные, модели и инфраструктуру с экономическим эффектом. Без него интеллект остаётся потенциальной возможностью, а не частью бизнеса."}]},"28":{"title":"Исследования и разработки","blocks":[{"t":"p","v":"Седьмое измерение — **исследования и разработки**. Оно показывает, способна ли компания не только применять готовые технологии, но и создавать новые знания, методы и решения."},{"t":"p","v":"R&D особенно важен в областях, где стандартные продукты не дают конкурентного преимущества. Если компания работает с уникальными данными, сложными процессами или новым рынком, ей необходимо экспериментировать, формулировать гипотезы и проверять границы существующих технологий."},{"t":"p","v":"Зрелый исследовательский контур объединяет бизнес-задачи, лаборатории, продуктовые команды и внешних партнёров. Результат исследования не должен оставаться в отчёте. Он должен переходить в прототип, продукт, модель, методику или стратегическое решение."},{"t":"p","v":"В этом измерении оцениваются партнёрства с университетами и научными центрами, качество исследовательского процесса, доля инициатив R&D, применимость результатов и активность в профессиональном сообществе."},{"t":"note","v":"Важно различать исследование и бесконечный эксперимент. R&D должен иметь вопрос, метод, критерии проверки и путь к применению. Даже отрицательный результат может быть ценным, если он сокращает пространство неопределённости и предотвращает дорогостоящую ошибку."},{"t":"p","v":"Способность проводить исследования формирует долгосрочное преимущество. Готовые инструменты быстро становятся доступными всем участникам рынка. Уникальность возникает там, где организация умеет создавать собственные методы, данные, знания и интеллектуальные продукты."},{"t":"p","v":"Зрелая компания не просто догоняет технологический рынок. Она участвует в его формировании и превращает исследования в механизм постоянного обновления бизнеса."}]},"29":{"title":"Как интерпретировать индекс зрелости","blocks":[{"t":"p","v":"Полная диагностика включает семь измерений и тридцать пять критериев. Каждый критерий можно оценить по шкале от одного до пяти, затем рассчитать среднее значение по каждому блоку и применить весовые коэффициенты в зависимости от приоритетов компании."},{"t":"note","v":"Итоговый показатель может быть выражен в процентах, однако одна цифра не должна скрывать структуру. Главная ценность диагностики — **профиль зрелости**."},{"t":"p","v":"Например, компания может иметь развитую инфраструктуру и сильные модели, но слабую культуру и низкий уровень внедрения. Это означает, что дальнейшие инвестиции в технологию не решат основную проблему. Нужно менять процессы, обучение и ответственность."},{"t":"p","v":"Другая организация может иметь поддержку руководства и понятную стратегию, но недостаточно качественных данных. В таком случае логичным приоритетом станет создание дата-фундамента, а не запуск большого числа агентов."},{"t":"p","v":"Основные точки роста находятся в разрывах между блоками. Система ограничена своим самым слабым критическим элементом. Поэтому цель — не максимальный балл по каждому направлению, а **достаточный баланс для выбранной бизнес-задачи**."},{"t":"p","v":"На основе профиля формируется дорожная карта: что исправить немедленно, что развивать в среднесрочной перспективе и какие возможности открываются после создания фундамента."},{"t":"p","v":"Диагностику полезно повторять регулярно, например раз в квартал. Это позволяет видеть динамику, проверять эффект инициатив и корректировать стратегию."},{"t":"p","v":"AI Maturity Index — не отчёт для демонстрации инвесторам и не рейтинг современности. Это инструмент внутренней рефлексии. Он показывает, где организация действительно готова к интеллектуальной трансформации, а где пока существует хаос, который ИИ способен только усилить."}]},"30":{"title":"Стратегия и три горизонта внедрения","blocks":[{"t":"p","v":"Стратегия внедрения ИИ начинается с понимания контекста: где компания находится сейчас, какие цели ставит и какие ограничения необходимо учитывать."},{"t":"p","v":"Первым шагом может стать SWOT-анализ. Сильные стороны показывают, на что можно опереться: качественные данные, технологическую базу, поддержку руководства, сильную команду или культуру экспериментов. Слабые стороны выявляют пробелы: фрагментированную инфраструктуру, недостаток компетенций, отсутствие стандартов или низкое качество аналитики."},{"t":"p","v":"Возможности описывают ценность, которую способен создать ИИ: новые продукты, автоматизацию, сокращение времени операций, персонализацию и улучшение клиентского опыта. Ограничения включают юридические, этические, финансовые и организационные барьеры."},{"t":"p","v":"После этого дорожная карта разделяется на три горизонта."},{"t":"p","v":"**Быстрые победы — инициативы до трёх месяцев**. Их задача — быстро проверить гипотезу и доказать эффект на ограниченном процессе. Это не случайные демонстрации, а небольшие решения с понятной метрикой и владельцем."},{"t":"p","v":"**Среднесрочный горизонт — от трёх до двенадцати месяцев**. Здесь создаются инфраструктура, управление данными, стандарты разработки, обучение и механизмы масштабирования."},{"t":"p","v":"**Долгосрочный горизонт — период от года и более**. На этом уровне агенты объединяются в сквозные процессы, интеллект становится частью корпоративной архитектуры, а организация переходит к непрерывному обучению."},{"t":"p","v":"Хорошая стратегия связывает эти горизонты. Быстрые победы подтверждают ценность, среднесрочные инициативы создают фундамент, а долгосрочная программа меняет операционную модель."},{"t":"p","v":"Успех измеряется не количеством агентов, а изменением ключевых показателей бизнеса. Если внедрение не влияет на скорость, стоимость, качество, выручку или риск, оно остаётся технологическим экспериментом."}]},"31":{"title":"Что создавать самостоятельно, а что покупать","blocks":[{"t":"p","v":"Не каждое ИИ-решение нужно разрабатывать с нуля. Зрелая стратегия включает осознанный выбор между собственным продуктом, внешней платформой и совместной моделью."},{"t":"p","v":"В ключевых процессах, формирующих уникальную ценность и конкурентное преимущество, собственная разработка часто оправданна. Если именно способ принятия решения, работы с клиентом или исполнения операции отличает компанию от рынка, интеллект становится частью её бизнес-модели."},{"t":"p","v":"В поддерживающих функциях — документообороте, типовых HR-операциях, бухгалтерии или юридической поддержке — чаще эффективнее использовать **готовые платформы, API и no-code-инструменты**. Это сокращает время запуска и позволяет сосредоточить внутреннюю команду на действительно уникальных задачах."},{"t":"p","v":"Однако выбор нельзя делать только по принципу «основной или поддерживающий процесс». Нужно учитывать конфиденциальность данных, требования к контролю, стоимость владения, скорость изменений, доступность специалистов и риск зависимости от поставщика."},{"t":"p","v":"В управленческих задачах человек должен оставаться в центре. ИИ может быть аналитиком, советником и симулятором сценариев, но стратегическая ответственность не должна растворяться в модели. Чем выше неопределённость и цена ошибки, тем важнее человеческое решение."},{"t":"p","v":"Практически архитектура часто получается гибридной. Компания использует внешнюю базовую модель, собственный контекст и данные, готовые интеграционные сервисы и внутреннюю логику процесса. Уникальность создаётся не обязательно самой моделью, а тем, как собраны знания, инструменты и правила."},{"t":"p","v":"Экономически разумная ИИ-стратегия не стремится владеть каждым компонентом. Она защищает то, что формирует преимущество, и покупает то, что стало стандартной инфраструктурой."}]},"32":{"title":"Три уровня зрелости внедрения агентов","blocks":[{"t":"p","v":"Внедрение ИИ-агентов можно разделить на три уровня."},{"t":"ol","v":["Точечные решения. Компания использует отдельные ассистенты и инструменты для конкретных задач: подготовки текста, анализа документа, генерации отчёта или обработки обращения. Эффект локален и зависит от инициативы отдельных сотрудников.","Вертикальные агенты. Интеллект берёт на себя значимую часть функциональной роли. Появляются ИИ-финансист, ИИ-рекрутер, ИИ-аналитик, ИИ-маркетолог или ИИ-оператор поддержки. Такие агенты работают с данными и системами своего домена, имеют метрики и встроены в процесс.","ИИ-процессы. Несколько агентов объединяются в сквозную систему. Один принимает сигнал, другой анализирует данные, третий выполняет действие, четвёртый контролирует качество. Задачи и контекст передаются автоматически, а человек управляет процессом на уровне целей и исключений."]},{"t":"p","v":"На этом уровне начинает формироваться корпоративный интеллект. Организация накапливает опыт решений, использует обратную связь и улучшает работу всей системы. Знание перестаёт быть распределено только по отдельным сотрудникам и закрепляется в данных, правилах, памяти и агентах."},{"t":"p","v":"Переход между уровнями требует не только новых технологий. Для вертикального агента нужны интеграция и владелец процесса. Для сквозного ИИ-процесса — **единая архитектура данных, оркестрация, наблюдаемость и правила взаимодействия**."},{"t":"p","v":"Поэтому масштабирование нельзя сводить к копированию пилота. Каждый следующий уровень меняет саму организацию: её процессы, роли, ответственность и способы принятия решений."}]},"33":{"title":"AgentOps как цикл управления ИИ","blocks":[{"t":"p","v":"Большинство ИИ-проектов терпит неудачу не из-за отсутствия идей. Главная проблема заключается в том, что компания умеет создавать пилоты, но не умеет превращать их в устойчивые производственные системы."},{"t":"p","v":"Для решения этой задачи необходим **AgentOps — системный подход к проектированию, внедрению, эксплуатации и постоянному улучшению ИИ-агентов**."},{"t":"p","v":"AgentOps объединяет бизнес-анализ, разработку, данные, интеграцию, обучение, тестирование, мониторинг и управление рисками в единый цикл. Его задача — сделать поведение агента наблюдаемым, измеримым и управляемым."},{"t":"p","v":"Цикл начинается с постановки цели и определения метрик. Затем проектируется и создаётся агент. После этого он подключается к данным и системам компании, проходит этап контролируемой эксплуатации и получает обратную связь от людей. Накопленные примеры используются для улучшения промтов, правил, памяти или моделей. Эффект подтверждается тестированием, а промышленная эксплуатация сопровождается мониторингом и управлением инцидентами."},{"t":"p","v":"После запуска цикл не заканчивается. Бизнес меняется, данные обновляются, модели деградируют, появляются новые требования и исключения. Поэтому агент должен постоянно наблюдаться и дорабатываться."},{"t":"p","v":"AgentOps можно сравнить с DevOps и MLOps, но его предмет шире. Нужно контролировать не только код и качество модели, но и рассуждение, использование инструментов, выбранные действия, бизнес-результат и взаимодействие с человеком."},{"t":"p","v":"**Главный принцип AgentOps — воспроизводимость**. Компания должна понимать, почему агент принял решение, какой контекст использовал, какие действия выполнил и к какому эффекту это привело."},{"t":"p","v":"Так экспериментальный агент превращается в управляемый компонент операционной модели, которому можно делегировать реальную работу."}]},"34":{"title":"Бизнес-анализ, цель и метрики","blocks":[{"t":"p","v":"**Первый этап AgentOps — бизнес-анализ**. До создания агента необходимо определить, какую проблему он решает и какой результат должен изменить."},{"t":"p","v":"Работа начинается с описания текущего процесса. Нужно зафиксировать его цель, участников, триггер, входы, выходы, последовательность операций, системы, точки принятия решений и исключения. Затем выявляются узкие места: ожидание, ручной поиск, ошибки, дублирование, избыточные согласования и высокая зависимость от отдельных специалистов."},{"t":"p","v":"После этого определяется целевой процесс с ИИ. Важно не просто вставить агента в существующую схему, а пересмотреть саму логику работы. Некоторые операции можно удалить, объединить или выполнять параллельно. Меняется и роль человека: он может перейти от исполнения к подтверждению, контролю исключений или развитию системы."},{"t":"p","v":"Одновременно фиксируется **базовое состояние процесса — базовый уровень**. Без него невозможно доказать эффект. Если до внедрения не измерялись время цикла, стоимость, качество и количество ошибок, после запуска нельзя достоверно понять, стало ли лучше."},{"t":"p","v":"Метрики следует разделять на бизнесовые и технические. Бизнесовые показатели отражают ценность: выручку, затраты, скорость, качество, ROI, NPS или снижение риска. Технические описывают работу системы: точность, полноту, задержку, доступность, стабильность и стоимость выполнения."},{"t":"p","v":"Цель должна быть сформулирована не как «внедрить агента», а как изменение процесса. Например: сократить время подготовки коммерческого предложения с двух дней до двух часов без снижения качества."},{"t":"p","v":"Именно бизнес-анализ задаёт управленческий контур проекта. Он определяет, зачем существует агент, где заканчивается его ответственность и по каким признакам решение можно считать успешным."}]},"35":{"title":"Разработка агента: модель, логика и фреймворки","blocks":[{"t":"p","v":"**Второй этап AgentOps — разработка ИИ-агента**. Здесь бизнес-требование превращается в работающую архитектуру."},{"t":"p","v":"В основе агента находится модель. Языковые модели подходят для работы с текстом, документами, кодом и естественным языком. Мультимодальные модели дополнительно воспринимают изображения, аудио, видео, таблицы и интерфейсы. Выбор модели определяет когнитивные возможности, стоимость, скорость и допустимый уровень качества."},{"t":"p","v":"Однако модель сама по себе ещё не является агентом. Необходимо определить роль, цель, контекст, память, инструменты, ограничения и логику поведения. Нужно решить, какие шаги агент выполняет самостоятельно, когда обращается к человеку, как обрабатывает ошибку и каким образом фиксирует ход работы."},{"t":"p","v":"Для программной разработки используются агентные фреймворки. LangChain позволяет собирать последовательности действий, объединяя обращения к модели, базам данных, API и вычислениям. LangGraph представляет процесс в виде графа состояний и переходов, что удобно для ветвящейся логики и мультиагентных систем."},{"t":"p","v":"Для быстрых прототипов и типовых бизнес-сценариев применяются low-code- и no-code-платформы, например n8n. Они позволяют визуально настроить триггеры, интеграции, промты и последовательность действий."},{"t":"p","v":"При проектировании важно различать интеллектуальные и программные операции. Расчёт, проверка формата или изменение записи лучше выполнять детерминированным кодом. Интерпретацию документа, классификацию нестандартного запроса или создание текста можно поручить модели."},{"t":"p","v":"Результатом этапа должен стать не эффектная демонстрация, а минимальный рабочий прототип, способный выполнять реальную задачу, оставлять журнал действий и собирать данные для дальнейшего улучшения."}]},"36":{"title":"Интеграция: RAG, данные и MCP","blocks":[{"t":"p","v":"После создания прототипа агент необходимо подключить к реальному контексту компании. Без этого он остаётся универсальным собеседником, который не знает клиентов, продуктов, регламентов и текущего состояния процессов."},{"t":"p","v":"Один из ключевых подходов — **Retrieval-Augmented Generation, или RAG**. Его смысл заключается в том, что модель не пытается хранить все знания внутри себя, а извлекает релевантную информацию из внешних источников в момент выполнения задачи."},{"t":"p","v":"Для структурированных показателей используются SQL-базы, аналитические хранилища и системы вроде BigQuery или ClickHouse. Векторные базы позволяют искать информацию по смысловой близости и находить подходящие фрагменты документов. Графовые базы описывают связи между людьми, процессами, объектами, документами и событиями."},{"t":"p","v":"RAG предоставляет агенту корпоративную память, но для выполнения работы нужны инструменты. Связь с CRM, ERP, почтой, календарём, хранилищами и другими сервисами может строиться через API и стандартизированные интерфейсы."},{"t":"p","v":"Model Context Protocol, или MCP, задаёт способ контролируемого доступа модели к данным и действиям. Через такие инструменты агент способен прочитать документ, создать файл, отправить письмо, обновить запись или запустить скрипт. При этом компания может ограничивать набор доступных функций и контролировать каждый вызов."},{"t":"p","v":"На этапе интеграции особенно важны права доступа, актуальность данных и журналирование. Агент не должен получать больше полномочий, чем требуется для его роли. Любое значимое действие должно быть отслеживаемым."},{"t":"p","v":"Параллельно запускается разметка. Оператор проверяет результаты, отмечает ошибки и уточняет контекст. Эти данные формируют основу доверия и дальнейшего обучения."},{"t":"p","v":"Так универсальная модель превращается в агента, который понимает конкретный бизнес и способен безопасно действовать внутри его инфраструктуры."}]},"37":{"title":"Обучение и адаптация к компании","blocks":[{"t":"p","v":"После подключения к реальным процессам начинается адаптация агента. Универсальная модель должна освоить терминологию, правила, типовые ситуации и критерии качества конкретной организации."},{"t":"p","v":"Первым источником обучения становится обратная связь пользователей и операторов. Они подтверждают корректные результаты, отмечают ошибки, объясняют причины и показывают предпочтительный способ действия. Важно собирать не только итоговую оценку, но и контекст: на каком шаге возникла ошибка, каких данных не хватило и какое решение считалось правильным."},{"t":"p","v":"Улучшение может происходить на нескольких уровнях. Самый быстрый — изменение инструкций и промтов. Далее можно перестроить процесс рассуждения, добавить примеры, улучшить поиск, память или набор инструментов. Если этого недостаточно, применяются тонкая настройка и другие методы дообучения моделей."},{"t":"p","v":"Не вся обратная связь должна автоматически становиться новым правилом. Пользователь тоже может ошибаться, а локальное исключение — противоречить политике компании. Поэтому данные проходят проверку и версионирование."},{"t":"p","v":"По мере накопления опыта агент начинает лучше учитывать внутренние регламенты, стиль коммуникации, допустимые компромиссы и особенности бизнес-модели. Он превращается из общего инструмента в контекстную интеллектуальную систему."},{"t":"p","v":"В мультиагентной среде важна также оркестрация. Механизмы Agent-to-Agent позволяют одному агенту передавать задачу другому, запрашивать специализированный анализ и объединять результаты. Каждый агент сохраняет свою роль, а оркестратор контролирует общий процесс."},{"t":"p","v":"**Цель обучения — не создать иллюзию человеческого сотрудника, а повысить предсказуемость и полезность системы**. Агент должен всё точнее выполнять определённую функцию, понимать границы и своевременно привлекать человека."}]},"38":{"title":"A/B-тестирование и валидация","blocks":[{"t":"p","v":"После разработки и адаптации необходимо доказать, что агент действительно улучшает процесс. Субъективного впечатления и нескольких удачных примеров недостаточно."},{"t":"p","v":"**Один из основных методов — A/B-тестирование**. Часть операций выполняется с участием агента, а контрольная группа продолжает работать по прежней схеме. Затем результаты сравниваются по заранее определённым показателям."},{"t":"p","v":"Можно измерять скорость выполнения, количество ошибок, стоимость операции, конверсию, удовлетворённость клиентов, нагрузку на сотрудников и экономический эффект. Для генеративных систем дополнительно оцениваются корректность, полнота, соответствие политике и устойчивость к нестандартным запросам."},{"t":"p","v":"Тест должен учитывать возможные побочные эффекты. Агент может ускорить ответ, но снизить качество. Сократить трудозатраты одного отдела, но создать дополнительную нагрузку для другого. Повысить конверсию, но увеличить число жалоб. Поэтому решение считается успешным только при устойчивом улучшении целевых метрик без недопустимой деградации остальных."},{"t":"p","v":"Для задач с высоким риском используются теневой режим и постепенное расширение полномочий. Сначала агент только формирует рекомендацию, затем действует после подтверждения человека и лишь после накопления достаточной статистики получает ограниченную автономность."},{"t":"p","v":"Валидация должна включать не только средние показатели, но и анализ редких и критических сценариев. Именно исключения часто определяют реальную безопасность системы."},{"t":"p","v":"По результатам теста компания принимает решение: масштабировать агента, доработать, ограничить область применения или отказаться от решения. Такой подход защищает бизнес от внедрения технологии ради самой технологии."}]},"39":{"title":"Мониторинг, дашборды и управление ИИ","blocks":[{"t":"p","v":"После выхода в промышленную эксплуатацию агент становится частью корпоративной инфраструктуры. С этого момента его необходимо контролировать так же системно, как другие критические системы."},{"t":"p","v":"Мониторинг должен объединять технический и бизнесовый уровни. Инженерные показатели включают доступность, задержку, потребление ресурсов, количество токенов, ошибки инструментов, качество поиска и стабильность моделей. Бизнесовые показатели отражают скорость процесса, стоимость, выручку, качество, ROI и удовлетворённость пользователей."},{"t":"p","v":"Для технической наблюдаемости используются системы вроде Grafana и Prometheus, а для управленческой аналитики — Power BI, Tableau или Looker Studio. В некоторых случаях интерфейс агента и дашборд можно быстро создать с помощью Streamlit. Конкретный инструмент менее важен, чем единая картина состояния системы."},{"t":"p","v":"Логирование должно позволять восстановить ход выполнения: какой запрос поступил, какой контекст был извлечён, какие инструменты вызваны, какие решения приняты и какой результат получен. Это необходимо для анализа ошибок и аудита."},{"t":"p","v":"Одновременно создаются процессы инцидент-менеджмента. Компания определяет, что считается инцидентом, кто получает уведомление, как ограничивается работа агента и каким образом восстанавливается процесс."},{"t":"p","v":"Управление ИИ охватывает права доступа, защиту данных, прозрачность, этические нормы, соответствие регулированию и распределение ответственности. Для критических действий применяются подтверждение человеком, лимиты, списки разрешённых инструментов и автоматическая остановка."},{"t":"p","v":"**Мониторинг замыкает цикл AgentOps**. Новые ошибки становятся материалом для улучшения, изменения бизнеса — причиной обновления контекста, а накопленные данные — основой следующей версии агента."},{"t":"p","v":"Только наблюдаемая и управляемая система может безопасно стать постоянным участником бизнеса."}]},"40":{"title":"Новые роли в ИИ-компании","blocks":[{"t":"p","v":"ИИ-трансформация меняет не только процессы и технологии, но и организационную структуру. Чтобы интеллект стал устойчивой частью бизнеса, необходимы новые роли, соединяющие стратегию, продукт, инженерию и операционную работу."},{"t":"p","v":"**Chief AI Officer** отвечает за общую ИИ-стратегию. Он формирует дорожную карту, управляет портфелем инициатив, создаёт центр компетенций, задаёт стандарты AgentOps и управления ИИ, контролирует бюджет, риски и бизнес-эффект. Его задача — превратить ИИ из набора экспериментов в управляемый элемент корпоративной стратегии."},{"t":"p","v":"AI Product Manager определяет, какую проблему решает ИИ-продукт, для кого он создаётся и как измеряется успех. Он управляет жизненным циклом от гипотезы до масштабирования, формирует требования и связывает потребности пользователей с возможностями технологии."},{"t":"p","v":"ИИ-консультант диагностирует зрелость компании, анализирует процессы, рассчитывает эффекты и формирует стратегию внедрения. Современный консультант способен не только подготовить рекомендации, но и создать прототип агента, проверить гипотезу и предложить решение как сервис."},{"t":"p","v":"ИИ-инженер превращает модели в надёжные сервисы. Он обучает и оптимизирует модели, строит RAG-системы, интегрирует данные, настраивает пайплайны, мониторинг, безопасность и промышленное развёртывание."},{"t":"p","v":"AI Automation Engineer проектирует сценарии автоматизации и внедряет агентов в процессы. Он описывает операции, формирует граф навыков, соединяет системы, определяет метрики и обучает сотрудников. По сути, это внутренний ИИ-консультант и архитектор внедрения."},{"t":"p","v":"AI Product Engineer объединяет инженерные, продуктовые и UX-компетенции. Он способен пройти весь путь от пользовательской проблемы и интерфейса до работающего ИИ-продукта."},{"t":"p","v":"Операторы ИИ-систем являются владельцами использования агентов внутри функций. Они ставят цели, проверяют результаты, дают обратную связь, контролируют качество и помогают командам освоить новый способ работы."},{"t":"p","v":"Вместе эти роли формируют **Центр ИИ-компетенций** — ядро, где создаются стандарты, решения и образовательные программы, а также управляются результаты трансформации."}]},"41":{"title":"Компания как интеллектуальная система","blocks":[{"t":"p","v":"**ИИ-агенты — это не просто новый инструмент автоматизации**. Они меняют архитектуру бизнеса, потому что соединяют данные, мышление и действие в одном управляемом цикле."},{"t":"p","v":"Традиционная компания организована вокруг передачи задач между людьми. Цифровая компания добавляет информационные системы и делает процессы наблюдаемыми. AI-First-компания встраивает интеллект непосредственно в поток работы: система воспринимает события, анализирует контекст, принимает решения и выполняет часть действий."},{"t":"p","v":"Человек в этой модели не исчезает. Он поднимается на другой уровень ответственности. Вместо постоянного выполнения операций он формулирует цели, проектирует процессы, задаёт ограничения, оценивает результаты и обучает систему. Чем больше работы передаётся агентам, тем важнее становится качество человеческого управления."},{"t":"p","v":"Успех ИИ-трансформации определяется не мощностью отдельной модели. Он зависит от согласованности всей системы: стратегии, культуры, инфраструктуры, данных, моделей, внедрения, исследований, процессов мониторинга и новых ролей."},{"t":"p","v":"Компания должна научиться видеть себя как поток данных и решений. Каждый процесс имеет триггер, входы, операции, точки выбора, результат и метрики. В этот поток можно встроить интеллект, но только если понятны цель и ответственность."},{"t":"p","v":"Победят не те организации, которые просто предоставили сотрудникам доступ к ИИ. Преимущество получат те, кто сумел перестроить вокруг него операционное ядро, создать корпоративную память, объединить агентов и людей и запустить цикл постоянного обучения."},{"t":"p","v":"Так бизнес постепенно превращается в живую интеллектуальную систему. **Данные становятся памятью, агенты — исполнительным и аналитическим слоем, а человек — архитектором направления и смысла**."},{"t":"p","v":"Это и есть главный переход новой экономики: от автоматизации отдельных действий к проектированию организаций, в которых интеллект способен работать непрерывно, масштабируемо и на измеримый результат."}]}}
 </script>
@@ -3014,9 +3153,14 @@ html.dark #progress-container{ background:#0A0A0A !important; }
      широкого слайда заезжала под голову. Сверху резерв меньше — там только
      шапка. */
   .slide-container .content-z{
-    padding-top:clamp(72px,9vh,110px) !important;
+    padding-top:clamp(88px,11vh,132px) !important;
     padding-bottom:calc(var(--bub) + 44px) !important;
   }
+  /* Заголовок во всю ширину 1440 доезжал до кнопок шапки справа. Ограничиваем
+     ширину самого заголовка — глушить кегль из slide-polish нельзя, он и так
+     задан через !important. */
+  .slide-container .content-z > h1,
+  .slide-container .content-z > h2{ max-width:min(100%, 60rem); }
   #nav-next{ right: calc(20px + var(--bub)/2 - 52px) !important; }
   #nav-prev{ right: calc(20px + var(--bub)/2 + 4px) !important; }
 }
@@ -3403,95 +3547,5 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 })();
 </script>
 
-<style id="radial-fig">
-/* ЭТАЛОН круговой («радиальной») инфографики.
-   Образец применения — слайд «Фреймворк AgentOps». На него ориентируются
-   остальные лекции, поэтому блок самодостаточный: копируется целиком.
-
-   Почему компонент устроен именно так — три ловушки этого проекта:
-   1) НИКАКИХ transform для позиционирования. Глобальное правило FR-LECTURE-20
-      гасит transform на :hover (`.slide-container *:hover{transform:none}`),
-      поэтому круг, отцентрованный через `-translate-x-1/2 -translate-y-1/2`,
-      при наведении ПРЫГАЛ на половину своей ширины. Здесь центр задаётся
-      арифметикой: left:calc(<X> - <диаметр>/2).
-   2) НИКАКОГО класса `aspect-square`: под него подвязаны глобальные правила
-      (white-space:nowrap на p/h3/h4 и max-width:440px). Пропорцию 1:1 держим
-      свойством aspect-ratio.
-   3) Круги — это круги (border-radius:50%), а не карточки со скруглением.
-      Никаких прямоугольных подложек под ними.
-   Hover-эффектов у компонента нет вовсе: ни размера, ни сдвига, ни цвета. */
-
-.radial-fig{
-  position:relative;
-  width:100%;
-  aspect-ratio:1 / 1;
-  margin-left:auto; margin-right:auto;
-  --orbit:38%;                        /* радиус орбиты (в % от стороны) */
-  --sat:clamp(84px, 25%, 148px);      /* диаметр спутника */
-  --core:clamp(92px, 26%, 168px);     /* диаметр ядра */
-}
-.radial-fig > *{ position:absolute; }
-
-.radial-core,
-.radial-sat{
-  border-radius:50%;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  text-align:center;
-  line-height:1.15;
-  overflow:hidden;
-}
-.radial-core{
-  width:var(--core); height:var(--core);
-  left:calc(50% - var(--core)/2);
-  top:calc(50% - var(--core)/2);
-  z-index:3;
-}
-.radial-sat{
-  width:var(--sat); height:var(--sat);
-  left:calc(var(--x) - var(--sat)/2);   /* --x/--y — центр спутника, инлайном */
-  top:calc(var(--y) - var(--sat)/2);
-  /* ВАЖНО: padding НЕ в процентах. У абсолютно спозиционированного элемента
-     процентный padding считается от ширины КОНТЕЙНЕРА (.radial-fig), а не от
-     самого круга, — внутренняя ширина падала втрое и подписи ломались. */
-  padding:calc(var(--sat) * 0.07);
-  z-index:2;
-}
-/* Пунктирное кольцо-орбита проходит РОВНО через центры спутников:
-   viewBox 0 0 100 100, r = значение --orbit в тех же единицах. */
-.radial-ring{
-  inset:0; width:100%; height:100%;
-  z-index:1; pointer-events:none;
-}
-/* Подписи внутри кругов. Правило: подпись — ОДНО слово (номер шага выносится
-   в .rf-num), тогда она встаёт в одну строку и круг не распирает.
-   Перенос по слогам оставлен страховкой для самых длинных слов. */
-.radial-sat .rf-label{
-  hyphens:auto; -webkit-hyphens:auto;
-  overflow-wrap:break-word; word-break:normal;
-  max-width:100%;
-}
-/* Номер шага — мелкой строкой над иконкой, чтобы не съедать ширину подписи. */
-.radial-sat .rf-num{
-  font-weight:900; line-height:1;
-  font-size:clamp(9px,2.2vw,12px);
-  opacity:.55;
-  margin-bottom:.15em;
-}
-/* Компонент не реагирует на указатель — он не интерактивный. */
-.radial-fig, .radial-fig *{ transition:none !important; }
-/* Телефон: композиция остаётся круговой, ужимаются размеры и кегль подписи.
-   Разваливать круг в сетку нельзя — круг нужен и на мобилке. */
-@media (max-width:520px){
-  .radial-fig{
-    --orbit:37%;
-    --sat:clamp(64px, 23%, 96px);
-    --core:clamp(76px, 26%, 108px);
-  }
-  .radial-sat .rf-label{ font-size:10px !important; line-height:1.1 !important; }
-  .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }
-  .radial-sat i, .radial-core i{ font-size:1.05rem !important; }
-}
-</style>
 </body>
 </html>

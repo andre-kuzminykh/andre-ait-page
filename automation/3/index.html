@@ -523,23 +523,26 @@ window.addEventListener('load', function(){
       c.style.zoom = '';
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
-      // scrollHeight ловит переполнение flex-центрированного контента
-      // (когда content-z имеет min-height:100% и offsetHeight = availH, но
-      // дети визуально вылезают за рамку из-за justify-content:center).
-      var natH = Math.max(c.offsetHeight, c.scrollHeight, slide.scrollHeight);
-      var natW = Math.max(c.scrollWidth, slide.scrollWidth);
-      if(!natH || !natW) return;
-      var s = Math.min(availH / natH, availW / natW, 1);
-      // запас 4% — чтобы высокий контент гарантированно влезал и заголовок не уходил за край
-      if(s < 0.999){ c.style.zoom = s * 0.96; return; }
+      // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
+      // offsetHeight/scrollHeight тут врут: у content-z стоит min-height:100%,
+      // поэтому offsetHeight всегда равен высоте слайда, а scrollHeight не
+      // растёт от flex-центрированного контента — переполнение молча уезжало
+      // вверх под шапку вместо того, чтобы ужаться.
+      var st = window.getComputedStyle(c);
+      var padY = (parseFloat(st.paddingTop) || 0) + (parseFloat(st.paddingBottom) || 0);
+      var padX = (parseFloat(st.paddingLeft) || 0) + (parseFloat(st.paddingRight) || 0);
+      var innerH = availH - padY, innerW = availW - padX;
+      var ink = inkBox(c);
+      if(!ink || ink.h < 40 || innerH <= 0 || innerW <= 0) return;
+      var k = Math.min(innerH / ink.h, innerW / ink.w);
+      if(k < 0.999){
+        // запас 4% — чтобы высокий контент гарантированно влезал
+        c.style.zoom = k * 0.96;
+        return;
+      }
       // Контент влезает — проверяем обратное: не тонет ли он в пустоте.
       if(window.innerWidth < 1024) return;
-      var st = window.getComputedStyle(c);
-      var innerH = availH - (parseFloat(st.paddingTop) || 0) - (parseFloat(st.paddingBottom) || 0);
-      var innerW = availW - (parseFloat(st.paddingLeft) || 0) - (parseFloat(st.paddingRight) || 0);
-      var ink = inkBox(c);
-      if(!ink || ink.h < 40) return;
-      var g = Math.min(innerH / ink.h, innerW / ink.w, MAX_GROW);
+      var g = Math.min(k, MAX_GROW);
       if(g > 1.04) c.style.zoom = g * 0.97;
     }catch(e){}
   }
@@ -673,26 +676,29 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 1: Введение -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-100 translate-y-0" id="slide-0">
-        <div class="content-z text-center max-w-6xl">
-            <div class="bg-grayBase/30 border border-grayBase rounded-full px-4 py-1.5 md:py-2 mx-auto shadow-sm mb-4 md:mb-10 inline-block">
+        <div class="content-z text-center max-w-3xl">
+            <div class="bg-grayBase/30 border border-grayBase rounded-full px-4 py-1.5 md:py-2 mx-auto shadow-sm mb-4 md:mb-8 inline-block">
                 <p class="text-black font-bold uppercase tracking-widest text-[8px] md:text-sm m-0">Лекция 3: ИИ-платформа</p>
             </div>
             <h1 class="text-2xl sm:text-4xl md:text-5xl lg:text-[60px] font-black mb-3 md:mb-6 leading-tight tracking-tight text-black">
                 ИИ-автоматизация <span class="text-solar">процессов</span>
             </h1>
-            <p class="text-black/70 font-bold text-sm md:text-2xl mb-10 md:mb-20 max-w-3xl mx-auto">От отдельных автоматизаций — к ИИ-платформе</p>
+            <p class="text-black/70 font-bold text-sm md:text-2xl mb-6 md:mb-10 max-w-3xl mx-auto">От отдельных автоматизаций — к ИИ-платформе</p>
 
-            <div class="flex flex-col md:flex-row gap-1.5 md:gap-3 justify-center items-stretch max-w-3xl mx-auto w-full opacity-80">
-                <div class="flex-1 flex items-center justify-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-medium text-black/60">
-                    <i class="ph-bold ph-equals text-solar text-xs md:text-sm"></i>Агент ≠ модель
+            <!-- Три тезиса лекции карточками: раньше это была тонкая строка через всю
+                 ширину — слайд читался полупустым, а строка расползалась по горизонтали. -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3 max-w-3xl mx-auto w-full">
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 flex flex-col items-center gap-1.5 md:gap-2">
+                    <i class="ph-fill ph-robot text-solar text-lg md:text-2xl"></i>
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Агент ≠ модель</p>
                 </div>
-                <div class="hidden md:block w-px bg-grayBase"></div>
-                <div class="flex-1 flex items-center justify-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-medium text-black/60">
-                    <i class="ph-bold ph-equals text-solar text-xs md:text-sm"></i>Платформа ≠ набор инструментов
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 flex flex-col items-center gap-1.5 md:gap-2">
+                    <i class="ph-fill ph-stack text-solar text-lg md:text-2xl"></i>
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Платформа ≠ набор инструментов</p>
                 </div>
-                <div class="hidden md:block w-px bg-grayBase"></div>
-                <div class="flex-1 flex items-center justify-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-medium text-black/60">
-                    <i class="ph-bold ph-shield-check text-solar text-xs md:text-sm"></i>Архитектура важнее агентов
+                <div class="bg-white border border-grayBase rounded-2xl p-3 md:p-4 flex flex-col items-center gap-1.5 md:gap-2">
+                    <i class="ph-fill ph-shield-check text-solar text-lg md:text-2xl"></i>
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Архитектура важнее агентов</p>
                 </div>
             </div>
         </div>
@@ -742,69 +748,40 @@ window.addEventListener('load', function(){
     <!-- СЛАЙД 3: Агент как часть среды исполнения -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-2">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-2xl md:text-3xl font-black mb-2 md:mb-3 text-center text-black">Агент как часть <span class="text-solar">среды исполнения</span></h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl font-black mb-2 md:mb-3 text-center text-black max-w-3xl mx-auto">Агент как часть <span class="text-solar">среды исполнения</span></h2>
             <p class="text-center text-black/60 mb-3 md:mb-5 text-[11px] md:text-base font-medium max-w-3xl mx-auto">Агент работает не сам по себе, а внутри среды исполнения</p>
 
-            <!-- Мобилка: ядро сверху + круги-спутники среды -->
-            <div class="md:hidden w-full max-w-sm mx-auto">
-                <div class="w-24 h-24 rounded-full bg-black border-4 border-solar text-solar flex flex-col items-center justify-center mx-auto mb-3">
-                    <i class="ph-fill ph-robot text-2xl"></i>
-                    <p class="text-[10px] font-black mt-0.5">Агент</p>
-                </div>
-                <div class="flex flex-wrap justify-center gap-x-1.5 gap-y-3">
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-database text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Данные</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-scales text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Правила</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-app-window text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Интерфейсы</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-toolbox text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Инструменты</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-shield-check text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Контроль</p>
-                    </div>
-                </div>
-            </div>
+            <!-- Круговая схема «ядро + спутники» (компонент .radial-fig): остаётся
+                 кругом и на 390px, и на 1440px — в сетку не разваливается. -->
+            <div class="radial-fig" style="width:min(100%,490px);--orbit:36%;--sat:clamp(84px,25%,136px);--core:clamp(88px,24%,142px)">
+                <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                    <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                </svg>
 
-            <!-- Десктоп: круги-спутники среды на пунктирном кольце -->
-            <div class="hidden md:block relative w-[440px] h-[440px] mx-auto">
-                <div class="absolute inset-[14%] border-2 border-dashed border-solar/40 rounded-full z-0"></div>
-
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-32 h-32 bg-black rounded-full flex flex-col items-center justify-center text-solar border-4 border-solar z-20">
-                        <i class="ph-fill ph-robot text-3xl"></i>
-                        <p class="text-xs font-black mt-1">Агент</p>
-                    </div>
+                <div class="radial-core bg-black border-4 border-solar">
+                    <i class="ph-fill ph-robot text-2xl md:text-4xl text-solar mb-1"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-white px-2">Агент</span>
                 </div>
 
-                <div class="absolute top-[14%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-database text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Данные</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:14%">
+                    <i class="ph-fill ph-database text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Данные</span>
                 </div>
-                <div class="absolute top-[38.9%] left-[84.2%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-scales text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Правила</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:84.24%;--y:38.88%">
+                    <i class="ph-fill ph-scales text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Правила</span>
                 </div>
-                <div class="absolute top-[79.1%] left-[71.2%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-app-window text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Интерфейсы</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:71.16%;--y:79.12%">
+                    <i class="ph-fill ph-app-window text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Интер&shy;фейсы</span>
                 </div>
-                <div class="absolute top-[79.1%] left-[28.8%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-toolbox text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Инструменты</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:28.84%;--y:79.12%">
+                    <i class="ph-fill ph-toolbox text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Инстру&shy;менты</span>
                 </div>
-                <div class="absolute top-[38.9%] left-[15.8%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-shield-check text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Контроль</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:15.76%;--y:38.88%">
+                    <i class="ph-fill ph-shield-check text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Контроль</span>
                 </div>
             </div>
         </div>
@@ -950,64 +927,36 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Признаки <span class="text-solar">зрелой платформы</span></h2>
             <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Зрелая платформа — это единая управляемая среда</p>
 
-            <!-- Мобилка: ядро сверху + круги-спутники сеткой -->
-            <div class="md:hidden w-full max-w-sm mx-auto">
-                <div class="w-24 h-24 rounded-full bg-black border-4 border-solar text-solar flex flex-col items-center justify-center mx-auto mb-3">
-                    <i class="ph-fill ph-stack text-2xl"></i>
-                    <p class="text-[10px] font-black mt-0.5">Платформа</p>
-                </div>
-                <div class="flex flex-wrap justify-center gap-x-1.5 gap-y-3">
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-globe text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Единый контекст</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-sliders text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Управляемость</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-arrows-out text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Масштаби&shy;руемость</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-eye text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Наблюда&shy;емость</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-arrows-counter-clockwise text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Накопление и улучшение</p>
-                    </div>
-                </div>
-            </div>
+            <!-- Круговая схема «ядро + спутники» (компонент .radial-fig). -->
+            <div class="radial-fig" style="width:min(100%,560px);--orbit:36%;--sat:clamp(84px,25%,150px);--core:clamp(88px,24%,156px)">
+                <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                    <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                </svg>
 
-            <!-- Десктоп: круг-ядро + круги-спутники на пунктирном кольце -->
-            <div class="hidden md:block relative w-[440px] h-[440px] mx-auto">
-                <div class="absolute inset-[14%] rounded-full border-2 border-dashed border-solar/40 z-0"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-32 h-32 rounded-full bg-black border-4 border-solar text-solar flex flex-col items-center justify-center z-20">
-                        <i class="ph-fill ph-stack text-3xl"></i>
-                        <p class="text-xs font-black mt-1">Платформа</p>
-                    </div>
+                <div class="radial-core bg-black border-4 border-solar">
+                    <i class="ph-fill ph-stack text-2xl md:text-4xl text-solar mb-1"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-white px-2">Плат&shy;форма</span>
                 </div>
-                <div class="absolute top-[14%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-globe text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Единый контекст</p>
+
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:14%">
+                    <i class="ph-fill ph-globe text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Контекст</span>
                 </div>
-                <div class="absolute top-[38.9%] left-[84.2%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-sliders text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Управляемость</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:84.24%;--y:38.88%">
+                    <i class="ph-fill ph-sliders text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Управ&shy;ляемость</span>
                 </div>
-                <div class="absolute top-[79.1%] left-[71.2%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-arrows-out text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Масштаби&shy;руемость</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:71.16%;--y:79.12%">
+                    <i class="ph-fill ph-arrows-out text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Масштаби&shy;руемость</span>
                 </div>
-                <div class="absolute top-[79.1%] left-[28.8%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-eye text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Наблюдаемость</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:28.84%;--y:79.12%">
+                    <i class="ph-fill ph-eye text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Наблюда&shy;емость</span>
                 </div>
-                <div class="absolute top-[38.9%] left-[15.8%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-arrows-counter-clockwise text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Накопление и улучшение</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:15.76%;--y:38.88%">
+                    <i class="ph-fill ph-arrows-counter-clockwise text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Улуч&shy;шение</span>
                 </div>
             </div>
         </div>
@@ -1015,30 +964,39 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 8: Формула автоматизации -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-7">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Базовая формула <span class="text-solar">автоматизации</span></h2>
-            <p class="text-center text-black/60 mb-10 md:mb-16 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Любая автоматизация строится по одной и той же схеме</p>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Любая автоматизация строится по одной и той же схеме</p>
 
-            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-3 md:gap-4 w-full max-w-5xl mx-auto">
-                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-8 shadow-sm text-center">
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-solar/20 rounded-full flex items-center justify-center text-solar mx-auto mb-2 md:mb-4"><i class="ph-fill ph-lightning text-xl md:text-3xl"></i></div>
+            <!-- Цепочка собрана плотно (gap-2/3, узкий контейнер): раньше три карточки
+                 стояли по краям max-w-5xl, а между ними зияла дыра с маленькой стрелкой. -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-2 md:gap-3 w-full max-w-3xl mx-auto">
+                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-6 shadow-sm text-center">
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-solar/20 rounded-full flex items-center justify-center text-solar mx-auto mb-1.5 md:mb-3"><i class="ph-fill ph-lightning text-lg md:text-3xl"></i></div>
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-1">Шаг 1</p>
                     <h3 class="font-black text-sm md:text-xl">Триггер</h3>
+                    <p class="hidden md:block text-[10px] md:text-xs text-black/60 font-medium mt-1 leading-tight">Что запускает процесс</p>
                 </div>
-                <i class="ph-bold ph-arrow-right text-grayBase text-3xl md:text-5xl self-center hidden md:block"></i>
-                <i class="ph-bold ph-arrow-down text-grayBase text-3xl md:text-5xl self-center md:hidden"></i>
-                <div class="flex-1 bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-8 shadow-xl text-center text-white">
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-solar rounded-full flex items-center justify-center text-black mx-auto mb-2 md:mb-4"><i class="ph-fill ph-gear-six text-xl md:text-3xl"></i></div>
+                <i class="ph-bold ph-arrow-right text-grayBase text-2xl md:text-3xl self-center hidden md:block shrink-0"></i>
+                <i class="ph-bold ph-arrow-down text-grayBase text-lg self-center md:hidden"></i>
+                <div class="flex-1 bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-3 md:p-6 shadow-xl text-center text-white">
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-solar rounded-full flex items-center justify-center text-black mx-auto mb-1.5 md:mb-3"><i class="ph-fill ph-gear-six text-lg md:text-3xl"></i></div>
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-1">Шаг 2</p>
                     <h3 class="font-black text-sm md:text-xl text-solar">Логика обработки</h3>
+                    <p class="hidden md:block text-[10px] md:text-xs text-white/60 font-medium mt-1 leading-tight">Здесь встраивается ИИ</p>
                 </div>
-                <i class="ph-bold ph-arrow-right text-grayBase text-3xl md:text-5xl self-center hidden md:block"></i>
-                <i class="ph-bold ph-arrow-down text-grayBase text-3xl md:text-5xl self-center md:hidden"></i>
-                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-8 shadow-sm text-center">
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-solar/20 rounded-full flex items-center justify-center text-solar mx-auto mb-2 md:mb-4"><i class="ph-fill ph-rocket-launch text-xl md:text-3xl"></i></div>
+                <i class="ph-bold ph-arrow-right text-grayBase text-2xl md:text-3xl self-center hidden md:block shrink-0"></i>
+                <i class="ph-bold ph-arrow-down text-grayBase text-lg self-center md:hidden"></i>
+                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-6 shadow-sm text-center">
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-solar/20 rounded-full flex items-center justify-center text-solar mx-auto mb-1.5 md:mb-3"><i class="ph-fill ph-rocket-launch text-lg md:text-3xl"></i></div>
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-1">Шаг 3</p>
                     <h3 class="font-black text-sm md:text-xl">Действие</h3>
+                    <p class="hidden md:block text-[10px] md:text-xs text-black/60 font-medium mt-1 leading-tight">Что меняется в системе</p>
                 </div>
+            </div>
+
+            <div class="w-full max-w-3xl mx-auto mt-2.5 md:mt-6 bg-white border border-grayBase rounded-2xl px-3 py-2 md:px-4 md:py-4 text-center">
+                <p class="text-[10px] md:text-sm text-black/70 font-medium leading-tight">ИИ не отменяет эту формулу — он встраивается в <span class="font-black text-black">шаг обработки</span>, где нужен смысл, а не правило</p>
             </div>
         </div>
     </div>
@@ -1049,8 +1007,8 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black"><span class="text-solar">Триггер</span> — точка запуска</h2>
             <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Любой процесс начинается с момента запуска</p>
 
-            <div class="w-full max-w-5xl mx-auto">
-                <div class="flex flex-col md:flex-row gap-4 md:gap-6 items-stretch md:items-center justify-center">
+            <div class="w-full max-w-3xl mx-auto">
+                <div class="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch md:items-center justify-center">
                     <div class="flex-1 space-y-3 md:space-y-4">
                         <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 shadow-sm flex items-center gap-3 md:gap-4">
                             <div class="w-10 h-10 md:w-12 md:h-12 bg-grayBase rounded-lg flex items-center justify-center shrink-0"><i class="ph-fill ph-hand-tap text-lg md:text-xl"></i></div>
@@ -1155,7 +1113,7 @@ window.addEventListener('load', function(){
             </div>
 
             <div class="relative w-full max-w-4xl mx-auto bg-black rounded-[20px] md:rounded-3xl p-5 md:p-8 text-white shadow-xl">
-                <div class="flex items-center justify-center gap-4 md:gap-8">
+                <div class="flex items-center justify-center gap-3 md:gap-5">
                     <div class="w-14 h-14 md:w-20 md:h-20 bg-solar rounded-full flex items-center justify-center text-black border-2 border-white/20 shrink-0">
                         <i class="ph-fill ph-gear-six text-2xl md:text-3xl"></i>
                     </div>
@@ -1274,76 +1232,66 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Что делает <span class="text-solar">агента агентом</span></h2>
             <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Четыре способности, без которых это не агент</p>
 
-            <!-- Мобилка: ядро сверху + четыре круга цикла -->
-            <div class="md:hidden w-full max-w-sm mx-auto">
-                <div class="w-24 h-24 rounded-full bg-black border-4 border-solar text-solar flex flex-col items-center justify-center mx-auto mb-3">
-                    <i class="ph-fill ph-robot text-2xl"></i>
-                    <p class="text-[10px] font-black mt-0.5">Агент</p>
+            <!-- Круговой цикл из четырёх способностей (компонент .radial-fig). -->
+            <div class="radial-fig" style="width:min(100%,420px);--orbit:35%;--sat:clamp(88px,27%,128px);--core:clamp(88px,24%,124px)">
+                <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                    <circle cx="50" cy="50" r="35" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                </svg>
+
+                <div class="radial-core bg-black border-4 border-solar">
+                    <i class="ph-fill ph-robot text-2xl md:text-4xl text-solar mb-1"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-white px-2">Агент</span>
                 </div>
-                <div class="grid grid-cols-2 gap-x-2 gap-y-3 justify-items-center">
-                    <div class="flex flex-col items-center gap-1.5 w-full">
-                        <div class="w-[72px] h-[72px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-eye text-solar text-2xl"></i></div>
-                        <p class="text-[11px] font-black text-center leading-tight">Воспринимает</p>
-                        <p class="text-[10px] text-black/60 font-medium text-center leading-tight">Ситуацию и контекст</p>
-                    </div>
-                    <div class="flex flex-col items-center gap-1.5 w-full">
-                        <div class="w-[72px] h-[72px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-brain text-solar text-2xl"></i></div>
-                        <p class="text-[11px] font-black text-center leading-tight">Решает</p>
-                        <p class="text-[10px] text-black/60 font-medium text-center leading-tight">Принимает решение</p>
-                    </div>
-                    <div class="flex flex-col items-center gap-1.5 w-full">
-                        <div class="w-[72px] h-[72px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-rocket-launch text-solar text-2xl"></i></div>
-                        <p class="text-[11px] font-black text-center leading-tight">Действует</p>
-                        <p class="text-[10px] text-black/60 font-medium text-center leading-tight">Ради цели</p>
-                    </div>
-                    <div class="flex flex-col items-center gap-1.5 w-full">
-                        <div class="w-[72px] h-[72px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-arrows-counter-clockwise text-solar text-2xl"></i></div>
-                        <p class="text-[11px] font-black text-center leading-tight">Учится</p>
-                        <p class="text-[10px] text-black/60 font-medium text-center leading-tight">Обратная связь</p>
-                    </div>
+
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:15%">
+                    <i class="ph-fill ph-eye text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Воспри&shy;нимает</span>
+                </div>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:85%;--y:50%">
+                    <i class="ph-fill ph-brain text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Решает</span>
+                </div>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:85%">
+                    <i class="ph-fill ph-rocket-launch text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Действует</span>
+                </div>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:15%;--y:50%">
+                    <i class="ph-fill ph-arrows-counter-clockwise text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Учится</span>
                 </div>
             </div>
 
-            <!-- Десктоп: цикл из четырёх кругов вокруг агента -->
-            <div class="hidden md:block relative w-[440px] h-[440px] mx-auto">
-                <div class="absolute inset-[15%] rounded-full border-2 border-dashed border-solar/40 z-0"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-32 h-32 rounded-full bg-black border-4 border-solar text-solar flex flex-col items-center justify-center z-20">
-                        <i class="ph-fill ph-robot text-3xl"></i>
-                        <p class="text-xs font-black mt-1">Агент</p>
-                    </div>
+            <!-- Расшифровка способностей: порядок совпадает с обходом круга по часовой -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-4 md:mt-6">
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Воспринимает</p>
+                    <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Ситуацию и контекст</p>
                 </div>
-                <div class="absolute top-[15%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-4 z-30">
-                    <i class="ph-fill ph-eye text-solar text-2xl"></i>
-                    <p class="text-sm font-black mt-1 leading-tight">Воспринимает</p>
-                    <p class="text-[10px] text-black/60 font-medium leading-tight">Ситуацию и контекст</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Решает</p>
+                    <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Принимает решение</p>
                 </div>
-                <div class="absolute top-1/2 left-[85%] -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-4 z-30">
-                    <i class="ph-fill ph-brain text-solar text-2xl"></i>
-                    <p class="text-sm font-black mt-1 leading-tight">Решает</p>
-                    <p class="text-[10px] text-black/60 font-medium leading-tight">Принимает решение</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Действует</p>
+                    <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Ради цели</p>
                 </div>
-                <div class="absolute top-[85%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-4 z-30">
-                    <i class="ph-fill ph-rocket-launch text-solar text-2xl"></i>
-                    <p class="text-sm font-black mt-1 leading-tight">Действует</p>
-                    <p class="text-[10px] text-black/60 font-medium leading-tight">Ради цели</p>
-                </div>
-                <div class="absolute top-1/2 left-[15%] -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-4 z-30">
-                    <i class="ph-fill ph-arrows-counter-clockwise text-solar text-2xl"></i>
-                    <p class="text-sm font-black mt-1 leading-tight">Учится</p>
-                    <p class="text-[10px] text-black/60 font-medium leading-tight">Обратная связь</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Учится</p>
+                    <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Обратная связь</p>
                 </div>
             </div>
+
         </div>
     </div>
 
     <!-- СЛАЙД 15: Воркфлоу и агент -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-14">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Воркфлоу и <span class="text-solar">агент</span></h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Воркфлоу задаёт рамку — агент добавляет гибкость</p>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Воркфлоу задаёт рамку — агент добавляет гибкость</p>
 
-            <div class="flex flex-col md:flex-row items-stretch gap-3 md:gap-6 w-full max-w-5xl mx-auto">
+            <!-- Две карточки стоят вплотную к знаку «+»: контейнер сужен, gap уменьшен. -->
+            <div class="flex flex-col md:flex-row items-stretch gap-2 md:gap-3 w-full max-w-3xl mx-auto">
                 <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-5 md:p-7 shadow-sm">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 md:w-12 md:h-12 bg-grayBase rounded-lg flex items-center justify-center"><i class="ph-fill ph-flow-arrow text-lg md:text-xl"></i></div>
@@ -1375,17 +1323,26 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
             </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-3 md:mt-5">
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 text-[11px] md:text-sm font-medium text-black/70 flex items-start gap-2">
+                    <i class="ph-fill ph-flow-arrow text-solar text-base md:text-lg shrink-0 mt-0.5"></i><span>«Как должен исполняться процесс?»</span>
+                </div>
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 text-[11px] md:text-sm font-medium text-black/70 flex items-start gap-2">
+                    <i class="ph-fill ph-robot text-solar text-base md:text-lg shrink-0 mt-0.5"></i><span>«Что лучше сделать в этой ситуации?»</span>
+                </div>
+            </div>
         </div>
     </div>
 
 
     <!-- СЛАЙД 16: Агент внутри процесса -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-15">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Агент <span class="text-solar">внутри процесса</span></h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент — это не отдельная система рядом, а исполнитель внутри процесса</p>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент — это не отдельная система рядом, а исполнитель внутри процесса</p>
 
-            <div class="w-full max-w-5xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-3 sm:p-5 md:p-8 shadow-sm">
+            <div class="w-full max-w-3xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-3 sm:p-5 md:p-8 shadow-sm">
                 <div class="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
                     <div class="flex-1 h-14 md:h-20 bg-grayBase/60 rounded-xl flex items-center justify-center text-[10px] md:text-sm font-bold text-black/70 px-1">
                         Вход
@@ -1406,7 +1363,7 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 w-full max-w-4xl mx-auto mt-6 md:mt-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-4 md:mt-6">
                 <div class="bg-white border border-grayBase rounded-xl p-3 md:p-4 flex items-center gap-3">
                     <div class="w-8 h-8 md:w-10 md:h-10 bg-solar/20 rounded-full flex items-center justify-center text-solar shrink-0"><i class="ph-fill ph-arrow-down text-sm md:text-lg"></i></div>
                     <p class="font-bold text-[11px] md:text-sm">Получает задачу</p>
@@ -1478,52 +1435,60 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 18: Агент действует через интерфейсы -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-17">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Агент действует через <span class="text-solar">интерфейсы</span></h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент влияет на систему только через точки интеграции</p>
+            <p class="text-center text-black/60 mb-5 md:mb-7 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент влияет на систему только через точки интеграции</p>
 
-            <div class="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-8 w-full max-w-5xl mx-auto">
-                <div class="w-20 h-20 md:w-32 md:h-32 bg-black rounded-full flex flex-col items-center justify-center text-solar border-4 border-solar shadow-[0_0_30px_rgba(139,92,246,0.5)] shrink-0">
+            <!-- Раньше композиция шла в строку (агент → стрелка → 5 интерфейсов →
+                 стрелка → системы) и расползалась в ширину: блоки стояли далеко друг
+                 от друга, а стрелки терялись. Стрелки развёрнуты вертикально,
+                 порядок читается сверху вниз. -->
+            <div class="flex flex-col items-center gap-2 md:gap-3 w-full max-w-2xl mx-auto">
+                <div class="w-20 h-20 md:w-28 md:h-28 bg-black rounded-full flex flex-col items-center justify-center text-solar border-4 border-solar shrink-0">
                     <i class="ph-fill ph-robot text-2xl md:text-4xl"></i>
                     <p class="text-[9px] md:text-xs font-black mt-0.5">Агент</p>
                 </div>
 
-                <div class="flex flex-col gap-2 md:gap-3 items-center">
-                    <i class="ph-bold ph-arrow-right text-solar text-2xl md:text-4xl hidden lg:block"></i>
-                    <i class="ph-bold ph-arrow-down text-solar text-2xl md:text-4xl lg:hidden"></i>
+                <i class="ph-bold ph-arrow-down text-solar text-2xl md:text-3xl"></i>
+
+                <div class="w-full">
+                    <p class="text-center text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2">Интерфейсы</p>
+                    <div class="grid grid-cols-5 gap-1.5 md:gap-3 w-full">
+                        <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
+                            <i class="ph-fill ph-plug text-solar text-base md:text-2xl"></i>
+                            <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1">API</p>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
+                            <i class="ph-fill ph-textbox text-solar text-base md:text-2xl"></i>
+                            <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1">Формы</p>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
+                            <i class="ph-fill ph-webhooks-logo text-solar text-base md:text-2xl"></i>
+                            <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1">Вебхук</p>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
+                            <i class="ph-fill ph-app-window text-solar text-base md:text-2xl"></i>
+                            <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1">UI</p>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
+                            <i class="ph-fill ph-toolbox text-solar text-base md:text-2xl"></i>
+                            <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1 leading-tight break-words">Инстру&shy;менты</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-5 gap-1.5 md:gap-3 flex-1 w-full">
-                    <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
-                        <i class="ph-fill ph-plug text-solar text-base md:text-2xl"></i>
-                        <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1">API</p>
-                    </div>
-                    <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
-                        <i class="ph-fill ph-textbox text-solar text-base md:text-2xl"></i>
-                        <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1">Формы</p>
-                    </div>
-                    <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
-                        <i class="ph-fill ph-webhooks-logo text-solar text-base md:text-2xl"></i>
-                        <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1">Вебхук</p>
-                    </div>
-                    <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
-                        <i class="ph-fill ph-app-window text-solar text-base md:text-2xl"></i>
-                        <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1">UI</p>
-                    </div>
-                    <div class="bg-white border border-grayBase rounded-lg md:rounded-xl p-1.5 md:p-3 shadow-sm text-center">
-                        <i class="ph-fill ph-toolbox text-solar text-base md:text-2xl"></i>
-                        <p class="font-bold text-[9px] md:text-xs mt-0.5 md:mt-1 leading-tight break-words">Инстру&shy;менты</p>
+                <i class="ph-bold ph-arrow-down text-solar text-2xl md:text-3xl"></i>
+
+                <div class="w-full">
+                    <p class="text-center text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2">Системы</p>
+                    <div class="grid grid-cols-3 gap-1.5 md:gap-3 w-full">
+                        <div class="bg-black text-white rounded-lg px-3 py-2 md:py-2.5 text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-buildings"></i>CRM</div>
+                        <div class="bg-black text-white rounded-lg px-3 py-2 md:py-2.5 text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-database"></i>ERP</div>
+                        <div class="bg-black text-white rounded-lg px-3 py-2 md:py-2.5 text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-cloud"></i>SaaS</div>
                     </div>
                 </div>
 
-                <i class="ph-bold ph-arrow-right text-solar text-2xl md:text-4xl hidden lg:block"></i>
-                <i class="ph-bold ph-arrow-down text-solar text-2xl md:text-4xl lg:hidden"></i>
-
-                <div class="flex flex-row lg:flex-col gap-2 shrink-0">
-                    <div class="bg-black text-white rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold flex items-center gap-2"><i class="ph-fill ph-buildings"></i>CRM</div>
-                    <div class="bg-black text-white rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold flex items-center gap-2"><i class="ph-fill ph-database"></i>ERP</div>
-                    <div class="bg-black text-white rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold flex items-center gap-2"><i class="ph-fill ph-cloud"></i>SaaS</div>
-                </div>
+                <p class="text-center text-[11px] md:text-sm text-black/60 font-medium mt-1 md:mt-2 max-w-xl">Без интеграций у агента нет «рук»: он поймёт задачу, но не изменит систему</p>
             </div>
         </div>
     </div>
@@ -1603,31 +1568,52 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 20: Запрос и ответ -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-19">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Базовая логика: <span class="text-solar">запрос и ответ</span></h2>
-            <p class="text-center text-black/60 mb-10 md:mb-16 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Любое взаимодействие систем строится так</p>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Любое взаимодействие систем строится так</p>
 
-            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-3 md:gap-4 w-full max-w-5xl mx-auto">
-                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-5 md:p-8 shadow-sm text-center">
-                    <div class="w-14 h-14 md:w-20 md:h-20 bg-grayBase rounded-full flex items-center justify-center mx-auto mb-3"><i class="ph-fill ph-laptop text-2xl md:text-3xl"></i></div>
+            <!-- Клиент и сервер стоят вплотную к колонке «запрос/ответ»: контейнер сужен,
+                 иначе между блоками зияла дыра, а стрелки терялись в пустоте. -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-2 md:gap-3 w-full max-w-3xl mx-auto">
+                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-7 shadow-sm text-center">
+                    <div class="w-11 h-11 md:w-20 md:h-20 bg-grayBase rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3"><i class="ph-fill ph-laptop text-xl md:text-3xl"></i></div>
                     <h3 class="font-black text-base md:text-xl mb-1">Система A</h3>
                     <p class="text-[10px] md:text-xs text-black/60 font-medium">Клиент</p>
                 </div>
 
-                <div class="flex-1 flex flex-col items-center justify-center gap-3 md:gap-4">
-                    <div class="w-full bg-solar/15 border border-solar rounded-full px-3 py-2 md:px-4 md:py-3 text-center text-[10px] md:text-sm font-black text-black flex items-center justify-center gap-2">
+                <div class="flex-1 flex flex-col items-center justify-center gap-1.5 md:gap-3">
+                    <div class="w-full bg-solar/15 border border-solar rounded-full px-3 py-1.5 md:px-4 md:py-3 text-center text-[10px] md:text-sm font-black text-black flex items-center justify-center gap-2">
                         <span>Запрос</span><i class="ph-bold ph-arrow-right"></i>
                     </div>
                     <div class="bg-black text-solar border border-solar rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold uppercase tracking-widest">Обработка</div>
-                    <div class="w-full bg-grayBase/60 border border-grayBase rounded-full px-3 py-2 md:px-4 md:py-3 text-center text-[10px] md:text-sm font-black text-black flex items-center justify-center gap-2">
+                    <div class="w-full bg-grayBase/60 border border-grayBase rounded-full px-3 py-1.5 md:px-4 md:py-3 text-center text-[10px] md:text-sm font-black text-black flex items-center justify-center gap-2">
                         <i class="ph-bold ph-arrow-left"></i><span>Ответ</span>
                     </div>
                 </div>
 
-                <div class="flex-1 bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-5 md:p-8 shadow-xl text-center text-white">
-                    <div class="w-14 h-14 md:w-20 md:h-20 bg-solar/20 rounded-full flex items-center justify-center mx-auto mb-3 text-solar"><i class="ph-fill ph-hard-drives text-2xl md:text-3xl"></i></div>
+                <div class="flex-1 bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-3 md:p-7 shadow-xl text-center text-white">
+                    <div class="w-11 h-11 md:w-20 md:h-20 bg-solar/20 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 text-solar"><i class="ph-fill ph-hard-drives text-xl md:text-3xl"></i></div>
                     <h3 class="font-black text-base md:text-xl mb-1 text-solar">Система B</h3>
                     <p class="text-[10px] md:text-xs text-white/60 font-medium">Сервер</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-2.5 md:mt-5">
+                <div class="bg-white border border-grayBase rounded-2xl p-2.5 md:p-4">
+                    <p class="text-[9px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 md:mb-2">Запрос сообщает</p>
+                    <ul class="space-y-0.5 md:space-y-1 text-[10px] md:text-sm text-black/70 font-medium leading-tight">
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-caret-right text-solar shrink-0"></i>куда обращается клиент</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-caret-right text-solar shrink-0"></i>что он хочет сделать</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-caret-right text-solar shrink-0"></i>какие данные передаёт</li>
+                    </ul>
+                </div>
+                <div class="bg-white border border-grayBase rounded-2xl p-2.5 md:p-4">
+                    <p class="text-[9px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 md:mb-2">Ответ показывает</p>
+                    <ul class="space-y-0.5 md:space-y-1 text-[10px] md:text-sm text-black/70 font-medium leading-tight">
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-caret-left text-solar shrink-0"></i>удалось ли выполнить</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-caret-left text-solar shrink-0"></i>какие данные получены</li>
+                        <li class="flex items-center gap-2"><i class="ph-bold ph-caret-left text-solar shrink-0"></i>возникла ли ошибка</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -1723,30 +1709,43 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 23: Вебхук -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-22">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black"><span class="text-solar">Вебхук</span> — внешний триггер</h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Система не ждёт запроса, а сама сообщает о событии</p>
+            <p class="text-center text-black/60 mb-5 md:mb-7 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Система не ждёт запроса, а сама сообщает о событии</p>
 
-            <div class="w-full max-w-5xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-5 md:p-10 shadow-sm">
-                <div class="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-4 md:gap-6">
-                    <div class="flex-1 bg-black text-white rounded-2xl p-4 md:p-6 text-center">
+            <!-- Блоки сведены вплотную к «сигналу»: контейнер сужен, gap уменьшен. -->
+            <div class="w-full max-w-2xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-4 md:p-7 shadow-sm">
+                <div class="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-3 md:gap-4">
+                    <div class="flex-1 bg-black text-white rounded-2xl p-4 md:p-5 text-center">
                         <i class="ph-fill ph-buildings text-solar text-2xl md:text-4xl mb-2"></i>
                         <p class="font-black text-sm md:text-lg text-solar mb-1">Внешняя система</p>
                         <p class="text-[10px] md:text-xs text-white/60 font-medium">Событие произошло</p>
                     </div>
 
-                    <div class="flex flex-col items-center gap-2 md:gap-3">
-                        <i class="ph-bold ph-lightning text-solar text-3xl md:text-5xl animate-pulse"></i>
+                    <div class="flex flex-col items-center gap-1.5 md:gap-2 shrink-0">
+                        <i class="ph-bold ph-lightning text-solar text-3xl md:text-4xl"></i>
                         <div class="bg-solar text-black rounded-full px-3 py-1 md:px-4 md:py-1.5 text-[10px] md:text-xs font-black uppercase tracking-widest">Сигнал</div>
                         <i class="ph-bold ph-arrow-right text-solar text-2xl md:text-3xl hidden md:block"></i>
                         <i class="ph-bold ph-arrow-down text-solar text-2xl md:text-3xl md:hidden"></i>
                     </div>
 
-                    <div class="flex-1 bg-solar/10 border-2 border-solar rounded-2xl p-4 md:p-6 text-center">
-                        <i class="ph-fill ph-flow-arrow text-black text-2xl md:text-4xl mb-2"></i>
-                        <p class="font-black text-sm md:text-lg mb-1 text-white">Наш процесс</p>
-                        <p class="text-[10px] md:text-xs text-white/85 font-medium">Запускается автоматически</p>
+                    <!-- Подписи были text-white на светлом тинте bg-solar/10 — не читались. -->
+                    <div class="flex-1 bg-solar/10 border-2 border-solar rounded-2xl p-4 md:p-5 text-center">
+                        <span class="block"><i class="ph-fill ph-flow-arrow text-solar text-2xl md:text-4xl mb-2"></i></span>
+                        <p class="font-black text-sm md:text-lg mb-1 text-black">Наш процесс</p>
+                        <p class="text-[10px] md:text-xs text-black/60 font-medium">Запускается автоматически</p>
                     </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-2xl mx-auto mt-3 md:mt-5">
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-start gap-2">
+                    <i class="ph-fill ph-arrows-clockwise text-solar text-base md:text-lg shrink-0 mt-0.5"></i>
+                    <div><p class="font-bold text-[11px] md:text-sm">Опрос</p><p class="text-[10px] md:text-xs text-black/60 font-medium">Задержки и лишняя нагрузка</p></div>
+                </div>
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-start gap-2">
+                    <i class="ph-fill ph-bell-ringing text-solar text-base md:text-lg shrink-0 mt-0.5"></i>
+                    <div><p class="font-bold text-[11px] md:text-sm">Вебхук</p><p class="text-[10px] md:text-xs text-black/60 font-medium">Реакция в момент события</p></div>
                 </div>
             </div>
         </div>
@@ -1754,11 +1753,11 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 24: Среда исполнения -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-23">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Среда <span class="text-solar">исполнения</span></h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Платформа — это среда исполнения процессов и агентов</p>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Платформа — это среда исполнения процессов и агентов</p>
 
-            <div class="w-full max-w-5xl mx-auto bg-black rounded-[24px] md:rounded-[32px] p-2 sm:p-5 md:p-8 shadow-xl text-white relative overflow-hidden">
+            <div class="w-full max-w-3xl mx-auto bg-black rounded-[24px] md:rounded-[32px] p-2 sm:p-5 md:p-8 shadow-xl text-white relative">
                 <div class="absolute top-2 left-3 md:top-4 md:left-6 text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar">Холст процесса</div>
 
                 <div class="relative mt-9 md:mt-10 grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 items-center">
@@ -1797,63 +1796,75 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 25: Узел -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-24">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-5xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black"><span class="text-solar">Узел</span> — атом процесса</h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Узел — базовая единица исполнения. Один узел = одна функция</p>
+            <p class="text-center text-black/60 mb-5 md:mb-7 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Узел — базовая единица исполнения. Один узел = одна функция</p>
 
-            <!-- Мобильная версия: grid без стрелок -->
-            <div class="md:hidden w-full max-w-md mx-auto mb-6">
+            <!-- Мобильная версия: grid без стрелок. Класс aspect-square не используем —
+                 под него подвязаны глобальные white-space:nowrap и max-width:440px. -->
+            <div class="md:hidden w-full max-w-md mx-auto mb-4">
                 <div class="grid grid-cols-3 gap-2">
-                    <div class="aspect-square bg-solar/15 border-2 border-solar rounded-xl flex flex-col items-center justify-center p-2">
+                    <div class="bg-solar/15 border-2 border-solar rounded-xl flex flex-col items-center justify-center p-2" style="aspect-ratio:1/1">
                         <i class="ph-fill ph-play-circle text-solar text-xl"></i>
-                        <p class="text-[10px] font-bold mt-1 text-center">Запуск</p>
+                        <p class="text-[10px] font-bold mt-1 text-center leading-tight">Запуск</p>
                     </div>
-                    <div class="aspect-square bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center p-2">
+                    <div class="bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center p-2" style="aspect-ratio:1/1">
                         <i class="ph-fill ph-gear-six text-black text-xl"></i>
-                        <p class="text-[10px] font-bold mt-1 text-center">Обработка</p>
+                        <p class="text-[10px] font-bold mt-1 text-center leading-tight">Обработка</p>
                     </div>
-                    <div class="aspect-square bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center p-2">
+                    <div class="bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center p-2" style="aspect-ratio:1/1">
                         <i class="ph-fill ph-check text-black text-xl"></i>
-                        <p class="text-[10px] font-bold mt-1 text-center">Проверка</p>
+                        <p class="text-[10px] font-bold mt-1 text-center leading-tight">Проверка</p>
                     </div>
-                    <div class="aspect-square bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center p-2">
+                    <div class="bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center p-2" style="aspect-ratio:1/1">
                         <i class="ph-fill ph-plug text-black text-xl"></i>
-                        <p class="text-[10px] font-bold mt-1 text-center">Вызов</p>
+                        <p class="text-[10px] font-bold mt-1 text-center leading-tight">Вызов</p>
                     </div>
                     <div class="bg-black text-white border-2 border-solar rounded-xl flex flex-col items-center justify-center p-2 col-span-2">
                         <i class="ph-fill ph-arrows-split text-solar text-xl"></i>
-                        <p class="text-[10px] font-bold mt-1 text-center text-solar">Преобразование</p>
+                        <p class="text-[10px] font-bold mt-1 text-center leading-tight text-solar">Преобразование</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Десктоп: горизонтальная цепочка -->
-            <div class="hidden md:block w-full max-w-5xl mx-auto mb-8">
-                <div class="flex items-center justify-between gap-3">
-                    <div class="flex-1 aspect-square bg-solar/15 border-2 border-solar rounded-xl flex flex-col items-center justify-center">
+            <!-- Десктоп: горизонтальная цепочка, собранная плотно (было max-w-5xl). -->
+            <div class="hidden md:block w-full max-w-3xl mx-auto mb-4 md:mb-6">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex-1 bg-solar/15 border-2 border-solar rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
                         <i class="ph-fill ph-play-circle text-solar text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1">Запуск</p>
+                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight">Запуск</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-2xl"></i>
-                    <div class="flex-1 aspect-square bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center">
+                    <i class="ph-bold ph-caret-right text-grayBase text-2xl shrink-0"></i>
+                    <div class="flex-1 bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
                         <i class="ph-fill ph-gear-six text-black text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1">Обработка</p>
+                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight">Обработка</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-2xl"></i>
-                    <div class="flex-1 aspect-square bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center">
+                    <i class="ph-bold ph-caret-right text-grayBase text-2xl shrink-0"></i>
+                    <div class="flex-1 bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
                         <i class="ph-fill ph-check text-black text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1">Проверка</p>
+                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight">Проверка</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-2xl"></i>
-                    <div class="flex-1 aspect-square bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center">
+                    <i class="ph-bold ph-caret-right text-grayBase text-2xl shrink-0"></i>
+                    <div class="flex-1 bg-white border border-grayBase rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
                         <i class="ph-fill ph-plug text-black text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1">Вызов</p>
+                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight">Вызов</p>
                     </div>
-                    <i class="ph-bold ph-caret-right text-grayBase text-2xl"></i>
-                    <div class="flex-1 aspect-square bg-black text-white border-2 border-solar rounded-xl flex flex-col items-center justify-center">
+                    <i class="ph-bold ph-caret-right text-grayBase text-2xl shrink-0"></i>
+                    <div class="flex-1 bg-black text-white border-2 border-solar rounded-xl flex flex-col items-center justify-center" style="aspect-ratio:1/1">
                         <i class="ph-fill ph-arrows-split text-solar text-3xl"></i>
-                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 text-solar">Преобразование</p>
+                        <p class="text-[10px] lg:text-xs font-bold mt-1 text-center px-1 leading-tight text-solar">Преобразование</p>
                     </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-3xl mx-auto mb-3 md:mb-4">
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-start gap-2">
+                    <i class="ph-fill ph-puzzle-piece text-solar text-base md:text-lg shrink-0 mt-0.5"></i>
+                    <div><p class="font-bold text-[11px] md:text-sm">Тип узла задаёт роль</p><p class="text-[10px] md:text-xs text-black/60 font-medium">Запуск, маршрут, данные, действие, смысл</p></div>
+                </div>
+                <div class="bg-white border border-grayBase rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-start gap-2">
+                    <i class="ph-fill ph-graph text-solar text-base md:text-lg shrink-0 mt-0.5"></i>
+                    <div><p class="font-bold text-[11px] md:text-sm">Логика — в связях</p><p class="text-[10px] md:text-xs text-black/60 font-medium">Один набор узлов даёт разное поведение</p></div>
                 </div>
             </div>
 
@@ -1864,11 +1875,11 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 26: Как движутся данные -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-25">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Как движутся <span class="text-solar">данные</span></h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Данные внутри процесса движутся как JSON-объекты</p>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Данные внутри процесса движутся как JSON-объекты</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full max-w-5xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-3xl mx-auto">
                 <div class="bg-black rounded-[20px] md:rounded-3xl p-4 md:p-6 text-white shadow-xl">
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-3">JSON</p>
                     <pre class="font-mono text-[10px] md:text-sm text-white/80 leading-relaxed overflow-x-auto">{
@@ -1900,11 +1911,11 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 27: Выражения -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-26">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-5xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black"><span class="text-solar">Выражения</span> — доступ к полям</h2>
             <p class="text-center text-black/60 mb-4 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Выражения связывают логику процесса с данными</p>
 
-            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-1.5 md:gap-5 w-full max-w-5xl mx-auto">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-1.5 md:gap-3 w-full max-w-4xl mx-auto">
                 <div class="flex-1 bg-black rounded-2xl p-2.5 md:p-6 text-white">
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-1 md:mb-2">Поле JSON</p>
                     <pre class="font-mono text-[10px] md:text-sm text-white/80 overflow-x-auto">{
@@ -1950,12 +1961,13 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 28: Ветвление процесса -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-27">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-3xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Ветвление <span class="text-solar">процесса</span></h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Один процесс может идти по разным маршрутам</p>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Один процесс может идти по разным маршрутам</p>
 
-            <div class="w-full max-w-5xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-5 md:p-10 shadow-sm">
-                <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+            <!-- Вход → развилка → три маршрута: блоки стоят плотно, gap уменьшен. -->
+            <div class="w-full max-w-2xl mx-auto bg-white border border-grayBase rounded-[24px] md:rounded-[32px] p-5 md:p-8 shadow-sm">
+                <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
                     <div class="flex flex-col items-center gap-2">
                         <div class="w-14 h-14 md:w-20 md:h-20 bg-black rounded-full flex items-center justify-center text-solar border-2 border-solar"><i class="ph-fill ph-sign-in text-xl md:text-3xl"></i></div>
                         <p class="text-[10px] md:text-sm font-bold">Вход</p>
@@ -1986,11 +1998,11 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 29: Где появляется интеллект -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-28">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Где появляется <span class="text-solar">интеллект</span></h2>
             <p class="text-center text-black/60 mb-4 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Интеллект нужен там, где уже недостаточно жёсткого правила</p>
 
-            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-6 w-full max-w-5xl mx-auto mb-3 md:mb-8">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 w-full max-w-3xl mx-auto mb-3 md:mb-5">
                 <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-7 shadow-sm">
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3">Правило</p>
                     <code class="block bg-grayBase/40 rounded-lg p-3 text-[10px] md:text-sm font-mono leading-relaxed">if status === "new"<br>then route → "queue"</code>
@@ -2006,7 +2018,7 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-4xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-3xl mx-auto">
                 <div class="bg-white border border-grayBase rounded-lg p-3 text-center">
                     <i class="ph-fill ph-lightbulb text-solar text-lg md:text-xl mb-1"></i>
                     <p class="font-bold text-[10px] md:text-sm">Понять смысл</p>
@@ -2029,13 +2041,14 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 30: Что подавать на вход модели -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-29">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Что подавать на <span class="text-solar">вход модели</span></h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Качество ответа зависит от качества входа</p>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Качество ответа зависит от качества входа</p>
 
-            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-8 w-full max-w-5xl mx-auto">
+            <!-- Воронка стоит между блоками вплотную: было max-w-5xl + gap-8 — дыра. -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4 w-full max-w-3xl mx-auto">
                 <div class="flex-1 relative">
-                    <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-sm overflow-hidden">
+                    <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-6 shadow-sm">
                         <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3">Шум</p>
                         <div class="flex flex-wrap gap-1.5">
                             <span class="bg-grayBase/60 text-[9px] md:text-xs px-2 py-1 rounded text-black/50">старые письма</span>
@@ -2070,11 +2083,11 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 31: Промпт -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-30">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black"><span class="text-solar">Промпт</span> — управляющий модуль</h2>
             <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Промпт управляет поведением модели</p>
 
-            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-6 w-full max-w-5xl mx-auto">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4 w-full max-w-3xl mx-auto">
                 <div class="flex-1 bg-solar/10 border-2 border-solar rounded-[20px] md:rounded-3xl p-5 md:p-8 shadow-md">
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/60 mb-4">Контрольный слой</p>
                     <div class="space-y-2">
@@ -2106,89 +2119,66 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Структура <span class="text-solar">промпта</span></h2>
             <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Хороший промпт должен быть не только понятным, но и устойчивым</p>
 
-            <!-- Мобилка: ядро сверху + пять кругов-блоков промпта -->
-            <div class="md:hidden w-full max-w-sm mx-auto">
-                <div class="w-24 h-24 rounded-full bg-black border-4 border-solar text-solar flex flex-col items-center justify-center mx-auto mb-3">
-                    <i class="ph-fill ph-textbox text-2xl"></i>
-                    <p class="text-[10px] font-black mt-0.5">Промпт</p>
+            <!-- Пять блоков промпта кольцом вокруг ядра (компонент .radial-fig):
+                 номер шага — в .rf-num, подпись — одно слово, чтобы влезала в круг. -->
+            <div class="radial-fig" style="width:min(100%,430px);--orbit:36%;--sat:clamp(84px,25%,124px);--core:clamp(88px,24%,128px)">
+                <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                    <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                </svg>
+
+                <div class="radial-core bg-black border-4 border-solar">
+                    <i class="ph-fill ph-textbox text-2xl md:text-4xl text-solar mb-1"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-white px-2">Промпт</span>
                 </div>
-                <div class="flex flex-wrap justify-center gap-x-1.5 gap-y-3">
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="relative shrink-0">
-                            <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center"><i class="ph-fill ph-mask-happy text-solar text-2xl"></i></div>
-                            <span class="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-solar text-[10px] font-black flex items-center justify-center">1</span>
-                        </div>
-                        <p class="text-[10px] font-black text-center leading-tight">Роль</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="relative shrink-0">
-                            <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center"><i class="ph-fill ph-target text-solar text-2xl"></i></div>
-                            <span class="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-solar text-[10px] font-black flex items-center justify-center">2</span>
-                        </div>
-                        <p class="text-[10px] font-black text-center leading-tight">Цель</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="relative shrink-0">
-                            <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center"><i class="ph-fill ph-book-bookmark text-solar text-2xl"></i></div>
-                            <span class="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-solar text-[10px] font-black flex items-center justify-center">3</span>
-                        </div>
-                        <p class="text-[10px] font-black text-center leading-tight">Контекст</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="relative shrink-0">
-                            <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center"><i class="ph-fill ph-shield text-solar text-2xl"></i></div>
-                            <span class="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-solar text-[10px] font-black flex items-center justify-center">4</span>
-                        </div>
-                        <p class="text-[10px] font-black text-center leading-tight">Ограничения</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="relative shrink-0">
-                            <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center"><i class="ph-fill ph-code text-solar text-2xl"></i></div>
-                            <span class="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-solar text-[10px] font-black flex items-center justify-center">5</span>
-                        </div>
-                        <p class="text-[10px] font-black text-center leading-tight">Формат ответа</p>
-                    </div>
+
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:14%">
+                    <span class="rf-num text-black">01</span>
+                    <i class="ph-fill ph-mask-happy text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Роль</span>
+                </div>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:84.24%;--y:38.88%">
+                    <span class="rf-num text-black">02</span>
+                    <i class="ph-fill ph-target text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Цель</span>
+                </div>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:71.16%;--y:79.12%">
+                    <span class="rf-num text-black">03</span>
+                    <i class="ph-fill ph-book-bookmark text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Контекст</span>
+                </div>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:28.84%;--y:79.12%">
+                    <span class="rf-num text-black">04</span>
+                    <i class="ph-fill ph-shield text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Ограни&shy;чения</span>
+                </div>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:15.76%;--y:38.88%">
+                    <span class="rf-num text-black">05</span>
+                    <i class="ph-fill ph-code text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Формат</span>
                 </div>
             </div>
 
-            <!-- Десктоп: пять блоков промпта кольцом вокруг ядра -->
-            <div class="hidden md:block relative w-[440px] h-[440px] mx-auto">
-                <div class="absolute inset-[15%] rounded-full border-2 border-dashed border-solar/40 z-0"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-32 h-32 rounded-full bg-black border-4 border-solar text-solar flex flex-col items-center justify-center z-20">
-                        <i class="ph-fill ph-textbox text-3xl"></i>
-                        <p class="text-xs font-black mt-1">Промпт</p>
-                    </div>
+            <!-- Расшифровка блоков промпта: порядок совпадает с нумерацией на круге -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 w-full max-w-4xl mx-auto mt-4 md:mt-6">
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Роль</p>
+                    <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Кем является модель</p>
                 </div>
-                <div class="absolute top-[15%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-4 z-30">
-                    <span class="absolute -top-1 left-2 w-7 h-7 rounded-full bg-solar text-xs font-black flex items-center justify-center">1</span>
-                    <i class="ph-fill ph-mask-happy text-solar text-2xl"></i>
-                    <p class="text-sm font-black mt-1 leading-tight">Роль</p>
-                    <p class="text-[10px] text-black/60 font-medium leading-tight">Кем является модель</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Цель</p>
+                    <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Что нужно получить</p>
                 </div>
-                <div class="absolute top-[39.2%] left-[83.3%] -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-4 z-30">
-                    <span class="absolute -top-1 left-2 w-7 h-7 rounded-full bg-solar text-xs font-black flex items-center justify-center">2</span>
-                    <i class="ph-fill ph-target text-solar text-2xl"></i>
-                    <p class="text-sm font-black mt-1 leading-tight">Цель</p>
-                    <p class="text-[10px] text-black/60 font-medium leading-tight">Что нужно получить</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Контекст</p>
+                    <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Данные, факты, условия</p>
                 </div>
-                <div class="absolute top-[78.3%] left-[70.6%] -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-4 z-30">
-                    <span class="absolute -top-1 left-2 w-7 h-7 rounded-full bg-solar text-xs font-black flex items-center justify-center">3</span>
-                    <i class="ph-fill ph-book-bookmark text-solar text-2xl"></i>
-                    <p class="text-sm font-black mt-1 leading-tight">Контекст</p>
-                    <p class="text-[10px] text-black/60 font-medium leading-tight">Данные, факты, условия</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Ограничения</p>
+                    <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Чего избегать</p>
                 </div>
-                <div class="absolute top-[78.3%] left-[29.4%] -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-4 z-30">
-                    <span class="absolute -top-1 left-2 w-7 h-7 rounded-full bg-solar text-xs font-black flex items-center justify-center">4</span>
-                    <i class="ph-fill ph-shield text-solar text-2xl"></i>
-                    <p class="text-sm font-black mt-1 leading-tight">Ограничения</p>
-                    <p class="text-[10px] text-black/60 font-medium leading-tight">Чего избегать</p>
-                </div>
-                <div class="absolute top-[39.2%] left-[16.7%] -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-4 z-30">
-                    <span class="absolute -top-1 left-2 w-7 h-7 rounded-full bg-solar text-xs font-black flex items-center justify-center">5</span>
-                    <i class="ph-fill ph-code text-solar text-2xl"></i>
-                    <p class="text-sm font-black mt-1 leading-tight">Формат ответа</p>
-                    <p class="text-[10px] text-black/60 font-medium leading-tight">Структура, поля, стиль</p>
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center col-span-2 md:col-span-1">
+                    <p class="font-black text-[11px] md:text-sm leading-tight">Формат ответа</p>
+                    <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Структура, поля, стиль</p>
                 </div>
             </div>
         </div>
@@ -2196,11 +2186,11 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 33: Задача для LLM vs агент -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-32">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Задача для LLM <span class="text-solar">≠ агент</span></h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Один вызов модели — это ещё не агент</p>
+            <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Один вызов модели — это ещё не агент</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 w-full max-w-5xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-3xl mx-auto">
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-5 md:p-7 shadow-sm">
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3">Простая задача</p>
                     <div class="flex items-center justify-center gap-3 mb-4">
@@ -2225,6 +2215,17 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
             </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-3 md:mt-4">
+                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-text-align-left text-solar shrink-0"></i>Извлечь данные</div>
+                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-tag text-solar shrink-0"></i>Классифицировать</div>
+                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-note text-solar shrink-0"></i>Сделать резюме</div>
+                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-pencil-simple text-solar shrink-0"></i>Черновик ответа</div>
+            </div>
+
+            <div class="w-full max-w-3xl mx-auto mt-3 md:mt-4 bg-white border border-grayBase rounded-2xl px-4 py-3 md:py-4 text-center">
+                <p class="text-[11px] md:text-sm text-black/70 font-medium">LLM-задача — <span class="font-black text-black">отдельная функция мышления</span>. Агент — <span class="font-black text-black">исполнительная система</span>, которая использует такие функции внутри управляемого процесса</p>
+            </div>
         </div>
     </div>
 
@@ -2234,66 +2235,36 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-2xl md:text-3xl font-black mb-2 md:mb-3 text-center text-black"><span class="text-solar">Инструменты</span> — руки агента</h2>
             <p class="text-center text-black/60 mb-3 md:mb-5 text-[11px] md:text-base font-medium max-w-3xl mx-auto">Через них агент может влиять на мир</p>
 
-            <!-- Мобилка: ядро сверху + круги-инструменты -->
-            <div class="md:hidden w-full max-w-sm mx-auto">
-                <div class="w-24 h-24 rounded-full bg-black border-4 border-solar text-solar flex flex-col items-center justify-center mx-auto mb-3">
-                    <i class="ph-fill ph-robot text-2xl"></i>
-                    <p class="text-[10px] font-black mt-0.5">Агент</p>
-                </div>
-                <div class="flex flex-wrap justify-center gap-x-1.5 gap-y-3">
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-buildings text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">CRM</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-database text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">База данных</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-plug text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">API</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-magnifying-glass text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Поиск</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-envelope text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Почта</p>
-                    </div>
-                </div>
-            </div>
+            <!-- Круги-инструменты вокруг агента (компонент .radial-fig). -->
+            <div class="radial-fig" style="width:min(100%,400px);--orbit:36%;--sat:clamp(80px,25%,116px);--core:clamp(84px,24%,120px)">
+                <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                    <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                </svg>
 
-            <!-- Десктоп: круги-инструменты на пунктирном кольце -->
-            <div class="hidden md:block relative w-[440px] h-[440px] mx-auto">
-                <div class="absolute inset-[14%] border-2 border-dashed border-solar/40 rounded-full z-0"></div>
-
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-32 h-32 bg-black rounded-full flex flex-col items-center justify-center text-solar border-4 border-solar z-20">
-                        <i class="ph-fill ph-robot text-3xl"></i>
-                        <p class="text-xs font-black mt-1">Агент</p>
-                    </div>
+                <div class="radial-core bg-black border-4 border-solar">
+                    <i class="ph-fill ph-robot text-2xl md:text-3xl text-solar mb-1"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-white px-2">Агент</span>
                 </div>
 
-                <div class="absolute top-[14%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-buildings text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">CRM</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:14%">
+                    <i class="ph-fill ph-buildings text-xl md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-black mt-1">CRM</span>
                 </div>
-                <div class="absolute top-[38.9%] left-[84.2%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-database text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">База данных</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:84.24%;--y:38.88%">
+                    <i class="ph-fill ph-database text-xl md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-black mt-1">База</span>
                 </div>
-                <div class="absolute top-[79.1%] left-[71.2%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-plug text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">API</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:71.16%;--y:79.12%">
+                    <i class="ph-fill ph-plug text-xl md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-black mt-1">API</span>
                 </div>
-                <div class="absolute top-[79.1%] left-[28.8%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-magnifying-glass text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Поиск</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:28.84%;--y:79.12%">
+                    <i class="ph-fill ph-magnifying-glass text-xl md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-black mt-1">Поиск</span>
                 </div>
-                <div class="absolute top-[38.9%] left-[15.8%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-envelope text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Почта</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:15.76%;--y:38.88%">
+                    <i class="ph-fill ph-envelope text-xl md:text-2xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-xs text-black mt-1">Почта</span>
                 </div>
             </div>
 
@@ -2308,14 +2279,14 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 35: Как агент выбирает -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-34">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Как агент <span class="text-solar">выбирает</span>, что вызывать</h2>
             <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Выбор инструмента — это выбор следующего действия</p>
 
-            <div class="flex flex-col md:flex-row items-stretch gap-4 md:gap-6 w-full max-w-5xl mx-auto">
-                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-5 md:p-7 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4">Основа выбора</p>
-                    <div class="space-y-2 md:space-y-3">
+            <div class="flex flex-col md:flex-row items-stretch gap-3 md:gap-4 w-full max-w-3xl mx-auto">
+                <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-7 shadow-sm">
+                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-4">Основа выбора</p>
+                    <div class="space-y-1.5 md:space-y-3">
                         <div class="flex items-center gap-3 p-3 bg-grayBase/30 rounded-lg"><i class="ph-fill ph-target text-solar text-lg md:text-xl"></i><span class="font-bold text-[11px] md:text-sm">Цель</span></div>
                         <div class="flex items-center gap-3 p-3 bg-grayBase/30 rounded-lg"><i class="ph-fill ph-book-bookmark text-solar text-lg md:text-xl"></i><span class="font-bold text-[11px] md:text-sm">Контекст</span></div>
                         <div class="flex items-center gap-3 p-3 bg-grayBase/30 rounded-lg"><i class="ph-fill ph-toolbox text-solar text-lg md:text-xl"></i><span class="font-bold text-[11px] md:text-sm">Доступные действия</span></div>
@@ -2323,8 +2294,8 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
 
-                <div class="flex-1 bg-black rounded-[20px] md:rounded-3xl p-5 md:p-7 shadow-xl text-white">
-                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-3 md:mb-4">Маршрут</p>
+                <div class="flex-1 bg-black rounded-[20px] md:rounded-3xl p-4 md:p-7 shadow-xl text-white">
+                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-2 md:mb-4">Маршрут</p>
                     <div class="space-y-2">
                         <div class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] md:text-sm text-white/65 font-bold flex items-center gap-2"><i class="ph-fill ph-wrench"></i>Инструмент A</div>
                         <div class="bg-solar/15 border-2 border-solar rounded-lg px-3 py-2 text-[10px] md:text-sm text-white font-black flex items-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.3)]"><i class="ph-fill ph-check-circle"></i>Инструмент B — выбран</div>
@@ -2339,11 +2310,11 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 36: Структурированный ответ -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-35">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-5xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Структурированный <span class="text-solar">ответ</span></h2>
             <p class="text-center text-black/60 mb-4 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Чтобы система могла использовать ответ дальше, он должен быть структурирован</p>
 
-            <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-1.5 md:gap-6 w-full max-w-5xl mx-auto">
+            <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-1.5 md:gap-4 w-full max-w-4xl mx-auto">
                 <div class="flex-1 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-7 shadow-sm">
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3">Свободный текст</p>
                     <div class="bg-grayBase/40 rounded-lg p-3 md:p-4 text-[10px] md:text-sm text-black/60 font-medium italic leading-relaxed">
@@ -2388,67 +2359,38 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-2xl md:text-3xl font-black mb-2 md:mb-3 text-center text-black">Защитный <span class="text-solar">контур</span></h2>
             <p class="text-center text-black/60 mb-3 md:mb-5 text-[11px] md:text-base font-medium max-w-3xl mx-auto">Вокруг агента обязательно нужен защитный контур</p>
 
-            <!-- Мобилка: агент в кольце + круги-рубежи защиты -->
-            <div class="md:hidden w-full max-w-sm mx-auto">
-                <div class="w-24 h-24 rounded-full bg-black border-4 border-solar text-solar flex flex-col items-center justify-center mx-auto mb-3">
-                    <i class="ph-fill ph-robot text-2xl"></i>
-                    <p class="text-[10px] font-black mt-0.5">Агент</p>
-                </div>
-                <div class="flex flex-wrap justify-center gap-x-1.5 gap-y-3">
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-shield text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Ограничения</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-lock text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Доступы</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-check-circle text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Валидация</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-white border border-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-gauge text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-bold text-center leading-tight">Лимиты</p>
-                    </div>
-                    <div class="basis-[31%] flex flex-col items-center gap-1.5">
-                        <div class="w-[62px] h-[62px] rounded-full bg-black border-2 border-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-user-check text-solar text-2xl"></i></div>
-                        <p class="text-[10px] font-black text-center leading-tight">Человек</p>
-                    </div>
-                </div>
-            </div>
+            <!-- Защитный контур вокруг агента (компонент .radial-fig):
+                 сплошное внешнее кольцо — граница контура, пунктир — орбита рубежей. -->
+            <div class="radial-fig" style="width:min(100%,560px);--orbit:35%;--sat:clamp(84px,25%,134px);--core:clamp(88px,24%,140px)">
+                <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                    <circle cx="50" cy="50" r="49" stroke="#F97316" stroke-opacity="0.45" stroke-width="1.4"/>
+                    <circle cx="50" cy="50" r="35" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                </svg>
 
-            <!-- Десктоп: защитное кольцо и круги-рубежи на нём -->
-            <div class="hidden md:block relative w-[440px] h-[440px] mx-auto">
-                <div class="absolute inset-[14%] rounded-full border-4 border-solar/40 z-0"></div>
-                <div class="absolute inset-[30%] rounded-full border-2 border-dashed border-solar/50 z-0"></div>
-
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-32 h-32 bg-black rounded-full flex flex-col items-center justify-center text-solar border-2 border-solar z-20">
-                        <i class="ph-fill ph-robot text-3xl"></i>
-                        <p class="text-xs font-black mt-1">Агент</p>
-                    </div>
+                <div class="radial-core bg-black border-4 border-solar">
+                    <i class="ph-fill ph-robot text-2xl md:text-4xl text-solar mb-1"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-white px-2">Агент</span>
                 </div>
 
-                <div class="absolute top-[14%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-shield text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Ограничения</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:15%">
+                    <i class="ph-fill ph-shield text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Ограни&shy;чения</span>
                 </div>
-                <div class="absolute top-[38.9%] left-[84.2%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-lock text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Доступы</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:83.29%;--y:39.18%">
+                    <i class="ph-fill ph-lock text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Доступы</span>
                 </div>
-                <div class="absolute top-[79.1%] left-[71.2%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-check-circle text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Валидация</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:70.57%;--y:78.32%">
+                    <i class="ph-fill ph-check-circle text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Вали&shy;дация</span>
                 </div>
-                <div class="absolute top-[79.1%] left-[28.8%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-white border border-grayBase flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-gauge text-solar text-2xl"></i>
-                    <p class="text-[11px] font-bold mt-1 leading-tight">Лимиты</p>
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:29.43%;--y:78.32%">
+                    <i class="ph-fill ph-gauge text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Лимиты</span>
                 </div>
-                <div class="absolute top-[38.9%] left-[15.8%] -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center px-2 z-30">
-                    <i class="ph-fill ph-user-check text-solar text-2xl"></i>
-                    <p class="text-[11px] font-black mt-1 leading-tight text-solar">Человек</p>
+                <div class="radial-sat bg-black border-2 border-solar" style="--x:16.71%;--y:39.18%">
+                    <i class="ph-fill ph-user-check text-xl md:text-3xl text-solar"></i>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-white mt-1">Человек</span>
                 </div>
             </div>
         </div>
@@ -2518,11 +2460,11 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 39: Топ-5 проблем -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-38">
-        <div class="content-z max-w-6xl w-full">
+        <div class="content-z max-w-5xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Топ-5 <span class="text-solar">проблем</span></h2>
-            <p class="text-center text-black/60 mb-8 md:mb-12 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Пять ошибок, которые ломают автоматизацию</p>
+            <p class="text-center text-black/60 mb-5 md:mb-7 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Пять ошибок, которые ломают автоматизацию</p>
 
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 lg:gap-4 w-full max-w-5xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 lg:gap-3 w-full max-w-4xl mx-auto">
                 <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-5 shadow-sm text-center">
                     <div class="w-8 h-8 md:w-12 md:h-12 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl">1</span></div>
                     <p class="font-black text-[11px] lg:text-sm mb-1 leading-tight">Нет схемы процесса</p>
@@ -2549,32 +2491,37 @@ window.addEventListener('load', function(){
                     <p class="text-[9px] lg:text-xs text-black/60 font-medium leading-tight">Процесс как чёрный ящик</p>
                 </div>
             </div>
+
+            <div class="w-full max-w-4xl mx-auto mt-3 md:mt-5 bg-black text-white rounded-2xl px-4 py-3 md:px-6 md:py-4 flex items-center justify-center gap-3">
+                <i class="ph-fill ph-warning-circle text-solar text-xl md:text-2xl shrink-0"></i>
+                <p class="text-[11px] md:text-sm font-medium text-white/80">У всех пяти ошибок один источник — <span class="font-black text-solar">отсутствие архитектуры</span>: автоматизацию собрали как набор идей, а не спроектировали</p>
+            </div>
         </div>
     </div>
 
     <!-- СЛАЙД 40: Заключение -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8 bg-black text-white" id="slide-39">
-        <div class="content-z max-w-6xl mx-auto w-full h-full flex flex-col justify-center relative overflow-hidden">
+        <div class="content-z max-w-4xl mx-auto w-full relative">
             <div class="relative z-10 w-full text-center">
                 <div class="bg-solar/10 border border-solar/40 rounded-full px-4 py-1.5 md:py-2 mx-auto shadow-sm mb-3 md:mb-8 inline-block">
                     <p class="text-solar font-bold uppercase tracking-widest text-[8px] md:text-sm m-0">Заключение</p>
                 </div>
-                <h2 class="text-xl sm:text-3xl md:text-4xl lg:text-[50px] font-black mb-4 md:mb-8 tracking-tight leading-tight">
+                <h2 class="text-xl sm:text-3xl md:text-4xl lg:text-[46px] font-black mb-4 md:mb-6 tracking-tight leading-tight">
                     Устойчивая ИИ-автоматизация — это <br><span class="text-solar font-black">процессы, платформа и архитектура</span>
                 </h2>
 
                 <p class="text-[10px] md:text-sm font-bold uppercase tracking-widest text-white/50 mb-2 md:mb-5">Формула зрелой системы</p>
 
-                <div class="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-3 mb-4 md:mb-12 w-full max-w-5xl mx-auto">
-                    <div class="bg-white/10 px-3 py-2 md:p-4 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Процесс</div>
+                <div class="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-2 mb-4 md:mb-8 w-full max-w-3xl mx-auto">
+                    <div class="bg-white/10 px-3 py-2 md:px-3 md:py-3 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Процесс</div>
                     <i class="ph-bold ph-arrow-right text-solar text-sm md:text-base shrink-0"></i>
-                    <div class="bg-white/10 px-3 py-2 md:p-4 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Агент</div>
+                    <div class="bg-white/10 px-3 py-2 md:px-3 md:py-3 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Агент</div>
                     <i class="ph-bold ph-arrow-right text-solar text-sm md:text-base shrink-0"></i>
-                    <div class="bg-white/10 px-3 py-2 md:p-4 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Платформа</div>
+                    <div class="bg-white/10 px-3 py-2 md:px-3 md:py-3 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Платформа</div>
                     <i class="ph-bold ph-arrow-right text-solar text-sm md:text-base shrink-0"></i>
-                    <div class="bg-white/10 px-3 py-2 md:p-4 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Контроль</div>
+                    <div class="bg-white/10 px-3 py-2 md:px-3 md:py-3 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Контроль</div>
                     <i class="ph-bold ph-arrow-right text-solar text-sm md:text-base shrink-0"></i>
-                    <div class="bg-solar text-black px-3 py-2 md:p-4 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-black uppercase tracking-widest shadow-[0_0_15px_#8B5CF6] whitespace-nowrap">Масштаб</div>
+                    <div class="bg-solar text-black px-3 py-2 md:px-3 md:py-3 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-black uppercase tracking-widest shadow-[0_0_15px_#8B5CF6] whitespace-nowrap">Масштаб</div>
                 </div>
 
                 <p class="text-[10px] md:text-sm font-bold uppercase tracking-widest text-white/50 mb-2 md:mb-3">Проверьте понимание</p>
@@ -3194,6 +3141,96 @@ window.addEventListener('load', function(){
     });
 </script>
 
+<style id="radial-fig">
+/* ЭТАЛОН круговой («радиальной») инфографики.
+   Образец применения — слайд «Фреймворк AgentOps». На него ориентируются
+   остальные лекции, поэтому блок самодостаточный: копируется целиком.
+
+   Почему компонент устроен именно так — три ловушки этого проекта:
+   1) НИКАКИХ transform для позиционирования. Глобальное правило FR-LECTURE-20
+      гасит transform на :hover (`.slide-container *:hover{transform:none}`),
+      поэтому круг, отцентрованный через `-translate-x-1/2 -translate-y-1/2`,
+      при наведении ПРЫГАЛ на половину своей ширины. Здесь центр задаётся
+      арифметикой: left:calc(<X> - <диаметр>/2).
+   2) НИКАКОГО класса `aspect-square`: под него подвязаны глобальные правила
+      (white-space:nowrap на p/h3/h4 и max-width:440px). Пропорцию 1:1 держим
+      свойством aspect-ratio.
+   3) Круги — это круги (border-radius:50%), а не карточки со скруглением.
+      Никаких прямоугольных подложек под ними.
+   Hover-эффектов у компонента нет вовсе: ни размера, ни сдвига, ни цвета. */
+
+.radial-fig{
+  position:relative;
+  width:100%;
+  aspect-ratio:1 / 1;
+  margin-left:auto; margin-right:auto;
+  --orbit:38%;                        /* радиус орбиты (в % от стороны) */
+  --sat:clamp(84px, 25%, 148px);      /* диаметр спутника */
+  --core:clamp(92px, 26%, 168px);     /* диаметр ядра */
+}
+.radial-fig > *{ position:absolute; }
+
+.radial-core,
+.radial-sat{
+  border-radius:50%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+  line-height:1.15;
+  overflow:hidden;
+}
+.radial-core{
+  width:var(--core); height:var(--core);
+  left:calc(50% - var(--core)/2);
+  top:calc(50% - var(--core)/2);
+  z-index:3;
+}
+.radial-sat{
+  width:var(--sat); height:var(--sat);
+  left:calc(var(--x) - var(--sat)/2);   /* --x/--y — центр спутника, инлайном */
+  top:calc(var(--y) - var(--sat)/2);
+  /* ВАЖНО: padding НЕ в процентах. У абсолютно спозиционированного элемента
+     процентный padding считается от ширины КОНТЕЙНЕРА (.radial-fig), а не от
+     самого круга, — внутренняя ширина падала втрое и подписи ломались. */
+  padding:calc(var(--sat) * 0.07);
+  z-index:2;
+}
+/* Пунктирное кольцо-орбита проходит РОВНО через центры спутников:
+   viewBox 0 0 100 100, r = значение --orbit в тех же единицах. */
+.radial-ring{
+  inset:0; width:100%; height:100%;
+  z-index:1; pointer-events:none;
+}
+/* Подписи внутри кругов. Правило: подпись — ОДНО слово (номер шага выносится
+   в .rf-num), тогда она встаёт в одну строку и круг не распирает.
+   Перенос по слогам оставлен страховкой для самых длинных слов. */
+.radial-sat .rf-label{
+  hyphens:auto; -webkit-hyphens:auto;
+  overflow-wrap:break-word; word-break:normal;
+  max-width:100%;
+}
+/* Номер шага — мелкой строкой над иконкой, чтобы не съедать ширину подписи. */
+.radial-sat .rf-num{
+  font-weight:900; line-height:1;
+  font-size:clamp(9px,2.2vw,12px);
+  opacity:.55;
+  margin-bottom:.15em;
+}
+/* Компонент не реагирует на указатель — он не интерактивный. */
+.radial-fig, .radial-fig *{ transition:none !important; }
+/* Телефон: композиция остаётся круговой, ужимаются размеры и кегль подписи.
+   Разваливать круг в сетку нельзя — круг нужен и на мобилке. */
+@media (max-width:520px){
+  .radial-fig{
+    --orbit:37%;
+    --sat:clamp(64px, 23%, 96px);
+    --core:clamp(76px, 26%, 108px);
+  }
+  .radial-sat .rf-label{ font-size:10px !important; line-height:1.1 !important; }
+  .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }
+  .radial-sat i, .radial-core i{ font-size:1.05rem !important; }
+}
+</style>
 <script id="slide-notes" type="application/json">
 {"0":{"title":"От бизнес-процесса к ИИ-агенту","blocks":[{"t":"h","v":"Архитектура управляемой интеллектуальной автоматизации"},{"t":"p","v":"Компании редко начинают внедрение искусственного интеллекта с целостной архитектуры. Обычно всё происходит постепенно. Сначала появляется бот, который отвечает на типовые вопросы. Затем — автоматизация обработки заявок. Потом кто-то подключает генерацию писем, кто-то создаёт помощника для отдела продаж, а кто-то запускает отдельного агента для анализа документов. Каждое решение закрывает локальную боль и поначалу кажется полезным. Однако по мере роста числа автоматизаций возникает новая проблема: решения не связаны друг с другом, используют разные данные, работают по разным правилам и почти не поддаются централизованному управлению."},{"t":"p","v":"Так появляется **«зоопарк агентов»** — множество интеллектуальных компонентов без единой среды, общей памяти и согласованной логики. Каждый новый агент должен был уменьшать сложность, но вместо этого начинает её увеличивать. Компания получает не интеллектуальную операционную систему, а набор разрозненных экспериментов."},{"t":"p","v":"Чтобы избежать этого, необходимо перейти от точечных автоматизаций к **платформенному подходу**. Агент должен рассматриваться не как самостоятельный чат-бот или модель с промптом, а как исполнитель внутри бизнес-процесса. Его работа должна быть встроена в общую архитектуру: с понятными входами и выходами, доступом к данным, ограниченным набором инструментов, правилами эскалации, журналом действий и измеримым результатом."},{"t":"note","v":"Главная задача этой главы — показать, как из бизнес-процесса получить рабочего ИИ-агента и превратить отдельные интеллектуальные действия в устойчивую систему автоматизации."}]},"1":{"title":"Агент рождается из логики процесса","blocks":[{"t":"p","v":"Первый вопрос при проектировании агента должен звучать не «какую модель подключить?», а «где в процессе требуется интеллектуальное действие?». Не каждый процесс нуждается в агенте. Если последовательность шагов заранее известна, условия можно формализовать, а результат однозначно определяется правилами, обычного воркфлоу будет достаточно."},{"t":"p","v":"Например, если при поступлении заявки необходимо проверить наличие номера телефона, определить регион по заполненному полю и создать карточку в CRM, никакого искусственного интеллекта не требуется. Эти действия детерминированы: при одинаковом входе система должна всегда выполнять одинаковые шаги."},{"t":"p","v":"Агент появляется в другой ситуации — когда внутри процесса возникает **неопределённость**. Это может быть свободный текст, неполная информация, неоднозначная формулировка, необходимость учитывать историю взаимодействия или выбирать лучший вариант из нескольких возможных. Здесь система должна не просто проверить значение поля, а интерпретировать ситуацию."},{"t":"p","v":"Поэтому проектирование начинается с описания процесса. Необходимо зафиксировать:"},{"t":"ul","v":["что запускает процесс","какие данные поступают на вход","через какие этапы проходит работа","какие системы и роли участвуют","где возникают условия и развилки","что должно быть получено на выходе","в каких точках заранее заданных правил уже недостаточно"]},{"t":"p","v":"Именно последняя группа точек является потенциальной зоной работы агента. В ней требуется понять смысл, сопоставить контекст, оценить уверенность, сформулировать решение или выбрать следующий шаг."},{"t":"note","v":"Таким образом, агент — это не весь процесс целиком. Это **специальный исполнитель внутри процесса**, которому передана ограниченная интеллектуальная функция. Он получает контекст, принимает локальное решение и при необходимости вызывает разрешённые инструменты для достижения заданного результата."}]},"2":{"title":"Агент не существует в вакууме","blocks":[{"t":"p","v":"Даже правильно выбранная интеллектуальная функция ещё не создаёт рабочего агента. Модель может качественно классифицировать письмо или сформулировать ответ, но это не означает, что она встроена в реальную операционную систему компании."},{"t":"p","v":"Агент всегда действует **внутри определённой среды исполнения**. Эта среда отвечает на практические вопросы:"},{"t":"ul","v":["когда агент запускается","какие данные он получает","где хранится контекст предыдущих шагов","к каким системам и функциям у него есть доступ","какие решения ему разрешено принимать","какие действия требуют подтверждения","куда передаётся результат","как регистрируются ошибки и отклонения"]},{"t":"p","v":"Если этих элементов нет, агент остаётся демонстрацией возможностей модели. Сегодня он может дать убедительный ответ, завтра — вернуть другой формат, а послезавтра — принять решение, выходящее за пределы его роли. В рабочей системе такое поведение недопустимо."},{"t":"p","v":"Среда исполнения превращает модель в управляемого участника процесса. Она предоставляет ей данные, инструменты, правила, интерфейсы и контроль. Именно поэтому агент является компонентом архитектуры, а не отдельным цифровым существом, которое «само разберётся»."},{"t":"p","v":"**Чем выше автономность агента, тем важнее границы среды**. На первый взгляд может казаться, что интеллектуальной системе нужно дать больше свободы. На практике действует обратное правило: чем больше неопределённости в поведении компонента, тем точнее должны быть определены его роль, доступы, формат результата и условия остановки."}]},"3":{"title":"От «зоопарка агентов» к платформе","blocks":[{"t":"p","v":"Проблема локальных решений состоит не в том, что каждый отдельный бот бесполезен. Проблема возникает на уровне системы."},{"t":"p","v":"Один агент отвечает клиентам в мессенджере. Другой классифицирует обращения. Третий готовит письма. Четвёртый анализирует сделки. Каждый из них может работать приемлемо, но использовать собственную версию данных, отдельные ключи доступа, уникальные промпты и несовместимые форматы результатов."},{"t":"p","v":"Со временем появляются **три вида хаоса**."},{"t":"ol","v":["Хаос данных. Разные агенты видят разные версии одного и того же клиента, заказа или процесса. Один работает с актуальной CRM, другой — с выгрузкой, третий — с документом недельной давности. Единой картины реальности не существует.","Дублирование функций. Несколько решений начинают выполнять похожие задачи разными способами. Их выводы конфликтуют, а команда не понимает, какое из решений является основным.","Разрыв контекста. Результат одного агента не становится знанием для другого. Автоматизации не усиливают друг друга и не образуют накопительный интеллект компании."]},{"t":"p","v":"Платформенный подход решает эту проблему не созданием «одного большого бота», а **общей средой управления**. В ней агенты используют единый контекст, подключаются к общим сервисам, подчиняются единым политикам безопасности и возвращают результаты в согласованных форматах."},{"t":"p","v":"Тогда каждый новый агент не создаёт отдельный технологический остров, а подключается к существующей архитектуре. Он получает доступ к уже настроенным данным, механизмам авторизации, логированию, мониторингу и общим инструментам. За счёт этого рост числа агентов перестаёт означать рост хаоса."}]},"4":{"title":"Инструмент и платформа — не одно и то же","blocks":[{"t":"p","v":"**ИИ-инструмент решает отдельную задачу**. Он может распознать документ, написать текст, классифицировать письмо, извлечь сущности, подготовить резюме встречи или отправить сообщение. Такой инструмент может быть очень полезным, но его зона ответственности локальна."},{"t":"p","v":"Платформа работает на другом уровне. Она связывает процессы, данные, модели, агентов, интерфейсы и правила управления. Платформа создаёт среду, внутри которой автоматизация может жить, развиваться и масштабироваться."},{"t":"p","v":"Различие становится особенно заметным на примере агента, отвечающего на письма. В инструментальном подходе вопрос звучит так: «умеет ли модель написать хороший ответ?». В платформенном подходе появляются дополнительные вопросы:"},{"t":"ul","v":["из каких данных агент берёт контекст","видит ли он историю клиента","может ли он определить тип обращения","какие ответы разрешено отправлять автоматически","когда требуется согласование человека","куда записывается итог","как измеряется качество","что произойдёт, если внешняя система недоступна"]},{"t":"p","v":"Набор ИИ-инструментов ещё не превращает компанию в интеллектуальную организацию. Пока решения изолированы и не подчиняются общей логике, это остаётся коллекцией точечных автоматизаций. **Платформа превращает их в единую операционную систему**, в которой каждый компонент усиливает не только свою локальную задачу, но и общий процесс."}]},"5":{"title":"Четыре слоя ИИ-платформы","blocks":[{"t":"p","v":"Зрелую ИИ-платформу можно представить как систему из **четырёх взаимосвязанных слоёв**."},{"t":"ol","v":["Инфраструктура. Это технический фундамент: вычислительные мощности, облако или собственное оборудование, сеть, контейнеризация, базовая безопасность и среда развёртывания. Инфраструктура отвечает на вопрос, где система существует, как запускается и как масштабируется.","Сервисы. К нему относятся общие функции, которые необходимы разным процессам и агентам: оркестрация, авторизация, управление доступом, логирование, мониторинг, маршрутизация, интеграционные механизмы и вызовы внешних функций. Этот слой превращает вычислительную инфраструктуру в операционную среду.","Данные. В агентной архитектуре данные — это не просто хранилище записей, а контекст и память системы. Сюда входят события, документы, переписка, данные CRM и ERP, история действий, состояние процессов, метаданные клиентов и результаты предыдущих запусков. Без общего слоя данных агенты не могут сформировать согласованную картину происходящего.","Модели и агенты. Здесь происходит смысловая интерпретация: классификация, извлечение структуры, анализ контекста, оценка вариантов, формирование ответа и принятие локальных решений."]},{"t":"p","v":"Интеллектуальный слой не может существовать независимо от остальных. Модель опирается на данные, действует через сервисы и исполняется на инфраструктуре. Если хотя бы один из нижних слоёв слаб, качество агента становится нестабильным. Поэтому зрелая ИИ-платформа — это не просто доступ к сильной модели, а **правильно собранная многослойная система**."}]},"6":{"title":"Четыре слоя ИИ-платформы","blocks":[{"t":"p","v":"У зрелой платформы есть несколько признаков."},{"t":"ol","v":["**Единый контекст**. Все агенты и процессы используют согласованные данные и не живут в отдельных версиях реальности.","Управляемость. Права доступа, безопасность, логирование, контроль действий и правила эскалации задаются централизованно.","Масштабируемость. Новый агент можно подключить к существующим слоям без полной перестройки архитектуры.","Наблюдаемость. Команда видит, как запускаются процессы, какие данные проходят через систему, где возникают ошибки и какой результат создаётся.","**Способность к накоплению и улучшению**. Результаты работы, ошибки и сигналы качества возвращаются в систему и используются для последующей доработки."]}]},"7":{"title":"Базовая формула автоматизации","blocks":[{"t":"p","v":"Практически любую автоматизацию можно представить с помощью простой формулы:"},{"t":"note","v":"**ТРИГГЕР → ОБРАБОТКА → ДЕЙСТВИЕ**"},{"t":"p","v":"Триггер отвечает за запуск процесса. Обработка определяет, что делать с поступившими данными. Действие изменяет состояние внешней или внутренней системы."},{"t":"p","v":"Представим, что с сайта поступила заявка. Сам факт поступления является триггером. Затем система проверяет полноту данных, определяет тип обращения, оценивает приоритет и выбирает маршрут — это обработка. После этого создаётся карточка в CRM, отправляется уведомление менеджеру или запускается следующий процесс — это действие."},{"t":"p","v":"Эта формула сохраняется и в сложных агентных системах. Искусственный интеллект не отменяет базовую логику автоматизации. Он **встраивается преимущественно в этап обработки** — туда, где требуется понимание смысла, анализ контекста или выбор при отсутствии однозначного правила."}]},"8":{"title":"Триггер: точка запуска процесса","blocks":[{"t":"p","v":"Триггер — **событие, после которого система начинает выполнение**. Он задаёт не только технический старт, но и временную модель процесса."},{"t":"p","v":"Ручной триггер используется, когда инициатором должен оставаться человек. Это может быть кнопка, форма, команда в чате или подтверждение операции. Такой запуск подходит для нестандартных случаев, аналитических задач и действий, требующих осознанного начала."},{"t":"p","v":"Триггер по расписанию запускает процесс в определённый момент или с заданной периодичностью: каждое утро, раз в неделю, каждые пятнадцать минут. Он используется для отчётов, фоновых проверок, синхронизации и пакетной обработки."},{"t":"p","v":"Событийный триггер реагирует на изменение в системе: пришло письмо, создана сделка, изменился статус, поступила оплата или появилась новая запись. Такой подход позволяет встроить автоматизацию непосредственно в операционную жизнь компании."},{"t":"note","v":"Важно понимать, что триггер сам по себе не решает задачу. Он лишь фиксирует событие и создаёт момент старта. **Ошибка в выборе триггера влияет на весь последующий процесс**: автоматизация может запускаться слишком поздно, слишком часто или не запускаться вовсе."}]},"9":{"title":"Обработка: фильтрация и ветвление","blocks":[{"t":"p","v":"После запуска данные редко проходят по одному прямому маршруту. Обычно их необходимо проверить, очистить, преобразовать и направить по подходящему сценарию."},{"t":"p","v":"Фильтрация отвечает на вопрос, **какие данные должны пройти дальше**. Она отсеивает неподходящие элементы и не позволяет системе тратить ресурсы на ненужную обработку. Например, можно пропускать только обращения с заполненными контактами, заявки из определённого региона или события с высоким приоритетом."},{"t":"p","v":"Ветвление отвечает на другой вопрос: **по какому пути должен развиваться конкретный случай**. Если условие выполнено, данные направляются по одной ветке; если нет — по другой. Так внутри одного воркфлоу появляются разные сценарии."}]},"10":{"title":"Действие: где возникает бизнес-результат","blocks":[{"t":"p","v":"Действие — это шаг, на котором автоматизация **изменяет состояние реального процесса**. До этого момента система только получала, проверяла и интерпретировала информацию."},{"t":"p","v":"Действием может быть:"},{"t":"ul","v":["создание записи в CRM","отправка письма или сообщения","обновление строки в таблице","смена статуса заказа","создание задачи или тикета","вызов внешнего сервиса","запуск следующего воркфлоу"]},{"t":"p","v":"**Ценность автоматизации проявляется именно через действие**. Если система только анализирует данные, но результат не используется дальше, операционный цикл остаётся незавершённым. Хорошая автоматизация всегда доводит понимание до конкретного изменения: экономит время, снижает количество ошибок, ускоряет обработку или создаёт новый результат."}]},"11":{"title":"Сначала схема, потом сборка","blocks":[{"t":"p","v":"Одна из самых распространённых ошибок — сразу открывать n8n или другой конструктор, добавлять ноды, подключать API и писать промпт. Такой подход начинается с интерфейса, а не с задачи."},{"t":"p","v":"В результате разработчик быстро получает технический прототип, но не понимает архитектуру процесса. Ноды соединены, модель что-то отвечает, данные куда-то записываются, однако границы системы не определены, исключения не обработаны, а критерии качества отсутствуют."},{"t":"p","v":"Правильный порядок противоположен."},{"t":"p","v":"Сначала определяется цель процесса и строится его карта. Затем описываются входы, выходы, роли, условия, ветвления, исключения и точки контроля. После этого выделяются системы и интерфейсы, через которые будет происходить исполнение. Далее определяется место агента и создаётся его минимальная спецификация. И только затем логика переносится в n8n, код или другую среду исполнения."},{"t":"p","v":"Минимальная спецификация агента должна отвечать как минимум на шесть вопросов:"},{"t":"ul","v":["**ROLE** — за что агент отвечает внутри процесса","**INPUT** — какие конкретные данные он получает","**DECISIONS** — какие решения имеет право принимать","**TOOLS** — какие инструменты и API ему доступны","**HANDOFF** — когда он обязан передать управление человеку","**OUTPUT** — в каком формате возвращается результат"]},{"t":"p","v":"Такой документ превращает агента из абстрактной идеи в инженерную сущность, которую можно разработать, протестировать и масштабировать."}]},"12":{"title":"Когда правила перестают работать","blocks":[{"t":"p","v":"Жёсткие правила эффективны там, где мир процесса можно описать заранее. Если известны все варианты и для каждого можно определить однозначное действие, классическая автоматизация остаётся самым надёжным решением."},{"t":"p","v":"Проблемы начинаются при появлении **неоднозначности**. Типичные признаки агентного шага:"},{"t":"ul","v":["свободная форма входа: письмо, чат, голосовая расшифровка, комментарий","неполные или противоречивые данные","несколько правдоподобных маршрутов","зависимость решения от истории и контекста","необходимость понять намерение, а не проверить поле","потребность сформулировать уточняющий вопрос","необходимость выбрать действие с учётом уровня уверенности"]},{"t":"p","v":"Например, клиент пишет: «У меня что-то не так с заказом». Обычное правило не знает, является ли это жалобой на доставку, проблемой с оплатой, запросом на возврат или просьбой уточнить статус. Система должна проанализировать формулировку, проверить историю заказа, определить недостающие данные и решить, какой шаг будет следующим."},{"t":"p","v":"Именно в такой точке появляется агент. Он не заменяет весь воркфлоу, а **усиливает конкретный участок**, где необходимо интерпретировать ситуацию."}]},"13":{"title":"Архитектура агента","blocks":[{"t":"p","v":"Чтобы агент был управляемым, его необходимо **разложить на составные элементы**."},{"t":"p","v":"Роль определяет, кем агент является внутри процесса: классификатором, маршрутизатором, аналитиком, валидатором, помощником менеджера или специалистом поддержки. Размытая роль заставляет модель самостоятельно достраивать зону ответственности."},{"t":"p","v":"Цель задаёт конкретный результат. Формулировка «помоги клиенту» слишком широка. Формулировка «определи тип обращения, проверь достаточность данных и верни рекомендуемый маршрут» уже пригодна для проектирования."},{"t":"p","v":"Контекст включает входные данные, состояние процесса, историю взаимодействия, метаданные и результаты предыдущих шагов. Без контекста модель вынуждена угадывать."},{"t":"p","v":"Память позволяет сохранять последовательность внутри одного кейса: какие вопросы уже задавались, какие решения принимались, какие данные были получены. Глубокая память нужна не всегда, но процесс должен знать своё текущее состояние."},{"t":"p","v":"Инструменты определяют, что агент способен сделать за пределами генерации текста. Ограничения фиксируют, чего делать нельзя. Эскалация задаёт условия передачи человеку. Формат результата определяет контракт с последующими узлами."},{"t":"p","v":"Полезно представлять агента не как одно большое «умное» существо, а как **граф навыков**. Один навык классифицирует запрос, другой определяет недостающие данные, третий формирует уточнение, четвёртый выбирает маршрут. Между ними могут находиться обычные правила и контрольные точки человека. Такое разложение упрощает разработку, тестирование и постепенное развитие системы."}]},"14":{"title":"Воркфлоу и агент","blocks":[{"t":"p","v":"Воркфлоу можно сравнить с поездом, который движется по заранее спроектированной сети рельсов. Маршрут может ветвиться, но возможные пути определены до запуска. Благодаря этому воркфлоу предсказуем, прозрачен и хорошо тестируется."},{"t":"p","v":"Агент больше похож на штурмана на отдельном участке маршрута. У него есть цель, контекст, доступные инструменты и границы. Он может понять смысл входящего сообщения, оценить неполную информацию, выбрать один из допустимых сценариев или решить, что требуется помощь человека."},{"t":"p","v":"Различие можно сформулировать так:"},{"t":"ul","v":["**воркфлоу** отвечает на вопрос «как должен исполняться процесс?»","**агент** отвечает на вопрос «что лучше сделать в этой конкретной ситуации внутри процесса?»"]}]},"15":{"title":"Воркфлоу и агент","blocks":[{"t":"h","v":"Разделение ответственности"},{"t":"p","v":"Эти сущности не конкурируют. Воркфлоу задаёт каркас исполнения: запускает процесс, перемещает данные, проверяет условия, вызывает API, регистрирует действия и обрабатывает ошибки. Агент добавляет гибкость в тех местах, где детерминированной логики недостаточно."},{"t":"p","v":"Хорошая архитектура **разделяет ответственность между правилами и интеллектом**. Всё, что должно быть стабильным и воспроизводимым, следует оставлять в детерминированном слое: валидацию, проверку доступов, запись в базы, смену статусов, вызовы API и очевидную маршрутизацию."},{"t":"p","v":"Агенту передаётся работа со смыслом: интерпретация текста, классификация, определение намерения, поиск недостающих данных, оценка уверенности и выбор среди допустимых вариантов."},{"t":"p","v":"**Чем меньше эти уровни смешиваются, тем надёжнее система**."}]},"16":{"title":"Человек в контуре","blocks":[{"t":"p","v":"Появление агента не означает исчезновение человека. Зрелая архитектура не стремится убрать человека из процесса любой ценой. Она оставляет его там, где требуются ответственность, доверие и работа с высокой ценой ошибки."},{"t":"p","v":"Человек должен подключаться, когда:"},{"t":"ul","v":["уверенность агента ниже допустимого порога","данные неполны или противоречат друг другу","решение связано с деньгами","действие имеет юридические последствия","требуется важная коммуникация с клиентом","изменяются критичные данные","ситуация не относится к известным сценариям"]},{"t":"p","v":"Агент может подготовить анализ, собрать сведения, предложить вариант ответа или рекомендуемое действие. Однако **финальное решение в чувствительной точке принимает человек**."},{"t":"p","v":"Передача управления человеку — не признак слабости автоматизации. Наоборот, это признак того, что **система осознаёт собственные границы**. Плохая система пытается решить всё. Хорошая понимает, где заканчивается зона её уверенного действия."}]},"17":{"title":"Интерфейсы: как агент влияет на системы","blocks":[{"t":"p","v":"Модель сама по себе способна анализировать и генерировать текст, но не может напрямую изменить CRM, создать задачу или отправить сообщение. Для взаимодействия с внешней средой **агенту нужны интерфейсы**."},{"t":"p","v":"Такими интерфейсами могут быть API, вебхуки, формы, пользовательские интерфейсы и специализированные инструменты платформы. Через них агент получает данные, вызывает действия и передаёт результат."},{"t":"p","v":"Интерфейсы одновременно расширяют возможности агента и ограничивают его. Они определяют, к каким объектам он имеет доступ, какие операции разрешены, какие параметры необходимо передать и какой ответ будет получен."},{"t":"p","v":"**Без интеграций у агента нет «рук»**. Он может правильно определить, что обращение связано с логистикой, но если не способен создать тикет, обновить статус и уведомить ответственного сотрудника, его интеллект не превращается в бизнес-результат."},{"t":"p","v":"Поэтому проектирование агента неизбежно включает проектирование его инструментального контура."}]},"18":{"title":"API как язык взаимодействия систем","blocks":[{"t":"p","v":"API — application programming interface — задаёт **формальные правила общения между системами**. Он определяет, что можно запросить, какие данные передать, в каком формате это сделать и какой ответ будет возвращён."},{"t":"p","v":"Удобная аналогия — ресторан. Клиент не идёт на кухню и не взаимодействует с её внутренним устройством. Он обращается к официанту, делает заказ по меню и получает результат. В этой модели **официант — API, а меню — документация**. Клиенту не нужно знать, как устроена кухня; ему необходимо знать, как корректно сформулировать запрос."},{"t":"p","v":"Точно так же агент не «заходит внутрь» CRM или платёжной системы. Он отправляет запрос через предусмотренный интерфейс и получает ответ."},{"t":"p","v":"Через API агент и воркфлоу могут:"},{"t":"ul","v":["получать записи","создавать объекты","обновлять данные","отправлять сообщения","запускать внешние операции","проверять состояние сервиса"]},{"t":"p","v":"Понимание API необходимо не только разработчикам. Любой человек, проектирующий агента, должен понимать возможности и ограничения доступных интерфейсов: какой вход требуется инструменту, что он возвращает, какие ошибки возможны и какие права необходимы."}]},"19":{"title":"Запрос, ответ и HTTP","blocks":[{"t":"p","v":"В основе интеграции лежит простой цикл: **клиент отправляет запрос, сервер его обрабатывает и возвращает ответ**."},{"t":"p","v":"Клиентом может быть воркфлоу, агент, приложение или другой сервис. Сервером является система, способная выполнить нужное действие."},{"t":"p","v":"Запрос сообщает, куда обращается клиент, что он хочет сделать и какие данные передаёт. Ответ показывает, удалось ли выполнить операцию, какие данные получены и возникла ли ошибка."}]},"20":{"title":"Запрос, ответ и HTTP","blocks":[{"t":"h","v":"Части HTTP-запроса"},{"t":"p","v":"Большинство взаимодействий через интернет строится на HTTP-запросах. У такого запроса есть несколько основных частей."},{"t":"ul","v":["**URL** указывает адрес ресурса.","**Метод** определяет тип действия. GET обычно используется для получения данных, POST — для создания или отправки, PUT и PATCH — для изменения, DELETE — для удаления.","**Заголовки** передают служебную информацию: формат данных, токен доступа и другие параметры.","**Тело** содержит данные, которые необходимо отправить серверу."]},{"t":"p","v":"Любой интеграционный узел фактически собирает такой запрос. Понимание его структуры позволяет не просто пользоваться готовыми коннекторами, а осознанно управлять взаимодействием систем."}]},"21":{"title":"Доступы и статусы","blocks":[{"t":"p","v":"Внешняя система должна понимать, кто к ней обращается и какие действия разрешены. Для этого используются API-ключи, токены и OAuth-авторизация."},{"t":"p","v":"API-ключ можно представить как пароль для приложения. Токен доступа передаётся вместе с запросом. OAuth позволяет предоставить ограниченный доступ от имени пользователя, не передавая системе его основной пароль."},{"t":"p","v":"Главный принцип состоит в **минимально необходимых правах**. Агент должен иметь ровно тот доступ, который соответствует его роли. Если ему нужно читать статус заказа, необязательно разрешать удаление заказов. Если он готовит письмо, необязательно давать ему право отправлять его без подтверждения."},{"t":"p","v":"После обработки запроса сервер возвращает статус-код. Наиболее распространённые значения:"},{"t":"ul","v":["**200** — запрос выполнен успешно","**400** — ошибка в самом запросе","**401** — отсутствует или некорректна авторизация","**404** — ресурс не найден","**500** — внутренняя ошибка сервера"]},{"t":"p","v":"Воркфлоу обязан учитывать эти ответы. Успешный статус ведёт к следующему шагу. Ошибка доступа может требовать остановки и уведомления. Временный сбой сервера — повторной попытки. Отсутствие ресурса — отдельной ветки процесса."},{"t":"p","v":"Отправить запрос и забыть о результате недостаточно. Ответ внешней системы является частью бизнес-логики."}]},"22":{"title":"Вебхуки и событийная архитектура","blocks":[{"t":"p","v":"Существует два способа узнать, произошло ли событие во внешней системе."},{"t":"p","v":"Первый — регулярно опрашивать её: «не появилось ли что-то новое?». **Такой подход называется опросом**. Он создаёт задержки и лишнюю нагрузку."},{"t":"p","v":"Второй — позволить системе самой отправить сигнал в момент события. Это **вебхук**. Его можно сравнить со звонком в дверь: нет необходимости каждые несколько секунд проверять, пришёл ли кто-нибудь."},{"t":"p","v":"Например, после успешной оплаты платёжный сервис отправляет вебхук. Он запускает воркфлоу, который обновляет статус заказа, создаёт документы, уведомляет клиента и передаёт данные дальше."},{"t":"p","v":"Вебхук является **автоматическим событийным триггером**. Благодаря ему процессы реагируют в реальном времени, а архитектура становится более эффективной."}]},"23":{"title":"Среда исполнения: где схема становится процессом","blocks":[{"t":"p","v":"После проектирования логики её необходимо перенести в среду исполнения. Такой средой может быть n8n, другая воркфлоу-платформа или собственная программная система."},{"t":"p","v":"Здесь соединяются:"},{"t":"ul","v":["триггеры как точки входа","условия и ветвления как управление потоком","агенты как узлы интерпретации","интеграции как способы действия","логи и метрики как контур управления"]},{"t":"p","v":"Среда исполнения — это **не просто редактор схем**. В ней процесс реально запускается, получает события, перемещает данные, вызывает системы и возвращает результат."},{"t":"note","v":"Именно поэтому n8n и аналогичные решения следует воспринимать не только как конструкторы автоматизаций, а как **операционную среду, в которой бизнес-логика становится исполняемой**."}]},"24":{"title":"Узел как атом процесса","blocks":[{"t":"p","v":"Воркфлоу состоит из узлов. **Каждый узел выполняет одну конкретную функцию**: запускает процесс, проверяет условие, преобразует данные, вызывает внешний сервис или принимает смысловое решение."},{"t":"p","v":"Тип узла определяет его роль:"},{"t":"ul","v":["триггер запускает","логический узел управляет маршрутом","узел данных меняет структуру","интеграционный узел выполняет действие","агентный узел интерпретирует ситуацию"]},{"t":"p","v":"Однако **логика процесса возникает не из набора узлов, а из связей между ними**. Один и тот же набор компонентов можно соединить по-разному и получить совершенно разное поведение."},{"t":"p","v":"Поэтому проектирование воркфлоу — это не выбор красивых нод. Это определение порядка, условий, контрактов данных и переходов между шагами."}]},"25":{"title":"Как движутся данные: JSON и item","blocks":[{"t":"p","v":"Базовой формой данных в большинстве воркфлоу является **JSON — структурированный объект** в формате «ключ — значение»."},{"t":"p","v":"Например:"},{"t":"note","v":"{ \"client_name\": \"Иван\", \"email\": \"ivan@example.com\", \"priority\": \"high\" }"},{"t":"p","v":"Один такой объект можно рассматривать **как один элемент — отдельную единицу обработки**. Если в процесс поступили десять заявок, обычно система работает с десятью элементами. Фильтры, ветвления, преобразования и агентные решения применяются к каждому элементу отдельно."},{"t":"p","v":"Эта модель принципиальна. Воркфлоу не обрабатывает абстрактный «поток целиком». Внутри него одновременно исполняется множество небольших процессов — по одному для каждого объекта."},{"t":"p","v":"Понимание этого уменьшает количество ошибок. Становится ясно, почему одна заявка прошла фильтр, другая была остановлена, а третья ушла на ручную проверку."}]},"26":{"title":"Выражения как связь между данными и логикой","blocks":[{"t":"p","v":"Чтобы процесс был динамическим, узлы должны получать реальные значения из текущего элемента. **Для этого используются выражения**."},{"t":"p","v":"Если во входящем JSON есть имя, электронная почта или идентификатор клиента, их не нужно прописывать вручную. Выражение подставляет значение в письмо, API-запрос, условие или промпт."},{"t":"p","v":"Благодаря выражениям:"},{"t":"ul","v":["сообщение персонализируется","в CRM записывается результат предыдущего шага","в модель передаётся текст конкретного обращения","API получает идентификатор нужного объекта","ветвление работает по фактическим данным"]},{"t":"p","v":"**Выражения являются связующей тканью воркфлоу**. Если система не умеет корректно передавать поля между узлами, она остаётся цепочкой изолированных действий."}]},"27":{"title":"Обработка: фильтрация и ветвление","blocks":[{"t":"p","v":"При проектировании важно различать альтернативное ветвление и параллелизм."},{"t":"p","v":"**Альтернативное ветвление выбирает один маршрут**. Например, если уверенность агента выше установленного порога, процесс продолжается автоматически; если ниже — кейс передаётся человеку."},{"t":"p","v":"**Параллельное ветвление отправляет один результат сразу в несколько направлений**. Например, после обработки обращения можно одновременно обновить CRM, записать событие в журнал и отправить уведомление сотруднику."},{"t":"p","v":"Эти механизмы нельзя путать. В первом случае система выбирает один сценарий, во втором — распространяет результат на несколько независимых действий."}]},"28":{"title":"Где в процессе появляется интеллект","blocks":[{"t":"p","v":"Интеллект появляется в конкретной точке процесса — там, где жёсткого правила недостаточно."},{"t":"p","v":"В агентный узел обычно поступают три группы сущностей:"},{"t":"ul","v":["**текст** — материал, который необходимо интерпретировать","**контекст** — данные о клиенте, истории и состоянии процесса","**правила** — границы, критерии и допустимые сценарии"]},{"t":"p","v":"До этого узла воркфлоу мог проверять условия, фильтровать, преобразовывать и вызывать действия. В агентной точке система начинает работать со смыслом: определять намерение, классифицировать содержание, извлекать структуру, формулировать уточнение или выбирать следующий шаг с учётом контекста."},{"t":"note","v":"Важно не превращать модель в магический чёрный ящик. Она не должна получать команду «разберись сама». Интеллектуальный узел выполняет ограниченную функцию внутри заранее спроектированной системы."}]},"29":{"title":"Что подавать модели на вход","blocks":[{"t":"p","v":"Качество ответа модели напрямую зависит от **качества входного пакета**. Большинство проблем возникает не из-за слабости модели, а из-за плохо собранного контекста."},{"t":"p","v":"На вход следует передавать:"},{"t":"ul","v":["текст задачи или обращения","только необходимые структурированные данные","роль агента","конкретную цель","ограничения","критерии выбора","ожидаемый формат результата"]},{"t":"p","v":"Лишняя информация не обязательно улучшает качество. Избыточный контекст способен размыть задачу и заставить модель уделять внимание нерелевантным деталям. Поэтому хороший вход — это не максимальный объём данных, а **минимально достаточный и правильно отобранный контекст**."},{"t":"p","v":"Например, для классификации обращения может быть достаточно текста письма, статуса клиента, истории последних действий и списка допустимых категорий. Передавать модели всю базу знаний компании в каждом запросе бессмысленно и опасно."},{"t":"p","v":"Чем точнее собран вход, тем надёжнее результат."}]},"30":{"title":"Промпт как управляющий модуль","blocks":[{"t":"p","v":"Промпт не является магической фразой, после которой модель начинает работать идеально. Внутри автоматизации он выполняет **роль управляющего модуля**."},{"t":"p","v":"Через промпт задаются:"},{"t":"ul","v":["роль модели","цель текущей операции","контекст","ограничения","критерии решения","правила приоритета","условия передачи человеку","формат ответа"]},{"t":"p","v":"Промпт фактически **переводит архитектуру агента в инструкцию для модели**. Если архитектура не определена, даже длинный и подробно написанный промпт не сделает систему устойчивой."}]},"31":{"title":"Промпт как управляющий модуль","blocks":[{"t":"h","v":"Как строится хороший промпт"},{"t":"p","v":"Хороший промпт **начинается с одной роли и одной задачи**. Попытка одновременно попросить модель классифицировать, исследовать, написать ответ, принять решение и выполнить действие размывает поведение."},{"t":"p","v":"После роли и задачи передаётся только необходимый контекст. Затем задаются ограничения: не выдумывать отсутствующие данные, не принимать чувствительные решения без подтверждения, не продолжать работу при низкой уверенности. Далее определяются критерии и формат результата."},{"t":"p","v":"Устойчивый промпт должен давать предсказуемый и полезный результат на похожих входах. Его качество **определяется не красотой формулировок, а точностью границ**."},{"t":"p","v":"Хаотичное поведение модели часто является отражением хаотичной архитектуры. Если роль слишком широкая, задач несколько, контекст не собран, а формат не задан, модель вынуждена импровизировать. Проблема в таком случае находится не в «характере» модели, а в конструкции системы."}]},"32":{"title":"LLM-задача и полноценный агент","blocks":[{"t":"p","v":"Не каждый вызов языковой модели является агентом."},{"t":"p","v":"Простая LLM-задача — это **единичная интеллектуальная операция**. Например:"},{"t":"ul","v":["извлечь имя и телефон из текста","классифицировать письмо","сделать краткое резюме","перевести сообщение","сформировать черновик ответа"]},{"t":"p","v":"Модель получает вход, выполняет одну функцию и возвращает результат."},{"t":"p","v":"Агент устроен сложнее. У него есть роль внутри процесса, операционная цель, контекст, ограничения, доступные инструменты и возможность выбирать следующий шаг. Он может вызвать функцию, получить ответ, оценить результат и продолжить работу до достижения локальной цели или передачи человеку."},{"t":"p","v":"LLM-задача является отдельной функцией мышления. **Агент — исполнительная система**, которая может использовать одну или несколько таких функций внутри управляемого процесса."}]},"33":{"title":"Инструменты — это руки агента","blocks":[{"t":"p","v":"Модель умеет интерпретировать информацию, но для воздействия на внешнюю среду **ей нужны инструменты**."},{"t":"p","v":"Инструментами могут быть:"},{"t":"ul","v":["API CRM","база данных","электронная почта","календарь","поисковая система","файловое хранилище","внутренний корпоративный сервис","другой воркфлоу"]},{"t":"p","v":"Инструменты **превращают интеллектуальный модуль в работающего агента**. С их помощью он может получить сведения, создать запись, отправить сообщение, обновить статус или запустить следующий этап."}]},"34":{"title":"Инструменты — это руки агента","blocks":[{"t":"p","v":"Агент выбирает инструмент **исходя из цели, контекста и доступного набора действий**. Если необходимо получить информацию, используется читающий инструмент. Если требуется изменить состояние системы — инструмент записи. Если данных недостаточно, первым действием может стать запрос уточнения."},{"t":"p","v":"При этом выбор не должен быть произвольным. Архитектура ограничивает список доступных инструментов, права и условия их использования. **Узкий инструментальный контур повышает надёжность и безопасность**."}]},"35":{"title":"Структурированный ответ","blocks":[{"t":"p","v":"Свободный текст удобен для человека, но плохо подходит для автоматизации. Следующий узел воркфлоу не должен читать абзац, угадывать смысл и решать, что имела в виду модель."},{"t":"p","v":"Поэтому агенту заранее задаётся схема ответа. Например:"},{"t":"note","v":"{ \"type\": \"delivery_complaint\", \"confidence\": 0.91, \"missing_data\": [], \"next_action\": \"create_support_ticket\", \"handoff_required\": false, \"reason\": \"Клиент сообщает о задержке доставки\" }"},{"t":"p","v":"Такая структура является **контрактом между агентом и системой**."},{"t":"p","v":"Поле type определяет категорию ситуации. Confidence позволяет управлять риском. Missing_data показывает, что необходимо уточнить. Next_action задаёт маршрут. Handoff_required фиксирует необходимость участия человека. Краткое reason помогает при наблюдении и отладке."},{"t":"p","v":"Структурированный ответ превращает рассуждение модели в исполняемый результат. Он позволяет сразу использовать вывод для ветвления, записи в CRM или вызова следующего инструмента."},{"t":"p","v":"Чем выше автономность агента, **тем жёстче должен быть контракт результата**."}]},"36":{"title":"Защитный контур","blocks":[{"t":"p","v":"Когда агент получает доступ к данным и действиям, **вокруг него необходим защитный контур**. Ошибка модели не должна автоматически превращаться в бизнес-риск."},{"t":"p","v":"Защитный контур включает:"},{"t":"ul","v":["узкую роль","минимально необходимые права","ограниченный список инструментов","валидацию входных данных","проверку структуры ответа","допустимые значения полей","лимиты на количество и стоимость действий","пороги уверенности","правила эскалации","подтверждение человека для чувствительных операций","возможность остановки и безопасного повторного запуска"]},{"t":"p","v":"Агент не должен «думать обо всём». Он должен быть надёжным в своей доменной зоне. Зрелая агентная система проектируется не через максимальную свободу, а **через точное определение роли, доступа и ответственности**."}]},"37":{"title":"Наблюдаемость, отладка и метрики","blocks":[{"t":"p","v":"Агента недостаточно собрать и проверить на нескольких примерах. После запуска начинается его реальная эксплуатация, а вероятностное поведение требует постоянной наблюдаемости."},{"t":"p","v":"Наблюдаемость позволяет понять:"},{"t":"ul","v":["когда процесс запустился","какие данные поступили","какие узлы выполнились","какие инструменты были вызваны","что вернула модель","где произошла ошибка","почему кейс был передан человеку","какой итоговый результат получен"]},{"t":"p","v":"Без журналов агент **превращается в чёрный ящик**. Качество может ухудшаться постепенно: немного растёт число неверных классификаций, чаще нарушается формат, позже происходит эскалация. Если команда видит только окончательный сбой, она пропускает ранние признаки деградации."},{"t":"p","v":"Отладка должна рассматривать процесс как цепочку преобразования данных. Недостаточно увидеть, что третий узел не смог разобрать JSON. Нужно понять, что поступило на вход модели, почему она вернула неправильную структуру, были ли размыты ограничения и корректно ли задан контракт результата."},{"t":"p","v":"Метрики показывают не «насколько умным выглядит агент», а **какую пользу он приносит процессу**."},{"t":"p","v":"Полезно измерять:"},{"t":"ul","v":["точность классификации и решений","долю корректно структурированных ответов","частоту эскалаций","число ошибок","скорость выполнения","стоимость одной операции","долю успешных запусков","время, сэкономленное сотрудникам","снижение ручных ошибок","влияние на итоговый бизнес-показатель"]},{"t":"note","v":"**Главный критерий — эффект**. Интеллект имеет ценность только тогда, когда он усиливает бизнес-процесс."}]},"38":{"title":"Пять типичных ошибок","blocks":[{"t":"ol","v":["**Автоматизировать без схемы процесса**. Если логика не спроектирована заранее, воркфлоу быстро превращается в запутанную сеть исключений.","Создавать агента там, где достаточно обычных правил. Модель добавляет стоимость и неопределённость, поэтому её следует применять только в точках смысловой сложности.","Давать агенту размытый промпт и слишком широкую роль. Избыточный контекст, несколько задач одновременно и отсутствие формата результата делают поведение нестабильным.","Не создавать защитный контур. Слишком широкие доступы, отсутствие валидации и правил передачи человеку превращают любую ошибку в операционный риск.","Не наблюдать реальные запуски. Без логов и метрик невозможно понять, где ломается процесс, как меняется качество и даёт ли система бизнес-эффект."]},{"t":"note","v":"Все эти ошибки имеют общий источник — **отсутствие архитектуры**. Проблема обычно заключается не в выбранной модели и не в платформе, а в том, что автоматизация была собрана как набор идей, а не спроектирована как управляемый процесс."}]},"39":{"title":"Заключение","blocks":[{"t":"p","v":"Чтобы получить рабочего ИИ-агента, недостаточно подключить модель, написать промпт и добавить несколько интеграций. **Зрелая автоматизация начинается с процесса**."},{"t":"p","v":"Сначала необходимо понять, что запускает работу, какие данные движутся по системе, где действуют строгие правила, где возникает неопределённость и какой результат должен быть создан. Затем в точку смысловой сложности встраивается агент с узкой ролью, конкретной целью, ограниченными инструментами и структурированным выходом."},{"t":"p","v":"Воркфлоу остаётся каркасом исполнения. Он управляет последовательностью, данными, API-вызовами, ветвлениями и ошибками. Агент добавляет интерпретацию и локальное принятие решений. Человек сохраняет контроль над чувствительными и пограничными случаями. **Платформа объединяет все эти элементы общим контекстом, правилами безопасности, наблюдаемостью и метриками**."},{"t":"p","v":"Инженерный путь выглядит последовательно:"},{"t":"note","v":"процесс → точка неопределённости → спецификация агента → промпт и формат ответа → инструменты → сборка воркфлоу → защитный контур → наблюдаемость и улучшение."},{"t":"p","v":"Именно такой подход позволяет перейти от хаотичных экспериментов к управляемой интеллектуальной системе, в которой каждый агент, воркфлоу и инструмент работают не по отдельности, а как части общей архитектуры бизнеса."}]}}
 </script>
@@ -3334,9 +3371,14 @@ html.dark #progress-container{ background:#0A0A0A !important; }
      широкого слайда заезжала под голову. Сверху резерв меньше — там только
      шапка. */
   .slide-container .content-z{
-    padding-top:clamp(72px,9vh,110px) !important;
+    padding-top:clamp(88px,11vh,132px) !important;
     padding-bottom:calc(var(--bub) + 44px) !important;
   }
+  /* Заголовок во всю ширину 1440 доезжал до кнопок шапки справа. Ограничиваем
+     ширину самого заголовка — глушить кегль из slide-polish нельзя, он и так
+     задан через !important. */
+  .slide-container .content-z > h1,
+  .slide-container .content-z > h2{ max-width:min(100%, 60rem); }
   #nav-next{ right: calc(20px + var(--bub)/2 - 52px) !important; }
   #nav-prev{ right: calc(20px + var(--bub)/2 + 4px) !important; }
 }
@@ -3723,95 +3765,5 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 })();
 </script>
 
-<style id="radial-fig">
-/* ЭТАЛОН круговой («радиальной») инфографики.
-   Образец применения — слайд «Фреймворк AgentOps». На него ориентируются
-   остальные лекции, поэтому блок самодостаточный: копируется целиком.
-
-   Почему компонент устроен именно так — три ловушки этого проекта:
-   1) НИКАКИХ transform для позиционирования. Глобальное правило FR-LECTURE-20
-      гасит transform на :hover (`.slide-container *:hover{transform:none}`),
-      поэтому круг, отцентрованный через `-translate-x-1/2 -translate-y-1/2`,
-      при наведении ПРЫГАЛ на половину своей ширины. Здесь центр задаётся
-      арифметикой: left:calc(<X> - <диаметр>/2).
-   2) НИКАКОГО класса `aspect-square`: под него подвязаны глобальные правила
-      (white-space:nowrap на p/h3/h4 и max-width:440px). Пропорцию 1:1 держим
-      свойством aspect-ratio.
-   3) Круги — это круги (border-radius:50%), а не карточки со скруглением.
-      Никаких прямоугольных подложек под ними.
-   Hover-эффектов у компонента нет вовсе: ни размера, ни сдвига, ни цвета. */
-
-.radial-fig{
-  position:relative;
-  width:100%;
-  aspect-ratio:1 / 1;
-  margin-left:auto; margin-right:auto;
-  --orbit:38%;                        /* радиус орбиты (в % от стороны) */
-  --sat:clamp(84px, 25%, 148px);      /* диаметр спутника */
-  --core:clamp(92px, 26%, 168px);     /* диаметр ядра */
-}
-.radial-fig > *{ position:absolute; }
-
-.radial-core,
-.radial-sat{
-  border-radius:50%;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  text-align:center;
-  line-height:1.15;
-  overflow:hidden;
-}
-.radial-core{
-  width:var(--core); height:var(--core);
-  left:calc(50% - var(--core)/2);
-  top:calc(50% - var(--core)/2);
-  z-index:3;
-}
-.radial-sat{
-  width:var(--sat); height:var(--sat);
-  left:calc(var(--x) - var(--sat)/2);   /* --x/--y — центр спутника, инлайном */
-  top:calc(var(--y) - var(--sat)/2);
-  /* ВАЖНО: padding НЕ в процентах. У абсолютно спозиционированного элемента
-     процентный padding считается от ширины КОНТЕЙНЕРА (.radial-fig), а не от
-     самого круга, — внутренняя ширина падала втрое и подписи ломались. */
-  padding:calc(var(--sat) * 0.07);
-  z-index:2;
-}
-/* Пунктирное кольцо-орбита проходит РОВНО через центры спутников:
-   viewBox 0 0 100 100, r = значение --orbit в тех же единицах. */
-.radial-ring{
-  inset:0; width:100%; height:100%;
-  z-index:1; pointer-events:none;
-}
-/* Подписи внутри кругов. Правило: подпись — ОДНО слово (номер шага выносится
-   в .rf-num), тогда она встаёт в одну строку и круг не распирает.
-   Перенос по слогам оставлен страховкой для самых длинных слов. */
-.radial-sat .rf-label{
-  hyphens:auto; -webkit-hyphens:auto;
-  overflow-wrap:break-word; word-break:normal;
-  max-width:100%;
-}
-/* Номер шага — мелкой строкой над иконкой, чтобы не съедать ширину подписи. */
-.radial-sat .rf-num{
-  font-weight:900; line-height:1;
-  font-size:clamp(9px,2.2vw,12px);
-  opacity:.55;
-  margin-bottom:.15em;
-}
-/* Компонент не реагирует на указатель — он не интерактивный. */
-.radial-fig, .radial-fig *{ transition:none !important; }
-/* Телефон: композиция остаётся круговой, ужимаются размеры и кегль подписи.
-   Разваливать круг в сетку нельзя — круг нужен и на мобилке. */
-@media (max-width:520px){
-  .radial-fig{
-    --orbit:37%;
-    --sat:clamp(64px, 23%, 96px);
-    --core:clamp(76px, 26%, 108px);
-  }
-  .radial-sat .rf-label{ font-size:10px !important; line-height:1.1 !important; }
-  .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }
-  .radial-sat i, .radial-core i{ font-size:1.05rem !important; }
-}
-</style>
 </body>
 </html>
