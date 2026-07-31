@@ -312,6 +312,28 @@ def test_video_shadow_has_vh_fallback():
     assert re.search(r"\.video-shadow \{[^}]*height: 100vh; height: 100dvh;", html)
 
 
+def test_portrait_video_mask_fades_the_video_itself():
+    """В части мобильных браузеров (Samsung Internet) видео композитится отдельным
+    слоем и оверлей затемнения под него не попадает. В портретной мобилке низ
+    растворяет МАСКА на самом видео — её композитор обойти не может."""
+    html = _html()
+    assert "@media (max-width:1023px) and (orientation: portrait) {" in html, \
+        "нужен портретный мобильный блок с маской видео"
+    for prop in ("-webkit-mask-image", "mask-image"):
+        assert re.search(re.escape(prop) + r": linear-gradient\(to bottom, rgba\(0,0,0,1\) 45%", html), \
+            "нужна вертикальная маска %s, начинающаяся с непрозрачного 45%%" % prop
+    assert html.count("rgba(0,0,0,0) 100%)") >= 2, \
+        "маска должна доходить до полной прозрачности ровно на 100%"
+    # оверлей гасим ТОЛЬКО там, где маски поддерживаются — иначе он остаётся рабочим
+    assert re.search(
+        r"@supports \(mask-image: linear-gradient\(#000, transparent\)\)[^{]*\{\s*\.video-shadow \{ background: none; \}",
+        html), "гашение оверлея должно быть внутри @supports (иначе старые браузеры останутся без затемнения)"
+    # JS не должен ставить mask:none на мобилке — это перебило бы CSS-маску
+    fn = html[html.find("function applyVideoMask"):html.find("/* ---- captions")]
+    assert ": '';" in fn and ": 'none';" not in fn, \
+        "applyVideoMask на мобилке снимает инлайн-маску пустой строкой, а не ставит none"
+
+
 def test_video_shadow_is_short_and_smooth():
     stops = _mobile_shadow_stops()
     assert len(stops) >= 12, "мало стопов (%d) — на слабых экранах будут полосы" % len(stops)
