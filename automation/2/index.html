@@ -1590,20 +1590,24 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">AS-IS — это модель того, как процесс реально работает сейчас. Не в идеале, не по регламенту, а в жизни</p>
 
             <div class="bg-white border border-grayBase p-6 md:p-10 rounded-[24px] md:rounded-[40px] shadow-sm w-full relative overflow-hidden flex flex-col items-center">
-                <!-- Абстрактная схема процесса -->
-                <div class="flex items-center gap-2 md:gap-6 text-black relative z-10">
-                    <div class="bg-grayBase w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center font-bold md:text-xl">1</div>
-                    <i class="ph-bold ph-arrow-right text-black/30 text-xl md:text-3xl"></i>
-                    <div class="bg-grayBase w-12 h-12 md:w-20 md:h-20 rounded flex items-center justify-center font-bold md:text-xl">2</div>
-                    <i class="ph-bold ph-arrow-right text-black/30 text-xl md:text-3xl"></i>
-                    <div class="bg-red-100 border-2 border-red-400 w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center text-red-500 font-bold md:text-xl relative">
+                <!-- Абстрактная схема процесса.
+                     Крупные размеры включаются с lg, а не с md: на 768 портальный
+                     zoom (~1.49) сжимает CSS-ширину колонки до ~450px, и цепочка
+                     из четырёх md:w-20 с gap-6 (554px) не влезала в карточку —
+                     шаги 1 и 4 обрезались её overflow:hidden. -->
+                <div class="flex items-center gap-2 lg:gap-4 text-black relative z-10">
+                    <div class="bg-grayBase w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center font-bold lg:text-xl">1</div>
+                    <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
+                    <div class="bg-grayBase w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl">2</div>
+                    <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
+                    <div class="bg-red-100 border-2 border-red-400 w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-red-500 font-bold lg:text-xl relative">
                         3
-                        <span class="absolute -top-6 -right-6 md:-top-8 md:-right-10 bg-red-500 text-white text-[8px] md:text-[10px] px-2 py-1 rounded">Задержка</span>
+                        <span class="absolute -top-6 -right-6 lg:-top-8 lg:-right-10 bg-red-500 text-white text-[8px] lg:text-[10px] px-2 py-1 rounded">Задержка</span>
                     </div>
-                    <i class="ph-bold ph-arrow-right text-black/30 text-xl md:text-3xl"></i>
-                    <div class="bg-black text-solar w-12 h-12 md:w-20 md:h-20 rounded flex items-center justify-center font-bold md:text-xl relative">
+                    <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
+                    <div class="bg-black text-solar w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl relative">
                         4
-                        <span class="absolute left-1/2 -translate-x-1/2 -bottom-6 md:-bottom-9 bg-black text-solar text-[8px] md:text-[10px] px-2 py-1 rounded whitespace-nowrap">Возврат</span>
+                        <span class="absolute left-1/2 -translate-x-1/2 -bottom-6 lg:-bottom-9 bg-black text-solar text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap">Возврат</span>
                     </div>
                 </div>
 
@@ -1788,8 +1792,10 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Карта <span class="text-solar">точек автоматизации</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Результат анализа — реестр. Для каждой точки нужно понимать суть, эффект, риски и метрики</p>
 
-            <!-- Mobile: реестр карточками — таблица на 390px обрезалась справа -->
-            <div class="md:hidden flex flex-col gap-2 w-full">
+            <!-- Карточками — до lg. Таблица min-w-[600px] не влезала не только на
+                 390px: на 768 портальный zoom оставляет карточке ~380 CSS-px, и
+                 колонка «Сложность» уезжала за правый край. С 1024 места хватает. -->
+            <div class="lg:hidden flex flex-col gap-2 w-full">
                 <div class="bg-white border border-grayBase rounded-[16px] p-3 shadow-sm">
                     <div class="flex items-start gap-2 mb-2">
                         <i class="ph-fill ph-funnel text-solar text-base shrink-0 mt-0.5"></i>
@@ -1819,7 +1825,7 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="hidden md:block bg-white border border-grayBase rounded-[20px] md:rounded-[32px] p-4 md:p-8 shadow-sm w-full overflow-x-auto">
+            <div class="hidden lg:block bg-white border border-grayBase rounded-[20px] md:rounded-[32px] p-4 md:p-8 shadow-sm w-full overflow-x-auto">
                 <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead>
                         <tr class="border-b-2 border-black">
@@ -2288,7 +2294,11 @@ window.addEventListener('load', function(){
                     <div class="bg-solar p-3 md:p-4 rounded-xl flex-1 w-full shadow-[0_0_15px_#8B5CF6] flex flex-col items-center justify-center gap-1" style="color:#111;-webkit-text-fill-color:#111"><i class="ph-fill ph-robot text-base md:text-2xl shrink-0"></i><span class="text-[10px] md:text-sm font-black uppercase tracking-widest">4. Гибридная система</span><span class="hidden md:block text-xs opacity-70">человек + агент</span></div>
                 </div>
 
-                <button id="open-quiz-btn" type="button" class="mt-6 md:mt-8 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-5 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:scale-105 transition-transform uppercase tracking-widest max-w-full" style="color:#111;-webkit-text-fill-color:#111">
+                <!-- mr-[5rem] на телефоне: кружок с говорящей головой стоит в правом
+                     нижнем углу и накрывал правый край кнопки теста. Отступ справа
+                     уводит центрированную кнопку левее ровно настолько, чтобы она
+                     осталась целой. На планшете и десктопе кружок мельче — отступ снят. -->
+                <button id="open-quiz-btn" type="button" class="mt-6 md:mt-8 mr-[5rem] md:mr-0 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-5 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:scale-105 transition-transform uppercase tracking-widest max-w-full" style="color:#111;-webkit-text-fill-color:#111">
                     <i class="ph-fill ph-graduation-cap text-lg md:text-2xl"></i>
                     Пройти тест
                 </button>
@@ -3063,17 +3073,7 @@ window.addEventListener('load', function(){
   .radial-core i{ font-size:1.1rem !important; }
 }
 </style>
-/* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
-   съедали высоту подписи и заставляли ломать слова. Сама фигура и всё
-   внутри кружков — строго по центру. */
-.radial-fig .rf-num{ display:none !important; }
-.radial-fig{ margin-left:auto !important; margin-right:auto !important; }
-.radial-core, .radial-sat{ align-items:center !important; justify-content:center !important; text-align:center !important; }
-
-/* 16. Финальный слайд-обложка: фиолетовый доходит до самого низа, под полосой
-   прогресса не остаётся чужой полоски фона. */
-.slide-container[class~="bg-black"]{ padding-bottom:0 !important; }
-</style>
+<style id="radial-fig-fix">
 /* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
    съедали высоту подписи и заставляли ломать слова. Сама фигура и всё
    внутри кружков — строго по центру. */
@@ -3338,6 +3338,17 @@ html.dark .slide-container [class*="text-white/4"]{ color:rgba(255,255,255,.62) 
 @media (min-width:1024px){
   body.notes-open .slide-container .content-z{ padding-right:calc(var(--bub) + 36px) !important; }
 }
+
+/* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
+   съедали высоту подписи и заставляли ломать слова. Сама фигура и всё
+   внутри кружков — строго по центру. */
+.radial-fig .rf-num{ display:none !important; }
+.radial-fig{ margin-left:auto !important; margin-right:auto !important; }
+.radial-core, .radial-sat{ align-items:center !important; justify-content:center !important; text-align:center !important; }
+
+/* 16. Финальный слайд-обложка: фиолетовый доходит до самого низа, под полосой
+   прогресса не остаётся чужой полоски фона. */
+.slide-container[class~="bg-black"]{ padding-bottom:0 !important; }
 </style>
 
 <style id="notes-panel-style">
@@ -3639,16 +3650,5 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 })();
 </script>
 
-/* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
-   съедали высоту подписи и заставляли ломать слова. Сама фигура и всё
-   внутри кружков — строго по центру. */
-.radial-fig .rf-num{ display:none !important; }
-.radial-fig{ margin-left:auto !important; margin-right:auto !important; }
-.radial-core, .radial-sat{ align-items:center !important; justify-content:center !important; text-align:center !important; }
-
-/* 16. Финальный слайд-обложка: фиолетовый доходит до самого низа, под полосой
-   прогресса не остаётся чужой полоски фона. */
-.slide-container[class~="bg-black"]{ padding-bottom:0 !important; }
-</style>
 </body>
 </html>
