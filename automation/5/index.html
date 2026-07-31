@@ -1562,6 +1562,30 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
+            <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-3 text-center">Что переносится между платформами</p>
+            <div class="grid grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3 max-w-5xl mx-auto w-full mb-3 md:mb-4">
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm flex flex-col items-center gap-1">
+                    <i class="ph-fill ph-sign-in text-solar text-base md:text-xl"></i>
+                    <p class="font-bold text-[10px] md:text-sm leading-tight">Вход</p>
+                </div>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm flex flex-col items-center gap-1">
+                    <i class="ph-fill ph-sign-out text-solar text-base md:text-xl"></i>
+                    <p class="font-bold text-[10px] md:text-sm leading-tight">Выход</p>
+                </div>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm flex flex-col items-center gap-1">
+                    <i class="ph-fill ph-scales text-solar text-base md:text-xl"></i>
+                    <p class="font-bold text-[10px] md:text-sm leading-tight">Правила</p>
+                </div>
+                <div class="bg-white border border-grayBase rounded-xl p-2 md:p-3 text-center shadow-sm flex flex-col items-center gap-1">
+                    <i class="ph-fill ph-prohibit text-solar text-base md:text-xl"></i>
+                    <p class="font-bold text-[10px] md:text-sm leading-tight">Ограничения</p>
+                </div>
+                <div class="col-span-3 lg:col-span-1 bg-black border-2 border-solar rounded-xl p-2 md:p-3 text-center shadow-xl text-white flex flex-col items-center gap-1">
+                    <i class="ph-fill ph-check-square text-solar text-base md:text-xl"></i>
+                    <p class="font-black text-[10px] md:text-sm text-solar leading-tight">Критерии</p>
+                </div>
+            </div>
+
             <div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-3xl mx-auto w-full">Не инструмент сам по себе, а умение точно описать задачу</div>
         </div>
     </div>
@@ -3528,7 +3552,10 @@ window.addEventListener('load', function(){
   width:100%;
   aspect-ratio:1 / 1;
   margin-left:auto; margin-right:auto;
-  --orbit:38%;                        /* радиус орбиты (в % от стороны) */
+  /* --orbit — ПОДСКАЗКА, а не рычаг: позиции спутников заданы инлайновыми
+     --x/--y на каждой фигуре, а кольцо — атрибутом r у <circle>. Воздух
+     между ядром и спутниками регулируется --core/--sat и координатами. */
+  --orbit:35%;
   --sat:clamp(84px, 25%, 148px);      /* диаметр спутника */
   --core:clamp(92px, 26%, 168px);     /* диаметр ядра */
 }
