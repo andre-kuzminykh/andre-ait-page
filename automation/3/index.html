@@ -541,7 +541,9 @@ window.addEventListener('load', function(){
         return;
       }
       // Контент влезает — проверяем обратное: не тонет ли он в пустоте.
-      if(window.innerWidth < 1024) return;
+      // Планшет тоже растим: на 768 сетки уже раскрыты, а контент оставался
+      // таким же мелким, как на телефоне, и слайд выглядел полупустым.
+      if(window.innerWidth < 768) return;
       var g = Math.min(k, MAX_GROW);
       if(g > 1.04) c.style.zoom = g * 0.97;
     }catch(e){}
@@ -3372,7 +3374,10 @@ html.dark #progress-container{ background:#0A0A0A !important; }
      шапка. */
   .slide-container .content-z{
     padding-top:clamp(88px,11vh,132px) !important;
-    padding-bottom:calc(var(--bub) + 44px) !important;
+    /* Кружок стоит на bottom:84px и высотой --bub, то есть его верх — на
+       84 + --bub от низа. Резерв должен быть БОЛЬШЕ этой суммы, иначе
+       выросший контент честно доходит до линии, которая уже под головой. */
+    padding-bottom:calc(var(--bub) + 100px) !important;
   }
   /* Заголовок во всю ширину 1440 доезжал до кнопок шапки справа. Ограничиваем
      ширину самого заголовка — глушить кегль из slide-polish нельзя, он и так

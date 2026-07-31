@@ -539,7 +539,9 @@ window.addEventListener('load', function(){
         return;
       }
       // Контент влезает — проверяем обратное: не тонет ли он в пустоте.
-      if(window.innerWidth < 1024) return;
+      // Планшет тоже растим: на 768 сетки уже раскрыты, а контент оставался
+      // таким же мелким, как на телефоне, и слайд выглядел полупустым.
+      if(window.innerWidth < 768) return;
       var g = Math.min(k, MAX_GROW);
       if(g > 1.04) c.style.zoom = g * 0.97;
     }catch(e){}
@@ -1165,8 +1167,8 @@ window.addEventListener('load', function(){
             <!-- Круговая схема + легенда: одна композиция на все ширины (компонент .radial-fig).
                  Подписи-спутники — одно слово; подписи «ПРИЧИНА МОЖЕТ БЫТЬ В» над схемой нет:
                  она дублировала ядро «Источник ошибки». -->
-            <div class="w-full flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-8 xl:gap-12 mb-3 md:mb-4">
-              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,340px,38vh)">
+            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-6 mb-3 md:mb-4">
+              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,318px,35vh)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                   <circle cx="50" cy="50" r="38" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1207,7 +1209,7 @@ window.addEventListener('load', function(){
                   <span class="rf-label font-black text-[9px] md:text-[11px] text-black mt-0.5">Архи&shy;тектуре</span>
                 </div>
               </div>
-              <div class="w-full lg:flex-1 lg:max-w-sm">
+              <div class="w-full lg:flex-1 lg:max-w-md">
                 <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-3 text-center lg:text-left">Разбор идёт сверху вниз</p>
                 <div class="space-y-2">
                 <div class="bg-white border border-grayBase rounded-2xl p-2.5 md:p-3 flex items-center gap-2.5">
@@ -1246,8 +1248,8 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Четыре опоры промышленного агента</p>
 
             <!-- Круговая схема + легенда: одна композиция на все ширины (компонент .radial-fig). -->
-            <div class="w-full flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-8 xl:gap-12 mb-3 md:mb-4">
-              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,340px,38vh)">
+            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-6 mb-3 md:mb-4">
+              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,318px,35vh)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                   <circle cx="50" cy="50" r="38" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1272,7 +1274,7 @@ window.addEventListener('load', function(){
                   <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Безопас&shy;ность</span>
                 </div>
               </div>
-              <div class="w-full lg:flex-1 lg:max-w-sm">
+              <div class="w-full lg:flex-1 lg:max-w-md">
                 <div class="space-y-2">
                 <div class="bg-white border border-grayBase rounded-2xl p-2.5 md:p-3 flex items-center gap-2.5">
                   <i class="ph-fill ph-anchor text-solar text-lg md:text-xl shrink-0"></i>
@@ -1317,8 +1319,8 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Повторяемое качество в разных условиях</p>
 
             <!-- Круговая схема + вывод рядом: одна композиция на все ширины (компонент .radial-fig). -->
-            <div class="w-full flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-8 xl:gap-12 mb-3 md:mb-4">
-              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,340px,38vh)">
+            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-6 mb-3 md:mb-4">
+              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,318px,35vh)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                   <circle cx="50" cy="50" r="38" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1347,7 +1349,7 @@ window.addEventListener('load', function(){
                   <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Нагрузках</span>
                 </div>
               </div>
-              <div class="w-full lg:flex-1 lg:max-w-sm">
+              <div class="w-full lg:flex-1 lg:max-w-md">
                 <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-3 text-center lg:text-left">Агент должен работать на разных</p>
                 <div class="bg-black border-2 border-solar rounded-2xl p-3 md:p-4 w-full text-white text-center lg:text-left">
                   <p class="font-black text-[11px] md:text-sm text-solar">Не должен резко менять поведение от небольших изменений промпта или контекста</p>
@@ -2063,8 +2065,8 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">При росте системы ручной поиск проблем не работает</p>
 
             <!-- Круговая схема + легенда: одна композиция на все ширины (компонент .radial-fig). -->
-            <div class="w-full flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-8 xl:gap-12 mb-3 md:mb-4">
-              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,340px,38vh)">
+            <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-6 mb-3 md:mb-4">
+              <div class="radial-fig shrink-0 mb-3 lg:mb-0" style="width:min(100%,318px,35vh)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                   <circle cx="50" cy="50" r="38" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -2089,7 +2091,7 @@ window.addEventListener('load', function(){
                   <span class="rf-label font-black text-[10px] md:text-xs text-black mt-0.5">Опове&shy;щения</span>
                 </div>
               </div>
-              <div class="w-full lg:flex-1 lg:max-w-sm">
+              <div class="w-full lg:flex-1 lg:max-w-md">
                 <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-2 md:mb-3 text-center lg:text-left">Наблюдаемость показывает</p>
                 <div class="grid grid-cols-2 lg:grid-cols-1 gap-2">
                   <div class="bg-grayBase/40 border border-grayBase rounded-xl p-2 md:p-2.5 flex items-center gap-2">
@@ -3274,7 +3276,10 @@ html.dark #progress-container{ background:#0A0A0A !important; }
      шапка. */
   .slide-container .content-z{
     padding-top:clamp(88px,11vh,132px) !important;
-    padding-bottom:calc(var(--bub) + 44px) !important;
+    /* Кружок стоит на bottom:84px и высотой --bub, то есть его верх — на
+       84 + --bub от низа. Резерв должен быть БОЛЬШЕ этой суммы, иначе
+       выросший контент честно доходит до линии, которая уже под головой. */
+    padding-bottom:calc(var(--bub) + 100px) !important;
   }
   /* Заголовок во всю ширину 1440 доезжал до кнопок шапки справа. Ограничиваем
      ширину самого заголовка — глушить кегль из slide-polish нельзя, он и так

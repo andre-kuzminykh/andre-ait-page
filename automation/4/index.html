@@ -541,7 +541,9 @@ window.addEventListener('load', function(){
         return;
       }
       // Контент влезает — проверяем обратное: не тонет ли он в пустоте.
-      if(window.innerWidth < 1024) return;
+      // Планшет тоже растим: на 768 сетки уже раскрыты, а контент оставался
+      // таким же мелким, как на телефоне, и слайд выглядел полупустым.
+      if(window.innerWidth < 768) return;
       var g = Math.min(k, MAX_GROW);
       if(g > 1.04) c.style.zoom = g * 0.97;
     }catch(e){}
@@ -1701,7 +1703,7 @@ window.addEventListener('load', function(){
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-5 shadow-sm">
                     <div class="flex items-center gap-2 mb-2"><i class="ph-fill ph-line-segment text-solar text-lg md:text-2xl"></i><h3 class="font-black text-sm md:text-base">Chain-of-Thought</h3></div>
                     <p class="text-[11px] md:text-sm text-black/60 font-medium mb-3">Цепочка шагов</p>
-                    <svg class="w-full text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
+                    <svg class="w-full h-[52px] md:h-auto text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
                         <path d="M60 13 V39 M60 39 V65" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
                         <circle cx="60" cy="13" r="6.5" fill="currentColor"/>
                         <circle cx="60" cy="39" r="6.5" fill="currentColor"/>
@@ -1712,7 +1714,7 @@ window.addEventListener('load', function(){
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-4 md:p-5 shadow-sm">
                     <div class="flex items-center gap-2 mb-2"><i class="ph-fill ph-tree-structure text-solar text-lg md:text-2xl"></i><h3 class="font-black text-sm md:text-base">Tree-of-Thought</h3></div>
                     <p class="text-[11px] md:text-sm text-black/60 font-medium mb-3">Дерево вариантов</p>
-                    <svg class="w-full text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
+                    <svg class="w-full h-[52px] md:h-auto text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
                         <path d="M60 12 L32 39 M60 12 L88 39 M32 39 L16 66 M32 39 L46 66 M88 39 L74 66 M88 39 L104 66"
                               stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
                         <circle cx="60" cy="12" r="6.5" fill="currentColor"/>
@@ -1728,7 +1730,7 @@ window.addEventListener('load', function(){
                 <div class="bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-5 shadow-xl text-white">
                     <div class="flex items-center gap-2 mb-2"><i class="ph-fill ph-graph text-solar text-lg md:text-2xl"></i><h3 class="font-black text-sm md:text-base text-solar">Graph-of-Thought</h3></div>
                     <p class="text-[11px] md:text-sm text-white/60 font-medium mb-3">Сеть рассуждений</p>
-                    <svg class="w-full text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
+                    <svg class="w-full h-[52px] md:h-auto text-solar" viewBox="0 0 120 78" fill="none" aria-hidden="true">
                         <path d="M18 20 L60 10 M60 10 L102 22 M18 20 L60 42 M102 22 L60 42 M18 20 L22 60 M102 22 L98 58 M22 60 L60 42 M98 58 L60 42 M22 60 L60 70 M60 70 L98 58 M60 42 L60 70"
                               stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/>
                         <circle cx="60" cy="10" r="5.5" fill="currentColor"/>
@@ -3410,7 +3412,10 @@ html.dark #progress-container{ background:#0A0A0A !important; }
      шапка. */
   .slide-container .content-z{
     padding-top:clamp(88px,11vh,132px) !important;
-    padding-bottom:calc(var(--bub) + 44px) !important;
+    /* Кружок стоит на bottom:84px и высотой --bub, то есть его верх — на
+       84 + --bub от низа. Резерв должен быть БОЛЬШЕ этой суммы, иначе
+       выросший контент честно доходит до линии, которая уже под головой. */
+    padding-bottom:calc(var(--bub) + 100px) !important;
   }
   /* Заголовок во всю ширину 1440 доезжал до кнопок шапки справа. Ограничиваем
      ширину самого заголовка — глушить кегль из slide-polish нельзя, он и так
