@@ -3860,9 +3860,8 @@ html.dark #progress-container{ background:#0A0A0A !important; }
      шапка. */
   .slide-container .content-z{
     padding-top:clamp(88px,11vh,132px) !important;
-    /* Кружок стоит на bottom:84px и высотой --bub, то есть его верх — на
-       84 + --bub от низа. Резерв должен быть БОЛЬШЕ этой суммы, иначе
-       выросший контент честно доходит до линии, которая уже под головой. */
+    /* По умолчанию — полный резерв под кружок: широкий блок доходит по
+       горизонтали до головы и обязан остановиться выше неё. */
     padding-bottom:calc(var(--bub) + 100px) !important;
   }
   /* Заголовок во всю ширину 1440 доезжал до кнопок шапки справа. Ограничиваем
@@ -3870,6 +3869,20 @@ html.dark #progress-container{ background:#0A0A0A !important; }
      задан через !important. */
   .slide-container .content-z > h1,
   .slide-container .content-z > h2{ max-width:min(100%, 60rem); }
+  /* А узкой колонке полный резерв не нужен: max-w-4xl (56rem) по центру 1440
+     занимает x 272…1168, а кружок начинается с 1233 — до головы она не
+     достаёт, и нижняя треть слайда доставалась пустоте зря.
+     Ограничитель ширины бывает и на самом .content-z, и на его ребёнке. */
+  .slide-container .content-z[class~="max-w-xl"],
+  .slide-container .content-z[class~="max-w-2xl"],
+  .slide-container .content-z[class~="max-w-3xl"],
+  .slide-container .content-z[class~="max-w-4xl"],
+  .slide-container .content-z:has(> [class~="max-w-xl"]:only-child),
+  .slide-container .content-z:has(> [class~="max-w-2xl"]:only-child),
+  .slide-container .content-z:has(> [class~="max-w-3xl"]:only-child),
+  .slide-container .content-z:has(> [class~="max-w-4xl"]:only-child){
+    padding-bottom:clamp(104px,13vh,150px) !important;
+  }
   #nav-next{ right: calc(20px + var(--bub)/2 - 52px) !important; }
   #nav-prev{ right: calc(20px + var(--bub)/2 + 4px) !important; }
 }
