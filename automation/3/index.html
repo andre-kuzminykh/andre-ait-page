@@ -556,6 +556,9 @@ window.addEventListener('load', function(){
       //   natH*z + padY*z <= availH   →   z <= availH / (natH + padY),
       // где natH — высота чернил в CSS-пикселях. Подбор вида z /= over только
       // приближался снизу и на коротких слайдах недобирал процентов десять.
+      // На телефоне НЕ растим: zoom сжимает CSS-ширину, а минимумы clamp у
+      // кругов заданы в пикселях — спутники становятся относительно больше
+      // и наезжают друг на друга.
       var grow = window.innerWidth >= 768;
       function target(natH, natW){
         var t = Math.min(availH / (natH + padY), availW / (natW + padX)) * 0.99;
@@ -3334,7 +3337,9 @@ window.addEventListener('load', function(){
    в .rf-num), тогда она встаёт в одну строку и круг не распирает.
    Перенос по слогам оставлен страховкой для самых длинных слов. */
 .radial-sat .rf-label{
-  hyphens:auto; -webkit-hyphens:auto;
+  /* Только авторские переносы (&shy;). При hyphens:auto браузер добавлял свои
+     и оставлял на последней строке обрубок в одну-две буквы. */
+  hyphens:manual; -webkit-hyphens:manual;
   overflow-wrap:break-word; word-break:normal;
   max-width:100%;
 }
@@ -3353,15 +3358,31 @@ window.addEventListener('load', function(){
   /* !important обязателен: --sat/--core почти всегда заданы инлайном на самой
      фигуре, а инлайн бьёт обычное правило таблицы стилей — без !important
      телефонные размеры просто не применялись. */
+  /* Круги подросли после того, как из них убрали номера шагов: длинные слова
+     («мультимодальность») иначе рвутся так, что на последней строке остаётся
+     обрубок в три буквы. */
   .radial-fig{
     --orbit:37% !important;
-    --sat:clamp(64px, 23%, 96px) !important;
-    --core:clamp(76px, 26%, 108px) !important;
+    --sat:clamp(76px, 27%, 108px) !important;
+    --core:clamp(80px, 27%, 112px) !important;
   }
-  .radial-sat .rf-label{ font-size:10px !important; line-height:1.1 !important; }
+  .radial-sat{ padding:calc(var(--sat) * 0.045) !important; }
+  .radial-sat .rf-label{ font-size:9.5px !important; line-height:1.08 !important; }
   .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }
-  .radial-sat i, .radial-core i{ font-size:1.05rem !important; }
+  .radial-sat i{ font-size:.95rem !important; margin-bottom:.05rem !important; }
+  .radial-core i{ font-size:1.1rem !important; }
 }
+</style>
+/* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
+   съедали высоту подписи и заставляли ломать слова. Сама фигура и всё
+   внутри кружков — строго по центру. */
+.radial-fig .rf-num{ display:none !important; }
+.radial-fig{ margin-left:auto !important; margin-right:auto !important; }
+.radial-core, .radial-sat{ align-items:center !important; justify-content:center !important; text-align:center !important; }
+
+/* 16. Финальный слайд-обложка: фиолетовый доходит до самого низа, под полосой
+   прогресса не остаётся чужой полоски фона. */
+.slide-container[class~="bg-black"]{ padding-bottom:0 !important; }
 </style>
 /* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
    съедали высоту подписи и заставляли ломать слова. Сама фигура и всё
