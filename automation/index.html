@@ -134,6 +134,11 @@
   .hero .nowrap{display:block}
   .hero .plum,.hero .flame{white-space:nowrap}
   .desc{color:var(--muted);max-width:40rem;margin:1.5rem auto 0;font-size:clamp(14.5px,1.05vw,21px);line-height:1.6}
+  /* Авторская разбивка вступления на три строки. Работает там, где строка
+     целиком помещается в 40rem; на узком экране переносы гасятся, и текст
+     переливается сам — иначе принудительный перенос рвал бы фразу дважды. */
+  .desc .lb{display:none}
+  @media (min-width:680px){ .desc .lb{display:inline} }
 
   /* decorative floating icon tiles above the hero */
   .float-row{display:flex;justify-content:center;align-items:flex-end;gap:.85rem;transform:scale(.82);margin:0 0 .25rem}
@@ -233,7 +238,7 @@
         <span class="line">по автоматизации</span>
         <span class="nowrap"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span>
       </h1>
-      <p class="desc">Вы узнаете, как трансформировать свой бизнес в AI-First компанию: моделировать бизнес-процессы, автоматизировать их с помощью ИИ-агентов и масштабироваться без роста штата с измеримым экономическим эффектом</p>
+      <p class="desc">Вы научитесь трансформировать бизнес в AI-First компанию: <br class="lb">автоматизировать процессы с помощью ИИ-агентов, масштабироваться <br class="lb">без роста штата и получать измеримый экономический эффект.</p>
       <div class="cta-row">
         <button class="btn-white next-btn" data-go="2">
           Для кого? <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
