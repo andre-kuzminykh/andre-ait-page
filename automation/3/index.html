@@ -1215,7 +1215,10 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="w-full max-w-5xl mx-auto bg-white border border-grayBase rounded-2xl p-4 md:p-6">
+            <!-- pr-24 до md: цепочка «процесс → … → действия» правым краем уходила
+                 под кружок с головой, от «ветвления» оставалось «ветв». Сама плашка
+                 остаётся во всю ширину — под головой только её заливка. -->
+            <div class="w-full max-w-5xl mx-auto bg-white border border-grayBase rounded-2xl p-4 pr-24 md:p-6">
                 <p class="text-center text-[10px] md:text-sm text-black/50 font-bold uppercase tracking-widest mb-2 md:mb-3">Сначала:</p>
                 <div class="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 text-[10px] md:text-sm font-bold">
                     <span class="bg-solar/15 text-black px-2 py-1 md:px-3 md:py-1.5 rounded-lg">процесс</span>
@@ -1309,8 +1312,10 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <!-- Расшифровка способностей: порядок совпадает с обходом круга по часовой -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-4 md:mt-6">
+            <!-- Расшифровка способностей: порядок совпадает с обходом круга по часовой.
+                 На телефоне две последние карточки идут во всю ширину: в сетке 2×2
+                 нижняя правая («Учится») целиком уходила под кружок с головой. -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-4 md:mt-6 pr-12 md:pr-0">
                 <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
                     <p class="font-black text-[11px] md:text-sm leading-tight">Воспринимает</p>
                     <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Ситуацию и контекст</p>
@@ -1319,11 +1324,11 @@ window.addEventListener('load', function(){
                     <p class="font-black text-[11px] md:text-sm leading-tight">Решает</p>
                     <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Принимает решение</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center col-span-2 md:col-span-1">
                     <p class="font-black text-[11px] md:text-sm leading-tight">Действует</p>
                     <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Ради цели</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center">
+                <div class="bg-white border border-grayBase rounded-xl p-2.5 md:p-3 text-center col-span-2 md:col-span-1">
                     <p class="font-black text-[11px] md:text-sm leading-tight">Учится</p>
                     <p class="text-[10px] md:text-xs text-black/60 font-medium leading-tight">Обратная связь</p>
                 </div>
@@ -1465,7 +1470,10 @@ window.addEventListener('load', function(){
             </div>
 
             <p class="text-center text-[11px] md:text-sm font-bold uppercase tracking-widest text-black/60 mb-3 md:mb-4">Где нужен человек</p>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 w-full max-w-4xl mx-auto">
+            <!-- Ряд сужен до max-w-2xl: при max-w-4xl пятая карточка «Клиент»
+                 уходила под кружок с головой и от подписи оставалось «Кли».
+                 Масштаб слайда не просел — самый широкий блок здесь плашка выше. -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 w-full max-w-2xl mx-auto">
                 <div class="bg-white border border-grayBase rounded-xl p-3 shadow-sm text-center">
                     <i class="ph-fill ph-currency-circle-dollar text-solar text-lg md:text-2xl mb-1"></i>
                     <p class="font-bold text-[10px] md:text-xs">Деньги</p>
@@ -1655,7 +1663,10 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-2.5 md:mt-5">
+            <!-- На телефоне карточки идут одна под другой: в две колонки правая
+                 («Ответ показывает») целиком уходила под кружок с головой —
+                 не читался ни один из трёх её пунктов. -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-3xl mx-auto mt-2.5 md:mt-5">
                 <div class="bg-white border border-grayBase rounded-2xl p-2.5 md:p-4">
                     <p class="text-[9px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 md:mb-2">Запрос сообщает</p>
                     <ul class="space-y-0.5 md:space-y-1 text-[10px] md:text-sm text-black/70 font-medium leading-tight">
@@ -1736,7 +1747,10 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="w-full max-w-5xl mx-auto">
+            <!-- Ряд статус-кодов сужен до max-w-2xl: при max-w-5xl пятая плашка
+                 «500 / Ошибка сервера» уходила под кружок с головой и от числа
+                 оставалась одна цифра. Масштаб держит ряд карточек выше. -->
+            <div class="w-full max-w-2xl mx-auto">
                 <p class="text-center text-[11px] md:text-sm font-bold uppercase tracking-widest text-black/60 mb-2 md:mb-3">Статус-коды</p>
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3">
                     <div class="bg-solar text-black border border-solar rounded-lg p-2 md:p-4 text-center shadow-md flex items-baseline justify-center gap-2 md:block">
@@ -2009,7 +2023,10 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-2 md:gap-4 w-full max-w-4xl mx-auto mt-2 md:mt-8">
+            <!-- На телефоне третья карточка занимает всю ширину: в ряду из трёх
+                 она стояла справа и целиком уходила под кружок с головой —
+                 от «Делать динамическим» оставалась одна иконка. -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 w-full max-w-4xl mx-auto mt-2 md:mt-8 pr-12 md:pr-0">
                 <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 md:p-4 text-center">
                     <i class="ph-fill ph-target text-solar text-xl md:text-2xl mb-1 md:mb-2"></i>
                     <p class="font-bold text-[10px] md:text-sm leading-tight">Брать значения</p>
@@ -2018,7 +2035,7 @@ window.addEventListener('load', function(){
                     <i class="ph-fill ph-arrow-right text-solar text-xl md:text-2xl mb-1 md:mb-2"></i>
                     <p class="font-bold text-[10px] md:text-sm leading-tight">Подставлять в шаг</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 md:p-4 text-center">
+                <div class="bg-white border border-grayBase rounded-xl px-1.5 py-2 md:p-4 text-center col-span-2 md:col-span-1">
                     <i class="ph-fill ph-lightning text-solar text-xl md:text-2xl mb-1 md:mb-2"></i>
                     <p class="font-bold text-[10px] md:text-sm leading-tight">Делать динамическим</p>
                 </div>
@@ -2122,7 +2139,9 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-3xl mx-auto">
+            <!-- На телефоне две последние карточки идут во всю ширину: в сетке 2×2
+                 нижняя правая («Сформулировать») уходила под кружок с головой. -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-3xl mx-auto pr-12 md:pr-0">
                 <div class="bg-white border border-grayBase rounded-lg p-3 lg:p-5 text-center">
                     <i class="ph-fill ph-lightbulb text-solar text-lg md:text-xl lg:text-3xl mb-1"></i>
                     <p class="font-bold text-[10px] md:text-sm lg:text-base">Понять смысл</p>
@@ -2131,11 +2150,11 @@ window.addEventListener('load', function(){
                     <i class="ph-fill ph-graph text-solar text-lg md:text-xl lg:text-3xl mb-1"></i>
                     <p class="font-bold text-[10px] md:text-sm lg:text-base">Учесть контекст</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-lg p-3 lg:p-5 text-center">
+                <div class="bg-white border border-grayBase rounded-lg p-3 lg:p-5 text-center col-span-2 md:col-span-1">
                     <i class="ph-fill ph-check-fat text-solar text-lg md:text-xl lg:text-3xl mb-1"></i>
                     <p class="font-bold text-[10px] md:text-sm lg:text-base">Выбрать вариант</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-lg p-3 lg:p-5 text-center">
+                <div class="bg-white border border-grayBase rounded-lg p-3 lg:p-5 text-center col-span-2 md:col-span-1">
                     <i class="ph-fill ph-chat-text text-solar text-lg md:text-xl lg:text-3xl mb-1"></i>
                     <p class="font-bold text-[10px] md:text-sm lg:text-base">Сформулировать</p>
                 </div>
@@ -2372,11 +2391,13 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-4xl mx-auto mt-4 md:mt-6">
+            <!-- На телефоне две последние плашки идут во всю ширину: в сетке 2×2
+                 нижняя правая («Изменить состояние») уходила под кружок с головой. -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-4xl mx-auto mt-4 md:mt-6 pr-12 md:pr-0">
                 <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-download-simple text-solar text-sm md:text-base shrink-0"></i>Получить данные</div>
                 <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-plus-circle text-solar text-sm md:text-base shrink-0"></i>Создать запись</div>
-                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-paper-plane-tilt text-solar text-sm md:text-base shrink-0"></i>Отправить сообщение</div>
-                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-arrows-clockwise text-solar text-sm md:text-base shrink-0"></i>Изменить состояние</div>
+                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-[10px] md:text-sm font-bold flex items-center justify-center gap-2 col-span-2 md:col-span-1"><i class="ph-fill ph-paper-plane-tilt text-solar text-sm md:text-base shrink-0"></i>Отправить сообщение</div>
+                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-[10px] md:text-sm font-bold flex items-center justify-center gap-2 col-span-2 md:col-span-1"><i class="ph-fill ph-arrows-clockwise text-solar text-sm md:text-base shrink-0"></i>Изменить состояние</div>
             </div>
         </div>
     </div>
@@ -2440,18 +2461,23 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 w-full max-w-4xl mx-auto mt-2 md:mt-8">
+            <!-- Расшифровка полей уходила правым краем под кружок с головой:
+                 подпись «handoff_required — нужен человек» самая длинная и стояла
+                 последней. На десктопе ряд стал 2×2 и уже (max-w-2xl), на телефоне
+                 две последние плашки занимают всю ширину и их текст стоит левее
+                 кружка. Порядок полей совпадает с JSON выше. -->
+            <div class="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-2xl mx-auto mt-2 md:mt-8 pr-12 md:pr-0">
                 <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center">
                     <p class="text-[10px] md:text-sm font-bold leading-tight"><span class="font-mono text-solar">type</span> — категория</p>
                 </div>
                 <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center">
                     <p class="text-[10px] md:text-sm font-bold leading-tight"><span class="font-mono text-solar">confidence</span> — уверенность</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center">
+                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center col-span-2 lg:col-span-1">
                     <p class="text-[10px] md:text-sm font-bold leading-tight"><span class="font-mono text-solar">next_action</span> — маршрут</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center">
-                    <p class="text-[10px] md:text-sm font-bold leading-tight"><span class="font-mono text-solar">handoff_required</span> — нужен человек</p>
+                <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center col-span-2 lg:col-span-1">
+                    <p class="text-[10px] md:text-sm font-bold leading-tight"><span class="font-mono text-solar">handoff_required</span> —<br class="lg:hidden"> нужен человек</p>
                 </div>
             </div>
         </div>
@@ -2553,11 +2579,13 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-4xl mx-auto mt-3 md:mt-6">
+            <!-- На телефоне две последние плашки идут во всю ширину: в сетке 2×2
+                 нижняя правая («Какой эффект») целиком уходила под кружок с головой. -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full max-w-4xl mx-auto mt-3 md:mt-6 pr-12 md:pr-0">
                 <div class="bg-white border border-grayBase rounded-lg p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-clock-counter-clockwise text-solar text-sm md:text-base shrink-0"></i>Что произошло</div>
                 <div class="bg-white border border-grayBase rounded-lg p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-bug text-solar text-sm md:text-base shrink-0"></i>Где сломалось</div>
-                <div class="bg-white border border-grayBase rounded-lg p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-question text-solar text-sm md:text-base shrink-0"></i>Почему</div>
-                <div class="bg-white border border-grayBase rounded-lg p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-chart-line-up text-solar text-sm md:text-base shrink-0"></i>Какой эффект</div>
+                <div class="bg-white border border-grayBase rounded-lg p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2 col-span-2 md:col-span-1"><i class="ph-fill ph-question text-solar text-sm md:text-base shrink-0"></i>Почему</div>
+                <div class="bg-white border border-grayBase rounded-lg p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2 col-span-2 md:col-span-1"><i class="ph-fill ph-chart-line-up text-solar text-sm md:text-base shrink-0"></i>Какой эффект</div>
             </div>
         </div>
     </div>
@@ -2616,7 +2644,10 @@ window.addEventListener('load', function(){
 
                 <p class="text-[10px] md:text-sm font-bold uppercase tracking-widest text-white/50 mb-2 md:mb-5">Формула зрелой системы</p>
 
-                <div class="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-2 mb-4 md:mb-8 w-full max-w-3xl mx-auto">
+                <!-- Формула сужена до max-w-2xl: при max-w-3xl акцентная плашка
+                     «Масштаб» — вывод всего слайда — уходила под кружок с головой
+                     и читалось «МАСШТ». -->
+                <div class="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-2 mb-4 md:mb-8 w-full max-w-2xl mx-auto">
                     <div class="bg-white/10 px-3 py-2 md:px-3 md:py-3 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Процесс</div>
                     <i class="ph-bold ph-arrow-right text-solar text-sm md:text-base shrink-0"></i>
                     <div class="bg-white/10 px-3 py-2 md:px-3 md:py-3 rounded-xl text-center w-auto md:flex-1 md:w-full text-[10px] md:text-sm font-bold border border-white/20 whitespace-nowrap">Агент</div>
