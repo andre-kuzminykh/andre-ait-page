@@ -1815,6 +1815,16 @@ window.addEventListener('load', function(){
    остаётся стоять на пустой правой части плашки — это разрешено.
    На десктопе (от 1024) плашка до головы не достаёт, там правило не нужно. */
 @media (max-width:1023px){
+  /* Плашка во всю ширину слайда (прямой ребёнок .content-z). */
+  .content-z > .bg-solar.text-center.rounded-2xl{
+    padding-right:calc(var(--bub) + 6px) !important;
+  }
+}
+@media (max-width:767px){
+  /* На телефоне колонки схлопываются, и вложенные плашки (рядом с круговой
+     схемой) тоже становятся во всю ширину — им отступ нужен так же.
+     От 768px такая плашка стоит в узкой правой колонке: там отступ в ширину
+     головы не влезал и выталкивал текст за край экрана. */
   .content-z .bg-solar.text-center.rounded-2xl{
     padding-right:calc(var(--bub) + 6px) !important;
   }

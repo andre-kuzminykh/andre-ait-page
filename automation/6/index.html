@@ -2319,7 +2319,7 @@ window.addEventListener('load', function(){
     <!-- СЛАЙД 48: Управление ИИ -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-47">
         <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Управление ИИ: <span class="text-solar">правила и ответственность</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Правила и <span class="text-solar">ответственность</span> за ИИ</h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Делает ИИ управляемым в компании</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-5xl mx-auto mb-3 md:mb-4">
@@ -3219,6 +3219,16 @@ window.addEventListener('load', function(){
    пустой правой части плашки — это разрешено. На десктопе (от 1024)
    плашка до головы не достаёт, там правило не нужно. */
 @media (max-width:1023px){
+  /* Плашка во всю ширину слайда (прямой ребёнок .content-z). */
+  .content-z > .bg-solar.text-center.rounded-2xl{
+    padding-right:calc(var(--bub) + 6px) !important;
+  }
+}
+@media (max-width:767px){
+  /* На телефоне колонки схлопываются, и вложенные плашки (рядом с круговой
+     схемой) тоже становятся во всю ширину — им отступ нужен так же.
+     От 768px такая плашка стоит в узкой правой колонке: там отступ в ширину
+     головы не влезал и выталкивал текст за край экрана. */
   .content-z .bg-solar.text-center.rounded-2xl{
     padding-right:calc(var(--bub) + 6px) !important;
   }
