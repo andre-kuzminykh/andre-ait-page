@@ -108,9 +108,17 @@ def test_notes_data_valid():
             assert key.isdigit() and int(key) < total, \
                 "%s: ключ %r вне диапазона слайдов (0..%d)" % (rel, key, total - 1)
             for b in note.get("blocks", []):
-                assert b.get("t") in ("p", "h", "ul", "ol", "note"), \
+                assert b.get("t") in ("p", "h", "ul", "ol", "note", "cards"), \
                     "%s: слайд %s — неизвестный тип блока %r" % (rel, key, b.get("t"))
                 assert b.get("v"), "%s: слайд %s — пустой блок" % (rel, key)
+                if b["t"] != "cards":
+                    continue
+                # FR-SITE14: карточка без иконки/названия рисуется пустотой
+                for c in b["v"]:
+                    assert re.match(r'^ph-[a-z0-9-]+$', c.get("i", "")), \
+                        "%s: слайд %s — плохое имя иконки %r" % (rel, key, c.get("i"))
+                    assert c.get("h") and c.get("p"), \
+                        "%s: слайд %s — карточка без названия или пояснения" % (rel, key)
 
 
 def test_notes_coverage():
