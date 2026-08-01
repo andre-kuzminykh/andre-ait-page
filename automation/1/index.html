@@ -421,6 +421,63 @@ h1 .text-solar, h2 .text-solar {
   .slide-container.is-active [class*="md:flex-row"] > * { animation:none !important; opacity:1 !important; }
 }
 
+/* ==== ОЖИВЛЕНИЕ ЛЕКЦИИ (FR-SITE23) ====================================
+   Каскад появления уже есть выше (deckRise/Zoom/SlideX/Flip по индексу
+   слайда). Здесь — постоянное движение: бегущие пунктиры, мягкая пульсация
+   акцентов, «проявление» иконок.
+
+   ВСЁ движение живёт внутри `prefers-reduced-motion: no-preference`. Две
+   причины. Первая — уважение к настройке пользователя. Вторая практическая:
+   харнесс проверки снимает слайды с `reducedMotion:'reduce'` и ждёт, пока
+   координаты перестанут меняться, — бесконечная анимация, двигающая боксы,
+   не дала бы им устаканиться никогда, и замеры стали бы случайными.
+
+   Кружки схем НЕ двигаются — двигается только штриховка орбиты: заказчик
+   просил «чтобы двигались пунктиры, но не сами кружки». */
+@media (prefers-reduced-motion: no-preference){
+
+  /* 1. Орбита схемы: штрихи бегут по кольцу. Двигаем stroke-dashoffset —
+        геометрия не меняется, кружки стоят на местах. Шаг штриха 2.4+2.6=5
+        единиц viewBox, поэтому смещение на 50 — ровно десять шагов, и стык
+        цикла не виден. */
+  @keyframes rfDash { to { stroke-dashoffset:-50; } }
+  .radial-ring circle{ animation:rfDash 7s linear infinite; }
+
+  /* 2. Пунктирные соединители между блоками. Это CSS-бордеры, у них нет
+        dashoffset, поэтому рисуем штрих фоном-градиентом и гоняем его
+        background-position. Класс вешается на разметку точечно. */
+  @keyframes dashFlow { to { background-position:22px 0; } }
+  .anim-dash{
+    border-top-color:transparent !important;
+    background-image:linear-gradient(90deg,currentColor 0 11px,transparent 11px 22px);
+    background-size:22px 2px; background-repeat:repeat-x; background-position:0 0;
+    animation:dashFlow 1.2s linear infinite;
+  }
+
+  /* 3. Иконки проявляются вместе со своим блоком — короткий «выдох» после
+        общего каскада, поэтому задержка чуть больше его шага. */
+  @keyframes iconPop { from{ opacity:0; transform:scale(.72); } to{ opacity:1; transform:none; } }
+  .slide-container.is-active [class*="rounded-full"] > i,
+  .slide-container.is-active [class*="rounded-2xl"] > i{
+    animation:iconPop .5s cubic-bezier(.34,1.56,.64,1) both; animation-delay:.34s;
+  }
+
+  /* 4. Акцентная карточка мягко дышит подсветкой. Тень, а не размер: рост
+        двигал бы соседей и ломал вёрстку. */
+  @keyframes accentGlow{
+    0%,100%{ box-shadow:0 0 0 0 rgba(139,92,246,.30); }
+    50%    { box-shadow:0 0 26px 4px rgba(139,92,246,.22); }
+  }
+  .slide-container.is-active [class~="bg-black"]:not(.slide-container){
+    animation:accentGlow 3.6s ease-in-out infinite; animation-delay:1s;
+  }
+
+  /* 5. Ядро круговой схемы — та же подсветка, чтобы центр читался первым. */
+  .slide-container.is-active .radial-core{
+    animation:accentGlow 3.6s ease-in-out infinite;
+  }
+}
+
 /* Нижняя панель управления на ВСЕХ экранах: стрелки — внизу СПРАВА,
    говорящая голова — внизу СЛЕВА и компактная (FR-LECTURE-01/29). */
 #nav-prev, #nav-next {
@@ -893,9 +950,9 @@ window.addEventListener('load', function(){
         <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-4xl font-black mb-4 md:mb-8 text-center text-black">Базовая архитектура <span class="text-solar">ИИ-агента</span></h2>
 
-            <div class="bg-white border border-grayBase p-4 md:p-8 rounded-[24px] md:rounded-[32px] shadow-xl flex flex-col md:flex-row items-stretch gap-3 md:gap-6 w-full max-w-5xl lg:max-w-3xl mx-auto">
+            <div class="bg-white border border-grayBase p-4 md:p-8 rounded-[24px] md:rounded-[32px] shadow-xl flex flex-col lg:flex-row items-stretch gap-3 md:gap-4 lg:gap-5 w-full max-w-5xl lg:max-w-3xl mx-auto">
                 <!-- Input -->
-                <div class="flex-1 bg-grayBase/30 rounded-[20px] md:rounded-3xl p-3 md:p-6 border border-grayBase flex flex-col items-center justify-center text-center h-full w-full min-h-[90px]">
+                <div class="flex-1 bg-grayBase/30 rounded-[20px] md:rounded-3xl p-3 md:p-4 lg:px-4 lg:py-6 border border-grayBase flex flex-col items-center justify-center text-center h-full w-full min-h-[90px]">
                     <div class="w-10 h-10 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center mb-2 md:mb-4 text-black shadow-sm shrink-0"><i class="ph-fill ph-download-simple text-xl md:text-3xl"></i></div>
                     <h3 class="font-black text-[11px] md:text-lg mb-1 md:mb-3 leading-tight">Входные данные</h3>
                     <ul class="text-[8px] md:text-sm text-black/60 space-y-0.5 md:space-y-2 text-left inline-block hidden sm:block">
@@ -904,8 +961,8 @@ window.addEventListener('load', function(){
                     </ul>
                 </div>
 
-                <i class="ph-bold ph-arrow-right text-3xl text-grayBase self-center hidden md:block"></i>
-                <i class="ph-bold ph-arrow-down text-xl text-grayBase self-center md:hidden my-0.5"></i>
+                <i class="ph-bold ph-arrow-right text-3xl text-grayBase self-center hidden lg:block"></i>
+                <i class="ph-bold ph-arrow-down text-xl text-grayBase self-center lg:hidden my-0.5"></i>
 
                 <!-- Core -->
                 <div class="flex-1 bg-black rounded-[20px] md:rounded-3xl p-3 md:p-6 text-white flex flex-col items-center justify-center shadow-2xl relative md:scale-105 z-10 h-full w-full min-h-[100px]">
@@ -921,11 +978,11 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
 
-                <i class="ph-bold ph-arrow-right text-3xl text-grayBase self-center hidden md:block"></i>
-                <i class="ph-bold ph-arrow-down text-xl text-grayBase self-center md:hidden my-0.5"></i>
+                <i class="ph-bold ph-arrow-right text-3xl text-grayBase self-center hidden lg:block"></i>
+                <i class="ph-bold ph-arrow-down text-xl text-grayBase self-center lg:hidden my-0.5"></i>
 
                 <!-- Output / Tools -->
-                <div class="flex-1 bg-grayBase/30 rounded-[20px] md:rounded-3xl p-3 md:p-6 border border-grayBase flex flex-col items-center justify-center text-center h-full w-full min-h-[90px]">
+                <div class="flex-1 bg-grayBase/30 rounded-[20px] md:rounded-3xl p-3 md:p-4 lg:px-4 lg:py-6 border border-grayBase flex flex-col items-center justify-center text-center h-full w-full min-h-[90px]">
                     <div class="w-10 h-10 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center mb-2 md:mb-4 text-black shadow-sm shrink-0"><i class="ph-fill ph-wrench text-xl md:text-3xl"></i></div>
                     <h3 class="font-black text-[11px] md:text-lg mb-1 md:mb-3 leading-tight">Инструменты</h3>
                     <ul class="text-[8px] md:text-sm text-black/60 space-y-0.5 md:space-y-2 text-left inline-block hidden sm:block">
@@ -935,7 +992,7 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 pr-28 md:pr-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-10">
+            <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 pr-28 md:pr-44 lg:pr-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-10">
                 <p class="text-[11px] md:text-xl text-black font-medium leading-snug">
                     <i class="ph-fill ph-arrows-clockwise text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Цикл замыкается: агент наблюдает результат и <span class="font-black">корректирует план</span>
                 </p>
@@ -1112,18 +1169,18 @@ window.addEventListener('load', function(){
         <div class="content-z max-w-6xl lg:max-w-4xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Почему агенты, <br><span class="text-solar">а не ассистенты?</span></h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8 w-full">
-                <div class="bg-white p-4 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase text-center flex flex-col items-center h-full w-full">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-5 w-full">
+                <div class="bg-white p-4 md:p-5 lg:px-5 lg:py-8 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase text-center flex flex-col items-center h-full w-full">
                     <div class="bg-solar/20 w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full mb-2 md:mb-6 text-black shrink-0"><i class="ph-fill ph-plugs-connected text-lg md:text-3xl"></i></div>
                     <h3 class="font-black text-[13px] md:text-xl mb-1 md:mb-4 text-black">Технологии готовы</h3>
                     <p class="text-[9px] md:text-sm text-black/60 leading-tight md:leading-relaxed">Модели получили "руки" (API). Они могут реально работать на результат</p>
                 </div>
-                <div class="bg-white p-4 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase text-center flex flex-col items-center h-full w-full">
+                <div class="bg-white p-4 md:p-5 lg:px-5 lg:py-8 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase text-center flex flex-col items-center h-full w-full">
                     <div class="bg-solar/20 w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full mb-2 md:mb-6 text-black shrink-0"><i class="ph-fill ph-chart-line-up text-lg md:text-3xl"></i></div>
                     <h3 class="font-black text-[13px] md:text-xl mb-1 md:mb-4 text-black">Реальный ROI</h3>
                     <p class="text-[9px] md:text-sm text-black/60 leading-tight md:leading-relaxed">Внедрение агентов в ключевые процессы приносит измеримые фин. эффекты</p>
                 </div>
-                <div class="bg-white p-4 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase text-center flex flex-col items-center h-full w-full">
+                <div class="bg-white p-4 md:p-5 lg:px-5 lg:py-8 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase text-center flex flex-col items-center h-full w-full">
                     <div class="bg-solar/20 w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full mb-2 md:mb-6 text-black shrink-0"><i class="ph-fill ph-users-three text-lg md:text-3xl"></i></div>
                     <h3 class="font-black text-[13px] md:text-xl mb-1 md:mb-4 text-black">Спрос бизнеса</h3>
                     <p class="text-[9px] md:text-sm text-black/60 leading-tight md:leading-relaxed">Нужны цифровые сотрудники, способные закрывать функции отделов</p>
@@ -1567,7 +1624,7 @@ window.addEventListener('load', function(){
             <!-- Иконочный блок темы: на телефоне СВЕРХУ (flex-col-reverse — в
                  разметке он второй, поэтому на десктопе остаётся справа). -->
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col-reverse md:flex-row w-full">
-                <div class="w-full md:w-[68%] lg:w-[62%] p-5 sm:p-8 md:p-6 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] lg:w-[64%] p-5 sm:p-8 md:p-10 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 1 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-black m-0">
@@ -1582,7 +1639,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как ИИ встроен в операционную модель</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[32%] lg:w-[38%] bg-black flex justify-center items-center text-white p-5 md:p-6 lg:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-target text-[28px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-target text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
                 </div>
@@ -1596,7 +1653,7 @@ window.addEventListener('load', function(){
             <!-- Иконочный блок темы: на телефоне СВЕРХУ (flex-col-reverse — в
                  разметке он второй, поэтому на десктопе остаётся справа). -->
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col-reverse md:flex-row w-full">
-                <div class="w-full md:w-[68%] lg:w-[62%] p-5 sm:p-8 md:p-6 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] lg:w-[64%] p-5 sm:p-8 md:p-10 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 2 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-black m-0">
@@ -1611,7 +1668,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как ИИ интегрирован в систему управления</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[32%] lg:w-[38%] bg-black flex justify-center items-center text-white p-5 md:p-6 lg:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-users text-[28px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-users-three text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
                 </div>
@@ -1625,7 +1682,7 @@ window.addEventListener('load', function(){
             <!-- Иконочный блок темы: на телефоне СВЕРХУ (flex-col-reverse — в
                  разметке он второй, поэтому на десктопе остаётся справа). -->
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col-reverse md:flex-row w-full">
-                <div class="w-full md:w-[68%] lg:w-[62%] p-5 sm:p-8 md:p-6 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] lg:w-[64%] p-5 sm:p-8 md:p-10 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 3 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-black m-0">
@@ -1640,7 +1697,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как обеспечивается уровень безопасности</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[32%] lg:w-[38%] bg-black flex justify-center items-center text-white p-5 md:p-6 lg:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-hard-drives text-[28px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-hard-drives text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
                 </div>
@@ -1654,7 +1711,7 @@ window.addEventListener('load', function(){
             <!-- Иконочный блок темы: на телефоне СВЕРХУ (flex-col-reverse — в
                  разметке он второй, поэтому на десктопе остаётся справа). -->
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col-reverse md:flex-row w-full">
-                <div class="w-full md:w-[68%] lg:w-[62%] p-5 sm:p-8 md:p-6 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] lg:w-[64%] p-5 sm:p-8 md:p-10 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 4 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-black m-0">
@@ -1669,7 +1726,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Как данные поддерживают обучение моделей</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[32%] lg:w-[38%] bg-black flex justify-center items-center text-white p-5 md:p-6 lg:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-database text-[28px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-database text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
                 </div>
@@ -1683,7 +1740,7 @@ window.addEventListener('load', function(){
             <!-- Иконочный блок темы: на телефоне СВЕРХУ (flex-col-reverse — в
                  разметке он второй, поэтому на десктопе остаётся справа). -->
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col-reverse md:flex-row w-full">
-                <div class="w-full md:w-[68%] lg:w-[62%] p-5 sm:p-8 md:p-6 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] lg:w-[64%] p-5 sm:p-8 md:p-10 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 5 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-black m-0">
@@ -1698,7 +1755,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Каково качество инженерных практик</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[32%] lg:w-[38%] bg-black flex justify-center items-center text-white p-5 md:p-6 lg:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-brain text-[28px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-cpu text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
                 </div>
@@ -1712,7 +1769,7 @@ window.addEventListener('load', function(){
             <!-- Иконочный блок темы: на телефоне СВЕРХУ (flex-col-reverse — в
                  разметке он второй, поэтому на десктопе остаётся справа). -->
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col-reverse md:flex-row w-full">
-                <div class="w-full md:w-[68%] lg:w-[62%] p-5 sm:p-8 md:p-6 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] lg:w-[64%] p-5 sm:p-8 md:p-10 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 6 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-black m-0">
@@ -1727,7 +1784,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Удовлетворённость сотрудников ИИ-инструментами</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[32%] lg:w-[38%] bg-black flex justify-center items-center text-white p-5 md:p-6 lg:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-rocket text-[28px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-rocket-launch text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
                 </div>
@@ -1741,7 +1798,7 @@ window.addEventListener('load', function(){
             <!-- Иконочный блок темы: на телефоне СВЕРХУ (flex-col-reverse — в
                  разметке он второй, поэтому на десктопе остаётся справа). -->
             <div class="bg-white rounded-[20px] md:rounded-[40px] shadow-xl overflow-hidden border border-grayBase flex flex-col-reverse md:flex-row w-full">
-                <div class="w-full md:w-[68%] lg:w-[62%] p-5 sm:p-8 md:p-6 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
+                <div class="w-full md:w-[55%] lg:w-[64%] p-5 sm:p-8 md:p-10 lg:px-10 lg:py-8 flex flex-col justify-center bg-grayBase/20 h-full">
                     <span class="text-black/40 font-bold uppercase tracking-widest text-[9px] md:text-xs mb-1 md:mb-3">Измерение 7 / 7</span>
                     <div class="flex items-center gap-3 mb-3 md:mb-6">
                         <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-black m-0">
@@ -1756,7 +1813,7 @@ window.addEventListener('load', function(){
                         <li class="flex items-start gap-2 md:gap-4 w-full"><i class="ph-bold ph-check text-solar mt-0.5 md:mt-1 text-sm md:text-lg shrink-0"></i> <span>Активность в профессиональном сообществе</span></li>
                     </ul>
                 </div>
-                <div class="w-full md:w-[32%] lg:w-[38%] bg-black flex justify-center items-center text-white p-5 md:p-6 lg:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
+                <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
                     <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-flask text-[28px] md:text-[60px]"></i></div>
                     <i class="ph-duotone ph-flask text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
                 </div>
@@ -1766,21 +1823,21 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 27: Интерпретация -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-29">
-        <div class="content-z max-w-5xl mx-auto w-full">
+        <div class="content-z max-w-6xl mx-auto w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Что делать <span class="text-solar">с ИИ-индексом?</span></h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8 w-full">
-                <div class="bg-white p-5 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase flex flex-col items-center text-center h-full w-full">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-5 w-full">
+                <div class="bg-white p-5 md:p-5 lg:p-6 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase flex flex-col items-center text-center h-full w-full">
                     <div class="w-12 h-12 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center text-black mb-3 md:mb-5"><i class="ph-fill ph-magnifying-glass text-xl md:text-3xl"></i></div>
                     <h3 class="font-bold text-sm md:text-xl text-black mb-1 md:mb-3">Найти разрывы</h3>
                     <p class="text-[10px] md:text-sm text-black/60 leading-tight md:leading-relaxed">Например, есть сильная IT-инфраструктура, но слабая культура внедрения</p>
                 </div>
-                <div class="bg-white p-5 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase flex flex-col items-center text-center h-full w-full">
+                <div class="bg-white p-5 md:p-5 lg:p-6 rounded-[20px] md:rounded-3xl shadow-sm border border-grayBase flex flex-col items-center text-center h-full w-full">
                     <div class="w-12 h-12 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center text-black mb-3 md:mb-5"><i class="ph-fill ph-scales text-xl md:text-3xl"></i></div>
                     <h3 class="font-bold text-sm md:text-xl text-black mb-1 md:mb-3">Найти баланс</h3>
                     <p class="text-[10px] md:text-sm text-black/60 leading-tight md:leading-relaxed">Цель не 100 баллов везде, а сбалансированная и управляемая система</p>
                 </div>
-                <div class="bg-black text-white p-5 md:p-8 rounded-[20px] md:rounded-3xl shadow-xl flex flex-col items-center text-center h-full md:scale-105 z-10 border border-solar/30 w-full">
+                <div class="bg-black text-white p-5 md:p-5 lg:p-6 rounded-[20px] md:rounded-3xl shadow-xl flex flex-col items-center text-center h-full md:scale-105 z-10 border border-solar/30 w-full">
                     <div class="w-12 h-12 md:w-16 md:h-16 bg-solar rounded-full flex items-center justify-center text-[#0A0A0A] mb-3 md:mb-5 shadow-md"><i class="ph-fill ph-map-trifold text-xl md:text-3xl text-black"></i></div>
                     <h3 class="font-bold text-sm md:text-xl text-solar mb-1 md:mb-3">Дорожная карта</h3>
                     <p class="text-[10px] md:text-sm text-white/80 leading-tight md:leading-relaxed">План действий: что внедрять сейчас, а что развивать в перспективе</p>
@@ -1807,20 +1864,20 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 font-medium mb-6 lg:mb-12 text-[10px] md:text-xl">Начинается со SWOT-анализа</p>
 
             <div class="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center justify-center w-full">
-                <div class="grid grid-cols-2 gap-2 md:gap-4 w-full max-w-2xl">
-                    <div class="bg-white border border-grayBase p-3 md:p-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
+                <div class="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-3xl">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-trend-up text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-lg leading-tight">Сильные стороны</h4>
                     </div>
-                    <div class="bg-white border border-grayBase p-3 md:p-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-trend-down text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-lg leading-tight">Слабые стороны</h4>
                     </div>
-                    <div class="bg-white border border-grayBase p-3 md:p-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-lightbulb text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-lg leading-tight">Возможности</h4>
                     </div>
-                    <div class="bg-white border border-grayBase p-3 md:p-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-warning-circle text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-lg leading-tight">Ограничения</h4>
                     </div>
@@ -1840,27 +1897,27 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 29: Где строить свое -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-31">
-        <div class="content-z max-w-6xl lg:max-w-3xl w-full">
+        <div class="content-z max-w-6xl lg:max-w-5xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Где строить своё, а где <span class="text-solar">готовое</span></h2>
 
-            <div class="flex flex-col lg:grid lg:grid-cols-3 gap-2 md:gap-8 w-full">
-                <div class="bg-white border border-grayBase p-3 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm text-center flex flex-col items-center h-full w-full">
+            <div class="flex flex-col lg:grid lg:grid-cols-3 gap-2 md:gap-4 w-full">
+                <div class="bg-white border border-grayBase p-3 md:p-5 lg:px-5 lg:py-8 rounded-[20px] md:rounded-3xl shadow-sm text-center flex flex-col items-center h-full w-full">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-black text-solar rounded-full flex items-center justify-center mb-2 md:mb-5 shadow-md shrink-0"><i class="ph-fill ph-star text-lg md:text-3xl"></i></div>
-                    <h3 class="font-bold text-[13px] md:text-2xl text-black mb-1 md:mb-3">Ключевые</h3>
+                    <h3 class="font-bold text-[13px] md:text-xl lg:text-[22px] text-black mb-1 md:mb-3">Ключевые</h3>
                     <p class="text-[9px] md:text-sm text-black/60 mb-2 md:mb-6 flex-grow leading-tight md:leading-relaxed">Формируют уникальную ценность для клиента</p>
                     <div class="bg-grayBase text-black py-1.5 md:py-3 px-2 rounded-lg md:rounded-xl text-[8px] md:text-[10px] lg:text-xs font-black tracking-widest uppercase w-full flex items-center justify-center gap-1.5 md:gap-2"><i class="ph-fill ph-hammer text-solar text-sm md:text-base shrink-0"></i>РАЗРАБАТЫВАТЬ СВОЁ</div>
                 </div>
 
-                <div class="bg-white border border-grayBase p-3 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm text-center flex flex-col items-center h-full w-full">
+                <div class="bg-white border border-grayBase p-3 md:p-5 lg:px-5 lg:py-8 rounded-[20px] md:rounded-3xl shadow-sm text-center flex flex-col items-center h-full w-full">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-grayBase text-black rounded-full flex items-center justify-center mb-2 md:mb-5 shadow-sm shrink-0"><i class="ph-fill ph-lifebuoy text-lg md:text-3xl"></i></div>
-                    <h3 class="font-bold text-[13px] md:text-2xl text-black mb-1 md:mb-3">Поддер&shy;живающие</h3>
+                    <h3 class="font-bold text-[13px] md:text-xl lg:text-[22px] text-black mb-1 md:mb-3">Поддер&shy;живающие</h3>
                     <p class="text-[9px] md:text-sm text-black/60 mb-2 md:mb-6 flex-grow leading-tight md:leading-relaxed">HR, финансы, документооборот</p>
                     <div class="bg-black text-white py-1.5 md:py-3 px-2 rounded-lg md:rounded-xl text-[8px] md:text-[10px] lg:text-xs font-black tracking-widest uppercase w-full flex items-center justify-center gap-1.5 md:gap-2"><i class="ph-fill ph-plugs-connected text-solar text-sm md:text-base shrink-0"></i>ГОТОВЫЕ ПЛАТФОРМЫ И API</div>
                 </div>
 
-                <div class="bg-white border border-grayBase p-3 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm text-center flex flex-col items-center h-full w-full">
+                <div class="bg-white border border-grayBase p-3 md:p-5 lg:px-5 lg:py-8 rounded-[20px] md:rounded-3xl shadow-sm text-center flex flex-col items-center h-full w-full">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-grayBase text-black rounded-full flex items-center justify-center mb-2 md:mb-5 shadow-sm shrink-0"><i class="ph-fill ph-chart-line-up text-lg md:text-3xl"></i></div>
-                    <h3 class="font-bold text-[13px] md:text-2xl text-black mb-1 md:mb-3">Управлен&shy;ческие</h3>
+                    <h3 class="font-bold text-[13px] md:text-xl lg:text-[22px] text-black mb-1 md:mb-3">Управлен&shy;ческие</h3>
                     <p class="text-[9px] md:text-sm text-black/60 mb-2 md:mb-6 flex-grow leading-tight md:leading-relaxed">Стратегия, принятие решений</p>
                     <div class="bg-solar text-[#0A0A0A] py-1.5 md:py-3 px-2 rounded-lg md:rounded-xl text-[8px] md:text-[10px] lg:text-xs font-black tracking-widest uppercase w-full flex items-center justify-center gap-1.5 md:gap-2"><i class="ph-fill ph-user-focus text-[#0A0A0A] text-sm md:text-base shrink-0"></i>ЧЕЛОВЕК В ЦЕНТРЕ</div>
                 </div>
@@ -2073,18 +2130,20 @@ window.addEventListener('load', function(){
                 </div>
 
                 <!-- Обратная связь: пунктирная шина со стрелкой влево, от оператора к агенту -->
-                <div class="hidden md:flex items-center gap-3 lg:gap-4 w-full mt-6 lg:mt-10">
-                    <i class="ph-bold ph-arrow-left text-solar text-2xl lg:text-3xl shrink-0"></i>
-                    <div class="flex-1 border-t-2 border-dashed border-solar"></div>
-                    <span class="shrink-0 bg-white px-4 py-1.5 rounded-full border border-grayBase text-[11px] lg:text-sm font-bold uppercase tracking-widest text-black">Сбор обратной связи</span>
-                    <div class="flex-1 border-t-2 border-dashed border-solar"></div>
+                <div class="hidden md:flex flex-col items-center w-full mt-6 lg:mt-10">
+                    <div class="flex items-center gap-3 lg:gap-4 w-full">
+                        <i class="ph-bold ph-arrow-left text-solar text-2xl lg:text-3xl shrink-0"></i>
+                        <div class="flex-1 border-t-2 border-dashed border-solar anim-dash"></div>
+                    </div>
+                    <span class="mt-3 lg:mt-4 bg-white px-4 py-1.5 rounded-full border border-grayBase text-[11px] lg:text-sm font-bold uppercase tracking-widest text-black">Сбор обратной связи</span>
                 </div>
 
-                <div class="md:hidden flex items-center gap-2 w-full mt-3">
-                    <i class="ph-bold ph-arrow-left text-solar text-lg shrink-0"></i>
-                    <div class="flex-1 border-t-2 border-dashed border-solar"></div>
-                    <span class="shrink-0 text-[9px] font-bold uppercase tracking-widest text-black">Обратная связь</span>
-                    <div class="flex-1 border-t-2 border-dashed border-solar"></div>
+                <div class="md:hidden flex flex-col items-center w-full mt-3">
+                    <div class="flex items-center gap-2 w-full">
+                        <i class="ph-bold ph-arrow-left text-solar text-lg shrink-0"></i>
+                        <div class="flex-1 border-t-2 border-dashed border-solar anim-dash"></div>
+                    </div>
+                    <span class="mt-1.5 text-[9px] font-bold uppercase tracking-widest text-black">Обратная связь</span>
                 </div>
 
                 <!-- Чем агент подключается к компании (панель: RAG, MCP/API, права и журнал) -->
@@ -2343,7 +2402,7 @@ window.addEventListener('load', function(){
                 <div class="bg-solar p-1 rounded-[24px] md:rounded-[28px] max-w-3xl mx-auto shadow-[0_0_30px_rgba(139, 92, 246,0.2)] w-full">
                     <div class="bg-black p-5 md:p-8 lg:p-6 rounded-[20px] md:rounded-[24px] w-full">
                         <p class="text-xs sm:text-base md:text-xl font-bold text-white leading-snug md:leading-relaxed">
-                            <i class="ph-fill ph-trophy text-solar text-base md:text-xl align-[-2px] mr-1.5"></i>Победит тот, кто сумеет встроить ИИ в <span class="text-solar">операционное ядро</span> своего бизнеса
+                            <i class="ph-fill ph-trophy text-solar text-base md:text-xl align-[-2px] mr-1.5"></i>Победит тот, кто сумеет встроить ИИ<br>в <span class="text-solar">операционное ядро</span> своего бизнеса
                         </p>
                     </div>
                 </div>
