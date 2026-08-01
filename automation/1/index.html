@@ -1770,10 +1770,15 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-5 md:mt-10">
-                <p class="text-[11px] md:text-xl text-black font-medium leading-snug">
-                    <i class="ph-fill ph-arrows-clockwise text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Система ограничена самым слабым звеном, поэтому диагностику <span class="font-black">повторяют раз в квартал</span>
-                </p>
+            <!-- Обёртка нужна из-за правила .content-z > * { max-width:100% !important }:
+                 узкая мера на телефоне держится только на вложенном элементе. Сужение
+                 уводит плашку из-под кружка с головой — иначе вывод было не прочитать. -->
+            <div class="w-full mt-5 md:mt-10">
+                <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-[14rem] mr-auto md:max-w-3xl md:mx-auto text-center">
+                    <p class="text-[11px] md:text-xl text-black font-medium leading-snug">
+                        <i class="ph-fill ph-arrows-clockwise text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Система ограничена самым слабым звеном, поэтому диагностику <span class="font-black">повторяют раз в квартал</span>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -2002,10 +2007,12 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-10">
-                <p class="text-[11px] md:text-xl text-black font-medium leading-snug">
-                    <i class="ph-fill ph-wrench text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Сборка: <span class="font-black">LangChain и LangGraph</span> для кода, <span class="font-black">n8n</span> — для быстрых прототипов
-                </p>
+            <div class="w-full mt-4 md:mt-10">
+                <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-[14rem] mr-auto md:max-w-3xl md:mx-auto text-center">
+                    <p class="text-[11px] md:text-xl text-black font-medium leading-snug">
+                        <i class="ph-fill ph-wrench text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Сборка: <span class="font-black">LangChain и LangGraph</span> для кода, <span class="font-black">n8n</span> — для быстрых прототипов
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -2064,21 +2071,31 @@ window.addEventListener('load', function(){
                 </div>
 
                 <!-- Чем агент подключается к компании (панель: RAG, MCP/API, права и журнал) -->
-                <div class="grid grid-cols-3 gap-2 md:gap-4 w-full mt-4 md:mt-8">
-                    <div class="bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center gap-1 md:gap-2 w-full">
-                        <i class="ph-fill ph-books text-lg md:text-2xl text-solar"></i>
-                        <h4 class="font-black text-[10px] md:text-base text-black leading-tight">RAG</h4>
-                        <p class="text-[8px] md:text-xs text-black/50 leading-tight">Корпоративная память: документы и базы</p>
+                <!-- На телефоне ряд из трёх карточек уходит правым краем под кружок
+                     с головой, и третья карточка («Права и журнал») пропадала целиком.
+                     Поэтому на узком экране это столбик строк «иконка + текст слева»:
+                     заголовки стоят у левого края и до кружка не достают. -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 w-full mt-4 md:mt-8">
+                    <div class="bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-2xl p-2.5 md:p-4 flex flex-row md:flex-col items-center text-left md:text-center gap-2 w-full">
+                        <i class="ph-fill ph-books text-lg md:text-2xl text-solar shrink-0"></i>
+                        <div class="min-w-0">
+                            <h4 class="font-black text-[10px] md:text-base text-black leading-tight">RAG</h4>
+                            <p class="text-[8px] md:text-xs text-black/50 leading-tight mt-0.5 md:mt-2">Корпоративная память: документы и базы</p>
+                        </div>
                     </div>
-                    <div class="bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center gap-1 md:gap-2 w-full">
-                        <i class="ph-fill ph-plugs-connected text-lg md:text-2xl text-solar"></i>
-                        <h4 class="font-black text-[10px] md:text-base text-black leading-tight">MCP и API</h4>
-                        <p class="text-[8px] md:text-xs text-black/50 leading-tight">Действия в CRM, почте, хранилищах</p>
+                    <div class="bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-2xl p-2.5 md:p-4 flex flex-row md:flex-col items-center text-left md:text-center gap-2 w-full">
+                        <i class="ph-fill ph-plugs-connected text-lg md:text-2xl text-solar shrink-0"></i>
+                        <div class="min-w-0">
+                            <h4 class="font-black text-[10px] md:text-base text-black leading-tight">MCP и API</h4>
+                            <p class="text-[8px] md:text-xs text-black/50 leading-tight mt-0.5 md:mt-2">Действия в CRM, почте, хранилищах</p>
+                        </div>
                     </div>
-                    <div class="bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center gap-1 md:gap-2 w-full">
-                        <i class="ph-fill ph-shield-check text-lg md:text-2xl text-solar"></i>
-                        <h4 class="font-black text-[10px] md:text-base text-black leading-tight">Права и журнал</h4>
-                        <p class="text-[8px] md:text-xs text-black/50 leading-tight">Минимум полномочий, каждое действие видно</p>
+                    <div class="bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-2xl p-2.5 md:p-4 flex flex-row md:flex-col items-center text-left md:text-center gap-2 w-full">
+                        <i class="ph-fill ph-shield-check text-lg md:text-2xl text-solar shrink-0"></i>
+                        <div class="min-w-0">
+                            <h4 class="font-black text-[10px] md:text-base text-black leading-tight">Права и журнал</h4>
+                            <p class="text-[8px] md:text-xs text-black/50 leading-tight mt-0.5 md:mt-2">Минимум полномочий, каждое действие видно</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2158,8 +2175,10 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="text-center text-[10px] md:text-lg text-black bg-solar/10 border border-solar/30 p-3 md:p-6 rounded-xl md:rounded-2xl w-full max-w-3xl mx-auto font-medium">
-                <span class="text-black"><i class="ph-fill ph-chart-line-up text-sm md:text-xl align-[-2px] mr-1.5"></i></span>Оцениваем метрики и убеждаемся, что улучшения устойчивы. Только после этого — <b class="text-black uppercase tracking-wider ml-1">масштабируем</b>
+            <div class="w-full">
+                <div class="text-center text-[10px] md:text-lg text-black bg-solar/10 border border-solar/30 p-3 md:p-6 rounded-xl md:rounded-2xl w-full max-w-[14rem] mr-auto md:max-w-3xl md:mx-auto font-medium">
+                    <span class="text-black"><i class="ph-fill ph-chart-line-up text-sm md:text-xl align-[-2px] mr-1.5"></i></span>Оцениваем метрики и убеждаемся, что улучшения устойчивы. Только после этого — <b class="text-black uppercase tracking-wider ml-1">масштабируем</b>
+                </div>
             </div>
         </div>
     </div>

@@ -1757,8 +1757,13 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <div class="w-full mt-4 md:mt-6 bg-grayBase/30 border border-grayBase rounded-2xl p-3 md:p-5">
-                <p class="text-[10px] md:text-base text-black/70 font-medium m-0 flex items-start gap-2"><i class="ph-fill ph-shield-check text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span>Вероятностная операция не обязана быть полностью автономной: степень самостоятельности агента задаёт <b>цена ошибки</b> — от «делает сам» до «готовит черновик, решает человек»</span></p>
+            <!-- Обёртка нужна из-за правила .content-z > * { max-width:100% !important }:
+                 узкая мера на телефоне держится только на вложенном элементе. Сужение
+                 уводит плашку из-под кружка с головой — иначе «цена ошибки» пропадала. -->
+            <div class="w-full mt-4 md:mt-6">
+                <div class="w-full max-w-[14rem] mr-auto md:max-w-none bg-grayBase/30 border border-grayBase rounded-2xl p-3 md:p-5">
+                    <p class="text-[10px] md:text-base text-black/70 font-medium m-0 flex items-start gap-2"><i class="ph-fill ph-shield-check text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span>Вероятностная операция не обязана быть полностью автономной: степень самостоятельности агента задаёт <b>цена ошибки</b> — от «делает сам» до «готовит черновик, решает человек»</span></p>
+                </div>
             </div>
         </div>
     </div>
@@ -1976,7 +1981,7 @@ window.addEventListener('load', function(){
 
             <div class="w-full mt-5 md:mt-7">
                 <p class="text-center text-black/40 text-[9px] md:text-xs font-bold uppercase tracking-widest mb-2 md:mb-3">В целевой модели задаются</p>
-                <div class="grid grid-cols-2 gap-2 md:gap-3 w-full">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full">
                     <div class="bg-white border border-grayBase rounded-xl px-3 py-2 md:py-2.5 flex items-center gap-2"><i class="ph-fill ph-scissors text-solar text-sm md:text-lg shrink-0"></i><span class="text-[10px] md:text-sm font-bold text-black">Шаги, которые исчезают</span></div>
                     <div class="bg-white border border-grayBase rounded-xl px-3 py-2 md:py-2.5 flex items-center gap-2"><i class="ph-fill ph-robot text-solar text-sm md:text-lg shrink-0"></i><span class="text-[10px] md:text-sm font-bold text-black">Новые автодействия</span></div>
                     <div class="bg-white border border-grayBase rounded-xl px-3 py-2 md:py-2.5 flex items-center gap-2"><i class="ph-fill ph-users-three text-solar text-sm md:text-lg shrink-0"></i><span class="text-[10px] md:text-sm font-bold text-black">Роли человека и агента</span></div>
