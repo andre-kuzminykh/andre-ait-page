@@ -857,7 +857,7 @@ window.addEventListener('load', function(){
                         <div class="aspect-square bg-grayBase/40 rounded flex items-center justify-center text-black/50"><i class="ph-fill ph-robot text-sm md:text-xl"></i></div>
                         <div class="aspect-square bg-grayBase/40 rounded flex items-center justify-center text-black/50 -rotate-6"><i class="ph-fill ph-robot text-sm md:text-xl"></i></div>
                     </div>
-                    <ul class="space-y-1.5 md:space-y-2 text-[11px] md:text-xs lg:text-sm text-black/70 font-medium">
+                    <ul class="space-y-1.5 md:space-y-2 text-[11px] lg:text-sm text-black/70 font-medium">
                         <li class="flex items-center gap-2"><i class="ph-bold ph-x text-red-500"></i>Разные данные</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-x text-red-500"></i>Разные правила</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-x text-red-500"></i>Плохо масштабируется</li>
@@ -875,7 +875,7 @@ window.addEventListener('load', function(){
                         <div class="w-8 h-8 md:w-10 md:h-10 bg-solar/20 border border-solar rounded flex items-center justify-center text-solar"><i class="ph-fill ph-robot text-sm md:text-lg"></i></div>
                         <div class="w-8 h-8 md:w-10 md:h-10 bg-solar/20 border border-solar rounded flex items-center justify-center text-solar"><i class="ph-fill ph-robot text-sm md:text-lg"></i></div>
                     </div>
-                    <ul class="space-y-1.5 md:space-y-2 text-[11px] md:text-xs lg:text-sm text-white/80 font-medium">
+                    <ul class="space-y-1.5 md:space-y-2 text-[11px] lg:text-sm text-white/80 font-medium">
                         <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar"></i>Единые данные</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar"></i>Общие правила</li>
                         <li class="flex items-center gap-2"><i class="ph-bold ph-check text-solar"></i>Масштабируется</li>
@@ -1046,8 +1046,9 @@ window.addEventListener('load', function(){
                 </div>
             </div>
 
-            <!-- md:pr-32 — на планшете хвост вывода упирался в кружок с головой. -->
-            <div class="w-full max-w-3xl mx-auto mt-2.5 md:mt-6 bg-white border border-grayBase rounded-2xl px-3 py-2 md:px-4 md:pr-32 lg:pr-4 md:py-4 text-center">
+            <!-- pr-28/md:pr-32 — хвост вывода упирался в кружок с головой и на телефоне
+                 («…он вст⬤»), и на планшете. Фон плашки остаётся во всю ширину. -->
+            <div class="w-full max-w-3xl mx-auto mt-2.5 md:mt-6 bg-white border border-grayBase rounded-2xl px-3 py-2 pr-28 md:px-4 md:pr-32 lg:pr-4 md:py-4 text-center">
                 <p class="text-[10px] md:text-sm text-black/70 font-medium leading-tight">ИИ не отменяет эту формулу — он встраивается в <span class="font-black text-black">шаг обработки</span>, где нужен смысл, а не правило</p>
             </div>
         </div>
@@ -1152,7 +1153,7 @@ window.addEventListener('load', function(){
                 </div>
                 <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 shadow-sm text-center">
                     <div class="w-10 h-10 md:w-14 md:h-14 bg-solar/20 rounded-full flex items-center justify-center text-solar mx-auto mb-2 md:mb-3"><i class="ph-fill ph-envelope-simple text-lg md:text-2xl"></i></div>
-                    <p class="font-bold text-[11px] md:text-sm">Отправить письмо</p>
+                    <p class="font-bold text-[11px] md:text-sm">Отпра&shy;вить письмо</p>
                 </div>
                 <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 shadow-sm text-center">
                     <div class="w-10 h-10 md:w-14 md:h-14 bg-solar/20 rounded-full flex items-center justify-center text-solar mx-auto mb-2 md:mb-3"><i class="ph-fill ph-arrows-clockwise text-lg md:text-2xl"></i></div>
@@ -1356,7 +1357,7 @@ window.addEventListener('load', function(){
                         <div class="w-10 h-10 md:w-12 md:h-12 bg-grayBase rounded-lg flex items-center justify-center"><i class="ph-fill ph-flow-arrow text-lg md:text-xl"></i></div>
                         <h3 class="font-black text-base md:text-xl">Воркфлоу</h3>
                     </div>
-                    <p class="text-[11px] md:text-sm text-black/70 font-medium mb-4">Последовательность и контроль</p>
+                    <p class="text-[11px] md:text-sm text-black/70 font-medium mb-4">Последова&shy;тельность и контроль</p>
                     <div class="flex items-center gap-1.5 md:gap-2">
                         <div class="h-8 md:h-10 flex-1 bg-grayBase rounded flex items-center justify-center text-[10px] md:text-xs font-bold text-black/70">Шаг 1</div>
                         <i class="ph-bold ph-caret-right text-black/40"></i>
@@ -1970,10 +1971,13 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Как движутся <span class="text-solar">данные</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-8 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Данные внутри процесса движутся как JSON-объекты</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full max-w-3xl mx-auto">
+            <!-- Две колонки только с lg: на планшете колонка JSON-карточки ~140 CSS-px,
+                 и строки вида `{ "sku": "A-1", "qty": 3 },` уезжали за рамку больше чем
+                 наполовину. На lg кегль ещё на шаг меньше — на 1440 хвост `},` вылезал. -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 w-full max-w-3xl mx-auto">
                 <div class="bg-black rounded-[20px] md:rounded-3xl p-4 md:p-6 lg:p-8 text-white shadow-xl">
                     <p class="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-solar mb-3">JSON</p>
-                    <pre class="font-mono text-[10px] md:text-sm lg:text-lg text-white/80 leading-relaxed overflow-x-auto">{
+                    <pre class="font-mono text-[10px] md:text-sm lg:text-base text-white/80 leading-relaxed overflow-x-auto">{
   "order_id": 42,
   "customer": "ООО Ромашка",
   "items": [
@@ -1992,7 +1996,9 @@ window.addEventListener('load', function(){
                             <div class="bg-solar/15 border border-solar/40 rounded-lg px-3 py-1.5 md:px-4 md:py-2 lg:py-3 text-[10px] md:text-xs lg:text-base font-bold flex items-center gap-2"><span class="shrink-0"><i class="ph-fill ph-package text-solar"></i></span>Элемент 2</div>
                         </div>
                     </div>
-                    <div class="bg-white border border-grayBase rounded-2xl p-4 md:p-5 lg:p-7 shadow-sm">
+                    <!-- pr-28 только на телефоне: хвост вывода уходил под кружок с головой
+                         («…отдельн⬤»). Фон плашки остаётся во всю ширину. -->
+                    <div class="bg-white border border-grayBase rounded-2xl p-4 pr-28 md:p-5 lg:p-7 shadow-sm">
                         <p class="text-[10px] md:text-xs lg:text-base text-black/70 font-medium">Узел обрабатывает каждый <span class="font-black">элемент</span> отдельно — это важно для массовых операций</p>
                     </div>
                 </div>
@@ -2370,9 +2376,9 @@ window.addEventListener('load', function(){
                 <div class="bg-white border border-grayBase rounded-lg p-2 md:p-3 text-center text-[10px] md:text-sm font-bold flex items-center justify-center gap-2"><i class="ph-fill ph-pencil-simple text-solar shrink-0"></i>Черновик ответа</div>
             </div>
 
-            <!-- md:pr-32 — на планшете строки вывода упирались правым концом в кружок
+            <!-- pr-28/md:pr-32 — строки вывода упирались правым концом в кружок
                  с головой («испол…», «управляемого…»). Плашка остаётся во всю ширину. -->
-            <div class="w-full max-w-3xl mx-auto mt-3 md:mt-4 bg-white border border-grayBase rounded-2xl px-4 md:pr-32 lg:pr-4 py-3 md:py-4 text-center">
+            <div class="w-full max-w-3xl mx-auto mt-3 md:mt-4 bg-white border border-grayBase rounded-2xl px-4 pr-28 md:pr-32 lg:pr-4 py-3 md:py-4 text-center">
                 <p class="text-[11px] md:text-sm text-black/70 font-medium">LLM-задача — <span class="font-black text-black">отдельная функция мышления</span>. Агент — <span class="font-black text-black">исполнительная система</span>, которая использует такие функции внутри управляемого процесса</p>
             </div>
         </div>
@@ -2478,7 +2484,9 @@ window.addEventListener('load', function(){
 
                 <div class="flex-1 bg-black border-2 border-solar rounded-[20px] md:rounded-3xl p-4 md:p-7 shadow-xl text-white">
                     <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar mb-3">JSON-ответ</p>
-                    <pre class="font-mono text-[10px] md:text-sm text-white/80 leading-relaxed overflow-x-auto">{
+                    <!-- lg:text-[13px] — на 1440 строка `"next_action": …` вылезала за рамку
+                         карточки, хвост `",` не читался. -->
+                    <pre class="font-mono text-[10px] md:text-sm lg:text-[13px] text-white/80 leading-relaxed overflow-x-auto">{
   "type": "delivery_complaint",
   "confidence": 0.91,
   "next_action": "create_support_ticket",
@@ -2622,7 +2630,10 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-6 text-center text-black">Топ-5 <span class="text-solar">проблем</span></h2>
             <p class="text-center text-black/60 mb-5 md:mb-7 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Пять ошибок, которые ломают автоматизацию</p>
 
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 lg:gap-3 w-full max-w-4xl mx-auto">
+            <!-- Пять колонок только с lg: на планшете колонка ~50 CSS-px, и слова
+                 рубились посреди («процесс/а», «инструмент/ы»). На md — три колонки,
+                 пятая карточка занимает остаток нижнего ряда. -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-3 w-full max-w-4xl mx-auto">
                 <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-6 shadow-sm text-center">
                     <div class="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl lg:text-3xl">1</span></div>
                     <p class="font-black text-[11px] lg:text-base mb-1 leading-tight">Нет схемы процесса</p>
@@ -2643,7 +2654,7 @@ window.addEventListener('load', function(){
                     <p class="font-black text-[11px] lg:text-base mb-1 leading-tight">Нет защитного контура</p>
                     <p class="text-[9px] lg:text-sm text-black/60 font-medium leading-tight">Риски без валидации</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-6 shadow-sm text-center col-span-2 md:col-span-1">
+                <div class="bg-white border border-grayBase rounded-2xl p-2.5 lg:p-6 shadow-sm text-center col-span-2 lg:col-span-1">
                     <div class="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mx-auto mb-1.5 md:mb-3"><span class="font-black text-lg md:text-xl lg:text-3xl">5</span></div>
                     <p class="font-black text-[11px] lg:text-base mb-1 leading-tight">Нет метрик</p>
                     <p class="text-[9px] lg:text-sm text-black/60 font-medium leading-tight">Процесс как чёрный ящик</p>
