@@ -3208,6 +3208,40 @@ window.addEventListener('load', function(){
   .radial-fig[data-sats="8"]{ --orbit:41% !important; --sat:clamp(60px, 21%, 84px) !important; }
   .radial-fig[data-sats="8"] .rf-label{ font-size:8.5px !important; }
 }
+
+/* ПОДПИСЬ ЖИВЁТ ЗА КРУГОМ. Раньше внутри круга сидели и иконка, и текст, и
+   длинное слово туда просто не помещалось: «Мультимодальность» резалась
+   переносами до огрызков в две буквы. Теперь круг — это иконка, а подпись
+   лежит ПОД ним поверх всей схемы, одной строкой и без переносов.
+
+   Диаметр кружка выводится из --sat, а не задаётся заново: --sat почти всегда
+   стоит инлайном на конкретной фигуре (и переопределяется в мобильном блоке),
+   поэтому пропорция сохраняет всю ручную настройку каждой схемы.
+
+   Центрируем подпись БЕЗ transform — см. ловушку 1 в шапке блока: коробка
+   растянута симметрично влево и вправо на диаметр кружка, а текст в ней
+   выровнен по центру. z-index выше ядра, поэтому подпись читается поверх
+   соседних кругов и кольца. */
+.radial-fig{ --sat-dot:calc(var(--sat) * 0.62); }
+.radial-sat{
+  width:var(--sat-dot) !important; height:var(--sat-dot) !important;
+  left:calc(var(--x) - var(--sat-dot)/2) !important;
+  top:calc(var(--y) - var(--sat-dot)/2) !important;
+  padding:0 !important;
+  overflow:visible !important;
+}
+.radial-sat i{ font-size:calc(var(--sat-dot) * 0.42) !important; margin:0 !important; }
+.radial-sat .rf-label{
+  position:absolute;
+  top:calc(100% + .32em);
+  left:calc(-1 * var(--sat-dot)); right:calc(-1 * var(--sat-dot));
+  width:auto !important; max-width:none !important;
+  white-space:nowrap !important;
+  text-align:center;
+  line-height:1.1 !important;
+  z-index:6;
+  pointer-events:none;
+}
 </style>
 <style id="lesson-fixes">
 /* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
