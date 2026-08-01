@@ -3544,6 +3544,33 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
 }
 .notes-body .n-note.n-alt{ border-left-color:#8B5CF6; background:rgba(139,92,246,.10); }
 
+/* Карточка-роль: иконка в кружке, название и пояснение. Нужна там, где текст
+   перечисляет профессии или роли — сплошным абзацем они читались как поток, и
+   ни одну нельзя было выхватить глазом. */
+.notes-body .n-cards{ margin:0 0 1.1em; display:grid; gap:.6rem; }
+.notes-body .n-card{
+  display:flex; gap:.7rem; align-items:flex-start;
+  padding:.75rem .9rem; border-radius:.8rem;
+  background:rgba(139,92,246,.07); border:1px solid rgba(139,92,246,.18);
+}
+.notes-body .n-card > i{
+  flex:0 0 auto; width:2rem; height:2rem; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:#8B5CF6; color:#FFFFFF; font-size:1.05rem;
+}
+.notes-body .n-card:nth-child(even) > i{ background:#F97316; }
+.notes-body .n-card-h{
+  display:block; font-weight:800; color:rgba(0,0,0,.9);
+  font-size:clamp(.86rem,2.5vw,.95rem); line-height:1.3; margin-bottom:.15rem;
+}
+.notes-body .n-card-p{
+  display:block; color:rgba(0,0,0,.72);
+  font-size:clamp(.8rem,2.35vw,.88rem); line-height:1.55;
+}
+html.dark .notes-body .n-card{ background:rgba(139,92,246,.12); border-color:rgba(139,92,246,.26); }
+html.dark .notes-body .n-card-h{ color:#FAFAFA; }
+html.dark .notes-body .n-card-p{ color:rgba(250,250,250,.76); }
+
 /* Тёмная тема */
 html.dark #notes-panel{ background:#101010; color:#FAFAFA; border-right-color:rgba(255,255,255,.10); }
 html.dark .notes-head{ border-bottom-color:rgba(255,255,255,.10); background:linear-gradient(180deg, rgba(139,92,246,.14), rgba(139,92,246,0)); }
@@ -3653,6 +3680,14 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
         // соседние врезки чередуют оранжевый и фиолетовый, иначе сливаются
         var nAlt = b.alt || (noteSeen++ % 2) === 1;
         html += '<div class="n-note' + (nAlt ? ' n-alt' : '') + '">' + rich(b.v) + '</div>';
+        return;
+      }
+      if(b.t === 'cards'){
+        html += '<div class="n-cards">' + (b.v || []).map(function(c){
+          return '<div class="n-card"><i class="ph-fill ' + esc(c.i || 'ph-user') + '"></i>' +
+                 '<span><span class="n-card-h">' + rich(c.h || '') + '</span>' +
+                 '<span class="n-card-p">' + rich(c.p || '') + '</span></span></div>';
+        }).join('') + '</div>';
         return;
       }
       if(b.t === 'ul' || b.t === 'ol'){
