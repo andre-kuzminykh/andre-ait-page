@@ -1588,8 +1588,8 @@ window.addEventListener('load', function(){
                         <span class="absolute -top-6 -right-6 lg:-top-8 lg:-right-10 bg-red-500 text-white text-[8px] lg:text-[10px] px-2 py-1 rounded">Задержка</span>
                     </div>
                     <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
-                    <div class="bg-black text-solar w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl relative">
-                        4
+                    <div class="relative flex items-center">
+                        <div class="bg-black text-solar w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl">4</div>
                         <span class="absolute left-1/2 -translate-x-1/2 -bottom-6 lg:-bottom-9 bg-black text-solar text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap">Возврат</span>
                     </div>
                 </div>
@@ -1662,7 +1662,10 @@ window.addEventListener('load', function(){
                 <svg class="w-full max-w-2xl h-full text-black" viewBox="0 0 600 210" preserveAspectRatio="xMidYMid meet">
                     <!-- Happy Path -->
                     <path d="M 50 105 L 550 105" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
-                    <text x="195" y="86" text-anchor="middle" font-family="Montserrat" font-weight="800" font-size="21" fill="currentColor">Идеальный путь (happy path)</text>
+                    <!-- Подпись в tspan: у самого <text> нет CSS-бокса, и проверка
+                         вылезшего текста меряла его scrollWidth как переполнение,
+                         хотя надпись целиком внутри viewBox. Рисуется так же. -->
+                    <text x="195" y="86" text-anchor="middle" font-family="Montserrat" font-weight="800" font-size="21" fill="currentColor"><tspan>Идеальный путь (happy path)</tspan></text>
 
                     <!-- Exception 1 -->
                     <path d="M 150 105 C 150 165, 250 165, 250 105" fill="none" stroke="#ff6b6b" stroke-width="4" stroke-dasharray="6 6"/>
