@@ -732,9 +732,13 @@ window.addEventListener('load', function(){
         <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-10 text-center text-black">Мир делится на <br class="hidden md:block"><span class="text-solar">два типа компаний</span></h2>
 
-            <div class="flex flex-col md:flex-row gap-4 md:gap-6 items-stretch justify-center w-full">
+            <!-- Ряд разъезжается на две колонки только с 1024. На планшете 768
+                 portal-fit увеличивает контент (zoom≈1.3), из-за чего CSS-ширина
+                 колонки падает до ~185px: «конкурентоспособность» вылезала за
+                 карточку, а третий пункт правой колонки уходил под кружок. -->
+            <div class="flex flex-col lg:flex-row gap-4 md:gap-6 items-stretch justify-center w-full">
                 <!-- ИИ First -->
-                <div class="bg-black text-white border-2 border-solar rounded-[24px] md:rounded-3xl p-5 md:p-10 flex-1 shadow-lg relative transform md:scale-105 z-10 flex flex-col items-center">
+                <div class="bg-black text-white border-2 border-solar rounded-[24px] md:rounded-3xl p-5 md:p-10 flex-1 shadow-lg relative transform lg:scale-105 z-10 flex flex-col items-center">
                     <div class="absolute -top-3 md:-top-4 left-0 right-0 mx-auto w-fit bg-solar text-[#0A0A0A] px-4 md:px-6 py-1 md:py-2 rounded-full text-[10px] md:text-xs font-bold uppercase whitespace-nowrap shadow-md">Лидеры</div>
                     <div class="w-14 h-14 md:w-20 md:h-20 bg-white/10 rounded-full flex items-center justify-center mb-3 md:mb-6"><i class="ph-fill ph-rocket text-2xl md:text-4xl text-solar"></i></div>
                     <h3 class="text-base md:text-2xl font-black text-center mb-3 md:mb-6">AI-First компании</h3>
@@ -806,7 +810,7 @@ window.addEventListener('load', function(){
         <div class="content-z w-full max-w-6xl lg:max-w-4xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-5 md:mb-16 text-center text-black">Почему именно <span class="text-solar">ИИ-агенты?</span></h2>
 
-            <div class="flex flex-col md:flex-row gap-3 md:gap-8 items-stretch justify-center w-full">
+            <div class="flex flex-col lg:flex-row gap-3 md:gap-8 items-stretch justify-center w-full">
                 <div class="bg-white border border-grayBase p-4 md:p-8 rounded-[20px] md:rounded-3xl flex-1 w-full flex flex-col items-center text-center shadow-sm h-full min-h-[110px]">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center mb-2 md:mb-5 border-2 md:border-4 border-white shadow-sm shrink-0"><i class="ph-fill ph-robot text-xl md:text-3xl text-black/50"></i></div>
                     <h3 class="font-black text-sm md:text-2xl text-black mb-1 md:mb-2">Раньше</h3>
@@ -1191,7 +1195,7 @@ window.addEventListener('load', function(){
         <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-5 md:mb-12 text-center text-black">Процессная <span class="text-solar">архитектура</span></h2>
 
-            <div class="flex flex-col md:grid md:grid-cols-3 gap-2 md:gap-8 w-full">
+            <div class="flex flex-col lg:grid lg:grid-cols-3 gap-2 md:gap-8 w-full">
                 <div class="bg-grayBase/30 border border-grayBase p-3 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col items-center md:items-start text-center md:text-left h-full w-full">
                     <div class="w-10 h-10 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center mb-2 md:mb-5 text-black shadow-sm shrink-0"><i class="ph-fill ph-star text-lg md:text-3xl"></i></div>
                     <h3 class="font-black text-sm md:text-lg lg:text-2xl text-black mb-1 md:mb-3">Основные</h3>
@@ -1826,7 +1830,7 @@ window.addEventListener('load', function(){
         <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Где строить своё, а где <span class="text-solar">готовое</span></h2>
 
-            <div class="flex flex-col md:grid md:grid-cols-3 gap-2 md:gap-8 w-full">
+            <div class="flex flex-col lg:grid lg:grid-cols-3 gap-2 md:gap-8 w-full">
                 <div class="bg-white border border-grayBase p-3 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm text-center flex flex-col items-center h-full w-full">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-black text-solar rounded-full flex items-center justify-center mb-2 md:mb-5 shadow-md shrink-0"><i class="ph-fill ph-star text-lg md:text-3xl"></i></div>
                     <h3 class="font-bold text-[13px] md:text-2xl text-black mb-1 md:mb-3">Ключевые процессы</h3>
@@ -1981,26 +1985,26 @@ window.addEventListener('load', function(){
         <div class="content-z max-w-6xl lg:max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-12 lg:mb-8 text-center text-black">2. Разработка <span class="text-solar">ИИ-агента</span></h2>
 
-            <div class="bg-grayBase/20 border border-grayBase p-3 md:p-12 lg:p-8 rounded-[24px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-stretch gap-3 md:gap-8 w-full">
-                <div class="w-full md:w-1/3 flex-1 bg-white rounded-[20px] md:rounded-3xl p-3 md:p-8 border border-grayBase flex flex-col items-center justify-center text-center shadow-sm min-h-[110px] md:min-h-full">
+            <div class="bg-grayBase/20 border border-grayBase p-3 md:p-6 lg:p-8 rounded-[24px] md:rounded-[40px] shadow-sm flex flex-col lg:flex-row items-stretch gap-3 md:gap-8 w-full">
+                <div class="w-full lg:w-1/3 flex-1 bg-white rounded-[20px] md:rounded-3xl p-3 md:p-8 border border-grayBase flex flex-col items-center justify-center text-center shadow-sm min-h-[110px] lg:min-h-full">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center mb-1.5 md:mb-5 text-black shrink-0"><i class="ph-fill ph-code text-lg md:text-3xl"></i></div>
                     <h3 class="font-black text-sm md:text-xl mb-1 md:mb-3 text-black">Логика</h3>
                     <p class="text-[9px] md:text-sm text-black/60 font-medium">Сценарии поведения. Где нужен код, а где нейросети</p>
                 </div>
 
-                <i class="ph-bold ph-arrow-right text-4xl text-grayBase self-center hidden md:block"></i>
-                <i class="ph-bold ph-arrow-down text-lg text-grayBase self-center md:hidden"></i>
+                <i class="ph-bold ph-arrow-right text-4xl text-grayBase self-center hidden lg:block"></i>
+                <i class="ph-bold ph-arrow-down text-lg text-grayBase self-center lg:hidden"></i>
 
-                <div class="w-full md:w-1/3 flex-1 bg-white rounded-[20px] md:rounded-3xl p-3 md:p-8 border border-grayBase flex flex-col items-center justify-center text-center shadow-sm min-h-[110px] md:min-h-full">
+                <div class="w-full lg:w-1/3 flex-1 bg-white rounded-[20px] md:rounded-3xl p-3 md:p-8 border border-grayBase flex flex-col items-center justify-center text-center shadow-sm min-h-[110px] lg:min-h-full">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center mb-1.5 md:mb-5 text-black shrink-0"><i class="ph-fill ph-brain text-lg md:text-3xl"></i></div>
                     <h3 class="font-black text-sm md:text-xl mb-1 md:mb-3 text-black">Архитектура</h3>
                     <p class="text-[9px] md:text-sm text-black/60 font-medium">Взаимодействие с системами и данными. Принятие решений</p>
                 </div>
 
-                <i class="ph-bold ph-arrow-right text-4xl text-grayBase self-center hidden md:block"></i>
-                <i class="ph-bold ph-arrow-down text-lg text-grayBase self-center md:hidden"></i>
+                <i class="ph-bold ph-arrow-right text-4xl text-grayBase self-center hidden lg:block"></i>
+                <i class="ph-bold ph-arrow-down text-lg text-grayBase self-center lg:hidden"></i>
 
-                <div class="w-full md:w-1/3 flex-1 bg-white rounded-[20px] md:rounded-3xl p-3 md:p-8 border border-grayBase flex flex-col items-center justify-center text-center shadow-sm min-h-[110px] md:min-h-full">
+                <div class="w-full lg:w-1/3 flex-1 bg-white rounded-[20px] md:rounded-3xl p-3 md:p-8 border border-grayBase flex flex-col items-center justify-center text-center shadow-sm min-h-[110px] lg:min-h-full">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center mb-1.5 md:mb-5 text-black shrink-0"><i class="ph-fill ph-rocket text-lg md:text-3xl"></i></div>
                     <h3 class="font-black text-sm md:text-xl mb-1 md:mb-3 text-black">Прототип</h3>
                     <p class="text-[9px] md:text-sm text-black/60 font-medium">Рабочий MVP, который может давать первые результаты</p>
@@ -2152,7 +2156,7 @@ window.addEventListener('load', function(){
         <div class="content-z max-w-5xl mx-auto w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">5. Тестирование <span class="text-solar">(A/B)</span></h2>
 
-            <div class="flex flex-col md:flex-row gap-4 md:gap-8 mb-6 md:mb-10 items-stretch justify-center h-auto md:h-80 w-full">
+            <div class="flex flex-col lg:flex-row gap-4 md:gap-8 mb-6 md:mb-10 items-stretch justify-center h-auto lg:h-80 w-full">
                 <div class="bg-grayBase/30 border border-grayBase p-5 md:p-8 rounded-[24px] md:rounded-3xl flex-1 shadow-sm flex flex-col justify-center h-full w-full">
                     <h3 class="font-black text-sm md:text-2xl text-black/60 mb-4 md:mb-8 text-center uppercase tracking-widest">Процесс <span class="border-b-2 border-black/30">БЕЗ</span> агента</h3>
                     <div class="space-y-2 md:space-y-4 text-[11px] md:text-base font-medium text-black/50 w-full">
@@ -2164,7 +2168,7 @@ window.addEventListener('load', function(){
 
                 <div class="flex items-center justify-center text-base md:text-2xl font-black uppercase tracking-widest text-grayBase">против</div>
 
-                <div class="bg-black border-2 border-solar p-5 md:p-8 rounded-[24px] md:rounded-3xl flex-1 shadow-2xl relative z-10 flex flex-col justify-center text-white h-full mt-2 md:mt-0 w-full">
+                <div class="bg-black border-2 border-solar p-5 md:p-8 rounded-[24px] md:rounded-3xl flex-1 shadow-2xl relative z-10 flex flex-col justify-center text-white h-full mt-2 lg:mt-0 w-full">
                     <div class="absolute -top-3 md:-top-4 -right-2 md:-right-4 bg-solar text-[#0A0A0A] px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[8px] md:text-xs font-bold uppercase shadow-lg tracking-widest">Эксперимент</div>
                     <h3 class="font-black text-sm md:text-2xl text-solar mb-4 md:mb-8 text-center uppercase tracking-widest">Процесс <span class="border-b-2 border-solar pb-1">С</span> агентом</h3>
                     <div class="space-y-2 md:space-y-4 text-[11px] md:text-base font-bold text-white/80 w-full">

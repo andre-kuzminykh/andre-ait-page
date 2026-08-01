@@ -1110,7 +1110,7 @@ window.addEventListener('load', function(){
         <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-12 text-center text-black">Два подхода к <span class="text-solar">автоматизации</span></h2>
 
-            <div class="flex flex-col md:flex-row gap-2 md:gap-8 items-stretch justify-center w-full">
+            <div class="flex flex-col lg:flex-row gap-2 md:gap-8 items-stretch justify-center w-full">
                 <!-- Незрелый -->
                 <div class="bg-grayBase/30 border border-grayBase rounded-[18px] md:rounded-3xl p-3 md:p-8 flex-1 shadow-sm flex flex-col items-center text-center h-full w-full">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center mb-2 md:mb-5 shadow-sm text-red-500"><i class="ph-fill ph-warning-circle text-xl md:text-3xl"></i></div>
@@ -1129,7 +1129,7 @@ window.addEventListener('load', function(){
                 <div class="hidden md:flex items-center justify-center text-xl font-black uppercase tracking-widest text-black/30">против</div>
 
                 <!-- Зрелый -->
-                <div class="bg-black text-white border-2 border-solar rounded-[18px] md:rounded-3xl p-3 md:p-8 flex-1 shadow-2xl relative md:transform md:scale-105 z-10 flex flex-col items-center text-center w-full">
+                <div class="bg-black text-white border-2 border-solar rounded-[18px] md:rounded-3xl p-3 md:p-8 flex-1 shadow-2xl relative lg:transform lg:scale-105 z-10 flex flex-col items-center text-center w-full">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mb-2 md:mb-5 mt-1 md:mt-2"><i class="ph-fill ph-check-circle text-xl md:text-3xl text-solar"></i></div>
                     <h3 class="font-black text-sm md:text-2xl text-solar mb-1 md:mb-4">Сначала процесс</h3>
                     <p class="text-[9px] md:text-sm text-white/50 mb-2 md:mb-4">Зрелый подход</p>
@@ -1513,7 +1513,10 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-2 md:gap-3 w-full text-center">
+                <!-- На планшете (768) три чипа в ряд не помещаются: правый уходит
+                     под кружок с головой и от него остаётся «Реал… длите…».
+                     В этом диапазоне чипы идут столбиком, с 1024 — снова в ряд. -->
+                <div class="grid grid-cols-3 md:grid-cols-1 lg:grid-cols-3 gap-2 md:gap-3 w-full text-center">
                     <div class="bg-grayBase/30 border border-grayBase rounded-xl px-2 py-2 md:py-2.5">
                         <p class="text-[9px] md:text-sm font-bold text-black m-0">Петли и возвраты</p>
                     </div>
@@ -1577,8 +1580,11 @@ window.addEventListener('load', function(){
                     <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
                     <div class="bg-grayBase w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl">2</div>
                     <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
-                    <div class="bg-red-100 border-2 border-red-400 w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-red-500 font-bold lg:text-xl relative">
-                        3
+                    <!-- Ярлык вынесен в обёртку: пока он лежал внутри кружка,
+                         кружок «переполнялся» (scrollWidth 68 при 44) и попадал
+                         в проверку вылезшего текста. Вид не меняется. -->
+                    <div class="relative flex items-center">
+                        <div class="bg-red-100 border-2 border-red-400 w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-red-500 font-bold lg:text-xl">3</div>
                         <span class="absolute -top-6 -right-6 lg:-top-8 lg:-right-10 bg-red-500 text-white text-[8px] lg:text-[10px] px-2 py-1 rounded">Задержка</span>
                     </div>
                     <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
