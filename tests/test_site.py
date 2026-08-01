@@ -287,6 +287,98 @@ def test_landscape_resets_mobile_offsets():
             "экран «%s» должен сбрасывать сдвиг в ландшафте" % s
 
 
+# ── FR-SITE17 ─────────────────────────────────────────────────────────────
+
+def _mobile_shadow_stops():
+    """Стопы мобильного градиента затемнения: [(альфа, позиция %)]."""
+    html = _html()
+    m = re.search(r"\.video-shadow \{[^}]*?background: linear-gradient\(to bottom,(.*?)\); \}", html, re.S)
+    assert m, "не найден мобильный градиент .video-shadow"
+    stops = []
+    for a, p, solid in re.findall(r"rgba\(5,5,5,([\d.]+)\)\s+([\d.]+)%|#050505\s+([\d.]+)%", m.group(1)):
+        stops.append((1.0, float(solid)) if solid else (float(a), float(p)))
+    return stops
+
+
+def test_video_shadow_has_vh_fallback():
+    """Без vh-фолбэка браузеры без поддержки dvh получали height:auto → затемнение
+    схлопывалось и переход «видео → чёрное» был резким."""
+    html = _html()
+    for sel in ("#hero-video", r"\.video-shadow"):
+        assert re.search(sel + r" \{[^}]*height: 64vh; height: 64dvh;", html), \
+            "%s должен объявлять height в vh ПЕРЕД dvh" % sel
+    # ландшафт телефона — тот же приём
+    assert re.search(r"#hero-video \{[^}]*height: 100vh; height: 100dvh;", html)
+    assert re.search(r"\.video-shadow \{[^}]*height: 100vh; height: 100dvh;", html)
+
+
+def test_portrait_video_mask_fades_the_video_itself():
+    """В части мобильных браузеров (Samsung Internet) видео композитится отдельным
+    слоем и оверлей затемнения под него не попадает. В портретной мобилке низ
+    растворяет МАСКА на самом видео — её композитор обойти не может."""
+    html = _html()
+    assert "@media (max-width:1023px) and (orientation: portrait) {" in html, \
+        "нужен портретный мобильный блок с маской видео"
+    for prop in ("-webkit-mask-image", "mask-image"):
+        assert re.search(re.escape(prop) + r": linear-gradient\(to bottom, rgba\(0,0,0,1\) 45%", html), \
+            "нужна вертикальная маска %s, начинающаяся с непрозрачного 45%%" % prop
+    assert html.count("rgba(0,0,0,0) 100%)") >= 2, \
+        "маска должна доходить до полной прозрачности ровно на 100%"
+    # оверлей гасим ТОЛЬКО там, где маски поддерживаются — иначе он остаётся рабочим
+    assert re.search(
+        r"@supports \(mask-image: linear-gradient\(#000, transparent\)\)[^{]*\{\s*\.video-shadow \{ background: none; \}",
+        html), "гашение оверлея должно быть внутри @supports (иначе старые браузеры останутся без затемнения)"
+    # JS не должен ставить mask:none на мобилке — это перебило бы CSS-маску
+    fn = html[html.find("function applyVideoMask"):html.find("/* ---- captions")]
+    assert ": '';" in fn and ": 'none';" not in fn, \
+        "applyVideoMask на мобилке снимает инлайн-маску пустой строкой, а не ставит none"
+
+
+def test_video_shadow_is_short_and_smooth():
+    stops = _mobile_shadow_stops()
+    assert len(stops) >= 12, "мало стопов (%d) — на слабых экранах будут полосы" % len(stops)
+    # затемнение КОРОТКОЕ: до 40% высоты видео его нет (раньше начиналось с 6%)
+    first_dark = next(p for a, p in stops if a > 0)
+    assert first_dark >= 40, "затемнение начинается слишком высоко (%.0f%%) и темнит бороду" % first_dark
+    # сплошной чёрный ровно на нижней кромке → бесшовный стык со страницей
+    assert stops[-1] == (1.0, 100.0), "градиент должен доходить до #050505 ровно на 100%%, а не %s" % (stops[-1],)
+    # монотонность и плавность
+    alphas = [a for a, _ in stops]
+    assert alphas == sorted(alphas), "альфа должна расти монотонно"
+    steps = [round(b - a, 3) for a, b in zip(alphas, alphas[1:])]
+    assert max(steps) <= 0.12, "слишком резкий скачок альфы: %.2f" % max(steps)
+
+
+# ── FR-SITE18 ─────────────────────────────────────────────────────────────
+
+def test_bottom_always_black():
+    html = _html()
+    assert re.search(r"html, body \{[^}]*overscroll-behavior: none;", html), \
+        "overscroll-behavior: none гасит «оттяжку», из-за которой снизу светился фон браузера"
+    assert re.search(r"body::after \{[^}]*position: fixed;[^}]*bottom: 0;", html), \
+        "нужна фиксированная полоса, закрывающая зону системной панели"
+    assert re.search(r"body::after \{[^}]*height: env\(safe-area-inset-bottom, 0px\);[^}]*background: #050505;", html), \
+        "полоса должна быть высотой safe-area-inset-bottom и чёрной"
+
+
+# ── FR-SITE19 ─────────────────────────────────────────────────────────────
+
+def test_mic_pulses_on_mobile():
+    html = _html()
+    assert re.search(r"\.mic-wave \{[^}]*display: none;", html), \
+        "по умолчанию кольцо скрыто"
+    assert re.search(r"\.mic-wave\.on \{ display: block; \}", html), \
+        "со звуком кольцо включается классом .on"
+    assert re.search(r"@media \(max-width:1023px\) \{ \.mic-wave \{ display: block; \} \}", html), \
+        "на мобилке кольцо должно пульсировать всегда"
+    assert "micWave.classList.toggle('on', !m)" in html, \
+        "видимостью управляет класс, а не инлайн-стиль (иначе media-правило не перебить)"
+    assert not re.search(r'id="mic-wave"[^>]*style="display: none;"', html), \
+        "инлайн-стиля display:none у #mic-wave быть не должно"
+    assert re.search(r"\.mic-wave::before, \.mic-wave::after \{[^}]*border: 1px solid #8854F3;[^}]*animation: soundWave", html), \
+        "кольцо — фиолетовое (#8854F3) с анимацией soundWave"
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:
