@@ -1911,7 +1911,17 @@ window.addEventListener('load', function(){
             </div>
 
             <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black/40 mb-3 md:mb-4 text-center">Нужно описать</p>
-            <!-- Круговая схема по эталону .radial-fig: одинаково круглая на телефоне и на десктопе -->
+            <!-- Круговая схема по эталону .radial-fig: одинаково круглая на телефоне и на десктопе.
+                 На телефоне схема прижата влево и сужена до 240px. Иначе подпись
+                 нижне-правого спутника («Переходы») уходит под говорящую голову, и это
+                 НЕ лечится ни сужением, ни поворотом: при шести спутниках через 60°
+                 один всегда стоит в правом нижнем секторе, а у отцентрованной схемы
+                 его центр равен 195 + 0.316·W — то есть при любой ширине правее 195px,
+                 тогда как голова начинает закрывать с 248px.
+                 Две обёртки, а не одна: у ПРЯМОГО ребёнка .content-z произвольная мера
+                 (max-w-[240px]) молча гасится правилом max-width:100% !important. -->
+            <div class="w-full">
+              <div class="w-full max-w-[240px] md:max-w-none mr-auto md:mx-auto">
             <div class="radial-fig" style="width:min(100%,300px,34vh);--orbit:36%;--sat:clamp(78px,26%,104px);--core:clamp(84px,28%,112px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
@@ -1944,6 +1954,8 @@ window.addEventListener('load', function(){
                     <i class="ph-fill ph-eye text-lg md:text-2xl text-solar leading-none"></i>
                     <span class="rf-label font-black text-[10px] md:text-xs text-solar">Отобра&shy;жение</span>
                 </div>
+            </div>
+              </div>
             </div>
         </div>
     </div>

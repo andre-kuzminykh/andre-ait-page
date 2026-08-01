@@ -1618,7 +1618,12 @@ window.addEventListener('load', function(){
                     <p class="text-[8px] md:text-xs text-black/55 m-0 mt-0.5">работа мимо регламента</p>
                 </div>
             </div>
-            <p class="text-center mt-3 md:mt-4 text-black/50 text-[9px] md:text-sm font-bold uppercase tracking-widest">AS-IS — рентген, а не парадный портрет</p>
+            <!-- На планшете строка-вывод упиралась в кружок и от неё оставалось
+                 «…А НЕ ПАРАДНЫЙ ПО». Сужаем ровно в этом диапазоне; обёртка —
+                 из-за .content-z > * { max-width:100% !important }. -->
+            <div class="w-full mt-3 md:mt-4">
+                <p class="text-center text-black/50 text-[9px] md:text-sm font-bold uppercase tracking-widest md:max-w-[15rem] md:mx-auto lg:max-w-none">AS-IS — рентген, а не парадный портрет</p>
+            </div>
         </div>
     </div>
 
