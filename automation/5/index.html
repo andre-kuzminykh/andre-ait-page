@@ -3071,13 +3071,13 @@ window.addEventListener('load', function(){
                 </div>
                 <h3 id="quiz-result-title" class="text-lg md:text-3xl font-black mb-2 md:mb-4"></h3>
                 <p id="quiz-result-desc" class="text-xs md:text-base text-white/70 max-w-xl mx-auto mb-8 md:mb-10"></p>
-                <div class="flex flex-col sm:flex-row gap-3 md:gap-4">
+                <div class="flex flex-col items-center gap-3 md:gap-4">
                     <button id="quiz-restart-btn" type="button" class="bg-solar text-black font-black text-sm md:text-base px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg hover:scale-[1.02] transition-transform uppercase tracking-widest">
                         <i class="ph-bold ph-arrow-clockwise mr-1"></i> Пройти ещё раз
                     </button>
-                    <button id="quiz-finish-btn" type="button" class="bg-white/10 hover:bg-white/20 text-white font-bold text-sm md:text-base px-6 md:px-8 py-3 md:py-4 rounded-full transition-colors uppercase tracking-widest">
-                        Закрыть
-                    </button>
+                    <a class="quiz-next" href="https://andre.technology/automation/6/">
+                        К следующей лекции <i class="ph-bold ph-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -3651,7 +3651,6 @@ window.addEventListener('load', function(){
 
         document.getElementById('open-quiz-btn').addEventListener('click', openQuiz);
         document.getElementById('quiz-close-btn').addEventListener('click', closeQuiz);
-        document.getElementById('quiz-finish-btn').addEventListener('click', closeQuiz);
         document.getElementById('quiz-restart-btn').addEventListener('click', openQuiz);
         quizNextBtn.addEventListener('click', nextQuestion);
     });
@@ -3997,6 +3996,24 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
   :root{ --bub:clamp(176px,15.5vw,354px); --arw:87px; --arw-gap:21px; --bub-right:30px; }
   #lecture-header{ zoom:1.5; }
 }
+
+/* Кнопка «К следующей лекции» на экране результата теста. Белая, при наведении
+   заливается тем же градиентом, что и полоса прогресса. Стоит ПОД «Пройти ещё
+   раз» — путь дальше должен быть виден при любом результате, а не только при
+   удачном; кнопки «Закрыть» больше нет, она вела в никуда. */
+.quiz-next{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  background:#FFFFFF; color:#0A0A0A;
+  font-weight:900; text-transform:uppercase; letter-spacing:.12em;
+  border-radius:9999px; text-decoration:none;
+  padding:1rem 2.25rem; font-size:.95rem;
+  transition:background-color .2s ease, color .2s ease;
+}
+.quiz-next:hover, .quiz-next:focus-visible{
+  background:linear-gradient(90deg,#8B5CF6 0%,#F97316 100%);
+  color:#FFFFFF;
+}
+@media (max-width:767px){ .quiz-next{ padding:.85rem 1.5rem; font-size:.8rem; } }
 
 /* 15. Панель: в конце текста было слишком много пустоты. */
 @media (max-width:1023px){ .notes-body{ padding-bottom:72px !important; } }
