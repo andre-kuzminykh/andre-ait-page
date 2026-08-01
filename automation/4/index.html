@@ -503,6 +503,15 @@ window.addEventListener('load', function(){
   // пустым. Только на десктопе: на телефоне контент и так занимает весь экран,
   // а рост увёл бы нижние плашки под кружок с головой.
   var MAX_GROW = 1.6;
+  // На широком экране одного потолка мало: контент упирался в 1.6 и застывал,
+  // а экран продолжал расти — на 2560 чернила занимали 64% ширины островом.
+  // Ступени и границы те же, что у дорожной карты (body{zoom} 1.15/1.3/1.5),
+  // чтобы страницы курса росли одинаково. Ниже 1600px потолок прежний, поэтому
+  // уже проверенные 390 / 768 / 1440 не меняются.
+  function growCap(){
+    var w = window.innerWidth;
+    return MAX_GROW * (w >= 2300 ? 1.5 : w >= 1900 ? 1.3 : w >= 1600 ? 1.15 : 1);
+  }
   function inkBox(c){
     // Реальная «чернильная» высота: объединённый bbox прямых детей content-z.
     // offsetHeight тут бесполезен — у content-z min-height:100%, он всегда
@@ -550,7 +559,7 @@ window.addEventListener('load', function(){
       var grow = window.innerWidth >= 768;
       function target(natH, natW){
         var t = Math.min(availH / (natH + padY), availW / (natW + padX)) * 0.99;
-        return grow ? Math.min(t, MAX_GROW) : Math.min(t, 1);
+        return grow ? Math.min(t, growCap()) : Math.min(t, 1);
       }
       var z = target(ink.h, ink.w);
       if(z > 0.999 && z < 1.04) return;
@@ -3542,6 +3551,30 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
   :root{ --bub:clamp(128px,32vw,168px); --arw:52px; --arw-gap:12px; --bub-right:14px; }
   #video-bubble{ bottom:calc(16px + var(--arw) + 12px) !important; }
   #nav-prev, #nav-next{ bottom:16px !important; }
+}
+
+/* Широкие экраны. До 1600px всё как было — ступени начинаются выше, поэтому
+   уже проверенные 390 / 768 / 1440 не меняются вовсе.
+   Дальше лекция переставала адаптироваться: контент упирался в потолок роста,
+   а голова, кнопки листания, лого и шапка были заданы в фиксированных
+   пикселях — на 2560 контент занимал 64% ширины островом, а вся обвязка
+   выглядела мелкой. Дорожная карта в тех же условиях масштабируется целиком
+   через body{zoom} 1.15 / 1.3 / 1.5 — повторяем те же ступени и те же границы.
+   Шапку масштабируем `zoom`ом как одно целое: лого, кнопки и «Консультация»
+   растут вместе и не разъезжаются. Голову и кнопки листания растим через
+   переменные — вся геометрия пары кнопок под головой считается от них,
+   поэтому центрирование сохраняется само. */
+@media (min-width:1600px){
+  :root{ --bub:clamp(176px,15.5vw,271px); --arw:67px; --arw-gap:16px; --bub-right:23px; }
+  #lecture-header{ zoom:1.15; }
+}
+@media (min-width:1900px){
+  :root{ --bub:clamp(176px,15.5vw,307px); --arw:75px; --arw-gap:18px; --bub-right:26px; }
+  #lecture-header{ zoom:1.3; }
+}
+@media (min-width:2300px){
+  :root{ --bub:clamp(176px,15.5vw,354px); --arw:87px; --arw-gap:21px; --bub-right:30px; }
+  #lecture-header{ zoom:1.5; }
 }
 
 /* 15. Панель: в конце текста было слишком много пустоты. */
