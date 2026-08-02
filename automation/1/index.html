@@ -229,6 +229,19 @@
         break-after: page;
     }
 
+    /* Слайд «Уровни зрелости бизнес-модели» (#slide-20) — блок из трёх карточек
+       шире. Ни max-w-* на сетке, ни max-w-* на самом .content-z тут не работают:
+       portal-fit подбирает zoom так, что .content-z всегда занимает ВСЮ
+       доступную полосу слайда, и ширина блока на экране равна
+       «ширина слайда − его боковой padding − боковой padding .content-z × zoom».
+       Единственный рычаг — боковые отступы, поэтому снимаем их у .content-z
+       (только на десктопе и только на этом слайде) и ужимаем боковой padding
+       самого слайда. Блок вырастает с 1245 до 1376 CSS-px на 1440. */
+    @media (min-width: 1024px) {
+        #slide-20 { padding-left: 2rem; padding-right: 2rem; }
+        #slide-20 .content-z { padding-left: 0 !important; padding-right: 0 !important; }
+    }
+
     @page { size: A4 landscape; margin: 10mm; }
     @media print {
         html, body { overflow: visible !important; height: auto !important; background: #ffffff !important; print-color-adjust: exact; }
@@ -939,7 +952,7 @@ window.addEventListener('load', function(){
                 </div>
 
                 <div class="bg-black text-white border-2 border-solar/30 p-4 md:p-8 rounded-[20px] md:rounded-3xl flex-1 w-full flex flex-col items-center text-center shadow-lg h-full min-h-[110px]">
-                    <div class="w-10 h-10 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mb-2 md:mb-5 border-2 md:border-4 border-black shadow-sm shrink-0"><i class="ph-fill ph-buildings text-xl md:text-3xl text-solar"></i></div>
+                    <div class="w-10 h-10 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mb-2 md:mb-5 border-2 md:border-4 border-white shadow-sm shrink-0"><i class="ph-fill ph-buildings text-xl md:text-3xl text-solar"></i></div>
                     <h3 class="font-black text-sm md:text-2xl mb-1 md:mb-2 text-solar">Новая форма</h3>
                     <p class="text-[8px] md:text-[11px] font-bold text-solar uppercase tracking-widest mb-2 md:mb-5">Синтез людей и ИИ</p>
                     <ul class="text-[10px] md:text-sm text-white/80 font-medium text-left w-full space-y-1 md:space-y-3">
@@ -1010,12 +1023,12 @@ window.addEventListener('load', function(){
                     <div class="absolute -top-2 md:-top-3 bg-solar text-[#0A0A0A] px-2 md:px-4 py-0.5 md:py-1 rounded-full text-[8px] md:text-[10px] font-bold uppercase shadow-sm tracking-widest">Ядро</div>
                     <i class="ph-fill ph-brain text-2xl md:text-5xl mb-1 md:mb-4 text-solar"></i>
                     <h3 class="font-black text-[12px] md:text-2xl mb-1 md:mb-4 leading-tight text-solar">LLM (Мозг)</h3>
+                    <!-- «Контекст» и «Логика» — ДВЕ отдельные строки: в одну строку с
+                         разделителем «•» ряд был шире внутренней ширины карточки и
+                         вылезал на её фиолетовый фон. -->
                     <div class="flex flex-col items-center gap-0.5 md:gap-2 text-[8px] md:text-sm font-bold text-white/80">
-                        <div class="flex items-center gap-1.5 md:gap-3">
-                            <span class="flex items-center gap-1 md:gap-2"><i class="ph-fill ph-file-text text-solar text-sm md:text-lg shrink-0"></i>Контекст</span>
-                            <span class="text-solar">•</span>
-                            <span class="flex items-center gap-1 md:gap-2"><i class="ph-fill ph-tree-structure text-solar text-sm md:text-lg shrink-0"></i>Логика</span>
-                        </div>
+                        <span class="flex items-center gap-1 md:gap-2"><i class="ph-fill ph-file-text text-solar text-sm md:text-lg shrink-0"></i>Контекст</span>
+                        <span class="flex items-center gap-1 md:gap-2"><i class="ph-fill ph-tree-structure text-solar text-sm md:text-lg shrink-0"></i>Логика</span>
                     </div>
                 </div>
 
@@ -1048,7 +1061,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика: ядро «ИИ-агент» + шесть свойств-спутников.
                  Разметка по эталону слайда «Фреймворк AgentOps». -->
-            <div class="radial-fig" style="width:min(100%,620px,46vh);--orbit:36%;--sat:clamp(104px,30%,152px);--core:clamp(88px,24%,142px)">
+            <div class="radial-fig" style="width:min(100%,620px,46vh);--orbit:36%;--sat:clamp(74px,21.5%,110px);--core:clamp(76px,20.5%,120px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="36" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1375,35 +1388,35 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Где ИИ <span class="text-solar">создаёт ценность?</span></h2>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6 mb-6 md:mb-10 w-full">
-                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full hover:border-black transition-colors w-full">
+                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full w-full">
                     <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center text-black"><i class="ph-fill ph-headset text-lg md:text-2xl"></i></div>
                     <div class="w-full"><h4 class="font-bold text-[10px] md:text-sm lg:text-base mb-0.5">Под&shy;держка</h4><p class="text-[8px] md:text-xs text-black/50 leading-tight">Разбор обра&shy;щений</p></div>
                 </div>
-                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full hover:border-black transition-colors w-full">
+                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full w-full">
                     <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center text-black"><i class="ph-fill ph-code text-lg md:text-2xl"></i></div>
                     <div class="w-full"><h4 class="font-bold text-[10px] md:text-sm lg:text-base mb-0.5">IT / Раз&shy;работка</h4><p class="text-[8px] md:text-xs text-black/50 leading-tight">Генерация кода, тесты</p></div>
                 </div>
-                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full hover:border-black transition-colors w-full">
+                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full w-full">
                     <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center text-black"><i class="ph-fill ph-megaphone text-lg md:text-2xl"></i></div>
                     <div class="w-full"><h4 class="font-bold text-[10px] md:text-sm lg:text-base mb-0.5">Марке&shy;тинг</h4><p class="text-[8px] md:text-xs text-black/50 leading-tight">Персона&shy;лизация</p></div>
                 </div>
-                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full hover:border-black transition-colors w-full">
+                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full w-full">
                     <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center text-black"><i class="ph-fill ph-currency-dollar text-lg md:text-2xl"></i></div>
                     <div class="w-full"><h4 class="font-bold text-[10px] md:text-sm lg:text-base mb-0.5">Про&shy;дажи</h4><p class="text-[8px] md:text-xs text-black/50 leading-tight">Оценка лидов</p></div>
                 </div>
-                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full hover:border-black transition-colors w-full">
+                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full w-full">
                     <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center text-black"><i class="ph-fill ph-users text-lg md:text-2xl"></i></div>
                     <div class="w-full"><h4 class="font-bold text-[10px] md:text-sm lg:text-base mb-0.5">HR</h4><p class="text-[8px] md:text-xs text-black/50 leading-tight">Онбор&shy;динг, обучение</p></div>
                 </div>
-                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full hover:border-black transition-colors w-full">
+                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full w-full">
                     <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center text-black"><i class="ph-fill ph-briefcase text-lg md:text-2xl"></i></div>
                     <div class="w-full"><h4 class="font-bold text-[10px] md:text-sm lg:text-base mb-0.5">Менедж&shy;мент</h4><p class="text-[8px] md:text-xs text-black/50 leading-tight">Коорди&shy;нация проектов</p></div>
                 </div>
-                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full hover:border-black transition-colors w-full">
+                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full w-full">
                     <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center text-black"><i class="ph-fill ph-palette text-lg md:text-2xl"></i></div>
                     <div class="w-full"><h4 class="font-bold text-[10px] md:text-sm lg:text-base mb-0.5">Дизайн</h4><p class="text-[8px] md:text-xs text-black/50 leading-tight">Гене&shy;рация креативов</p></div>
                 </div>
-                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full hover:border-black transition-colors w-full">
+                <div class="bg-white border border-grayBase p-2 md:p-3 lg:p-5 rounded-[16px] md:rounded-3xl shadow-sm flex flex-col items-center text-center gap-1 md:gap-3 h-full w-full">
                     <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center text-black"><i class="ph-fill ph-chart-pie-slice text-lg md:text-2xl"></i></div>
                     <div class="w-full"><h4 class="font-bold text-[10px] md:text-sm lg:text-base mb-0.5">Анали&shy;тика</h4><p class="text-[8px] md:text-xs text-black/50 leading-tight">Даш&shy;борды и аномалии</p></div>
                 </div>
@@ -1570,7 +1583,7 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 18: Уровни зрелости бизнес-модели -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-20">
-        <div class="content-z w-full max-w-6xl lg:max-w-4xl">
+        <div class="content-z w-full max-w-6xl lg:max-w-5xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-12 text-center text-black">Уровни зрелости <span class="text-solar">бизнес-модели</span></h2>
 
             <div class="flex flex-col md:flex-row gap-3 md:gap-8 items-stretch justify-center w-full">
@@ -1603,7 +1616,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика: ядро + 7 измерений зрелости.
                  Разметка по эталону слайда «Фреймворк AgentOps». -->
-            <div class="radial-fig" style="width:min(100%,600px,50vh);--orbit:37.5%;--sat:clamp(88px,25%,138px);--core:clamp(98px,24%,140px)">
+            <div class="radial-fig" style="width:min(100%,600px,50vh);--orbit:37.5%;--sat:clamp(64px,18%,100px);--core:clamp(98px,24%,140px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="37.5" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1906,19 +1919,19 @@ window.addEventListener('load', function(){
 
             <div class="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center justify-center w-full">
                 <div class="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-3xl">
-                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-trend-up text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-lg leading-tight">Сильные стороны</h4>
                     </div>
-                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-trend-down text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-lg leading-tight">Слабые стороны</h4>
                     </div>
-                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-lightbulb text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-lg leading-tight">Возможности</h4>
                     </div>
-                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm hover:border-black transition-colors min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-warning-circle text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-lg leading-tight">Ограничения</h4>
                     </div>
@@ -2008,7 +2021,7 @@ window.addEventListener('load', function(){
             <!-- Круговая инфографика: одна композиция на все ширины.
                  Разметка-эталон, см. блок radial-fig — позиционирование
                  без transform, круги настоящие, hover-эффектов нет. -->
-            <div class="radial-fig" style="width:min(100%,620px,48vh)">
+            <div class="radial-fig" style="width:min(100%,620px,48vh);--sat:clamp(64px,18%,106px);--core:clamp(92px,26%,168px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="35" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -2170,18 +2183,18 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
 
-                <!-- Обратная связь: пунктирная шина со стрелкой влево, от оператора к агенту -->
+                <!-- Обратная связь: только пунктирная шина под потоком. Стрелку
+                     влево убрали по правке заказчика — она висела у левого края
+                     сама по себе и ни на что не указывала. -->
                 <div class="hidden md:flex flex-col items-center w-full mt-6 lg:mt-10">
-                    <div class="flex items-center gap-3 lg:gap-4 w-full">
-                        <i class="ph-bold ph-arrow-left text-solar text-2xl lg:text-3xl shrink-0"></i>
+                    <div class="flex items-center w-full">
                         <div class="flex-1 border-t-2 border-dashed border-solar anim-dash"></div>
                     </div>
                     <span class="mt-3 lg:mt-4 bg-white px-4 py-1.5 rounded-full border border-grayBase text-[11px] lg:text-sm font-bold uppercase tracking-widest text-black">Сбор обратной связи</span>
                 </div>
 
                 <div class="md:hidden flex flex-col items-center w-full mt-3">
-                    <div class="flex items-center gap-2 w-full">
-                        <i class="ph-bold ph-arrow-left text-solar text-lg shrink-0"></i>
+                    <div class="flex items-center w-full">
                         <div class="flex-1 border-t-2 border-dashed border-solar anim-dash"></div>
                     </div>
                     <span class="mt-1.5 text-[9px] font-bold uppercase tracking-widest text-black">Обратная связь</span>
@@ -2226,7 +2239,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика: цикл обучения. Разметка по эталону слайда
                  «Фреймворк AgentOps», см. блок radial-fig. -->
-            <div class="radial-fig mb-4 md:mb-6" style="width:min(100%,560px,48vh);--sat:clamp(108px,31%,164px);--core:clamp(96px,26%,140px)">
+            <div class="radial-fig mb-4 md:mb-6" style="width:min(100%,560px,48vh);--sat:clamp(88px,25%,132px);--core:clamp(84px,22%,120px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="35" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -2440,7 +2453,7 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
 
-                <div class="bg-solar p-1 rounded-[24px] md:rounded-[28px] max-w-3xl mx-auto shadow-[0_0_30px_rgba(139, 92, 246,0.2)] w-full">
+                <div class="bg-solar p-1 rounded-[24px] md:rounded-[28px] max-w-2xl mx-auto shadow-[0_0_30px_rgba(139, 92, 246,0.2)] w-full">
                     <div class="bg-black p-5 md:p-8 lg:p-6 rounded-[20px] md:rounded-[24px] w-full">
                         <p class="text-xs sm:text-base md:text-xl font-bold text-white leading-snug md:leading-relaxed">
                             <i class="ph-fill ph-trophy text-solar text-base md:text-xl align-[-2px] mr-1.5"></i>Победит тот, кто сумеет встроить ИИ<br>в <span class="text-solar">операционное ядро</span> своего бизнеса
@@ -2448,7 +2461,7 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
 
-                <button id="open-quiz-btn" type="button" class="mt-8 md:mt-10 lg:mt-6 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar text-[#0A0A0A] font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-4 rounded-full shadow-[0_0_30px_rgba(139, 92, 246,0.4)] hover:scale-105 transition-transform uppercase tracking-widest">
+                <button id="open-quiz-btn" type="button" class="mt-8 md:mt-10 lg:mt-6 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar text-[#0A0A0A] font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-4 rounded-full shadow-[0_0_30px_rgba(139, 92, 246,0.4)] uppercase tracking-widest">
                     <i class="ph-fill ph-graduation-cap text-lg md:text-2xl"></i>
                     Пройти тест
                 </button>
