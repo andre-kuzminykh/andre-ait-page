@@ -420,6 +420,63 @@ h1 .text-solar, h2 .text-solar {
   .slide-container.is-active [class*="md:flex-row"] > * { animation:none !important; opacity:1 !important; }
 }
 
+/* ==== ОЖИВЛЕНИЕ ЛЕКЦИИ (FR-SITE23) ====================================
+   Каскад появления уже есть выше (deckRise/Zoom/SlideX/Flip по индексу
+   слайда). Здесь — постоянное движение: бегущие пунктиры, мягкая пульсация
+   акцентов, «проявление» иконок.
+
+   ВСЁ движение живёт внутри `prefers-reduced-motion: no-preference`. Две
+   причины. Первая — уважение к настройке пользователя. Вторая практическая:
+   харнесс проверки снимает слайды с `reducedMotion:'reduce'` и ждёт, пока
+   координаты перестанут меняться, — бесконечная анимация, двигающая боксы,
+   не дала бы им устаканиться никогда, и замеры стали бы случайными.
+
+   Кружки схем НЕ двигаются — двигается только штриховка орбиты: заказчик
+   просил «чтобы двигались пунктиры, но не сами кружки». */
+@media (prefers-reduced-motion: no-preference){
+
+  /* 1. Орбита схемы: штрихи бегут по кольцу. Двигаем stroke-dashoffset —
+        геометрия не меняется, кружки стоят на местах. Шаг штриха 2.4+2.6=5
+        единиц viewBox, поэтому смещение на 50 — ровно десять шагов, и стык
+        цикла не виден. */
+  @keyframes rfDash { to { stroke-dashoffset:-50; } }
+  .radial-ring circle{ animation:rfDash 7s linear infinite; }
+
+  /* 2. Пунктирные соединители между блоками. Это CSS-бордеры, у них нет
+        dashoffset, поэтому рисуем штрих фоном-градиентом и гоняем его
+        background-position. Класс вешается на разметку точечно. */
+  @keyframes dashFlow { to { background-position:22px 0; } }
+  .anim-dash{
+    border-top-color:transparent !important;
+    background-image:linear-gradient(90deg,currentColor 0 11px,transparent 11px 22px);
+    background-size:22px 2px; background-repeat:repeat-x; background-position:0 0;
+    animation:dashFlow 1.2s linear infinite;
+  }
+
+  /* 3. Иконки проявляются вместе со своим блоком — короткий «выдох» после
+        общего каскада, поэтому задержка чуть больше его шага. */
+  @keyframes iconPop { from{ opacity:0; transform:scale(.72); } to{ opacity:1; transform:none; } }
+  .slide-container.is-active [class*="rounded-full"] > i,
+  .slide-container.is-active [class*="rounded-2xl"] > i{
+    animation:iconPop .5s cubic-bezier(.34,1.56,.64,1) both; animation-delay:.34s;
+  }
+
+  /* 4. Акцентная карточка мягко дышит подсветкой. Тень, а не размер: рост
+        двигал бы соседей и ломал вёрстку. */
+  @keyframes accentGlow{
+    0%,100%{ box-shadow:0 0 0 0 rgba(139,92,246,.30); }
+    50%    { box-shadow:0 0 26px 4px rgba(139,92,246,.22); }
+  }
+  .slide-container.is-active [class~="bg-black"]:not(.slide-container){
+    animation:accentGlow 3.6s ease-in-out infinite; animation-delay:1s;
+  }
+
+  /* 5. Ядро круговой схемы — та же подсветка, чтобы центр читался первым. */
+  .slide-container.is-active .radial-core{
+    animation:accentGlow 3.6s ease-in-out infinite;
+  }
+}
+
 /* Нижняя панель управления на ВСЕХ экранах: стрелки — внизу СПРАВА,
    говорящая голова — внизу СЛЕВА и компактная (FR-LECTURE-01/29). */
 #nav-prev, #nav-next {
@@ -3063,7 +3120,7 @@ window.addEventListener('load', function(){
                 <p class="text-[10px] md:text-sm font-bold uppercase tracking-widest text-white/50 mb-3">Проверьте понимание — 10 вопросов</p>
                 <!-- mr-[4rem] на телефоне: кружок с головой стоит в правом нижнем углу и
                      задевал правый край кнопки теста. -->
-                <button id="open-quiz-btn" type="button" class="mt-2 md:mt-4 mr-[4rem] md:mr-0 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar text-black font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-5 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:scale-105 transition-transform uppercase tracking-widest">
+                <button id="open-quiz-btn" type="button" class="mt-2 md:mt-4 mr-[4rem] md:mr-0 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar text-black font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-5 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.4)] uppercase tracking-widest">
                     <i class="ph-fill ph-graduation-cap text-lg md:text-2xl"></i>
                     Пройти тест
                 </button>
