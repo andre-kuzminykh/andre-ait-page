@@ -3574,7 +3574,12 @@ window.addEventListener('load', function(){
 .radial-sat .rf-label{
   position:absolute;
   top:calc(100% + .32em);
-  left:calc(-1 * var(--sat-dot)); right:calc(-1 * var(--sat-dot));
+  /* Коробка подписи шире кружка на 1.6 диаметра в каждую сторону, то есть
+     4.2 диаметра всего. Трёх не хватало: после уменьшения кружков длинные
+     подписи («Сценарии понятны», «Промышленная сборка») перестали в неё
+     влезать на узких фигурах. Расширять коробку правильнее, чем возвращать
+     кружкам размер, — заказчик просил кружки поменьше. */
+  left:calc(-1.6 * var(--sat-dot)); right:calc(-1.6 * var(--sat-dot));
   width:auto !important; max-width:none !important;
   white-space:nowrap !important;
   text-align:center;
