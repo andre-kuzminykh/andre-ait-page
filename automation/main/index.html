@@ -103,8 +103,8 @@
   @media(min-width:2300px){body{zoom:1.5}}
 
   /* ===== Content: roadmap (scrolls) ===== */
-  main{min-height:100dvh;padding:6rem 1rem 3rem}
-  @media(min-width:640px){main{padding:7rem 2rem 3.5rem}}
+  main{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 1rem}
+  @media(min-width:640px){main{padding:5.5rem 2rem}}
   .wrap{max-width:64rem;margin:0 auto;animation:fadeUp .5s ease both}
   .title{text-align:center;font-size:clamp(1.7rem,5vw,2.8rem);font-weight:800;line-height:1.12;letter-spacing:-.02em}
   .title .line,.title .line2{display:block}
@@ -204,7 +204,7 @@
         <li><a class="module" href="https://andre.technology/automation/2">
           <span class="ico"><i class="fa-solid fa-diagram-project"></i></span>
           <span class="body"><span class="lbl">Модуль 2</span><h3>Моделирование бизнес-процессов с ИИ-агентами</h3>
-          <p>Вы научитесь анализировать бизнес-процессы, выявлять узкие места и точки автоматизации, а также проектировать новые процессы, в которых человек и ИИ-агенты работают как единая система.</p></span>
+          <p>Вы научитесь анализировать бизнес-процессы, выявлять узкие места и точки автоматизации, проектировать новые процессы, в которых человек и ИИ-агенты работают как единая система.</p></span>
           <span class="go"><i class="fa-solid fa-arrow-right"></i></span>
         </a></li>
 
@@ -257,7 +257,7 @@
   <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
     <div class="inner">
       <div class="grad"></div>
-      <video id="bubble-video" src="https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l1/videos/0.mp4" loop muted autoplay playsinline preload="auto"></video>
+      <video id="bubble-video" src="https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l1/videos/0.mp4" muted autoplay playsinline preload="auto"></video>
       <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><i class="fa-solid fa-volume-xmark"></i></div>
       <div class="bubble-play" aria-hidden="true"><i class="fa-solid fa-play"></i></div>
     </div>
@@ -298,7 +298,11 @@
       var WANT_SOUND = false;
       try { WANT_SOUND = localStorage.getItem('welcome-audio') === '1'; } catch (e) {}
       function rememberSound(){ try { localStorage.setItem('welcome-audio', '1'); } catch (e) {} }
-      video.loop = true; video.muted = !WANT_SOUND;
+      // Дорожная карта — конечная страница пути: голова договаривает своё и
+      // замолкает, дальше выбирает пользователь. Зацикливать нельзя: на шагах
+      // мастера ролик по окончании ведёт на следующий шаг, а здесь вести некуда,
+      // и повтор превращался в бесконечно говорящую голову поверх списка модулей.
+      video.loop = false; video.muted = !WANT_SOUND;
       // Only the autoplay-policy block (NotAllowedError) means "sound isn't allowed on this fresh page"
       // → only THEN fall back to muted. Transient rejections (AbortError from an interrupted load) must
       // NOT mute, otherwise we'd kill sound the browser would actually allow (e.g. Chrome after the user
@@ -315,6 +319,10 @@
       }
       video.addEventListener('play',  function(){ bubble.classList.remove('paused'); });
       video.addEventListener('pause', function(){ bubble.classList.add('paused'); });
+      // Договорил — показываем ▶, чтобы кружок не выглядел зависшим и ролик
+      // можно было пересмотреть. Отдельно от 'pause': по спецификации порядок
+      // событий в конце воспроизведения зависит от браузера.
+      video.addEventListener('ended', function(){ bubble.classList.add('paused'); });
       video.addEventListener('volumechange', syncSound);
       syncSound();
       // safety net: show ▶ only if playback genuinely never started (rare with the muted fallback)
@@ -363,5 +371,33 @@
       });
     })();
   </script>
+
+<script id="wizard-fit">
+/* Экран визарда не листается по замыслу — три шага живут в одном экране.
+   Но контент бывает выше вьюпорта, и тогда страница уезжает под фиксированную
+   шапку: заголовок оказывается за кнопками. Ужимаем активный шаг, чтобы он
+   помещался целиком, и держим его строго по центру. */
+(function(){
+  function fit(){
+    var m = document.querySelector('main');
+    var sec = document.querySelector('.screen.active') || document.querySelector('.screen');
+    if(!m || !sec) return;
+    sec.style.zoom = '';
+    var st = getComputedStyle(m);
+    var pad = (parseFloat(st.paddingTop)||0) + (parseFloat(st.paddingBottom)||0);
+    var avail = window.innerHeight - pad;
+    var need = sec.getBoundingClientRect().height;
+    if(need > 8 && avail > 8 && need > avail) sec.style.zoom = Math.max(0.55, (avail/need) * 0.98);
+  }
+  var t;
+  function soon(){ clearTimeout(t); t = setTimeout(fit, 60); }
+  window.addEventListener('load', function(){ fit(); [200,600,1400].forEach(function(d){ setTimeout(fit,d); }); });
+  window.addEventListener('resize', soon);
+  window.addEventListener('orientationchange', function(){ setTimeout(fit,150); });
+  window.addEventListener('popstate', soon);
+  document.addEventListener('click', soon, true);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>
 </body>
 </html>

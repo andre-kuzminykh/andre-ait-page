@@ -354,5 +354,33 @@
       });
     })();
   </script>
+
+<script id="wizard-fit">
+/* Экран визарда не листается по замыслу — три шага живут в одном экране.
+   Но контент бывает выше вьюпорта, и тогда страница уезжает под фиксированную
+   шапку: заголовок оказывается за кнопками. Ужимаем активный шаг, чтобы он
+   помещался целиком, и держим его строго по центру. */
+(function(){
+  function fit(){
+    var m = document.querySelector('main');
+    var sec = document.querySelector('.screen.active') || document.querySelector('.screen');
+    if(!m || !sec) return;
+    sec.style.zoom = '';
+    var st = getComputedStyle(m);
+    var pad = (parseFloat(st.paddingTop)||0) + (parseFloat(st.paddingBottom)||0);
+    var avail = window.innerHeight - pad;
+    var need = sec.getBoundingClientRect().height;
+    if(need > 8 && avail > 8 && need > avail) sec.style.zoom = Math.max(0.55, (avail/need) * 0.98);
+  }
+  var t;
+  function soon(){ clearTimeout(t); t = setTimeout(fit, 60); }
+  window.addEventListener('load', function(){ fit(); [200,600,1400].forEach(function(d){ setTimeout(fit,d); }); });
+  window.addEventListener('resize', soon);
+  window.addEventListener('orientationchange', function(){ setTimeout(fit,150); });
+  window.addEventListener('popstate', soon);
+  document.addEventListener('click', soon, true);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>
 </body>
 </html>
