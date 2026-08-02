@@ -2055,7 +2055,12 @@ window.addEventListener('load', function(){
             <p class="w-full text-center text-black/60 mb-6 md:mb-10 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент управляет выполнением задачи</p>
 
             <!-- Круговая схема на компоненте .radial-fig: остаётся кругом и на 390px,
-                 спутники позиционируются инлайновыми --x/--y (см. блок radial-fig). -->
+                 спутники позиционируются инлайновыми --x/--y (см. блок radial-fig).
+                 Обёртка с правым отступом ТОЛЬКО на планшете: подпись правого нижнего
+                 спутника («Инструменты») вынесена за кружок и на 768px упиралась в
+                 говорящую голову — последняя буква уходила под кружок. Отступ
+                 сдвигает всю схему левее; на телефоне и десктопе он не нужен. -->
+            <div class="w-full md:pr-20 lg:pr-0">
             <div class="radial-fig" style="width:min(100%,470px,48vh);--orbit:37%;--sat:clamp(68px,25%,132px);--core:clamp(82px,24%,148px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="37" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
@@ -2088,6 +2093,7 @@ window.addEventListener('load', function(){
                     <i class="ph-fill ph-shield text-lg md:text-2xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-0.5">Ограни&shy;чения</span>
                 </div>
+            </div>
             </div>
 
         </div>
