@@ -589,11 +589,14 @@ window.addEventListener('load', function(){
       if(z > 0.999 && z < 1.04) return;
       apply(z);
       // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
-      // и natH меняется. Обратно в CSS-пиксели — делением на текущий z.
+      // и natH меняется. Делить на z тут НЕЛЬЗЯ: inkBox меряет offsetHeight,
+      // а он и так в раскладочных пикселях — zoom предка его не масштабирует.
+      // Пока делили, высота занижалась в z раз, масштаб выходил завышенным, и
+      // контент лез под шапку почти на каждом слайде.
       for(var pass = 0; pass < 4; pass++){
         var re = inkBox(c);
         if(!re) break;
-        var next = target(re.h / z, re.w / z);
+        var next = target(re.h, re.w);
         if(Math.abs(next - z) < 0.01) break;
         z = next;
         apply(z);
