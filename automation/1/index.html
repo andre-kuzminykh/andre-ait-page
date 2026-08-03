@@ -4,14 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ИИ как новое операционное ядро бизнеса</title>
-    <meta name="description" content="Лекция 1: Введение в разработку ИИ-стратегии. 42 слайда о том, как ИИ становится операционным ядром бизнеса и как построить AI-First компанию.">
+    <title>Автоматизация - Модуль 1 - Стратегия внедрения ИИ в бизнес-процессы</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="description" content="Вы поймёте, как ИИ-агенты меняют операционную модель компании, сможете оценить уровень ИИ-зрелости бизнеса и определить, в какие процессы внедрение ИИ принесёт наибольший эффект.">
     <meta name="theme-color" content="#8B5CF6">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="ИИ как новое операционное ядро бизнеса">
-    <meta property="og:description" content="Лекция 1: Введение в разработку ИИ-стратегии. 42 слайда о том, как ИИ становится операционным ядром бизнеса и как построить AI-First компанию.">
+    <meta property="og:title" content="Автоматизация - Модуль 1 - Стратегия внедрения ИИ в бизнес-процессы">
+    <meta property="og:description" content="Вы поймёте, как ИИ-агенты меняют операционную модель компании, сможете оценить уровень ИИ-зрелости бизнеса и определить, в какие процессы внедрение ИИ принесёт наибольший эффект.">
     <meta property="og:image" content="https://i.ibb.co/cSx3J9r8/111.png">
     <meta property="og:image:secure_url" content="https://i.ibb.co/cSx3J9r8/111.png">
     <meta property="og:image:type" content="image/png">
@@ -20,8 +27,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ИИ как новое операционное ядро бизнеса">
-    <meta name="twitter:description" content="Лекция 1: Введение в разработку ИИ-стратегии. 42 слайда о том, как ИИ становится операционным ядром бизнеса.">
+    <meta name="twitter:title" content="Автоматизация - Модуль 1 - Стратегия внедрения ИИ в бизнес-процессы">
+    <meta name="twitter:description" content="Вы поймёте, как ИИ-агенты меняют операционную модель компании, сможете оценить уровень ИИ-зрелости бизнеса и определить, в какие процессы внедрение ИИ принесёт наибольший эффект.">
     <meta name="twitter:image" content="https://i.ibb.co/cSx3J9r8/111.png">
 
     <!-- Tailwind CSS -->
@@ -2634,6 +2641,9 @@ window.addEventListener('load', function(){
 
         function setupPlayerEvents(p) {
             p.on('ended', () => {
+                // Открыт текст к слайду — читатель ещё читает: видео просто
+                // доигрывает, слайд НЕ переключается (FR-LECTURE-32).
+                if (document.body.classList.contains('notes-open')) return;
                 if (currentSlide < totalSlides - 1) nextSlide();
             });
             p.on('play', () => {
