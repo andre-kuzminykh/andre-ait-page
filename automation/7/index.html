@@ -643,7 +643,9 @@ window.addEventListener('load', function(){
         return grow ? Math.min(t, growCap()) : Math.min(t, 1);
       }
       var z = target(ink.h, ink.w);
-      if(z > 0.999 && z < 1.04) return;
+      // При открытой панели ранний выход НЕЛЬЗЯ: ширина уже узкая, раскладка
+      // перестроена, и без финальной компенсации карточки остаются пережатыми.
+      if(z > 0.999 && z < 1.04 && !panelW) return;
       apply(z);
       // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
       // и natH меняется. Делить на z тут НЕЛЬЗЯ: inkBox меряет offsetHeight,
@@ -1927,6 +1929,11 @@ window.addEventListener('load', function(){
 .radial-sat .rf-label{
   position:absolute;
   top:calc(100% + .32em);
+  /* Пилюля цвета фона страницы: пунктир орбиты проходит ПОД подписью и не
+     читается как лишний символ внутри слов («Учёт /ошибок»). */
+  background:#FFFFFF;
+  padding:.08em .45em;
+  border-radius:.6em;
   /* Коробка подписи шире кружка на 1.6 диаметра в каждую сторону, то есть
      4.2 диаметра всего. Трёх не хватало: после уменьшения кружков длинные
      подписи («Сценарии понятны», «Промышленная сборка») перестали в неё
@@ -1940,6 +1947,7 @@ window.addEventListener('load', function(){
   z-index:6;
   pointer-events:none;
 }
+html.dark .radial-sat .rf-label{ background:#0A0A0A; }
 </style>
 <style id="lesson-fixes">
 /* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
@@ -2265,12 +2273,11 @@ html.dark .slide-container [class*="text-white/4"]{ color:rgba(255,255,255,.62) 
 .slide-container h1, .slide-container h2,
 .slide-container h3, .slide-container h4{ hyphens:manual !important; }
 
-/* 23. При открытой панели слайд сжимается вправо, а кружок с головой остаётся
-   на месте — широкие нижние плашки доезжали до него правым краем.
-   Отводим контент от зоны кружка. */
-@media (min-width:1024px){
-  body.notes-open .slide-container .content-z{ padding-right:calc(var(--bub) + 36px) !important; }
-}
+/* 23 (отменено). Раньше при открытой панели контенту добавлялся padding-right
+   под кружок с головой — но это ПЕРЕСТРАИВАЛО раскладку (карточки ужимались
+   и текст переносился иначе). Требование заказчика: при открытии текста
+   элементы не меняют форму, меняется только масштаб. Кружок, как и при
+   закрытой панели, просто лежит поверх слайда. */
 
 /* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
    съедали высоту подписи и заставляли ломать слова. Сама фигура и всё
@@ -2282,6 +2289,49 @@ html.dark .slide-container [class*="text-white/4"]{ color:rgba(255,255,255,.62) 
 /* 16. Финальный слайд-обложка: фиолетовый доходит до самого низа, под полосой
    прогресса не остаётся чужой полоски фона. */
 .slide-container[class~="bg-black"]{ padding-bottom:0 !important; }
+
+/* 16b. Подсвеченный столбец диаграммы «Пять уровней»: scale-105 растёт от
+   ОСНОВАНИЯ, а не от центра — низ столбца не проваливается под базовую линию. */
+.slide-container [class*="rounded-t-"][class*="scale-105"]{ transform-origin:center bottom; }
+
+/* 16c. Точки-маркеры таймлайна (bg-white + border-4 + rounded-full): в тёмной
+   теме правило 18 делало их полупрозрачными, и линия таймлайна просвечивала
+   сквозь маркер. Маркеры непрозрачные. */
+html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounded-full"]{
+  background-color:#2E2E2E !important;
+}
+
+/* 24. «Дрыгание» при наведении: portal-deck гасит любой transform на :hover,
+   а у восьми акцентных карточек масштаб СТАТИЧЕСКИЙ (md:scale-105 /
+   lg:scale-105) — под курсором карточка сжималась и прыгала обратно.
+   Возвращаем статический масштаб (правило 21 сделало то же для
+   центрирующих -translate-сдвигов). */
+@media (min-width:768px){
+  .slide-container [class*="md:scale-105"]:hover{ transform:scale(1.05) !important; }
+}
+@media (min-width:1024px){
+  .slide-container [class*="lg:scale-105"]:hover{ transform:scale(1.05) !important; }
+}
+
+/* 25. На слайдах нечего нажимать — курсор всюду обычный; единственная
+   настоящая кнопка — «Пройти тест» на финальном слайде. */
+.slide-container .content-z, .slide-container .content-z *{ cursor:default; }
+.slide-container #open-quiz-btn, .slide-container #open-quiz-btn *{ cursor:pointer; }
+
+/* 26. Галочки/крестики списков: глиф центрируется по ПЕРВОЙ строке текста на
+   любом брейкпоинте. Фиксированный mt-0.5 при разных кеглях иконки и текста
+   давал разнобой — иконка то ниже, то выше строки. */
+.slide-container li > i[class*="ph-check"],
+.slide-container li > i[class*="ph-x"]{
+  margin-top:0 !important; line-height:inherit !important; align-self:flex-start;
+}
+
+/* 27. Подпись под «Практическим заданием» на экране результата теста. */
+.quiz-soon{
+  margin:0 auto; display:block; max-width:24rem;
+  font-size:.78rem; font-weight:600; letter-spacing:.02em; color:rgba(255,255,255,.55);
+}
+.quiz-soon i{ color:#F97316; margin-right:.4rem; }
 </style>
 
 <style id="notes-panel-style">
@@ -2307,7 +2357,7 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
 .notes-head{
   flex:0 0 auto; display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem;
   /* сверху резерв под логотип AIT: он остаётся видимым НАД панелью */
-  padding:calc(clamp(2.3rem,9vw,3.2rem) + clamp(1.1rem,4vw,1.7rem)) clamp(1rem,2.6vw,1.6rem) .85rem;
+  padding:calc(clamp(2.3rem,9vw,3.2rem) + clamp(1.5rem,5vw,2.3rem)) clamp(1rem,2.6vw,1.6rem) .85rem;
   border-bottom:1px solid rgba(0,0,0,.09);
   background:linear-gradient(180deg, rgba(139,92,246,.07), rgba(139,92,246,0));
 }

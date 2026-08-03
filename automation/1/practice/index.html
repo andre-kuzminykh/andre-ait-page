@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Практическое задание — Лекция 1 | Andre AI Technology</title>
+<meta name="description" content="Практическое задание к лекции 1 курса «Автоматизация бизнес-процессов с ИИ-агентами».">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<style>
+  :root{
+    --bg:#FFFFFF; --fg:#0A0A0A; --muted:rgba(0,0,0,.55);
+    --card:rgba(0,0,0,.04); --card-border:rgba(0,0,0,.10);
+    --ctrl-bg:#fff; --ctrl-fg:#111; --ctrl-border:rgba(0,0,0,.12);
+  }
+  html.dark{
+    --bg:#0A0A0A; --fg:#FAFAFA; --muted:rgba(250,250,250,.6);
+    --card:rgba(255,255,255,.05); --card-border:rgba(255,255,255,.12);
+    --ctrl-bg:#141414; --ctrl-fg:#fafafa; --ctrl-border:rgba(255,255,255,.18);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  *, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
+  body{
+    font-family:'Montserrat',sans-serif; background:var(--bg); color:var(--fg);
+    min-height:100dvh; display:flex; flex-direction:column;
+    transition:background .3s ease,color .3s ease;
+  }
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+    padding:clamp(.55rem,2vw,1rem) clamp(.9rem,3.2vw,2rem);
+  }
+  .lec-logo{display:inline-flex;align-items:center}
+  .lec-logo img{height:clamp(2.3rem,9vw,3.2rem);width:auto;display:block}
+  .lec-right{display:flex;align-items:center;gap:clamp(.5rem,2.2vw,.8rem)}
+  .lec-ctrl{
+    display:inline-flex;align-items:center;justify-content:center;
+    height:clamp(2.3rem,9vw,3rem);width:clamp(2.3rem,9vw,3rem);border-radius:999px;
+    border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);
+    font-size:clamp(1.05rem,4vw,1.3rem);line-height:1;cursor:pointer;
+    transition:background .2s ease,color .2s ease;
+  }
+  main{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:clamp(6rem,16vh,8rem) 1.25rem 3rem;
+  }
+  .badge{
+    display:inline-flex; align-items:center; gap:.5rem;
+    font-size:clamp(10px,2.4vw,11.5px); font-weight:800; letter-spacing:.16em;
+    text-transform:uppercase; color:#8B5CF6; margin-bottom:1rem;
+  }
+  h1{font-weight:900; font-size:clamp(1.6rem,6vw,3rem); line-height:1.15; letter-spacing:-.01em}
+  h1 .accent{
+    background-image:linear-gradient(90deg,#8B5CF6 0%,#F97316 100%);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+  }
+  .card{
+    margin-top:clamp(1.4rem,4vh,2.2rem); max-width:34rem; width:100%;
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:1.5rem; padding:clamp(1.3rem,4vw,2rem);
+  }
+  .card i{font-size:2rem;color:#F97316}
+  .card p{margin-top:.7rem;color:var(--muted);font-size:clamp(.9rem,2.6vw,1rem);line-height:1.65;font-weight:600}
+  .back{
+    margin-top:clamp(1.6rem,4vh,2.4rem); display:inline-flex; align-items:center; gap:.55rem;
+    background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase;
+    letter-spacing:.09em; font-size:clamp(11px,2.6vw,13px);
+    padding:.95rem 1.9rem; border-radius:999px; text-decoration:none;
+    transition:background .2s ease;
+  }
+  .back:hover{background:#7C3AED}
+</style>
+<script>
+(function(){
+  var saved=null; try{saved=localStorage.getItem('welcome-theme');}catch(e){}
+  document.documentElement.classList.toggle('dark', saved!=='light');
+})();
+</script>
+</head>
+<body>
+  <header>
+    <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
+      <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
+    </a>
+    <div class="lec-right">
+      <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить тему (тёмная/светлая)"><i class="ph-fill ph-moon"></i></button>
+    </div>
+  </header>
+
+  <main>
+    <span class="badge"><i class="ph-fill ph-clipboard-text"></i> Лекция 1</span>
+    <h1>Практическое <span class="accent">задание</span></h1>
+    <div class="card">
+      <i class="ph-fill ph-hammer"></i>
+      <p>Задание к лекции «Стратегия внедрения ИИ в бизнес-процессы» появится здесь совсем скоро. Загляните после следующей лекции.</p>
+    </div>
+    <a class="back" href="https://andre.technology/automation/1/"><i class="ph-bold ph-arrow-left"></i> Вернуться к лекции</a>
+  </main>
+
+<script>
+(function(){
+  var btn=document.getElementById('lec-theme');
+  function sync(){
+    var dark=document.documentElement.classList.contains('dark');
+    btn.innerHTML='<i class="ph-fill ph-'+(dark?'sun':'moon')+'"></i>';
+  }
+  btn.addEventListener('click',function(){
+    var dark=document.documentElement.classList.toggle('dark');
+    try{localStorage.setItem('welcome-theme',dark?'dark':'light');}catch(e){}
+    sync();
+  });
+  sync();
+})();
+</script>
+</body>
+</html>
