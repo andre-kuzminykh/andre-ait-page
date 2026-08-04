@@ -1,5 +1,160 @@
-<!DOCTYPE html>
-<html lang="en">
+# -*- coding: utf-8 -*-
+"""Сборка двух входных страниц курса из одного шаблона.
+
+  /automation/     — английская (адрес без пометки)
+  /automation_ru/  — русская (помечена суффиксом _ru)
+
+Обе страницы устроены одинаково: одна и та же вёрстка, стили и скрипт, разные
+только тексты и мета для веб-превью. Шаблон здесь — единственный источник
+правды; `tests/test_course_entry.py` пересобирает страницы и сверяет байты,
+поэтому руками их править нельзя — правим шаблон и запускаем:
+
+    python3 tools/build_course_entry.py
+"""
+import os
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+SITE = "https://andre.technology"
+PATH_EN = "/automation/"
+PATH_RU = "/automation_ru/"
+URL_EN = SITE + PATH_EN
+URL_RU = SITE + PATH_RU
+COURSE = SITE + "/automation/main"
+
+# Картинку для веб-превью заказчик пришлёт отдельно — меняется одной строкой
+# на язык (ширина/высота ниже тоже под неё).
+OG_IMAGE_EN = SITE + "/assets/og/andre-ai-technologies.png"
+OG_IMAGE_RU = SITE + "/assets/og/andre-ai-technologies.png"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Тексты
+# ─────────────────────────────────────────────────────────────────────────────
+
+RU = {
+    "lang": "ru",
+    "url": URL_RU,
+    "path": PATH_RU,
+    "other_path": PATH_EN,
+    "og_locale": "ru_RU",
+    "og_image": OG_IMAGE_RU,
+    "title": "Курс по автоматизации бизнес-процессов с помощью ИИ-агентов",
+    "desc": (
+        "Курс для будущих ИИ-консультантов, ИИ-инженеров по автоматизации и "
+        "ИИ-основателей: находить процессы для автоматизации, собирать "
+        "ИИ-агентов и получать измеримый экономический эффект."
+    ),
+    "og_image_alt": "Курс по автоматизации бизнес-процессов с помощью ИИ-агентов",
+    "home_label": "На главную",
+    "lang_group": "Язык",
+    "theme_label": "Сменить фон (тёмный/светлый)",
+    "consult": "Консультация",
+    "consult_label": "Консультация",
+    "blocks_label": "Блоки страницы",
+    "start": "Начать обучение",
+    "scroll": "Листайте вниз",
+    "a_course": "О курсе",
+    "a_roles": "Для кого этот курс",
+    "a_skills": "Чему вы научитесь",
+    "a_start": "Начать обучение",
+    "hero": ('<span class="line">Добро пожаловать на курс</span>'
+             '<span class="line">по автоматизации</span>'
+             '<span class="line"><span class="plum">бизнес-процессов</span> '
+             'с <span class="flame">ИИ-агентами</span></span>'),
+    "hero_desc": ("Вы научитесь трансформировать бизнес в AI-First компанию: "
+                  '<br class="lb">автоматизировать процессы с помощью ИИ-агентов, масштабироваться '
+                  '<br class="lb">без роста штата и получать измеримый экономический эффект.'),
+    "roles_h": 'Для кого <span class="plum">этот курс</span>',
+    "roles": [
+        ("p", "fa-compass", "ИИ-консультант",
+         'Находит процессы для <span class="nb">ИИ-автоматизации</span>'),
+        ("f", "fa-wrench", "ИИ-инженер по автоматизации",
+         'Автоматизирует бизнес с <span class="nb">ИИ-агентами</span>'),
+        ("p", "fa-rocket", "ИИ-основатель",
+         'Строит бизнес с помощью <span class="nb">ИИ-агентов</span>'),
+    ],
+    "skills_h": 'Чему вы <span class="flame">научитесь</span>',
+    "skills": [
+        "Управлять компанией как потоком данных",
+        "Находить процессы для автоматизации",
+        "Описывать текущий AS-IS процесс",
+        "Проектировать будущую TO-BE модель",
+        "Определять роль ИИ-агента в процессе",
+        "Создавать ИИ-агентов",
+        "Понимать логику мультиагентных систем",
+        "Проверять качество и безопасность ИИ",
+        "Оценивать эффект от автоматизации",
+        "Внедрить первого ИИ-агента в бизнес",
+    ],
+    "final_h": 'Готовы <span class="plum">начать</span>?',
+    "final_lead": ("Пройдите курс шаг за шагом — от поиска процесса до работающего "
+                   '<span class="nb">ИИ-агента</span> в вашем бизнесе.'),
+}
+
+EN = {
+    "lang": "en",
+    "url": URL_EN,
+    "path": PATH_EN,
+    "other_path": PATH_RU,
+    "og_locale": "en_US",
+    "og_image": OG_IMAGE_EN,
+    "title": "Business process automation course with AI agents",
+    "desc": ("A course for future AI consultants, AI automation engineers and AI "
+             "founders: find the processes worth automating, build AI agents and "
+             "deliver a measurable economic effect."),
+    "og_image_alt": "Business process automation course with AI agents",
+    "home_label": "Home",
+    "lang_group": "Language",
+    "theme_label": "Switch background (dark/light)",
+    "consult": "Consultation",
+    "consult_label": "Consultation",
+    "blocks_label": "Page sections",
+    "start": "Start learning",
+    "scroll": "Scroll down",
+    "a_course": "About the course",
+    "a_roles": "Who this course is for",
+    "a_skills": "What you will learn",
+    "a_start": "Start learning",
+    "hero": ('<span class="line">Welcome to the course on</span>'
+             '<span class="line"><span class="plum">business process automation</span></span>'
+             '<span class="line">with <span class="flame">AI agents</span></span>'),
+    "hero_desc": ("You will learn to transform your business into an AI-First company: "
+                  '<br class="lb">automate processes with AI agents, scale without growing headcount, '
+                  '<br class="lb">and achieve a measurable economic effect.'),
+    "roles_h": 'Who <span class="plum">this course</span> is for',
+    "roles": [
+        ("p", "fa-compass", "AI Consultant", "Finds processes ready for AI automation"),
+        ("f", "fa-wrench", "AI Automation Engineer", "Automates business with AI agents"),
+        ("p", "fa-rocket", "AI Founder", "Builds a business powered by AI agents"),
+    ],
+    "skills_h": 'What you will <span class="flame">learn</span>',
+    "skills": [
+        "Run a company as a flow of data",
+        "Find processes worth automating",
+        "Describe the current AS-IS process",
+        "Design the future TO-BE model",
+        "Define the AI agent's role in a process",
+        "Build AI agents",
+        "Understand multi-agent system logic",
+        "Verify AI quality and safety",
+        "Measure the effect of automation",
+        "Deploy your first AI agent in a business",
+    ],
+    "final_h": 'Ready to <span class="plum">start</span>?',
+    "final_lead": ("Take the course step by step — from finding a process to a working "
+                   '<span class="nb">AI agent</span> in your business.'),
+}
+
+SKILL_ICONS = ("fa-brain", "fa-magnifying-glass", "fa-clipboard-list", "fa-pen-ruler",
+               "fa-user-gear", "fa-robot", "fa-network-wired", "fa-shield-halved",
+               "fa-arrow-trend-up", "fa-rocket")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Шаблон
+# ─────────────────────────────────────────────────────────────────────────────
+
+TEMPLATE = r"""<!DOCTYPE html>
+<html lang="{{LANG}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -16,15 +171,15 @@
   try{
     if (sessionStorage.getItem('ait_lang_hop') === '1') return;
     var pref = localStorage.getItem('ait_lang');
-    if ((pref === 'ru' || pref === 'en') && pref !== 'en'){
+    if ((pref === 'ru' || pref === 'en') && pref !== '{{LANG}}'){
       sessionStorage.setItem('ait_lang_hop', '1');
-      location.replace('/automation_ru/' + location.hash);
+      location.replace('{{OTHER_PATH}}' + location.hash);
     }
   }catch(e){}
 })();
 </script>
-<title>Business process automation course with AI agents</title>
-<meta name="description" content="A course for future AI consultants, AI automation engineers and AI founders: find the processes worth automating, build AI agents and deliver a measurable economic effect.">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESC}}">
 
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
@@ -34,25 +189,25 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 
-<link rel="canonical" href="https://andre.technology/automation/">
-<link rel="alternate" hreflang="en" href="https://andre.technology/automation/">
-<link rel="alternate" hreflang="ru" href="https://andre.technology/automation_ru/">
-<link rel="alternate" hreflang="x-default" href="https://andre.technology/automation/">
+<link rel="canonical" href="{{URL}}">
+<link rel="alternate" hreflang="en" href="{{URL_EN}}">
+<link rel="alternate" hreflang="ru" href="{{URL_RU}}">
+<link rel="alternate" hreflang="x-default" href="{{URL_EN}}">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Andre AI Technologies">
-<meta property="og:locale" content="en_US">
-<meta property="og:title" content="Business process automation course with AI agents">
-<meta property="og:description" content="A course for future AI consultants, AI automation engineers and AI founders: find the processes worth automating, build AI agents and deliver a measurable economic effect.">
-<meta property="og:url" content="https://andre.technology/automation/">
-<meta property="og:image" content="https://andre.technology/assets/og/andre-ai-technologies.png">
+<meta property="og:locale" content="{{OG_LOCALE}}">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:url" content="{{URL}}">
+<meta property="og:image" content="{{OG_IMAGE}}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Business process automation course with AI agents">
+<meta property="og:image:alt" content="{{OG_IMAGE_ALT}}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Business process automation course with AI agents">
-<meta name="twitter:description" content="A course for future AI consultants, AI automation engineers and AI founders: find the processes worth automating, build AI agents and deliver a measurable economic effect.">
-<meta name="twitter:image" content="https://andre.technology/assets/og/andre-ai-technologies.png">
+<meta name="twitter:title" content="{{TITLE}}">
+<meta name="twitter:description" content="{{DESC}}">
+<meta name="twitter:image" content="{{OG_IMAGE}}">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -338,18 +493,16 @@
   <!-- HEADER -->
   <header id="hdr">
     <div class="row">
-      <button class="logo-btn" aria-label="Home" onclick="location.href='https://andre.technology'">
+      <button class="logo-btn" aria-label="{{HOME_LABEL}}" onclick="location.href='https://andre.technology'">
         <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="Andre AI">
       </button>
       <div class="right">
-        <div class="lang-switch" role="group" aria-label="Language">
-          <a class="lang-opt active" data-lang="en" href="/automation/" hreflang="en" aria-current="true">EN</a>
-          <span class="lang-sep" aria-hidden="true">|</span>
-          <a class="lang-opt" data-lang="ru" href="/automation_ru/" hreflang="ru">RU</a>
+        <div class="lang-switch" role="group" aria-label="{{LANG_GROUP}}">
+{{LANG_SWITCH}}
         </div>
-        <button class="ctrl" id="theme" aria-label="Switch background (dark/light)"><i class="fa-solid fa-sun"></i></button>
-        <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Consultation">
-          <span class="txt">Consultation</span>
+        <button class="ctrl" id="theme" aria-label="{{THEME_LABEL}}"><i class="fa-solid fa-sun"></i></button>
+        <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="{{CONSULT_LABEL}}">
+          <span class="txt">{{CONSULT}}</span>
           <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
         </button>
       </div>
@@ -359,52 +512,38 @@
   <main class="deck" id="deck">
 
     <!-- ===== 1. О КУРСЕ ===== -->
-    <section class="panel on" id="course" aria-label="About the course">
+    <section class="panel on" id="course" aria-label="{{A_COURSE}}">
       <div class="wrap">
         <div class="float-row" aria-hidden="true">
           <div class="tile sm" style="border-color:rgba(136,84,243,.3)"><i class="fa-solid fa-magnifying-glass-chart" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,.5)"></div></div>
           <div class="tile lg" style="border-color:rgba(249,115,22,.5);animation-delay:.2s"><i class="fa-solid fa-robot" style="font-size:38px;color:#F97316"></i><div class="bar" style="background:rgba(249,115,22,.5)"></div></div>
           <div class="tile sm" style="border-color:rgba(136,84,243,.3);animation-delay:.4s"><i class="fa-solid fa-gears" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,.5)"></div></div>
         </div>
-        <h1 class="hero" id="hero-h"><span class="line">Welcome to the course on</span><span class="line"><span class="plum">business process automation</span></span><span class="line">with <span class="flame">AI agents</span></span></h1>
-        <p class="desc" id="hero-d">You will learn to transform your business into an AI-First company: <br class="lb">automate processes with AI agents, scale without growing headcount, <br class="lb">and achieve a measurable economic effect.</p>
+        <h1 class="hero" id="hero-h">{{HERO}}</h1>
+        <p class="desc" id="hero-d">{{HERO_DESC}}</p>
         <div class="cta-row">
-          <a class="btn-white btn-start" href="https://andre.technology/automation/main">
-            <span>Start learning</span>
+          <a class="btn-white btn-start" href="{{COURSE}}">
+            <span>{{START}}</span>
             <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
           </a>
         </div>
         <button class="scroll-hint" type="button" data-go="next">
-          <span>Scroll down</span>
+          <span>{{SCROLL}}</span>
           <i class="fa-solid fa-chevron-down"></i>
         </button>
       </div>
     </section>
 
     <!-- ===== 2. ДЛЯ КОГО ===== -->
-    <section class="panel" id="roles" aria-label="Who this course is for">
+    <section class="panel" id="roles" aria-label="{{A_ROLES}}">
       <div class="wrap">
-        <h2 class="h2" id="roles-h">Who <span class="plum">this course</span> is for</h2>
+        <h2 class="h2" id="roles-h">{{ROLES_H}}</h2>
         <div class="roles">
-          <article class="card role">
-            <div class="ico p"><i class="fa-solid fa-compass"></i></div>
-            <h3>AI Consultant</h3>
-            <p>Finds processes ready for AI automation</p>
-          </article>
-          <article class="card role">
-            <div class="ico f"><i class="fa-solid fa-wrench"></i></div>
-            <h3>AI Automation Engineer</h3>
-            <p>Automates business with AI agents</p>
-          </article>
-          <article class="card role">
-            <div class="ico p"><i class="fa-solid fa-rocket"></i></div>
-            <h3>AI Founder</h3>
-            <p>Builds a business powered by AI agents</p>
-          </article>
+{{ROLE_CARDS}}
         </div>
         <div class="cta-row">
-          <a class="btn-white btn-start" href="https://andre.technology/automation/main">
-            <span>Start learning</span>
+          <a class="btn-white btn-start" href="{{COURSE}}">
+            <span>{{START}}</span>
             <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
           </a>
         </div>
@@ -412,24 +551,15 @@
     </section>
 
     <!-- ===== 3. ЧЕМУ НАУЧИТЕСЬ ===== -->
-    <section class="panel" id="skills" aria-label="What you will learn">
+    <section class="panel" id="skills" aria-label="{{A_SKILLS}}">
       <div class="wrap">
-        <h2 class="h2" id="skills-h">What you will <span class="flame">learn</span></h2>
+        <h2 class="h2" id="skills-h">{{SKILLS_H}}</h2>
         <ol class="learn">
-          <li><span class="ico p"><i class="fa-solid fa-brain"></i></span><p>Run a company as a flow of data</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-magnifying-glass"></i></span><p>Find processes worth automating</p></li>
-          <li><span class="ico p"><i class="fa-solid fa-clipboard-list"></i></span><p>Describe the current AS-IS process</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-pen-ruler"></i></span><p>Design the future TO-BE model</p></li>
-          <li><span class="ico p"><i class="fa-solid fa-user-gear"></i></span><p>Define the AI agent's role in a process</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-robot"></i></span><p>Build AI agents</p></li>
-          <li><span class="ico p"><i class="fa-solid fa-network-wired"></i></span><p>Understand multi-agent system logic</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-shield-halved"></i></span><p>Verify AI quality and safety</p></li>
-          <li><span class="ico p"><i class="fa-solid fa-arrow-trend-up"></i></span><p>Measure the effect of automation</p></li>
-          <li><span class="ico f"><i class="fa-solid fa-rocket"></i></span><p>Deploy your first AI agent in a business</p></li>
+{{SKILL_ITEMS}}
         </ol>
         <div class="cta-row">
-          <a class="btn-white btn-start" href="https://andre.technology/automation/main">
-            <span>Start learning</span>
+          <a class="btn-white btn-start" href="{{COURSE}}">
+            <span>{{START}}</span>
             <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
           </a>
         </div>
@@ -437,18 +567,18 @@
     </section>
 
     <!-- ===== 4. НАЧАТЬ ===== -->
-    <section class="panel" id="start" aria-label="Start learning">
+    <section class="panel" id="start" aria-label="{{A_START}}">
       <div class="wrap">
         <div class="divider"></div>
-        <h2 class="h2" id="final-h">Ready to <span class="plum">start</span>?</h2>
-        <p class="lead">Take the course step by step — from finding a process to a working <span class="nb">AI agent</span> in your business.</p>
+        <h2 class="h2" id="final-h">{{FINAL_H}}</h2>
+        <p class="lead">{{FINAL_LEAD}}</p>
         <div class="cta-stack">
           <picture>
             <source srcset="/automation/andre-cta.webp" type="image/webp">
             <img class="cta-photo" id="cta-photo" src="/automation/andre-cta.png" alt="" width="600" height="526" decoding="async" onerror="this.style.display='none'">
           </picture>
-          <a class="btn-white btn-start" id="final-cta" href="https://andre.technology/automation/main">
-            <span>Start learning</span>
+          <a class="btn-white btn-start" id="final-cta" href="{{COURSE}}">
+            <span>{{START}}</span>
             <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
           </a>
         </div>
@@ -458,7 +588,7 @@
 
   </main>
 
-  <nav class="dots" id="dots" aria-label="Page sections"></nav>
+  <nav class="dots" id="dots" aria-label="{{BLOCKS_LABEL}}"></nav>
 
   <script>
     function storeGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -477,7 +607,7 @@
       }
       // Осознанный выбор посетителя не перетираем — записываем язык только
       // если он вообще ещё не выбирался.
-      if (storeGet('ait_lang') !== 'en' && storeGet('ait_lang') !== 'ru') storeSet('ait_lang', 'en');
+      if (storeGet('ait_lang') !== 'en' && storeGet('ait_lang') !== 'ru') storeSet('ait_lang', '{{LANG}}');
     })();
 
     /* ===== Тема: тёмная по умолчанию, .light по клику; ключ общий со
@@ -690,3 +820,106 @@
   </script>
 </body>
 </html>
+"""
+
+LANG_OPT = ('          <a class="lang-opt%(active)s" data-lang="%(code)s" href="%(href)s" '
+            'hreflang="%(code)s"%(current)s>%(label)s</a>')
+LANG_SEP = '          <span class="lang-sep" aria-hidden="true">|</span>'
+
+ROLE_CARD = """          <article class="card role">
+            <div class="ico %(tone)s"><i class="fa-solid %(icon)s"></i></div>
+            <h3>%(title)s</h3>
+            <p>%(text)s</p>
+          </article>"""
+
+SKILL_ITEM = ('          <li><span class="ico %(tone)s"><i class="fa-solid %(icon)s"></i></span>'
+              '<p>%(text)s</p></li>')
+
+
+def _lang_switch(cur):
+    """EN | RU — активный язык помечен, соседний ведёт на свою страницу."""
+    out = []
+    for code in ("en", "ru"):
+        active = code == cur["lang"]
+        href = cur["path"] if active else cur["other_path"]
+        out.append(LANG_OPT % {
+            "active": " active" if active else "",
+            "code": code,
+            "href": href,
+            "current": ' aria-current="true"' if active else "",
+            "label": code.upper(),
+        })
+    return "\n".join([out[0], LANG_SEP, out[1]])
+
+
+def render(cur):
+    roles = "\n".join(
+        ROLE_CARD % {"tone": tone, "icon": icon, "title": title, "text": text}
+        for tone, icon, title, text in cur["roles"]
+    )
+    skills = "\n".join(
+        SKILL_ITEM % {"tone": "p" if i % 2 == 0 else "f", "icon": SKILL_ICONS[i], "text": text}
+        for i, text in enumerate(cur["skills"])
+    )
+    html = TEMPLATE
+    subs = {
+        "LANG": cur["lang"],
+        "OTHER_PATH": cur["other_path"],
+        "URL": cur["url"],
+        "URL_EN": URL_EN,
+        "URL_RU": URL_RU,
+        "OG_LOCALE": cur["og_locale"],
+        "OG_IMAGE": cur["og_image"],
+        "OG_IMAGE_ALT": cur["og_image_alt"],
+        "TITLE": cur["title"],
+        "DESC": cur["desc"],
+        "COURSE": COURSE,
+        "HOME_LABEL": cur["home_label"],
+        "LANG_GROUP": cur["lang_group"],
+        "THEME_LABEL": cur["theme_label"],
+        "CONSULT": cur["consult"],
+        "CONSULT_LABEL": cur["consult_label"],
+        "BLOCKS_LABEL": cur["blocks_label"],
+        "START": cur["start"],
+        "SCROLL": cur["scroll"],
+        "A_COURSE": cur["a_course"],
+        "A_ROLES": cur["a_roles"],
+        "A_SKILLS": cur["a_skills"],
+        "A_START": cur["a_start"],
+        "HERO": cur["hero"],
+        "HERO_DESC": cur["hero_desc"],
+        "ROLES_H": cur["roles_h"],
+        "SKILLS_H": cur["skills_h"],
+        "FINAL_H": cur["final_h"],
+        "FINAL_LEAD": cur["final_lead"],
+        "LANG_SWITCH": _lang_switch(cur),
+        "ROLE_CARDS": roles,
+        "SKILL_ITEMS": skills,
+    }
+    for key, value in subs.items():
+        html = html.replace("{{%s}}" % key, value)
+    assert "{{" not in html, "в шаблоне остался незаполненный токен"
+    return html
+
+
+PAGES = (("automation/index.html", EN), ("automation_ru/index.html", RU))
+
+
+def build():
+    """Возвращает {путь: html} — файлы на диск не пишет."""
+    return dict((rel, render(cur)) for rel, cur in PAGES)
+
+
+def main():
+    for rel, html in build().items():
+        path = os.path.join(ROOT, rel)
+        directory = os.path.dirname(path)
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(html)
+        print("собрано:", rel, len(html), "байт")
+
+
+if __name__ == "__main__":
+    main()
