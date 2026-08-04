@@ -44,7 +44,7 @@
     --divider:rgba(255,255,255,.12); --navitem:rgba(255,255,255,.60);
     --btn-bg:#FAFAFA; --btn-fg:#050505;
     --ctrl-bg:rgba(255,255,255,.05); --ctrl-border:rgba(255,255,255,.10); --ctrl-fg:rgba(255,255,255,.80);
-    --tile-bg:#15151b; --dot:rgba(255,255,255,.22);
+    --tile-bg:#15151b; --dot:rgba(255,255,255,.45);
   }
   html.light{
     --bg:#FAFAFA; --fg:#0A0A0A; --muted:rgba(10,10,10,.55);
@@ -52,7 +52,7 @@
     --divider:rgba(0,0,0,.10); --navitem:rgba(0,0,0,.55);
     --btn-bg:#0A0A0A; --btn-fg:#FAFAFA;
     --ctrl-bg:rgba(0,0,0,.03); --ctrl-border:rgba(0,0,0,.10); --ctrl-fg:rgba(0,0,0,.70);
-    --tile-bg:#fff; --dot:rgba(0,0,0,.30);
+    --tile-bg:#fff; --dot:rgba(0,0,0,.42);
   }
   /* На белом фоне фирменный оранжевый выцветает (2.7:1), а вторичный текст
      проваливается ниже 4.5:1 — в светлой теме берём те же цвета потемнее. */
@@ -211,6 +211,9 @@
   .ico.p{background:rgba(136,84,243,.15);color:#8854F3}
   .ico.f{background:rgba(249,115,22,.15);color:#F97316}
   .role h3{font-size:clamp(1rem,1.3vw,1.25rem);font-weight:700;text-transform:uppercase}
+  /* Заголовок средней карточки занимает две строки — резерв даём всем трём,
+     иначе описания в ряду начинаются с разной высоты. */
+  @media(min-width:640px){.role h3{min-height:2.5em;display:flex;align-items:center;justify-content:center}}
   .role p{color:var(--muted);margin:.55rem 0 0;font-size:clamp(.78rem,1vw,.95rem);line-height:1.6}
   .nb{white-space:nowrap}   /* «ИИ-агентами» не разрывается по дефису */
 
@@ -221,7 +224,7 @@
   .learn li:hover{transform:translateY(-2px);border-color:rgba(249,115,22,.45)}
   .learn .ico{height:clamp(2.2rem,3vw,2.8rem);width:clamp(2.2rem,3vw,2.8rem);border-radius:.65rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:clamp(1rem,1.4vw,1.35rem)}
   .learn p{margin:0;font-size:clamp(.78rem,1.3vw,.98rem);line-height:1.4}
-  .learn li::after{counter-increment:n;content:counter(n,decimal-leading-zero);position:absolute;top:.4rem;right:.7rem;font-size:.6rem;font-weight:700;letter-spacing:.08em;color:var(--muted);opacity:.75}
+  .learn li::after{counter-increment:n;content:counter(n,decimal-leading-zero);position:absolute;top:.4rem;right:.7rem;font-size:.6rem;font-weight:700;letter-spacing:.08em;color:var(--muted);opacity:1}
 
   /* ===== CTA ===== */
   .cta-row{margin:1.9rem 0 0;display:flex;justify-content:center}
@@ -362,7 +365,7 @@
           </article>
           <article class="card role">
             <div class="ico f"><i class="fa-solid fa-wrench"></i></div>
-            <h3 data-i18n="r2h">ИИ-инженер по автоматизации</h3>
+            <h3 data-i18n="r2h">ИИ-инженер по автоматизации</h3>
             <p data-i18n="r2p">Автоматизирует бизнес с <span class="nb">ИИ-агентами</span></p>
           </article>
           <article class="card role">
@@ -410,7 +413,7 @@
       <div class="wrap">
         <div class="divider"></div>
         <h2 class="h2" id="final-h">Готовы <span class="plum">начать</span>?</h2>
-        <p class="lead" data-i18n="finalLead">Пройдите курс шаг за шагом — от поиска процесса до работающего ИИ-агента в вашем бизнесе.</p>
+        <p class="lead" data-i18n="finalLead">Пройдите курс шаг за шагом — от поиска процесса до работающего <span class="nb">ИИ-агента</span> в вашем бизнесе.</p>
         <picture>
           <source srcset="/automation/andre-cta.webp" type="image/webp">
           <img class="cta-photo" id="cta-photo" src="/automation/andre-cta.png" alt="" width="600" height="501" decoding="async" onerror="this.style.display='none'">
@@ -443,7 +446,7 @@
         heroD: 'Вы научитесь трансформировать бизнес в AI-First компанию: <br class="lb">автоматизировать процессы с помощью ИИ-агентов, масштабироваться <br class="lb">без роста штата и получать измеримый экономический эффект.',
         rolesH: 'Для кого <span class="plum">этот курс</span>',
         r1h: 'ИИ-консультант', r1p: 'Находит процессы для <span class="nb">ИИ-автоматизации</span>',
-        r2h: 'ИИ-инженер по автоматизации', r2p: 'Автоматизирует бизнес с <span class="nb">ИИ-агентами</span>',
+        r2h: 'ИИ-инженер по автоматизации', r2p: 'Автоматизирует бизнес с <span class="nb">ИИ-агентами</span>',
         r3h: 'ИИ-основатель', r3p: 'Строит бизнес с помощью <span class="nb">ИИ-агентов</span>',
         skillsH: 'Чему вы <span class="flame">научитесь</span>',
         l1: 'Управлять компанией как потоком данных',
@@ -457,7 +460,7 @@
         l9: 'Оценивать эффект от автоматизации',
         l10: 'Внедрить первого ИИ-агента в бизнес',
         finalH: 'Готовы <span class="plum">начать</span>?',
-        finalLead: 'Пройдите курс шаг за шагом — от поиска процесса до работающего ИИ-агента в вашем бизнесе.',
+        finalLead: 'Пройдите курс шаг за шагом — от поиска процесса до работающего <span class="nb">ИИ-агента</span> в вашем бизнесе.',
         start: 'Начать обучение',
         title: 'Andre AI — Курс по автоматизации бизнес-процессов с ИИ-агентами'
       },
