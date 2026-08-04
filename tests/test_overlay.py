@@ -13,7 +13,8 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _OVERLAY = os.path.join(_ROOT, "automation", "1", "overlay", "index.html")
 _LECTURE = os.path.join(_ROOT, "automation", "1", "index.html")
 _DURATION = 143.0          # 02:23 — длина ролика
-_WORDS = 285               # столько слов в посекундной расшифровке
+_WORDS = 281               # столько слов в сценарии владельца
+_COVER_MAX = 6.0           # заставка — секунды, а не полролика
 
 
 def _html(path=_OVERLAY):
@@ -148,7 +149,7 @@ def _subs():
 
 def test_subs_follow_the_transcript():
     """Реплики идут подряд, не наезжают друг на друга и укладываются в ролик.
-    Ни одно слово расшифровки не потеряно при нарезке."""
+    Ни одно слово сценария не потеряно при нарезке."""
     subs = _subs()
     assert len(subs) > 80, "субтитров подозрительно мало: %d" % len(subs)
     prev_end = -1.0
@@ -158,7 +159,34 @@ def test_subs_follow_the_transcript():
         assert end <= _DURATION, "реплика %r выходит за длину ролика" % text
         prev_end = end
     assert sum(len(t.split()) for _, _, t in subs) == _WORDS, \
-        "при нарезке потерялись или задвоились слова расшифровки"
+        "при нарезке потерялись или задвоились слова сценария"
+
+
+# ── FR-SITE23: обложка и сборка ──────────────────────────────────────────
+
+def test_cover_precedes_the_clip():
+    """Обложка идёт ПЕРЕД роликом, поэтому мастер-время сдвинуто на COVER,
+    а графика и субтитры считаются от времени видео (time - COVER)."""
+    html = _html()
+    cover = float(re.search(r"var COVER = ([\d.]+);", html).group(1))
+    assert 0 < cover <= _COVER_MAX, "странная длина заставки: %s" % cover
+    assert os.path.exists(os.path.join(os.path.dirname(_OVERLAY), "cover.png")), \
+        "нет файла обложки рядом со страницей"
+    assert "var vt = time - COVER;" in html, "время видео не сдвинуто на заставку"
+    # На заставке ни графики, ни субтитров, ни скрима.
+    assert "body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim{display:none}" in html
+
+
+def test_join_script_copies_the_clip():
+    """Кнопка сборки обязана КОПИРОВАТЬ дорожку ролика, а не пережимать её:
+    перекодирование ради двух секунд заставки — потеря качества исходника."""
+    html = _html()
+    body = html[html.index("function joinScript()"):html.index("document.getElementById('bJoin')")]
+    assert "-f concat" in body and "-c copy" in body, \
+        "основной путь сборки должен быть склейкой потоков без перекодирования"
+    assert "command -v ffmpeg" in body and "command -v ffprobe" in body, \
+        "скрипт должен сам сообщать о недостающих зависимостях"
+    assert "crf 16" in body, "нет запасного пути на случай несовпадения параметров"
 
 
 def test_subs_are_two_to_four_words():
@@ -225,6 +253,10 @@ def test_no_rectangular_blocks():
     css = _scene_css()
     assert ".card" not in css, "вернулась карточка-подложка"
     for sel, body in _rules(css):
+        # #cover — это САМ кадр (заставка на весь экран), а не элемент поверх
+        # кадра: правило «без блоков» на него не распространяется.
+        if "#cover" in sel:
+            continue
         for radius in re.findall(r"border-radius:\s*([^;]+)", body):
             assert radius.strip() == "50%", "не круглая оправа у %s: %s" % (sel, radius)
         if re.search(r"(^|;)\s*background:", body):
