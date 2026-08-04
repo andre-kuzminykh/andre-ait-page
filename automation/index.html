@@ -20,7 +20,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Andre AI Technologies">
 <meta property="og:title" content="Курс по автоматизации бизнес-процессов с ИИ-агентами">
-<meta property="og:description" content="Научитесь трансформировать бизнес в AI-First компанию: автоматизировать процессы с помощью ИИ-агентов и получать измеримый экономический эффект.">
+<meta property="og:description" content="Научитесь трансформировать бизнес в AI-First компанию: автоматизировать процессы с помощью ИИ-агентов и получать измеримый экономический эффект.">
 <meta property="og:image" content="https://andre.technology/assets/og/andre-ai-technologies.png">
 <meta property="og:url" content="https://andre.technology/automation/">
 <meta name="twitter:card" content="summary_large_image">
@@ -52,8 +52,13 @@
     --divider:rgba(0,0,0,.10); --navitem:rgba(0,0,0,.55);
     --btn-bg:#0A0A0A; --btn-fg:#FAFAFA;
     --ctrl-bg:rgba(0,0,0,.03); --ctrl-border:rgba(0,0,0,.10); --ctrl-fg:rgba(0,0,0,.70);
-    --tile-bg:#fff; --dot:rgba(0,0,0,.20);
+    --tile-bg:#fff; --dot:rgba(0,0,0,.30);
   }
+  /* На белом фоне фирменный оранжевый выцветает (2.7:1), а вторичный текст
+     проваливается ниже 4.5:1 — в светлой теме берём те же цвета потемнее. */
+  html.light{ --muted:rgba(10,10,10,.62); }
+  html.light .flame, html.light .ico.f{ color:#D9520A; }
+  html.light .learn li:hover{ border-color:rgba(217,82,10,.45) }
 
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;overflow:hidden}
@@ -170,7 +175,7 @@
     transition:background .25s ease,transform .25s ease}
   .dot.on{background:#8854F3;transform:scale(1.35)}
   @media(hover:hover){.dot:hover{background:#F97316}}
-  @media(max-width:520px){.dots{right:.5rem;gap:.55rem}.dot{width:7px;height:7px}}
+  @media(max-width:520px){.dots{right:.22rem;gap:.55rem}.dot{width:7px;height:7px}}
 
   /* ===== Блок 1: о курсе ===== */
   .float-row{display:flex;justify-content:center;align-items:flex-end;gap:.85rem;transform:scale(.82);margin:0 0 .25rem}
@@ -207,15 +212,16 @@
   .ico.f{background:rgba(249,115,22,.15);color:#F97316}
   .role h3{font-size:clamp(1rem,1.3vw,1.25rem);font-weight:700;text-transform:uppercase}
   .role p{color:var(--muted);margin:.55rem 0 0;font-size:clamp(.78rem,1vw,.95rem);line-height:1.6}
+  .nb{white-space:nowrap}   /* «ИИ-агентами» не разрывается по дефису */
 
   /* ===== Блок 3: чему научитесь ===== */
   .learn{margin:1.8rem auto 0;max-width:56rem;display:grid;grid-template-columns:repeat(2,1fr);gap:.55rem;list-style:none;padding:0;text-align:left;counter-reset:n}
   @media(max-width:639px){.learn{grid-template-columns:1fr}}
-  .learn li{position:relative;display:flex;align-items:center;gap:.75rem;padding:.72rem .9rem;border-radius:1rem;border:1px solid var(--card-border);background:var(--card-bg);transition:transform .2s ease,border-color .2s ease}
+  .learn li{position:relative;display:flex;align-items:center;gap:.75rem;padding:.72rem 2rem .72rem .9rem;border-radius:1rem;border:1px solid var(--card-border);background:var(--card-bg);transition:transform .2s ease,border-color .2s ease}
   .learn li:hover{transform:translateY(-2px);border-color:rgba(249,115,22,.45)}
   .learn .ico{height:clamp(2.2rem,3vw,2.8rem);width:clamp(2.2rem,3vw,2.8rem);border-radius:.65rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:clamp(1rem,1.4vw,1.35rem)}
   .learn p{margin:0;font-size:clamp(.78rem,1.3vw,.98rem);line-height:1.4}
-  .learn li::after{counter-increment:n;content:counter(n,decimal-leading-zero);position:absolute;top:.4rem;right:.7rem;font-size:.6rem;font-weight:700;letter-spacing:.08em;color:var(--muted);opacity:.6}
+  .learn li::after{counter-increment:n;content:counter(n,decimal-leading-zero);position:absolute;top:.4rem;right:.7rem;font-size:.6rem;font-weight:700;letter-spacing:.08em;color:var(--muted);opacity:.75}
 
   /* ===== CTA ===== */
   .cta-row{margin:1.9rem 0 0;display:flex;justify-content:center}
@@ -235,7 +241,7 @@
      Иначе самый длинный («чему научитесь», десять пунктов) пришлось бы
      мотать внутри себя, и свайп переставал бы переключать блок. */
   @media (max-width:639px){
-    .panel{padding-top:clamp(4.9rem,11vh,6rem);padding-bottom:2rem}
+    .panel{padding-top:clamp(4.9rem,11vh,6rem);padding-bottom:2rem;padding-left:1.15rem;padding-right:1.15rem}
     .desc{margin-top:1rem}
     .scroll-hint{margin-top:1.1rem}
     .cta-row{margin-top:1.15rem}
@@ -244,7 +250,7 @@
     .role .ico{height:2.9rem;width:2.9rem;margin-bottom:.6rem;font-size:1.25rem;border-radius:.9rem}
     .role p{margin-top:.35rem;line-height:1.5}
     .learn{margin-top:1.15rem;gap:.4rem}
-    .learn li{padding:.5rem .75rem;gap:.6rem;border-radius:.8rem}
+    .learn li{padding:.5rem 1.7rem .5rem .75rem;gap:.6rem;border-radius:.8rem}
     .learn .ico{height:2rem;width:2rem;font-size:.95rem;border-radius:.55rem}
     .learn p{font-size:.76rem;line-height:1.3}
     .learn li::after{top:.28rem;right:.55rem;font-size:.55rem}
@@ -308,8 +314,8 @@
           <div class="tile lg" style="border-color:rgba(249,115,22,.5);animation-delay:.2s"><i class="fa-solid fa-robot" style="font-size:38px;color:#F97316"></i><div class="bar" style="background:rgba(249,115,22,.5)"></div></div>
           <div class="tile sm" style="border-color:rgba(136,84,243,.3);animation-delay:.4s"><i class="fa-solid fa-gears" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,.5)"></div></div>
         </div>
-        <h1 class="hero" id="hero-h"><span class="line">Добро пожаловать на курс</span><span class="line">по автоматизации</span><span class="line"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span></h1>
-        <p class="desc" id="hero-d">Вы научитесь трансформировать бизнес в AI-First компанию: <br class="lb">автоматизировать процессы с помощью ИИ-агентов, масштабироваться <br class="lb">без роста штата и получать измеримый экономический эффект.</p>
+        <h1 class="hero" id="hero-h"><span class="line">Добро пожаловать на курс</span><span class="line">по автоматизации</span><span class="line"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span></h1>
+        <p class="desc" id="hero-d">Вы научитесь трансформировать бизнес в AI-First компанию: <br class="lb">автоматизировать процессы с помощью ИИ-агентов, масштабироваться <br class="lb">без роста штата и получать измеримый экономический эффект.</p>
         <div class="cta-row">
           <a class="btn-white btn-start" href="https://andre.technology/automation/main">
             <span data-i18n="start">Начать обучение</span>
@@ -331,17 +337,17 @@
           <article class="card role">
             <div class="ico p"><i class="fa-solid fa-compass"></i></div>
             <h3 data-i18n="r1h">ИИ-консультант</h3>
-            <p data-i18n="r1p">Находит процессы для ИИ-автоматизации</p>
+            <p data-i18n="r1p">Находит процессы для <span class="nb">ИИ-автоматизации</span></p>
           </article>
           <article class="card role">
             <div class="ico f"><i class="fa-solid fa-wrench"></i></div>
             <h3 data-i18n="r2h">ИИ-инженер по автоматизации</h3>
-            <p data-i18n="r2p">Автоматизирует бизнес с ИИ-агентами</p>
+            <p data-i18n="r2p">Автоматизирует бизнес с <span class="nb">ИИ-агентами</span></p>
           </article>
           <article class="card role">
             <div class="ico p"><i class="fa-solid fa-rocket"></i></div>
             <h3 data-i18n="r3h">ИИ-основатель</h3>
-            <p data-i18n="r3p">Строит бизнес с помощью ИИ-агентов</p>
+            <p data-i18n="r3p">Строит бизнес с помощью <span class="nb">ИИ-агентов</span></p>
           </article>
         </div>
         <div class="cta-row">
@@ -383,7 +389,7 @@
       <div class="wrap">
         <div class="divider"></div>
         <h2 class="h2" id="final-h">Готовы <span class="plum">начать</span>?</h2>
-        <p class="lead" data-i18n="finalLead">Пройдите курс шаг за шагом — от поиска процесса до работающего ИИ-агента в вашем бизнесе.</p>
+        <p class="lead" data-i18n="finalLead">Пройдите курс шаг за шагом — от поиска процесса до работающего ИИ-агента в вашем бизнесе.</p>
         <picture>
           <source srcset="/automation/andre-cta.webp" type="image/webp">
           <img class="cta-photo" id="cta-photo" src="/automation/andre-cta.png" alt="" width="600" height="509" decoding="async">
@@ -412,12 +418,12 @@
         scroll: 'Листайте вниз',
         heroH: '<span class="line">Добро пожаловать на курс</span>' +
                '<span class="line">по автоматизации</span>' +
-               '<span class="line"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span>',
-        heroD: 'Вы научитесь трансформировать бизнес в AI-First компанию: <br class="lb">автоматизировать процессы с помощью ИИ-агентов, масштабироваться <br class="lb">без роста штата и получать измеримый экономический эффект.',
+               '<span class="line"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span>',
+        heroD: 'Вы научитесь трансформировать бизнес в AI-First компанию: <br class="lb">автоматизировать процессы с помощью ИИ-агентов, масштабироваться <br class="lb">без роста штата и получать измеримый экономический эффект.',
         rolesH: 'Для кого <span class="plum">этот курс</span>',
-        r1h: 'ИИ-консультант', r1p: 'Находит процессы для ИИ-автоматизации',
-        r2h: 'ИИ-инженер по автоматизации', r2p: 'Автоматизирует бизнес с ИИ-агентами',
-        r3h: 'ИИ-основатель', r3p: 'Строит бизнес с помощью ИИ-агентов',
+        r1h: 'ИИ-консультант', r1p: 'Находит процессы для <span class="nb">ИИ-автоматизации</span>',
+        r2h: 'ИИ-инженер по автоматизации', r2p: 'Автоматизирует бизнес с <span class="nb">ИИ-агентами</span>',
+        r3h: 'ИИ-основатель', r3p: 'Строит бизнес с помощью <span class="nb">ИИ-агентов</span>',
         skillsH: 'Чему вы <span class="flame">научитесь</span>',
         l1: 'Управлять компанией как потоком данных',
         l2: 'Находить процессы для автоматизации',
@@ -430,15 +436,15 @@
         l9: 'Оценивать эффект от автоматизации',
         l10: 'Внедрить первого ИИ-агента в бизнес',
         finalH: 'Готовы <span class="plum">начать</span>?',
-        finalLead: 'Пройдите курс шаг за шагом — от поиска процесса до работающего ИИ-агента в вашем бизнесе.',
+        finalLead: 'Пройдите курс шаг за шагом — от поиска процесса до работающего ИИ-агента в вашем бизнесе.',
         start: 'Начать обучение',
         title: 'Andre AI — Курс по автоматизации бизнес-процессов с ИИ-агентами'
       },
       en: {
         consult: 'Consultation',
         scroll: 'Scroll down',
-        heroH: '<span class="line">Welcome to the course</span>' +
-               '<span class="line">on <span class="plum">business process</span> automation</span>' +
+        heroH: '<span class="line">Welcome to the course on</span>' +
+               '<span class="line"><span class="plum">business process automation</span></span>' +
                '<span class="line">with <span class="flame">AI agents</span></span>',
         heroD: 'You will learn to transform your business into an AI-First company: <br class="lb">automate processes with AI agents, scale without growing headcount, <br class="lb">and achieve a measurable economic effect.',
         rolesH: 'Who <span class="plum">this course</span> is for',
@@ -481,7 +487,9 @@
       nodes = document.querySelectorAll('[data-i18n]');
       for (i = 0; i < nodes.length; i++){
         k = nodes[i].getAttribute('data-i18n');
-        if (d[k]) nodes[i].textContent = d[k];
+        if (!d[k]) continue;
+        // в словаре бывает разметка (неразрывные «ИИ-агентами») — тогда её и вставляем
+        if (d[k].indexOf('<') >= 0) nodes[i].innerHTML = d[k]; else nodes[i].textContent = d[k];
       }
       nodes = document.querySelectorAll('.lang-opt');
       for (i = 0; i < nodes.length; i++){
