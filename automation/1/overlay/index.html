@@ -59,16 +59,16 @@ body.transparent #stage,body.transparent{background:transparent}
 body.mock #mock{display:block}
 body.transparent #mock{display:none}
 
-/* ── Скрим: мягкое осветление верхней трети. Стена в кадре сиреневая и
-   к краям темнеет, а дек лекции свёрстан на белом — скрим возвращает
-   «бумажный» фон под чёрный текст и не режет кадр жёсткой полосой. ── */
+/* ── Скрим: мягкое затемнение верхней трети. Подписи белые, а стена в
+   кадре светло-сиреневая — без затемнения белое по светлому не читается.
+   Заодно это тот же верхний виньет, что на обложке. ─────────────────── */
 #scrim{
-    position:absolute;left:0;right:0;top:0;height:860px;pointer-events:none;
+    position:absolute;left:0;right:0;top:0;height:820px;pointer-events:none;
     background:linear-gradient(180deg,
-        rgba(255,255,255,.42) 0%,
-        rgba(255,255,255,.36) 46%,
-        rgba(255,255,255,.20) 74%,
-        rgba(255,255,255,0) 100%);
+        rgba(14,7,28,.60) 0%,
+        rgba(14,7,28,.50) 44%,
+        rgba(14,7,28,.26) 72%,
+        rgba(14,7,28,0) 100%);
     opacity:0;transition:opacity .7s ease;
 }
 #scrim.on{opacity:1}
@@ -146,13 +146,13 @@ body.no-scrim #scrim{display:none}
 h1,h2,h3,p,ul{margin:0}
 ul{list-style:none;padding:0}
 
-/* Текст лежит на видео, а не на плашке: белый ореол держит контраст,
-   когда под буквой проезжает тёмный край постера или волосы. */
-.label,#s2 li,#s2 .vs{
-    text-shadow:0 1px 10px rgba(255,255,255,.75),0 0 3px rgba(255,255,255,.9);
+/* Текст лежит на видео, а не на плашке: тёмный ореол держит контраст,
+   когда под белой буквой проезжает светлый угол стены. */
+.label,#s2 li{
+    text-shadow:0 3px 16px rgba(10,4,24,.6),0 1px 4px rgba(10,4,24,.75);
 }
 .label{
-    font-weight:900;line-height:1.1;letter-spacing:-.01em;color:#141018;
+    font-weight:900;line-height:1.1;letter-spacing:-.01em;color:#fff;
     overflow-wrap:break-word;hyphens:none;
 }
 
@@ -162,24 +162,19 @@ ul{list-style:none;padding:0}
 #s1 .label{font-size:32px}
 
 /* ── СЦЕНА 2 · две группы и «против» между ними ──────────────────── */
-#s2 .row{display:flex;gap:20px;width:100%;align-items:flex-start;justify-content:center}
+/* Слово «против» убрано — разделяет сам зазор между колонками. */
+#s2 .row{display:flex;gap:96px;width:100%;align-items:flex-start;justify-content:center}
 #s2 .col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center}
 #s2 .circle{width:92px;height:92px;margin-bottom:14px}
 #s2 .label{font-size:31px;margin-bottom:22px;white-space:nowrap}
 #s2 ul{width:100%;display:flex;flex-direction:column;gap:16px}
 #s2 li{
     display:flex;align-items:flex-start;gap:12px;text-align:left;
-    font-size:27px;font-weight:600;line-height:1.2;color:#221d2b;
+    font-size:27px;font-weight:600;line-height:1.2;color:#fff;
 }
 #s2 li svg{width:28px;height:28px;flex:none;margin-top:2px}
-#s2 li.yes svg{color:var(--solar)}
-#s2 li.no svg{color:#6f6a7a}
-/* «против» — просто набранное слово, без пилюли и подложки. */
-#s2 .vs{
-    flex:none;width:132px;align-self:center;text-align:center;
-    font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;
-    color:#4a4453;
-}
+#s2 li.yes svg{color:#B794FF}
+#s2 li.no svg{color:rgba(255,255,255,.55)}
 
 /* ── СЦЕНА 3 · четыре элемента в ряд, одно слово под иконкой ─────── */
 /* Колонки по ширине СЛОВА (flex:0 1 auto + space-between), а не поровну:
@@ -190,7 +185,7 @@ ul{list-style:none;padding:0}
 #s3 .item{flex:0 1 auto}
 #s3 .circle{width:96px;height:96px;margin-bottom:16px}
 #s3 .label{font-size:27px;white-space:nowrap}
-#s3 .era .label{color:#D2570B}
+#s3 .era .label{color:#FFA24D}
 #s3 .era.hot .circle{animation:hotEmber 2.6s var(--ease)}
 @keyframes hotEmber{
     0%{box-shadow:0 12px 30px rgba(24,10,54,.20)}
@@ -210,6 +205,26 @@ ul{list-style:none;padding:0}
     0%,100%{border-color:rgba(249,115,22,0);transform:scale(1)}
     50%{border-color:rgba(249,115,22,.6);transform:scale(1.07)}
 }
+
+/* ── Субтитры ────────────────────────────────────────────────────────
+   Белые, с тонкой чёрной обводкой, без подложки (правило «без блоков»).
+   Позиция снята с кадра владельца: центр строки на 78.6% высоты — под
+   микрофоном и над руками. Двигается через ?subY=. */
+#sub{
+    position:absolute;left:70px;right:70px;top:1510px;
+    transform:translateY(-50%);
+    text-align:center;pointer-events:none;
+    font-size:50px;font-weight:800;line-height:1.18;letter-spacing:-.005em;
+    color:#fff;
+    /* paint-order обязателен: без него обводка съедает половину буквы
+       изнутри и текст выглядит тоньше, чем набран. */
+    -webkit-text-stroke:4px #0A0A0A;paint-order:stroke fill;
+    text-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+#sub:empty{display:none}
+#sub.pop{animation:subIn .16s ease-out}
+@keyframes subIn{from{opacity:0;transform:translateY(calc(-50% + 8px))}}
+body.no-subs #sub{display:none}
 
 /* ── Направляющие (?guides=1): где в кадре постеры и макушка ─────── */
 #guides{position:absolute;inset:0;display:none;pointer-events:none;font:700 20px/1 Montserrat,sans-serif}
@@ -333,9 +348,6 @@ body.dragging #drop{display:flex}
                     </ul>
                 </div>
 
-                <!-- 01:04 «компании конкурируют бизнес-моделями: с AI или без него» -->
-                <div class="vs el" data-in="64.6">против</div>
-
                 <div class="col">
                 <div class="item el" data-in="53.6">
                     <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M230.14,58.87A8,8,0,0,0,224,56H62.68L56.6,22.57A8,8,0,0,0,48.73,16H24a8,8,0,0,0,0,16h18L67.56,172.29a24,24,0,0,0,5.33,11.27,28,28,0,1,0,44.4,8.44h45.42A27.75,27.75,0,0,0,160,204a28,28,0,1,0,28-28H91.17a8,8,0,0,1-7.87-6.57L80.13,152h116a24,24,0,0,0,23.61-19.71l12.16-66.86A8,8,0,0,0,230.14,58.87ZM104,204a12,12,0,1,1-12-12A12,12,0,0,1,104,204Zm96,0a12,12,0,1,1-12-12A12,12,0,0,1,200,204Z"/></svg></div>
@@ -353,7 +365,7 @@ body.dragging #drop{display:flex}
         </section>
 
         <!-- ══ СЦЕНА 3 · 01:29–02:15 · слайд «Четыре революции» ══════ -->
-        <section class="scene" id="s3" data-in="89.8" data-out="135.6">
+        <section class="scene" id="s3" data-in="89.8" data-out="134.8">
             <div class="row">
                 <div class="item el" data-in="90.5">
                     <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M256,120v48a16,16,0,0,1-16,16H227.31L192,219.31A15.86,15.86,0,0,1,180.69,224H103.31A15.86,15.86,0,0,1,92,219.31L52.69,180A15.86,15.86,0,0,1,48,168.69V148H24v24a8,8,0,0,1-16,0V108a8,8,0,0,1,16,0v24H48V80A16,16,0,0,1,64,64h60V40H100a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16H140V64h40.69A15.86,15.86,0,0,1,192,68.69L227.31,104H240A16,16,0,0,1,256,120Z"/></svg></div>
@@ -375,6 +387,8 @@ body.dragging #drop{display:flex}
         </section>
     </div>
 
+    <div id="sub"></div>
+
     <div id="guides">
         <div class="box" style="top:70px;height:500px"></div>
         <div class="ln" style="top:638px"><span>верх постеров · y638</span></div>
@@ -387,12 +401,13 @@ body.dragging #drop{display:flex}
 <div id="hud">
     <div class="line">
         <div id="track"><div class="bar"></div><div class="fill"></div></div>
-        <span id="time">00:00.0 / 02:22</span>
+        <span id="time">00:00.0 / 02:23</span>
     </div>
     <div class="line">
         <button id="play">▶ Пуск</button>
         <label class="btn">Загрузить видео<input type="file" id="file" accept="video/*"></label>
         <button id="bMock" class="act">Демо-фон</button>
+        <button id="bSubs" class="act">Субтитры</button>
         <button id="bScrim" class="act">Скрим</button>
         <button id="bGuide">Границы</button>
         <button id="bRec">Режим записи</button>
@@ -405,7 +420,118 @@ body.dragging #drop{display:flex}
 (function () {
     'use strict';
 
-    var DURATION = 142;                       // 02:22 — длина озвучки
+    /* Субтитры: нарезка посекундной расшифровки по 2–4 слова. Границы
+       стоят только на секундах расшифровки, поэтому реплика не может
+       разъехаться с речью; паузы держат предыдущую реплику на экране,
+       а не мигают пустотой. */
+    var SUBS = [
+        [0,1,"Сегодня искусственный"],
+        [1,2,"интеллект перестаёт"],
+        [2,3,"быть просто инструментом"],
+        [3,4,"и становится"],
+        [4,6,"новой операционной системой бизнеса."],
+        [6,8,"AI-агенты уже способны принимать"],
+        [8,9,"решения и выполнять"],
+        [9,11,"полезную работу."],
+        [11,12,"Поэтому выигрывать будут"],
+        [12,13,"те компании,"],
+        [13,14,"которые сумеют"],
+        [14,15,"организовать новый"],
+        [15,17,"формат работы вокруг AI."],
+        [17,18,"Именно так появляются"],
+        [18,19,"AI-first компании."],
+        [19,22,"Организации, где AI-агенты становятся"],
+        [22,23,"полноценной частью"],
+        [23,24,"рабочих процессов,"],
+        [24,25,"а люди"],
+        [25,27,"становятся их менеджерами."],
+        [27,28,"Мы разберёмся,"],
+        [28,29,"кто такие AI-агенты"],
+        [29,30,"и как они работают,"],
+        [30,33,"поймём, какие процессы действительно"],
+        [33,34,"стоит усиливать с помощью"],
+        [34,35,"AI, а где"],
+        [35,36,"его внедрение не даст"],
+        [36,37,"заметного эффекта."],
+        [37,39,"Поговорим о том,"],
+        [39,41,"как меняется роль человека,"],
+        [41,43,"и, главное, обсудим,"],
+        [43,44,"как превратить"],
+        [44,45,"AI из обычного инструмента"],
+        [45,47,"в ваше конкурентное преимущество."],
+        [47,48,"Вперёд"],
+        [48,49,"в этот дивный новый"],
+        [49,50,"мир!"],
+        [50,51,"Компании уже делятся"],
+        [51,52,"на два типа:"],
+        [52,53,"AI-first компании"],
+        [53,54,"и их клиенты."],
+        [54,55,"В AI-first"],
+        [55,56,"компаниях искусственный"],
+        [56,57,"интеллект встроен"],
+        [57,59,"в само ядро бизнеса."],
+        [59,61,"Он управляет процессами, принимает"],
+        [61,62,"решения и действует"],
+        [62,64,"как настоящий сотрудник."],
+        [64,65,"Сегодня компании"],
+        [65,67,"конкурируют своими бизнес-моделями:"],
+        [67,68,"с AI или без"],
+        [68,69,"него."],
+        [69,70,"AI-first компании"],
+        [70,71,"могут предложить"],
+        [71,73,"клиенту услугу быстрее, дешевле"],
+        [73,74,"и качественнее,"],
+        [74,75,"а также масштабироваться"],
+        [75,77,"без роста штата."],
+        [77,78,"Поэтому главный вопрос"],
+        [78,79,"для бизнеса:"],
+        [79,80,"либо внедрять"],
+        [80,81,"AI в свой бизнес,"],
+        [81,83,"либо стать неконкурентоспособным."],
+        [83,86,"Думаю, выбор очевиден."],
+        [86,87,"История экономики"],
+        [87,88,"— это история"],
+        [88,90,"делегирования труда машинам."],
+        [90,92,"Первая промышленная революция"],
+        [92,93,"дала нам механизацию."],
+        [93,95,"Машины заменили физический"],
+        [95,96,"труд человека."],
+        [96,98,"Вторая — электричество"],
+        [98,99,"и конвейеры,"],
+        [99,101,"позволила автоматизировать производство"],
+        [101,103,"и масштабировать операции."],
+        [103,105,"Третья — цифровая,"],
+        [105,106,"перевела процессы"],
+        [106,107,"в софт,"],
+        [107,109,"появились компьютеры, интернет"],
+        [109,110,"и управление на основе"],
+        [110,111,"данных."],
+        [111,112,"И сегодня мы находимся"],
+        [112,113,"в четвёртой"],
+        [113,114,"промышленной революции"],
+        [114,116,"— интеллектуальной."],
+        [116,117,"Теперь автоматизируется"],
+        [117,118,"не действие,"],
+        [118,120,"а само мышление."],
+        [120,123,"AI-агенты способны анализировать, принимать"],
+        [123,124,"решения и действовать"],
+        [124,125,"в сложной среде."],
+        [125,127,"Это качественный переход."],
+        [127,130,"Раньше человек управлял машинами,"],
+        [130,131,"теперь он становится"],
+        [131,132,"архитектором систем,"],
+        [132,133,"где интеллект"],
+        [133,134,"работает вместе"],
+        [134,135,"с ним."],
+        [135,136,"Искусственный интеллект"],
+        [136,137,"не отнимет у"],
+        [137,138,"вас работу,"],
+        [138,139,"это сделают люди,"],
+        [139,140,"которые уже научились"],
+        [140,141.6,"с ним работать."]
+    ];
+
+    var DURATION = 143;                       // 02:23 — длина ролика
     var HOT = 2.6;                            // столько живёт подсветка .hot
 
     var stage = document.getElementById('stage');
@@ -415,6 +541,7 @@ body.dragging #drop{display:flex}
     var fill = track.querySelector('.fill');
     var timeEl = document.getElementById('time');
     var playBtn = document.getElementById('play');
+    var subEl = document.getElementById('sub');
 
     var scenes = [].slice.call(document.querySelectorAll('.scene'));
     var els = [].slice.call(document.querySelectorAll('.el'));
@@ -455,6 +582,17 @@ body.dragging #drop{display:flex}
             }
             if (el.classList.contains('hot') !== hot) el.classList.toggle('hot', hot);
         });
+
+        var line = '';
+        for (var k = 0; k < SUBS.length; k++) {
+            if (time >= SUBS[k][0] && time < SUBS[k][1]) { line = SUBS[k][2]; break; }
+        }
+        if (subEl.textContent !== line) {
+            subEl.textContent = line;
+            subEl.classList.remove('pop');
+            void subEl.offsetWidth;              // перезапуск анимации появления
+            if (line) subEl.classList.add('pop');
+        }
 
         var d = total();
         fill.style.width = (Math.min(time / d, 1) * 100) + '%';
@@ -572,6 +710,10 @@ body.dragging #drop{display:flex}
     toggle('bMock', 'mock');
     toggle('bGuide', 'guides');
     toggle('bRec', 'rec');
+    document.getElementById('bSubs').addEventListener('click', function () {
+        document.body.classList.toggle('no-subs');
+        this.classList.toggle('act', !document.body.classList.contains('no-subs'));
+    });
     document.getElementById('bScrim').addEventListener('click', function () {
         document.body.classList.toggle('no-scrim');
         this.classList.toggle('act', !document.body.classList.contains('no-scrim'));
@@ -609,6 +751,8 @@ body.dragging #drop{display:flex}
     if (q.get('mock') === '0') document.body.classList.remove('mock');
     if (q.get('bg') === 'none') { document.body.classList.add('transparent', 'rec'); }
     if (q.get('scrim') === '0') document.body.classList.add('no-scrim');
+    if (q.get('subs') === '0') document.body.classList.add('no-subs');
+    if (q.get('subY')) document.getElementById('sub').style.top = q.get('subY') + 'px';
     if (q.get('zoneTop')) document.documentElement.style.setProperty('--zone-top', q.get('zoneTop') + 'px');
     if (q.get('zoneH')) document.documentElement.style.setProperty('--zone-h', q.get('zoneH') + 'px');
 

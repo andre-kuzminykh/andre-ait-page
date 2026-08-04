@@ -12,7 +12,8 @@ import re
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _OVERLAY = os.path.join(_ROOT, "automation", "1", "overlay", "index.html")
 _LECTURE = os.path.join(_ROOT, "automation", "1", "index.html")
-_DURATION = 142.0          # 02:22 — длина озвучки ролика
+_DURATION = 143.0          # 02:23 — длина ролика
+_WORDS = 285               # столько слов в посекундной расшифровке
 
 
 def _html(path=_OVERLAY):
@@ -133,6 +134,54 @@ def test_no_hyphenation_at_all():
     flat = html.replace(" ", "")
     assert "overflow-wrap:anywhere" not in flat, "anywhere рвёт слово посреди слога"
     assert "hyphens:auto" not in flat, "автоперенос запрещён"
+
+
+# ── FR-SITE23: субтитры ──────────────────────────────────────────────────
+
+def _subs():
+    """[(начало, конец, текст)] из массива SUBS в скрипте страницы."""
+    html = _html()
+    block = html[html.index("var SUBS = ["):html.index("var DURATION")]
+    return [(float(a), float(b), t) for a, b, t in
+            re.findall(r"\[([\d.]+),([\d.]+),\"(.*?)\"\]", block)]
+
+
+def test_subs_follow_the_transcript():
+    """Реплики идут подряд, не наезжают друг на друга и укладываются в ролик.
+    Ни одно слово расшифровки не потеряно при нарезке."""
+    subs = _subs()
+    assert len(subs) > 80, "субтитров подозрительно мало: %d" % len(subs)
+    prev_end = -1.0
+    for start, end, text in subs:
+        assert start < end, "реплика %r начинается позже, чем кончается" % text
+        assert start >= prev_end, "реплика %r наезжает на предыдущую" % text
+        assert end <= _DURATION, "реплика %r выходит за длину ролика" % text
+        prev_end = end
+    assert sum(len(t.split()) for _, _, t in subs) == _WORDS, \
+        "при нарезке потерялись или задвоились слова расшифровки"
+
+
+def test_subs_are_two_to_four_words():
+    for start, _, text in _subs():
+        n = len(text.split())
+        assert n <= 4, "на %.0fс реплика из %d слов — читать не успеть: %r" % (start, n, text)
+
+
+def test_subs_have_no_stage_directions():
+    """Ремарки расшифровки в квадратных скобках в кадр не попадают."""
+    for _, _, text in _subs():
+        assert "[" not in text and "]" not in text, "ремарка попала в субтитры: %r" % text
+
+
+def test_subs_are_white_outlined_and_boxless():
+    html = _html()
+    css = html[html.index("#sub{"):html.index("#sub:empty")]
+    assert "color:#fff" in css.replace(" ", ""), "субтитры должны быть белыми"
+    assert "-webkit-text-stroke" in css, "нет чёрной обводки"
+    assert "paint-order:stroke fill" in css, \
+        "без paint-order обводка съедает букву изнутри"
+    for boxy in ("background", "border-radius"):
+        assert boxy not in css, "у субтитров появилась подложка (%s)" % boxy
 
 
 # ── FR-SITE23: служебный интерфейс не попадает в кадр ────────────────────
