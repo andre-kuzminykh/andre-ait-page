@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<meta name="color-scheme" content="dark">
+<title>Как превратить бизнес в AI-First компанию с ИИ-агентами — Andre AI Technologies</title>
+<meta name="description" content="ИИ перестаёт быть инструментом и становится операционным ядром бизнеса. Почему рынок делится на AI-First компании и их клиентов и как четвёртая — интеллектуальная — революция меняет саму форму организации труда.">
+<link rel="canonical" href="https://andre.technology/articles/ai-agents/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<!-- Обложка — самый тяжёлый элемент первого экрана, тянем её раньше шрифтов. -->
+<link rel="preload" as="image" href="/assets/1_long.jpg" fetchpriority="high">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://andre.technology/articles/ai-agents/">
+<meta property="og:site_name" content="Andre AI Technologies">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Как превратить бизнес в AI-First компанию с ИИ-агентами">
+<meta property="og:description" content="ИИ становится операционным ядром бизнеса. Два типа компаний и четыре революции делегирования труда.">
+<meta property="og:image" content="https://andre.technology/assets/1_long.jpg">
+<meta property="og:image:width" content="1672">
+<meta property="og:image:height" content="941">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Как превратить бизнес в AI-First компанию с ИИ-агентами">
+<meta name="twitter:description" content="ИИ становится операционным ядром бизнеса. Два типа компаний и четыре революции делегирования труда.">
+<meta name="twitter:image" content="https://andre.technology/assets/1_long.jpg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Как превратить бизнес в AI-First компанию с ИИ-агентами",
+  "description": "ИИ перестаёт быть инструментом и становится операционным ядром бизнеса: два типа компаний и четыре революции делегирования труда.",
+  "image": "https://andre.technology/assets/1_long.jpg",
+  "inLanguage": "ru-RU",
+  "datePublished": "2026-08-04",
+  "author": { "@type": "Person", "name": "Andre Kuzminykh", "url": "https://andre.technology/about/" },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Andre AI Technologies",
+    "logo": { "@type": "ImageObject", "url": "https://andre.technology/icon-512.png" }
+  },
+  "mainEntityOfPage": "https://andre.technology/articles/ai-agents/"
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Шрифты грузим неблокирующе — как на главной: страница не должна ждать CDN
+     и показывать пустой тёмный экран (тот же приём, что в корневом index.html). -->
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null">
+<noscript><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+
+<style>
+/* ============================================================================
+   Andre AIT — лонгрид «Как превратить бизнес в AI-First компанию с ИИ-агентами».
+   Собран из слайдов 1–3 лекции 1 (automation/1): текст взят из конспектов
+   слайдов, инфографика перенесена по смыслу один в один, но перерисована
+   в тёмной палитре главной страницы.
+   Один файл: инлайновые CSS и vanilla-JS, без сборки и зависимостей.
+
+   Почему тут ДВА шрифта, хотя по конвенции сайта шрифт один (JetBrains Mono):
+   моноширинный текст на длинном чтении утомляет. JetBrains Mono остаётся
+   «голосом бренда» — заголовки, метки, цифры, интерфейс, — а корпус статьи
+   набран Inter. Переключается одной переменной --font-body.
+   ========================================================================= */
+
+:root{
+  --font-ui:'JetBrains Mono', ui-monospace, monospace;
+  --font-body:'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --bg:#050505;
+  --card:#0E0E12;
+  --line:#20202A;
+  --line-soft:#17171E;
+
+  --text:#E9E9EE;
+  --muted:#9C9CAA;
+  --dim:#6C6C7A;
+
+  --violet:#8854F3;
+  --violet-2:#A47BF7;
+  --orange:#F97316;
+
+  --shell:min(1120px, 100% - 2.5rem);
+  --col:min(720px, 100% - 2.5rem);
+  --wide:min(1000px, 100% - 2.5rem);
+  --r:18px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{scroll-behavior:smooth; -webkit-text-size-adjust:100%; text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:var(--font-body); font-size:17px; line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+::selection{background:var(--violet); color:#fff}
+*:focus-visible{outline:2px solid var(--violet); outline-offset:3px; border-radius:4px}
+
+a{color:inherit}
+img,svg{max-width:100%}
+
+/* Иконка из спрайта — это <svg><use></svg> без viewBox: без явного размера
+   браузер разворачивает её в дефолтные 300×150 и ломает блок. Страховка на
+   нулевой специфичности (:where) — любое точечное правило ниже её перебивает. */
+svg:where(:not([class]):not([viewBox])){width:1em; height:1em; flex:none}
+
+/* ---------- сетка статьи -------------------------------------------------- */
+.wrap{width:var(--col); margin-inline:auto}
+.wrap-wide{width:var(--wide); margin-inline:auto}
+.wrap-shell{width:var(--shell); margin-inline:auto}
+
+/* ---------- прогресс чтения ---------------------------------------------- */
+#progress{
+  position:fixed; inset:0 auto auto 0; height:2px; width:0;
+  background:linear-gradient(90deg,var(--violet),var(--orange));
+  z-index:60; transition:width .12s linear;
+}
+
+/* ---------- шапка --------------------------------------------------------- */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:rgba(5,5,5,.78); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line-soft);
+}
+.topbar__in{
+  width:var(--shell); margin-inline:auto;
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  height:3.4rem;
+}
+.brand{
+  display:inline-flex; align-items:center; gap:.6rem;
+  font-family:var(--font-ui); font-weight:800; font-size:.78rem;
+  letter-spacing:.14em; text-transform:uppercase; text-decoration:none;
+}
+.brand__dot{
+  width:9px; height:9px; border-radius:50%;
+  background:linear-gradient(135deg,var(--violet),var(--orange));
+  box-shadow:0 0 14px rgba(136,84,243,.8);
+}
+.topbar__link{
+  font-family:var(--font-ui); font-size:.72rem; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+  text-decoration:none; border:1px solid var(--line); border-radius:999px;
+  padding:.42rem .85rem; transition:.2s; white-space:nowrap;
+}
+.topbar__link:hover{color:var(--text); border-color:var(--violet)}
+@media (max-width:520px){ .topbar__link{display:none} }
+
+/* ---------- герой --------------------------------------------------------- */
+.hero{position:relative; padding:4rem 0 0; overflow:hidden}
+.hero::before{
+  content:''; position:absolute; z-index:0;
+  left:50%; top:-34%; translate:-50% 0;
+  width:min(1100px,140vw); aspect-ratio:1;
+  background:radial-gradient(circle at 50% 50%, rgba(136,84,243,.20), rgba(249,115,22,.07) 42%, transparent 66%);
+  filter:blur(14px); pointer-events:none;
+}
+.hero > *{position:relative; z-index:1}
+
+.eyebrow{
+  display:inline-flex; align-items:center; gap:.55rem;
+  font-family:var(--font-ui); font-size:.68rem; font-weight:700;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--violet-2);
+  border:1px solid rgba(136,84,243,.35); background:rgba(136,84,243,.09);
+  border-radius:999px; padding:.4rem .85rem; margin-bottom:1.6rem;
+}
+.eyebrow svg{width:14px; height:14px}
+
+h1{
+  font-family:var(--font-ui); font-weight:800;
+  font-size:clamp(1.85rem, 5vw, 3.15rem); line-height:1.1;
+  letter-spacing:-.02em; margin:0 0 1.4rem; text-wrap:balance;
+}
+h1 .nb{white-space:nowrap}
+h1 .accent{
+  background:linear-gradient(100deg,var(--violet) 10%, var(--orange) 92%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+.lead{
+  font-size:clamp(1.05rem,2.2vw,1.3rem); line-height:1.65;
+  color:var(--muted); margin:0 0 2.2rem; max-width:40em;
+}
+
+.byline{
+  display:flex; flex-wrap:wrap; align-items:center; gap:.55rem 1.1rem;
+  font-family:var(--font-ui); font-size:.72rem; font-weight:600;
+  letter-spacing:.06em; color:var(--dim);
+  padding-top:1.4rem; border-top:1px solid var(--line-soft);
+}
+.byline strong{color:var(--text); font-weight:700}
+.byline .sep{color:var(--line)}
+
+/* Обложка. Фиксируем пропорции картинки, чтобы страница не «прыгала»
+   при её догрузке, и подсвечиваем снизу — она уходит в фон без стыка. */
+.cover{position:relative; margin:2.6rem auto 0}
+.cover img{
+  /* height:auto обязателен: атрибуты width/height на <img> приходят в стили
+     презентационной подсказкой, и без него height=941px побеждает aspect-ratio —
+     обложка растягивалась в почти квадрат. */
+  display:block; width:100%; height:auto; aspect-ratio:1672/941; object-fit:cover;
+  border-radius:24px; border:1px solid var(--line);
+}
+.cover::after{
+  content:''; position:absolute; inset:auto 0 0 0; height:38%;
+  border-radius:0 0 24px 24px; pointer-events:none;
+  background:linear-gradient(180deg, transparent, rgba(5,5,5,.55));
+}
+@media (max-width:520px){ .cover img,.cover::after{border-radius:16px} }
+
+/* ---------- оглавление ---------------------------------------------------- */
+.toc{
+  margin:3rem auto 0;
+  border:1px solid var(--line); border-radius:var(--r);
+  background:linear-gradient(180deg,var(--card),rgba(14,14,18,.4));
+  padding:1.6rem 1.5rem;
+}
+.toc__title{
+  font-family:var(--font-ui); font-size:.7rem; font-weight:800;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
+  margin:0 0 1rem;
+}
+.toc ol{list-style:none; margin:0; padding:0; counter-reset:toc}
+.toc li{counter-increment:toc}
+.toc a{
+  display:flex; gap:.85rem; align-items:baseline;
+  text-decoration:none; color:var(--muted);
+  padding:.45rem 0; font-size:.98rem; line-height:1.45; transition:.18s;
+}
+.toc a::before{
+  content:counter(toc,decimal-leading-zero);
+  font-family:var(--font-ui); font-size:.7rem; font-weight:700;
+  color:var(--dim); flex:none; letter-spacing:.05em;
+}
+.toc a:hover{color:var(--text)}
+.toc a:hover::before{color:var(--violet)}
+.toc a.is-active{color:var(--text)}
+.toc a.is-active::before{color:var(--orange)}
+
+/* ---------- секции -------------------------------------------------------- */
+section{scroll-margin-top:5rem}
+h2{
+  font-family:var(--font-ui); font-weight:800;
+  font-size:clamp(1.4rem,3vw,1.95rem); line-height:1.22;
+  letter-spacing:-.015em; margin:4rem 0 1.4rem; text-wrap:balance;
+}
+h2 .num{
+  display:block; font-size:.66rem; font-weight:800; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--violet-2); margin-bottom:.7rem;
+}
+h3{
+  font-family:var(--font-ui); font-weight:700; font-size:1.02rem;
+  line-height:1.35; letter-spacing:-.005em; margin:0 0 .5rem;
+}
+h4{
+  font-family:var(--font-ui); font-weight:800; font-size:1.15rem;
+  line-height:1.3; letter-spacing:-.01em; margin:2.6rem 0 1rem;
+}
+p{margin:0 0 1.25rem}
+p b, li b{color:#fff; font-weight:600}
+
+/* ---------- лид секции — врезка с главной мыслью -------------------------- */
+.lede{
+  position:relative; margin:0 0 2.4rem;
+  border:1px solid var(--line); border-left:3px solid transparent;
+  border-radius:var(--r);
+  background:
+    linear-gradient(var(--card),var(--card)) padding-box,
+    linear-gradient(180deg,var(--violet),var(--orange)) border-box;
+  padding:1.5rem;
+}
+.lede p{font-size:1.1rem; line-height:1.65; color:#fff; margin:0 0 .8rem; font-weight:500}
+.lede p:last-child{margin-bottom:0}
+.lede p + p{color:#CFCFDA; font-weight:400}
+
+/* ---------- врезка -------------------------------------------------------- */
+.note{
+  display:flex; gap:1rem; align-items:flex-start;
+  margin:2rem 0 2.2rem; padding:1.25rem 1.35rem;
+  border:1px solid rgba(136,84,243,.3); border-radius:var(--r);
+  background:rgba(136,84,243,.08);
+}
+.note svg{width:20px; height:20px; flex:none; margin-top:.28rem; color:var(--violet-2)}
+.note p{margin:0; font-size:1rem; line-height:1.65}
+.note--orange{border-color:rgba(249,115,22,.3); background:rgba(249,115,22,.08)}
+.note--orange svg{color:var(--orange)}
+
+/* ---------- фигура (инфографика) ------------------------------------------ */
+.fig{margin:2.6rem 0 2.8rem}
+.fig__cap{
+  display:block; margin-top:1rem;
+  font-family:var(--font-ui); font-size:.68rem; font-weight:600;
+  letter-spacing:.1em; color:var(--dim); text-transform:uppercase;
+}
+.fig__cap b{color:var(--violet-2); font-weight:700}
+
+/* ---------- карточки ------------------------------------------------------ */
+.grid{display:grid; gap:.85rem}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:760px){ .g3{grid-template-columns:1fr} }
+@media (max-width:520px){ .g2{grid-template-columns:1fr} }
+
+.card{
+  border:1px solid var(--line); border-radius:var(--r);
+  background:var(--card); padding:1.35rem 1.3rem;
+  display:flex; flex-direction:column; gap:.5rem;
+  transition:border-color .2s, transform .2s;
+}
+.card:hover{border-color:#2E2E3C; transform:translateY(-2px)}
+.card p{margin:0; font-size:.92rem; line-height:1.6; color:var(--muted)}
+.card__ico{
+  width:42px; height:42px; border-radius:12px; flex:none;
+  display:grid; place-items:center; margin-bottom:.35rem;
+  background:rgba(136,84,243,.13); border:1px solid rgba(136,84,243,.24);
+  color:var(--violet-2);
+}
+.card__ico svg{width:21px; height:21px}
+.card--hi{
+  background:linear-gradient(165deg,rgba(136,84,243,.16),rgba(14,14,18,.9) 62%);
+  border-color:rgba(136,84,243,.4);
+}
+.card--hi .card__ico{background:rgba(136,84,243,.22); color:#fff}
+.card--hi h3{color:#fff}
+.card--hi p{color:#C8C4DC}
+
+/* ---------- ИНФОГРАФИКА 2: два типа компаний ------------------------------ */
+.versus{display:flex; align-items:stretch; gap:1rem}
+.versus__vs{
+  display:grid; place-items:center; flex:none;
+  font-family:var(--font-ui); font-size:.62rem; font-weight:800;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
+}
+.versus__vs span{border:1px solid var(--line); border-radius:999px; padding:.4rem .7rem}
+.side{
+  flex:1; min-width:0; border-radius:22px; padding:1.7rem 1.5rem;
+  border:1px solid var(--line); background:var(--card);
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  position:relative;
+}
+.side--lead{
+  border-color:rgba(136,84,243,.45);
+  background:linear-gradient(165deg,rgba(136,84,243,.2),rgba(8,8,10,.96) 66%);
+  box-shadow:0 12px 42px -30px rgba(136,84,243,.9);
+}
+.side__flag{
+  position:absolute; top:-.75rem; left:50%; translate:-50% 0;
+  font-family:var(--font-ui); font-size:.58rem; font-weight:800;
+  letter-spacing:.18em; text-transform:uppercase; white-space:nowrap;
+  background:linear-gradient(90deg,var(--violet),var(--orange)); color:#0A0A0A;
+  border-radius:999px; padding:.3rem .8rem;
+}
+.side__ico{
+  width:62px; height:62px; border-radius:50%; display:grid; place-items:center;
+  background:rgba(255,255,255,.05); border:1px solid var(--line);
+  color:var(--muted); margin-bottom:1rem;
+}
+.side__ico svg{width:28px; height:28px}
+.side--lead .side__ico{background:rgba(136,84,243,.2); border-color:rgba(136,84,243,.45); color:var(--violet-2)}
+.side h3{font-size:1.15rem; margin-bottom:1.1rem}
+.side--lead h3{color:#fff}
+.side ul{list-style:none; margin:0; padding:0; display:grid; gap:.75rem; width:100%; text-align:left}
+.side li{display:flex; gap:.6rem; align-items:flex-start; font-size:.92rem; line-height:1.5; color:var(--muted)}
+.side li svg{width:16px; height:16px; flex:none; margin-top:.3rem}
+.side--lead li{color:#D6D2E6}
+.side--lead li svg{color:var(--violet-2)}
+.side--rest li svg{color:#4A4A58}
+@media (max-width:820px){
+  .versus{flex-direction:column}
+  .versus__vs{padding:.2rem 0}
+}
+
+/* ---------- ИНФОГРАФИКА 3: четыре революции ------------------------------- */
+.revos{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.75rem}
+@media (max-width:760px){ .revos{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:420px){ .revos{grid-template-columns:1fr} }
+.revo{
+  border:1px solid var(--line); border-radius:var(--r); background:var(--card);
+  padding:1.3rem 1rem; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:.45rem;
+}
+.revo__n{
+  font-family:var(--font-ui); font-size:.58rem; font-weight:800;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
+}
+.revo__ico{
+  width:48px; height:48px; border-radius:50%; display:grid; place-items:center;
+  background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--muted);
+  margin-bottom:.2rem;
+}
+.revo__ico svg{width:23px; height:23px}
+.revo h3{margin:0}
+.revo p{margin:0; font-size:.85rem; line-height:1.45; color:var(--muted)}
+.revo--now{
+  border-color:rgba(249,115,22,.45);
+  background:linear-gradient(170deg,rgba(249,115,22,.16),rgba(8,8,10,.96) 66%);
+  box-shadow:0 10px 38px -28px rgba(249,115,22,.85);
+}
+.revo--now .revo__ico{background:rgba(249,115,22,.18); border-color:rgba(249,115,22,.4); color:var(--orange)}
+.revo--now .revo__n{color:var(--orange)}
+.revo--now h3{color:var(--orange)}
+.revo--now p{color:#E6DACE}
+
+/* ---------- нумерованные карточки конспекта ------------------------------- */
+.steps{display:grid; gap:.8rem; margin:2.2rem 0 2.4rem}
+.step{
+  display:grid; grid-template-columns:auto 1fr; gap:1.1rem;
+  border:1px solid var(--line); border-radius:var(--r);
+  background:var(--card); padding:1.25rem 1.3rem; transition:border-color .2s;
+}
+.step:hover{border-color:#2E2E3C}
+.step__n{
+  width:40px; height:40px; border-radius:11px; display:grid; place-items:center;
+  background:rgba(136,84,243,.13); border:1px solid rgba(136,84,243,.24);
+  color:var(--violet-2); font-family:var(--font-ui); font-weight:800; font-size:.9rem;
+}
+.step__n svg{width:20px; height:20px}
+.step p{margin:0; font-size:.94rem; line-height:1.62; color:var(--muted)}
+.step--now .step__n{background:rgba(249,115,22,.16); border-color:rgba(249,115,22,.35); color:var(--orange)}
+
+/* ---------- «О чём эта лекция» — чек-лист --------------------------------- */
+.agenda{
+  border:1px solid var(--line); border-radius:22px; padding:1.7rem 1.6rem;
+  background:linear-gradient(180deg,var(--card),rgba(10,10,12,.5)); margin:2.4rem 0;
+}
+.agenda h4{margin:0 0 1.1rem}
+.agenda ul{list-style:none; margin:0 0 1.2rem; padding:0; display:grid; gap:.7rem}
+.agenda li{display:flex; gap:.75rem; align-items:flex-start; font-size:.98rem; line-height:1.55; color:var(--muted)}
+.agenda li svg{width:17px; height:17px; flex:none; margin-top:.3rem; color:var(--violet-2)}
+.agenda__out{
+  margin:0; padding-top:1.1rem; border-top:1px solid var(--line-soft);
+  font-family:var(--font-ui); font-weight:700; font-size:.95rem; color:#fff;
+}
+.agenda__out span{
+  background:linear-gradient(100deg,var(--violet),var(--orange));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+/* ---------- финальная цитата ---------------------------------------------- */
+.pull{
+  position:relative; overflow:hidden; margin:4rem 0 0;
+  border:1px solid var(--line); border-radius:26px;
+  background:radial-gradient(120% 150% at 50% 0%, rgba(136,84,243,.2), rgba(249,115,22,.06) 45%, #08080A 78%);
+  padding:3rem 2rem; text-align:center;
+}
+.pull__mark{
+  position:absolute; top:-1rem; left:50%; translate:-50% 0;
+  width:130px; height:130px; color:#fff; opacity:.045; pointer-events:none;
+}
+.pull p{
+  position:relative; z-index:1; margin:0;
+  font-family:var(--font-ui); font-weight:800; letter-spacing:-.015em;
+  font-size:clamp(1.15rem,3.2vw,1.85rem); line-height:1.4; text-wrap:balance;
+}
+.pull em{
+  font-style:normal;
+  background:linear-gradient(100deg,var(--violet) 5%, var(--orange) 95%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+/* ---------- итоги --------------------------------------------------------- */
+.takeaways{
+  margin:4.5rem 0 0; border:1px solid var(--line); border-radius:24px;
+  background:linear-gradient(180deg,var(--card),rgba(10,10,12,.5)); padding:2rem 1.8rem;
+}
+.takeaways h2{margin:0 0 1.4rem; font-size:1.35rem}
+.takeaways ul{list-style:none; margin:0; padding:0; display:grid; gap:.95rem}
+.takeaways li{display:flex; gap:.85rem; align-items:flex-start; font-size:1rem; line-height:1.6}
+.takeaways li svg{width:18px; height:18px; flex:none; margin-top:.32rem; color:var(--violet-2)}
+
+/* ---------- CTA ----------------------------------------------------------- */
+.cta{
+  margin:3rem 0 0; border-radius:26px; padding:2.4rem 2rem; text-align:center;
+  border:1px solid rgba(136,84,243,.3);
+  background:radial-gradient(120% 140% at 50% 0%, rgba(136,84,243,.22), rgba(249,115,22,.07) 45%, #08080A 78%);
+}
+.cta h2{margin:0 0 .8rem; font-size:clamp(1.3rem,3vw,1.8rem)}
+.cta p{color:var(--muted); max-width:34em; margin:0 auto 1.8rem}
+.cta__row{display:flex; flex-wrap:wrap; gap:.7rem; justify-content:center}
+.btn{
+  display:inline-flex; align-items:center; gap:.55rem;
+  font-family:var(--font-ui); font-size:.8rem; font-weight:800;
+  letter-spacing:.08em; text-transform:uppercase; text-decoration:none;
+  padding:.85rem 1.5rem; border-radius:999px; transition:.2s;
+}
+.btn svg{width:16px; height:16px}
+.btn--primary{background:#fff; color:#08080A; border:1px solid #fff}
+.btn--primary:hover{background:var(--violet); border-color:var(--violet); color:#fff}
+.btn--ghost{border:1px solid var(--line); color:var(--text)}
+.btn--ghost:hover{border-color:var(--violet); color:#fff}
+
+/* ---------- подвал -------------------------------------------------------- */
+footer{margin-top:5rem; border-top:1px solid var(--line-soft); padding:2.4rem 0 3.2rem}
+.foot{
+  display:flex; flex-wrap:wrap; gap:1rem; align-items:center; justify-content:space-between;
+  font-family:var(--font-ui); font-size:.72rem; letter-spacing:.06em; color:var(--dim);
+}
+.foot a{color:var(--muted); text-decoration:none; transition:.2s}
+.foot a:hover{color:var(--text)}
+.foot__links{display:flex; flex-wrap:wrap; gap:1.1rem}
+
+/* ---------- появление при скролле ----------------------------------------- */
+.reveal{opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s cubic-bezier(.22,1,.36,1)}
+.reveal.is-in{opacity:1; transform:none}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1 !important; transform:none !important; transition:none}
+  .card:hover{transform:none}
+}
+
+@media (max-width:520px){
+  body{font-size:16px}
+  .hero{padding:3rem 0 0}
+  .toc{padding:1.3rem 1.1rem}
+  .takeaways,.cta,.pull,.agenda{padding:1.6rem 1.2rem}
+  .side{padding:1.4rem 1.1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Иконки — инлайновый SVG-спрайт: страница остаётся самодостаточной и не
+     ждёт стороннего CDN с иконочным шрифтом (как это делает главная). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="ic-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="17" height="12" rx="3.5"/><path d="M12 4.5V8M9.2 13.5h.01M14.8 13.5h.01M9.8 16.8h4.4"/><circle cx="12" cy="3.2" r="1.3"/><path d="M3.5 12.5H2M22 12.5h-1.5"/></symbol>
+<symbol id="ic-case" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="19" height="13" rx="2.6"/><path d="M9 7V5.2A2 2 0 0 1 11 3.2h2a2 2 0 0 1 2 2V7M2.5 12.2h19"/></symbol>
+<symbol id="ic-userswitch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.6" cy="7.4" r="3.4"/><path d="M3.2 19.4a6.5 6.5 0 0 1 9.6-5.7"/><path d="M14.4 16.6h6.4l-2.2-2.2M20.8 20h-6.4l2.2 2.2"/></symbol>
+<symbol id="ic-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6c3 2 4.9 5.6 4.9 9.4 0 1.5-.3 2.9-.8 4.2H7.9A11.4 11.4 0 0 1 7.1 12c0-3.8 1.9-7.4 4.9-9.4Z"/><circle cx="12" cy="9.8" r="1.9"/><path d="m7.9 16.2-2.8 2.2 1.7-5M16.1 16.2l2.8 2.2-1.7-5M10.5 19.2c.4 1.2.9 2 1.5 2.6.6-.6 1.1-1.4 1.5-2.6"/></symbol>
+<symbol id="ic-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.6" cy="19.4" r="1.6"/><circle cx="17.2" cy="19.4" r="1.6"/><path d="M2.6 3.6h2.7l2.6 11.6h10.6l2.1-8H6.5"/></symbol>
+<symbol id="ic-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5.5 21V6.6L12 3v18"/><path d="M12 10.5 18.5 13v8"/><path d="M8.2 8.5v.01M8.2 12.5v.01M8.2 16.5v.01M15.2 15.5v.01"/></symbol>
+<symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.8"/><path d="m8.2 12.4 2.6 2.6 5-5.2"/></symbol>
+<symbol id="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.8"/><path d="m9 9 6 6M15 9l-6 6"/></symbol>
+<symbol id="ic-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></symbol>
+<symbol id="ic-desktop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="4" width="18.8" height="12.4" rx="2.4"/><path d="M8.5 20.4h7M12 16.4v4"/></symbol>
+<symbol id="ic-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5v13"/><path d="M12 6a3 3 0 0 0-5.2-2A3 3 0 0 0 4 9a3 3 0 0 0 1 5.6A3 3 0 0 0 9.5 19a2.5 2.5 0 0 0 2.5-2.2"/><path d="M12 6a3 3 0 0 1 5.2-2A3 3 0 0 1 20 9a3 3 0 0 1-1 5.6A3 3 0 0 1 14.5 19a2.5 2.5 0 0 1-2.5-2.2"/></symbol>
+<symbol id="ic-compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.6" r="1.9"/><path d="M11.1 6.4 6 20.2M12.9 6.4 18 20.2M8.6 14h6.8"/></symbol>
+<symbol id="ic-factory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20.6h18V9l-6 3.8V9l-6 3.8V4H3v16.6Z"/><path d="M7.4 17.2v-2M12 17.2v-2M16.6 17.2v-2"/></symbol>
+<symbol id="ic-cpu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.4" y="6.4" width="11.2" height="11.2" rx="2.2"/><rect x="10" y="10" width="4" height="4" rx="1"/><path d="M9.4 3v3.4M14.6 3v3.4M9.4 17.6V21M14.6 17.6V21M3 9.4h3.4M3 14.6h3.4M17.6 9.4H21M17.6 14.6H21"/></symbol>
+<symbol id="ic-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15.5M13.5 6l6 6-6 6"/></symbol>
+<symbol id="ic-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 13.9 9l5.8 1.9-5.8 1.9L12 18.6 10.1 12.8 4.3 10.9 10.1 9 12 3.2Z"/><path d="M18.8 3v3M20.3 4.5h-3"/></symbol>
+<symbol id="ic-quote" viewBox="0 0 24 24" fill="currentColor"><path d="M9.4 5.2c-3.4 1.5-5.6 4.5-5.6 8.2 0 3.3 1.9 5.4 4.5 5.4 2.2 0 3.9-1.6 3.9-3.8 0-2-1.4-3.5-3.3-3.5-.4 0-.8.1-1 .2.4-1.7 1.8-3.4 3.6-4.3l-2.1-2.2Zm10 0c-3.4 1.5-5.6 4.5-5.6 8.2 0 3.3 1.9 5.4 4.5 5.4 2.2 0 3.9-1.6 3.9-3.8 0-2-1.4-3.5-3.3-3.5-.4 0-.8.1-1 .2.4-1.7 1.8-3.4 3.6-4.3l-2.1-2.2Z"/></symbol>
+</svg>
+
+<div id="progress" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="topbar__in">
+    <a class="brand" href="https://andre.technology/"><span class="brand__dot"></span>Andre&nbsp;AI</a>
+    <a class="topbar__link" href="https://andre.technology/automation/main">К&nbsp;курсу&nbsp;→</a>
+  </div>
+</header>
+
+<main>
+
+<!-- ======================= ГЕРОЙ ======================= -->
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow"><svg><use href="#ic-spark"/></svg>Лекция 1 · Введение в ИИ-стратегию</span>
+    <h1>Как превратить бизнес в <span class="accent"><span class="nb">AI-First</span> компанию</span> с ИИ-агентами</h1>
+    <p class="lead">
+      Искусственный интеллект перестаёт быть инструментом и становится операционным ядром бизнеса.
+      Разбираем, почему рынок уже разделился на AI-First компании и их клиентов и как четвёртая —
+      интеллектуальная — революция меняет саму форму организации труда.
+    </p>
+    <div class="byline">
+      <span><strong>Андрей Кузьминых</strong> · Andre AI Technologies</span>
+      <span class="sep">/</span>
+      <span>4 августа 2026</span>
+      <span class="sep">/</span>
+      <span>≈ 10 минут чтения</span>
+    </div>
+  </div>
+
+  <figure class="cover wrap-wide">
+    <img src="/assets/1_long.jpg" width="1672" height="941" fetchpriority="high"
+         alt="Андрей Кузьминых за столом, рядом ИИ-агент везёт тележку с золотыми монетами">
+  </figure>
+</div>
+
+<!-- ======================= ОГЛАВЛЕНИЕ ======================= -->
+<nav class="toc wrap" aria-label="Содержание">
+  <p class="toc__title">Содержание</p>
+  <ol>
+    <li><a href="#s1">ИИ как новое операционное ядро бизнеса</a></li>
+    <li><a href="#s2">Мир делится на два типа компаний</a></li>
+    <li><a href="#s3">Четыре промышленные революции</a></li>
+  </ol>
+</nav>
+
+<!-- ---------- 1 ---------- -->
+<section id="s1" class="wrap">
+  <h2><span class="num">01 — Новая операционная система</span>ИИ как новое операционное ядро бизнеса</h2>
+
+  <div class="lede reveal">
+    <p>Сегодня искусственный интеллект перестаёт быть просто инструментом и становится новой операционной системой бизнеса.</p>
+    <p>ИИ-агенты уже способны принимать решения и выполнять полезную работу. Поэтому выигрывать будут те компании, которые сумеют организовать новый формат работы вокруг ИИ.</p>
+  </div>
+
+  <p>Искусственный интеллект уже нельзя рассматривать только как ещё один цифровой инструмент — такой же, как текстовый редактор, поисковая система или аналитическая платформа. Мы вступаем в период, когда ИИ становится <b>самостоятельным участником бизнес-процессов</b>: получает информацию, анализирует контекст, принимает решения, выполняет действия и взаимодействует с людьми и другими системами.</p>
+
+  <p>Это меняет сам предмет автоматизации. Раньше компания выбирала отдельную операцию и пыталась ускорить её с помощью программного обеспечения. Например, автоматизировала выставление счетов, рассылку писем, формирование отчётов или маршрутизацию обращений. Сегодня задача становится шире: нужно увидеть весь процесс целиком, определить его цель, входы и выходы, точки принятия решений, ограничения, метрики, роль человека — и только после этого понять, какую часть работы можно передать <b>ИИ-агентам</b>.</p>
+
+  <figure class="fig wrap-wide reveal">
+    <div class="grid g3">
+      <div class="card">
+        <div class="card__ico"><svg><use href="#ic-robot"/></svg></div>
+        <h3>От инструмента к агенту</h3>
+        <p>ИИ перестал быть просто чатом. Агенты сами принимают решения и выполняют задачи</p>
+      </div>
+      <div class="card card--hi">
+        <div class="card__ico"><svg><use href="#ic-case"/></svg></div>
+        <h3>AI-First компании</h3>
+        <p>Выигрывают те, кто перестраивает процессы вокруг ИИ, а не просто использует его</p>
+      </div>
+      <div class="card">
+        <div class="card__ico"><svg><use href="#ic-userswitch"/></svg></div>
+        <h3>Новая роль человека</h3>
+        <p>Люди становятся архитекторами и менеджерами цифровых систем</p>
+      </div>
+    </div>
+    <figcaption class="fig__cap"><b>Рис. 1</b> — три сдвига, из которых складывается ИИ-трансформация</figcaption>
+  </figure>
+
+  <div class="note reveal">
+    <svg><use href="#ic-spark"/></svg>
+    <p>Успешное внедрение ИИ начинается не с выбора модели, платформы или промта. Оно начинается с умения видеть компанию как <b>систему взаимосвязанных процессов и потоков данных</b>. Только в такой системе можно понять, где интеллект действительно нужен, какие решения ему можно делегировать и как измерить полученный результат.</p>
+  </div>
+
+  <h4>ИИ как операционная система бизнеса</h4>
+
+  <p>Искусственный интеллект перестаёт быть внешним инструментом, к которому сотрудник обращается время от времени. Он постепенно становится <b>внутренним операционным слоем компании</b> — системой, через которую проходят данные, решения и действия.</p>
+
+  <p>Когда ИИ используется только для генерации текста или поиска идей, он повышает личную продуктивность отдельного сотрудника. Но когда он подключён к корпоративным данным, бизнес-правилам, календарям, CRM, ERP, аналитическим платформам и другим системам, его роль меняется. Он уже не просто отвечает на вопросы, а участвует в работе: анализирует ситуацию, предлагает или принимает решение, запускает следующий этап процесса, контролирует исполнение и фиксирует результат.</p>
+
+  <p>Именно здесь появляется понятие <b>ИИ-агента</b>. Агент получает цель, воспринимает состояние среды, выбирает действия и использует доступные инструменты для достижения результата. Один агент может работать с обращениями клиентов, другой — анализировать финансовые показатели, третий — контролировать исполнение проектов, четвёртый — координировать работу остальных.</p>
+
+  <p>Компания, которая умеет организовать такую систему, получает не просто набор автоматизаций. Она получает новый способ управления. Часть операций выполняется непрерывно, решения принимаются быстрее, а накопленные данные превращаются в контекст для следующих действий.</p>
+
+  <p>Именно так появляются <b>AI-First компании</b> — организации, где ИИ-агенты становятся полноценной частью рабочих процессов, а люди становятся их менеджерами.</p>
+
+  <p>При этом роль человека не исчезает. Напротив, она становится более управленческой. Человек формулирует цели, задаёт правила, определяет границы автономности, проверяет качество и отвечает за последствия. ИИ берёт на себя анализ, подготовку решений и исполнение повторяемых действий, а человек проектирует систему и развивает её.</p>
+
+  <p>Поэтому ИИ-трансформация — это не внедрение одной технологии. Это перестройка операционной модели вокруг совместной работы человеческого и машинного интеллекта.</p>
+
+  <div class="agenda reveal">
+    <h4 style="margin-top:0">О чём эта лекция</h4>
+    <ul>
+      <li><svg><use href="#ic-check"/></svg><span>Кто такие <b>ИИ-агенты</b> и как они работают: чем отличаются от обычных программ и ассистентов.</span></li>
+      <li><svg><use href="#ic-check"/></svg><span>Как устроена <b>AI-First-компания</b> и почему ИИ превращается в новый слой управления бизнесом.</span></li>
+      <li><svg><use href="#ic-check"/></svg><span>Какие процессы действительно стоит усиливать с помощью ИИ, а где внедрение не даст заметного эффекта.</span></li>
+      <li><svg><use href="#ic-check"/></svg><span>Как оценить зрелость организации и разработать стратегию внедрения.</span></li>
+      <li><svg><use href="#ic-check"/></svg><span>Как построить цикл <b>AgentOps</b> и сформировать новую организационную структуру.</span></li>
+      <li><svg><use href="#ic-check"/></svg><span>Как меняется роль человека — и как превратить ИИ из обычного инструмента в конкурентное преимущество.</span></li>
+    </ul>
+    <p class="agenda__out"><span>Вперёд в этот дивный новый мир!</span></p>
+  </div>
+</section>
+
+<!-- ---------- 2 ---------- -->
+<section id="s2" class="wrap">
+  <h2><span class="num">02 — Новая линия конкуренции</span>Мир делится на два типа компаний</h2>
+
+  <div class="lede reveal">
+    <p>Компании уже делятся на два типа: AI-First компании и их клиенты.</p>
+    <p>В AI-First компаниях искусственный интеллект встроен в самое ядро бизнеса: он управляет процессами, принимает решения и действует, как настоящий сотрудник.</p>
+  </div>
+
+  <p>По мере распространения искусственного интеллекта компании начинают различаться не только продуктами, капиталом или численностью команды. Всё более важным становится вопрос: встроен ли интеллект в саму бизнес-модель или используется лишь эпизодически?</p>
+
+  <p>Условно рынок можно разделить на два типа участников.</p>
+
+  <figure class="fig wrap-wide reveal">
+    <div class="versus">
+      <div class="side side--lead">
+        <span class="side__flag">Лидеры</span>
+        <span class="side__ico"><svg><use href="#ic-rocket"/></svg></span>
+        <h3>AI-First компании</h3>
+        <ul>
+          <li><svg><use href="#ic-check"/></svg>ИИ управляет ядром бизнеса</li>
+          <li><svg><use href="#ic-check"/></svg>Масштабируются без роста штата</li>
+          <li><svg><use href="#ic-check"/></svg>Быстрее, дешевле, качественнее</li>
+        </ul>
+      </div>
+
+      <div class="versus__vs"><span>против</span></div>
+
+      <div class="side side--rest">
+        <span class="side__ico"><svg><use href="#ic-cart"/></svg></span>
+        <h3>Их клиенты</h3>
+        <ul>
+          <li><svg><use href="#ic-x"/></svg>Игнорируют ИИ или используют локально</li>
+          <li><svg><use href="#ic-x"/></svg>Теряют конкурентоспособность</li>
+          <li><svg><use href="#ic-x"/></svg>Становятся потребителями чужих технологий</li>
+        </ul>
+      </div>
+    </div>
+    <figcaption class="fig__cap"><b>Рис. 2</b> — рынок расходится на две бизнес-модели: с ИИ в ядре и без него</figcaption>
+  </figure>
+
+  <figure class="fig reveal">
+    <div class="grid g2">
+      <div class="card card--hi">
+        <div class="card__ico"><svg><use href="#ic-rocket"/></svg></div>
+        <h3>AI-First-компания</h3>
+        <p>Строит процессы так, чтобы ИИ был частью её операционного ядра.</p>
+      </div>
+      <div class="card">
+        <div class="card__ico"><svg><use href="#ic-building"/></svg></div>
+        <h3>Традиционная компания</h3>
+        <p>Продолжает работать по старой модели и постепенно становится клиентом первых.</p>
+      </div>
+    </div>
+    <figcaption class="fig__cap"><b>Рис. 3</b> — две роли на одном рынке</figcaption>
+  </figure>
+
+  <p><b>AI-First-компания</b> способна быстрее обрабатывать информацию, персонализировать предложения, принимать решения и масштабировать операции. Там, где традиционной организации нужно нанимать дополнительных сотрудников, расширять отделы и увеличивать число уровней управления, AI-First-компания может наращивать объём работы за счёт агентов и автоматизированных процессов. Она предлагает клиенту услугу <b>быстрее, дешевле и качественнее</b> — и масштабируется без роста штата.</p>
+
+  <p>Это не означает, что она полностью отказывается от людей. Её преимущество заключается в другом: человеческое внимание используется только там, где оно действительно необходимо — в постановке целей, переговорах, ответственности, творчестве, этических и стратегических решениях. Повторяемая интеллектуальная работа делегируется системам.</p>
+
+  <p>В результате меняется характер конкуренции. Сегодня компании конкурируют своими <b>бизнес-моделями</b> — с ИИ и без него. Два бизнеса могут предлагать одинаковую услугу, но один будет оказывать её быстрее, дешевле и стабильнее, потому что большая часть операций в нём выполняется автоматически.</p>
+
+  <p>Поэтому вопрос о внедрении ИИ становится вопросом долгосрочной конкурентоспособности. Организация может начать трансформацию сама, выстроив <b>собственный интеллектуальный слой</b>, либо покупать всё больше услуг у тех, кто уже сделал это раньше.</p>
+
+  <div class="note reveal">
+    <svg><use href="#ic-spark"/></svg>
+    <p>Главный вопрос для бизнеса звучит так: либо внедрять ИИ в свой бизнес, либо стать неконкурентоспособным. <b>Думаю, выбор очевиден.</b></p>
+  </div>
+</section>
+
+<!-- ---------- 3 ---------- -->
+<section id="s3" class="wrap">
+  <h2><span class="num">03 — Исторический контекст</span>Четыре промышленные революции</h2>
+
+  <div class="lede reveal">
+    <p>История экономики — это история делегирования труда машинам.</p>
+    <p>И сегодня мы находимся в четвёртой революции — интеллектуальной. Теперь автоматизируется не действие, а само мышление.</p>
+  </div>
+
+  <p>Историю экономики можно рассматривать как историю последовательного делегирования человеческого труда машинам.</p>
+
+  <figure class="fig wrap-wide reveal">
+    <div class="revos">
+      <div class="revo">
+        <span class="revo__n">I</span>
+        <span class="revo__ico"><svg><use href="#ic-factory"/></svg></span>
+        <h3>Механизация</h3>
+        <p>Автоматизация физического труда</p>
+      </div>
+      <div class="revo">
+        <span class="revo__n">II</span>
+        <span class="revo__ico"><svg><use href="#ic-bolt"/></svg></span>
+        <h3>Электричество</h3>
+        <p>Массовое производство</p>
+      </div>
+      <div class="revo">
+        <span class="revo__n">III</span>
+        <span class="revo__ico"><svg><use href="#ic-desktop"/></svg></span>
+        <h3>Цифровая</h3>
+        <p>IT и управление на основе данных</p>
+      </div>
+      <div class="revo revo--now">
+        <span class="revo__n">IV · сейчас</span>
+        <span class="revo__ico"><svg><use href="#ic-brain"/></svg></span>
+        <h3>Интеллектуальная</h3>
+        <p>Автоматизация мышления</p>
+      </div>
+    </div>
+    <figcaption class="fig__cap"><b>Рис. 4</b> — четыре революции делегирования труда машинам</figcaption>
+  </figure>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step__n"><svg><use href="#ic-factory"/></svg></div>
+      <div>
+        <h3>Первая революция — механическая</h3>
+        <p>Паровой двигатель, фабрики, станки и железные дороги позволили заменить или многократно усилить физический труд. Машина выполняла действие, но человек непосредственно управлял ею.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n"><svg><use href="#ic-bolt"/></svg></div>
+      <div>
+        <h3>Вторая революция — электрическая</h3>
+        <p>Электричество, конвейеры, телеграф и телефон сделали возможными массовое производство и масштабирование коммуникаций. В этот период возникли стандартизированные процессы, промышленный менеджмент, нормативы и показатели эффективности. Машины стали частью операционной системы предприятий.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__n"><svg><use href="#ic-cpu"/></svg></div>
+      <div>
+        <h3>Третья революция — цифровая</h3>
+        <p>Компьютеры, интернет, базы данных, ERP- и CRM-системы позволили перевести процессы в программное обеспечение. Действия стали оставлять цифровой след, данные превратились в управленческий ресурс, а решения всё чаще начали приниматься на основе аналитики.</p>
+      </div>
+    </div>
+    <div class="step step--now">
+      <div class="step__n"><svg><use href="#ic-brain"/></svg></div>
+      <div>
+        <h3>Четвёртая революция — интеллектуальная</h3>
+        <p>Сегодня автоматизируется не только физическое действие и не только передача информации, но и часть мышления. ИИ-системы способны понимать язык, учитывать контекст, распознавать изображения, анализировать большие массивы данных, строить планы и выполнять последовательности действий.</p>
+      </div>
+    </div>
+  </div>
+
+  <p>Это качественный переход. Раньше человек управлял машиной или программой, пошагово указывая, что нужно сделать. Теперь он всё чаще задаёт цель и ограничения, а система самостоятельно определяет необходимые шаги.</p>
+
+  <div class="note note--orange reveal">
+    <svg><use href="#ic-compass"/></svg>
+    <p>Раньше человек управлял машинами — теперь он становится <b>архитектором систем</b>, где интеллект работает вместе с ним.</p>
+  </div>
+
+  <p>Поэтому новая революция меняет не отдельные профессии, а саму форму организации труда. Человек постепенно становится архитектором интеллектуальной среды, в которой вместе работают люди, модели, данные, программные инструменты и автономные агенты.</p>
+</section>
+
+<!-- ======================= ИТОГИ И ФИНАЛ ======================= -->
+<div class="wrap">
+  <div class="takeaways reveal">
+    <h2 style="margin-top:0">Что важно запомнить</h2>
+    <ul>
+      <li><svg><use href="#ic-check"/></svg><span>ИИ становится не инструментом, а <b>операционным слоем</b>, через который проходят данные, решения и действия.</span></li>
+      <li><svg><use href="#ic-check"/></svg><span>Трансформация начинается не с выбора модели, а с умения видеть компанию как <b>систему процессов и потоков данных</b>.</span></li>
+      <li><svg><use href="#ic-check"/></svg><span>Конкуренция сместилась с продукта на <b>бизнес-модель и архитектуру исполнения</b>: одна и та же услуга оказывается быстрее и дешевле.</span></li>
+      <li><svg><use href="#ic-check"/></svg><span>AI-First-компания растёт объёмом работы, а не штатом — человеческое внимание уходит туда, где оно незаменимо.</span></li>
+      <li><svg><use href="#ic-check"/></svg><span>Четвёртая революция автоматизирует не действие, а <b>мышление</b>. Роль человека — архитектор системы, а не оператор машины.</span></li>
+    </ul>
+  </div>
+
+  <blockquote class="pull reveal">
+    <svg class="pull__mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-quote"/></svg>
+    <p>Искусственный интеллект не отнимет у вас работу. <em>Это сделают люди, которые уже научились с ним работать.</em></p>
+  </blockquote>
+
+  <div class="cta reveal">
+    <h2>Дальше — практика</h2>
+    <p>Эта статья собрана из первой лекции курса по автоматизации бизнес-процессов с ИИ-агентами. Дальше — поиск процессов, AS-IS / TO-BE, проектирование агента и запуск в реальном бизнесе.</p>
+    <div class="cta__row">
+      <a class="btn btn--primary" href="https://andre.technology/automation/main">Пройти курс<svg><use href="#ic-right"/></svg></a>
+      <a class="btn btn--ghost" href="https://strategy.andre.technology/">Оценить ИИ-зрелость бизнеса</a>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div class="foot wrap-shell">
+    <span>© 2026 Andre AI Technologies</span>
+    <span class="foot__links">
+      <a href="https://andre.technology/">andre.technology</a>
+      <a href="https://t.me/andre_dataist">Telegram</a>
+      <a href="https://www.youtube.com/@andre_dataist">YouTube</a>
+      <a href="https://www.linkedin.com/in/andre-kuzminykh/">LinkedIn</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* Полоса прогресса чтения: доля пройденной высоты документа. */
+  var bar = document.getElementById('progress');
+  var ticking = false;
+  function paint() {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var p = h > 0 ? (window.pageYOffset / h) * 100 : 0;
+    bar.style.width = (p < 0 ? 0 : p > 100 ? 100 : p) + '%';
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { ticking = true; requestAnimationFrame(paint); }
+  }, { passive: true });
+  paint();
+
+  /* Подсветка активного пункта оглавления. Наблюдаем секции, а не считаем
+     координаты на каждый скролл — так не дёргается на длинных блоках. */
+  var links = {}, i;
+  var anchors = document.querySelectorAll('.toc a[href^="#"]');
+  for (i = 0; i < anchors.length; i++) links[anchors[i].getAttribute('href').slice(1)] = anchors[i];
+
+  var sections = document.querySelectorAll('main section[id]');
+  if ('IntersectionObserver' in window) {
+    var spy = new IntersectionObserver(function (entries) {
+      for (var k = 0; k < entries.length; k++) {
+        var a = links[entries[k].target.id];
+        if (!a) continue;
+        if (entries[k].isIntersecting) {
+          for (var id in links) links[id].classList.remove('is-active');
+          a.classList.add('is-active');
+        }
+      }
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    for (i = 0; i < sections.length; i++) spy.observe(sections[i]);
+  }
+
+  /* Мягкое появление блоков. Без IntersectionObserver или при
+     prefers-reduced-motion всё показываем сразу — контент важнее анимации. */
+  var reveals = document.querySelectorAll('.reveal');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!('IntersectionObserver' in window) || reduce) {
+    for (i = 0; i < reveals.length; i++) reveals[i].classList.add('is-in');
+  } else {
+    var io = new IntersectionObserver(function (entries, obs) {
+      for (var k = 0; k < entries.length; k++) {
+        if (entries[k].isIntersecting) {
+          entries[k].target.classList.add('is-in');
+          obs.unobserve(entries[k].target);
+        }
+      }
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+    for (i = 0; i < reveals.length; i++) io.observe(reveals[i]);
+  }
+})();
+</script>
+</body>
+</html>
