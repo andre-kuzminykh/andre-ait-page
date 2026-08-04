@@ -218,8 +218,11 @@ def test_one_gesture_is_one_block():
         assert "(t - firedAt) > 700" not in html, \
             "взвода курка «по таймеру» быть не должно — хвост идёт кадрами по 16 мс"
         # снятие курка обнуляет накопитель, поэтому знак читается ДО него
-        m = re.search(r"var dir = accum > 0 .*?\n\s*disarmWheel\(\);\n\s*go\(dir\);", html, re.S)
-        assert m, "%s: направление должно читаться до disarmWheel()" % rel
+        m = re.search(r"var dir = accum > 0(.*?)go\(dir\);", html, re.S)
+        assert m and "disarmWheel();" in m.group(1), \
+            "%s: направление должно читаться ДО disarmWheel() — он обнуляет accum" % rel
+        assert "t - wheelAt < COOL" in html, \
+            "%s: колесо не должно менять блок чаще, чем раз в COOL мс" % rel
         # смена блока чем угодно (точка, клавиша, кнопка) тоже снимает курок —
         # иначе хвост инерции доводил дек дальше уже после осознанного выбора
         assert re.search(r"firedAt = t;\n\s*disarmWheel\(\);", html), \
@@ -247,24 +250,43 @@ def test_portrait_only_on_last_block_above_the_button():
         assert last.index("cta-photo") < last.index('id="final-cta"'), "портрет стоит НАД кнопкой"
 
 
-def test_portrait_sits_flush_on_the_button():
-    """Снимок «выходит» из кнопки: между ними нет ни просвета, ни отступа."""
+def test_portrait_goes_under_the_button():
+    """Снимок уходит ПОД кнопку до её середины: срез спрятан, просвета нет."""
     for rel in _ENTRIES:
         html = _read(rel)
-        assert re.search(r"\.cta-photo\{[^}]*margin:0 0 -1px", html), \
-            "у портрета не должно быть нижнего отступа"
         assert re.search(r"\.cta-stack\{[^}]*flex-direction:column", html), \
             "портрет и кнопка — один блок, чтобы анимация не разводила их"
+        assert re.search(r"\.cta-stack \.btn-start\{[^}]*z-index:1", html), \
+            "кнопка рисуется ПОВЕРХ снимка — иначе срез будет виден"
+        assert "photo.style.marginBottom = (-Math.round(h / 2))" in html, \
+            "заход под кнопку считается от её фактической высоты"
         last = _blocks(html)[-1]
         stack = last[last.index('class="cta-stack"'):]
         assert stack.index("cta-photo") < stack.index('id="final-cta"')
         assert "cta-row" not in stack, "между портретом и кнопкой не должно быть обёртки с отступом"
 
 
-def test_portrait_width_follows_the_button():
+def test_portrait_has_no_gradient():
+    """Заказчик просил убрать растворение: низ кадра обрезан «в стык»."""
+    from struct import unpack
+    png = os.path.join(_ROOT, "automation/andre-cta.png")
+    with open(png, "rb") as f:
+        head = f.read(24)
+    w, h = unpack(">II", head[16:24])
+    try:
+        from PIL import Image
+    except ImportError:                      # без PIL проверяем только разметку
+        return
+    alpha = Image.open(png).convert("RGBA").split()[3]
+    bottom = max(alpha.getpixel((x, h - 1)) for x in range(0, w, 4))
+    assert bottom > 200, "нижняя кромка должна быть непрозрачной, без затухания"
+
+
+def test_portrait_width_stays_inside_the_button():
+    """Чуть у́же кнопки — плечи не должны выходить за её края."""
     for rel in _ENTRIES:
         html = _read(rel)
-        assert "photo.style.width = w + 'px'" in html and "btn.offsetWidth" in html, rel
+        assert "btn.offsetWidth" in html and "Math.round(w * 0.92)" in html, rel
 
 
 def test_portrait_files_exist_and_markup_matches():

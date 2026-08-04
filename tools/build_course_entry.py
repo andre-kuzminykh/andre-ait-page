@@ -420,11 +420,14 @@ TEMPLATE = r"""<!DOCTYPE html>
   .lead{color:var(--muted);max-width:40em;margin:1rem auto 0;font-size:clamp(.85rem,1.05vw,1.05rem);line-height:1.65}
   .divider{height:1px;max-width:16rem;margin:0 auto clamp(1.5rem,4vh,2.6rem);background:linear-gradient(90deg,transparent,#8854F3,#F97316,transparent);opacity:.6}
 
-  /* Портрет + кнопка последнего блока — один блок без просвета: снимок стоит
-     ровно на верхней кромке кнопки и «выходит» из неё, низ снимка растворяется
-     (затухание вшито в сам файл). Ширину скрипт подгоняет под кнопку. */
+  /* Портрет и кнопка — один блок без просвета. Никакого градиента: снимок
+     обрезан «в стык» и уходит ПОД кнопку до её середины, поэтому срез не виден
+     и зазору взяться неоткуда. Кадр обрезан по силуэту в точке среза, так что
+     выше кнопки плечи заведомо у́же неё и за края не заходят. Ширину и заход
+     под кнопку считает скрипт — они зависят от фактического размера кнопки. */
   .cta-stack{margin:1.5rem 0 0;display:flex;flex-direction:column;align-items:center}
-  .cta-photo{display:block;margin:0 0 -1px;width:min(15rem,60vw);max-width:15rem;height:auto;pointer-events:none}
+  .cta-photo{display:block;margin:0 auto;width:min(15rem,60vw);max-width:15rem;height:auto;pointer-events:none}
+  .cta-stack .btn-start{position:relative;z-index:1}   /* кнопка поверх снимка */
 
   .site-link{display:inline-block;margin-top:clamp(1.3rem,4vh,2.1rem);color:var(--muted);font-size:.72rem;letter-spacing:.06em;border-bottom:1px solid var(--divider)}
   .site-link:hover{color:#8854F3;border-color:#8854F3}
@@ -587,7 +590,7 @@ TEMPLATE = r"""<!DOCTYPE html>
         <div class="cta-stack">
           <picture>
             <source srcset="/automation/andre-cta.webp" type="image/webp">
-            <img class="cta-photo" id="cta-photo" src="/automation/andre-cta.png" alt="" width="600" height="526" decoding="async" onerror="this.style.display='none'">
+            <img class="cta-photo" id="cta-photo" src="/automation/andre-cta.png" alt="" width="600" height="454" decoding="async" onerror="this.style.display='none'">
           </picture>
           <a class="btn-white btn-start" id="final-cta" href="{{COURSE}}">
             <span>{{START}}</span>
@@ -648,8 +651,15 @@ TEMPLATE = r"""<!DOCTYPE html>
       var btn = document.getElementById('final-cta');
       if (!photo || !btn) return;
       window.sizePhoto = function(){
-        var w = btn.offsetWidth;
-        if (w > 40) { photo.style.width = w + 'px'; photo.style.maxWidth = w + 'px'; }
+        var w = btn.offsetWidth, h = btn.offsetHeight;
+        if (w > 40) {
+          // Чуть у́же кнопки — чтобы плечи гарантированно не выходили за её края.
+          var pw = Math.round(w * 0.92);
+          photo.style.width = pw + 'px';
+          photo.style.maxWidth = pw + 'px';
+        }
+        // Снимок заходит под кнопку до её середины: срез прячется, просвета нет.
+        if (h > 20) photo.style.marginBottom = (-Math.round(h / 2)) + 'px';
       };
       window.sizePhoto();
     })();
@@ -725,7 +735,10 @@ TEMPLATE = r"""<!DOCTYPE html>
           d.classList.toggle('on', i === idx);
           if (i === idx) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
         });
-        try { if (history.replaceState) history.replaceState(null, '', '#' + panels[idx].id); } catch (e) {}
+        // Якорь в адрес НЕ пишем: replaceState записей в историю не создаёт,
+        // «назад» им всё равно не воспользуешься, а «#start» в адресной строке
+        // выглядит мусором. Читать якорь при заходе продолжаем — ссылка вида
+        // /automation/#skills откроет нужный блок.
       }
 
       /* Единственная точка входа для жестов: пока идёт смена блока, осознанное
@@ -758,7 +771,8 @@ TEMPLATE = r"""<!DOCTYPE html>
       var REARM    = 260;    // раньше этого нового толчка не ищем — там ещё анимация
       var RISE_MIN = 12;     // дельта, ниже которой рост не считаем толчком
       var RISE_LEN = 3;      // столько СТРОГО растущих кадров подряд = новый взмах
-      var accum = 0, lastT = 0, prevAbs = 0, armed = true, rise = 0;
+      var COOL     = 500;    // жёсткий потолок: чаще этого колесо блок не меняет
+      var accum = 0, lastT = 0, prevAbs = 0, armed = true, rise = 0, wheelAt = 0;
 
       function armWheel(){ armed = true; accum = 0; rise = 0; }
       // Любая смена блока — хоть колесом, хоть точкой, хоть клавишей — снимает
@@ -795,6 +809,11 @@ TEMPLATE = r"""<!DOCTYPE html>
         if (Math.abs(accum) >= THRESH){
           var dir = accum > 0 ? 1 : -1;   // направление СНАЧАЛА: disarm обнуляет accum
           disarmWheel();
+          // Предохранитель поверх всей логики: сколько бы событий ни принёс
+          // экзотический поток, чаще раза в COOL колесо блок не переключит.
+          // Один взмах = один блок при любом раскладе.
+          if (t - wheelAt < COOL) return;
+          wheelAt = t;
           go(dir);
         }
       }, {passive:false});
