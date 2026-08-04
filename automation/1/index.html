@@ -664,24 +664,25 @@ window.addEventListener('load', function(){
     return (bot > top) ? { h: bot - top, w: w, top: top, bottom: bot, left: left, right: right } : null;
   }
 
-  // ── Ни одно слово не шире своей колонки (FR-LECTURE-34) ─────────────────
+  // ── Кегль подбирается ГРУППАМИ карточек (FR-LECTURE-34) ─────────────────
   // Плитки свёрстаны фиксированными кеглями Tailwind. На части ширин длинное
-  // русское слово («Механизация», «Исследования», «Ограничение») в колонку не
-  // влезает и ведёт себя одинаково плохо: либо выходит за карточку и наезжает
-  // на соседнюю, либо рубится по мягкому переносу («ОПТИ-МИЗАЦИЯ», «AI-Drive
-  // n»). Общий масштаб слайда (zoom) тут не помогает: он ужимает и колонку, и
-  // текст в одинаковой пропорции, поэтому слово не влезает при любом zoom.
-  // Единственный рычаг — кегль САМОГО элемента: уменьшаем его, пока самое
-  // длинное слово не поместится в строку.
+  // русское слово («Механизация», «Мультимодальность») в карточку не влезает
+  // и ведёт себя одинаково плохо: вылезает за неё или рубится по мягкому
+  // переносу («ОПТИ-МИЗАЦИЯ», «AI-Drive n»). Общий масштаб слайда не помогает:
+  // zoom ужимает и карточку, и текст в одной пропорции.
+  //
+  // Ужимаем кегль самого текста — но НЕ поэлементно: если каждый заголовок
+  // подбирает себе размер сам, соседние карточки получают 16, 13, 12 и 9 px, и
+  // ряд «скачет». Поэтому элементы одной роли (одинаковый тег + одинаковые
+  // классы) считаются ОДНОЙ группой и получают ОДИН кегль — по самому
+  // тесному в группе. Текст при этом пускаем ближе к краям карточки (минус
+  // небольшой зазор), чтобы не ужимать сильнее необходимого.
   var MEASURE = null;
   try { MEASURE = document.createElement('canvas').getContext('2d'); } catch(e){}
   var TEXT_SEL = 'h1,h2,h3,h4,h5,h6,p,li,span,div,a,strong,em,button,td,th';
-  // Нижняя граница — АБСОЛЮТНАЯ, а не доля: крупному заголовку падение с 64 до
-  // 14 px не вредит, а подписи в 10 px нельзя уходить ниже 6. Доля тут врала:
-  // «Исследования и разработки» упиралось в 0.45×64 = 28.8 px и всё равно не
-  // влезало в колонку.
-  var MIN_PX    = 6;    // мельче не читается вовсе
+  var MIN_PX    = 8;    // мельче подпись уже не читается
   var FLOOR_CAP = 14;   // ниже этого крупный текст не опускаем
+  var GUTTER    = 6;    // текст может подойти к краю карточки, но не впритык
 
   // Собственный текст элемента: то, что он рисует сам, без вложенных блоков.
   function ownText(el){
@@ -697,11 +698,26 @@ window.addEventListener('load', function(){
     // чтобы слово уместилось целиком и переносом не воспользовалось
     return out.replace(/­/g, '').replace(/\s+/g, ' ').trim();
   }
+  function boxW(el){                    // паддинг-бокс минус зазор у края
+    if(!el || el.nodeType !== 1) return Infinity;
+    var w = el.clientWidth - GUTTER;
+    return w > 0 ? w : Infinity;
+  }
   function contentW(el){
-    if(!el) return Infinity;
+    if(!el || el.nodeType !== 1) return Infinity;
     var cs = window.getComputedStyle(el);
     var w = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
     return w > 0 ? w : Infinity;
+  }
+  // Живёт ли элемент ВНУТРИ родителя по вертикали. Подпись под кружком
+  // радиальной схемы вынесена под него намеренно и шире кружка по замыслу —
+  // ужимать её нельзя. Заголовок карточки лежит внутри карточки, и если он
+  // шире её, это уже дефект.
+  function insideParent(el){
+    var p = el.parentNode;
+    if(!p || p.nodeType !== 1) return false;
+    var er = el.getBoundingClientRect(), pr = p.getBoundingClientRect();
+    return er.top >= pr.top - 1 && er.bottom <= pr.bottom + 1;
   }
   function measure(text, cs){
     if(!MEASURE) return 0;
@@ -711,34 +727,30 @@ window.addEventListener('load', function(){
     if(ls) w += ls * text.length;
     return w;
   }
-  function fitEl(el){
+
+  // Сколько места нужно элементу и сколько у него есть. null — не наш случай.
+  function demand(el){
     var cs = window.getComputedStyle(el);
-    if(cs.display === 'inline' || cs.display === 'none') return;
+    if(cs.display === 'inline' || cs.display === 'none') return null;
     var txt = ownText(el);
-    if(!txt) return;
-    var base = el.getAttribute('data-fs0');
-    if(base === null){ el.setAttribute('data-fs0', parseFloat(cs.fontSize)); }
-    else if(el.style.fontSize){ el.style.fontSize = ''; cs = window.getComputedStyle(el); }
+    if(!txt) return null;
+    if(el.style.fontSize){ el.style.fontSize = ''; el.style.overflowWrap = ''; cs = window.getComputedStyle(el); }
     var size = parseFloat(cs.fontSize);
-    if(!size) return;
-    // Строка целиком — если перенос запрещён; иначе достаточно самого
-    // длинного слова: остальное браузер перенесёт по пробелам.
+    if(!size) return null;
+    // Строка целиком — если перенос запрещён; иначе достаточно самого длинного
+    // слова: остальное браузер перенесёт по пробелам.
     var nowrap = cs.whiteSpace === 'nowrap' || cs.whiteSpace === 'pre';
     var need, i, w;
     if(nowrap){ need = measure(txt, cs); }
     else {
       var parts = txt.split(' '), m = 0;
-      for(i = 0; i < parts.length; i++){
-        w = measure(parts[i], cs);
-        if(w > m) m = w;
-      }
+      for(i = 0; i < parts.length; i++){ w = measure(parts[i], cs); if(w > m) m = w; }
       need = m;
     }
     // Внутри заголовка бывает кусок с запретом переноса — «ИИ-инженер
-    // <span class="whitespace-nowrap">(по автоматизации)</span>». Сам span
-    // инлайновый, своей ширины у него нет, и по словам он проходит; целиком
-    // же он в карточку не влезал и вылезал за неё. Меряем такие куски как
-    // одно слово и ужимаем ВЕСЬ заголовок — иначе кегль внутри строки поедет.
+    // <span class="whitespace-nowrap">(по автоматизации)</span>»: сам span
+    // инлайновый, своей ширины у него нет, и по словам он проходит, а целиком
+    // не влезает. Меряем такие куски как одно слово.
     var keep = el.querySelectorAll('[class*="whitespace-nowrap"]');
     for(i = 0; i < keep.length; i++){
       var kt = (keep[i].textContent || '').replace(/­/g, '').replace(/\s+/g, ' ').trim();
@@ -746,26 +758,75 @@ window.addEventListener('load', function(){
       w = measure(kt, window.getComputedStyle(keep[i]));
       if(w > need) need = w;
     }
-    if(!need) return;
-    // Место — минимум из собственной ширины и ширины родительской колонки:
-    // у плашек с shrink-to-fit (бейдж «Мы здесь») собственная ширина равна
-    // тексту, и переполнения у себя они не видят — оно у колонки.
-    var avail = Math.min(contentW(el), contentW(el.parentNode));
-    if(!isFinite(avail) || avail <= 4){ el.style.overflowWrap = ''; return; }
-    if(need <= avail){ el.style.overflowWrap = ''; return; }
-    var floor = Math.max(MIN_PX, Math.min(size * 0.4, FLOOR_CAP));
-    var want = size * (avail / need);
-    el.style.fontSize = Math.max(floor, want) + 'px';
-    // Кружок спутника радиальной схемы бывает уже, чем «Мультимодальность»
-    // даже на нижнем кегле. Тогда выбираем меньшее зло: перенос ВНУТРИ
-    // кружка вместо слова, вылезающего на соседний.
-    el.style.overflowWrap = (want < floor) ? 'anywhere' : '';
+    if(!need) return null;
+    // Что считать рамкой. Минимум из своей и родительской ширины брать НЕЛЬЗЯ:
+    // подпись под кружком радиальной схемы намеренно шире кружка, и такое
+    // правило ужимало её с 14 до 6 px.
+    //   · текст не влезает в СВОЮ коробку → рамка своя;
+    //   · коробка сама по тексту (бейдж «Мы здесь») и шире колонки → рамка колонки;
+    //   · иначе элемент шире родителя по замыслу — не трогаем.
+    var own = boxW(el), par = boxW(el.parentNode), avail;
+    if(isFinite(own) && need > own) avail = own;
+    else if(isFinite(own) && isFinite(par) && own > par && insideParent(el)) avail = par;
+    else return null;
+    if(!isFinite(avail) || avail <= 4 || need <= avail) return null;
+    return { size: size, need: need, avail: avail };
   }
+
+  // Ряд карточек — ближайший предок, внутри которого таких элементов уже
+  // НЕСКОЛЬКО. Искать «первый flex/grid» нельзя: сама карточка тоже flex, и
+  // каждая карточка становилась своей группой — кегль в ряду снова скакал.
+  var ROWS = 0;
+  function rowKey(el){
+    var p = el.parentNode, n = 0, tag = el.tagName;
+    while(p && p.nodeType === 1 && n < 6){
+      if(p.querySelectorAll(tag).length > 1){
+        if(!p.getAttribute('data-fitrow')) p.setAttribute('data-fitrow', ++ROWS);
+        return p.getAttribute('data-fitrow');
+      }
+      p = p.parentNode; n++;
+    }
+    return '0';
+  }
+
   function textFit(slide){
     var c = slide.querySelector('.content-z');
     if(!c || !MEASURE) return;
-    var els = c.querySelectorAll(TEXT_SEL), i;
-    for(i = 0; i < els.length; i++) fitEl(els[i]);
+    var els = c.querySelectorAll(TEXT_SEL), i, el, d, key;
+    // сброс прошлой подгонки — иначе замер идёт от уже ужатого кегля
+    for(i = 0; i < els.length; i++){
+      if(els[i].style.fontSize){ els[i].style.fontSize = ''; els[i].style.overflowWrap = ''; }
+    }
+    var groups = {}, order = [];
+    for(i = 0; i < els.length; i++){
+      el = els[i];
+      d = demand(el);
+      if(!d) continue;
+      // Ключ группы — «одна роль в одном ряду»: тег + сам ряд. Классы для
+      // этого не годятся: у подсвеченной карточки они свои (bg-black вместо
+      // bg-white), и она получала СВОЙ кегль — ряд начинал скакать.
+      key = el.tagName + '|' + rowKey(el);
+      if(!groups[key]){ groups[key] = []; order.push(key); }
+      groups[key].push({ el: el, d: d });
+    }
+    for(i = 0; i < order.length; i++){
+      var g = groups[order[i]], j, ratio = 1, size = 0;
+      for(j = 0; j < g.length; j++){
+        var r = g[j].d.avail / g[j].d.need;
+        if(r < ratio) ratio = r;
+        if(g[j].d.size > size) size = g[j].d.size;
+      }
+      if(ratio >= 1) continue;
+      var floor = Math.max(MIN_PX, Math.min(size * 0.4, FLOOR_CAP));
+      var want = size * ratio;
+      var px = Math.max(floor, want);
+      for(j = 0; j < g.length; j++){
+        g[j].el.style.fontSize = px + 'px';
+        // Кружок спутника бывает уже слова даже на нижнем кегле — тогда
+        // меньшее зло — перенос внутри кружка, а не слово поверх соседнего.
+        g[j].el.style.overflowWrap = (want < floor) ? 'anywhere' : '';
+      }
+    }
   }
 
   function fitOne(slide){
