@@ -202,6 +202,10 @@ _AI_KEEP = (
 
 
 def _strip_keep(text, extra=()):
+    # В вёрстке дефис в терминах вроде «AI-First» неразрывный (U+2011), иначе
+    # строка рвалась ровно по нему и на второй оставался огрызок. Для сверки
+    # словаря оба дефиса — одно и то же.
+    text = text.replace("\u2011", "-")
     for keep in sorted(_TERM_KEEP + tuple(extra), key=len, reverse=True):
         text = text.replace(keep, " ")
     return text

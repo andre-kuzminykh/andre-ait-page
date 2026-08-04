@@ -407,7 +407,7 @@ h1 .text-solar, h2 .text-solar {
    одинаково — контент остаётся ровно по геометрическому центру слайда (никакого
    «приподняты выше»), а нижняя плашка гарантированно не уходит под кружок.
    flex-direction НЕ переопределяем — иначе ломаются слайды с md:flex-row прямо
-   на content-z (например радар ИИ-индекса). Если контент не влезает после
+   на content-z (например радар ИИ‑индекса). Если контент не влезает после
    резерва, скрипт portal-fit ужимает через zoom (FR-LECTURE-07/30). */
 /* Резерв под шапку и стрелки СНЯТ с паддинга content-z и перенесён в расчёт
    масштаба (portal-fit, chromeBand). Причина: паддинг здесь масштабируется
@@ -417,6 +417,10 @@ h1 .text-solar, h2 .text-solar {
 .slide-container .content-z {
   justify-content: center !important;
   padding-block: 10px !important;
+  /* h-full из разметки жёстко приравнивал коробку к высоте слайда: после zoom
+     центрирование считалось не от чернил, и на слайде-обложке содержимое
+     заезжало под шапку. Высоту держит min-height:100% — этого достаточно. */
+  height: auto !important;
 }
 /* Тематические переходы (FR-LECTURE-27): 4 варианта появления, чередуются по
    слайдам (класс anim-0..3 ставит portal-fit по индексу слайда). */
@@ -634,16 +638,34 @@ window.addEventListener('load', function(){
   // константой: её размеры зависят от ширины экрана.
   // Экранный размер заголовка слайда — ОДИН на всю лекцию. Две формы, как и
   // просил заказчик: телефон и компьютер, между ними только размер.
-  function titlePx(){
+  var TITLE_FLOOR = 0;               // общий потолок, найденный вторым проходом
+  function titleTarget(){
     var w = window.innerWidth;
     return w >= 768 ? Math.max(30, Math.min(48, w * 0.030))
                     : Math.max(19, Math.min(28, w * 0.062));
   }
+  function titlePx(){
+    var t = titleTarget();
+    return TITLE_FLOOR && TITLE_FLOOR < t ? TITLE_FLOOR : t;
+  }
+  // Сверху полосу занимает шапка, снизу — стрелки навигации, а на телефоне ещё
+  // и кружок с говорящей головой: он широкий относительно экрана и накрывал
+  // нижний блок слайда. На компьютере кружок стоит в пустом углу справа от
+  // содержимого, поэтому там резервируем только стрелки. Полосы РАЗНЫЕ, и
+  // содержимое сдвигается на половину разницы — визуально оно остаётся по
+  // центру свободной зоны.
   function chromeBand(){
     var h = document.getElementById('lecture-header');
-    var top = (h ? h.getBoundingClientRect().height : 56) + 10;
-    var bottom = window.innerWidth >= 1024 ? 82 : 74;
-    return Math.max(top, bottom);
+    var top = (h ? h.getBoundingClientRect().height : 56) + 16;
+    var H = window.innerHeight;
+    var nav = document.getElementById('nav-next');
+    var bottom = nav ? (H - nav.getBoundingClientRect().top + 10) : 82;
+    var bub = document.getElementById('video-bubble');
+    if(bub && window.getComputedStyle(bub).display !== 'none'){
+      var b = H - bub.getBoundingClientRect().top + 10;
+      if(b > bottom) bottom = b;
+    }
+    return { top: top, bottom: bottom };
   }
   function inkBox(c){
     // Объединённый бокс прямых детей content-z — по РАСКЛАДОЧНОЙ геометрии
@@ -672,14 +694,20 @@ window.addEventListener('load', function(){
       if(l + ww > right) right = l + ww;
       if(ww > w) w = ww;
     }
-    return (bot > top) ? { h: bot - top, w: w, top: top, bottom: bot, left: left, right: right } : null;
+    if(!(bot > top)) return null;
+    // Единственный ребёнок-обёртка на всю высоту (h-full) чернилами не является:
+    // его высота равна высоте слайда, масштаб считался по ней, и содержимое
+    // уезжало под шапку. Меряем то, что лежит ВНУТРИ такой обёртки.
+    if(k.length === 1 && (bot - top) >= c.clientHeight - 4 && k[0].children.length)
+      return inkBox(k[0]) || { h: bot - top, w: w, top: top, bottom: bot, left: left, right: right };
+    return { h: bot - top, w: w, top: top, bottom: bot, left: left, right: right };
   }
 
   // ── Кегль подбирается ГРУППАМИ карточек (FR-LECTURE-34) ─────────────────
   // Плитки свёрстаны фиксированными кеглями Tailwind. На части ширин длинное
   // русское слово («Механизация», «Мультимодальность») в карточку не влезает
   // и ведёт себя одинаково плохо: вылезает за неё или рубится по мягкому
-  // переносу («ОПТИ-МИЗАЦИЯ», «AI-Drive n»). Общий масштаб слайда не помогает:
+  // переносу («ОПТИ-МИЗАЦИЯ», «AI‑Drive n»). Общий масштаб слайда не помогает:
   // zoom ужимает и карточку, и текст в одной пропорции.
   //
   // Ужимаем кегль самого текста — но НЕ поэлементно: если каждый заголовок
@@ -748,7 +776,7 @@ window.addEventListener('load', function(){
       for(i = 0; i < parts.length; i++){ w = measure(parts[i], cs); if(w > m) m = w; }
       need = m;
     }
-    // Внутри заголовка бывает кусок с запретом переноса — «ИИ-инженер
+    // Внутри заголовка бывает кусок с запретом переноса — «ИИ‑инженер
     // <span class="whitespace-nowrap">(по автоматизации)</span>»: сам span
     // инлайновый, своей ширины у него нет, и по словам он проходит, а целиком
     // не влезает. Меряем такие куски как одно слово.
@@ -804,6 +832,28 @@ window.addEventListener('load', function(){
       if(els[i].style.fontSize){ els[i].style.fontSize = ''; els[i].style.overflowWrap = ''; }
     }
     var groups = {}, order = [];
+    // Сначала — выравнивание ряда по САМОМУ МЕЛКОМУ участнику: одинаковые по
+    // роли подписи в ряду обязаны быть одного кегля, даже если все влезают.
+    var rows = {}, rkey;
+    for(i = 0; i < els.length; i++){
+      el = els[i];
+      if(el.getAttribute('data-slide-title')) continue;
+      if(el.className && ('' + el.className).indexOf('rf-label') >= 0) continue;
+      if(!ownText(el)) continue;
+      var cs0 = window.getComputedStyle(el);
+      if(cs0.display === 'inline' || cs0.display === 'none') continue;
+      var sz = parseFloat(cs0.fontSize);
+      if(!sz) continue;
+      rkey = el.tagName + '|' + rowKey(el);
+      if(!rows[rkey]) rows[rkey] = { min: sz, els: [] };
+      else if(sz < rows[rkey].min) rows[rkey].min = sz;
+      rows[rkey].els.push(el);
+    }
+    for(key in rows){
+      if(!rows.hasOwnProperty(key) || rows[key].els.length < 2) continue;
+      for(i = 0; i < rows[key].els.length; i++) rows[key].els[i].style.fontSize = rows[key].min + 'px';
+    }
+
     for(i = 0; i < els.length; i++){
       el = els[i];
       d = demand(el);
@@ -812,6 +862,7 @@ window.addEventListener('load', function(){
       // этого не годятся: у подсвеченной карточки они свои (bg-black вместо
       // bg-white), и она получала СВОЙ кегль — ряд начинал скакать.
       if(el.getAttribute('data-slide-title')) continue;   // у заголовка свой размер
+      if(el.className && ('' + el.className).indexOf('rf-label') >= 0) continue;  // подпись кружка
       key = el.tagName + '|' + rowKey(el);
       if(!groups[key]){ groups[key] = []; order.push(key); }
       groups[key].push({ el: el, d: d });
@@ -842,6 +893,11 @@ window.addEventListener('load', function(){
     var out = [], k = c.children, i;
     for(i = 0; i < k.length; i++)
       if(k[i].tagName === 'H1' || k[i].tagName === 'H2') out.push(k[i]);
+    if(!out.length){
+      // На части слайдов заголовок завёрнут в обёртку — берём первый h1/h2.
+      var f = c.querySelector('h1, h2');
+      if(f) out.push(f);
+    }
     return out;
   }
   function longestWord(el, cs){
@@ -893,16 +949,21 @@ window.addEventListener('load', function(){
       // одинаковая сверху и снизу, поэтому контент остаётся ровно по центру
       // слайда, а обе полосы гарантированно свободны.
       var band = chromeBand();
-      var freeH = availH - 2 * band;
+      var freeH = availH - band.top - band.bottom;
       if(freeH < availH * 0.45) freeH = availH * 0.45;   // страховка на низких окнах
+      var shift = (band.top - band.bottom) / 2;          // центр свободной зоны
       function target(natH, natW){
         // 0.94, а не 0.99: слайд не должен упираться в края экрана — заказчик
         // просил «совсем чуть-чуть поменьше».
-        var t = Math.min(freeH / (natH + padY), widthV / (natW + padX)) * 0.94;
+        var t = Math.min(freeH / (natH + padY), widthV / (natW + padX)) * 0.98;
         return grow ? Math.min(t, growCap()) : Math.min(t, 1);
       }
       var z = target(ink.h, ink.w);
-      if(z > 0.999 && z < 1.04){ sizeTitles(1); return; }   // кегль заголовка — всегда
+      if(z > 0.999 && z < 1.04){
+        sizeTitles(1);
+        c.style.setProperty('--fit-shift', shift + 'px');
+        return;                                          // кегль заголовка — всегда
+      }
       apply(z);
       // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
       // и natH меняется. Делить на z тут НЕЛЬЗЯ: inkBox меряет offsetHeight,
@@ -916,6 +977,15 @@ window.addEventListener('load', function(){
         if(Math.abs(next - z) < 0.01) break;
         z = next;
         apply(z);
+      }
+      // Страховка: сдвиг вверх не должен загнать верх содержимого под шапку.
+      // Слайд-обложка с обёрткой во всю высоту фактического масштаба не
+      // добирала, и отрицательный сдвиг доводил её заголовок до самой шапки.
+      var fin = inkBox(c);
+      if(fin){
+        var inkH = fin.h * z;
+        var minShift = band.top - (availH - inkH) / 2;
+        if(shift < minShift){ shift = Math.min(0, minShift); apply(z); }
       }
     }catch(e){}
 
@@ -937,6 +1007,9 @@ window.addEventListener('load', function(){
     }
     function apply(z){
       sizeTitles(z);
+      // Сдвиг задаём переменной, а не инлайновым transform: тот же transform
+      // использует панель с текстом (--fit-shrink), и инлайн её бы перебил.
+      c.style.setProperty('--fit-shift', (shift / z) + 'px');
       c.style.zoom = z;
       // zoom масштабирует и рамку content-z. У неё min-height:100% = высота
       // слайда, после zoom это 900×z — слайд (overflow-y:auto) становится
@@ -946,9 +1019,30 @@ window.addEventListener('load', function(){
       slide.scrollTop = 0;
     }
   }
+  // Экранный размер заголовка слайда: инлайновый кегль × zoom его content-z.
+  function titleScreenPx(slide){
+    var c = slide.querySelector('.content-z');
+    if(!c) return 0;
+    var t = slideTitles(c);
+    if(!t.length || !t[0].style.fontSize) return 0;
+    return parseFloat(t[0].style.fontSize) * (parseFloat(window.getComputedStyle(c).zoom) || 1);
+  }
   function fitAll(){
-    var nodes = document.querySelectorAll('.slide-container');
-    for(var i=0;i<nodes.length;i++) fitOne(nodes[i]);
+    var nodes = document.querySelectorAll('.slide-container'), i, px;
+    TITLE_FLOOR = 0;
+    for(i = 0; i < nodes.length; i++) fitOne(nodes[i]);
+    // Где-то длинное слово в целевой кегль не влезло и заголовок ужался —
+    // тогда опускаем цель для ВСЕЙ лекции и прогоняем ещё раз: «все заголовки
+    // одного размера» важнее, чем «максимально крупно».
+    var min = Infinity;
+    for(i = 0; i < nodes.length; i++){
+      px = titleScreenPx(nodes[i]);
+      if(px && px < min) min = px;
+    }
+    if(min < titleTarget() - 0.5 && min > 8){
+      TITLE_FLOOR = min;
+      for(i = 0; i < nodes.length; i++) fitOne(nodes[i]);
+    }
   }
   // Помечаем активный слайд классом is-active — это перезапускает каскадное
   // появление контента (FR-LECTURE-14) при каждой смене слайда.
@@ -2243,8 +2337,8 @@ window.addEventListener('load', function(){
 html.dark .radial-sat .rf-label{ background:#0A0A0A; }
 
 /* ЯДРО — ПО ТОМУ ЖЕ ПРАВИЛУ. Внутри круга подпись не помещалась: у .radial-core
-   стоит overflow:hidden, и «ИИ-агент» рвался переносом, а вторая строка просто
-   срезалась краем круга. Так было на КАЖДОЙ схеме («ИИ-индекс зрелости»,
+   стоит overflow:hidden, и «ИИ‑агент» рвался переносом, а вторая строка просто
+   срезалась краем круга. Так было на КАЖДОЙ схеме («ИИ‑индекс зрелости»,
    «Постоянное улучшение», «Цикл обучения»). Теперь круг — это иконка, а подпись
    пилюлей под ним: одна строка, без переносов, читается поверх кольца.
    Цвет текста задаётся здесь: в разметке на подписи висит Tailwind-класс
@@ -2422,7 +2516,7 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    правому краю, а голова — своим правым краем к ним же, поэтому её центр
    уезжал левее пары. Считаем от центра головы, а не от края экрана. */
 :root{
-  --bub:clamp(176px,15.5vw,236px);   /* диаметр говорящей головы */
+  --bub:clamp(150px,12.5vw,196px);   /* диаметр говорящей головы */
   --arw:58px;                        /* диаметр кнопки листания */
   --arw-gap:14px;                    /* просвет между кнопками */
   --arw-pair:calc(2*var(--arw) + var(--arw-gap));
@@ -2431,22 +2525,23 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
 #video-bubble{
   width:var(--bub) !important; height:var(--bub) !important;
   left:auto !important; right:var(--bub-right) !important;
-  top:auto !important; bottom:calc(22px + var(--arw) + 16px) !important;
+  top:auto !important; bottom:16px !important;
 }
+/* Стрелки — СЛЕВА от головы, на одной с ней средней линии. Так весь нижний
+   правый угол становится одной невысокой полосой, а не колонной в треть
+   экрана, которая накрывала угол почти каждого слайда. */
 #nav-prev, #nav-next{
-  top:auto !important; bottom:22px !important; transform:none !important;
+  top:auto !important; transform:none !important;
+  bottom:calc(16px + (var(--bub) - var(--arw)) / 2) !important;
   width:var(--arw) !important; height:var(--arw) !important;
   left:auto !important;
 }
-/* правый край пары = центр головы + половина пары */
-#nav-next{ right:calc(var(--bub-right) + var(--bub)/2 - var(--arw-pair)/2) !important; }
-#nav-prev{ right:calc(var(--bub-right) + var(--bub)/2 - var(--arw-pair)/2 + var(--arw) + var(--arw-gap)) !important; }
+#nav-next{ right:calc(var(--bub-right) + var(--bub) + var(--arw-gap)) !important; }
+#nav-prev{ right:calc(var(--bub-right) + var(--bub) + 2*var(--arw-gap) + var(--arw)) !important; }
 #nav-prev i, #nav-next i{ font-size:1.35rem !important; }
 
 @media (max-width:1023px){
-  :root{ --bub:clamp(128px,32vw,168px); --arw:52px; --arw-gap:12px; --bub-right:14px; }
-  #video-bubble{ bottom:calc(16px + var(--arw) + 12px) !important; }
-  #nav-prev, #nav-next{ bottom:16px !important; }
+  :root{ --bub:clamp(112px,27vw,140px); --arw:46px; --arw-gap:10px; --bub-right:12px; }
 }
 
 /* Широкие экраны. До 1600px всё как было — ступени начинаются выше, поэтому
@@ -2461,7 +2556,7 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    переменные — вся геометрия пары кнопок под головой считается от них,
    поэтому центрирование сохраняется само. */
 @media (min-width:1600px){
-  :root{ --bub:clamp(176px,15.5vw,271px); --arw:67px; --arw-gap:16px; --bub-right:23px; }
+  :root{ --bub:clamp(150px,12.5vw,226px); --arw:60px; --arw-gap:14px; --bub-right:23px; }
   #lecture-header{ zoom:1.15; }
 }
 @media (min-width:1900px){
@@ -2615,6 +2710,15 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   font-size:.78rem; font-weight:600; letter-spacing:.02em; color:rgba(255,255,255,.55);
 }
 .quiz-soon i{ color:#F97316; margin-right:.4rem; }
+
+/* 29. Бейдж («ЯДРО», «МОЗГ») висит на верхнем крае карточки абсолютом. Своей
+   высоты он карточке не добавляет, поэтому первая строка содержимого — как
+   правило иконка — оказывалась ПОД ним и была видна наполовину. Даём карточке
+   верхний отступ ровно под бейдж. */
+.slide-container [class*="relative"]:has(> [class*="-top-2"]),
+.slide-container [class*="relative"]:has(> [class*="-top-3"]){
+  padding-top:1.5rem !important;
+}
 
 /* 28. МАРКЕР СТОИТ ВПЛОТНУЮ К СВОЕМУ ТЕКСТУ.
    Строка «иконка + подпись» была flex-строкой с justify-center. Пока подпись
@@ -2822,10 +2926,17 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
    содержимое одной анимацией уезжает вправо и уменьшается ровно во столько
    раз, во сколько сузилась свободная полоса: раскладка не меняется ВООБЩЕ,
    меняется только размер (FR-LECTURE-33). --fit-shrink считает скрипт. */
-.content-z{ transform-origin:center center; transition:transform .38s cubic-bezier(.22,1,.36,1); }
+/* --fit-shift — вертикальный сдвиг от portal-fit: сверху полоса шапки, снизу
+   стрелок и кружка, полосы разной высоты, и содержимое смещается на половину
+   разницы, чтобы стоять по центру СВОБОДНОЙ зоны. */
+.content-z{
+  transform-origin:center center;
+  transform:translateY(var(--fit-shift, 0px));
+  transition:transform .38s cubic-bezier(.22,1,.36,1);
+}
 @media (min-width:1024px){
   body.notes-open .slide-container .content-z{
-    transform:translateX(calc(var(--notes-w) / 2)) scale(var(--fit-shrink,1));
+    transform:translateX(calc(var(--notes-w) / 2)) translateY(var(--fit-shift, 0px)) scale(var(--fit-shrink,1));
   }
   body.notes-open #progress-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
 }
