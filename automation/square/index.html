@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Квадратная нарезка ролика</title>
+<meta name="robots" content="noindex">
+
+<style>
+:root{
+    --solar:#8B5CF6;
+    --bg:#0c0b11;
+    --panel:#16151d;
+    --line:rgba(255,255,255,.14);
+    --dim:rgba(255,255,255,.55);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:#fff}
+body{
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    display:flex;flex-direction:column;
+}
+
+header{padding:18px 22px 6px}
+h1{font-size:19px;margin:0 0 4px}
+header p{margin:0;color:var(--dim);font-size:13px}
+
+main{flex:1;display:flex;gap:22px;padding:16px 22px;min-height:0;flex-wrap:wrap}
+
+/* ── Превью ─────────────────────────────────────────────────────────
+   Слева весь кадр с рамкой выреза, справа — что получится. Одно без
+   другого бесполезно: по вертикали надо видеть И картины, И стол. */
+.pane{display:flex;flex-direction:column;gap:8px;min-width:0}
+.pane h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin:0;font-weight:600}
+
+#fullBox{
+    position:relative;background:#000;border:1px solid var(--line);border-radius:10px;
+    overflow:hidden;width:230px;aspect-ratio:9/16;flex:none;
+}
+#fullBox video{width:100%;height:100%;object-fit:contain;display:block}
+/* Рамка выреза: всё, что вне неё, гасим — сразу видно, что уйдёт. */
+#cutBox{position:absolute;left:0;right:0;outline:2px solid var(--solar);
+    box-shadow:0 0 0 9999px rgba(0,0,0,.62);pointer-events:none}
+
+#sqBox{
+    position:relative;background:#000;border:1px solid var(--line);border-radius:10px;
+    overflow:hidden;width:420px;aspect-ratio:1/1;flex:none;
+}
+#sqBox video{position:absolute;left:0;width:100%;display:block;transform-origin:0 0}
+#sqBox .empty,#fullBox .empty{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:var(--dim);font-size:13px;text-align:center;padding:16px;
+}
+
+/* ── Управление ─────────────────────────────────────────────────── */
+.controls{flex:1;min-width:300px;display:flex;flex-direction:column;gap:16px}
+.row{display:flex;flex-direction:column;gap:6px}
+label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600}
+input[type=text],input[type=range]{width:100%}
+input[type=text]{
+    background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:8px;
+    padding:10px 12px;font:15px/1.2 inherit;
+}
+input[type=text]:focus{outline:none;border-color:var(--solar)}
+.hint{font-size:12px;color:var(--dim)}
+
+button,label.file{
+    background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:9px;
+    padding:10px 16px;cursor:pointer;font:600 14px inherit;
+}
+button:hover,label.file:hover{border-color:var(--solar);background:rgba(139,92,246,.18)}
+button.go{background:var(--solar);border-color:var(--solar);color:#0A0A0A}
+button:disabled{opacity:.45;cursor:default}
+input[type=file]{display:none}
+.buttons{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ── Список кусков ──────────────────────────────────────────────── */
+#pieces{display:flex;flex-direction:column;gap:5px;margin:0;padding:0;list-style:none}
+#pieces li{
+    display:flex;gap:10px;align-items:baseline;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 11px;
+    font-variant-numeric:tabular-nums;font-size:14px;
+}
+#pieces li b{color:var(--solar);font-weight:700;min-width:22px}
+#pieces li span{color:var(--dim);font-size:12px;margin-left:auto}
+#pieces li.bad{border-color:#F97316;color:#FFB068}
+
+#say{font-size:13px;color:var(--dim);min-height:20px}
+
+#drop{
+    position:fixed;inset:0;z-index:9;display:none;
+    align-items:center;justify-content:center;
+    background:rgba(10,10,16,.85);border:4px dashed var(--solar);
+    font:700 22px inherit;
+}
+body.dragging #drop{display:flex}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Квадратная нарезка ролика</h1>
+    <p>Кидаете клип, указываете секунды реза через точку с запятой — получаете квадратные куски 1080×1080.</p>
+</header>
+
+<main>
+    <div class="pane">
+        <h2>Весь кадр</h2>
+        <div id="fullBox">
+            <video id="vFull" playsinline muted></video>
+            <div id="cutBox"></div>
+            <div class="empty" id="emptyFull">Загрузите клип</div>
+        </div>
+    </div>
+
+    <div class="pane">
+        <h2>Что получится</h2>
+        <div id="sqBox">
+            <video id="vSq" playsinline></video>
+            <div class="empty" id="emptySq">Квадрат 1080×1080</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="buttons">
+            <label class="file">Загрузить клип<input type="file" id="file" accept="video/*"></label>
+            <button id="play" disabled>▶ Пуск</button>
+        </div>
+
+        <div class="row">
+            <label for="pos">Положение квадрата по вертикали</label>
+            <input type="range" id="pos" min="0" max="1000" value="323">
+            <p class="hint" id="posHint">Сверху видны картины, снизу — край стола. Прокрутите ролик и проверьте на разных моментах.</p>
+        </div>
+
+        <div class="row">
+            <label for="cuts">Секунды реза, через точку с запятой</label>
+            <input type="text" id="cuts" placeholder="12;45;80  или  0:12;0:45;1:20" value="">
+            <p class="hint">Три реза — четыре куска. Можно писать и <code>мм:сс</code>.</p>
+        </div>
+
+        <ul id="pieces"></ul>
+        <div id="say"></div>
+
+        <div class="buttons">
+            <button id="mk" class="go" disabled>Скрипт нарезки</button>
+        </div>
+    </div>
+</main>
+
+<div id="drop">Отпустите клип здесь</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var vFull = document.getElementById('vFull');
+    var vSq = document.getElementById('vSq');
+    var sqBox = document.getElementById('sqBox');
+    var cutBox = document.getElementById('cutBox');
+    var pos = document.getElementById('pos');
+    var cuts = document.getElementById('cuts');
+    var piecesEl = document.getElementById('pieces');
+    var say = document.getElementById('say');
+    var playBtn = document.getElementById('play');
+    var mkBtn = document.getElementById('mk');
+
+    var fileName = '', dur = 0, vidW = 0, vidH = 0;
+
+    /* Доля высоты кадра, где начинается квадрат. 0.323 — замер по студийному
+       кадру 1080×1920: верх картин уходит под кромку на 18px, край стола
+       остаётся за 48px до низа. Ползунок нужен, потому что дубли разные. */
+    function frac() { return +pos.value / 1000; }
+
+    function fmt(s) {
+        s = Math.max(0, s);
+        var m = Math.floor(s / 60);
+        return m + ':' + (s - m * 60 < 10 ? '0' : '') + (s - m * 60).toFixed(1);
+    }
+
+    /* «12», «1:20», «1:20.5» — всё это секунды от начала. */
+    function parseTime(raw) {
+        raw = String(raw).trim().replace(',', '.');
+        if (!raw) return NaN;
+        var parts = raw.split(':').map(parseFloat);
+        if (parts.some(isNaN)) return NaN;
+        return parts.reduce(function (acc, n) { return acc * 60 + n; }, 0);
+    }
+
+    function points() {
+        return cuts.value.split(';')
+            .map(function (s) { return s.trim(); })
+            .filter(Boolean)
+            .map(parseTime);
+    }
+
+    /* Куски = отрезки между 0, точками реза и концом ролика. */
+    function pieces() {
+        var pts = points();
+        if (pts.some(isNaN)) return null;
+        var edges = [0].concat(pts.slice().sort(function (a, b) { return a - b; }));
+        // Длительность может ещё не приехать — тогда последний кусок идёт
+        // «до конца», а не пропадает из списка.
+        edges.push(dur || Infinity);
+        var out = [];
+        for (var i = 0; i < edges.length - 1; i++) {
+            out.push([edges[i], edges[i + 1]]);
+        }
+        return out;
+    }
+
+    function renderPieces() {
+        var list = pieces();
+        piecesEl.innerHTML = '';
+        if (!list) {
+            say.textContent = 'Не разобрал секунды. Пример: 12;45;80';
+            mkBtn.disabled = true;
+            return;
+        }
+        var bad = false;
+        list.forEach(function (p, i) {
+            var li = document.createElement('li');
+            var open = !isFinite(p[1]);
+            var len = open ? Infinity : p[1] - p[0];
+            if (len <= 0.2 || (dur && p[0] >= dur)) { li.className = 'bad'; bad = true; }
+            li.innerHTML = '<b>' + (i + 1) + '</b>' + fmt(p[0]) + ' – ' + (open ? 'конец' : fmt(p[1])) +
+                           '<span>' + (open ? 'до конца' : (len > 0 ? len.toFixed(1) + ' с' : 'пусто')) + '</span>';
+            piecesEl.appendChild(li);
+        });
+        say.textContent = bad ? 'Есть куски нулевой или отрицательной длины — проверьте секунды.'
+                              : (list.length + ' ' + word(list.length) + ' по 1080×1080');
+        mkBtn.disabled = bad || !fileName;
+        if (!fileName) say.textContent = 'Загрузите клип.';
+    }
+
+    function word(n) {
+        var t = n % 100;
+        if (t > 10 && t < 20) return 'кусков';
+        t = n % 10;
+        return t === 1 ? 'кусок' : (t >= 2 && t <= 4 ? 'куска' : 'кусков');
+    }
+
+    /* Превью: слева рамка выреза на всём кадре, справа — сам квадрат.
+       Сторона квадрата = меньшая сторона кадра, обычно ширина. */
+    function layout() {
+        if (!vidW) return;
+        var side = Math.min(vidW, vidH);
+        var maxTop = vidH - side;
+        var top = Math.round(Math.min(maxTop, Math.max(0, frac() * vidH)));
+
+        // Рамка на полном кадре: считаем в процентах — видео вписано contain.
+        cutBox.style.top = (top / vidH * 100) + '%';
+        cutBox.style.height = (side / vidH * 100) + '%';
+        var pad = (vidW - side) / 2 / vidW * 100;
+        cutBox.style.left = pad + '%';
+        cutBox.style.right = pad + '%';
+
+        // Квадрат: видео шире рамки не бывает, поэтому просто сдвигаем вверх.
+        var boxW = sqBox.clientWidth;
+        var k = boxW / side;
+        vSq.style.width = (vidW * k) + 'px';
+        vSq.style.transform = 'translate(' + (-(vidW - side) / 2 * k) + 'px,' + (-top * k) + 'px)';
+
+        document.getElementById('posHint').textContent =
+            'Квадрат ' + side + '×' + side + ' начинается на ' + top + '-м пикселе по вертикали. ' +
+            'Сверху должны быть видны картины, снизу — край стола.';
+    }
+
+    function loadVideo(f) {
+        fileName = f.name;
+        var url = URL.createObjectURL(f);
+        [vFull, vSq].forEach(function (v) { v.src = url; });
+        document.getElementById('emptyFull').style.display = 'none';
+        document.getElementById('emptySq').style.display = 'none';
+        vFull.addEventListener('error', function () {
+            say.textContent = 'Браузер не открыл этот файл (кодек не поддерживается ' +
+                'этим браузером). Нарезке это не мешает — она идёт через ffmpeg, — ' +
+                'но превью кадрирования не покажу. Впишите секунды и жмите «Скрипт нарезки».';
+            mkBtn.disabled = false;
+        });
+        vFull.addEventListener('loadedmetadata', function () {
+            vidW = vFull.videoWidth; vidH = vFull.videoHeight; dur = vFull.duration;
+            if (!cuts.value) {
+                // Ровные доли — просто чтобы поле не пустовало.
+                var n = 3, step = dur / (n + 1), pts = [];
+                for (var i = 1; i <= n; i++) pts.push(Math.round(step * i));
+                cuts.value = pts.join(';');
+            }
+            playBtn.disabled = false;
+            layout();
+            renderPieces();
+        }, { once: true });
+    }
+
+    document.getElementById('file').addEventListener('change', function (e) {
+        if (e.target.files[0]) loadVideo(e.target.files[0]);
+    });
+    ['dragenter', 'dragover'].forEach(function (n) {
+        window.addEventListener(n, function (e) { e.preventDefault(); document.body.classList.add('dragging'); });
+    });
+    ['dragleave', 'drop'].forEach(function (n) {
+        window.addEventListener(n, function (e) {
+            e.preventDefault();
+            if (n === 'dragleave' && e.relatedTarget) return;
+            document.body.classList.remove('dragging');
+            if (n === 'drop' && e.dataTransfer.files[0]) loadVideo(e.dataTransfer.files[0]);
+        });
+    });
+
+    // Два <video> на один файл: держим их в одной точке, иначе превью врут.
+    playBtn.addEventListener('click', function () {
+        if (vSq.paused) { vFull.play(); vSq.play(); playBtn.textContent = '❚❚ Пауза'; }
+        else { vFull.pause(); vSq.pause(); playBtn.textContent = '▶ Пуск'; }
+    });
+    vSq.addEventListener('timeupdate', function () {
+        if (Math.abs(vFull.currentTime - vSq.currentTime) > 0.25) vFull.currentTime = vSq.currentTime;
+    });
+
+    pos.addEventListener('input', layout);
+    cuts.addEventListener('input', renderPieces);
+    window.addEventListener('resize', layout);
+
+    /* ── Скрипт нарезки ───────────────────────────────────────────
+       Обрезка кадра — это всегда перекодирование: копированием дорожки
+       картинку не подрежешь. Зато на маке это идёт аппаратно. */
+    function script() {
+        var list = pieces() || [];
+        var starts = list.map(function (p) { return p[0].toFixed(2); }).join(' ');
+        // Пустой конец = «до конца ролика»: длину посчитает сам ffmpeg.
+        var ends = list.map(function (p) {
+            return (!isFinite(p[1]) || (dur && p[1] >= dur)) ? '' : p[1].toFixed(2);
+        }).join(' ');
+        return [
+            '#!/bin/sh',
+            '# Нарезка ролика на квадратные куски 1080×1080.',
+            '#',
+            '# Кадр обрезается во всю ширину, по вертикали — с ' + Math.round(frac() * 1000) + '/1000',
+            '# высоты: сверху остаются картины, снизу край стола.',
+            '# Обрезка — это всегда перекодирование, копированием дорожки картинку',
+            '# не подрежешь. На маке идёт аппаратно, через VideoToolbox.',
+            '#',
+            '# Запуск:  sh нарезать.sh "ваш клип.MOV"',
+            'set -e',
+            'command -v ffmpeg  >/dev/null || { echo "Нет ffmpeg. macOS: brew install ffmpeg"; exit 1; }',
+            'command -v ffprobe >/dev/null || { echo "Нет ffprobe — он ставится вместе с ffmpeg"; exit 1; }',
+            'VIDEO="${1:-' + (fileName || 'video.mp4') + '}"',
+            '[ -f "$VIDEO" ] || { echo "Не найден файл: $VIDEO"; exit 1; }',
+            'BASE="${VIDEO%.*}"',
+            'TOP=' + (frac()).toFixed(4) + '        # доля высоты кадра, где начинается квадрат',
+            'STARTS="' + starts + '"',
+            'ENDS="' + ends + '"        # пусто = до конца ролика',
+            '',
+            'p()  { ffprobe -v error -select_streams "$1" -show_entries stream="$2" -of csv=p=0 "$VIDEO"; }',
+            'pf() { ffprobe -v error -show_entries format="$1" -of csv=p=0 "$VIDEO"; }',
+            'W=$(p v:0 width); H=$(p v:0 height); PIX=$(p v:0 pix_fmt)',
+            'VCODEC=$(p v:0 codec_name); ACODEC=$(p a:0 codec_name); BR=$(pf bit_rate)',
+            'ROT=$(ffprobe -v error -select_streams v:0 -show_entries stream_side_data=rotation -of csv=p=0 "$VIDEO" 2>/dev/null | head -1)',
+            ': "${ROT:=0}"',
+            '# Снятый телефоном ролик часто лежит боком плюс метка поворота:',
+            '# считаем в тех размерах, в каких кадр ВИДЕН.',
+            'case "$ROT" in 90|-90|270|-270) DW=$H; DH=$W ;; *) DW=$W; DH=$H ;; esac',
+            'SIDE=$DW; [ "$DH" -lt "$DW" ] && SIDE=$DH',
+            "X=$(awk -v w=\"$DW\" -v s=\"$SIDE\" 'BEGIN{ printf \"%d\", (w-s)/2 }')",
+            "Y=$(awk -v h=\"$DH\" -v s=\"$SIDE\" -v t=\"$TOP\" 'BEGIN{ y=t*h; m=h-s; if(y<0)y=0; if(y>m)y=m; printf \"%d\", y }')",
+            'echo "Кадр: ${DW}x${DH}, поворот $ROT → квадрат ${SIDE}x${SIDE} от y=$Y"',
+            '',
+            '# Битрейт под квадрат: пикселей примерно вдвое меньше вертикали.',
+            "TARGET=$(awk -v b=\"${BR:-0}\" 'BEGIN{ if(b<1) b=12000000; v=b*0.6; if(v<8000000) v=8000000; printf \"%d\", v }')",
+            'HW=$(ffmpeg -hide_banner -encoders 2>/dev/null | grep -o "hevc_videotoolbox\\|h264_videotoolbox" | tr "\\n" " ")',
+            'case "$VCODEC:$HW" in',
+            '  hevc:*hevc_videotoolbox*) VE="hevc_videotoolbox -b:v $TARGET -tag:v hvc1" ;;',
+            '  *:*h264_videotoolbox*)    VE="h264_videotoolbox -b:v $TARGET" ;;',
+            '  hevc:*)                   VE="libx265 -preset medium -crf 20 -tag:v hvc1" ;;',
+            '  *)                        VE="libx264 -preset medium -crf 19" ;;',
+            'esac',
+            'echo "Кодировщик: $VE"',
+            '',
+            'i=0',
+            'for A in $STARTS; do',
+            '  i=$((i+1))',
+            '  B=$(echo "$ENDS" | cut -d" " -f$i)',
+            '  OUT="$BASE-кв-$i.mp4"',
+            '  if [ -n "$B" ]; then',
+            "    LEN=$(awk -v a=\"$A\" -v b=\"$B\" 'BEGIN{ printf \"%.3f\", b-a }')",
+            '    T="-t $LEN"',
+            '  else',
+            '    T=""',
+            '  fi',
+            '  echo "Кусок $i: с $A с ${B:+до $B с}${B:+ }→ $OUT"',
+            '  # -ss ДО -i: перемотка быстрая, а раз всё равно перекодируем,',
+            '  # рез получается точным по кадру.',
+            '  if [ -n "$ACODEC" ]; then',
+            '    ffmpeg -y -loglevel error -stats -ss "$A" $T -i "$VIDEO" \\',
+            '      -vf "crop=$SIDE:$SIDE:$X:$Y,scale=1080:1080:flags=lanczos,format=$PIX,setsar=1" \\',
+            '      -c:v $VE -pix_fmt "$PIX" -c:a aac -b:a 192k -movflags +faststart "$OUT"',
+            '  else',
+            '    ffmpeg -y -loglevel error -stats -ss "$A" $T -i "$VIDEO" \\',
+            '      -vf "crop=$SIDE:$SIDE:$X:$Y,scale=1080:1080:flags=lanczos,format=$PIX,setsar=1" \\',
+            '      -c:v $VE -pix_fmt "$PIX" -an -movflags +faststart "$OUT"',
+            '  fi',
+            '  ERR=$(ffmpeg -v error -i "$OUT" -f null - 2>&1 || true)',
+            '  [ -z "$ERR" ] || { echo "ОШИБКА в куске $i: $(echo "$ERR" | head -1)"; exit 1; }',
+            'done',
+            'echo "Готово: $i шт., $BASE-кв-1.mp4 …"'
+        ].join('\n') + '\n';
+    }
+
+    mkBtn.addEventListener('click', function () {
+        var url = URL.createObjectURL(new Blob([script()], { type: 'text/x-shellscript' }));
+        var a = document.createElement('a');
+        a.href = url; a.download = 'нарезать.sh'; a.click();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+        say.textContent = 'Скрипт скачан. Запустите: sh нарезать.sh "' + fileName + '"';
+    });
+
+    renderPieces();
+    window.__ready = true;
+})();
+</script>
+</body>
+</html>
