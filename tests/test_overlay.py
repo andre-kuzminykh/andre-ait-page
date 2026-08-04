@@ -211,16 +211,33 @@ def test_cover_is_encoded_in_the_clips_own_codec():
         "libx265 в wasm слишком медленный, кодировать им в браузере нельзя"
 
 
-def test_join_verifies_the_result():
-    """Склейка потоков умеет вернуть 0 и выбросить пакеты. Молча отдавать
-    такой файл нельзя — сверяем длительность и размер с исходником."""
+def test_join_verifies_by_decoding():
+    """Склейка потоков умеет вернуть 0 и уложить пакеты ролика под параметры
+    декодера обложки: файл выходит нужного веса и длины, а плеер показывает
+    одну заставку. Размер и длительность такое пропускают — ловит только
+    попытка ДЕКОДИРОВАТЬ то, что вышло."""
     base = os.path.dirname(_OVERLAY)
     with open(os.path.join(base, "join.worker.js"), encoding="utf-8") as f:
         w = f.read()
     assert "длительность не сошлась" in w, "нет сверки длительности результата"
     assert "меньше исходника" in w, "нет сверки размера результата"
-    assert w.index("Проверяю результат") < w.index("type: 'done'"), \
+    assert "'-f', 'null'" in w, "результат не проверяется декодированием"
+    assert "не декодируется после заставки" in w, "нет разбора ошибок декодирования"
+    assert w.index("'-f', 'null'") < w.index("type: 'done'"), \
         "проверка должна идти ДО выдачи файла"
+
+
+def test_script_rebuilds_when_copy_does_not_decode():
+    """У скрипта ffmpeg настоящий, поэтому он не отказывает, а пересобирает —
+    один раз, с запасом по битрейту, аппаратно если на маке есть VideoToolbox."""
+    body = _html()
+    body = body[body.index("function joinScript()"):body.index("var joinBtn")]
+    assert "-f null" in body, "скрипт не проверяет результат декодированием"
+    assert "videotoolbox" in body, "на маке пересборка должна идти аппаратно"
+    assert "concat=n=2:v=1:a=1" in body, "нет запасного пути с пересборкой"
+    assert body.index("-c copy") < body.index("concat=n=2"), \
+        "сначала пробуем без перекодирования, пересборка — только если не вышло"
+    assert "$ROT" in body, "поворот кадра не учитывается"
 
 
 def test_join_falls_back_when_worker_is_impossible():
@@ -235,7 +252,6 @@ def test_join_falls_back_when_worker_is_impossible():
     assert "command -v ffmpeg" in body, "скрипт должен сам сообщать о недостающих зависимостях"
     assert "VENC=libx264" in body and "VENC=libx265" in body, \
         "у скрипта ffmpeg настоящий — он обязан уметь и H.265, ради которого его и предлагают"
-    assert "дорожка потерялась" in body, "скрипт тоже должен проверять результат"
     launcher = os.path.join(os.path.dirname(_OVERLAY), "Запустить.command")
     assert os.path.exists(launcher), "нет лаунчера локального сервера для офлайн-папки"
 
