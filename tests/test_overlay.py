@@ -214,6 +214,19 @@ def test_script_burns_the_layer_into_the_frame():
     assert "command -v ffmpeg" in body, "скрипт должен сам сообщать о недостающих зависимостях"
 
 
+def test_script_pins_clip_tracks_to_zero():
+    """В MOV с телефона видеодорожка нередко начинается позже звука (edit list).
+    Такой ролик, вклеенный как есть, даёт после обложки чёрный кадр: звук уже
+    идёт, а картинки на шкале ещё нет. Дырка — не кадр, покадровые проверки её
+    не видят, поэтому обе дорожки прижимаются к нулю явно."""
+    body = _html()
+    body = body[body.index("function joinScript()"):body.index("var joinBtn")]
+    assert "[1:v]setpts=PTS-STARTPTS" in body, "видеодорожка ролика не прижата к нулю"
+    assert "asetpts=PTS-STARTPTS" in body, "звук ролика не прижат к нулю"
+    assert "aresample=async=1:first_pts=0" in body, \
+        "звук не выравнивается по нулю — вернётся смещение относительно картинки"
+
+
 def test_button_hands_over_the_script():
     """Сборка в браузере убрана намеренно: вжигание графики — это пересборка
     всего ролика, в wasm это десятки минут на вкладку."""
