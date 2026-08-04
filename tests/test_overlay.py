@@ -95,6 +95,13 @@ def test_highlights_land_inside_their_scene():
 
 # ── FR-SITE23: текст дословно из дека, своего не досочиняем ──────────────
 
+def _labels():
+    """Тексты всех подписей и пунктов оверлея."""
+    html = _html()
+    body = html[html.index('<div id="layer">'):html.index('<div id="guides">')]
+    return [_plain(r) for r in re.findall(r"<(?:p|li)[^>]*>(.*?)</(?:p|li)>", body, re.S)]
+
+
 def _plain(fragment):
     """Голый текст: <br> — это пробел, мягкий перенос не считается символом."""
     txt = re.sub(r"<br[^>]*>", " ", fragment)
@@ -102,29 +109,30 @@ def _plain(fragment):
     return re.sub(r"\s+", " ", txt).strip()
 
 
+# Владелец попросил именно эти слова вместо «Цифровая» и «Интеллектуальная»
+# из дека — единственные два расхождения, все остальные тексты дословные.
+_OWNER_WORDING = ("Цифровизация", "Интеллект")
+
+
 def test_texts_match_lecture_slides():
     lecture = _plain(_html(_LECTURE))
-    html = _html()
-    body = html[html.index('<div id="layer">'):html.index('<div id="guides">')]
-    checked = 0
-    for raw in re.findall(r"<(?:h1|h2|h3|p|li)[^>]*>(.*?)</(?:h1|h2|h3|p|li)>", body, re.S):
-        txt = _plain(raw)
-        if len(txt) < 12:
+    for txt in _labels():
+        if txt in _OWNER_WORDING:
             continue
-        checked += 1
         assert txt in lecture, "текста нет в деке лекции, значит он досочинён: %r" % txt
-    assert checked >= 15, "проверено подозрительно мало текстов (%d)" % checked
+    assert len(_labels()) >= 14, "проверено подозрительно мало текстов (%d)" % len(_labels())
 
 
 # ── FR-SITE23: переносы ──────────────────────────────────────────────────
 
-def test_no_break_anywhere():
+def test_no_hyphenation_at_all():
+    """Правило владельца: слова не переносятся. Значит и мягких переносов
+    быть не должно — вместо них подбирается кегль, при котором слово влезает."""
     html = _html()
-    assert "overflow-wrap:anywhere" not in html.replace(" ", ""), \
-        "anywhere рвёт слова посреди слога — только break-word + &shy;"
-    for word in ("конкуренто&shy;способность", "Механи&shy;зация",
-                 "Электри&shy;чество", "Интеллек&shy;туальная"):
-        assert word in html, "длинное слово без мягкого переноса: %s" % word
+    assert "&shy;" not in html, "остался мягкий перенос — слова не должны переноситься"
+    flat = html.replace(" ", "")
+    assert "overflow-wrap:anywhere" not in flat, "anywhere рвёт слово посреди слога"
+    assert "hyphens:auto" not in flat, "автоперенос запрещён"
 
 
 # ── FR-SITE23: служебный интерфейс не попадает в кадр ────────────────────
@@ -136,12 +144,61 @@ def test_hud_outside_stage():
         assert html.index(panel) > stage_end, "%s лежит внутри #stage и попадёт в запись" % panel
 
 
-def test_zone_stays_above_the_head():
-    """Макушка в кадре начинается на y816 — графика обязана кончаться выше."""
+def test_zone_stays_above_the_posters():
+    """Графика не доходит до картин на стене (верх рамок — y638)."""
     html = _html()
     top = int(re.search(r"--zone-top:(\d+)px", html).group(1))
     height = int(re.search(r"--zone-h:(\d+)px", html).group(1))
-    assert top + height <= 816, "зона графики (%d..%d) заходит на голову" % (top, top + height)
+    assert top + height <= 638, "зона графики (%d..%d) доходит до картин" % (top, top + height)
+
+
+# ── FR-SITE23: постоянные правила подачи ─────────────────────────────────
+
+def _scene_css():
+    """Кусок CSS, отвечающий за сцены: от правил элементов до направляющих.
+    Дальше идёт служебный HUD, у него свои скругления и он в кадр не попадает."""
+    style = _html()
+    style = style[style.index("<style>"):style.index("</style>")]
+    a = style.index("/* ── Элементы БЕЗ прямоугольных")
+    b = style.index("/* ── Направляющие (?guides=1)")
+    return style[a:b]
+
+
+def _rules(css):
+    """[(селектор, тело)] — грубого разбора хватает: вложенности здесь нет."""
+    return [(m.group(1).strip(), m.group(2))
+            for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css)]
+
+
+def test_no_rectangular_blocks():
+    """Постоянное правило: элементы живут прямо на кадре — ни карточек, ни
+    плашек, ни рамок. Единственная допустимая «оправа» — круг."""
+    css = _scene_css()
+    assert ".card" not in css, "вернулась карточка-подложка"
+    for sel, body in _rules(css):
+        for radius in re.findall(r"border-radius:\s*([^;]+)", body):
+            assert radius.strip() == "50%", "не круглая оправа у %s: %s" % (sel, radius)
+        if re.search(r"(^|;)\s*background:", body):
+            assert ".circle" in sel, "прямоугольная подложка у %s" % sel
+
+
+def test_no_headings_and_no_small_print():
+    """Наверху только элементы: без заголовков слайдов и без мелких пояснений.
+    У элемента ровно одна подпись, и она крупная."""
+    html = _html()
+    body = html[html.index('<div id="layer">'):html.index('<div id="guides">')]
+    for tag in ("<h1", "<h2", "<h3"):
+        assert tag not in body, "вернулся заголовок %s — наверху должны быть только элементы" % tag
+    for cls in ('class="hero"', 'class="sub"', 'class="note"'):
+        assert cls not in body, "вернулся текстовый блок %s" % cls
+    items = body.count('<div class="item')
+    labels = body.count('<p class="label">')
+    assert items == labels, "подписей (%d) не поровну с элементами (%d)" % (labels, items)
+    assert items == 9, "ожидались 3 + 2 + 4 элемента, найдено %d" % items
+
+    for sel, rule in _rules(_scene_css()):
+        for size in re.findall(r"font-size:(\d+)px", rule):
+            assert int(size) >= 24, "%s: кегль %spx — мелкий текст в кадре не нужен" % (sel, size)
 
 
 if __name__ == "__main__":

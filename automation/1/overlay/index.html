@@ -27,8 +27,8 @@
        (1080×1920): верх постеров ≈ y638, макушка ≈ y816. Жёсткая граница —
        макушка; верх постеров карточки перекрывают, они непрозрачные.
        Правится на лету: ?zoneTop=48&zoneH=712 под конкретный кадр. */
-    --zone-top:48px;
-    --zone-h:712px;
+    --zone-top:70px;
+    --zone-h:500px;
     --zone-pad:46px;
 
     --ease:cubic-bezier(.22,1,.36,1);
@@ -113,149 +113,103 @@ body.no-scrim #scrim{display:none}
 /* ── Подсветка: элемент уже на экране, но о нём говорят прямо сейчас ─ */
 .hot{animation:hot 2.6s var(--ease)}
 @keyframes hot{
-    0%{transform:none;box-shadow:0 14px 34px rgba(24,10,54,.16)}
-    18%{transform:translateY(-9px) scale(1.035);box-shadow:0 26px 54px rgba(139,92,246,.42),0 0 0 4px rgba(139,92,246,.55)}
-    72%{transform:translateY(-6px) scale(1.02);box-shadow:0 22px 46px rgba(139,92,246,.3),0 0 0 3px rgba(139,92,246,.35)}
-    100%{transform:none;box-shadow:0 14px 34px rgba(24,10,54,.16)}
+    0%{transform:none}
+    18%{transform:translateY(-12px) scale(1.06)}
+    72%{transform:translateY(-7px) scale(1.035)}
+    100%{transform:none}
+}
+.hot .circle{animation:hotRing 2.6s var(--ease)}
+@keyframes hotRing{
+    0%{box-shadow:0 12px 30px rgba(24,10,54,.20)}
+    18%{box-shadow:0 18px 40px rgba(139,92,246,.45),0 0 0 6px rgba(139,92,246,.55)}
+    72%{box-shadow:0 16px 34px rgba(139,92,246,.3),0 0 0 4px rgba(139,92,246,.35)}
+    100%{box-shadow:0 12px 30px rgba(24,10,54,.20)}
 }
 
-/* ── Карточки в стиле дека ───────────────────────────────────────── */
-.card{
-    background:rgba(255,255,255,.96);
-    border:1px solid var(--gray);
-    border-radius:26px;
-    box-shadow:0 14px 34px rgba(24,10,54,.16);
+/* ── Элементы БЕЗ прямоугольных блоков (правило владельца) ────────
+   Никаких карточек, рамок и плашек: только круглая иконка и подпись
+   прямо на кадре. Круг — единственная допустимая «оправа». ────────── */
+.item{
     display:flex;flex-direction:column;align-items:center;text-align:center;
-    /* flex:1 1 0 + min-width:0 обязательны: иначе колонки делятся не поровну
-       по контенту и ряд из 4 карточек вылезает за кадр на ~140px. */
     flex:1 1 0;min-width:0;
-    /* break-word, а не anywhere: anywhere рвёт слова посреди слога
-       («Механизаци/я», «конкурентоспособ/ность»). Длинные слова, которые
-       не влезают физически, разбиты мягким переносом &shy; в разметке. */
-    overflow-wrap:break-word;hyphens:manual;
-}
-.card.dark{
-    background:#000;color:#fff;border:2px solid var(--solar);
-    box-shadow:0 18px 44px rgba(24,10,54,.34);
 }
 .circle{
-    border-radius:50%;background:var(--gray);
+    border-radius:50%;background:#fff;
     display:flex;align-items:center;justify-content:center;flex:none;
+    box-shadow:0 12px 30px rgba(24,10,54,.20);
+    color:#141018;
 }
-.circle svg{width:56%;height:56%}
-.card.dark .circle{background:rgba(255,255,255,.1)}
+.circle svg{width:52%;height:52%}
+.circle.solar{background:#EDE4FE;color:var(--solar)}
+.circle.ember{background:#FFE6D2;color:#F97316}
 
 h1,h2,h3,p,ul{margin:0}
 ul{list-style:none;padding:0}
-.solar{color:var(--solar)}
 
-/* Кегль подобран под просмотр с телефона: ролик вертикальный, 1080 в
-   ширину превращаются в ~400 CSS-px, поэтому шрифт дека умножен ~1.6×. */
+/* Текст лежит на видео, а не на плашке: белый ореол держит контраст,
+   когда под буквой проезжает тёмный край постера или волосы. */
+.label,#s2 li,#s2 .vs{
+    text-shadow:0 1px 10px rgba(255,255,255,.75),0 0 3px rgba(255,255,255,.9);
+}
+.label{
+    font-weight:900;line-height:1.1;letter-spacing:-.01em;color:#141018;
+    overflow-wrap:break-word;hyphens:none;
+}
 
-/* ── СЦЕНА 1: «ИИ как новое операционное ядро бизнеса» ───────────── */
-/* 62px — предел, при котором «операционное ядро бизнеса» (963px) ещё
-   помещается в 988px строки. 64px уже даёт третью строку и срез сверху. */
-#s1 .hero{
-    font-size:62px;font-weight:900;line-height:1.06;letter-spacing:-.025em;
-    text-align:center;margin-bottom:30px;
-}
-/* Три колонки дека в кадре 1080 дают полосы по ~280px: заголовок ломается
-   на три строки, текст — на шесть. В вертикали те же карточки разложены
-   в строки во всю ширину — содержание дека то же, читаемость с телефона
-   принципиально другая. */
-#s1 .row{display:flex;flex-direction:column;gap:14px;width:100%}
-#s1 .card{
-    flex-direction:row;align-items:center;text-align:left;
-    padding:20px 26px;gap:22px;
-}
-#s1 .circle{width:84px;height:84px;margin:0}
-#s1 .txt{flex:1;min-width:0}
-#s1 .card h3{font-size:36px;font-weight:900;line-height:1.1;margin-bottom:6px}
-#s1 .card p{font-size:29px;font-weight:400;line-height:1.24;color:rgba(0,0,0,.62)}
-#s1 .c2 .circle{background:rgba(139,92,246,.3)}
+/* ── СЦЕНА 1 · три элемента в ряд, только крупная подпись ─────────── */
+#s1 .row{display:flex;gap:26px;width:100%;align-items:flex-start}
+#s1 .circle{width:104px;height:104px;margin-bottom:18px}
+#s1 .label{font-size:32px}
 
-/* ── СЦЕНА 2: «Мир делится на два типа компаний» ─────────────────── */
-#s2 .h2{font-size:60px;font-weight:900;line-height:1.1;text-align:center;margin-bottom:30px}
-#s2 .row{display:flex;gap:16px;width:100%;align-items:stretch;justify-content:center}
-#s2 .col{padding:30px 22px 28px;position:relative}
-/* Дек выделяет карточку лидеров через scale-105. Здесь вместо transform
-   даём ей больше flex-доли: transform занят анимациями .el/.hot. */
-#s2 .col.dark{flex:1.1 1 0;z-index:2}
-#s2 .badge{
-    position:absolute;top:-18px;left:50%;transform:translateX(-50%);
-    background:var(--solar);color:#0A0A0A;
-    padding:7px 22px;border-radius:999px;
-    font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;
-    box-shadow:0 6px 16px rgba(139,92,246,.4);
-}
-#s2 .circle{width:84px;height:84px;margin-bottom:14px}
-#s2 .col.light .circle{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-/* Непрозрачный: сквозь полупрозрачный серый просвечивала рамка постера
-   и резала строку «Становятся потребителями…» тёмной полосой. */
-#s2 .col.light{background:#EFEEF2}
-#s2 .col h3{font-size:33px;font-weight:900;line-height:1.1;margin-bottom:20px}
-/* Списки разной длины: space-evenly растягивает более короткий по высоте
-   карточки, иначе у «Лидеров» снизу оставалась пустая треть. */
-#s2 ul{width:100%;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:14px}
+/* ── СЦЕНА 2 · две группы и «против» между ними ──────────────────── */
+#s2 .row{display:flex;gap:20px;width:100%;align-items:flex-start;justify-content:center}
+#s2 .col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center}
+#s2 .circle{width:92px;height:92px;margin-bottom:14px}
+#s2 .label{font-size:31px;margin-bottom:22px;white-space:nowrap}
+#s2 ul{width:100%;display:flex;flex-direction:column;gap:16px}
 #s2 li{
     display:flex;align-items:flex-start;gap:12px;text-align:left;
-    font-size:29px;font-weight:500;line-height:1.2;
+    font-size:27px;font-weight:600;line-height:1.2;color:#221d2b;
 }
-#s2 .col.dark li{color:rgba(255,255,255,.85)}
-#s2 .col.light li{color:rgba(0,0,0,.72)}
-#s2 li svg{width:30px;height:30px;flex:none;margin-top:2px}
-#s2 .col.dark li svg{color:var(--solar)}
-#s2 .col.light li svg{color:rgba(0,0,0,.4)}
-/* В деке «против» — светло-серый на белом. На сиреневой стене он пропадал,
-   поэтому здесь это белая пилюля с тёмным текстом. */
+#s2 li svg{width:28px;height:28px;flex:none;margin-top:2px}
+#s2 li.yes svg{color:var(--solar)}
+#s2 li.no svg{color:#6f6a7a}
+/* «против» — просто набранное слово, без пилюли и подложки. */
 #s2 .vs{
-    display:flex;align-items:center;justify-content:center;flex:none;width:150px;
-}
-#s2 .vs b{
-    background:#fff;color:#4a4754;border-radius:999px;padding:9px 16px;
-    font-size:25px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;
-    box-shadow:0 8px 22px rgba(24,10,54,.18);
+    flex:none;width:132px;align-self:center;text-align:center;
+    font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;
+    color:#4a4453;
 }
 
-/* ── СЦЕНА 3: «Четыре промышленные революции» ────────────────────── */
-#s3 .h2{font-size:56px;font-weight:900;line-height:1.08;text-align:center;margin-bottom:12px}
-/* 26px — подзаголовок ещё влезает в одну строку (926px из 988). */
-#s3 .sub{font-size:26px;font-weight:500;color:rgba(0,0,0,.55);text-align:center;margin-bottom:30px}
-#s3 .row{display:flex;gap:14px;width:100%;align-items:stretch;margin-bottom:28px}
-#s3 .card{padding:22px 12px 24px}
-#s3 .circle{width:68px;height:68px;margin-bottom:12px;color:rgba(0,0,0,.45)}
-#s3 .card h3{font-size:30px;font-weight:900;line-height:1.1;margin-bottom:8px}
-#s3 .card p{font-size:24px;font-weight:400;line-height:1.2;color:rgba(0,0,0,.52)}
-#s3 .card.dark p{color:rgba(255,255,255,.85);font-weight:500}
-#s3 .card.dark .circle{background:rgba(249,115,22,.18);color:#F97316}
-#s3 .card.dark h3{color:#F97316}
-/* «Интеллектуальная» — текущая эпоха, поэтому дышит всё время показа.
-   Пульс живёт на ::after, а не на самой карточке: иначе он конфликтует
-   с анимацией .hot (у неё специфичность ниже и она бы не сработала). */
-#s3 .card.dark{position:relative}
-#s3 .card.dark::after{
-    content:'';position:absolute;inset:-4px;border-radius:30px;pointer-events:none;
+/* ── СЦЕНА 3 · четыре элемента в ряд, одно слово под иконкой ─────── */
+/* Колонки по ширине СЛОВА (flex:0 1 auto + space-between), а не поровну:
+   при равных колонках «Электричество» (245px) вылезало из своих 230px и
+   почти слипалось с соседом. Сейчас четыре слова занимают 822px из 988,
+   зазоры ровные по 55px. */
+#s3 .row{display:flex;width:100%;align-items:flex-start;justify-content:space-between}
+#s3 .item{flex:0 1 auto}
+#s3 .circle{width:96px;height:96px;margin-bottom:16px}
+#s3 .label{font-size:27px;white-space:nowrap}
+#s3 .era .label{color:#D2570B}
+#s3 .era.hot .circle{animation:hotEmber 2.6s var(--ease)}
+@keyframes hotEmber{
+    0%{box-shadow:0 12px 30px rgba(24,10,54,.20)}
+    18%{box-shadow:0 18px 40px rgba(249,115,22,.45),0 0 0 6px rgba(249,115,22,.6)}
+    72%{box-shadow:0 16px 34px rgba(249,115,22,.3),0 0 0 4px rgba(249,115,22,.4)}
+    100%{box-shadow:0 12px 30px rgba(24,10,54,.20)}
+}
+/* Текущая эпоха дышит всё время показа. Пульс на ::after, а не на самом
+   круге: иначе он перебивает анимацию .hot. */
+#s3 .era .circle{position:relative}
+#s3 .era .circle::after{
+    content:'';position:absolute;inset:-7px;border-radius:50%;pointer-events:none;
     border:3px solid rgba(249,115,22,0);
 }
-#s3 .card.dark.on::after{animation:era 3.4s ease-in-out 1.1s infinite}
+#s3 .era.on .circle::after{animation:era 3.4s ease-in-out 1.1s infinite}
 @keyframes era{
     0%,100%{border-color:rgba(249,115,22,0);transform:scale(1)}
-    50%{border-color:rgba(249,115,22,.55);transform:scale(1.015)}
+    50%{border-color:rgba(249,115,22,.6);transform:scale(1.07)}
 }
-/* Плашка непрозрачная: полупрозрачная сирень поверх рамок постеров
-   давала грязное пятно, а не «подсветку». */
-#s3 .note{
-    width:100%;max-width:900px;
-    background:#EDE6FD;
-    border-left:8px solid var(--solar);
-    border-radius:0 20px 20px 0;
-    padding:20px 26px;text-align:left;
-    font-size:28px;font-weight:500;line-height:1.24;
-    display:flex;align-items:center;gap:16px;
-    box-shadow:0 14px 34px rgba(24,10,54,.18);
-}
-#s3 .note svg{width:40px;height:40px;flex:none;color:var(--solar)}
-#s3 .note b{font-weight:900}
 
 /* ── Направляющие (?guides=1): где в кадре постеры и макушка ─────── */
 #guides{position:absolute;inset:0;display:none;pointer-events:none;font:700 20px/1 Montserrat,sans-serif}
@@ -344,129 +298,85 @@ body.dragging #drop{display:flex}
 
     <div id="layer">
 
-        <!-- ══ СЦЕНА 1 · 00:00–00:49 · слайд «Введение» ══════════════ -->
-        <section class="scene" id="s1" data-in="0.2" data-out="48.6">
-            <!-- 00:00 «ИИ перестаёт быть инструментом и становится новой ОС бизнеса» -->
-            <h1 class="hero el" data-in="0.5">ИИ как новое<br><span class="solar">операционное ядро бизнеса</span></h1>
-
+        <!-- ══ СЦЕНА 1 · 00:02–00:49 · слайд «Введение» ══════════════ -->
+        <section class="scene" id="s1" data-in="1.9" data-out="48.6">
             <div class="row">
-                <!-- 00:06 «AI-агенты уже способны принимать решения и выполнять работу»
-                     00:28 «разберёмся, кто такие AI-агенты и как они работают» -->
-                <div class="card el c1" data-in="6.2" data-hl="27.8">
+                <div class="item el" data-in="2.4" data-hl="27.8">
                     <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M200,48H136V16a8,8,0,0,0-16,0V48H56A32,32,0,0,0,24,80V192a32,32,0,0,0,32,32H200a32,32,0,0,0,32-32V80A32,32,0,0,0,200,48ZM172,96a12,12,0,1,1-12,12A12,12,0,0,1,172,96ZM96,184H80a16,16,0,0,1,0-32H96ZM84,120a12,12,0,1,1,12-12A12,12,0,0,1,84,120Zm60,64H112V152h32Zm32,0H160V152h16a16,16,0,0,1,0,32Z"/></svg></div>
-                    <div class="txt">
-                        <h3>От инструмента к агенту</h3>
-                        <p>ИИ перестал быть просто чатом. Агенты сами принимают решения и выполняют задачи</p>
-                    </div>
+                    <p class="label">От инструмента<br>к агенту</p>
                 </div>
-
-                <!-- 00:11 «выигрывать будут те компании… так появляются AI-first компании»
-                     00:31 «какие процессы стоит усиливать с помощью AI»
-                     00:43 «как превратить AI в ваше конкурентное преимущество» -->
-                <div class="card el c2" data-in="11.2" data-hl="31.5 43.4">
-                    <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M152,112a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h32A8,8,0,0,1,152,112Zm80-40V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V72A16,16,0,0,1,40,56H80V48a24,24,0,0,1,24-24h48a24,24,0,0,1,24,24v8h40A16,16,0,0,1,232,72ZM96,56h64V48a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8Zm120,57.61V72H40v41.61A184,184,0,0,0,128,136,184,184,0,0,0,216,113.61Z"/></svg></div>
-                    <div class="txt">
-                        <h3>AI-First компании</h3>
-                        <p>Выигрывают те, кто перестраивает процессы вокруг ИИ, а не просто использует его</p>
-                    </div>
+                <div class="item el" data-in="11.2" data-hl="31.5 43.4">
+                    <div class="circle solar ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M152,112a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h32A8,8,0,0,1,152,112Zm80-40V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V72A16,16,0,0,1,40,56H80V48a24,24,0,0,1,24-24h48a24,24,0,0,1,24,24v8h40A16,16,0,0,1,232,72ZM96,56h64V48a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8Zm120,57.61V72H40v41.61A184,184,0,0,0,128,136,184,184,0,0,0,216,113.61Z"/></svg></div>
+                    <p class="label">AI-First<br>компании</p>
                 </div>
-
-                <!-- 00:21 «люди становятся их менеджерами»
-                     00:39 «как меняется роль человека» -->
-                <div class="card el c3" data-in="20.8" data-hl="38.6">
+                <div class="item el" data-in="23.6" data-hl="38.6">
                     <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M84,120a44,44,0,1,1,44,44A44,44,0,0,1,84,120Zm126.16,57.18a8.21,8.21,0,0,0-10.86,2.41,87.42,87.42,0,0,1-5.52,6.85A79.76,79.76,0,0,0,172,165.1a4,4,0,0,0-4.84.32,59.8,59.8,0,0,1-78.26,0A4,4,0,0,0,84,165.1a79.71,79.71,0,0,0-21.79,21.31A87.66,87.66,0,0,1,40.37,136h15.4a8.2,8.2,0,0,0,6.69-3.28,8,8,0,0,0-.8-10.38l-24-24a8,8,0,0,0-11.32,0l-24,24a8,8,0,0,0-.8,10.38A8.2,8.2,0,0,0,8.23,136H24.3a104,104,0,0,0,188.18,52.67A8,8,0,0,0,210.16,177.18Zm45.23-52.24A8,8,0,0,0,248,120H231.7A104,104,0,0,0,43.52,67.33a8,8,0,0,0,13,9.34A88,88,0,0,1,215.63,120H200a8,8,0,0,0-5.66,13.66l24,24a8,8,0,0,0,11.32,0l24-24A8,8,0,0,0,255.39,124.94Z"/></svg></div>
-                    <div class="txt">
-                        <h3>Новая роль человека</h3>
-                        <p>Люди становятся архитекторами и менеджерами цифровых систем</p>
-                    </div>
+                    <p class="label">Новая роль<br>человека</p>
                 </div>
             </div>
         </section>
 
-        <!-- ══ СЦЕНА 2 · 00:49–01:25 · слайд «Мир делится» ═══════════ -->
-        <section class="scene" id="s2" data-in="49.4" data-out="85.2">
-            <!-- 00:50 «компании уже делятся на два типа» -->
-            <h2 class="h2 el" data-in="49.8">Мир делится на<br><span class="solar">два типа компаний</span></h2>
-
+        <!-- ══ СЦЕНА 2 · 00:51–01:25 · слайд «Мир делится» ═══════════ -->
+        <section class="scene" id="s2" data-in="51.7" data-out="85.2">
             <div class="row">
-                <!-- 00:52 «AI-first компании»; 01:00 «управляет процессами, действует как сотрудник» -->
-                <div class="card dark col el" data-in="52.3" data-hl="59.8">
-                    <div class="badge">Лидеры</div>
-                    <div class="circle ico"><svg viewBox="0 0 256 256" fill="var(--solar)"><path d="M152,224a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h32A8,8,0,0,1,152,224Zm71.62-68.17-12.36,55.63a16,16,0,0,1-25.51,9.11L158.51,200h-61L70.25,220.57a16,16,0,0,1-25.51-9.11L32.38,155.83a16.09,16.09,0,0,1,3.32-13.71l28.56-34.26a123.07,123.07,0,0,1,8.57-36.67c12.9-32.34,36-52.63,45.37-59.85a16,16,0,0,1,19.6,0c9.34,7.22,32.47,27.51,45.37,59.85a123.07,123.07,0,0,1,8.57,36.67l28.56,34.26A16.09,16.09,0,0,1,223.62,155.83Zm-139.23,34Q68.28,160.5,64.83,132.16L48,152.36,60.36,208l.18-.13ZM140,100a12,12,0,1,0-12,12A12,12,0,0,0,140,100Zm68,52.36-16.83-20.2q-3.42,28.28-19.56,57.69l23.85,18,.18.13Z"/></svg></div>
-                    <h3>AI-First компании</h3>
+                <div class="col">
+                <div class="item el" data-in="52.3" data-hl="59.8">
+                    <div class="circle solar ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M152,224a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h32A8,8,0,0,1,152,224Zm71.62-68.17-12.36,55.63a16,16,0,0,1-25.51,9.11L158.51,200h-61L70.25,220.57a16,16,0,0,1-25.51-9.11L32.38,155.83a16.09,16.09,0,0,1,3.32-13.71l28.56-34.26a123.07,123.07,0,0,1,8.57-36.67c12.9-32.34,36-52.63,45.37-59.85a16,16,0,0,1,19.6,0c9.34,7.22,32.47,27.51,45.37,59.85a123.07,123.07,0,0,1,8.57,36.67l28.56,34.26A16.09,16.09,0,0,1,223.62,155.83Zm-139.23,34Q68.28,160.5,64.83,132.16L48,152.36,60.36,208l.18-.13ZM140,100a12,12,0,1,0-12,12A12,12,0,0,0,140,100Zm68,52.36-16.83-20.2q-3.42,28.28-19.56,57.69l23.85,18,.18.13Z"/></svg></div>
+                    <p class="label">AI-First компании</p>
+                </div>
                     <!-- Порядок пунктов = порядок озвучки, а не порядок в деке:
-                         «ядро» (00:56) → «быстрее/дешевле» (01:11) → «без роста штата» (01:15). -->
+                         ядро (00:56) → быстрее/дешевле (01:11) → без роста штата (01:15). -->
                     <ul>
-                        <li class="el slide-l" data-in="55.2"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>ИИ управляет ядром бизнеса</li>
-                        <li class="el slide-l" data-in="70.8"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>Быстрее, дешевле, качественнее</li>
-                        <li class="el slide-l" data-in="74.5"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>Масштабируются без роста штата</li>
+                        <li class="el slide-l yes" data-in="55.2"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>ИИ управляет ядром бизнеса</li>
+                        <li class="el slide-l yes" data-in="70.8"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>Быстрее, дешевле, качественнее</li>
+                        <li class="el slide-l yes" data-in="74.5"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>Масштабируются без роста штата</li>
                     </ul>
                 </div>
 
                 <!-- 01:04 «компании конкурируют бизнес-моделями: с AI или без него» -->
-                <div class="vs el" data-in="64.6"><b>против</b></div>
+                <div class="vs el" data-in="64.6">против</div>
 
-                <!-- 00:53 «и их клиенты» -->
-                <div class="card light col el" data-in="53.6">
-                    <div class="circle ico"><svg viewBox="0 0 256 256" fill="rgba(0,0,0,.4)"><path d="M230.14,58.87A8,8,0,0,0,224,56H62.68L56.6,22.57A8,8,0,0,0,48.73,16H24a8,8,0,0,0,0,16h18L67.56,172.29a24,24,0,0,0,5.33,11.27,28,28,0,1,0,44.4,8.44h45.42A27.75,27.75,0,0,0,160,204a28,28,0,1,0,28-28H91.17a8,8,0,0,1-7.87-6.57L80.13,152h116a24,24,0,0,0,23.61-19.71l12.16-66.86A8,8,0,0,0,230.14,58.87ZM104,204a12,12,0,1,1-12-12A12,12,0,0,1,104,204Zm96,0a12,12,0,1,1-12-12A12,12,0,0,1,200,204Z"/></svg></div>
-                    <h3>Их клиенты</h3>
+                <div class="col">
+                <div class="item el" data-in="53.6">
+                    <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M230.14,58.87A8,8,0,0,0,224,56H62.68L56.6,22.57A8,8,0,0,0,48.73,16H24a8,8,0,0,0,0,16h18L67.56,172.29a24,24,0,0,0,5.33,11.27,28,28,0,1,0,44.4,8.44h45.42A27.75,27.75,0,0,0,160,204a28,28,0,1,0,28-28H91.17a8,8,0,0,1-7.87-6.57L80.13,152h116a24,24,0,0,0,23.61-19.71l12.16-66.86A8,8,0,0,0,230.14,58.87ZM104,204a12,12,0,1,1-12-12A12,12,0,0,1,104,204Zm96,0a12,12,0,1,1-12-12A12,12,0,0,1,200,204Z"/></svg></div>
+                    <p class="label">Их клиенты</p>
+                </div>
                     <!-- 01:19 «либо внедрять AI…» → 01:21 «…либо стать неконкурентоспособным»
                          → 01:23 «выбор очевиден» (остаёшься клиентом чужих технологий). -->
                     <ul>
-                        <li class="el slide-l" data-in="79.3"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></svg>Игнорируют ИИ или используют локально</li>
-                        <li class="el slide-l" data-in="81.2"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></svg>Теряют конкуренто&shy;способность</li>
-                        <li class="el slide-l" data-in="83.4"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></svg>Становятся потребителями чужих технологий</li>
+                        <li class="el slide-l no" data-in="79.3"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></svg>Игнорируют ИИ или используют локально</li>
+                        <li class="el slide-l no" data-in="81.2"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></svg>Теряют конкурентоспособность</li>
+                        <li class="el slide-l no" data-in="83.4"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></svg>Становятся потребителями чужих технологий</li>
                     </ul>
                 </div>
             </div>
         </section>
 
-        <!-- ══ СЦЕНА 3 · 01:25–02:15 · слайд «Четыре революции» ══════ -->
-        <section class="scene" id="s3" data-in="85.5" data-out="135.6">
-            <!-- 01:26 «История экономики — это история делегирования труда машинам» -->
-            <h2 class="h2 el" data-in="85.8">Четыре промышленные <span class="solar">революции</span></h2>
-            <p class="sub el" data-in="86.4">История экономики — это история делегирования труда машинам</p>
-
+        <!-- ══ СЦЕНА 3 · 01:29–02:15 · слайд «Четыре революции» ══════ -->
+        <section class="scene" id="s3" data-in="89.8" data-out="135.6">
             <div class="row">
-                <!-- 01:30 «Первая промышленная революция дала нам механизацию» -->
-                <div class="card el" data-in="90.5">
+                <div class="item el" data-in="90.5">
                     <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M256,120v48a16,16,0,0,1-16,16H227.31L192,219.31A15.86,15.86,0,0,1,180.69,224H103.31A15.86,15.86,0,0,1,92,219.31L52.69,180A15.86,15.86,0,0,1,48,168.69V148H24v24a8,8,0,0,1-16,0V108a8,8,0,0,1,16,0v24H48V80A16,16,0,0,1,64,64h60V40H100a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16H140V64h40.69A15.86,15.86,0,0,1,192,68.69L227.31,104H240A16,16,0,0,1,256,120Z"/></svg></div>
-                    <h3>Механи&shy;зация</h3>
-                    <p>Автоматизация физ. труда</p>
+                    <p class="label">Механизация</p>
                 </div>
-
-                <!-- 01:36 «Вторая — электричество и конвейеры» -->
-                <div class="card el" data-in="96.5">
+                <div class="item el" data-in="96.5">
                     <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z"/></svg></div>
-                    <h3>Электри&shy;чество</h3>
-                    <p>Массовое произ&shy;водство</p>
+                    <p class="label">Электричество</p>
                 </div>
-
-                <!-- 01:43 «Третья — цифровая» -->
-                <div class="card el" data-in="103.4">
+                <div class="item el" data-in="103.4">
                     <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M208,40H48A24,24,0,0,0,24,64V176a24,24,0,0,0,24,24h72v16H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V200h72a24,24,0,0,0,24-24V64A24,24,0,0,0,208,40Zm0,144H48a8,8,0,0,1-8-8V160H216v16A8,8,0,0,1,208,184Z"/></svg></div>
-                    <h3>Цифровая</h3>
-                    <p>IT и управление на основе данных</p>
+                    <p class="label">Цифровизация</p>
                 </div>
-
-                <!-- 01:51 «четвёртая — интеллектуальная»; 01:56 «автоматизируется само мышление» -->
-                <div class="card dark el" data-in="111.6" data-hl="116.3">
-                    <div class="circle ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M212,76V72a44,44,0,0,0-74.86-31.31,3.93,3.93,0,0,0-1.14,2.8v88.72a4,4,0,0,0,6.2,3.33A47.67,47.67,0,0,1,167.68,128a8.18,8.18,0,0,1,8.31,7.58,8,8,0,0,1-8,8.42,32,32,0,0,0-32,32v33.88a4,4,0,0,0,1.49,3.12,47.92,47.92,0,0,0,74.21-17.16,4,4,0,0,0-4.49-5.56A68.06,68.06,0,0,1,192,192h-7.73a8.18,8.18,0,0,1-8.25-7.47,8,8,0,0,1,8-8.53h8a51.6,51.6,0,0,0,24-5.88v0A52,52,0,0,0,212,76Zm-12,36h-4a36,36,0,0,1-36-36V72a8,8,0,0,1,16,0v4a20,20,0,0,0,20,20h4a8,8,0,0,1,0,16ZM88,28A44.05,44.05,0,0,0,44,72v4a52,52,0,0,0-4,94.12h0A51.6,51.6,0,0,0,64,176h7.73A8.18,8.18,0,0,1,80,183.47,8,8,0,0,1,72,192H64a67.48,67.48,0,0,1-15.21-1.73,4,4,0,0,0-4.5,5.55A47.93,47.93,0,0,0,118.51,213a4,4,0,0,0,1.49-3.12V176a32,32,0,0,0-32-32,8,8,0,0,1-8-8.42A8.18,8.18,0,0,1,88.32,128a47.67,47.67,0,0,1,25.48,7.54,4,4,0,0,0,6.2-3.33V43.49a4,4,0,0,0-1.14-2.81A43.85,43.85,0,0,0,88,28Zm8,48a36,36,0,0,1-36,36H56a8,8,0,0,1,0-16h4A20,20,0,0,0,80,76V72a8,8,0,0,1,16,0Z"/></svg></div>
-                    <h3>Интеллек&shy;туальная</h3>
-                    <p>Автоматизация мышления</p>
+                <div class="item el era" data-in="111.6" data-hl="116.3">
+                    <div class="circle ember ico"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M212,76V72a44,44,0,0,0-74.86-31.31,3.93,3.93,0,0,0-1.14,2.8v88.72a4,4,0,0,0,6.2,3.33A47.67,47.67,0,0,1,167.68,128a8.18,8.18,0,0,1,8.31,7.58,8,8,0,0,1-8,8.42,32,32,0,0,0-32,32v33.88a4,4,0,0,0,1.49,3.12,47.92,47.92,0,0,0,74.21-17.16,4,4,0,0,0-4.49-5.56A68.06,68.06,0,0,1,192,192h-7.73a8.18,8.18,0,0,1-8.25-7.47,8,8,0,0,1,8-8.53h8a51.6,51.6,0,0,0,24-5.88v0A52,52,0,0,0,212,76Zm-12,36h-4a36,36,0,0,1-36-36V72a8,8,0,0,1,16,0v4a20,20,0,0,0,20,20h4a8,8,0,0,1,0,16ZM88,28A44.05,44.05,0,0,0,44,72v4a52,52,0,0,0-4,94.12h0A51.6,51.6,0,0,0,64,176h7.73A8.18,8.18,0,0,1,80,183.47,8,8,0,0,1,72,192H64a67.48,67.48,0,0,1-15.21-1.73,4,4,0,0,0-4.5,5.55A47.93,47.93,0,0,0,118.51,213a4,4,0,0,0,1.49-3.12V176a32,32,0,0,0-32-32,8,8,0,0,1-8-8.42A8.18,8.18,0,0,1,88.32,128a47.67,47.67,0,0,1,25.48,7.54,4,4,0,0,0,6.2-3.33V43.49a4,4,0,0,0-1.14-2.81A43.85,43.85,0,0,0,88,28Zm8,48a36,36,0,0,1-36,36H56a8,8,0,0,1,0-16h4A20,20,0,0,0,80,76V72a8,8,0,0,1,16,0Z"/></svg></div>
+                    <p class="label">Интеллект</p>
                 </div>
-            </div>
-
-            <!-- 02:05 «Это качественный переход… он становится архитектором систем» -->
-            <div class="note el" data-in="125.4">
-                <svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg>
-                <span>Это качественный переход: человек больше не управляет машинами, он становится <b>архитектором систем</b></span>
             </div>
         </section>
     </div>
 
     <div id="guides">
-        <div class="box" style="top:48px;height:712px"></div>
+        <div class="box" style="top:70px;height:500px"></div>
         <div class="ln" style="top:638px"><span>верх постеров · y638</span></div>
         <div class="ln" style="top:816px"><span>макушка · y816</span></div>
     </div>
