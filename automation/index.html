@@ -208,8 +208,11 @@
   @media(max-width:520px){.dots{right:.45rem;gap:.55rem}.dot{width:7px;height:7px}}
 
   /* ===== Блок 1: о курсе ===== */
-  .float-row{display:flex;justify-content:center;align-items:flex-end;gap:.85rem;transform:scale(.82);margin:0 0 .25rem}
-  @media(min-width:640px){.float-row{transform:none;margin-bottom:.85rem}}
+  /* zoom, а не transform: transform уменьшает только отрисовку, в потоке ряд
+     продолжал занимать полную высоту — подгонка блока считала её и ужимала
+     первый экран сильнее, чем требовалось. */
+  .float-row{display:flex;justify-content:center;align-items:flex-end;gap:.85rem;zoom:.82;margin:0 0 .25rem}
+  @media(min-width:640px){.float-row{zoom:1;margin-bottom:.85rem}}
   .tile{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--tile-bg);border:1px solid var(--card-border);border-radius:1rem;animation:floatY 4s ease-in-out infinite}
   .tile.sm{width:3.6rem;height:5.4rem;gap:.55rem}
   .tile.lg{width:4.5rem;height:6.6rem;gap:.6rem;border-radius:1.1rem}
@@ -297,22 +300,31 @@
      в альбомной ориентации телефона ширина уже 844px, и правило с
      max-width:639px туда не доставало — блоки переставали влезать. */
   @media (max-height:700px){
-    .float-row{transform:scale(.7);margin-bottom:0}
+    .float-row{zoom:.7;margin-bottom:0}
     .roles{margin-top:.9rem;gap:.5rem}
     .role{padding:.8rem .9rem}
     .role .ico{height:2.4rem;width:2.4rem;margin-bottom:.45rem;font-size:1.05rem}
     .learn{margin-top:.7rem;gap:.32rem}
     .learn li{padding:.42rem .7rem}
+    .learn li::after{display:none}   /* резерв справа убран — номер убираем тоже */
     .learn .ico{height:1.8rem;width:1.8rem;font-size:.85rem}
     .cta-row{margin-top:.9rem}
     .panel{padding-top:clamp(4.2rem,14vh,5.2rem);padding-bottom:1.2rem}
     .desc{margin-top:.6rem}
     .scroll-hint{margin-top:.6rem}
     .cta-stack{margin-top:.6rem}
-    .cta-photo{width:min(11rem,26vh)}
     .divider{margin-bottom:.8rem}
     .lead{margin-top:.5rem}
     .site-link{margin-top:.7rem}
+  }
+
+  /* На печать уходят все четыре блока подряд, а не только активный */
+  @media print{
+    html,body{height:auto;overflow:visible}
+    .deck{position:static}
+    .panel{position:static;opacity:1;visibility:visible;overflow:visible;page-break-after:always}
+    .panel .wrap{transform:none !important;margin:0 auto !important}
+    .dots,.scroll-hint,header{display:none}
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -538,16 +550,17 @@
         w.style.transformOrigin = '';
         w.style.marginTop = '';
         w.style.marginBottom = '';
-        p.style.overflowY = '';
         var cs = window.getComputedStyle(p);
         var avail = p.clientHeight - parseFloat(cs.paddingTop || 0) - parseFloat(cs.paddingBottom || 0);
         var need = w.offsetHeight;
         if (!avail || !need || need <= avail + 1) return;
+        // Ужимаем ровно настолько, насколько не хватает высоты. Пола нет
+        // намеренно: любой пол означал бы обрезанный низ блока, а прокрутить
+        // его нечем — колесо и свайп перехвачены декой.
         var k = avail / need;
-        if (k < 0.5){ k = 0.5; p.style.overflowY = 'auto'; }   // страховка: не режем
         w.style.transformOrigin = 'top center';
         w.style.transform = 'scale(' + k + ')';
-        w.style.marginTop = Math.max(0, (avail - need * k) / 2) + 'px';
+        w.style.marginTop = '0';
         w.style.marginBottom = '0';
       }
       var fitQueued = false;
@@ -582,7 +595,7 @@
           d.classList.toggle('on', i === idx);
           if (i === idx) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
         });
-        if (history.replaceState) history.replaceState(null, '', '#' + panels[idx].id);
+        try { if (history.replaceState) history.replaceState(null, '', '#' + panels[idx].id); } catch (e) {}
       }
 
       /* Единственная точка входа для жестов: пока идёт смена блока, осознанное
@@ -590,8 +603,9 @@
          сюда не доходит — его отсекает жестовый слой ниже. */
       function jump(n){
         var t = now();
-        if (t < busyUntil){ pending = n; return; }
-        if (n < 0 || n > panels.length - 1 || n === idx) return;
+        if (n < 0 || n > panels.length - 1) return;
+        if (t < busyUntil){ if (n !== idx) pending = n; return; }
+        if (n === idx) return;
         show(n);
         busyUntil = t + SWITCH;
         firedAt = t;
@@ -621,10 +635,12 @@
         else if (e.deltaMode === 2) d *= window.innerHeight;
         var a = Math.abs(d);
         if (a < 1) return;
+        if (Math.abs(e.deltaX) > a) return;       // горизонтальный жест — не наш
         var t = now(), gap = t - lastT;
         lastT = t;
         if (gap > QUIET){ armed = true; accum = 0; }
-        else if (!armed && a >= prevAbs && a >= 12 && (t - firedAt) > REARM){ armed = true; accum = 0; }
+        else if (!armed && (t - firedAt) > REARM && (a >= prevAbs && a >= 4)){ armed = true; accum = 0; }
+        else if (!armed && (t - firedAt) > 700){ armed = true; accum = 0; }
         prevAbs = a;
         if (!armed) return;
         accum += d;
@@ -660,6 +676,7 @@
 
       /* ---- Клавиатура ---------------------------------------------------- */
       document.addEventListener('keydown', function(e){
+        if (e.metaKey || e.ctrlKey || e.altKey) return;   // системные сочетания — браузеру
         var k = e.key;
         // Пробел на кнопке или ссылке под фокусом — это нажатие, а не листание
         if (k === ' ' && e.target && e.target.closest && e.target.closest('button,a,input,textarea')) return;

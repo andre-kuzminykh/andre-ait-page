@@ -699,15 +699,27 @@ window.addEventListener('load', function(){
     // Строка целиком — если перенос запрещён; иначе достаточно самого
     // длинного слова: остальное браузер перенесёт по пробелам.
     var nowrap = cs.whiteSpace === 'nowrap' || cs.whiteSpace === 'pre';
-    var need;
+    var need, i, w;
     if(nowrap){ need = measure(txt, cs); }
     else {
-      var parts = txt.split(' '), i, m = 0, w;
+      var parts = txt.split(' '), m = 0;
       for(i = 0; i < parts.length; i++){
         w = measure(parts[i], cs);
         if(w > m) m = w;
       }
       need = m;
+    }
+    // Внутри заголовка бывает кусок с запретом переноса — «ИИ-инженер
+    // <span class="whitespace-nowrap">(по автоматизации)</span>». Сам span
+    // инлайновый, своей ширины у него нет, и по словам он проходит; целиком
+    // же он в карточку не влезал и вылезал за неё. Меряем такие куски как
+    // одно слово и ужимаем ВЕСЬ заголовок — иначе кегль внутри строки поедет.
+    var keep = el.querySelectorAll('[class*="whitespace-nowrap"]');
+    for(i = 0; i < keep.length; i++){
+      var kt = (keep[i].textContent || '').replace(/­/g, '').replace(/\s+/g, ' ').trim();
+      if(!kt) continue;
+      w = measure(kt, window.getComputedStyle(keep[i]));
+      if(w > need) need = w;
     }
     if(!need) return;
     // Место — минимум из собственной ширины и ширины родительской колонки:
