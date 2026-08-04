@@ -22,10 +22,10 @@ URL_EN = SITE + PATH_EN
 URL_RU = SITE + PATH_RU
 COURSE = SITE + "/automation/main"
 
-# Картинку для веб-превью заказчик пришлёт отдельно — меняется одной строкой
-# на язык (ширина/высота ниже тоже под неё).
-OG_IMAGE_EN = SITE + "/assets/og/andre-ai-technologies.png"
-OG_IMAGE_RU = SITE + "/assets/og/andre-ai-technologies.png"
+# Обложка курса для веб-превью (прислал заказчик). Меняется одной строкой на язык.
+OG_IMAGE_EN = SITE + "/assets/cover_auto.jpg"
+OG_IMAGE_RU = SITE + "/assets/cover_auto.jpg"
+OG_W, OG_H = "960", "540"          # реальные размеры обложки
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Тексты
@@ -201,8 +201,8 @@ TEMPLATE = r"""<!DOCTYPE html>
 <meta property="og:description" content="{{DESC}}">
 <meta property="og:url" content="{{URL}}">
 <meta property="og:image" content="{{OG_IMAGE}}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="{{OG_W}}">
+<meta property="og:image:height" content="{{OG_H}}">
 <meta property="og:image:alt" content="{{OG_IMAGE_ALT}}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{TITLE}}">
@@ -739,6 +739,7 @@ TEMPLATE = r"""<!DOCTYPE html>
         show(n);
         busyUntil = t + SWITCH;
         firedAt = t;
+        disarmWheel();
         setTimeout(function(){
           var p = pending; pending = -1;
           if (p >= 0 && p !== idx) jump(p);
@@ -752,10 +753,18 @@ TEMPLATE = r"""<!DOCTYPE html>
          делаем, а вот новый толчок (дельта перестала падать) снова взводит
          курок — иначе второй взмах подряд «проглатывался» и казалось, что
          страница дёрнулась и не переключилась. */
-      var THRESH = 42;       // накопленная прокрутка, дающая переключение
-      var QUIET  = 170;      // пауза, после которой жест считается новым
-      var REARM  = 260;      // раньше этого нового толчка не ищем — там ещё анимация
-      var accum = 0, lastT = 0, prevAbs = 0, armed = true;
+      var THRESH   = 42;     // накопленная прокрутка, дающая переключение
+      var QUIET    = 170;    // пауза, после которой жест считается новым
+      var REARM    = 260;    // раньше этого нового толчка не ищем — там ещё анимация
+      var RISE_MIN = 12;     // дельта, ниже которой рост не считаем толчком
+      var RISE_LEN = 3;      // столько СТРОГО растущих кадров подряд = новый взмах
+      var accum = 0, lastT = 0, prevAbs = 0, armed = true, rise = 0;
+
+      function armWheel(){ armed = true; accum = 0; rise = 0; }
+      // Любая смена блока — хоть колесом, хоть точкой, хоть клавишей — снимает
+      // курок: иначе недоеденный хвост инерции доводил дек до следующего блока
+      // уже ПОСЛЕ того, как зритель осознанно ткнул в нужную точку.
+      function disarmWheel(){ armed = false; accum = 0; rise = 0; }
 
       window.addEventListener('wheel', function(e){
         if (e.ctrlKey) return;                    // ctrl+колесо — это зум браузера
@@ -768,16 +777,25 @@ TEMPLATE = r"""<!DOCTYPE html>
         if (Math.abs(e.deltaX) > a) return;       // горизонтальный жест — не наш
         var t = now(), gap = t - lastT;
         lastT = t;
-        if (gap > QUIET){ armed = true; accum = 0; }
-        else if (!armed && (t - firedAt) > REARM && (a >= prevAbs && a >= 4)){ armed = true; accum = 0; }
-        else if (!armed && (t - firedAt) > 700){ armed = true; accum = 0; }
+        // Курок взводит либо пауза, либо НОВЫЙ ТОЛЧОК — три кадра подряд со
+        // строго растущей дельтой. Нестрогое «не убывает» тут не годится:
+        // инерция macOS приходит округлённой до целых, в хвосте появляются
+        // плато (13,13,12,12), и на плато курок взводился сам — один мягкий
+        // взмах уводил дек через два блока на третий. Взвода «по таймеру»
+        // тоже быть не должно: хвост идёт кадрами по 16 мс, пауза не
+        // набирается, и любой порог времени срабатывает на самом хвосте.
+        if (gap > QUIET){ armWheel(); }
+        else if (!armed && (t - firedAt) > REARM && a > prevAbs && a >= RISE_MIN){
+          if (++rise >= RISE_LEN) armWheel();
+        }
+        else if (a <= prevAbs){ rise = 0; }
         prevAbs = a;
         if (!armed) return;
         accum += d;
         if (Math.abs(accum) >= THRESH){
-          armed = false;
-          go(accum > 0 ? 1 : -1);
-          accum = 0;
+          var dir = accum > 0 ? 1 : -1;   // направление СНАЧАЛА: disarm обнуляет accum
+          disarmWheel();
+          go(dir);
         }
       }, {passive:false});
 
@@ -887,6 +905,8 @@ def render(cur):
         "URL_RU": URL_RU,
         "OG_LOCALE": cur["og_locale"],
         "OG_IMAGE": cur["og_image"],
+        "OG_W": OG_W,
+        "OG_H": OG_H,
         "OG_IMAGE_ALT": cur["og_image_alt"],
         "TITLE": cur["title"],
         "DESC": cur["desc"],

@@ -207,9 +207,23 @@ def test_one_gesture_is_one_block():
     """Хвост инерции тачпада не листает лишнего, а новый толчок не глотается."""
     for rel in _ENTRIES:
         html = _read(rel)
-        assert "var THRESH" in html and "var QUIET" in html and "var REARM" in html, rel
+        for name in ("var THRESH", "var QUIET", "var REARM", "var RISE_MIN", "var RISE_LEN"):
+            assert name in html, "%s: нет %s" % (rel, name)
         assert "armed" in html, "жест взводит курок ровно один раз"
         assert "e.deltaMode === 1" in html, "дельту колеса надо нормализовать по deltaMode"
+        # хвост инерции затухает не строго: на плато нестрогое сравнение взводило
+        # курок само, и один взмах уводил дек через два блока на третий
+        assert "a > prevAbs" in html and "a >= prevAbs" not in html, \
+            "новый толчок опознаётся по СТРОГО растущей дельте"
+        assert "(t - firedAt) > 700" not in html, \
+            "взвода курка «по таймеру» быть не должно — хвост идёт кадрами по 16 мс"
+        # снятие курка обнуляет накопитель, поэтому знак читается ДО него
+        m = re.search(r"var dir = accum > 0 .*?\n\s*disarmWheel\(\);\n\s*go\(dir\);", html, re.S)
+        assert m, "%s: направление должно читаться до disarmWheel()" % rel
+        # смена блока чем угодно (точка, клавиша, кнопка) тоже снимает курок —
+        # иначе хвост инерции доводил дек дальше уже после осознанного выбора
+        assert re.search(r"firedAt = t;\n\s*disarmWheel\(\);", html), \
+            "%s: jump() должен снимать курок колеса" % rel
 
 
 # ── Кнопка «Начать обучение» на каждом блоке ───────────────────────────────

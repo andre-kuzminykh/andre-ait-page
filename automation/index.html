@@ -45,14 +45,14 @@
 <meta property="og:title" content="Business process automation course with AI agents">
 <meta property="og:description" content="A course for future AI consultants, AI automation engineers and AI founders: find the processes worth automating, build AI agents and deliver a measurable economic effect.">
 <meta property="og:url" content="https://andre.technology/automation/">
-<meta property="og:image" content="https://andre.technology/assets/og/andre-ai-technologies.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image" content="https://andre.technology/assets/cover_auto.jpg">
+<meta property="og:image:width" content="960">
+<meta property="og:image:height" content="540">
 <meta property="og:image:alt" content="Business process automation course with AI agents">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Business process automation course with AI agents">
 <meta name="twitter:description" content="A course for future AI consultants, AI automation engineers and AI founders: find the processes worth automating, build AI agents and deliver a measurable economic effect.">
-<meta name="twitter:image" content="https://andre.technology/assets/og/andre-ai-technologies.png">
+<meta name="twitter:image" content="https://andre.technology/assets/cover_auto.jpg">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -609,6 +609,7 @@
         show(n);
         busyUntil = t + SWITCH;
         firedAt = t;
+        disarmWheel();
         setTimeout(function(){
           var p = pending; pending = -1;
           if (p >= 0 && p !== idx) jump(p);
@@ -622,10 +623,18 @@
          делаем, а вот новый толчок (дельта перестала падать) снова взводит
          курок — иначе второй взмах подряд «проглатывался» и казалось, что
          страница дёрнулась и не переключилась. */
-      var THRESH = 42;       // накопленная прокрутка, дающая переключение
-      var QUIET  = 170;      // пауза, после которой жест считается новым
-      var REARM  = 260;      // раньше этого нового толчка не ищем — там ещё анимация
-      var accum = 0, lastT = 0, prevAbs = 0, armed = true;
+      var THRESH   = 42;     // накопленная прокрутка, дающая переключение
+      var QUIET    = 170;    // пауза, после которой жест считается новым
+      var REARM    = 260;    // раньше этого нового толчка не ищем — там ещё анимация
+      var RISE_MIN = 12;     // дельта, ниже которой рост не считаем толчком
+      var RISE_LEN = 3;      // столько СТРОГО растущих кадров подряд = новый взмах
+      var accum = 0, lastT = 0, prevAbs = 0, armed = true, rise = 0;
+
+      function armWheel(){ armed = true; accum = 0; rise = 0; }
+      // Любая смена блока — хоть колесом, хоть точкой, хоть клавишей — снимает
+      // курок: иначе недоеденный хвост инерции доводил дек до следующего блока
+      // уже ПОСЛЕ того, как зритель осознанно ткнул в нужную точку.
+      function disarmWheel(){ armed = false; accum = 0; rise = 0; }
 
       window.addEventListener('wheel', function(e){
         if (e.ctrlKey) return;                    // ctrl+колесо — это зум браузера
@@ -638,16 +647,25 @@
         if (Math.abs(e.deltaX) > a) return;       // горизонтальный жест — не наш
         var t = now(), gap = t - lastT;
         lastT = t;
-        if (gap > QUIET){ armed = true; accum = 0; }
-        else if (!armed && (t - firedAt) > REARM && (a >= prevAbs && a >= 4)){ armed = true; accum = 0; }
-        else if (!armed && (t - firedAt) > 700){ armed = true; accum = 0; }
+        // Курок взводит либо пауза, либо НОВЫЙ ТОЛЧОК — три кадра подряд со
+        // строго растущей дельтой. Нестрогое «не убывает» тут не годится:
+        // инерция macOS приходит округлённой до целых, в хвосте появляются
+        // плато (13,13,12,12), и на плато курок взводился сам — один мягкий
+        // взмах уводил дек через два блока на третий. Взвода «по таймеру»
+        // тоже быть не должно: хвост идёт кадрами по 16 мс, пауза не
+        // набирается, и любой порог времени срабатывает на самом хвосте.
+        if (gap > QUIET){ armWheel(); }
+        else if (!armed && (t - firedAt) > REARM && a > prevAbs && a >= RISE_MIN){
+          if (++rise >= RISE_LEN) armWheel();
+        }
+        else if (a <= prevAbs){ rise = 0; }
         prevAbs = a;
         if (!armed) return;
         accum += d;
         if (Math.abs(accum) >= THRESH){
-          armed = false;
-          go(accum > 0 ? 1 : -1);
-          accum = 0;
+          var dir = accum > 0 ? 1 : -1;   // направление СНАЧАЛА: disarm обнуляет accum
+          disarmWheel();
+          go(dir);
         }
       }, {passive:false});
 
