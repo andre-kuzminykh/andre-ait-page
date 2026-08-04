@@ -55,14 +55,24 @@ def test_no_tile_shadows():
 # ── FR-SITE6: шапка на всю ширину, CTA как на главной ─────────────────────
 
 def test_header_full_width_and_cta():
+    """Шапка курса повторяет геометрию главной andre.technology.
+
+    Ряд шапки называется по-разному (.row на страницах-визарда, .header-row на
+    входной странице — она собрана по разметке главной), но правило одно: ряд
+    на всю ширину, десктопный паддинг 2rem, правая кнопка тех же метрик и лого
+    того же размера.
+    """
     for rel, html in _pages():
-        row = re.search(r"\.row\{[^}]*\}", html)
+        row = re.search(r"\.(?:header-)?row\{[^}]*\}", html)
         assert row and "max-width" not in row.group(0), \
-            rel + ": .row шапки должен быть на всю ширину (без max-width)"
-        assert "@media(min-width:1024px){.row{padding:2rem}}" in html, \
+            rel + ": ряд шапки должен быть на всю ширину (без max-width)"
+        assert re.search(r"@media\(min-width:1024px\)\{(?:\.row|header)\{padding:2rem\}\}", html), \
             rel + ": десктопный паддинг шапки 2rem (как на главной)"
-        assert "height:2.85rem;padding:0 1.4rem;font-size:11.5px;letter-spacing:.15em" in html, \
-            rel + ": десктопная CTA «Консультация» = метрики CTA главной"
+        assert re.search(r"height:2\.85rem;(?:box-sizing:border-box;)?padding:0 1\.4rem;"
+                         r"font-size:11\.5px;letter-spacing:\.15em", html), \
+            rel + ": десктопная кнопка «Буткемп» = метрики CTA главной"
+        assert "clamp(2.85rem,12vw,3.7rem)" in html and "3.6rem" in html, \
+            rel + ": лого шапки того же размера, что на главной"
 
 
 # ── FR-SITE11: единый рабочий адрес лого на всех страницах ────────────────

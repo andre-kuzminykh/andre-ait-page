@@ -339,18 +339,10 @@ h1 .text-solar, h2 .text-solar {
    Ловим только «переключатели» — элементы, у которых объявлены ОБА варианта
    (`flex-col` + `md:flex-row`, `grid-cols-1` + `md:grid-cols-3`): постоянные
    flex-row (иконка + подпись) трогать нельзя. */
-@media (orientation: landscape){
-  .slide-container [class*="flex-col"][class*="flex-row"]{ flex-direction:row !important; }
-  .slide-container [class*="flex-col"][class*="grid-cols-3"]{ display:grid !important; }
-  .slide-container [class*="grid-cols-3"]{ grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
-  .slide-container [class*="grid-cols-4"]{ grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
-}
-@media (orientation: portrait){
-  .slide-container [class*="flex-col"][class*="flex-row"]{ flex-direction:column !important; }
-  .slide-container [class*="flex-col"][class*="grid-cols-3"]{ display:flex !important; flex-direction:column !important; }
-  .slide-container [class*="grid-cols-1"][class*="grid-cols-3"]{ grid-template-columns:minmax(0,1fr) !important; }
-  .slide-container [class*="grid-cols-2"][class*="grid-cols-4"]{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
-}
+/* Ориентационных переключателей больше НЕТ. Форма определяется одной
+   шириной 768px (см. tailwind.config.screens): телефон в альбомной ориентации
+   получал десктопную раскладку, планшет в портретной — мобильную, и форм
+   выходило четыре вместо двух. */
 
 /* Колонки flex/grid могут ужиматься — нет горизонтального переполнения (FR-LECTURE-08) */
 .slide-container [class*="grid-cols"] > *,
@@ -426,9 +418,14 @@ h1 .text-solar, h2 .text-solar {
    flex-direction НЕ переопределяем — иначе ломаются слайды с md:flex-row прямо
    на content-z (например радар ИИ-индекса). Если контент не влезает после
    резерва, скрипт portal-fit ужимает через zoom (FR-LECTURE-07/30). */
+/* Резерв под шапку и стрелки СНЯТ с паддинга content-z и перенесён в расчёт
+   масштаба (portal-fit, chromeBand). Причина: паддинг здесь масштабируется
+   zoom'ом вместе с контентом, и на ужатых слайдах клиренс исчезал — заголовок
+   оказывался прямо под кнопками шапки. Теперь резерв фиксированный, в
+   экранных пикселях, и от масштаба не зависит. */
 .slide-container .content-z {
   justify-content: center !important;
-  padding-block: clamp(40px, 7vh, 96px) !important;
+  padding-block: 10px !important;
 }
 /* Тематические переходы (FR-LECTURE-27): 4 варианта появления, чередуются по
    слайдам (класс anim-0..3 ставит portal-fit по индексу слайда). */
@@ -499,8 +496,13 @@ h1 .text-solar, h2 .text-solar {
   @keyframes iconPop { from{ opacity:0; transform:scale(.72); } to{ opacity:1; transform:none; } }
   .slide-container.is-active [class*="rounded-full"] > i,
   .slide-container.is-active [class*="rounded-2xl"] > i{
-    animation:iconPop .5s cubic-bezier(.34,1.56,.64,1) both; animation-delay:.34s;
+    animation:iconPop .45s cubic-bezier(.34,1.56,.64,1);
   }
+  /* Страховка поверх всех каскадов: содержимое активного слайда невидимым не
+     остаётся никогда — даже если анимация не отыграла. */
+  .slide-container.is-active .content-z i,
+  .slide-container.is-active .content-z img,
+  .slide-container.is-active .content-z svg{ opacity:1; }
 
   /* 4. Акцентная карточка мягко дышит подсветкой. Тень, а не размер: рост
         двигал бы соседей и ломал вёрстку. */
@@ -539,7 +541,7 @@ h1 .text-solar, h2 .text-solar {
   #nav-next { right:12px !important; }
   #video-bubble { width:150px !important; height:150px !important; left:15px !important; bottom:15px !important; }
   .slide-container .content-z {
-    padding-block: 72px !important;
+    padding-block: 10px !important;
     padding-left:1rem !important; padding-right:1rem !important;
   }
 }
@@ -557,16 +559,26 @@ html.dark [class*="border-grayBase"] { border-color:rgba(255,255,255,0.12) !impo
 html.dark [class*="border-black"] { border-color:rgba(255,255,255,0.18) !important; }
 </style>
 <style id="lecture-chrome">
-/* Шапка лекции: лого AIT слева, переключатель темы + «Консультация» справа (без меню).
+/* Шапка лекции: лого AIT слева, переключатель темы + «Буткемп» справа (без меню).
    Фиксированная, поверх слайдов, но ниже стартового оверлея/квиза. */
-#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:clamp(.55rem,2vw,1rem) clamp(.9rem,3.2vw,2rem); pointer-events:none; }
+/* Геометрия шапки — один в один с главной andre.technology: те же отступы,
+   тот же размер логотипа и правой кнопки. Круглые кнопки лекции живут по
+   размерам бургера главной, поэтому ряд собирается точно так же. */
+#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:1.1rem; pointer-events:none; }
+@media (min-width:1024px){ #lecture-header{ padding:2rem; } }
 #lecture-header > *{ pointer-events:auto; }
-#lecture-header .lec-logo{ display:inline-flex; align-items:center; }
-#lecture-header .lec-logo img{ height:clamp(2.3rem,9vw,3.2rem); width:auto; display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
-#lecture-header .lec-right{ display:flex; align-items:center; gap:clamp(.5rem,2.2vw,.8rem); }
-#lecture-header .lec-ctrl{ display:inline-flex; align-items:center; justify-content:center; height:clamp(2.3rem,9vw,3rem); width:clamp(2.3rem,9vw,3rem); border-radius:999px; border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:clamp(1.05rem,4vw,1.3rem); line-height:1; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:background .2s ease,color .2s ease; }
+#lecture-header .lec-logo{ display:inline-flex; align-items:center; flex-shrink:0; }
+#lecture-header .lec-logo img{ width:clamp(2.85rem,12vw,3.7rem); height:clamp(2.85rem,12vw,3.7rem); object-fit:contain; display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+@media (min-width:1024px){ #lecture-header .lec-logo img{ width:3.6rem; height:3.6rem; } }
+#lecture-header .lec-right{ display:flex; align-items:center; gap:.4rem; flex-shrink:0; }
+#lecture-header .lec-ctrl{ display:inline-flex; align-items:center; justify-content:center; height:clamp(2.5rem,11vw,3.3rem); width:clamp(2.5rem,11vw,3.3rem); border-radius:999px; border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:clamp(1.05rem,4vw,1.3rem); line-height:1; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:background .2s ease,color .2s ease; }
+@media (min-width:1024px){ #lecture-header .lec-ctrl{ height:2.85rem; width:2.85rem; } }
 #lecture-header .lec-ctrl:hover{ background:#f1f1f1; }
-#lecture-header .lec-consult{ display:inline-flex; align-items:center; gap:.5rem; height:clamp(2.3rem,9vw,3rem); padding:0 clamp(1rem,3.4vw,1.6rem); border-radius:999px; background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:clamp(10px,2.6vw,13px); white-space:nowrap; box-shadow:0 10px 24px -6px rgba(139,92,246,.5); transition:transform .2s ease,box-shadow .2s ease; }
+/* Правая кнопка — размеры «Free AI Diagnostic» с главной. */
+#lecture-header .lec-consult{ display:inline-flex; align-items:center; justify-content:center; gap:clamp(.4rem,1.2vw,.6rem); padding:clamp(.62rem,2.2vw,.95rem) clamp(.85rem,3.2vw,1.35rem); border-radius:999px; background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:clamp(.06em,.4vw,.1em); font-size:clamp(9px,2.7vw,12.5px); white-space:nowrap; box-shadow:0 10px 24px -6px rgba(139,92,246,.5); transition:transform .2s ease,box-shadow .2s ease; }
+@media (min-width:1024px){ #lecture-header .lec-consult{ height:2.85rem; box-sizing:border-box; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em; gap:.55rem; } }
+@media (min-width:1024px) and (max-width:1319px){ #lecture-header .lec-consult{ padding:0 .95rem; font-size:10px; letter-spacing:.08em; gap:.4rem; } }
+@media (min-width:1320px) and (max-width:1479px){ #lecture-header .lec-consult{ padding:0 1.15rem; font-size:11px; letter-spacing:.12em; gap:.5rem; } }
 #lecture-header .lec-consult:hover{ transform:translateY(-1px); box-shadow:0 14px 30px -6px rgba(139,92,246,.6); }
 html.dark #lecture-header .lec-ctrl{ background:#141414; color:#fafafa; border-color:rgba(255,255,255,.18); box-shadow:0 6px 16px rgba(0,0,0,.5); }
 html.dark #lecture-header .lec-ctrl:hover{ background:#1f1f1f; }
@@ -575,8 +587,16 @@ html.dark #lecture-header .lec-ctrl:hover{ background:#1f1f1f; }
 #lecture-header .lec-task, #lecture-header .lec-lbl{ width:auto; padding:0 clamp(.8rem,2.8vw,1.15rem); gap:.45rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:clamp(10px,2.6vw,12px); text-decoration:none; }
 #lecture-header .lec-task i, #lecture-header .lec-lbl i{ font-size:clamp(1.05rem,4vw,1.2rem); }
 @media (max-width:640px){
-  #lecture-header .lec-task, #lecture-header .lec-lbl{ width:clamp(2.3rem,9vw,3rem); padding:0; }
+  #lecture-header .lec-task, #lecture-header .lec-lbl{ width:clamp(2.5rem,11vw,3.3rem); padding:0; }
   #lecture-header .lec-task span, #lecture-header .lec-lbl span{ display:none; }
+}
+/* ≤380px — компактная шапка, как на главной */
+@media (max-width:380px){
+  #lecture-header{ padding:.85rem .6rem; gap:.3rem; }
+  #lecture-header .lec-right{ gap:.3rem; }
+  #lecture-header .lec-logo img{ width:2.5rem; height:2.5rem; }
+  #lecture-header .lec-ctrl, #lecture-header .lec-task, #lecture-header .lec-lbl{ width:2.3rem; height:2.3rem; }
+  #lecture-header .lec-consult{ padding:.6rem .55rem; font-size:8px; letter-spacing:.02em; }
 }
 </style>
 <script id="portal-theme">
@@ -617,6 +637,22 @@ window.addEventListener('load', function(){
   function growCap(){
     var w = window.innerWidth;
     return MAX_GROW * (w >= 2300 ? 1.5 : w >= 1900 ? 1.3 : w >= 1600 ? 1.15 : 1);
+  }
+  // Высота полосы, в которую контенту заходить нельзя: сверху её занимает
+  // шапка лекции, снизу — стрелки навигации. Меряем шапку по факту, а не
+  // константой: её размеры зависят от ширины экрана.
+  // Экранный размер заголовка слайда — ОДИН на всю лекцию. Две формы, как и
+  // просил заказчик: телефон и компьютер, между ними только размер.
+  function titlePx(){
+    var w = window.innerWidth;
+    return w >= 768 ? Math.max(30, Math.min(48, w * 0.030))
+                    : Math.max(19, Math.min(28, w * 0.062));
+  }
+  function chromeBand(){
+    var h = document.getElementById('lecture-header');
+    var top = (h ? h.getBoundingClientRect().height : 56) + 10;
+    var bottom = window.innerWidth >= 1024 ? 82 : 74;
+    return Math.max(top, bottom);
   }
   function inkBox(c){
     // Объединённый бокс прямых детей content-z — по РАСКЛАДОЧНОЙ геометрии
@@ -784,6 +820,7 @@ window.addEventListener('load', function(){
       // Ключ группы — «одна роль в одном ряду»: тег + сам ряд. Классы для
       // этого не годятся: у подсвеченной карточки они свои (bg-black вместо
       // bg-white), и она получала СВОЙ кегль — ряд начинал скакать.
+      if(el.getAttribute('data-slide-title')) continue;   // у заголовка свой размер
       key = el.tagName + '|' + rowKey(el);
       if(!groups[key]){ groups[key] = []; order.push(key); }
       groups[key].push({ el: el, d: d });
@@ -806,6 +843,20 @@ window.addEventListener('load', function(){
         g[j].el.style.overflowWrap = (want < floor) ? 'anywhere' : '';
       }
     }
+  }
+
+  // Заголовок слайда — h1/h2 прямо внутри content-z (подзаголовки карточек
+  // лежат глубже и сюда не попадают).
+  function slideTitles(c){
+    var out = [], k = c.children, i;
+    for(i = 0; i < k.length; i++)
+      if(k[i].tagName === 'H1' || k[i].tagName === 'H2') out.push(k[i]);
+    return out;
+  }
+  function longestWord(el, cs){
+    var t = ownText(el).split(' '), i, m = 0, w;
+    for(i = 0; i < t.length; i++){ w = measure(t[i], cs); if(w > m) m = w; }
+    return m;
   }
 
   function fitOne(slide){
@@ -845,12 +896,22 @@ window.addEventListener('load', function(){
       // кругов заданы в пикселях — спутники становятся относительно больше
       // и наезжают друг на друга.
       var grow = window.innerWidth >= 768;
+      // «Мёртвая зона» слайда: сверху шапка лекции, снизу стрелки навигации.
+      // Вычитаем её из доступной высоты и НЕ отдаём zoom'у — иначе резерв
+      // ужимается вместе с контентом и перестаёт быть резервом. Полоса
+      // одинаковая сверху и снизу, поэтому контент остаётся ровно по центру
+      // слайда, а обе полосы гарантированно свободны.
+      var band = chromeBand();
+      var freeH = availH - 2 * band;
+      if(freeH < availH * 0.45) freeH = availH * 0.45;   // страховка на низких окнах
       function target(natH, natW){
-        var t = Math.min(availH / (natH + padY), widthV / (natW + padX)) * 0.99;
+        // 0.94, а не 0.99: слайд не должен упираться в края экрана — заказчик
+        // просил «совсем чуть-чуть поменьше».
+        var t = Math.min(freeH / (natH + padY), widthV / (natW + padX)) * 0.94;
         return grow ? Math.min(t, growCap()) : Math.min(t, 1);
       }
       var z = target(ink.h, ink.w);
-      if(z > 0.999 && z < 1.04) return;
+      if(z > 0.999 && z < 1.04){ sizeTitles(1); return; }   // кегль заголовка — всегда
       apply(z);
       // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
       // и natH меняется. Делить на z тут НЕЛЬЗЯ: inkBox меряет offsetHeight,
@@ -867,7 +928,24 @@ window.addEventListener('load', function(){
       }
     }catch(e){}
 
+    // Кегль заголовка = экранный размер / масштаб слайда: после умножения на
+    // zoom все заголовки лекции выходят на экране ОДНОГО размера. Если самое
+    // длинное слово в такой кегль не влезает по ширине — опускаем ровно
+    // настолько, насколько не хватает (лучше чуть мельче, чем слово за краем).
+    function sizeTitles(z){
+      var ttl = slideTitles(c), i, want = titlePx() / z;
+      for(i = 0; i < ttl.length; i++){
+        ttl[i].setAttribute('data-slide-title', '1');
+        ttl[i].style.fontSize = want + 'px';
+        if(MEASURE){
+          var cs = window.getComputedStyle(ttl[i]);
+          var need = longestWord(ttl[i], cs), box = ttl[i].clientWidth - 4;
+          if(need > box && box > 20) ttl[i].style.fontSize = Math.max(10, want * box / need) + 'px';
+        }
+      }
+    }
     function apply(z){
+      sizeTitles(z);
       c.style.zoom = z;
       // zoom масштабирует и рамку content-z. У неё min-height:100% = высота
       // слайда, после zoom это 900×z — слайд (overflow-y:auto) становится
@@ -887,6 +965,11 @@ window.addEventListener('load', function(){
     var nodes = document.querySelectorAll('.slide-container');
     for(var i=0;i<nodes.length;i++){
       var active = nodes[i].classList.contains('opacity-100');
+      if(active && nodes[i].classList.contains('is-active')){
+        // тот же слайд показывают заново — принудительный перезапуск каскада
+        nodes[i].classList.remove('is-active');
+        void nodes[i].offsetWidth;                      // reflow
+      }
       nodes[i].classList.toggle('is-active', active);
       if(active){
         // тематический вариант появления по индексу слайда (FR-LECTURE-27)
@@ -988,7 +1071,7 @@ window.addEventListener('load', function(){
 </head>
 <body class="font-sans selection:bg-solar selection:text-black">
 
-    <!-- Шапка лекции: лого AIT слева, переключатель темы + «Консультация» справа (без меню) -->
+    <!-- Шапка лекции: лого AIT слева, переключатель темы + «Буткемп» справа (без меню) -->
     <header id="lecture-header">
         <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
             <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
@@ -996,7 +1079,7 @@ window.addEventListener('load', function(){
         <div class="lec-right">
             <button id="notes-toggle" class="lec-ctrl lec-lbl" type="button" aria-label="Текст к слайду" aria-expanded="false"><i class="ph-fill ph-book-open-text"></i><span>Текст</span></button>
             <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить тему (тёмная/светлая)"><i class="ph-fill ph-moon"></i></button>
-            <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Консультация <i class="ph-bold ph-arrow-right"></i></a>
+            <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Буткемп <i class="ph-bold ph-arrow-right"></i></a>
         </div>
     </header>
     <script>
@@ -3552,7 +3635,8 @@ window.addEventListener('load', function(){
      влезать на узких фигурах. Расширять коробку правильнее, чем возвращать
      кружкам размер, — заказчик просил кружки поменьше. */
   left:calc(-1.6 * var(--sat-dot)); right:calc(-1.6 * var(--sat-dot));
-  width:auto !important; max-width:none !important;
+  width:max-content !important; max-width:none !important;
+  margin-left:auto !important; margin-right:auto !important;
   white-space:nowrap !important;
   text-align:center;
   line-height:1.1 !important;
@@ -3560,6 +3644,35 @@ window.addEventListener('load', function(){
   pointer-events:none;
 }
 html.dark .radial-sat .rf-label{ background:#0A0A0A; }
+
+/* ЯДРО — ПО ТОМУ ЖЕ ПРАВИЛУ. Внутри круга подпись не помещалась: у .radial-core
+   стоит overflow:hidden, и «ИИ-агент» рвался переносом, а вторая строка просто
+   срезалась краем круга. Так было на КАЖДОЙ схеме («ИИ-индекс зрелости»,
+   «Постоянное улучшение», «Цикл обучения»). Теперь круг — это иконка, а подпись
+   пилюлей под ним: одна строка, без переносов, читается поверх кольца.
+   Цвет текста задаётся здесь: в разметке на подписи висит Tailwind-класс
+   text-white, а вне тёмного круга белым по белому её не видно. */
+.radial-core{ overflow:visible !important; }
+.radial-core > i{ margin-bottom:0 !important; }
+.radial-core .rf-label{
+  position:absolute;
+  top:calc(100% + .32em);
+  background:#FFFFFF; color:#0A0A0A !important;
+  -webkit-text-fill-color:#0A0A0A;
+  padding:.08em .45em;
+  border-radius:.6em;
+  /* Коробка симметрично шире круга — подпись центрируется без transform
+     (см. ловушку 1 в шапке блока). */
+  left:calc(-1.1 * var(--core)); right:calc(-1.1 * var(--core));
+  width:max-content !important; max-width:none !important;
+  margin-left:auto !important; margin-right:auto !important;
+  white-space:nowrap !important;
+  text-align:center;
+  line-height:1.1 !important;
+  z-index:7;
+  pointer-events:none;
+}
+html.dark .radial-core .rf-label{ background:#0A0A0A; color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF; }
 </style>
 <style id="lesson-fixes">
 /* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
@@ -3658,17 +3771,23 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
   background-color:rgba(255,255,255,.07) !important;
 }
 
-/* 5. Заголовки слайдов крупнее — на телефоне они читались мелко.
-   Если после увеличения контент не влезает, portal-fit ужмёт слайд целиком. */
+/* 5. ЗАГОЛОВКИ ВСЕХ СЛАЙДОВ — ОДНОГО ЭКРАННОГО РАЗМЕРА.
+   Кегль задаёт portal-fit инлайном (TARGET / zoom слайда), потому что у
+   каждого слайда свой масштаб: одинаковый CSS-кегль давал на экране разброс
+   в полтора раза. Здесь остаются только межстрочный интервал и запасной
+   размер на случай, если скрипт не отработал. Никаких `!important` на
+   font-size: они били инлайновый стиль, и подгонка не применялась вовсе. */
 @media (max-width:767px){
-  .slide-container h1{ font-size:clamp(1.5rem,7vw,2.05rem) !important; line-height:1.16 !important; }
-  .slide-container h2{ font-size:clamp(1.28rem,5.9vw,1.7rem) !important; line-height:1.2 !important; }
+  .slide-container h1{ font-size:1.5rem; line-height:1.16 !important; }
+  .slide-container h2{ font-size:1.5rem; line-height:1.2 !important; }
   .slide-container h3{ font-size:clamp(.95rem,3.9vw,1.15rem) !important; }
 }
 @media (min-width:768px){
-  .slide-container h1{ font-size:clamp(2.3rem,4.3vw,3.75rem) !important; line-height:1.1 !important; }
-  .slide-container h2{ font-size:clamp(1.8rem,3.3vw,2.9rem) !important; line-height:1.15 !important; }
+  .slide-container h1{ font-size:2.7rem; line-height:1.1 !important; }
+  .slide-container h2{ font-size:2.7rem; line-height:1.15 !important; }
 }
+/* Заголовок с проставленным кеглем от portal-fit — только он источник правды. */
+.slide-container [data-slide-title]{ text-wrap:balance; }
 
 /* 6. Резерв под говорящую голову. Базовый стиль давал .content-z 120px снизу
    именно под кружок, но portal-deck перебивал его симметричным padding-block
@@ -3775,7 +3894,7 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    пикселях — на 2560 контент занимал 64% ширины островом, а вся обвязка
    выглядела мелкой. Дорожная карта в тех же условиях масштабируется целиком
    через body{zoom} 1.15 / 1.3 / 1.5 — повторяем те же ступени и те же границы.
-   Шапку масштабируем `zoom`ом как одно целое: лого, кнопки и «Консультация»
+   Шапку масштабируем `zoom`ом как одно целое: лого, кнопки и «Буткемп»
    растут вместе и не разъезжаются. Голову и кнопки листания растим через
    переменные — вся геометрия пары кнопок под головой считается от них,
    поэтому центрирование сохраняется само. */
@@ -3934,6 +4053,32 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   font-size:.78rem; font-weight:600; letter-spacing:.02em; color:rgba(255,255,255,.55);
 }
 .quiz-soon i{ color:#F97316; margin-right:.4rem; }
+
+/* 28. МАРКЕР СТОИТ ВПЛОТНУЮ К СВОЕМУ ТЕКСТУ.
+   Строка «иконка + подпись» была flex-строкой с justify-center. Пока подпись
+   влезала в одну строку, всё выглядело правильно («ЧЕЛОВЕК В ЦЕНТРЕ»). Но как
+   только подпись переносилась на две, текстовый флекс-элемент растягивался на
+   всю ширину карточки — маркер уезжал к левому краю, а текст центрировался
+   отдельно от него, и между ними зияла дыра в полкарточки.
+   Делаем такие строки строчными: иконка становится частью ПЕРВОЙ строки и
+   центрируется ВМЕСТЕ с текстом. Зазор задаём margin'ом — gap во flex больше
+   не действует, да и просили галочки ближе к тексту.
+   :not([class*="flex-col"]) обязателен — под селектор иначе попадают карточки
+   с колоночной раскладкой, и они бы рассыпались. */
+.slide-container li[class*="justify-center"],
+.slide-container div[class~="w-full"][class*="uppercase"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]),
+.slide-container div[class*="text-center"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]){
+  display:block !important;
+  text-align:center !important;
+}
+.slide-container li[class*="justify-center"] > i,
+.slide-container div[class~="w-full"][class*="uppercase"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]) > i,
+.slide-container div[class*="text-center"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]) > i{
+  display:inline-block !important;
+  vertical-align:-.1em;
+  margin:0 .3em 0 0 !important;
+  align-self:auto !important;
+}
 </style>
 
 <style id="notes-panel-style">

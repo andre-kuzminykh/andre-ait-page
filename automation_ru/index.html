@@ -73,7 +73,7 @@
     --divider:rgba(255,255,255,.12); --navitem:rgba(255,255,255,.60);
     --btn-bg:#FAFAFA; --btn-fg:#050505;
     --ctrl-bg:rgba(255,255,255,.05); --ctrl-border:rgba(255,255,255,.10); --ctrl-fg:rgba(255,255,255,.80);
-    --tile-bg:#15151b; --dot:rgba(255,255,255,.45);
+    --tile-bg:#15151b;
   }
   html.light{
     --bg:#FAFAFA; --fg:#0A0A0A; --muted:rgba(10,10,10,.55);
@@ -81,7 +81,7 @@
     --divider:rgba(0,0,0,.10); --navitem:rgba(0,0,0,.55);
     --btn-bg:#0A0A0A; --btn-fg:#FAFAFA;
     --ctrl-bg:rgba(0,0,0,.03); --ctrl-border:rgba(0,0,0,.10); --ctrl-fg:rgba(0,0,0,.70);
-    --tile-bg:#fff; --dot:rgba(0,0,0,.42);
+    --tile-bg:#fff;
   }
   /* На белом фоне фирменный оранжевый выцветает (2.7:1), а вторичный текст
      проваливается ниже 4.5:1 — в светлой теме берём те же цвета потемнее. */
@@ -122,32 +122,41 @@
     background-size:180px 180px}
   html.light .grain{mix-blend-mode:multiply;opacity:.04}
 
-  /* ===== Шапка ===== */
-  header{position:fixed;inset:0 0 auto 0;z-index:40}
-  .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:.75rem;padding:1.1rem}
-  @media(min-width:1024px){.row{padding:2rem}}
+  /* ===== Шапка =============================================================
+     Геометрия один в один с главной andre.technology: те же отступы шапки,
+     тот же размер логотипа, тот же переключатель языка и та же правая кнопка.
+     Роль бургера (круглая кнопка между языком и CTA) здесь играет переключатель
+     темы — размеры у него бургерные, поэтому ряд собирается точно так же. */
+  header{position:fixed;top:0;left:0;right:0;z-index:40;pointer-events:none;padding:1.1rem}
+  @media(min-width:1024px){header{padding:2rem}}
+  .header-row{position:relative;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+  .header-left{pointer-events:auto;display:flex;align-items:center;gap:.5rem;min-width:0}
+  .header-right{pointer-events:auto;display:flex;align-items:center;gap:.4rem;flex-shrink:0}
 
-  .logo-btn{display:inline-flex;align-items:center;gap:.5rem;background:none;border:0;padding:0;justify-self:start;cursor:pointer}
-  .logo-btn img{height:clamp(2.6rem,11vw,3.4rem);width:auto;object-fit:contain;transition:transform .2s ease}
-  @media(min-width:1024px){.logo-btn img{height:3.4rem}}
-  .logo-btn:hover img{transform:scale(1.05)}
-
-  .right{display:flex;align-items:center;justify-self:end;gap:.45rem}
-  @media(min-width:640px){.right{gap:.7rem}}
+  .logo-btn{display:inline-flex;align-items:center;background:none;border:0;padding:0;cursor:pointer;flex-shrink:0}
+  .logo-img{width:clamp(2.85rem,12vw,3.7rem);height:clamp(2.85rem,12vw,3.7rem);object-fit:contain;transition:transform .2s ease}
+  @media(min-width:1024px){.logo-img{width:3.6rem;height:3.6rem}}
+  .logo-btn:hover .logo-img{transform:scale(1.05)}
 
   /* Переключатель языка — как на главной: EN | RU, активный подсвечен.
-     Здесь это ссылки: у каждого языка своя страница со своим веб-превью. */
-  .lang-switch{display:flex;align-items:center;gap:.3rem;margin-right:.15rem;flex-shrink:0}
-  @media(min-width:640px){.lang-switch{margin-right:.4rem}}
+     Здесь это ссылки: у каждого языка своя страница со своим веб-превью.
+     На мобилке свободное место в шапке слева, поэтому переключатель уезжает
+     туда (margin-right:auto), а круглая кнопка и CTA остаются прижаты вправо. */
+  .lang-switch{display:flex;align-items:center;gap:.3rem;margin-right:clamp(.5rem,3.5vw,1.4rem);flex-shrink:0}
+  @media(max-width:1023px){
+    .header-right{flex:1 0 auto}
+    .lang-switch{margin-left:clamp(.5rem,2.2vw,1.5rem);margin-right:auto}
+  }
   .lang-opt{background:none;border:0;padding:.2rem .05rem;font-size:11px;font-weight:500;
-    color:var(--navitem);letter-spacing:.06em;transition:color .2s ease;cursor:pointer}
+    color:var(--navitem);letter-spacing:.08em;transition:color .2s ease;cursor:pointer}
   .lang-opt.active{color:var(--fg);font-weight:700}
   @media(hover:hover){.lang-opt:hover{color:var(--fg)}}
   .lang-sep{color:var(--divider);font-size:10px;user-select:none}
-  @media(min-width:1024px){.lang-opt{font-size:12px}}
+  @media(min-width:1024px){.lang-opt{font-size:12px}.lang-switch{margin-right:2rem}}
+  @media(min-width:1024px) and (max-width:1319px){.lang-switch{gap:.12rem;margin-right:1rem}.lang-opt{font-size:11px;letter-spacing:0}}
 
-  .ctrl{display:inline-flex;align-items:center;justify-content:center;height:clamp(2.4rem,10vw,3.1rem);min-width:clamp(2.4rem,10vw,3.1rem);padding:0 .55rem;border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:clamp(.95rem,3.2vw,1.15rem);line-height:1;flex-shrink:0;transition:background .2s ease}
-  @media(min-width:1024px){.ctrl{height:2.85rem;min-width:2.85rem;font-size:1.05rem}}
+  .ctrl{display:flex;align-items:center;justify-content:center;width:clamp(2.5rem,11vw,3.3rem);height:clamp(2.5rem,11vw,3.3rem);border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:clamp(.95rem,3.2vw,1.15rem);line-height:1;flex-shrink:0;transition:background .2s ease}
+  @media(min-width:1024px){.ctrl{width:2.85rem;height:2.85rem;font-size:1.05rem}}
   .ctrl:hover{background:rgba(136,84,243,.14)}
 
   /* ===== CTA-кнопки: белые, шиммер-градиент на ховере ===== */
@@ -162,9 +171,21 @@
     color:#fff;transform:translateY(-2px);
     animation:gradientShimmer 4.5s ease infinite;
   }
-  .consult{height:clamp(2.4rem,10vw,3.1rem);padding:0 clamp(.9rem,2.2vw,1.5rem);font-size:clamp(9.5px,1.02vw,12px)}
-  @media(min-width:1024px){.consult{height:2.85rem;padding:0 1.4rem;font-size:11.5px;letter-spacing:.15em}}
-  @media(max-width:399px){.consult .txt{display:none}.consult{padding:0 .8rem}}
+  /* Правая кнопка шапки — те же размеры, что «Free AI Diagnostic» на главной */
+  .consult{padding:clamp(.62rem,2.2vw,.95rem) clamp(.85rem,3.2vw,1.35rem);font-size:clamp(9px,2.7vw,12.5px);letter-spacing:clamp(.06em,.4vw,.1em);gap:clamp(.4rem,1.2vw,.6rem)}
+  @media(min-width:1024px){.consult{height:2.85rem;box-sizing:border-box;padding:0 1.4rem;font-size:11.5px;letter-spacing:.15em;gap:.55rem}}
+  @media(min-width:1024px) and (max-width:1319px){.consult{padding:0 .95rem;font-size:10px;letter-spacing:.08em;gap:.4rem}}
+  @media(min-width:1320px) and (max-width:1479px){.consult{padding:0 1.15rem;font-size:11px;letter-spacing:.12em;gap:.5rem}}
+  /* ≤380px — компактная шапка, как на главной: четыре элемента в строку иначе не влезают */
+  @media(max-width:380px){
+    header{padding:.85rem .6rem}
+    .header-right{flex:0 0 auto;gap:.3rem}
+    .lang-switch{margin-left:0;margin-right:.25rem;gap:.12rem}
+    .lang-opt{font-size:10px;letter-spacing:.03em}
+    .logo-img{width:2.5rem;height:2.5rem}
+    .ctrl{width:2.3rem;height:2.3rem}
+    .consult{padding:.6rem .55rem;font-size:8px;letter-spacing:.02em}
+  }
 
   /* Широкие экраны: масштабируем весь UI (как на главном сайте) */
   @media(min-width:1600px){body{zoom:1.15}}
@@ -184,7 +205,7 @@
   .panel.on{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .34s ease,visibility 0s}
   /* margin:auto вместо align-items:center: если блок всё-таки выше экрана,
      скрипт ужмёт .wrap и сам посчитает отступ сверху. */
-  .wrap{margin:auto;width:100%;max-width:62rem;text-align:center}
+  .wrap{margin:auto;width:100%;max-width:68rem;text-align:center}
 
   /* Появление содержимого: каскад перезапускается при каждом показе блока */
   .panel.on .wrap > *{animation:riseIn .5s cubic-bezier(.22,1,.36,1) both}
@@ -198,14 +219,8 @@
   .panel.on .learn > *:nth-child(n+3){animation-delay:.06s}
   .panel.on .learn > *:nth-child(n+7){animation-delay:.12s}
 
-  /* Точки-навигация по блокам */
-  .dots{position:fixed;z-index:30;right:clamp(.7rem,1.6vw,1.5rem);top:50%;transform:translateY(-50%);
-    display:flex;flex-direction:column;gap:.7rem}
-  .dot{width:8px;height:8px;padding:0;border:0;border-radius:999px;background:var(--dot);
-    transition:background .25s ease,transform .25s ease}
-  .dot.on{background:#8854F3;transform:scale(1.35)}
-  @media(hover:hover){.dot:hover{background:#F97316}}
-  @media(max-width:520px){.dots{right:.45rem;gap:.55rem}.dot{width:7px;height:7px}}
+  /* Точек-навигации нет: блоки листаются колесом, свайпом и стрелками,
+     а лишний столбик кружков справа только рябил в глазах. */
 
   /* ===== Блок 1: о курсе ===== */
   /* zoom, а не transform: transform уменьшает только отрисовку, в потоке ряд
@@ -214,16 +229,16 @@
   .float-row{display:flex;justify-content:center;align-items:flex-end;gap:.85rem;zoom:.82;margin:0 0 .25rem}
   @media(min-width:640px){.float-row{zoom:1;margin-bottom:.85rem}}
   .tile{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--tile-bg);border:1px solid var(--card-border);border-radius:1rem;animation:floatY 4s ease-in-out infinite}
-  .tile.sm{width:3.6rem;height:5.4rem;gap:.55rem}
-  .tile.lg{width:4.5rem;height:6.6rem;gap:.6rem;border-radius:1.1rem}
+  .tile.sm{width:4rem;height:6rem;gap:.6rem}
+  .tile.lg{width:5rem;height:7.3rem;gap:.65rem;border-radius:1.1rem}
   .tile .bar{height:3px;border-radius:2px}
-  .tile.sm .bar{width:1.6rem}
-  .tile.lg .bar{width:2rem}
+  .tile.sm .bar{width:1.8rem}
+  .tile.lg .bar{width:2.25rem}
 
-  .hero{font-size:clamp(1.4rem,4.6vw,2.8rem);font-weight:800;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;padding-top:.5rem}
+  .hero{font-size:clamp(1.55rem,5vw,3.3rem);font-weight:800;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;padding-top:.5rem}
   .hero span.line{display:block}
   .hero .plum,.hero .flame{white-space:nowrap}
-  .desc{color:var(--muted);max-width:min(62em,92vw);margin:1.35rem auto 0;font-size:clamp(14.5px,1.05vw,21px);line-height:1.6}
+  .desc{color:var(--muted);max-width:min(62em,92vw);margin:1.35rem auto 0;font-size:clamp(15.5px,1.18vw,24px);line-height:1.6}
   .desc .lb{display:none}
   @media (min-width:680px){ .desc .lb{display:inline} }
 
@@ -231,39 +246,40 @@
   .scroll-hint i{animation:bounceDown 1.8s ease-in-out infinite;color:#8854F3}
 
   /* заголовки блоков */
-  .h2{text-align:center;font-size:clamp(1.45rem,4vw,1.9rem);font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
-  @media(min-width:1024px){.h2{font-size:clamp(2.1rem,2.3vw,2.8rem)}}
+  .h2{text-align:center;font-size:clamp(1.6rem,4.4vw,2.2rem);font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+  @media(min-width:1024px){.h2{font-size:clamp(2.4rem,2.6vw,3.2rem)}}
 
   /* ===== Блок 2: для кого ===== */
   .roles{margin-top:1.8rem;display:grid;grid-template-columns:1fr;gap:1rem}
   @media(min-width:640px){.roles{grid-template-columns:repeat(3,1fr)}}
   .card{border:1px solid var(--card-border);background:var(--card-bg);border-radius:1rem;transition:transform .2s ease,border-color .2s ease}
   .card:hover{transform:translateY(-3px);border-color:rgba(136,84,243,.45)}
-  .role{padding:1.5rem 1.3rem;text-align:center}
-  .role .ico{margin:0 auto 1rem;display:inline-flex;align-items:center;justify-content:center;height:clamp(3.4rem,4.5vw,4.5rem);width:clamp(3.4rem,4.5vw,4.5rem);border-radius:1.1rem;font-size:clamp(1.45rem,2vw,2rem)}
+  .role{padding:1.7rem 1.45rem;text-align:center}
+  .role .ico{margin:0 auto 1rem;display:inline-flex;align-items:center;justify-content:center;height:clamp(3.7rem,5vw,5rem);width:clamp(3.7rem,5vw,5rem);border-radius:1.1rem;font-size:clamp(1.6rem,2.2vw,2.2rem)}
   .ico.p{background:rgba(136,84,243,.15);color:#8854F3}
   .ico.f{background:rgba(249,115,22,.15);color:#F97316}
-  .role h3{font-size:clamp(1rem,1.3vw,1.25rem);font-weight:700;text-transform:uppercase}
+  .role h3{font-size:clamp(1.08rem,1.45vw,1.4rem);font-weight:700;text-transform:uppercase}
   /* Заголовок средней карточки занимает две строки — резерв даём всем трём,
      иначе описания в ряду начинаются с разной высоты. */
   @media(min-width:640px){.role h3{min-height:2.5em;display:flex;align-items:center;justify-content:center}}
-  .role p{color:var(--muted);margin:.55rem 0 0;font-size:clamp(.78rem,1vw,.95rem);line-height:1.6}
+  .role p{color:var(--muted);margin:.55rem 0 0;font-size:clamp(.85rem,1.1vw,1.05rem);line-height:1.6}
   .nb{white-space:nowrap}   /* «ИИ-агентами» не разрывается по дефису */
 
   /* ===== Блок 3: чему научитесь ===== */
-  .learn{margin:1.8rem auto 0;max-width:61rem;display:grid;grid-template-columns:repeat(2,1fr);gap:.55rem;list-style:none;padding:0;text-align:left;counter-reset:n}
+  /* Номеров у пунктов нет: они ничего не сообщали, а резерв справа перекашивал
+     строку. Отступы поэтому симметричные. */
+  .learn{margin:1.8rem auto 0;max-width:67rem;display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem;list-style:none;padding:0;text-align:left}
   @media(max-width:639px){.learn{grid-template-columns:1fr}}
-  .learn li{position:relative;display:flex;align-items:center;gap:.75rem;padding:.72rem 2rem .72rem .9rem;border-radius:1rem;border:1px solid var(--card-border);background:var(--card-bg);transition:transform .2s ease,border-color .2s ease}
+  .learn li{position:relative;display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border-radius:1rem;border:1px solid var(--card-border);background:var(--card-bg);transition:transform .2s ease,border-color .2s ease}
   .learn li:hover{transform:translateY(-2px);border-color:rgba(249,115,22,.45)}
-  .learn .ico{height:clamp(2.2rem,3vw,2.8rem);width:clamp(2.2rem,3vw,2.8rem);border-radius:.65rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:clamp(1rem,1.4vw,1.35rem)}
-  .learn p{margin:0;font-size:clamp(.78rem,1.3vw,.98rem);line-height:1.4}
-  .learn li::after{counter-increment:n;content:counter(n,decimal-leading-zero);position:absolute;top:.4rem;right:.7rem;font-size:.6rem;font-weight:700;letter-spacing:.08em;color:var(--muted);opacity:1}
+  .learn .ico{height:clamp(2.4rem,3.3vw,3.1rem);width:clamp(2.4rem,3.3vw,3.1rem);border-radius:.65rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:clamp(1.1rem,1.55vw,1.5rem)}
+  .learn p{margin:0;font-size:clamp(.85rem,1.45vw,1.1rem);line-height:1.4}
 
   /* ===== CTA ===== */
   .cta-row{margin:1.9rem 0 0;display:flex;justify-content:center}
-  .btn-start{padding:clamp(.95rem,1vw,1.5rem) clamp(1.9rem,2vw,3.2rem);font-size:clamp(12px,.85vw,17px);letter-spacing:.15em}
-  .lead{color:var(--muted);max-width:40em;margin:1rem auto 0;font-size:clamp(.85rem,1.05vw,1.05rem);line-height:1.65}
-  .divider{height:1px;max-width:16rem;margin:0 auto clamp(1.5rem,4vh,2.6rem);background:linear-gradient(90deg,transparent,#8854F3,#F97316,transparent);opacity:.6}
+  .btn-start{padding:clamp(1.1rem,1.15vw,1.7rem) clamp(2.2rem,2.3vw,3.7rem);font-size:clamp(13px,.95vw,19px);letter-spacing:.15em}
+  .lead{color:var(--muted);max-width:44em;margin:1.1rem auto 0;font-size:clamp(.95rem,1.18vw,1.2rem);line-height:1.65}
+  .lead .ln{display:block}   /* «…в вашем бизнесе.» — всегда вторая строка */
 
   /* Портрет и кнопка — один блок без просвета. Никакого градиента: снимок
      обрезан «в стык» и уходит ПОД кнопку до её середины, поэтому срез не виден
@@ -274,7 +290,7 @@
   .cta-photo{display:block;margin:0 auto;width:min(15rem,60vw);max-width:15rem;height:auto;pointer-events:none}
   .cta-stack .btn-start{position:relative;z-index:1}   /* кнопка поверх снимка */
 
-  .site-link{display:inline-block;margin-top:clamp(1.3rem,4vh,2.1rem);color:var(--muted);font-size:.72rem;letter-spacing:.06em;border-bottom:1px solid var(--divider)}
+  .site-link{display:inline-block;margin-top:clamp(1.3rem,4vh,2.1rem);color:var(--muted);font-size:.8rem;letter-spacing:.06em;border-bottom:1px solid var(--divider)}
   .site-link:hover{color:#8854F3;border-color:#8854F3}
 
   /* Телефон: ужимаем блоки так, чтобы каждый влезал в экран целиком —
@@ -289,12 +305,9 @@
     .role .ico{height:2.9rem;width:2.9rem;margin-bottom:.6rem;font-size:1.25rem;border-radius:.9rem}
     .role p{margin-top:.35rem;line-height:1.5}
     .learn{margin-top:1.15rem;gap:.4rem}
-    .learn li{padding:.5rem .8rem;gap:.6rem;border-radius:.8rem}
-    /* Номер пункта на телефоне съедал ширину строки и всё равно был
-       нечитаем (9px, приглушённый) — на узком экране он не нужен. */
-    .learn li::after{display:none}
-    .learn .ico{height:2rem;width:2rem;font-size:.95rem;border-radius:.55rem}
-    .learn p{font-size:.76rem;line-height:1.3}
+    .learn li{padding:.55rem .8rem;gap:.65rem;border-radius:.8rem}
+    .learn .ico{height:2.15rem;width:2.15rem;font-size:1rem;border-radius:.55rem}
+    .learn p{font-size:.82rem;line-height:1.3}
     .lead{margin-top:.7rem}
     .cta-stack{margin-top:1.1rem}
     .site-link{margin-top:1.1rem}
@@ -308,15 +321,13 @@
     .role{padding:.8rem .9rem}
     .role .ico{height:2.4rem;width:2.4rem;margin-bottom:.45rem;font-size:1.05rem}
     .learn{margin-top:.7rem;gap:.32rem}
-    .learn li{padding:.42rem .7rem}
-    .learn li::after{display:none}   /* резерв справа убран — номер убираем тоже */
-    .learn .ico{height:1.8rem;width:1.8rem;font-size:.85rem}
+    .learn li{padding:.45rem .7rem}
+    .learn .ico{height:1.95rem;width:1.95rem;font-size:.9rem}
     .cta-row{margin-top:.9rem}
     .panel{padding-top:clamp(4.2rem,14vh,5.2rem);padding-bottom:1.2rem}
     .desc{margin-top:.6rem}
     .scroll-hint{margin-top:.6rem}
     .cta-stack{margin-top:.6rem}
-    .divider{margin-bottom:.8rem}
     .lead{margin-top:.5rem}
     .site-link{margin-top:.7rem}
   }
@@ -327,7 +338,7 @@
     .deck{position:static}
     .panel{position:static;opacity:1;visibility:visible;overflow:visible;page-break-after:always}
     .panel .wrap{transform:none !important;margin:0 auto !important}
-    .dots,.scroll-hint,header{display:none}
+    .scroll-hint,header{display:none}
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -343,7 +354,7 @@
   html,body{height:auto;overflow:auto}
   .deck{position:static}
   .panel{position:static;opacity:1;visibility:visible;pointer-events:auto;min-height:100vh;overflow:visible}
-  .dots,.scroll-hint,#theme{display:none}
+  .scroll-hint,#theme{display:none}
 </style></noscript>
 </head>
 <body>
@@ -352,19 +363,21 @@
 
   <!-- HEADER -->
   <header id="hdr">
-    <div class="row">
-      <button class="logo-btn" aria-label="На главную" onclick="location.href='https://andre.technology'">
-        <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="Andre AI">
-      </button>
-      <div class="right">
+    <div class="header-row">
+      <div class="header-left">
+        <button class="logo-btn" aria-label="На главную" onclick="location.href='https://andre.technology'">
+          <img class="logo-img" src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="Andre AI">
+        </button>
+      </div>
+      <div class="header-right">
         <div class="lang-switch" role="group" aria-label="Язык">
           <a class="lang-opt" data-lang="en" href="/automation/" hreflang="en">EN</a>
           <span class="lang-sep" aria-hidden="true">|</span>
           <a class="lang-opt active" data-lang="ru" href="/automation_ru/" hreflang="ru" aria-current="true">RU</a>
         </div>
         <button class="ctrl" id="theme" aria-label="Сменить фон (тёмный/светлый)"><i class="fa-solid fa-sun"></i></button>
-        <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Консультация">
-          <span class="txt">Консультация</span>
+        <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Буткемп">
+          <span class="txt">Буткемп</span>
           <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
         </button>
       </div>
@@ -454,9 +467,8 @@
     <!-- ===== 4. НАЧАТЬ ===== -->
     <section class="panel" id="start" aria-label="Начать обучение">
       <div class="wrap">
-        <div class="divider"></div>
         <h2 class="h2" id="final-h">Готовы <span class="plum">начать</span>?</h2>
-        <p class="lead">Пройдите курс шаг за шагом — от поиска процесса до работающего <span class="nb">ИИ-агента</span> в вашем бизнесе.</p>
+        <p class="lead"><span class="ln">Пройдите курс шаг за шагом — от поиска процесса</span><span class="ln">до работающего <span class="nb">ИИ-агента</span> в вашем бизнесе.</span></p>
         <div class="cta-stack">
           <picture>
             <source srcset="/automation/andre-cta.webp" type="image/webp">
@@ -472,8 +484,6 @@
     </section>
 
   </main>
-
-  <nav class="dots" id="dots" aria-label="Блоки страницы"></nav>
 
   <script>
     function storeGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -541,7 +551,6 @@
        целиком (fit) — резать содержимое и листать внутри блока нельзя. */
     (function(){
       var panels = [].slice.call(document.querySelectorAll('.panel'));
-      var dotsBox = document.getElementById('dots');
       var idx = 0;
       var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var SWITCH = REDUCED ? 120 : 380;      // сколько длится смена блока
@@ -584,26 +593,12 @@
         }, 0);
       };
 
-      var dots = panels.map(function(p, i){
-        var b = document.createElement('button');
-        b.className = 'dot';
-        b.type = 'button';
-        b.setAttribute('aria-label', p.getAttribute('aria-label') || ('' + (i + 1)));
-        b.addEventListener('click', function(){ jump(i); });
-        dotsBox.appendChild(b);
-        return b;
-      });
-
       function show(n){
         n = Math.max(0, Math.min(panels.length - 1, n));
         idx = n;
         panels.forEach(function(p, i){
           p.classList.toggle('on', i === idx);
           p.setAttribute('aria-hidden', i === idx ? 'false' : 'true');
-        });
-        dots.forEach(function(d, i){
-          d.classList.toggle('on', i === idx);
-          if (i === idx) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
         });
         // Якорь в адрес НЕ пишем: replaceState записей в историю не создаёт,
         // «назад» им всё равно не воспользуешься, а «#start» в адресной строке
@@ -643,8 +638,11 @@
       var RISE_LEN = 3;      // столько СТРОГО растущих кадров подряд = новый взмах
       var COOL     = 500;    // жёсткий потолок: чаще этого колесо блок не меняет
       var accum = 0, lastT = 0, prevAbs = 0, armed = true, rise = 0, wheelAt = 0;
+      // Курок взведён паузой (изолированный щелчок мыши) или ростом дельты
+      // (новый взмах поверх инерции) — от этого зависит, действует ли COOL.
+      var quietArm = true;
 
-      function armWheel(){ armed = true; accum = 0; rise = 0; }
+      function armWheel(byQuiet){ armed = true; accum = 0; rise = 0; quietArm = !!byQuiet; }
       // Любая смена блока — хоть колесом, хоть точкой, хоть клавишей — снимает
       // курок: иначе недоеденный хвост инерции доводил дек до следующего блока
       // уже ПОСЛЕ того, как зритель осознанно ткнул в нужную точку.
@@ -668,9 +666,9 @@
         // взмах уводил дек через два блока на третий. Взвода «по таймеру»
         // тоже быть не должно: хвост идёт кадрами по 16 мс, пауза не
         // набирается, и любой порог времени срабатывает на самом хвосте.
-        if (gap > QUIET){ armWheel(); }
+        if (gap > QUIET){ armWheel(true); }
         else if (!armed && (t - firedAt) > REARM && a > prevAbs && a >= RISE_MIN){
-          if (++rise >= RISE_LEN) armWheel();
+          if (++rise >= RISE_LEN) armWheel(false);
         }
         else if (a <= prevAbs){ rise = 0; }
         prevAbs = a;
@@ -681,8 +679,11 @@
           disarmWheel();
           // Предохранитель поверх всей логики: сколько бы событий ни принёс
           // экзотический поток, чаще раза в COOL колесо блок не переключит.
-          // Один взмах = один блок при любом раскладе.
-          if (t - wheelAt < COOL) return;
+          // Один взмах = один блок при любом раскладе. Действует он только
+          // ВНУТРИ потока: щелчок мыши приходит после паузы (quietArm), это
+          // заведомо новое намерение — глотать его нельзя, иначе у мышиного
+          // колеса срабатывает лишь каждый второй щелчок.
+          if (!quietArm && t - wheelAt < COOL) return;
           wheelAt = t;
           go(dir);
         }
