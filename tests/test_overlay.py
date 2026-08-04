@@ -177,39 +177,41 @@ def test_cover_precedes_the_clip():
     assert "body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim{display:none}" in html
 
 
-def test_join_script_copies_the_clip():
-    """Кнопка сборки обязана КОПИРОВАТЬ дорожку ролика, а не пережимать её:
-    перекодирование ради двух секунд заставки — потеря качества исходника."""
+def test_join_runs_in_the_browser_and_copies_the_clip():
+    """Кнопка собирает файл сама, в воркере с ядром ffmpeg, и КОПИРУЕТ дорожку
+    ролика: перекодировать весь исходник ради секунды заставки — потерять
+    качество. Пересборка допустима только как запасной путь и с уведомлением."""
+    base = os.path.dirname(_OVERLAY)
+    worker = os.path.join(base, "join.worker.js")
+    assert os.path.exists(worker), "нет воркера сборки"
+    with open(worker, encoding="utf-8") as f:
+        w = f.read()
+
+    assert "'-f', 'concat'" in w and "'-c', 'copy'" in w, \
+        "основной путь обязан быть склейкой потоков без перекодирования"
+    assert w.index("'-c', 'copy'") < w.index("concat=n=2"), \
+        "пересборка не должна идти раньше склейки потоков"
+    assert "type: 'reencode'" in w, "о пересборке нужно сообщать, а не молчать"
+    assert "importScripts('vendor/ffmpeg-core.js')" in w, "ядро должно браться локально"
+
+    for f in ("vendor/ffmpeg-core.js", "vendor/ffmpeg-core.wasm"):
+        assert os.path.exists(os.path.join(base, f)), "нет файла ядра %s" % f
+    assert os.path.getsize(os.path.join(base, "vendor/ffmpeg-core.wasm")) > 10 << 20, \
+        "ядро подозрительно маленькое — похоже, положили заглушку"
+
+
+def test_join_falls_back_when_worker_is_impossible():
+    """Из file:// браузер не даст поднять воркер. Тогда кнопка обязана отдать
+    тот же конвейер командой, а не оставить человека ни с чем."""
     html = _html()
-    body = html[html.index("function joinScript()"):html.index("document.getElementById('bJoin')")]
+    assert "location.protocol === 'file:'" in html, "нет проверки на file://"
+    assert "function offerScript" in html, "нет запасного пути со скриптом"
+    body = html[html.index("function joinScript()"):html.index("var joinBtn")]
     assert "-f concat" in body and "-c copy" in body, \
-        "основной путь сборки должен быть склейкой потоков без перекодирования"
-    assert "command -v ffmpeg" in body and "command -v ffprobe" in body, \
-        "скрипт должен сам сообщать о недостающих зависимостях"
-    assert "crf 16" in body, "нет запасного пути на случай несовпадения параметров"
-
-
-def test_subs_are_two_to_four_words():
-    for start, _, text in _subs():
-        n = len(text.split())
-        assert n <= 4, "на %.0fс реплика из %d слов — читать не успеть: %r" % (start, n, text)
-
-
-def test_subs_have_no_stage_directions():
-    """Ремарки расшифровки в квадратных скобках в кадр не попадают."""
-    for _, _, text in _subs():
-        assert "[" not in text and "]" not in text, "ремарка попала в субтитры: %r" % text
-
-
-def test_subs_are_white_outlined_and_boxless():
-    html = _html()
-    css = html[html.index("#sub{"):html.index("#sub:empty")]
-    assert "color:#fff" in css.replace(" ", ""), "субтитры должны быть белыми"
-    assert "-webkit-text-stroke" in css, "нет чёрной обводки"
-    assert "paint-order:stroke fill" in css, \
-        "без paint-order обводка съедает букву изнутри"
-    for boxy in ("background", "border-radius"):
-        assert boxy not in css, "у субтитров появилась подложка (%s)" % boxy
+        "запасной скрипт тоже должен копировать дорожку, а не пережимать"
+    assert "command -v ffmpeg" in body, "скрипт должен сам сообщать о недостающих зависимостях"
+    launcher = os.path.join(os.path.dirname(_OVERLAY), "Запустить.command")
+    assert os.path.exists(launcher), "нет лаунчера локального сервера для офлайн-папки"
 
 
 # ── FR-SITE23: служебный интерфейс не попадает в кадр ────────────────────

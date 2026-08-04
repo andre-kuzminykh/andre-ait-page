@@ -687,8 +687,9 @@ body.dragging #drop{display:flex}
     }
     document.getElementById('file').addEventListener('change', function (e) {
         if (e.target.files[0]) {
-            videoName = e.target.files[0].name;
-            loadVideo(URL.createObjectURL(e.target.files[0]));
+            videoFile = e.target.files[0];
+            videoName = videoFile.name;
+            loadVideo(URL.createObjectURL(videoFile));
         }
     });
     ['dragenter', 'dragover'].forEach(function (n) {
@@ -700,8 +701,9 @@ body.dragging #drop{display:flex}
             if (n === 'dragleave' && e.relatedTarget) return;
             document.body.classList.remove('dragging');
             if (n === 'drop' && e.dataTransfer.files[0]) {
-                videoName = e.dataTransfer.files[0].name;
-                loadVideo(URL.createObjectURL(e.dataTransfer.files[0]));
+                videoFile = e.dataTransfer.files[0];
+                videoName = videoFile.name;
+                loadVideo(URL.createObjectURL(videoFile));
             }
         });
     });
@@ -738,7 +740,7 @@ body.dragging #drop{display:flex}
        качество исходника. Поэтому кнопка готовит команду: обложка
        кодируется под параметры ролика, а сам ролик копируется
        потоком (-c copy), то есть остаётся байт в байт. */
-    var videoName = '';
+    var videoName = '', videoFile = null;
     function joinScript() {
         var v = videoName || 'video.mp4';
         return [
@@ -783,21 +785,87 @@ body.dragging #drop{display:flex}
             'echo "Готово: $OUT"'
         ].join('\n') + '\n';
     }
-    document.getElementById('bJoin').addEventListener('click', function () {
-        var text = joinScript();
-        var url = URL.createObjectURL(new Blob([text], { type: 'text/x-shellscript' }));
+    var joinBtn = document.getElementById('bJoin');
+    function tell(msg) { document.getElementById('hint').textContent = msg; }
+
+    /* Запасной путь: страница открыта из файла (file://) — браузер не даст
+       воркеру подняться, и ядро ffmpeg не загрузится. Тогда отдаём тот же
+       конвейер командой, чтобы человек не остался ни с чем. */
+    function offerScript(why) {
+        var url = URL.createObjectURL(new Blob([joinScript()], { type: 'text/x-shellscript' }));
         var a = document.createElement('a');
         a.href = url; a.download = 'собрать.sh'; a.click();
         setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-        var msg = 'Скрипт скачан. Положите его рядом с cover.png и запустите: sh собрать.sh ' +
-                  (videoName || '<ваше-видео.mp4>');
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(function () {
-                document.getElementById('hint').textContent = msg + ' — он же скопирован в буфер.';
-            }, function () { document.getElementById('hint').textContent = msg; });
-        } else {
-            document.getElementById('hint').textContent = msg;
+        tell(why + ' Скачал скрипт: положите рядом с cover.png и запустите ' +
+             '«sh собрать.sh ' + (videoName || 'ваше-видео.mp4') + '».');
+    }
+
+    joinBtn.addEventListener('click', function () {
+        if (!videoFile) { tell('Сначала загрузите видео — кнопкой или перетащив файл в окно.'); return; }
+        if (location.protocol === 'file:') {
+            offerScript('Страница открыта из файла, сборка в браузере тут запрещена самим браузером.');
+            return;
         }
+        joinBtn.disabled = true;
+        var t0 = Date.now();
+        var worker;
+        try {
+            worker = new Worker('join.worker.js');
+        } catch (err) {
+            joinBtn.disabled = false;
+            offerScript('Не удалось запустить сборку в браузере.');
+            return;
+        }
+        var reencoded = false;
+        worker.onmessage = function (e) {
+            var m = e.data;
+            if (m.type === 'stage') {
+                joinBtn.textContent = m.pct + '% · ' + m.stage;
+            } else if (m.type === 'reencode') {
+                reencoded = true;
+            } else if (m.type === 'done') {
+                var name = (videoName.replace(/\.[^.]+$/, '') || 'ролик') + '-с-обложкой.mp4';
+                var url = URL.createObjectURL(new Blob([m.data], { type: 'video/mp4' }));
+                var a = document.createElement('a');
+                a.href = url; a.download = name; a.click();
+                setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+                tell('Готово: ' + name + ' за ' + Math.round((Date.now() - t0) / 1000) + ' с. ' +
+                     (reencoded ? 'Параметры не совпали, ролик пришлось пересобрать целиком.'
+                                : 'Дорожка ролика скопирована без перекодирования.'));
+                joinBtn.textContent = 'Собрать с обложкой';
+                joinBtn.disabled = false;
+                worker.terminate();
+            } else if (m.type === 'error') {
+                joinBtn.textContent = 'Собрать с обложкой';
+                joinBtn.disabled = false;
+                worker.terminate();
+                offerScript('Сборка в браузере не удалась (' + m.message + ').');
+            }
+        };
+        worker.onerror = function () {
+            joinBtn.textContent = 'Собрать с обложкой';
+            joinBtn.disabled = false;
+            offerScript('Воркер сборки не запустился.');
+        };
+        tell('Собираю… первый запуск качает ядро ffmpeg (32 МБ), дальше оно из кэша.');
+        var coreURL = new URL('vendor/ffmpeg-core.js', location.href).href;
+        // Ядро читает адрес .wasm из base64-хвоста после #; без хвоста оно
+        // спотыкается на atob и лезет за несуществующим .worker.js.
+        var hash = btoa(JSON.stringify({
+            wasmURL: coreURL.replace(/\.js$/, '.wasm'), workerURL: ''
+        }));
+        Promise.all([
+            fetch('cover.png').then(function (r) { return r.arrayBuffer(); }),
+            videoFile.arrayBuffer()
+        ]).then(function (buf) {
+            var cover = new Uint8Array(buf[0]), video = new Uint8Array(buf[1]);
+            worker.postMessage({
+                coreURL: coreURL + '#' + hash, cover: cover, video: video, sec: COVER
+            }, [cover.buffer, video.buffer]);
+        }, function (err) {
+            joinBtn.disabled = false;
+            offerScript('Не удалось прочитать файлы (' + err + ').');
+        });
     });
 
     document.getElementById('bSubs').addEventListener('click', function () {
