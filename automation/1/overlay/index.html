@@ -417,7 +417,7 @@ body.dragging #drop{display:flex}
         <button id="play">▶ Пуск</button>
         <label class="btn">Загрузить видео<input type="file" id="file" accept="video/*"></label>
         <button id="bMock" class="act">Демо-фон</button>
-        <button id="bJoin">Собрать с обложкой</button>
+        <button id="bJoin">Скрипт сборки</button>
         <button id="bSubs" class="act">Субтитры</button>
         <button id="bScrim" class="act">Скрим</button>
         <button id="bGuide">Границы</button>
@@ -529,7 +529,7 @@ body.dragging #drop{display:flex}
     /* Обложка идёт ПЕРЕД роликом, поэтому мастер-время = обложка + видео,
        а графика и субтитры считаются от времени ВИДЕО (time - COVER):
        так тайминги остаются те же, что в SRT, сколько бы ни длилась заставка. */
-    var COVER = 1;
+    var COVER = 0.1;
 
     var stage = document.getElementById('stage');
     var clip = document.getElementById('clip');
@@ -745,179 +745,98 @@ body.dragging #drop{display:flex}
         var v = videoName || 'video.mp4';
         return [
             '#!/bin/sh',
-            '# Обложка + ролик.',
+            '# Обложка + ролик + графика с субтитрами, вжжённые в кадр.',
             '#',
-            '# Сначала пробуем склеить БЕЗ перекодирования — дорожка ролика копируется',
-            '# байт в байт. Такая склейка держится только если параметры декодера у',
-            '# обложки и ролика совпали; если нет — плеер покажет одну заставку, а файл',
-            '# при этом будет нужного размера и длины. Поэтому результат проверяется',
-            '# ДЕКОДИРОВАНИЕМ, и при расхождении ролик пересобирается один раз.',
+            '# Графику и субтитры нельзя доложить без перекодирования — их надо',
+            '# нарисовать поверх КАЖДОГО кадра. Поэтому здесь одна пересборка, с',
+            '# битрейтом исходника: второй проход на 10+ Мбит/с на глаз неотличим,',
+            '# а раздувать файл незачем.',
             '#',
-            '# Запуск:  sh собрать.sh "ваше видео.MOV"   (кавычки нужны, если в имени пробелы)',
+            '# Запуск:  sh собрать.sh "ваше видео.MOV"   (кавычки — если в имени пробелы)',
             'set -e',
             'command -v ffmpeg  >/dev/null || { echo "Нет ffmpeg. macOS: brew install ffmpeg"; exit 1; }',
             'command -v ffprobe >/dev/null || { echo "Нет ffprobe — он ставится вместе с ffmpeg"; exit 1; }',
             'DIR=$(cd "$(dirname "$0")" && pwd)',
-            '[ -f "$DIR/cover.png" ] || { echo "Рядом со скриптом нет cover.png"; exit 1; }',
+            'for f in cover.png overlay_c.mp4 overlay_a.mp4; do',
+            '  [ -f "$DIR/$f" ] || { echo "Рядом со скриптом нет $f"; exit 1; }',
+            'done',
             'VIDEO="${1:-' + v + '}"',
             '[ -f "$VIDEO" ] || { echo "Не найден файл: $VIDEO"; exit 1; }',
-            'COVER="$DIR/cover.png"',
-            'OUT="${VIDEO%.*}-с-обложкой.mp4"',
+            'OUT="${VIDEO%.*}-готовый.mp4"',
             'SEC=' + COVER,
             '',
             'p()  { ffprobe -v error -select_streams "$1" -show_entries stream="$2"  -of csv=p=0 "$VIDEO"; }',
             'pf() { ffprobe -v error -show_entries format="$1" -of csv=p=0 "$VIDEO"; }',
             'W=$(p v:0 width);  H=$(p v:0 height)',
             'FPS=$(p v:0 r_frame_rate); PIX=$(p v:0 pix_fmt)',
-            'VCODEC=$(p v:0 codec_name); VTAG=$(p v:0 codec_tag_string)',
-            'ACODEC=$(p a:0 codec_name); AR=$(p a:0 sample_rate); AC=$(p a:0 channels)',
-            'BR=$(pf bit_rate)',
+            'VCODEC=$(p v:0 codec_name); ACODEC=$(p a:0 codec_name)',
+            'AR=$(p a:0 sample_rate); AC=$(p a:0 channels); BR=$(pf bit_rate)',
             'ROT=$(ffprobe -v error -select_streams v:0 -show_entries stream_side_data=rotation -of csv=p=0 "$VIDEO" 2>/dev/null | head -1)',
             ': "${AR:=48000}"; : "${AC:=2}"; : "${ROT:=0}"',
             '[ "$AC" = 1 ] && CL=mono || CL=stereo',
-            '# Снятый телефоном ролик часто лежит боком плюс метка поворота: показываем',
-            '# обложку в тех размерах, в каких кадр ВИДЕН, а не в каких хранится.',
+            '# Снятый телефоном ролик часто лежит боком плюс метка поворота: работаем',
+            '# в тех размерах, в каких кадр ВИДЕН, а не в каких хранится.',
             'case "$ROT" in 90|-90|270|-270) DW=$H; DH=$W ;; *) DW=$W; DH=$H ;; esac',
-            'echo "Ролик: $VCODEC ${W}x${H}, поворот $ROT, звук ${ACODEC:-нет}"',
+            'echo "Ролик: $VCODEC ${DW}x${DH}, поворот $ROT, звук ${ACODEC:-нет}"',
             '',
-            'ok=0',
-            'case "$VCODEC" in',
-            '  h264) VENC=libx264; CRF=14 ;;',
-            '  hevc) VENC=libx265; CRF=20 ;;',
-            '  *)    VENC="" ;;',
-            'esac',
-            '# Поворот в режиме копирования не воспроизвести: метка живёт в дорожке,',
-            '# а склейка берёт её у первого файла. С поворотом — сразу пересборка.',
-            'if [ -n "$VENC" ] && [ "$ACODEC" = aac ] && [ "$ROT" = 0 ]; then',
-            '  echo "Пробую склейку без перекодирования…"',
-            '  ffmpeg -y -loglevel error -loop 1 -framerate "$FPS" -t "$SEC" -i "$COVER" \\',
-            '    -f lavfi -t "$SEC" -i "anullsrc=r=$AR:cl=$CL" \\',
-            '    -vf "scale=$W:$H:flags=lanczos,format=$PIX,setsar=1" \\',
-            '    -c:v "$VENC" -preset medium -crf "$CRF" -pix_fmt "$PIX" -tag:v "$VTAG" \\',
-            '    -c:a aac -b:a 192k -ar "$AR" -ac "$AC" -shortest "$DIR/_cover.mp4"',
-            '  printf "file \'%s\'\\nfile \'%s\'\\n" "$DIR/_cover.mp4" "$(cd "$(dirname "$VIDEO")" && pwd)/$(basename "$VIDEO")" > "$DIR/_list.txt"',
-            '  if ffmpeg -y -loglevel error -f concat -safe 0 -i "$DIR/_list.txt" -c copy -movflags +faststart "$OUT"; then',
-            '    # Проверка ДЕКОДИРОВАНИЕМ. Размер и длительность такую поломку не',
-            '    # ловят: файл выходит нужного веса и длины, но пакеты ролика лежат',
-            '    # под параметрами декодера обложки, и плеер глохнет после заставки.',
-            '    ERR=$(ffmpeg -v error -ss ' + (COVER + 1) + ' -t 3 -i "$OUT" -f null - 2>&1 || true)',
-            '    if [ -z "$ERR" ]; then ok=1; else echo "  декодер ругается: $(echo "$ERR" | head -1)"; fi',
-            '  fi',
-            '  rm -f "$DIR/_list.txt" "$DIR/_cover.mp4"',
-            'fi',
-            '',
-            'if [ "$ok" = 1 ]; then',
-            '  echo "Готово БЕЗ перекодирования: $OUT"',
-            '  exit 0',
-            'fi',
-            '',
-            'echo "Копия дорожки не подошла (у обложки и ролика разные параметры декодера)."',
-            'echo "Пересобираю ролик один раз, с запасом по битрейту — на глаз не отличить."',
-            '# Битрейт берём с полуторным запасом от исходного, но не ниже 12 Мбит/с.',
-            "TARGET=$(awk -v b=\"${BR:-0}\" 'BEGIN{ if(b<1) b=12000000; v=b*1.5; if(v<12000000) v=12000000; printf \"%d\", v }')",
-            'HW=$(ffmpeg -hide_banner -encoders 2>/dev/null | grep -o "hevc_videotoolbox\\|h264_videotoolbox" | head -2 | tr "\\n" " ")',
+            '# Битрейт как у исходника, но не ниже 10 Мбит/с.',
+            "TARGET=$(awk -v b=\"${BR:-0}\" 'BEGIN{ if(b<1) b=12000000; if(b<10000000) b=10000000; printf \"%d\", b }')",
+            'HW=$(ffmpeg -hide_banner -encoders 2>/dev/null | grep -o "hevc_videotoolbox\\|h264_videotoolbox" | tr "\\n" " ")',
             'case "$VCODEC:$HW" in',
             '  hevc:*hevc_videotoolbox*) VE="hevc_videotoolbox -b:v $TARGET -tag:v hvc1" ;;',
             '  *:*h264_videotoolbox*)    VE="h264_videotoolbox -b:v $TARGET" ;;',
             '  hevc:*)                   VE="libx265 -preset medium -crf 18 -tag:v hvc1" ;;',
-            '  *)                        VE="libx264 -preset medium -crf 16" ;;',
+            '  *)                        VE="libx264 -preset medium -crf 17" ;;',
             'esac',
             'echo "Кодировщик: $VE"',
+            'echo "Собираю: обложка ${SEC}с + ролик с графикой и субтитрами…"',
+            '',
+            '# [0] обложка · [1] ролик · [2] цвет слоя · [3] маска слоя · [4] тишина',
+            '# Слой лежит ДВУМЯ файлами: прозрачности в mp4 нет, webm с альфой',
+            '# собирается не везде, а две дорожки в одном mp4 не переживают ремукс.',
+            '# alphamerge сшивает цвет с маской обратно в прозрачную картинку.',
+            '# shortest=1 обязателен: иначе длина тянется по слою и короткий ролик',
+            '# раздувается до его длительности.',
             'if [ -n "$ACODEC" ]; then',
-            '  ffmpeg -y -loglevel error -stats -loop 1 -t "$SEC" -i "$COVER" -i "$VIDEO" \\',
+            '  ffmpeg -y -loglevel error -stats \\',
+            '    -loop 1 -t "$SEC" -i "$DIR/cover.png" -i "$VIDEO" \\',
+            '    -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
             '    -f lavfi -t "$SEC" -i "anullsrc=r=$AR:cl=$CL" \\',
-            '    -filter_complex "[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[c][2:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]" \\',
+            '    -filter_complex "[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[1:v][ov]overlay=0:0:format=auto:shortest=1,format=$PIX,setsar=1[m];[c][4:a][m][1:a]concat=n=2:v=1:a=1[v][a]" \\',
             '    -map "[v]" -map "[a]" -c:v $VE -pix_fmt "$PIX" -c:a aac -b:a 192k -movflags +faststart "$OUT"',
             'else',
-            '  ffmpeg -y -loglevel error -stats -loop 1 -t "$SEC" -i "$COVER" -i "$VIDEO" \\',
-            '    -filter_complex "[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[c][1:v]concat=n=2:v=1[v]" \\',
+            '  ffmpeg -y -loglevel error -stats \\',
+            '    -loop 1 -t "$SEC" -i "$DIR/cover.png" -i "$VIDEO" \\',
+            '    -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
+            '    -filter_complex "[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[1:v][ov]overlay=0:0:format=auto:shortest=1,format=$PIX,setsar=1[m];[c][m]concat=n=2:v=1[v]" \\',
             '    -map "[v]" -c:v $VE -pix_fmt "$PIX" -an -movflags +faststart "$OUT"',
             'fi',
-            'echo "Готово (одна пересборка): $OUT"'
+            '',
+            '# Проверка декодированием: файл обязан играть дальше заставки.',
+            'ERR=$(ffmpeg -v error -ss 3 -t 3 -i "$OUT" -f null - 2>&1 || true)',
+            '[ -z "$ERR" ] || { echo "ОШИБКА: результат не декодируется — $(echo "$ERR" | head -1)"; exit 1; }',
+            'echo "Готово: $OUT"'
         ].join('\n') + '\n';
     }
 
     var joinBtn = document.getElementById('bJoin');
     function tell(msg) { document.getElementById('hint').textContent = msg; }
 
-    /* Запасной путь. Он нужен в двух случаях: страница открыта из файла
-       (file://) и браузер не даст воркеру подняться; либо склейка вышла
-       битой — в браузере пересобрать нечем, а у ffmpeg на компьютере
-       с этим проблем нет, и скрипт это умеет. */
-    function offerScript(why) {
+    /* Кнопка отдаёт скрипт, а не собирает сама.
+       Раньше сборка шла прямо здесь, в ffmpeg.wasm, и это работало — пока
+       речь была только о склейке обложки с роликом. Но графику и субтитры
+       «доложить» нельзя, их надо нарисовать поверх КАЖДОГО кадра, то есть
+       пересобрать ролик целиком. В wasm это десятки минут на вкладку;
+       у ffmpeg на маке тот же ролик проходит за минуту через VideoToolbox.
+       Поэтому путь один — скрипт, и он же честнее: видно, что происходит. */
+    joinBtn.addEventListener('click', function () {
         var url = URL.createObjectURL(new Blob([joinScript()], { type: 'text/x-shellscript' }));
         var a = document.createElement('a');
         a.href = url; a.download = 'собрать.sh'; a.click();
         setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-        tell(why + ' Скачал скрипт: положите рядом с cover.png и запустите ' +
-             '«sh собрать.sh "' + (videoName || 'ваше-видео.mp4') + '"».');
-    }
-
-    joinBtn.addEventListener('click', function () {
-        if (!videoFile) { tell('Сначала загрузите видео — кнопкой или перетащив файл в окно.'); return; }
-        if (location.protocol === 'file:') {
-            offerScript('Страница открыта из файла, сборка в браузере тут запрещена самим браузером.');
-            return;
-        }
-        joinBtn.disabled = true;
-        var t0 = Date.now();
-        var worker;
-        try {
-            worker = new Worker('join.worker.js');
-        } catch (err) {
-            joinBtn.disabled = false;
-            offerScript('Не удалось запустить сборку в браузере.');
-            return;
-        }
-        worker.onmessage = function (e) {
-            var m = e.data;
-            if (m.type === 'stage') {
-                joinBtn.textContent = m.pct + '% · ' + m.stage;
-            } else if (m.type === 'probe') {
-                tell('Ролик: ' + m.video.codec_name + ' ' + m.video.width + '×' + m.video.height +
-                     ', ' + Math.round(m.duration) + ' с. Собираю…');
-            } else if (m.type === 'done') {
-                var name = (videoName.replace(/\.[^.]+$/, '') || 'ролик') + '-с-обложкой.mp4';
-                var url = URL.createObjectURL(new Blob([m.data], { type: 'video/mp4' }));
-                var a = document.createElement('a');
-                a.href = url; a.download = name; a.click();
-                setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
-                tell('Готово: ' + name + ' за ' + Math.round((Date.now() - t0) / 1000) + ' с — ' +
-                     (m.info || '') + '. Дорожка ролика скопирована без перекодирования.');
-                joinBtn.textContent = 'Собрать с обложкой';
-                joinBtn.disabled = false;
-                worker.terminate();
-            } else if (m.type === 'error') {
-                joinBtn.textContent = 'Собрать с обложкой';
-                joinBtn.disabled = false;
-                worker.terminate();
-                offerScript('Сборка в браузере не удалась (' + m.message + ').');
-            }
-        };
-        worker.onerror = function () {
-            joinBtn.textContent = 'Собрать с обложкой';
-            joinBtn.disabled = false;
-            offerScript('Воркер сборки не запустился.');
-        };
-        tell('Собираю… первый запуск качает ядро ffmpeg (32 МБ), дальше оно из кэша.');
-        var coreURL = new URL('vendor/ffmpeg-core.js', location.href).href;
-        // Ядро читает адрес .wasm из base64-хвоста после #; без хвоста оно
-        // спотыкается на atob и лезет за несуществующим .worker.js.
-        var hash = btoa(JSON.stringify({
-            wasmURL: coreURL.replace(/\.js$/, '.wasm'), workerURL: ''
-        }));
-        Promise.all([
-            fetch('cover.png').then(function (r) { return r.arrayBuffer(); }),
-            videoFile.arrayBuffer()
-        ]).then(function (buf) {
-            var cover = new Uint8Array(buf[0]), video = new Uint8Array(buf[1]);
-            worker.postMessage({
-                coreURL: coreURL + '#' + hash, cover: cover, video: video, sec: COVER
-            }, [cover.buffer, video.buffer]);
-        }, function (err) {
-            joinBtn.disabled = false;
-            offerScript('Не удалось прочитать файлы (' + err + ').');
-        });
+        tell('Скрипт скачан. Положите его в эту же папку (рядом с cover.png и ' +
+             'overlay.mp4) и запустите: sh собрать.sh "' +
+             (videoName || 'ваше-видео.mov') + '"');
     });
 
     document.getElementById('bSubs').addEventListener('click', function () {
@@ -959,7 +878,12 @@ body.dragging #drop{display:flex}
     if (q.get('guides')) document.body.classList.add('guides');
     if (q.get('rec')) document.body.classList.add('rec');
     if (q.get('mock') === '0') document.body.classList.remove('mock');
-    if (q.get('bg') === 'none') { document.body.classList.add('transparent', 'rec'); }
+    if (q.get('bg') === 'none') {
+        document.body.classList.add('transparent', 'rec');
+        // Фон живёт ещё и на <html>: без этого снимок выходит непрозрачным,
+        // и слой нечем накладывать на видео.
+        document.documentElement.style.background = 'transparent';
+    }
     if (q.get('scrim') === '0') document.body.classList.add('no-scrim');
     if (q.get('subs') === '0') document.body.classList.add('no-subs');
     if (q.get('subY')) document.getElementById('sub').style.top = q.get('subY') + 'px';
@@ -972,7 +896,46 @@ body.dragging #drop{display:flex}
     // проигрывается системным шрифтом и «прыгает» при подмене.
     (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () {
         seek(q.get('t') ? parseFloat(q.get('t')) : 0);
-        requestAnimationFrame(frame);
+        if (!q.get('still')) requestAnimationFrame(frame);
+        window.__seek = seek;
+
+        /* Покадровый рендер слоя (tools/render_overlay.py). Время КАЖДОЙ
+           анимации выставляется явно: иначе переходы играют по реальным
+           часам браузера, а снимки идут втрое медленнее реального времени,
+           и все появления в слое размазываются. Виртуальное время браузера
+           для этого не годится — под паузой он не отдаёт снимок вообще. */
+        window.__renderAt = function (time) {
+            seek(time);
+            if (!document.getAnimations) return;
+            document.getAnimations().forEach(function (an) {
+                var el = an.effect && an.effect.target;
+                if (!el) return;
+                var name = an.animationName || '';
+                var start = null, host, list, i;
+                if (name.indexOf('hot') === 0) {
+                    host = el.closest('[data-hl]');
+                    if (host) {
+                        list = host.getAttribute('data-hl').split(/\s+/).map(parseFloat);
+                        for (i = 0; i < list.length; i++) {
+                            if (time >= list[i] && time < list[i] + HOT) start = list[i];
+                        }
+                    }
+                } else if (name === 'era') {
+                    host = el.closest('[data-in]');
+                    if (host) start = parseFloat(host.getAttribute('data-in')) + 1.1;
+                } else if (el.id === 'sub') {
+                    for (i = 0; i < SUBS.length; i++) {
+                        if (time >= SUBS[i][0] && time < SUBS[i][1]) { start = SUBS[i][0]; break; }
+                    }
+                } else {
+                    host = el.closest('[data-in]');
+                    if (host) start = parseFloat(host.getAttribute('data-in'));
+                }
+                if (start === null) return;
+                an.pause();
+                try { an.currentTime = Math.max(0, (time - start) * 1000); } catch (ignored) {}
+            });
+        };
         window.__ready = true;
     });
 })();

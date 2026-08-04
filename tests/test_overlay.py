@@ -162,7 +162,7 @@ def test_subs_follow_the_transcript():
         "при нарезке потерялись или задвоились слова сценария"
 
 
-# ── FR-SITE23: обложка и сборка ──────────────────────────────────────────
+# ── FR-SITE23: обложка, слой графики и сборка ────────────────────────────
 
 def test_cover_precedes_the_clip():
     """Обложка идёт ПЕРЕД роликом, поэтому мастер-время сдвинуто на COVER,
@@ -173,87 +173,59 @@ def test_cover_precedes_the_clip():
     assert os.path.exists(os.path.join(os.path.dirname(_OVERLAY), "cover.png")), \
         "нет файла обложки рядом со страницей"
     assert "var vt = time - COVER;" in html, "время видео не сдвинуто на заставку"
-    # На заставке ни графики, ни субтитров, ни скрима.
     assert "body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim{display:none}" in html
 
 
-def test_join_runs_in_the_browser_and_copies_the_clip():
-    """Кнопка собирает файл сама, в воркере с ядром ffmpeg, и КОПИРУЕТ дорожку
-    ролика: перекодировать весь исходник ради секунды заставки — потерять
-    качество."""
+def test_rendered_layer_is_present_and_split():
+    """Слой графики отрендерен заранее и лежит ДВУМЯ файлами: прозрачности в
+    mp4 нет, webm с альфой собирается не везде, а две дорожки в одном mp4 не
+    переживают ремукс — это проверено, файл переставал декодироваться."""
     base = os.path.dirname(_OVERLAY)
-    with open(os.path.join(base, "join.worker.js"), encoding="utf-8") as f:
-        w = f.read()
-
-    assert "'-f', 'concat'" in w and "'-c', 'copy'" in w, \
-        "сборка обязана быть склейкой потоков без перекодирования"
-    assert "importScripts('vendor/ffmpeg-core.js')" in w, "ядро должно браться локально"
-    for f_ in ("vendor/ffmpeg-core.js", "vendor/ffmpeg-core.wasm"):
-        assert os.path.exists(os.path.join(base, f_)), "нет файла ядра %s" % f_
-    assert os.path.getsize(os.path.join(base, "vendor/ffmpeg-core.wasm")) > 10 << 20, \
-        "ядро подозрительно маленькое — похоже, положили заглушку"
+    for name in ("overlay_c.mp4", "overlay_a.mp4"):
+        path = os.path.join(base, name)
+        assert os.path.exists(path), "нет файла слоя %s" % name
+        assert os.path.getsize(path) > 200 << 10, "%s подозрительно маленький" % name
 
 
-def test_cover_is_encoded_in_the_clips_own_codec():
-    """Первая версия кодировала обложку всегда в libx264. На H.265-ролике
-    склейка возвращала 0 и отдавала файл, где дорожка объявлена h264, а пакеты
-    внутри h265: плеер показывал секунду заставки и глох, файл весил втрое
-    меньше исходника. Обложка обязана кодироваться кодеком РОЛИКА."""
-    base = os.path.dirname(_OVERLAY)
-    with open(os.path.join(base, "join.worker.js"), encoding="utf-8") as f:
-        w = f.read()
-    assert "codec_name" in w, "воркер не читает кодек ролика"
-    assert "ENCODER[v.codec_name]" in w, "кодировщик обложки не выбирается по кодеку ролика"
-    assert re.search(r"var ENCODER = \{[^}]*h264:\s*'libx264'", w), "нет пары h264 → libx264"
-    # libx265 в браузере запрещён: в wasm он не уложился и в десять минут.
-    # Ищем именно строковый литерал — в комментарии-то он упомянут, и правильно.
-    assert "'libx265'" not in w, \
-        "libx265 в wasm слишком медленный, кодировать им в браузере нельзя"
+def test_page_can_be_rendered_frame_by_frame():
+    """Слой рендерится покадрово, и время КАЖДОЙ анимации выставляется явно:
+    иначе переходы играют по часам браузера, снимки идут медленнее реального
+    времени, и все появления в слое размазываются."""
+    html = _html()
+    assert "window.__renderAt" in html, "нет точки входа покадрового рендера"
+    assert "an.currentTime" in html, "время анимаций не выставляется явно"
+    assert "document.documentElement.style.background = 'transparent'" in html, \
+        "фон <html> не снят — снимок выйдет непрозрачным и слой нечем накладывать"
 
 
-def test_join_verifies_by_decoding():
-    """Склейка потоков умеет вернуть 0 и уложить пакеты ролика под параметры
-    декодера обложки: файл выходит нужного веса и длины, а плеер показывает
-    одну заставку. Размер и длительность такое пропускают — ловит только
-    попытка ДЕКОДИРОВАТЬ то, что вышло."""
-    base = os.path.dirname(_OVERLAY)
-    with open(os.path.join(base, "join.worker.js"), encoding="utf-8") as f:
-        w = f.read()
-    assert "длительность не сошлась" in w, "нет сверки длительности результата"
-    assert "меньше исходника" in w, "нет сверки размера результата"
-    assert "'-f', 'null'" in w, "результат не проверяется декодированием"
-    assert "не декодируется после заставки" in w, "нет разбора ошибок декодирования"
-    assert w.index("'-f', 'null'") < w.index("type: 'done'"), \
-        "проверка должна идти ДО выдачи файла"
-
-
-def test_script_rebuilds_when_copy_does_not_decode():
-    """У скрипта ffmpeg настоящий, поэтому он не отказывает, а пересобирает —
-    один раз, с запасом по битрейту, аппаратно если на маке есть VideoToolbox."""
+def test_script_burns_the_layer_into_the_frame():
+    """Графику и субтитры нельзя доложить копированием дорожки — их надо
+    нарисовать поверх каждого кадра. Значит одна пересборка, аппаратная где
+    можно, с проверкой результата декодированием."""
     body = _html()
     body = body[body.index("function joinScript()"):body.index("var joinBtn")]
-    assert "-f null" in body, "скрипт не проверяет результат декодированием"
+    assert "alphamerge" in body, "слой не сшивается из цвета и маски"
+    assert "shortest=1" in body, \
+        "без shortest длительность тянется по слою и короткий ролик раздувается"
+    assert "overlay_c.mp4" in body and "overlay_a.mp4" in body, "слой не подключён"
     assert "videotoolbox" in body, "на маке пересборка должна идти аппаратно"
-    assert "concat=n=2:v=1:a=1" in body, "нет запасного пути с пересборкой"
-    assert body.index("-c copy") < body.index("concat=n=2"), \
-        "сначала пробуем без перекодирования, пересборка — только если не вышло"
     assert "$ROT" in body, "поворот кадра не учитывается"
-
-
-def test_join_falls_back_when_worker_is_impossible():
-    """Из file:// браузер не даст поднять воркер. Тогда кнопка обязана отдать
-    тот же конвейер командой, а не оставить человека ни с чем."""
-    html = _html()
-    assert "location.protocol === 'file:'" in html, "нет проверки на file://"
-    assert "function offerScript" in html, "нет запасного пути со скриптом"
-    body = html[html.index("function joinScript()"):html.index("var joinBtn")]
-    assert "-f concat" in body and "-c copy" in body, \
-        "запасной скрипт тоже должен копировать дорожку, а не пережимать"
+    assert "-f null" in body, "результат не проверяется декодированием"
     assert "command -v ffmpeg" in body, "скрипт должен сам сообщать о недостающих зависимостях"
-    assert "VENC=libx264" in body and "VENC=libx265" in body, \
-        "у скрипта ffmpeg настоящий — он обязан уметь и H.265, ради которого его и предлагают"
-    launcher = os.path.join(os.path.dirname(_OVERLAY), "Запустить.command")
-    assert os.path.exists(launcher), "нет лаунчера локального сервера для офлайн-папки"
+
+
+def test_button_hands_over_the_script():
+    """Сборка в браузере убрана намеренно: вжигание графики — это пересборка
+    всего ролика, в wasm это десятки минут на вкладку."""
+    html = _html()
+    assert "joinScript()" in html and "'собрать.sh'" in html, "кнопка не отдаёт скрипт"
+    base = os.path.dirname(_OVERLAY)
+    assert not os.path.exists(os.path.join(base, "vendor")), \
+        "остался неиспользуемый ffmpeg.wasm — 32 МБ мёртвого груза"
+    assert not os.path.exists(os.path.join(base, "join.worker.js")), \
+        "остался воркер сборки, которого больше нет в схеме"
+    assert os.path.exists(os.path.join(base, "Запустить.command")), \
+        "нет лаунчера локального сервера для офлайн-папки"
 
 
 # ── FR-SITE23: служебный интерфейс не попадает в кадр ────────────────────
