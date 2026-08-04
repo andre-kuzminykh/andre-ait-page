@@ -684,16 +684,6 @@ window.addEventListener('load', function(){
     var w = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
     return w > 0 ? w : Infinity;
   }
-  // Живёт ли элемент ВНУТРИ родителя по вертикали. Подпись под кружком
-  // радиальной схемы вынесена под него намеренно и шире кружка по замыслу —
-  // ужимать её нельзя. Заголовок карточки лежит внутри карточки, и если он
-  // шире её, это уже дефект.
-  function insideParent(el){
-    var p = el.parentNode;
-    if(!p || p.nodeType !== 1) return false;
-    var er = el.getBoundingClientRect(), pr = p.getBoundingClientRect();
-    return er.top >= pr.top - 1 && er.bottom <= pr.bottom + 1;
-  }
   function measure(text, cs){
     if(!MEASURE) return 0;
     MEASURE.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
@@ -734,16 +724,21 @@ window.addEventListener('load', function(){
       if(w > need) need = w;
     }
     if(!need) return null;
-    // Что считать рамкой. Минимум из своей и родительской ширины брать НЕЛЬЗЯ:
-    // подпись под кружком радиальной схемы намеренно шире кружка, и такое
-    // правило ужимало её с 14 до 6 px.
-    //   · текст не влезает в СВОЮ коробку → рамка своя;
-    //   · коробка сама по тексту (бейдж «Мы здесь») и шире колонки → рамка колонки;
-    //   · иначе элемент шире родителя по замыслу — не трогаем.
+    // Что считать рамкой.
+    //   · Коробка «по тексту» (заголовок карточки с запретом переноса, бейдж
+    //     «Мы здесь») рамкой быть НЕ может: ужимаешь кегль — коробка ужимается
+    //     следом, и подгонка гонится за убегающей целью, каждый раз промахиваясь
+    //     ровно на зазор. Для таких рамка — родительская карточка.
+    //   · Иначе рамка своя, если текст в неё не влезает.
+    //   · Подпись под кружком радиальной схемы шире кружка ПО ЗАМЫСЛУ: её
+    //     коробка широкая и текста не касается — такие не трогаем вовсе.
     var own = boxW(el), par = boxW(el.parentNode), avail;
-    if(isFinite(own) && need > own) avail = own;
-    else if(isFinite(own) && isFinite(par) && own > par && insideParent(el)) avail = par;
-    else return null;
+    var hugs = isFinite(own) && Math.abs(own - need) < 24;
+    if(hugs){
+      if(isFinite(par) && need > par) avail = par; else return null;
+    } else if(isFinite(own) && need > own){
+      avail = own;
+    } else return null;
     if(!isFinite(avail) || avail <= 4 || need <= avail) return null;
     return { size: size, need: need, avail: avail };
   }
