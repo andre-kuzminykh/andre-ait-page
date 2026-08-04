@@ -290,12 +290,22 @@ h1 .text-solar, h2 .text-solar {
 .slide-container .content-z *::after,
 .slide-container .content-z *:hover::before,
 .slide-container .content-z *:hover::after { transition: none !important; }
-.slide-container *:hover,
-.slide-container *:focus,
-.slide-container *:focus-visible,
-.slide-container *:active {
-  transform: none !important;
-  filter: none !important;
+/* Гасим ТОЛЬКО hover-трансформы, объявленные самим элементом. Раньше здесь
+   стоял сплошной `transform:none` по любому :hover — и он снимал ПОСТОЯННЫЕ
+   трансформы тоже: подсвеченная карточка (`md:scale-105`, `md:scale-110`) под
+   курсором ужималась до обычного размера, спутник радиальной схемы прыгал на
+   полразмера от снятого центрирования. Со стороны это и есть «дёргается при
+   наведении». Теперь целимся ровно в hover:-утилиты (FR-LECTURE-20). */
+.slide-container [class*="hover:scale"]:hover,
+.slide-container [class*="hover:translate"]:hover,
+.slide-container [class*="hover:-translate"]:hover,
+.slide-container [class*="hover:rotate"]:hover,
+.slide-container [class*="hover:skew"]:hover,
+.slide-container [class*="hover:scale"]:focus-visible,
+.slide-container [class*="hover:translate"]:focus-visible,
+.slide-container [class*="hover:-translate"]:focus-visible,
+.slide-container [class*="hover:rotate"]:focus-visible,
+.slide-container [class*="hover:skew"]:focus-visible {
   --tw-translate-x: 0 !important;
   --tw-translate-y: 0 !important;
   --tw-scale-x: 1 !important;
@@ -304,9 +314,34 @@ h1 .text-solar, h2 .text-solar {
   --tw-skew-x: 0 !important;
   --tw-skew-y: 0 !important;
 }
+.slide-container *:hover,
+.slide-container *:focus,
+.slide-container *:focus-visible,
+.slide-container *:active { filter: none !important; }
 
 /* Стартовый оверлей убран — портал автозапускает деку */
 #start-overlay { display:none !important; }
+
+/* Тройки плиток: на ГОРИЗОНТАЛЬНОМ экране — в ряд, на вертикальном — друг за
+   другом (FR-LECTURE-35). Ширина здесь плохой критерий: телефон в альбомной
+   ориентации (844×390) шире планшета в портретной (768×1024), а раскладка
+   нужна ровно обратная — из-за этого на промежуточных ширинах сетка 2×2
+   оставляла третью карточку одну, с пустым местом рядом.
+   Ловим только «переключатели» — элементы, у которых объявлены ОБА варианта
+   (`flex-col` + `md:flex-row`, `grid-cols-1` + `md:grid-cols-3`): постоянные
+   flex-row (иконка + подпись) трогать нельзя. */
+@media (orientation: landscape){
+  .slide-container [class*="flex-col"][class*="flex-row"]{ flex-direction:row !important; }
+  .slide-container [class*="flex-col"][class*="grid-cols-3"]{ display:grid !important; }
+  .slide-container [class*="grid-cols-3"]{ grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+  .slide-container [class*="grid-cols-4"]{ grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
+}
+@media (orientation: portrait){
+  .slide-container [class*="flex-col"][class*="flex-row"]{ flex-direction:column !important; }
+  .slide-container [class*="flex-col"][class*="grid-cols-3"]{ display:flex !important; flex-direction:column !important; }
+  .slide-container [class*="grid-cols-1"][class*="grid-cols-3"]{ grid-template-columns:minmax(0,1fr) !important; }
+  .slide-container [class*="grid-cols-2"][class*="grid-cols-4"]{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+}
 
 /* Колонки flex/grid могут ужиматься — нет горизонтального переполнения (FR-LECTURE-08) */
 .slide-container [class*="grid-cols"] > *,
@@ -442,11 +477,12 @@ h1 .text-solar, h2 .text-solar {
         dashoffset, поэтому рисуем штрих фоном-градиентом и гоняем его
         background-position. Класс вешается на разметку точечно. */
   @keyframes dashFlow { to { background-position:22px 0; } }
+  /* Пунктир обратной связи РИСУЕМ, но не гоняем: бегущая линия читалась как
+     мигание и отвлекала от слайда (правка заказчика). */
   .anim-dash{
     border-top-color:transparent !important;
     background-image:linear-gradient(90deg,currentColor 0 11px,transparent 11px 22px);
     background-size:22px 2px; background-repeat:repeat-x; background-position:0 0;
-    animation:dashFlow 1.2s linear infinite;
   }
 
   /* 3. Иконки проявляются вместе со своим блоком — короткий «выдох» после
@@ -525,6 +561,14 @@ html.dark [class*="border-black"] { border-color:rgba(255,255,255,0.18) !importa
 #lecture-header .lec-consult:hover{ transform:translateY(-1px); box-shadow:0 14px 30px -6px rgba(139,92,246,.6); }
 html.dark #lecture-header .lec-ctrl{ background:#141414; color:#fafafa; border-color:rgba(255,255,255,.18); box-shadow:0 6px 16px rgba(0,0,0,.5); }
 html.dark #lecture-header .lec-ctrl:hover{ background:#1f1f1f; }
+/* Кнопка «Практическое задание»: та же капсула, что и лек-кнопки, но с подписью.
+   На узких экранах остаётся только иконка — шапка не переполняется. */
+#lecture-header .lec-task, #lecture-header .lec-lbl{ width:auto; padding:0 clamp(.8rem,2.8vw,1.15rem); gap:.45rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:clamp(10px,2.6vw,12px); text-decoration:none; }
+#lecture-header .lec-task i, #lecture-header .lec-lbl i{ font-size:clamp(1.05rem,4vw,1.2rem); }
+@media (max-width:640px){
+  #lecture-header .lec-task, #lecture-header .lec-lbl{ width:clamp(2.3rem,9vw,3rem); padding:0; }
+  #lecture-header .lec-task span, #lecture-header .lec-lbl span{ display:none; }
+}
 </style>
 <script id="portal-theme">
 (function(){
@@ -594,31 +638,116 @@ window.addEventListener('load', function(){
     }
     return (bot > top) ? { h: bot - top, w: w, top: top, bottom: bot, left: left, right: right } : null;
   }
+
+  // ── Ни одно слово не шире своей колонки (FR-LECTURE-34) ─────────────────
+  // Плитки свёрстаны фиксированными кеглями Tailwind. На части ширин длинное
+  // русское слово («Механизация», «Исследования», «Ограничение») в колонку не
+  // влезает и ведёт себя одинаково плохо: либо выходит за карточку и наезжает
+  // на соседнюю, либо рубится по мягкому переносу («ОПТИ-МИЗАЦИЯ», «AI-Drive
+  // n»). Общий масштаб слайда (zoom) тут не помогает: он ужимает и колонку, и
+  // текст в одинаковой пропорции, поэтому слово не влезает при любом zoom.
+  // Единственный рычаг — кегль САМОГО элемента: уменьшаем его, пока самое
+  // длинное слово не поместится в строку.
+  var MEASURE = null;
+  try { MEASURE = document.createElement('canvas').getContext('2d'); } catch(e){}
+  var TEXT_SEL = 'h1,h2,h3,h4,h5,h6,p,li,span,div,a,strong,em,button,td,th';
+  // Нижняя граница — АБСОЛЮТНАЯ, а не доля: крупному заголовку падение с 64 до
+  // 14 px не вредит, а подписи в 10 px нельзя уходить ниже 6. Доля тут врала:
+  // «Исследования и разработки» упиралось в 0.45×64 = 28.8 px и всё равно не
+  // влезало в колонку.
+  var MIN_PX    = 6;    // мельче не читается вовсе
+  var FLOOR_CAP = 14;   // ниже этого крупный текст не опускаем
+
+  // Собственный текст элемента: то, что он рисует сам, без вложенных блоков.
+  function ownText(el){
+    var out = '', n;
+    for(n = el.firstChild; n; n = n.nextSibling){
+      if(n.nodeType === 3) out += n.nodeValue;
+      else if(n.nodeType === 1 && n.tagName !== 'BR'){
+        var d = window.getComputedStyle(n).display;
+        if(d === 'inline' || d === 'inline-block') out += n.textContent;
+      }
+    }
+    // мягкий перенос при измерении не считаем — мы как раз и хотим,
+    // чтобы слово уместилось целиком и переносом не воспользовалось
+    return out.replace(/­/g, '').replace(/\s+/g, ' ').trim();
+  }
+  function contentW(el){
+    if(!el) return Infinity;
+    var cs = window.getComputedStyle(el);
+    var w = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    return w > 0 ? w : Infinity;
+  }
+  function measure(text, cs){
+    if(!MEASURE) return 0;
+    MEASURE.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    var w = MEASURE.measureText(text).width;
+    var ls = parseFloat(cs.letterSpacing);        // трекинг canvas не учитывает
+    if(ls) w += ls * text.length;
+    return w;
+  }
+  function fitEl(el){
+    var cs = window.getComputedStyle(el);
+    if(cs.display === 'inline' || cs.display === 'none') return;
+    var txt = ownText(el);
+    if(!txt) return;
+    var base = el.getAttribute('data-fs0');
+    if(base === null){ el.setAttribute('data-fs0', parseFloat(cs.fontSize)); }
+    else if(el.style.fontSize){ el.style.fontSize = ''; cs = window.getComputedStyle(el); }
+    var size = parseFloat(cs.fontSize);
+    if(!size) return;
+    // Строка целиком — если перенос запрещён; иначе достаточно самого
+    // длинного слова: остальное браузер перенесёт по пробелам.
+    var nowrap = cs.whiteSpace === 'nowrap' || cs.whiteSpace === 'pre';
+    var need;
+    if(nowrap){ need = measure(txt, cs); }
+    else {
+      var parts = txt.split(' '), i, m = 0, w;
+      for(i = 0; i < parts.length; i++){
+        w = measure(parts[i], cs);
+        if(w > m) m = w;
+      }
+      need = m;
+    }
+    if(!need) return;
+    // Место — минимум из собственной ширины и ширины родительской колонки:
+    // у плашек с shrink-to-fit (бейдж «Мы здесь») собственная ширина равна
+    // тексту, и переполнения у себя они не видят — оно у колонки.
+    var avail = Math.min(contentW(el), contentW(el.parentNode));
+    if(!isFinite(avail) || avail <= 4){ el.style.overflowWrap = ''; return; }
+    if(need <= avail){ el.style.overflowWrap = ''; return; }
+    var floor = Math.max(MIN_PX, Math.min(size * 0.4, FLOOR_CAP));
+    var want = size * (avail / need);
+    el.style.fontSize = Math.max(floor, want) + 'px';
+    // Кружок спутника радиальной схемы бывает уже, чем «Мультимодальность»
+    // даже на нижнем кегле. Тогда выбираем меньшее зло: перенос ВНУТРИ
+    // кружка вместо слова, вылезающего на соседний.
+    el.style.overflowWrap = (want < floor) ? 'anywhere' : '';
+  }
+  function textFit(slide){
+    var c = slide.querySelector('.content-z');
+    if(!c || !MEASURE) return;
+    var els = c.querySelectorAll(TEXT_SEL), i;
+    for(i = 0; i < els.length; i++) fitEl(els[i]);
+  }
+
   function fitOne(slide){
     var c = slide.querySelector('.content-z');
     if(!c) return;
     try{
+      // Сначала кегли, потом общий масштаб: подгонка шрифта меняет высоту
+      // чернил, и считать zoom до неё бессмысленно.
+      textFit(slide);
       c.style.zoom = '';
       c.style.minHeight = '';
       c.style.width = '';
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
-      // Панель с текстом открыта: слайд физически уже, но перестраивать
-      // раскладку под узкую колонку НЕЛЬЗЯ — Tailwind-сетки схлопывались,
-      // колонки сжимались до нечитаемых, и текст наезжал сам на себя.
-      // Поэтому весь расчёт ведём так, БУДТО ПАНЕЛИ НЕТ (widthV), получаем ту
-      // же раскладку, что и при закрытой панели, а в конце фиксируем её и
-      // домножаем масштаб на долю оставшейся ширины: элементы те же, просто
-      // меньше. Пинить ширину заранее нельзя — она сама зависит от масштаба.
-      var panelW = 0;
-      if(document.body.classList.contains('notes-open') && window.innerWidth >= 1024){
-        var pnl = document.getElementById('notes-panel');
-        if(pnl) panelW = pnl.getBoundingClientRect().width;
-      }
-      var widthV = availW + panelW;
-      var sst = window.getComputedStyle(slide);
-      var slidePadX = (parseFloat(sst.paddingLeft) || 0) + (parseFloat(sst.paddingRight) || 0);
-      var czMax = parseFloat(window.getComputedStyle(c).maxWidth);
+      // Панель с текстом раскладку больше НЕ трогает: слайд остаётся полной
+      // ширины, а содержимое уезжает вправо и уменьшается чистым CSS-трансформом
+      // (--fit-shrink). Поэтому здесь про панель знать нечего — считаем всегда
+      // по полной ширине, и открытие панели не вызывает ни одного пересчёта.
+      var widthV = availW;
       // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
       // offsetHeight/scrollHeight тут врут: у content-z стоит min-height:100%,
       // поэтому offsetHeight всегда равен высоте слайда, а scrollHeight не
@@ -644,9 +773,7 @@ window.addEventListener('load', function(){
         return grow ? Math.min(t, growCap()) : Math.min(t, 1);
       }
       var z = target(ink.h, ink.w);
-      // При открытой панели ранний выход НЕЛЬЗЯ: ширина уже узкая, раскладка
-      // перестроена, и без финальной компенсации карточки остаются пережатыми.
-      if(z > 0.999 && z < 1.04 && !panelW) return;
+      if(z > 0.999 && z < 1.04) return;
       apply(z);
       // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
       // и natH меняется. Делить на z тут НЕЛЬЗЯ: inkBox меряет offsetHeight,
@@ -661,22 +788,9 @@ window.addEventListener('load', function(){
         z = next;
         apply(z);
       }
-      // Раскладка сошлась в «полной» ширине — фиксируем её и ужимаем только
-      // масштабом, чтобы контент влез в оставшуюся от панели полосу.
-      if(panelW > 0) apply(z * availW / widthV, true);
     }catch(e){}
 
-    function apply(z, keepWidth){
-      // Пока идёт схождение, ширину контента держим такой, какой она была бы
-      // БЕЗ панели: доступная полоса, делённая на текущий масштаб (именно так
-      // её и считает браузер при закрытой панели). Ширина зависит от масштаба,
-      // поэтому пересчитываем на каждой итерации, а не пиним заранее.
-      // На последнем шаге ширину уже не трогаем: раскладка сошлась, и меняется
-      // только масштаб.
-      if(panelW > 0 && !keepWidth){
-        var wv = (widthV - slidePadX) / z;
-        c.style.width = (isNaN(czMax) ? wv : Math.min(wv, czMax)) + 'px';
-      }
+    function apply(z){
       c.style.zoom = z;
       // zoom масштабирует и рамку content-z. У неё min-height:100% = высота
       // слайда, после zoom это 900×z — слайд (overflow-y:auto) становится
@@ -704,10 +818,29 @@ window.addEventListener('load', function(){
       }
     }
   }
+  // Во сколько раз ужимается содержимое, когда слева встаёт панель с текстом.
+  // Считаем ДО начала анимации, чтобы слайд и панель ехали одним движением.
+  function syncShrink(){
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    var pnl = document.getElementById('notes-panel');
+    var pw = (document.body.classList.contains('notes-open') && window.innerWidth >= 1024 && pnl)
+      ? pnl.offsetWidth : 0;
+    document.body.style.setProperty('--fit-shrink', vw ? (vw - pw) / vw : 1);
+  }
+  window.syncNotesShrink = syncShrink;
+
   var t;
-  function soon(){ clearTimeout(t); t = setTimeout(fitAll, 60); }
+  // Активный слайд подгоняем сразу в том же кадре — иначе при перетаскивании
+  // окна зритель успевает увидеть «непопавшую» раскладку, и она прыгает на
+  // место только через паузу. Остальные 41 слайд догоняют с задержкой.
+  function soon(){
+    syncShrink();
+    var live = document.querySelector('.slide-container.opacity-100');
+    if(live) fitOne(live);
+    clearTimeout(t); t = setTimeout(fitAll, 60);
+  }
   window.addEventListener('load', function(){
-    fitAll(); markActive();
+    syncShrink(); fitAll(); markActive();
     if(typeof window.updateSlides === 'function'){
       var orig = window.updateSlides;
       window.updateSlides = function(){
@@ -761,7 +894,7 @@ window.addEventListener('load', function(){
             <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
         </a>
         <div class="lec-right">
-            <button id="notes-toggle" class="lec-ctrl" type="button" aria-label="Текст к слайду" aria-expanded="false"><i class="ph-fill ph-book-open-text"></i></button>
+            <button id="notes-toggle" class="lec-ctrl lec-lbl" type="button" aria-label="Текст к слайду" aria-expanded="false"><i class="ph-fill ph-book-open-text"></i><span>Текст</span></button>
             <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить тему (тёмная/светлая)"><i class="ph-fill ph-moon"></i></button>
             <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Консультация <i class="ph-bold ph-arrow-right"></i></a>
         </div>
@@ -2226,19 +2359,9 @@ html:not(.dark) .slide-container [class*="text-black/4"]{ color:rgba(0,0,0,.58) 
 html.dark .slide-container [class*="text-white/3"],
 html.dark .slide-container [class*="text-white/4"]{ color:rgba(255,255,255,.62) !important; }
 
-/* 21. ПРИЧИНА «скачков при наведении» на радиальных схемах: portal-deck гасит
-   любой transform на :hover, включая тот, которым элемент ЦЕНТРИРУЕТСЯ
-   (-translate-x-1/2). Спутник под курсором прыгал на полразмера.
-   Возвращаем именно центрирующий сдвиг. */
-.slide-container [class*="-translate-x-1/2"][class*="-translate-y-1/2"]:hover{
-  transform:translate(-50%,-50%) !important;
-}
-.slide-container [class*="-translate-x-1/2"]:not([class*="-translate-y-1/2"]):hover{
-  transform:translateX(-50%) !important;
-}
-.slide-container [class*="-translate-y-1/2"]:not([class*="-translate-x-1/2"]):hover{
-  transform:translateY(-50%) !important;
-}
+/* 21. Компенсация центрирующего сдвига на :hover больше не нужна: сплошной
+   `transform:none` убран (см. FR-LECTURE-20 выше), постоянные трансформы
+   при наведении никто не снимает, и возвращать нечего. */
 
 /* 22. Автоперенос рвал русские слова без дефиса («Неформализован/ные»):
    у браузера нет словаря переносов для русского. Переносим только по
@@ -2480,20 +2603,20 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 
 /* --- Раскладка при открытой панели --- */
 /* Десктоп: панель слева, инфографика и прогресс сдвигаются вправо на её ширину */
+/* Раньше слайд физически сужался (left/width), раскладка перестраивалась под
+   узкую колонку, и зритель успевал увидеть «неправильный» кадр до того, как
+   portal-fit пересчитает масштаб. Теперь слайд остаётся во всю ширину, а
+   содержимое одной анимацией уезжает вправо и уменьшается ровно во столько
+   раз, во сколько сузилась свободная полоса: раскладка не меняется ВООБЩЕ,
+   меняется только размер (FR-LECTURE-33). --fit-shrink считает скрипт. */
+.content-z{ transform-origin:center center; transition:transform .38s cubic-bezier(.22,1,.36,1); }
 @media (min-width:1024px){
-  body.notes-open .slide-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
+  body.notes-open .slide-container .content-z{
+    transform:translateX(calc(var(--notes-w) / 2)) scale(var(--fit-shrink,1));
+  }
   body.notes-open #progress-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
 }
-/* Слайд стал уже — слова НЕ должны рваться посреди («Автономност|ь»).
-   Переносим только по пробелам, а вписывание берёт на себя portal-fit (zoom). */
-@media (min-width:1024px){
-  body.notes-open .slide-container h1, body.notes-open .slide-container h2,
-  body.notes-open .slide-container h3, body.notes-open .slide-container h4,
-  body.notes-open .slide-container p,  body.notes-open .slide-container li,
-  body.notes-open .slide-container span{
-    overflow-wrap:normal !important; word-break:normal !important; hyphens:none !important;
-  }
-}
+@media (prefers-reduced-motion: reduce){ .content-z{ transition:none; } }
 /* Мобилка: панель на весь экран поверх всего */
 @media (max-width:1023px){
   #notes-panel{ width:100%; border-right:none; }
@@ -2597,7 +2720,7 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
     document.body.classList.toggle('notes-open', open);
     panel.setAttribute('aria-hidden', open ? 'false' : 'true');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.innerHTML = '<i class="ph-fill ph-book-open-text"></i>';
+    toggle.innerHTML = '<i class="ph-fill ph-book-open-text"></i><span>Текст</span>';
     if(open) render(activeIdx());
     // Пересчёт вписывания слайда: ширина слайда изменилась (portal-fit слушает resize)
     setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 40);
