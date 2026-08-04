@@ -324,12 +324,7 @@ body.dragging #drop{display:flex}
        Обрезка кадра — это всегда перекодирование: копированием дорожки
        картинку не подрежешь. Зато на маке это идёт аппаратно. */
     function script() {
-        var list = pieces() || [];
-        var starts = list.map(function (p) { return p[0].toFixed(2); }).join(' ');
-        // Пустой конец = «до конца ролика»: длину посчитает сам ffmpeg.
-        var ends = list.map(function (p) {
-            return (!isFinite(p[1]) || (dur && p[1] >= dur)) ? '' : p[1].toFixed(2);
-        }).join(' ');
+        var raw = (cuts.value || '').replace(/\s+/g, '');
         return [
             '#!/bin/sh',
             '# Нарезка ролика на квадратные куски 1080×1080.',
@@ -340,15 +335,30 @@ body.dragging #drop{display:flex}
             '# не подрежешь. На маке идёт аппаратно, через VideoToolbox.',
             '#',
             '# Запуск:  sh нарезать.sh "ваш клип.MOV"',
+            '# Другие секунды — вторым аргументом, страница для этого не нужна:',
+            '#          sh нарезать.sh "ваш клип.MOV" "12;45;1:20"',
+            '# Другое положение квадрата — третьим (доля высоты кадра, 0…1).',
             'set -e',
             'command -v ffmpeg  >/dev/null || { echo "Нет ffmpeg. macOS: brew install ffmpeg"; exit 1; }',
             'command -v ffprobe >/dev/null || { echo "Нет ffprobe — он ставится вместе с ffmpeg"; exit 1; }',
             'VIDEO="${1:-' + (fileName || 'video.mp4') + '}"',
             '[ -f "$VIDEO" ] || { echo "Не найден файл: $VIDEO"; exit 1; }',
             'BASE="${VIDEO%.*}"',
-            'TOP=' + (frac()).toFixed(4) + '        # доля высоты кадра, где начинается квадрат',
-            'STARTS="' + starts + '"',
-            'ENDS="' + ends + '"        # пусто = до конца ролика',
+            'CUTS="${2:-' + raw + '}"        # секунды реза через «;», можно мм:сс',
+            'TOP="${3:-' + (frac()).toFixed(4) + '}"        # доля высоты кадра, где начинается квадрат',
+            '',
+            '# «12;45;1:20» → границы кусков. Точки сортируются: «45;12» иначе дало бы',
+            '# кусок отрицательной длины.',
+            "sec() { echo \"$1\" | awk -F: '{ s=0; for(i=1;i<=NF;i++) s=s*60+$i; printf \"%.2f\", s }'; }",
+            'PTS=""',
+            'OLD=$IFS; IFS=";"',
+            'for c in $CUTS; do',
+            '  if [ -n "$c" ]; then PTS="$PTS $(sec "$c")"; fi',
+            'done',
+            'IFS=$OLD',
+            'if [ -n "$PTS" ]; then PTS=$(printf "%s\\n" $PTS | sort -n | tr "\\n" " "); fi',
+            'STARTS="0.00 $PTS"',
+            'ENDS="$PTS"        # на один короче STARTS: пусто = до конца ролика',
             '',
             'p()  { ffprobe -v error -select_streams "$1" -show_entries stream="$2" -of csv=p=0 "$VIDEO"; }',
             'pf() { ffprobe -v error -show_entries format="$1" -of csv=p=0 "$VIDEO"; }',
@@ -378,7 +388,7 @@ body.dragging #drop{display:flex}
             'i=0',
             'for A in $STARTS; do',
             '  i=$((i+1))',
-            '  B=$(echo "$ENDS" | cut -d" " -f$i)',
+            '  B=$(echo "$ENDS" | awk -v i="$i" \'{print $i}\')',
             '  OUT="$BASE-кв-$i.mp4"',
             '  if [ -n "$B" ]; then',
             "    LEN=$(awk -v a=\"$A\" -v b=\"$B\" 'BEGIN{ printf \"%.3f\", b-a }')",
