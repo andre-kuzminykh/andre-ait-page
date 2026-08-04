@@ -760,15 +760,24 @@ body.dragging #drop{display:flex}
             'p() { ffprobe -v error -select_streams "$1" -show_entries stream="$2" -of csv=p=0 "$VIDEO"; }',
             'W=$(p v:0 width);  H=$(p v:0 height)',
             'FPS=$(p v:0 r_frame_rate); PIX=$(p v:0 pix_fmt)',
+            'VCODEC=$(p v:0 codec_name); VTAG=$(p v:0 codec_tag_string)',
             'AR=$(p a:0 sample_rate); AC=$(p a:0 channels)',
             ': "${AR:=48000}"; : "${AC:=2}"',
             '[ "$AC" = 1 ] && CL=mono || CL=stereo',
+            '# Обложку кодируем ТЕМ ЖЕ кодеком: иначе склейка соберёт файл,',
+            '# где дорожка объявлена h264, а пакеты внутри h265, и плеер',
+            '# покажет только заставку.',
+            'case "$VCODEC" in',
+            '  h264) VENC=libx264; CRF=14 ;;',
+            '  hevc) VENC=libx265; CRF=20 ;;',
+            '  *) echo "Дорожка в кодеке $VCODEC — обложку под неё не подобрать"; exit 1 ;;',
+            'esac',
             '',
             '# 1. Обложка → клип ровно с теми же параметрами, что у ролика',
             'ffmpeg -y -loglevel error -loop 1 -framerate "$FPS" -t "$SEC" -i "$COVER" \\',
             '  -f lavfi -t "$SEC" -i "anullsrc=r=$AR:cl=$CL" \\',
             '  -vf "scale=$W:$H:flags=lanczos,format=$PIX,setsar=1" \\',
-            '  -c:v libx264 -preset slow -crf 14 -pix_fmt "$PIX" \\',
+            '  -c:v "$VENC" -preset slow -crf "$CRF" -pix_fmt "$PIX" -tag:v "$VTAG" \\',
             '  -c:a aac -b:a 192k -ar "$AR" -ac "$AC" -shortest "$DIR/_cover.mp4"',
             '',
             '# 2. Склейка потоков: ролик копируется без перекодирования',
@@ -782,6 +791,12 @@ body.dragging #drop{display:flex}
             '    -c:a aac -b:a 192k -movflags +faststart "$OUT"',
             'fi',
             'rm -f "$DIR/_list.txt" "$DIR/_cover.mp4"',
+            '# Склейка умеет вернуть 0 и выбросить пакеты: сверяем размер.',
+            'IN_SZ=$(wc -c < "$VIDEO"); OUT_SZ=$(wc -c < "$OUT")',
+            'if [ "$OUT_SZ" -lt "$IN_SZ" ]; then',
+            '  echo "ОШИБКА: результат меньше исходника — дорожка потерялась. Файл не годится."',
+            '  exit 1',
+            'fi',
             'echo "Готово: $OUT"'
         ].join('\n') + '\n';
     }
@@ -816,22 +831,21 @@ body.dragging #drop{display:flex}
             offerScript('Не удалось запустить сборку в браузере.');
             return;
         }
-        var reencoded = false;
         worker.onmessage = function (e) {
             var m = e.data;
             if (m.type === 'stage') {
                 joinBtn.textContent = m.pct + '% · ' + m.stage;
-            } else if (m.type === 'reencode') {
-                reencoded = true;
+            } else if (m.type === 'probe') {
+                tell('Ролик: ' + m.video.codec_name + ' ' + m.video.width + '×' + m.video.height +
+                     ', ' + Math.round(m.duration) + ' с. Собираю…');
             } else if (m.type === 'done') {
                 var name = (videoName.replace(/\.[^.]+$/, '') || 'ролик') + '-с-обложкой.mp4';
                 var url = URL.createObjectURL(new Blob([m.data], { type: 'video/mp4' }));
                 var a = document.createElement('a');
                 a.href = url; a.download = name; a.click();
                 setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
-                tell('Готово: ' + name + ' за ' + Math.round((Date.now() - t0) / 1000) + ' с. ' +
-                     (reencoded ? 'Параметры не совпали, ролик пришлось пересобрать целиком.'
-                                : 'Дорожка ролика скопирована без перекодирования.'));
+                tell('Готово: ' + name + ' за ' + Math.round((Date.now() - t0) / 1000) + ' с — ' +
+                     (m.info || '') + '. Дорожка ролика скопирована без перекодирования.');
                 joinBtn.textContent = 'Собрать с обложкой';
                 joinBtn.disabled = false;
                 worker.terminate();

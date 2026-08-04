@@ -180,24 +180,47 @@ def test_cover_precedes_the_clip():
 def test_join_runs_in_the_browser_and_copies_the_clip():
     """Кнопка собирает файл сама, в воркере с ядром ffmpeg, и КОПИРУЕТ дорожку
     ролика: перекодировать весь исходник ради секунды заставки — потерять
-    качество. Пересборка допустима только как запасной путь и с уведомлением."""
+    качество."""
     base = os.path.dirname(_OVERLAY)
-    worker = os.path.join(base, "join.worker.js")
-    assert os.path.exists(worker), "нет воркера сборки"
-    with open(worker, encoding="utf-8") as f:
+    with open(os.path.join(base, "join.worker.js"), encoding="utf-8") as f:
         w = f.read()
 
     assert "'-f', 'concat'" in w and "'-c', 'copy'" in w, \
-        "основной путь обязан быть склейкой потоков без перекодирования"
-    assert w.index("'-c', 'copy'") < w.index("concat=n=2"), \
-        "пересборка не должна идти раньше склейки потоков"
-    assert "type: 'reencode'" in w, "о пересборке нужно сообщать, а не молчать"
+        "сборка обязана быть склейкой потоков без перекодирования"
     assert "importScripts('vendor/ffmpeg-core.js')" in w, "ядро должно браться локально"
-
-    for f in ("vendor/ffmpeg-core.js", "vendor/ffmpeg-core.wasm"):
-        assert os.path.exists(os.path.join(base, f)), "нет файла ядра %s" % f
+    for f_ in ("vendor/ffmpeg-core.js", "vendor/ffmpeg-core.wasm"):
+        assert os.path.exists(os.path.join(base, f_)), "нет файла ядра %s" % f_
     assert os.path.getsize(os.path.join(base, "vendor/ffmpeg-core.wasm")) > 10 << 20, \
         "ядро подозрительно маленькое — похоже, положили заглушку"
+
+
+def test_cover_is_encoded_in_the_clips_own_codec():
+    """Первая версия кодировала обложку всегда в libx264. На H.265-ролике
+    склейка возвращала 0 и отдавала файл, где дорожка объявлена h264, а пакеты
+    внутри h265: плеер показывал секунду заставки и глох, файл весил втрое
+    меньше исходника. Обложка обязана кодироваться кодеком РОЛИКА."""
+    base = os.path.dirname(_OVERLAY)
+    with open(os.path.join(base, "join.worker.js"), encoding="utf-8") as f:
+        w = f.read()
+    assert "codec_name" in w, "воркер не читает кодек ролика"
+    assert "ENCODER[v.codec_name]" in w, "кодировщик обложки не выбирается по кодеку ролика"
+    assert re.search(r"var ENCODER = \{[^}]*h264:\s*'libx264'", w), "нет пары h264 → libx264"
+    # libx265 в браузере запрещён: в wasm он не уложился и в десять минут.
+    # Ищем именно строковый литерал — в комментарии-то он упомянут, и правильно.
+    assert "'libx265'" not in w, \
+        "libx265 в wasm слишком медленный, кодировать им в браузере нельзя"
+
+
+def test_join_verifies_the_result():
+    """Склейка потоков умеет вернуть 0 и выбросить пакеты. Молча отдавать
+    такой файл нельзя — сверяем длительность и размер с исходником."""
+    base = os.path.dirname(_OVERLAY)
+    with open(os.path.join(base, "join.worker.js"), encoding="utf-8") as f:
+        w = f.read()
+    assert "длительность не сошлась" in w, "нет сверки длительности результата"
+    assert "меньше исходника" in w, "нет сверки размера результата"
+    assert w.index("Проверяю результат") < w.index("type: 'done'"), \
+        "проверка должна идти ДО выдачи файла"
 
 
 def test_join_falls_back_when_worker_is_impossible():
@@ -210,6 +233,9 @@ def test_join_falls_back_when_worker_is_impossible():
     assert "-f concat" in body and "-c copy" in body, \
         "запасной скрипт тоже должен копировать дорожку, а не пережимать"
     assert "command -v ffmpeg" in body, "скрипт должен сам сообщать о недостающих зависимостях"
+    assert "VENC=libx264" in body and "VENC=libx265" in body, \
+        "у скрипта ffmpeg настоящий — он обязан уметь и H.265, ради которого его и предлагают"
+    assert "дорожка потерялась" in body, "скрипт тоже должен проверять результат"
     launcher = os.path.join(os.path.dirname(_OVERLAY), "Запустить.command")
     assert os.path.exists(launcher), "нет лаунчера локального сервера для офлайн-папки"
 

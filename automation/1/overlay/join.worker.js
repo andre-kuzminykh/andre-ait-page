@@ -11,6 +11,17 @@ importScripts('vendor/ffmpeg-core.js');
 var core = null;
 var out = [];                       // строки лога последней команды
 
+/* Обложку кодируем ТЕМ ЖЕ кодеком, что и ролик. Иначе склейка потоков
+   молча собирает файл, где дорожка объявлена как h264, а пакеты внутри
+   h265: плеер показывает секунду заставки и глохнет, а файл весит в сто
+   раз меньше исходника. Именно так это и сломалось в первый раз.
+
+   H.265 в списке нет намеренно. libx265 в ядре есть, но в wasm он
+   однопоточный и без ассемблера: тридцать кадров 1080×1920 не уложились
+   и в десять минут (замерено). Лучше честно отказать, чем подвесить
+   вкладку на полчаса. */
+var ENCODER = { h264: 'libx264' };
+
 function say(stage, pct) {
     self.postMessage({ type: 'stage', stage: stage, pct: pct });
 }
@@ -18,15 +29,21 @@ function say(stage, pct) {
 /* ffprobe отдаёт поля в порядке потока, а не в порядке -show_entries,
    поэтому читаем по ключам: позиционный разбор молча врёт (pix_fmt
    приезжал на месте fps и заставка не кодировалась). */
-function probe(fields, stream) {
+function probe(file, section, fields, stream) {
     out = [];
-    core.ffprobe('-v', 'error', '-select_streams', stream, '-show_entries',
-        'stream=' + fields, '-of', 'default=noprint_wrappers=1', 'in.mp4');
+    var args = ['-v', 'error'];
+    if (stream) args = args.concat(['-select_streams', stream]);
+    args = args.concat(['-show_entries', section + '=' + fields,
+        '-of', 'default=noprint_wrappers=1', file]);
+    core.ffprobe.apply(core, args);
     core.reset();
     var kv = {};
     out.join('\n').split('\n').forEach(function (line) {
         var i = line.indexOf('=');
-        if (i > 0) kv[line.slice(0, i).trim()] = line.slice(i + 1).trim();
+        if (i > 0) {
+            var val = line.slice(i + 1).trim();
+            if (val && val !== 'N/A') kv[line.slice(0, i).trim()] = val;
+        }
     });
     return kv;
 }
@@ -50,55 +67,83 @@ self.onmessage = function (e) {
             }
             core.FS.writeFile('cover.png', m.cover);
             core.FS.writeFile('in.mp4', m.video);
+            var inSize = m.video.length;
 
             say('Читаю параметры ролика…', 12);
-            var v = probe('width,height,r_frame_rate,pix_fmt', 'v:0');
-            var a = probe('sample_rate,channels', 'a:0');
+            var v = probe('in.mp4', 'stream', 'codec_name,codec_tag_string,width,height,r_frame_rate,pix_fmt', 'v:0');
+            var a = probe('in.mp4', 'stream', 'codec_name,sample_rate,channels', 'a:0');
+            var f = probe('in.mp4', 'format', 'duration');
             var W = v.width, H = v.height, FPS = v.r_frame_rate;
             var PIX = v.pix_fmt || 'yuv420p';
-            var AR = a.sample_rate || '48000', AC = a.channels || '2';
+            var inDur = parseFloat(f.duration || '0');
             if (!W || !H || !FPS) throw new Error('не удалось прочитать параметры ролика');
-            self.postMessage({ type: 'probe', video: v, audio: a });
+            self.postMessage({ type: 'probe', video: v, audio: a, duration: inDur });
 
-            // 1. Заставка → клип ровно с теми же параметрами, что у ролика.
-            //    Иначе склейка потоков откажется их соединять.
+            var VENC = ENCODER[v.codec_name];
+            if (!VENC) throw new Error('ролик в кодеке ' + (v.codec_name || '?').toUpperCase() +
+                ', а в браузере обложку можно подготовить только под H.264. ' +
+                'Выход: экспортировать ролик в H.264 — либо собрать скриптом, ' +
+                'у ffmpeg на компьютере с этим проблем нет');
+            var hasAudio = !!a.codec_name;
+            if (hasAudio && a.codec_name !== 'aac') throw new Error('звук в кодеке «' +
+                a.codec_name + '» — склейка без перекодирования не сойдётся');
+
+            // 1. Заставка → клип ровно с теми же параметрами, что у ролика:
+            //    кодек, тег, размер, частота кадров, формат пикселей и звук.
             say('Готовлю обложку…', 25);
-            run(['-y', '-loglevel', 'error',
-                '-loop', '1', '-framerate', FPS, '-t', String(m.sec), '-i', 'cover.png',
-                '-f', 'lavfi', '-t', String(m.sec),
-                '-i', 'anullsrc=r=' + AR + ':cl=' + (AC === '1' ? 'mono' : 'stereo'),
+            var args = ['-y', '-loglevel', 'error',
+                '-loop', '1', '-framerate', FPS, '-t', String(m.sec), '-i', 'cover.png'];
+            if (hasAudio) {
+                args = args.concat(['-f', 'lavfi', '-t', String(m.sec),
+                    '-i', 'anullsrc=r=' + a.sample_rate + ':cl=' +
+                          (a.channels === '1' ? 'mono' : 'stereo')]);
+            }
+            args = args.concat([
                 '-vf', 'scale=' + W + ':' + H + ':flags=lanczos,format=' + PIX + ',setsar=1',
-                '-c:v', 'libx264', '-preset', 'medium', '-crf', '14', '-pix_fmt', PIX,
-                '-c:a', 'aac', '-b:a', '192k', '-ar', AR, '-ac', AC,
-                '-shortest', 'cover.mp4'], 'обложка');
+                '-c:v', VENC, '-preset', 'medium', '-crf', '14', '-pix_fmt', PIX]);
+            if (v.codec_tag_string && /^[a-z0-9]{4}$/i.test(v.codec_tag_string)) {
+                args = args.concat(['-tag:v', v.codec_tag_string]);
+            }
+            args = hasAudio
+                ? args.concat(['-c:a', 'aac', '-b:a', '192k',
+                    '-ar', a.sample_rate, '-ac', a.channels, '-shortest'])
+                : args.concat(['-an']);
+            run(args.concat(['cover.mp4']), 'обложка');
 
             // 2. Склейка потоков. Ролик копируется байт в байт.
             say('Склеиваю…', 60);
             core.FS.writeFile('list.txt',
                 new TextEncoder().encode("file 'cover.mp4'\nfile 'in.mp4'\n"));
-            try {
-                run(['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', 'list.txt',
-                    '-c', 'copy', '-movflags', '+faststart', 'out.mp4'], 'склейка');
-            } catch (err) {
-                // Параметры всё-таки разошлись — пересобираем целиком.
-                // CRF 16 на глаз неотличим, но это уже перекодирование,
-                // и пользователь должен об этом узнать, а не догадываться.
-                self.postMessage({ type: 'reencode', reason: String(err.message || err) });
-                say('Параметры не совпали, пересобираю целиком…', 65);
-                run(['-y', '-loglevel', 'error', '-i', 'cover.mp4', '-i', 'in.mp4',
-                    '-filter_complex', '[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]',
-                    '-map', '[v]', '-map', '[a]',
-                    '-c:v', 'libx264', '-preset', 'medium', '-crf', '16', '-pix_fmt', PIX,
-                    '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', 'out.mp4'],
-                    'пересборка');
+            run(['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', 'list.txt',
+                '-c', 'copy', '-movflags', '+faststart', 'out.mp4'], 'склейка');
+
+            /* 3. Проверка результата. Склейка потоков умеет возвращать 0 и при
+               этом выбросить пакеты, которые не легли в заголовок дорожки, —
+               файл получается коротким и «одна обложка». Молча отдавать такое
+               нельзя, поэтому сверяем длительность и размер с исходником. */
+            say('Проверяю результат…', 88);
+            var outStat = core.FS.stat('out.mp4');
+            var outDur = parseFloat(probe('out.mp4', 'format', 'duration').duration || '0');
+            var wantDur = inDur + Number(m.sec);
+            if (inDur && Math.abs(outDur - wantDur) > 1.5) {
+                throw new Error('длительность не сошлась: ожидал ' + wantDur.toFixed(1) +
+                    ' с, получилось ' + outDur.toFixed(1) + ' с');
+            }
+            if (outStat.size < inSize) {
+                throw new Error('файл получился меньше исходника (' +
+                    Math.round(outStat.size / 1048576) + ' МБ против ' +
+                    Math.round(inSize / 1048576) + ' МБ) — дорожка потерялась при склейке');
             }
 
             say('Отдаю файл…', 95);
             var data = core.FS.readFile('out.mp4');
-            ['cover.png', 'in.mp4', 'cover.mp4', 'list.txt', 'out.mp4'].forEach(function (f) {
-                try { core.FS.unlink(f); } catch (ignored) { /* уже нет */ }
+            ['cover.png', 'in.mp4', 'cover.mp4', 'list.txt', 'out.mp4'].forEach(function (name) {
+                try { core.FS.unlink(name); } catch (ignored) { /* уже нет */ }
             });
-            self.postMessage({ type: 'done', data: data }, [data.buffer]);
+            self.postMessage({
+                type: 'done', data: data,
+                info: v.codec_name + ' ' + W + '×' + H + ', ' + Math.round(outDur) + ' с'
+            }, [data.buffer]);
         } catch (err) {
             self.postMessage({ type: 'error', message: String((err && err.message) || err) });
         }
