@@ -196,15 +196,17 @@
   @media(min-width:2300px){body{zoom:1.5}}
 
   /* ===== Блоки страницы =====
-     Каждый блок занимает экран целиком, но это обычная прокрутка: никакого
-     перехвата колеса и свайпа. Так страница ведёт себя предсказуемо на любом
-     устройстве и ничего не «залипает». */
+     Ритм страницы, а не «экран на блок»: min-height:100svh раздувал каждый
+     блок до полной высоты окна и оставлял между ними провалы в 300-450px.
+     Отступы такие же, как на странице буткемпа — блоки идут плотно и
+     читаются подряд, обычной прокруткой. */
   .deck{position:relative;z-index:2}
   .panel{
     position:relative;display:flex;
-    min-height:100svh;
-    padding:clamp(5.5rem,13vh,7.5rem) 1rem clamp(3rem,7vh,4.5rem);
+    padding:clamp(2.6rem,7vh,4.2rem) 1rem;
   }
+  .panel:first-child{padding-top:clamp(6.5rem,17vh,9rem)}
+  .panel:last-child{padding-bottom:clamp(3.5rem,9vh,5.5rem)}
   @media(min-width:640px){.panel{padding-left:2rem;padding-right:2rem}}
   .wrap{margin:auto;width:100%;max-width:68rem;text-align:center}
 
@@ -237,8 +239,6 @@
   .desc .lb{display:none}
   @media (min-width:680px){ .desc .lb{display:inline} }
 
-  .scroll-hint{background:none;border:0;padding:0;margin-top:clamp(1.2rem,3.5vh,2rem);color:var(--muted);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;display:inline-flex;flex-direction:column;align-items:center;gap:.45rem}
-  .scroll-hint i{animation:bounceDown 1.8s ease-in-out infinite;color:#8854F3}
 
   /* заголовки блоков */
   .h2{text-align:center;font-size:clamp(1.6rem,4.4vw,2.2rem);font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
@@ -276,12 +276,12 @@
 
 
 
-  /* Телефон: ужимаем блоки так, чтобы каждый влезал в экран целиком —
-     внутри блока прокрутки нет вовсе. */
+  /* Телефон: тот же ритм, только плотнее и с узкими полями. */
   @media (max-width:639px){
-    .panel{padding-top:clamp(4.9rem,11vh,6rem);padding-bottom:2rem;padding-left:1.4rem;padding-right:1.4rem}
+    .panel{padding:clamp(2rem,6vh,3rem) 1.4rem}
+    .panel:first-child{padding-top:clamp(5.2rem,13vh,6.4rem)}
+    .panel:last-child{padding-bottom:clamp(2.6rem,7vh,3.6rem)}
     .desc{margin-top:1rem}
-    .scroll-hint{margin-top:1.1rem}
     .cta-row{margin-top:1.15rem}
     .roles{margin-top:1.2rem;gap:.65rem}
     .role{padding:1.05rem 1rem}
@@ -292,39 +292,25 @@
     .learn .ico{height:2.15rem;width:2.15rem;font-size:1rem;border-radius:.55rem}
     .learn p{font-size:.82rem;line-height:1.3}
   }
-  /* Низкие экраны — ещё плотнее. Условие по высоте без ограничения ширины:
-     в альбомной ориентации телефона ширина уже 844px, и правило с
-     max-width:639px туда не доставало — блоки переставали влезать. */
-  @media (max-height:700px){
-    .float-row{zoom:.7;margin-bottom:0}
-    .roles{margin-top:.9rem;gap:.5rem}
-    .role{padding:.8rem .9rem}
-    .role .ico{height:2.4rem;width:2.4rem;margin-bottom:.45rem;font-size:1.05rem}
-    .learn{margin-top:.7rem;gap:.32rem}
-    .learn li{padding:.45rem .7rem}
-    .learn .ico{height:1.95rem;width:1.95rem;font-size:.9rem}
-    .cta-row{margin-top:.9rem}
-    .panel{padding-top:clamp(4.2rem,14vh,5.2rem);padding-bottom:1.2rem}
-    .desc{margin-top:.6rem}
-    .scroll-hint{margin-top:.6rem}
-  }
+  /* Низкие окна отдельным правилом больше не ужимаем: блоки не обязаны
+     влезать в экран, страница прокручивается обычным образом. */
 
   @media print{
-    .panel{min-height:auto;page-break-after:always}
+    .panel{page-break-after:always}
     .panel .wrap > *{opacity:1;transform:none}
-    .scroll-hint,header{display:none}
+    header{display:none}
   }
 
   @media (prefers-reduced-motion: reduce){
     .panel .wrap > *{opacity:1;transform:none;animation:none}
-    .tile,.scroll-hint i{animation:none}
+    .tile{animation:none}
     .btn-white:hover{animation:none;transform:none}
   }
 </style>
 <noscript><style>
   /* Без скрипта появление блоков не запустится — показываем сразу. */
   .panel .wrap > *{opacity:1;transform:none}
-  .scroll-hint,#theme{display:none}
+  #theme{display:none}
 </style></noscript>
 </head>
 <body>
@@ -372,10 +358,6 @@
             <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
           </a>
         </div>
-        <button class="scroll-hint" type="button" data-go="next">
-          <span>Листайте вниз</span>
-          <i class="fa-solid fa-chevron-down"></i>
-        </button>
       </div>
     </section>
 
@@ -481,7 +463,7 @@
     /* ===== Плавное появление блоков при прокрутке ======================
        Никакого перехвата колеса и свайпа: страница прокручивается как
        обычная. Наблюдатель включает каскад появления, когда блок доехал до
-       экрана, а «Листайте вниз» плавно уводит к следующему блоку. */
+       экрана. */
     (function(){
       var panels = [].slice.call(document.querySelectorAll('.panel'));
       var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -273,7 +273,31 @@ def test_blocks_appear_on_scroll():
         page = _read(rel)
         assert "IntersectionObserver" in page, rel + ": появление по наблюдателю"
         assert ".panel.in .wrap > *{animation:riseIn" in page, rel + ": каскад появления"
-        assert "scrollIntoView({ behavior:" in page, rel + ": «Листайте вниз» ведёт плавно"
+        assert "scrollIntoView({ behavior:" in page, rel + ": переход к блоку плавный"
+
+
+def test_blocks_go_one_after_another_without_empty_screens():
+    """Блок занимает столько, сколько нужно содержимому, а не целый экран.
+
+    `min-height:100svh` раздувал каждый блок до высоты окна: между текстом
+    соседних блоков зияло 300-450px пустоты, и страница читалась как набор
+    полупустых экранов. Ритм задаём отступами, как на странице буткемпа.
+    """
+    for rel in _ENTRIES:
+        panel = re.search(r"\n  \.panel\{(.*?)\}", _read(rel), re.S)
+        assert panel, rel + ": не нашёл правило .panel"
+        assert "min-height" not in panel.group(1), \
+            rel + ": блок не растягиваем на весь экран — это и давало провалы"
+        assert re.search(r"padding:clamp\([^)]*\) 1rem", panel.group(1)), \
+            rel + ": вертикальный ритм задаём отступом блока"
+
+
+def test_no_scroll_hint():
+    """Подсказки «SCROLL DOWN» нет: обычная страница в ней не нуждается."""
+    for rel in _ENTRIES:
+        page = _read(rel)
+        for mark in ("scroll-hint", "SCROLL DOWN", "Листайте вниз"):
+            assert mark not in page, rel + ": подсказка прокрутки убрана (" + mark + ")"
 
 
 if __name__ == "__main__":
