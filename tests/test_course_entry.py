@@ -363,3 +363,47 @@ def test_practice_terms_do_not_break_on_hyphen():
     plain = re.sub(r"<[^>]*>", " ", body)
     for bad in ("ИИ-агент", "ИИ-модел", "ИИ-трансформац"):
         assert bad not in plain, "%s: дефис в термине должен быть неразрывным (U+2011)" % bad
+
+
+# ── Говорящая голова: обложка вместо дыры, локальные видео ─────────────────
+
+_COVER = "/assets/1_video/auto_cover_1.jpg"
+
+
+def test_lecture_videos_are_local_and_in_order():
+    """42 ролика лежат в репозитории и идут по слайдам в порядке глав.
+
+    Раньше они грузились с raw.githubusercontent.com по хешу коммита чужого
+    репозитория — то есть жили на честном слове.
+    """
+    import os
+    html = _read(_LECTURE1)
+    assert "raw.githubusercontent.com" not in html, "видео должны браться из репозитория"
+    urls = re.findall(r"'(/assets/1_video/auto_[^']+\.mp4)'", html)
+    assert len(urls) == 42, "по одному ролику на слайд, а не %d" % len(urls)
+    order = [tuple(map(int, re.search(r"auto_(\d+)-sq-(\d+)", u).groups())) for u in urls]
+    assert order == sorted(order), "порядок роликов должен идти по главам и номерам"
+    for u in urls + [_COVER, "/assets/1_video/auto_0_sq.mp4"]:
+        assert os.path.isfile(os.path.join(_ROOT, u.lstrip("/"))), "нет файла " + u
+
+
+def test_cover_shows_while_video_is_idle():
+    """Пока ролик не играет, в кружке виден кадр-обложка, а не чёрная дыра."""
+    html = _read(_LECTURE1)
+    assert 'poster="%s"' % _COVER in html, "у видео лекции должен быть постер"
+    assert _COVER in html.split('id="head-video"', 1)[1][:400], \
+        "обложка должна стоять и фоном кружка — постер не виден после буферизации"
+    for rel in _ENTRIES:
+        page = _read(rel)
+        assert 'poster="%s"' % _COVER in page, rel + ": нужен постер"
+        assert _COVER in page, rel + ": нужна обложка фоном кружка"
+
+
+def test_entry_head_uses_its_own_video():
+    """У входа в курс свой ролик (_0), у лекции — свои 42."""
+    for rel in _ENTRIES:
+        page = _read(rel)
+        assert 'src="/assets/1_video/auto_0_sq.mp4"' in page, rel
+        assert 'id="head"' in page and 'id="head-video"' in page, rel
+        assert re.search(r"\.head\{[^}]*position:fixed", page), \
+            rel + ": кружок лежит поверх блоков и на раскладку не влияет"
