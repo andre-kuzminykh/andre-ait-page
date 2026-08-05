@@ -247,6 +247,8 @@ def test_style_is_applied_through_ass_not_force_style():
     script = html[html.index("function joinScript()"):html.index("var joinBtn")]
     assert "force_style=" not in script, "через force_style субтитры молча не отрисуются"
     assert "raw.ass" in script and "subs.ass" in script, "нет перевода SRT в ASS"
+    assert "subtitles=filename=" in script, \
+        "ffmpeg 8 (brew на маке) не разбирает короткую форму subtitles=файл — нужен явный ключ"
     assert "PlayResX" in script and "PlayResY" in script, \
         "ffmpeg пишет ASS в координатах 384x288 — без подмены кегль и отступ будут не те"
 
