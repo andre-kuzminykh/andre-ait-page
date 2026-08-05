@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Лекция 8: Экономика ИИ-трансформации</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
     <meta name="description" content="Лекция 8: ИИ-трансформация компании. Гибридная система, новые роли, метрики, governance, работа с сопротивлением.">
     <meta name="theme-color" content="#8B5CF6">
 
@@ -17,13 +24,26 @@
     <meta name="twitter:title" content="Лекция 8: Экономика ИИ-трансформации">
     <meta name="twitter:description" content="Как компания становится гибридной системой">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind СОБРАН ЗАРАНЕЕ и лежит статикой.
+         Раньше здесь висел cdn.tailwindcss.com — «Play CDN»: браузер
+         рисовал страницу БЕЗ стилей Tailwind, скрипт скачивался,
+         компилировал классы в CSS уже в рантайме и только потом
+         подменял вид. Отсюда и брался кадр, на котором кнопки и
+         карточки сначала «квадратные», а через секунду становятся
+         нормальными. Обычный <link> блокирует первую отрисовку —
+         промежуточного кадра не существует в принципе.
+         Пересобирается tools/build_lecture_css.py. -->
+    <link rel="stylesheet" href="/assets/lecture-2-8.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
         <script>
+        // Tailwind собран статикой (см. <link> выше). Конфиг оставлен
+        // как единственное описание палитры и брейкпоинтов лекции —
+        // сборщик tools/build_lecture_css.py повторяет его один в один.
+        window.tailwind = window.tailwind || {};
         tailwind.config = {
             theme: {
                 extend: {
@@ -45,11 +65,20 @@
     html {
         background: #ffffff !important;
         -webkit-tap-highlight-color: transparent;
+        /* Лекция — экран, а не документ: прокрутки нет нигде (см. лекцию 1). */
+        height: 100%;
+        overflow: hidden;
+        overflow: clip;
+        overscroll-behavior: none;
     }
 
     body {
         user-select: none;
+        /* clip вместо hidden: hidden оставляет элемент прокручиваемым
+           программно, и неактивные слайды (сдвинутые на 32px) давали
+           «фантомную» прокрутку страницы. */
         overflow: hidden;
+        overflow: clip;
         background-color: #ffffff !important;
         margin: 0;
         width: 100vw;
@@ -67,8 +96,8 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        overflow-y: auto;
-        overflow-x: hidden;
+        /* Слайд не прокручивается: не влезло — значит дефект подгонки. */
+        overflow: hidden;
         background: #ffffff;
     }
 
@@ -110,7 +139,10 @@
     }
 
     .bg-glow-1, .bg-glow-2 {
-        position: absolute;
+        /* fixed, а не absolute: пятно с bottom:-10% раздувало высоту документа
+           на 90px, и страница получала «фантомную» прокрутку. Фиксированный
+           слой живёт в области просмотра и высоту документа не трогает. */
+        position: fixed;
         border-radius: 50%;
         filter: blur(100px);
         z-index: 0;
@@ -283,12 +315,22 @@ h1 .text-solar, h2 .text-solar {
 .slide-container .content-z *::after,
 .slide-container .content-z *:hover::before,
 .slide-container .content-z *:hover::after { transition: none !important; }
-.slide-container *:hover,
-.slide-container *:focus,
-.slide-container *:focus-visible,
-.slide-container *:active {
-  transform: none !important;
-  filter: none !important;
+/* Гасим ТОЛЬКО hover-трансформы, объявленные самим элементом. Раньше здесь
+   стоял сплошной `transform:none` по любому :hover — и он снимал ПОСТОЯННЫЕ
+   трансформы тоже: подсвеченная карточка (`md:scale-105`, `md:scale-110`) под
+   курсором ужималась до обычного размера, спутник радиальной схемы прыгал на
+   полразмера от снятого центрирования. Со стороны это и есть «дёргается при
+   наведении». Теперь целимся ровно в hover:-утилиты (FR-LECTURE-20). */
+.slide-container [class*="hover:scale"]:hover,
+.slide-container [class*="hover:translate"]:hover,
+.slide-container [class*="hover:-translate"]:hover,
+.slide-container [class*="hover:rotate"]:hover,
+.slide-container [class*="hover:skew"]:hover,
+.slide-container [class*="hover:scale"]:focus-visible,
+.slide-container [class*="hover:translate"]:focus-visible,
+.slide-container [class*="hover:-translate"]:focus-visible,
+.slide-container [class*="hover:rotate"]:focus-visible,
+.slide-container [class*="hover:skew"]:focus-visible {
   --tw-translate-x: 0 !important;
   --tw-translate-y: 0 !important;
   --tw-scale-x: 1 !important;
@@ -297,9 +339,26 @@ h1 .text-solar, h2 .text-solar {
   --tw-skew-x: 0 !important;
   --tw-skew-y: 0 !important;
 }
+.slide-container *:hover,
+.slide-container *:focus,
+.slide-container *:focus-visible,
+.slide-container *:active { filter: none !important; }
 
 /* Стартовый оверлей убран — портал автозапускает деку */
 #start-overlay { display:none !important; }
+
+/* Тройки плиток: на ГОРИЗОНТАЛЬНОМ экране — в ряд, на вертикальном — друг за
+   другом (FR-LECTURE-35). Ширина здесь плохой критерий: телефон в альбомной
+   ориентации (844×390) шире планшета в портретной (768×1024), а раскладка
+   нужна ровно обратная — из-за этого на промежуточных ширинах сетка 2×2
+   оставляла третью карточку одну, с пустым местом рядом.
+   Ловим только «переключатели» — элементы, у которых объявлены ОБА варианта
+   (`flex-col` + `md:flex-row`, `grid-cols-1` + `md:grid-cols-3`): постоянные
+   flex-row (иконка + подпись) трогать нельзя. */
+/* Ориентационных переключателей больше НЕТ. Форма определяется одной
+   шириной 768px (см. tailwind.config.screens): телефон в альбомной ориентации
+   получал десктопную раскладку, планшет в портретной — мобильную, и форм
+   выходило четыре вместо двух. */
 
 /* Колонки flex/grid могут ужиматься — нет горизонтального переполнения (FR-LECTURE-08) */
 .slide-container [class*="grid-cols"] > *,
@@ -362,10 +421,7 @@ h1 .text-solar, h2 .text-solar {
 
 /* Премиальное «оживление» контента при показе слайда — каскадный fade-rise (FR-LECTURE-14).
    Класс .is-active ставит скрипт portal-fit при каждой смене слайда. */
-@keyframes deckRise { from { opacity:0; transform: translateY(22px) scale(0.985); } to { opacity:1; transform:none; } }
-@keyframes deckZoom { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform:none; } }
-@keyframes deckSlideX { from { opacity:0; transform: translateX(-28px); } to { opacity:1; transform:none; } }
-@keyframes deckFlip { from { opacity:0; transform: perspective(900px) rotateX(12deg) translateY(14px); } to { opacity:1; transform:none; } }
+@keyframes deckRise { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform:none; } }
 /* Заголовки никогда не должны быть невидимыми из-за анимации (FR-LECTURE-25) */
 .slide-container h1, .slide-container h2, .slide-container h3, .slide-container h4 { opacity:1 !important; }
 /* FR-LECTURE-28 — вертикальное центрирование + СИММЕТРИЧНЫЙ резерв сверху/снизу,
@@ -373,28 +429,98 @@ h1 .text-solar, h2 .text-solar {
    одинаково — контент остаётся ровно по геометрическому центру слайда (никакого
    «приподняты выше»), а нижняя плашка гарантированно не уходит под кружок.
    flex-direction НЕ переопределяем — иначе ломаются слайды с md:flex-row прямо
-   на content-z (например радар ИИ-индекса). Если контент не влезает после
+   на content-z (например радар ИИ‑индекса). Если контент не влезает после
    резерва, скрипт portal-fit ужимает через zoom (FR-LECTURE-07/30). */
+/* Резерв под шапку и стрелки СНЯТ с паддинга content-z и перенесён в расчёт
+   масштаба (portal-fit, chromeBand). Причина: паддинг здесь масштабируется
+   zoom'ом вместе с контентом, и на ужатых слайдах клиренс исчезал — заголовок
+   оказывался прямо под кнопками шапки. Теперь резерв фиксированный, в
+   экранных пикселях, и от масштаба не зависит. */
 .slide-container .content-z {
+  /* Блок центрируется ЦЕЛИКОМ: заголовок стоит прямо над своим содержимым,
+     а не отрывается к верхней кромке экрана (правка заказчика). */
   justify-content: center !important;
-  padding-block: clamp(40px, 7vh, 96px) !important;
+  /* Вертикальные отступы задаёт ТОЛЬКО portal-fit (инлайном, в экранных
+     пикселях): сверху полоса шапки, снизу воздух. Любое правило с !important
+     здесь перебивало расчёт, и содержимое снова не влезало в экран. */
+  /* h-full из разметки жёстко приравнивал коробку к высоте слайда: после zoom
+     центрирование считалось не от чернил, и на слайде-обложке содержимое
+     заезжало под шапку. Высоту держит min-height:100% — этого достаточно. */
+  height: auto !important;
 }
+/* Финальный слайд залит фиолетовым — фиолетовая кнопка шапки на нём почти
+   сливается с фоном. Только на этом слайде CTA становится белой. */
+body:has(#slide-41.opacity-100) .lec-consult{ background:#FAFAFA !important; color:#0A0A0A !important; }
+body:has(#slide-41.opacity-100) .lec-consult:hover{ background:#FFFFFF !important; }
+
+/* Бейджи-ярлыки, приклеенные к верхнему краю карточки, не должны вылезать
+   за её борт: -top/-right у абсолютных бейджей выносило их наружу. */
+.slide-container .content-z [class*="absolute"][class*="-top-"]{ max-width:calc(100% - 1rem); }
+
+/* ТЕЛЕФОН: ряд из трёх и более карточек — это колонки по 105px и текст в
+   10px, читать невозможно. На узком экране такой ряд встаёт столбцом; вся
+   информация остаётся, меняется только форма (канон «две формы»). */
+@media (max-width:767px){
+  .slide-container .content-z [class~="flex-row"]:not([class*="md:flex-row"]):has(> *:nth-child(3)){
+    flex-direction:column !important;
+  }
+  .slide-container .content-z [class~="grid-cols-3"]:not([class*="md:grid-cols"]),
+  .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]){
+    grid-template-columns:1fr !important;
+  }
+  /* Подписи спутников радиальной схемы на телефоне переносятся — но правило
+     живёт НИЖЕ по файлу (см. блок @media (max-width:520px) в самом конце):
+     базовый `white-space:nowrap !important` объявлен позже этого места и
+     перебивал бы отсюда любую попытку разрешить перенос. */
+}
+
+/* Никаких свечений и размытых ореолов внутри слайда: на чёрном фоне они
+   читаются как грязное пятно, а канон — минимализм. Тени уже погашены
+   глобально, здесь добиваем filter (drop-shadow/blur). Картинки и видео
+   не трогаем — им filter может быть нужен по делу. */
+.slide-container .content-z,
+.slide-container .content-z *:not(img):not(video){ filter:none !important; }
+/* И ни одной «подсветки» фоном: радиальные градиенты-ореолы у акцентных
+   карточек давали то самое размытое пятно на чёрном. */
+.slide-container .content-z [class*="shadow"]{ box-shadow:none !important; }
+
+/* Приглушённая иконка в тёмном кружке была серой на тёмно-сером — на грани
+   различимости. Даём ей акцентный цвет и нормальный размер: кружок без
+   собственного цвета = иконка фиолетовая. */
+.slide-container .content-z [class*="rounded-full"] > i:only-child,
+.slide-container .content-z [class*="rounded-2xl"] > i:only-child{ color:#8B5CF6; }
+html.dark .slide-container .content-z [class*="rounded-full"] > i:only-child,
+html.dark .slide-container .content-z [class*="rounded-2xl"] > i:only-child{ color:#A78BFA; }
+/* …но если у кружка есть своя заливка (bg-solar / bg-black / оранжевая),
+   цвет иконки задан осознанно — не перебиваем. */
+.slide-container .content-z [class*="bg-solar"] > i:only-child,
+.slide-container .content-z [class~="bg-black"] > i:only-child,
+.slide-container .content-z [class*="bg-white"] > i:only-child{ color:inherit; }
+
+/* Нижняя плашка-вывод должна совпадать по ширине с рядом карточек над ней:
+   разные max-w-* у соседей давали ступеньку в 60-115px и ломали колонку.
+   Выравнивает их portal-fit (общий max-width по самому широкому соседу).
+   Здесь остаётся только страховка от выхода за борт слайда: элементу БЕЗ
+   собственного max-w-* шире 100% быть незачем. */
+.slide-container .content-z > [class*="rounded"][class*="bg-"]:not([class*="max-w-"]){ max-width:100% !important; }
+
 /* Тематические переходы (FR-LECTURE-27): 4 варианта появления, чередуются по
    слайдам (класс anim-0..3 ставит portal-fit по индексу слайда). */
-.slide-container.is-active.anim-0 .content-z > * { animation-name: deckRise; }
-.slide-container.is-active.anim-1 .content-z > * { animation-name: deckZoom; }
-.slide-container.is-active.anim-2 .content-z > * { animation-name: deckSlideX; }
-.slide-container.is-active.anim-3 .content-z > * { animation-name: deckFlip; }
+/* Вариант появления ОДИН на всю лекцию: мягкий подъём с проявлением.
+   Четыре разных (зум, сдвиг вбок, переворот) читались как рывки, особенно
+   при быстром листании. */
 /* уровень 1 — крупные блоки слайда (заголовок, подзаголовок, основной блок) */
-.slide-container.is-active .content-z > * { animation: deckRise .6s cubic-bezier(0.22,1,0.36,1) both; }
-.slide-container.is-active .content-z > *:nth-child(2) { animation-delay:.08s; }
-.slide-container.is-active .content-z > *:nth-child(3) { animation-delay:.16s; }
-.slide-container.is-active .content-z > *:nth-child(4) { animation-delay:.24s; }
-.slide-container.is-active .content-z > *:nth-child(n+5) { animation-delay:.3s; }
+.slide-container.is-active .content-z > * { animation: deckRise .5s cubic-bezier(0.22,1,0.36,1) both; }
+.slide-container.is-active .content-z > *:nth-child(2) { animation-delay:.06s; }
+.slide-container.is-active .content-z > *:nth-child(3) { animation-delay:.12s; }
+.slide-container.is-active .content-z > *:nth-child(n+4) { animation-delay:.18s; }
 /* уровень 2 — отдельные карточки в сетках/рядах. Исключаем заголовки h1..h4,
    чтобы анимация уровня 2 не накладывалась на уровень 1 и не «гасила» заголовки. */
+/* Второго каскада на карточках больше нет: он проигрывался ПОВЕРХ первого на
+   тех же самых элементах, и они дважды ехали с места — это и читалось как
+   дрожь. Карточки появляются вместе со своим блоком. */
 .slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4),
-.slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4) { animation: deckRise .5s cubic-bezier(0.22,1,0.36,1) both; }
+.slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4) { animation: none; }
 .slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(2),
 .slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(2) { animation-delay:.1s; }
 .slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(3),
@@ -435,11 +561,12 @@ h1 .text-solar, h2 .text-solar {
         dashoffset, поэтому рисуем штрих фоном-градиентом и гоняем его
         background-position. Класс вешается на разметку точечно. */
   @keyframes dashFlow { to { background-position:22px 0; } }
+  /* Пунктир обратной связи РИСУЕМ, но не гоняем: бегущая линия читалась как
+     мигание и отвлекала от слайда (правка заказчика). */
   .anim-dash{
     border-top-color:transparent !important;
     background-image:linear-gradient(90deg,currentColor 0 11px,transparent 11px 22px);
     background-size:22px 2px; background-repeat:repeat-x; background-position:0 0;
-    animation:dashFlow 1.2s linear infinite;
   }
 
   /* 3. Иконки проявляются вместе со своим блоком — короткий «выдох» после
@@ -447,8 +574,13 @@ h1 .text-solar, h2 .text-solar {
   @keyframes iconPop { from{ opacity:0; transform:scale(.72); } to{ opacity:1; transform:none; } }
   .slide-container.is-active [class*="rounded-full"] > i,
   .slide-container.is-active [class*="rounded-2xl"] > i{
-    animation:iconPop .5s cubic-bezier(.34,1.56,.64,1) both; animation-delay:.34s;
+    animation:iconPop .45s cubic-bezier(.34,1.56,.64,1);
   }
+  /* Страховка поверх всех каскадов: содержимое активного слайда невидимым не
+     остаётся никогда — даже если анимация не отыграла. */
+  .slide-container.is-active .content-z i,
+  .slide-container.is-active .content-z img,
+  .slide-container.is-active .content-z svg{ opacity:1; }
 
   /* 4. Акцентная карточка мягко дышит подсветкой. Тень, а не размер: рост
         двигал бы соседей и ломал вёрстку. */
@@ -476,6 +608,13 @@ h1 .text-solar, h2 .text-solar {
 #nav-prev { right:80px !important; left:auto !important; }
 #nav-next { right:20px !important; left:auto !important; }
 #nav-prev i, #nav-next i { color:#FFFFFF !important; }
+/* Значок на кружке (правило заказчика): пока видео НЕ играет — «play» виден
+   всегда, чтобы было понятно, что кружок можно включить. Как только пошло
+   воспроизведение — значок уходит, а при наведении показывается «pause».
+   Никаких таймеров: состояние — это класс .is-playing на самом кружке. */
+#video-overlay{ opacity:1; }
+#video-bubble.is-playing #video-overlay{ opacity:0; }
+@media (hover:hover){ #video-bubble.is-playing:hover #video-overlay{ opacity:1; } }
 #video-bubble {
   width: clamp(140px, 22vw, 280px) !important; height: clamp(140px, 22vw, 280px) !important;
   left: clamp(1.5rem, 5vw, 4rem) !important; right:auto !important;
@@ -486,10 +625,6 @@ h1 .text-solar, h2 .text-solar {
   #nav-prev { right:66px !important; }
   #nav-next { right:12px !important; }
   #video-bubble { width:150px !important; height:150px !important; left:15px !important; bottom:15px !important; }
-  .slide-container .content-z {
-    padding-block: 72px !important;
-    padding-left:1rem !important; padding-right:1rem !important;
-  }
 }
 </style>
 <style id="portal-dark">
@@ -505,19 +640,45 @@ html.dark [class*="border-grayBase"] { border-color:rgba(255,255,255,0.12) !impo
 html.dark [class*="border-black"] { border-color:rgba(255,255,255,0.18) !important; }
 </style>
 <style id="lecture-chrome">
-/* Шапка лекции: лого AIT слева, переключатель темы + «Консультация» справа (без меню).
+/* Шапка лекции: лого AIT слева, переключатель темы + «Буткемп» справа (без меню).
    Фиксированная, поверх слайдов, но ниже стартового оверлея/квиза. */
-#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:clamp(.55rem,2vw,1rem) clamp(.9rem,3.2vw,2rem); pointer-events:none; }
+/* Геометрия шапки — один в один с главной andre.technology: те же отступы,
+   тот же размер логотипа и правой кнопки. Круглые кнопки лекции живут по
+   размерам бургера главной, поэтому ряд собирается точно так же. */
+#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:1.1rem; pointer-events:none; }
+@media (min-width:1024px){ #lecture-header{ padding:2rem; } }
 #lecture-header > *{ pointer-events:auto; }
-#lecture-header .lec-logo{ display:inline-flex; align-items:center; }
-#lecture-header .lec-logo img{ height:clamp(2.3rem,9vw,3.2rem); width:auto; display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
-#lecture-header .lec-right{ display:flex; align-items:center; gap:clamp(.5rem,2.2vw,.8rem); }
-#lecture-header .lec-ctrl{ display:inline-flex; align-items:center; justify-content:center; height:clamp(2.3rem,9vw,3rem); width:clamp(2.3rem,9vw,3rem); border-radius:999px; border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:clamp(1.05rem,4vw,1.3rem); line-height:1; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:background .2s ease,color .2s ease; }
+#lecture-header .lec-logo{ display:inline-flex; align-items:center; flex-shrink:0; }
+#lecture-header .lec-logo img{ width:clamp(2.85rem,12vw,3.7rem); height:clamp(2.85rem,12vw,3.7rem); object-fit:contain; display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+@media (min-width:1024px){ #lecture-header .lec-logo img{ width:3.6rem; height:3.6rem; } }
+#lecture-header .lec-right{ display:flex; align-items:center; gap:.4rem; flex-shrink:0; }
+#lecture-header .lec-ctrl{ display:inline-flex; align-items:center; justify-content:center; height:clamp(2.5rem,11vw,3.3rem); width:clamp(2.5rem,11vw,3.3rem); border-radius:999px; border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:clamp(1.05rem,4vw,1.3rem); line-height:1; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:background .2s ease,color .2s ease; }
+@media (min-width:1024px){ #lecture-header .lec-ctrl{ height:2.85rem; width:2.85rem; } }
 #lecture-header .lec-ctrl:hover{ background:#f1f1f1; }
-#lecture-header .lec-consult{ display:inline-flex; align-items:center; gap:.5rem; height:clamp(2.3rem,9vw,3rem); padding:0 clamp(1rem,3.4vw,1.6rem); border-radius:999px; background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:clamp(10px,2.6vw,13px); white-space:nowrap; box-shadow:0 10px 24px -6px rgba(139,92,246,.5); transition:transform .2s ease,box-shadow .2s ease; }
+/* Правая кнопка — размеры «Free AI Diagnostic» с главной. */
+#lecture-header .lec-consult{ display:inline-flex; align-items:center; justify-content:center; gap:clamp(.4rem,1.2vw,.6rem); padding:clamp(.62rem,2.2vw,.95rem) clamp(.85rem,3.2vw,1.35rem); border-radius:999px; background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:clamp(.06em,.4vw,.1em); font-size:clamp(9px,2.7vw,12.5px); white-space:nowrap; box-shadow:0 10px 24px -6px rgba(139,92,246,.5); transition:transform .2s ease,box-shadow .2s ease; }
+@media (min-width:1024px){ #lecture-header .lec-consult{ height:2.85rem; box-sizing:border-box; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em; gap:.55rem; } }
+@media (min-width:1024px) and (max-width:1319px){ #lecture-header .lec-consult{ padding:0 .95rem; font-size:10px; letter-spacing:.08em; gap:.4rem; } }
+@media (min-width:1320px) and (max-width:1479px){ #lecture-header .lec-consult{ padding:0 1.15rem; font-size:11px; letter-spacing:.12em; gap:.5rem; } }
 #lecture-header .lec-consult:hover{ transform:translateY(-1px); box-shadow:0 14px 30px -6px rgba(139,92,246,.6); }
 html.dark #lecture-header .lec-ctrl{ background:#141414; color:#fafafa; border-color:rgba(255,255,255,.18); box-shadow:0 6px 16px rgba(0,0,0,.5); }
 html.dark #lecture-header .lec-ctrl:hover{ background:#1f1f1f; }
+/* Кнопка «Практическое задание»: та же капсула, что и лек-кнопки, но с подписью.
+   На узких экранах остаётся только иконка — шапка не переполняется. */
+#lecture-header .lec-task, #lecture-header .lec-lbl{ width:auto; padding:0 clamp(.8rem,2.8vw,1.15rem); gap:.45rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:clamp(10px,2.6vw,12px); text-decoration:none; }
+#lecture-header .lec-task i, #lecture-header .lec-lbl i{ font-size:clamp(1.05rem,4vw,1.2rem); }
+@media (max-width:640px){
+  #lecture-header .lec-task, #lecture-header .lec-lbl{ width:clamp(2.5rem,11vw,3.3rem); padding:0; }
+  #lecture-header .lec-task span, #lecture-header .lec-lbl span{ display:none; }
+}
+/* ≤380px — компактная шапка, как на главной */
+@media (max-width:380px){
+  #lecture-header{ padding:.85rem .6rem; gap:.3rem; }
+  #lecture-header .lec-right{ gap:.3rem; }
+  #lecture-header .lec-logo img{ width:2.5rem; height:2.5rem; }
+  #lecture-header .lec-ctrl, #lecture-header .lec-task, #lecture-header .lec-lbl{ width:2.3rem; height:2.3rem; }
+  #lecture-header .lec-consult{ padding:.6rem .55rem; font-size:8px; letter-spacing:.02em; }
+}
 </style>
 <script id="portal-theme">
 (function(){
@@ -548,7 +709,9 @@ window.addEventListener('load', function(){
   // Насколько сильно разрешено УВЕЛИЧИВАТЬ контент, чтобы слайд не выглядел
   // пустым. Только на десктопе: на телефоне контент и так занимает весь экран,
   // а рост увёл бы нижние плашки под кружок с головой.
-  var MAX_GROW = 1.6;
+  // Насколько разрешено УВЕЛИЧИВАТЬ содержимое. 1.6 давало на большом экране
+  // огромные карточки — заказчик просил элементы мельче относительно экрана.
+  var MAX_GROW = 1.22;
   // На широком экране одного потолка мало: контент упирался в 1.6 и застывал,
   // а экран продолжал расти — на 2560 чернила занимали 64% ширины островом.
   // Ступени и границы те же, что у дорожной карты (body{zoom} 1.15/1.3/1.5),
@@ -556,7 +719,53 @@ window.addEventListener('load', function(){
   // уже проверенные 390 / 768 / 1440 не меняются.
   function growCap(){
     var w = window.innerWidth;
+    // На телефоне потолок роста свой: содержимое там и так близко к ширине
+    // экрана, но по высоте оставалось до половины пустоты.
+    if (w < 768) return 1.3;
     return MAX_GROW * (w >= 2300 ? 1.5 : w >= 1900 ? 1.3 : w >= 1600 ? 1.15 : 1);
+  }
+  // Высота полосы, в которую контенту заходить нельзя: сверху её занимает
+  // шапка лекции, снизу — стрелки навигации. Меряем шапку по факту, а не
+  // константой: её размеры зависят от ширины экрана.
+  // Экранный размер заголовка слайда — ОДИН на всю лекцию. Две формы, как и
+  // просил заказчик: телефон и компьютер, между ними только размер.
+  var TITLE_FLOOR = 0;               // общий потолок, найденный вторым проходом
+  function titleTarget(){
+    var w = window.innerWidth;
+    // На компьютере заголовок заметно крупнее содержимого — так слайд читается
+    // как заголовок с иллюстрацией, а не как стена одинаковых блоков.
+    return w >= 768 ? Math.max(34, Math.min(64, w * 0.037))
+                    : Math.max(19, Math.min(28, w * 0.062));
+  }
+  function titlePx(){
+    var t = titleTarget();
+    return TITLE_FLOOR && TITLE_FLOOR < t ? TITLE_FLOOR : t;
+  }
+  // Сверху полосу занимает шапка, снизу — стрелки навигации, а на телефоне ещё
+  // и кружок с говорящей головой: он широкий относительно экрана и накрывал
+  // нижний блок слайда. На компьютере кружок стоит в пустом углу справа от
+  // содержимого, поэтому там резервируем только стрелки. Полосы РАЗНЫЕ, и
+  // содержимое сдвигается на половину разницы — визуально оно остаётся по
+  // центру свободной зоны.
+  function chromeBand(){
+    var h = document.getElementById('lecture-header');
+    var top = (h ? h.getBoundingClientRect().height : 56) + 16;
+    // Низ оставляем свободнее верха: содержимое встаёт выше геометрического
+    // центра, как просил заказчик («подтянуть повыше»).
+    var bottom = Math.round(window.innerHeight * 0.10);
+    // На компьютере голова стоит в пустом углу справа от содержимого и в
+    // резерв не входит («голова и стрелки не влияют на слайды»). На телефоне
+    // угла нет: ряд управления лежит ровно поверх текста, и аудит наложений
+    // ловил его на 24 слайдах из 42. Там полосу резервируем — иначе канон
+    // «никаких наложений» невыполним в принципе.
+    if (window.innerWidth < 768){
+      var bub = document.getElementById('video-bubble');
+      // getComputedStyle отдаёт ширину даже у display:none — кружок появляется
+      // только когда видео готово, а резерв нужен с первого кадра.
+      var d = bub ? parseFloat(window.getComputedStyle(bub).width) : 0;
+      if (d > 0) bottom = Math.max(bottom, Math.round(14 + d + 12));
+    }
+    return { top: top, bottom: bottom };
   }
   function inkBox(c){
     // Объединённый бокс прямых детей content-z — по РАСКЛАДОЧНОЙ геометрии
@@ -585,101 +794,372 @@ window.addEventListener('load', function(){
       if(l + ww > right) right = l + ww;
       if(ww > w) w = ww;
     }
-    return (bot > top) ? { h: bot - top, w: w, top: top, bottom: bot, left: left, right: right } : null;
+    if(!(bot > top)) return null;
+    // Единственный ребёнок-обёртка на всю высоту (h-full) чернилами не является:
+    // его высота равна высоте слайда, масштаб считался по ней, и содержимое
+    // уезжало под шапку. Меряем то, что лежит ВНУТРИ такой обёртки.
+    if(k.length === 1 && (bot - top) >= c.clientHeight - 4 && k[0].children.length)
+      return inkBox(k[0]) || { h: bot - top, w: w, top: top, bottom: bot, left: left, right: right };
+    return { h: bot - top, w: w, top: top, bottom: bot, left: left, right: right };
   }
+
+  // ── Кегль подбирается ГРУППАМИ карточек (FR-LECTURE-34) ─────────────────
+  // Плитки свёрстаны фиксированными кеглями Tailwind. На части ширин длинное
+  // русское слово («Механизация», «Мультимодальность») в карточку не влезает
+  // и ведёт себя одинаково плохо: вылезает за неё или рубится по мягкому
+  // переносу («ОПТИ-МИЗАЦИЯ», «AI‑Drive n»). Общий масштаб слайда не помогает:
+  // zoom ужимает и карточку, и текст в одной пропорции.
+  //
+  // Ужимаем кегль самого текста — но НЕ поэлементно: если каждый заголовок
+  // подбирает себе размер сам, соседние карточки получают 16, 13, 12 и 9 px, и
+  // ряд «скачет». Поэтому элементы одной роли (одинаковый тег + одинаковые
+  // классы) считаются ОДНОЙ группой и получают ОДИН кегль — по самому
+  // тесному в группе. Текст при этом пускаем ближе к краям карточки (минус
+  // небольшой зазор), чтобы не ужимать сильнее необходимого.
+  var MEASURE = null;
+  try { MEASURE = document.createElement('canvas').getContext('2d'); } catch(e){}
+  var TEXT_SEL = 'h1,h2,h3,h4,h5,h6,p,li,span,div,a,strong,em,button,td,th';
+  var MIN_PX    = 8;    // мельче подпись уже не читается
+  var FLOOR_CAP = 14;   // ниже этого крупный текст не опускаем
+  var GUTTER    = 6;    // текст может подойти к краю карточки, но не впритык
+
+  // Собственный текст элемента: то, что он рисует сам, без вложенных блоков.
+  function ownText(el){
+    var out = '', n;
+    for(n = el.firstChild; n; n = n.nextSibling){
+      if(n.nodeType === 3) out += n.nodeValue;
+      else if(n.nodeType === 1 && n.tagName !== 'BR'){
+        var d = window.getComputedStyle(n).display;
+        if(d === 'inline' || d === 'inline-block') out += n.textContent;
+      }
+    }
+    // мягкий перенос при измерении не считаем — мы как раз и хотим,
+    // чтобы слово уместилось целиком и переносом не воспользовалось
+    return out.replace(/­/g, '').replace(/\s+/g, ' ').trim();
+  }
+  function boxW(el){                    // паддинг-бокс минус зазор у края
+    if(!el || el.nodeType !== 1) return Infinity;
+    var w = el.clientWidth - GUTTER;
+    return w > 0 ? w : Infinity;
+  }
+  function contentW(el){
+    if(!el || el.nodeType !== 1) return Infinity;
+    var cs = window.getComputedStyle(el);
+    var w = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    return w > 0 ? w : Infinity;
+  }
+  function measure(text, cs){
+    if(!MEASURE) return 0;
+    MEASURE.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    var w = MEASURE.measureText(text).width;
+    var ls = parseFloat(cs.letterSpacing);        // трекинг canvas не учитывает
+    if(ls) w += ls * text.length;
+    return w;
+  }
+
+  // Сколько места нужно элементу и сколько у него есть. null — не наш случай.
+  function demand(el){
+    var cs = window.getComputedStyle(el);
+    if(cs.display === 'inline' || cs.display === 'none') return null;
+    var txt = ownText(el);
+    if(!txt) return null;
+    if(el.style.fontSize){ el.style.fontSize = ''; el.style.overflowWrap = ''; cs = window.getComputedStyle(el); }
+    var size = parseFloat(cs.fontSize);
+    if(!size) return null;
+    // Строка целиком — если перенос запрещён; иначе достаточно самого длинного
+    // слова: остальное браузер перенесёт по пробелам.
+    var nowrap = cs.whiteSpace === 'nowrap' || cs.whiteSpace === 'pre';
+    var need, i, w;
+    if(nowrap){ need = measure(txt, cs); }
+    else {
+      var parts = txt.split(' '), m = 0;
+      for(i = 0; i < parts.length; i++){ w = measure(parts[i], cs); if(w > m) m = w; }
+      need = m;
+    }
+    // Внутри заголовка бывает кусок с запретом переноса — «ИИ‑инженер
+    // <span class="whitespace-nowrap">(по автоматизации)</span>»: сам span
+    // инлайновый, своей ширины у него нет, и по словам он проходит, а целиком
+    // не влезает. Меряем такие куски как одно слово.
+    var keep = el.querySelectorAll('[class*="whitespace-nowrap"]');
+    for(i = 0; i < keep.length; i++){
+      var kt = (keep[i].textContent || '').replace(/­/g, '').replace(/\s+/g, ' ').trim();
+      if(!kt) continue;
+      w = measure(kt, window.getComputedStyle(keep[i]));
+      if(w > need) need = w;
+    }
+    if(!need) return null;
+    // Что считать рамкой.
+    //   · Коробка «по тексту» (заголовок карточки с запретом переноса, бейдж
+    //     «Мы здесь») рамкой быть НЕ может: ужимаешь кегль — коробка ужимается
+    //     следом, и подгонка гонится за убегающей целью, каждый раз промахиваясь
+    //     ровно на зазор. Для таких рамка — родительская карточка.
+    //   · Иначе рамка своя, если текст в неё не влезает.
+    //   · Подпись под кружком радиальной схемы шире кружка ПО ЗАМЫСЛУ: её
+    //     коробка широкая и текста не касается — такие не трогаем вовсе.
+    var own = boxW(el), par = boxW(el.parentNode), avail;
+    var hugs = isFinite(own) && Math.abs(own - need) < 24;
+    if(hugs){
+      if(isFinite(par) && need > par) avail = par; else return null;
+    } else if(isFinite(own) && need > own){
+      avail = own;
+    } else return null;
+    if(!isFinite(avail) || avail <= 4 || need <= avail) return null;
+    return { size: size, need: need, avail: avail };
+  }
+
+  // Ряд карточек — ближайший предок, внутри которого таких элементов уже
+  // НЕСКОЛЬКО. Искать «первый flex/grid» нельзя: сама карточка тоже flex, и
+  // каждая карточка становилась своей группой — кегль в ряду снова скакал.
+  var ROWS = 0;
+  function rowKey(el){
+    var p = el.parentNode, n = 0, tag = el.tagName;
+    while(p && p.nodeType === 1 && n < 6){
+      if(p.querySelectorAll(tag).length > 1){
+        if(!p.getAttribute('data-fitrow')) p.setAttribute('data-fitrow', ++ROWS);
+        return p.getAttribute('data-fitrow');
+      }
+      p = p.parentNode; n++;
+    }
+    return '0';
+  }
+
+  function textFit(slide){
+    var c = slide.querySelector('.content-z');
+    if(!c || !MEASURE) return;
+    var els = c.querySelectorAll(TEXT_SEL), i, el, d, key;
+    // сброс прошлой подгонки — иначе замер идёт от уже ужатого кегля
+    for(i = 0; i < els.length; i++){
+      if(els[i].style.fontSize){ els[i].style.fontSize = ''; els[i].style.overflowWrap = ''; }
+    }
+    var groups = {}, order = [];
+    // Сначала — выравнивание ряда по САМОМУ МЕЛКОМУ участнику: одинаковые по
+    // роли подписи в ряду обязаны быть одного кегля, даже если все влезают.
+    var rows = {}, rkey;
+    for(i = 0; i < els.length; i++){
+      el = els[i];
+      if(el.getAttribute('data-slide-title')) continue;
+      if(el.className && ('' + el.className).indexOf('rf-label') >= 0) continue;
+      if(!ownText(el)) continue;
+      var cs0 = window.getComputedStyle(el);
+      if(cs0.display === 'inline' || cs0.display === 'none') continue;
+      var sz = parseFloat(cs0.fontSize);
+      if(!sz) continue;
+      rkey = el.tagName + '|' + rowKey(el);
+      if(!rows[rkey]) rows[rkey] = { min: sz, els: [] };
+      else if(sz < rows[rkey].min) rows[rkey].min = sz;
+      rows[rkey].els.push(el);
+    }
+    for(key in rows){
+      if(!rows.hasOwnProperty(key) || rows[key].els.length < 2) continue;
+      for(i = 0; i < rows[key].els.length; i++) rows[key].els[i].style.fontSize = rows[key].min + 'px';
+    }
+
+    for(i = 0; i < els.length; i++){
+      el = els[i];
+      d = demand(el);
+      if(!d) continue;
+      // Ключ группы — «одна роль в одном ряду»: тег + сам ряд. Классы для
+      // этого не годятся: у подсвеченной карточки они свои (bg-black вместо
+      // bg-white), и она получала СВОЙ кегль — ряд начинал скакать.
+      if(el.getAttribute('data-slide-title')) continue;   // у заголовка свой размер
+      if(el.className && ('' + el.className).indexOf('rf-label') >= 0) continue;  // подпись кружка
+      key = el.tagName + '|' + rowKey(el);
+      if(!groups[key]){ groups[key] = []; order.push(key); }
+      groups[key].push({ el: el, d: d });
+    }
+    for(i = 0; i < order.length; i++){
+      var g = groups[order[i]], j, ratio = 1, size = 0;
+      for(j = 0; j < g.length; j++){
+        var r = g[j].d.avail / g[j].d.need;
+        if(r < ratio) ratio = r;
+        if(g[j].d.size > size) size = g[j].d.size;
+      }
+      if(ratio >= 1) continue;
+      var floor = Math.max(MIN_PX, Math.min(size * 0.4, FLOOR_CAP));
+      var want = size * ratio;
+      var px = Math.max(floor, want);
+      for(j = 0; j < g.length; j++){
+        g[j].el.style.fontSize = px + 'px';
+        // Кружок спутника бывает уже слова даже на нижнем кегле — тогда
+        // меньшее зло — перенос внутри кружка, а не слово поверх соседнего.
+        g[j].el.style.overflowWrap = (want < floor) ? 'anywhere' : '';
+      }
+    }
+  }
+
+  // Заголовок слайда — h1/h2 прямо внутри content-z (подзаголовки карточек
+  // лежат глубже и сюда не попадают).
+  function slideTitles(c){
+    var out = [], k = c.children, i;
+    for(i = 0; i < k.length; i++)
+      if(k[i].tagName === 'H1' || k[i].tagName === 'H2') out.push(k[i]);
+    if(!out.length){
+      // На части слайдов заголовок завёрнут в обёртку — берём первый h1/h2.
+      var f = c.querySelector('h1, h2');
+      if(f) out.push(f);
+    }
+    return out;
+  }
+  function longestWord(el, cs){
+    var t = ownText(el).split(' '), i, m = 0, w;
+    for(i = 0; i < t.length; i++){ w = measure(t[i], cs); if(w > m) m = w; }
+    return m;
+  }
+
   function fitOne(slide){
     var c = slide.querySelector('.content-z');
     if(!c) return;
     try{
+      // Сначала кегли, потом общий масштаб: подгонка шрифта меняет высоту
+      // чернил, и считать zoom до неё бессмысленно.
+      textFit(slide);
       c.style.zoom = '';
       c.style.minHeight = '';
       c.style.width = '';
+      c.style.padding = '';
+      // сброс компенсации ширин от прошлой подгонки — иначе меряем уже гнутое
+      c.style.maxWidth = '';
+      var kids = [].slice.call(c.children), ki;
+      for(ki = 0; ki < kids.length; ki++) kids[ki].style.maxWidth = '';
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
-      // Панель с текстом открыта: слайд физически уже, но перестраивать
-      // раскладку под узкую колонку НЕЛЬЗЯ — Tailwind-сетки схлопывались,
-      // колонки сжимались до нечитаемых, и текст наезжал сам на себя.
-      // Поэтому весь расчёт ведём так, БУДТО ПАНЕЛИ НЕТ (widthV), получаем ту
-      // же раскладку, что и при закрытой панели, а в конце фиксируем её и
-      // домножаем масштаб на долю оставшейся ширины: элементы те же, просто
-      // меньше. Пинить ширину заранее нельзя — она сама зависит от масштаба.
-      var panelW = 0;
-      if(document.body.classList.contains('notes-open') && window.innerWidth >= 1024){
-        var pnl = document.getElementById('notes-panel');
-        if(pnl) panelW = pnl.getBoundingClientRect().width;
-      }
-      var widthV = availW + panelW;
-      var sst = window.getComputedStyle(slide);
-      var slidePadX = (parseFloat(sst.paddingLeft) || 0) + (parseFloat(sst.paddingRight) || 0);
-      var czMax = parseFloat(window.getComputedStyle(c).maxWidth);
-      // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
-      // offsetHeight/scrollHeight тут врут: у content-z стоит min-height:100%,
-      // поэтому offsetHeight всегда равен высоте слайда, а scrollHeight не
-      // растёт от flex-центрированного контента — переполнение молча уезжало
-      // вверх под шапку вместо того, чтобы ужаться.
-      var st = window.getComputedStyle(c);
-      var padY = (parseFloat(st.paddingTop) || 0) + (parseFloat(st.paddingBottom) || 0);
-      var padX = (parseFloat(st.paddingLeft) || 0) + (parseFloat(st.paddingRight) || 0);
-      var ink = inkBox(c);
-      if(!ink || ink.h < 40) return;
-      if(availH - padY <= 0 || availW - padX <= 0) return;
-      // Масштаб считается аналитически, а не подбором. Паддинги zoom тоже
-      // масштабирует, поэтому условие «чернила влезают» — это
-      //   natH*z + padY*z <= availH   →   z <= availH / (natH + padY),
-      // где natH — высота чернил в CSS-пикселях. Подбор вида z /= over только
-      // приближался снизу и на коротких слайдах недобирал процентов десять.
+
+      // МОДЕЛЬ (простая и потому надёжная):
+      //   content-z ровно с экран, его паддинги — это «мёртвые» полосы
+      //   (сверху шапка, снизу воздух), а содержимое центрируется флексом
+      //   внутри оставшейся коробки. Никаких вертикальных сдвигов transform:
+      //   раньше слайд смещался на полполосы, и ровно на эти пиксели низ
+      //   уезжал за край экрана — при overflow:hidden это выглядело как
+      //   обрезанный слайд, при auto — как «страница листается».
+      var band = chromeBand();
+      var freeH = availH - band.top - band.bottom;
+      if(freeH < availH * 0.45) freeH = availH * 0.45;   // страховка на низких окнах
+      var padX = window.innerWidth >= 768 ? 32 : 16;     // воздух по бокам, экранные px
+      var freeW = availW - padX * 2;
+      if(freeW < availW * 0.6) freeW = availW * 0.6;
       // На телефоне НЕ растим: zoom сжимает CSS-ширину, а минимумы clamp у
       // кругов заданы в пикселях — спутники становятся относительно больше
       // и наезжают друг на друга.
-      var grow = window.innerWidth >= 768;
+      var grow = true;
+
+      // ── Потолки ширины компенсируем масштабом ────────────────────────────
+      // max-w-5xl и подобные заданы в CSS-пикселях. Внутри zoom эти пиксели
+      // принадлежат ВНУТРЕННЕЙ системе координат, поэтому на экране колонка
+      // сжимается второй раз — вместе с масштабом: при z=0.45 «1024px»
+      // превращались в 460px, заголовок рвался на четыре строки, а круговая
+      // схема выглядела крошечной посреди пустого экрана. Делим каждый
+      // потолок на z — и колонка занимает ровно ту ширину, на которую её
+      // рассчитывали в вёрстке.
+      var caps = [], cn = [c].concat(kids), cj, cv;
+      for(cj = 0; cj < cn.length; cj++){
+        cv = window.getComputedStyle(cn[cj]).maxWidth;
+        if(/px$/.test(cv) && parseFloat(cv) > 0)
+          caps.push({ el: cn[cj], cap: parseFloat(cv), kid: cn[cj] !== c });
+      }
+      // Прямые дети слайда стоят одной колонкой: разные max-w-* у соседей
+      // давали ступеньку в 60-115px. Выравниваем по самому широкому — но
+      // ТОЛЬКО среди тех, кто ширину себе объявил. Раньше это делало правило
+      // `max-width:100% !important`, и на слайдах с узкой схемой (сл. 38)
+      // нижняя плашка растягивалась на всю ширину экрана и заезжала под
+      // кружок с головой.
+      var wide = 0, ck;
+      for(ck = 0; ck < caps.length; ck++) if (caps[ck].kid && caps[ck].cap > wide) wide = caps[ck].cap;
+      if (wide > 0) for(ck = 0; ck < caps.length; ck++) if (caps[ck].kid) caps[ck].cap = wide;
+
       function target(natH, natW){
-        var t = Math.min(availH / (natH + padY), widthV / (natW + padX)) * 0.99;
+        // 0.97, а не 1.0: слайд не должен упираться в края свободной зоны.
+        var t = Math.min(freeH / natH, freeW / natW) * 0.97;
         return grow ? Math.min(t, growCap()) : Math.min(t, 1);
       }
-      var z = target(ink.h, ink.w);
-      if(z > 0.999 && z < 1.04) return;
-      apply(z);
-      // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
-      // и natH меняется. Делить на z тут НЕЛЬЗЯ: inkBox меряет offsetHeight,
-      // а он и так в раскладочных пикселях — zoom предка его не масштабирует.
-      // Пока делили, высота занижалась в z раз, масштаб выходил завышенным, и
-      // контент лез под шапку почти на каждом слайде.
-      for(var pass = 0; pass < 4; pass++){
-        var re = inkBox(c);
-        if(!re) break;
-        var next = target(re.h, re.w);
-        if(Math.abs(next - z) < 0.01) break;
+
+      // Паддинги задаём В СИСТЕМЕ КООРДИНАТ content-z (то есть делённые на
+      // zoom) — тогда на экране они дают ровно band.top / band.bottom.
+      function apply(z){
+        var q;
+        for(q = 0; q < caps.length; q++) caps[q].el.style.maxWidth = (caps[q].cap / z) + 'px';
+        sizeTitles(z);
+        c.style.setProperty('--fit-shift', '0px');
+        c.style.zoom = z;
+        c.style.paddingTop = (band.top / z) + 'px';
+        c.style.paddingBottom = (band.bottom / z) + 'px';
+        c.style.paddingLeft = (padX / z) + 'px';
+        c.style.paddingRight = (padX / z) + 'px';
+        // min-height НЕ компенсируем: внутри zoom проценты и так считаются от
+        // высоты родителя, переведённой в масштаб элемента. Прежняя поправка
+        // (100/z)% давала высоту 600/z² — при z=0.65 это 925px на экране в
+        // 600px, и слайд становился прокручиваемым.
+        c.style.minHeight = '';
+        slide.scrollTop = 0;
+      }
+
+      apply(1);
+      var z = 1, i, ink;
+      // Итерации нужны потому, что zoom меняет CSS-ширину content-z: текст
+      // переносится иначе и высота чернил гуляет. Обычно хватает двух.
+      for(i = 0; i < 5; i++){
+        ink = inkBox(c);
+        if(!ink || ink.h < 20) return;
+        var next = target(ink.h, ink.w);
+        if(Math.abs(next - z) < 0.005) break;
         z = next;
         apply(z);
       }
-      // Раскладка сошлась в «полной» ширине — фиксируем её и ужимаем только
-      // масштабом, чтобы контент влез в оставшуюся от панели полосу.
-      if(panelW > 0) apply(z * availW / widthV, true);
+      // Финальная гарантия «влезло»: если после схождения чернила всё ещё выше
+      // свободной зоны (бывает на слайдах, где высота почти не зависит от
+      // ширины), дожимаем прямым делением.
+      for(i = 0; i < 3; i++){
+        ink = inkBox(c);
+        if(!ink) break;
+        var overH = ink.h * z - freeH, overW = ink.w * z - freeW;
+        if(overH <= 1 && overW <= 1) break;
+        z *= Math.min(overH > 1 ? freeH / (ink.h * z) : 1,
+                      overW > 1 ? freeW / (ink.w * z) : 1) * 0.995;
+        apply(z);
+      }
     }catch(e){}
 
-    function apply(z, keepWidth){
-      // Пока идёт схождение, ширину контента держим такой, какой она была бы
-      // БЕЗ панели: доступная полоса, делённая на текущий масштаб (именно так
-      // её и считает браузер при закрытой панели). Ширина зависит от масштаба,
-      // поэтому пересчитываем на каждой итерации, а не пиним заранее.
-      // На последнем шаге ширину уже не трогаем: раскладка сошлась, и меняется
-      // только масштаб.
-      if(panelW > 0 && !keepWidth){
-        var wv = (widthV - slidePadX) / z;
-        c.style.width = (isNaN(czMax) ? wv : Math.min(wv, czMax)) + 'px';
+    // Кегль заголовка = экранный размер / масштаб слайда: после умножения на
+    // zoom все заголовки лекции выходят на экране ОДНОГО размера. Если самое
+    // длинное слово в такой кегль не влезает по ширине — опускаем ровно
+    // настолько, насколько не хватает (лучше чуть мельче, чем слово за краем).
+    function sizeTitles(z){
+      var ttl = slideTitles(c), i, want = titlePx() / z;
+      for(i = 0; i < ttl.length; i++){
+        ttl[i].setAttribute('data-slide-title', '1');
+        ttl[i].style.fontSize = want + 'px';
+        if(MEASURE){
+          var cs = window.getComputedStyle(ttl[i]);
+          var need = longestWord(ttl[i], cs), box = ttl[i].clientWidth - 4;
+          if(need > box && box > 20) ttl[i].style.fontSize = Math.max(10, want * box / need) + 'px';
+        }
       }
-      c.style.zoom = z;
-      // zoom масштабирует и рамку content-z. У неё min-height:100% = высота
-      // слайда, после zoom это 900×z — слайд (overflow-y:auto) становится
-      // прокручиваемым, и от остаточного скролла контент уезжал под шапку.
-      // Компенсируем: делим min-height ровно на коэффициент.
-      c.style.minHeight = (100 / z) + '%';
-      slide.scrollTop = 0;
     }
   }
+  // Экранный размер заголовка слайда: инлайновый кегль × zoom его content-z.
+  function titleScreenPx(slide){
+    var c = slide.querySelector('.content-z');
+    if(!c) return 0;
+    var t = slideTitles(c);
+    if(!t.length || !t[0].style.fontSize) return 0;
+    return parseFloat(t[0].style.fontSize) * (parseFloat(window.getComputedStyle(c).zoom) || 1);
+  }
   function fitAll(){
-    var nodes = document.querySelectorAll('.slide-container');
-    for(var i=0;i<nodes.length;i++) fitOne(nodes[i]);
+    var nodes = document.querySelectorAll('.slide-container'), i, px;
+    lastW = window.innerWidth; lastH = window.innerHeight;
+    TITLE_FLOOR = 0;
+    for(i = 0; i < nodes.length; i++) fitOne(nodes[i]);
+    // Где-то длинное слово в целевой кегль не влезло и заголовок ужался —
+    // тогда опускаем цель для ВСЕЙ лекции и прогоняем ещё раз: «все заголовки
+    // одного размера» важнее, чем «максимально крупно».
+    var min = Infinity;
+    for(i = 0; i < nodes.length; i++){
+      px = titleScreenPx(nodes[i]);
+      if(px && px < min) min = px;
+    }
+    if(min < titleTarget() - 0.5 && min > 8){
+      TITLE_FLOOR = min;
+      for(i = 0; i < nodes.length; i++) fitOne(nodes[i]);
+    }
   }
   // Помечаем активный слайд классом is-active — это перезапускает каскадное
   // появление контента (FR-LECTURE-14) при каждой смене слайда.
@@ -687,33 +1167,73 @@ window.addEventListener('load', function(){
     var nodes = document.querySelectorAll('.slide-container');
     for(var i=0;i<nodes.length;i++){
       var active = nodes[i].classList.contains('opacity-100');
+      if(active && nodes[i].classList.contains('is-active')){
+        // тот же слайд показывают заново — принудительный перезапуск каскада
+        nodes[i].classList.remove('is-active');
+        void nodes[i].offsetWidth;                      // reflow
+      }
       nodes[i].classList.toggle('is-active', active);
       if(active){
-        // тематический вариант появления по индексу слайда (FR-LECTURE-27)
-        nodes[i].classList.remove('anim-0','anim-1','anim-2','anim-3');
-        nodes[i].classList.add('anim-' + (i % 4));
       }
     }
   }
+  // Во сколько раз ужимается содержимое, когда слева встаёт панель с текстом.
+  // Считаем ДО начала анимации, чтобы слайд и панель ехали одним движением.
+  function syncShrink(){
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    var pnl = document.getElementById('notes-panel');
+    var pw = (document.body.classList.contains('notes-open') && window.innerWidth >= 1024 && pnl)
+      ? pnl.offsetWidth : 0;
+    document.body.style.setProperty('--fit-shrink', vw ? (vw - pw) / vw : 1);
+  }
+  window.syncNotesShrink = syncShrink;
+
   var t;
-  function soon(){ clearTimeout(t); t = setTimeout(fitAll, 60); }
+  // Активный слайд подгоняем сразу в том же кадре — иначе при перетаскивании
+  // окна зритель успевает увидеть «непопавшую» раскладку, и она прыгает на
+  // место только через паузу. Остальные 41 слайд догоняют с задержкой.
+  var lastW = 0, lastH = 0;
+  function soon(){
+    syncShrink();
+    var w = window.innerWidth, h = window.innerHeight;
+    // Порог по высоте — 80px: на телефоне при листании прячется адресная
+    // строка, окно «дышит» на 50-60px, и без порога каждый вздох перекраивал
+    // всю деку прямо под пальцем.
+    if(Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 80) return;
+    lastW = w; lastH = h;
+    var live = document.querySelector('.slide-container.opacity-100');
+    if(live) fitOne(live);
+    clearTimeout(t); t = setTimeout(fitAll, 90);
+  }
   window.addEventListener('load', function(){
-    fitAll(); markActive();
+    syncShrink(); fitAll(); markActive();
     if(typeof window.updateSlides === 'function'){
       var orig = window.updateSlides;
       window.updateSlides = function(){
         var r = orig.apply(this, arguments);
-        requestAnimationFrame(function(){ fitAll(); markActive(); });
-        // Обязательный повтор ПОСЛЕ каскада появления. Первый замер идёт в тот
-        // момент, когда на слайде только что встал .is-active и его дети
-        // анимируются (deckRise: 0.6s + до 0.34s задержки) — их боксы сдвинуты
-        // трансформом, ink меряется неверно, и именно активный слайд, который
-        // видит зритель, оставался с zoom≈1, пока соседние масштабировались.
-        setTimeout(fitAll, 1050);
+        // ТОЛЬКО отметка активного слайда. Никакого пересчёта масштаба:
+        // содержимое не изменилось, значит и масштаб прежний. Раньше здесь
+        // стояли fitAll() и повтор через 1050 мс — именно они дёргали слайд
+        // уже после появления.
+        markActive();
         return r;
       };
     }
-    [250, 700, 1500].forEach(function(d){ setTimeout(fitAll, d); });
+    // ПОКАЗЫВАЕМ деку только когда подгонка отработала с УЖЕ загруженными
+    // шрифтами. Раньше первый кадр рисовался в масштабе 1, потом приезжали
+    // шрифты, потом подгонка — и зритель своими глазами видел, как элементы
+    // «подбиваются» и перескакивают. Теперь до этого момента слайдов просто
+    // не видно (класс fit-ready на body), а появляются они уже готовыми.
+    var revealed = false;
+    function reveal(){
+      if (revealed) return;
+      revealed = true;
+      fitAll();
+      document.body.classList.add('fit-ready');
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(reveal);
+    setTimeout(reveal, 1200);            // страховка, если шрифты не доехали
+    setTimeout(fitAll, 1800);            // поздний контрольный пересчёт (обычно ноль изменений)
   });
   window.addEventListener('resize', soon);
   window.addEventListener('orientationchange', function(){ setTimeout(fitAll, 150); });
@@ -746,15 +1266,15 @@ window.addEventListener('load', function(){
 </head>
 <body class="font-sans selection:bg-solar selection:text-black">
 
-    <!-- Шапка лекции: лого AIT слева, переключатель темы + «Консультация» справа (без меню) -->
+    <!-- Шапка лекции: лого AIT слева, переключатель темы + «Буткемп» справа (без меню) -->
     <header id="lecture-header">
         <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
             <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
         </a>
         <div class="lec-right">
-            <button id="notes-toggle" class="lec-ctrl" type="button" aria-label="Текст к слайду" aria-expanded="false"><i class="ph-fill ph-book-open-text"></i></button>
+            <button id="notes-toggle" class="lec-ctrl lec-lbl" type="button" aria-label="Текст к слайду" aria-expanded="false"><i class="ph-fill ph-book-open-text"></i><span>Текст</span></button>
             <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить тему (тёмная/светлая)"><i class="ph-fill ph-moon"></i></button>
-            <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Консультация <i class="ph-bold ph-arrow-right"></i></a>
+            <a class="lec-consult" href="/automation/bootcamp/">Буткемп <i class="ph-bold ph-arrow-right"></i></a>
         </div>
     </header>
     <script>
@@ -793,8 +1313,6 @@ window.addEventListener('load', function(){
     </div>
 
     <!-- Декоративный фон -->
-    <div class="bg-glow-1"></div>
-    <div class="bg-glow-2"></div>
 
     <!-- Индикатор прогресса -->
     <div id="progress-container" class="absolute bottom-0 left-0 h-1.5 bg-grayBase w-full z-50">
@@ -871,7 +1389,7 @@ window.addEventListener('load', function(){
     <!-- ============================================================== -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-6">
         <div class="content-z max-w-4xl w-full">
-<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Процесс как <span class="text-solar">объект экономики</span></h2><p class="text-center text-black/60 mb-4 md:mb-6 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Не «у нас сложная поддержка», а конкретный процесс с границами</p><div class="radial-fig mb-2 md:mb-3" style="width:min(100%,312px,40vh);--orbit:34%;--sat:clamp(80px,24%,140px);--core:clamp(80px,23%,132px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="34" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-flow-arrow text-solar text-2xl md:text-4xl mb-1"></i><span class="rf-label font-black text-solar text-[10px] md:text-xs px-1">Процесс</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:16%"><i class="ph-fill ph-flag-banner text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Начало</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:82.34%;--y:39.49%"><i class="ph-fill ph-flag-checkered text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Конец</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:69.98%;--y:77.51%"><i class="ph-fill ph-users-three text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Участники</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:30.02%;--y:77.51%"><i class="ph-fill ph-list-checks text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Шаги</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:17.66%;--y:39.49%"><i class="ph-fill ph-package text-solar text-xl md:text-3xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm mt-1">Результат</span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Только очерченный процесс можно измерить — время, стоимость, ошибки</div>
+<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Процесс как <span class="text-solar">объект экономики</span></h2><p class="text-center text-black/60 mb-4 md:mb-6 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Не «у нас сложная поддержка», а конкретный процесс с границами</p><div class="radial-fig mb-2 md:mb-3" data-sats="5" style="width:min(100%,312px,40vh);--orbit:34%;--sat:clamp(80px,24%,140px);--core:clamp(80px,23%,132px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="34" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-flow-arrow text-solar text-2xl md:text-4xl mb-1"></i><span class="rf-label font-black text-solar text-[10px] md:text-xs px-1">Процесс</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:16%"><i class="ph-fill ph-flag-banner text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Начало</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:82.34%;--y:39.49%"><i class="ph-fill ph-flag-checkered text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Конец</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:69.98%;--y:77.51%"><i class="ph-fill ph-users-three text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Участники</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:30.02%;--y:77.51%"><i class="ph-fill ph-list-checks text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Шаги</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:17.66%;--y:39.49%"><i class="ph-fill ph-package text-solar text-xl md:text-3xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm mt-1">Результат</span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Только очерченный процесс можно измерить — время, стоимость, ошибки</div>
         </div>
     </div>
 
@@ -880,7 +1398,7 @@ window.addEventListener('load', function(){
     <!-- ============================================================== -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-7">
         <div class="content-z max-w-4xl w-full">
-<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black"><span class="text-solar">Юнит</span> процесса</h2><p class="text-center text-black/60 mb-4 md:mb-6 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Измеряемая единица работы — сравниваем «до» и «после» ИИ</p><div class="radial-fig mb-3 md:mb-6" data-sats="8" style="width:min(100%,312px,40vh);--orbit:40%;--sat:clamp(74px,22.8%,138px);--core:clamp(84px,24%,140px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="40" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-cube text-solar text-2xl md:text-4xl mb-1"></i><span class="rf-label font-black text-solar text-[11px] md:text-sm px-2">Юнит</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:10%"><i class="ph-fill ph-headset text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Обращение</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:78.28%;--y:21.72%"><i class="ph-fill ph-handshake text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Лид / сделка</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:90%;--y:50%"><i class="ph-fill ph-file-text text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Договор</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:78.28%;--y:78.28%"><i class="ph-fill ph-receipt text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Отчёт / платёж</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:90%"><i class="ph-fill ph-user-circle-plus text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Кандидат</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:21.72%;--y:78.28%"><i class="ph-fill ph-shopping-cart text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Заявка</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:10%;--y:50%"><i class="ph-fill ph-package text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Заказ</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:21.72%;--y:21.72%"><i class="ph-fill ph-check-square text-solar text-xl md:text-3xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-xs mt-1">Контроль качества</span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Юнит — точка перехода от общих слов к точной экономике процесса</div>
+<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black"><span class="text-solar">Юнит</span> процесса</h2><p class="text-center text-black/60 mb-4 md:mb-6 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Измеряемая единица работы — сравниваем «до» и «после» ИИ</p><div class="radial-fig mb-3 md:mb-6" data-sats="8" data-sats="8" style="width:min(100%,312px,40vh);--orbit:40%;--sat:clamp(74px,22.8%,138px);--core:clamp(84px,24%,140px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="40" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-cube text-solar text-2xl md:text-4xl mb-1"></i><span class="rf-label font-black text-solar text-[11px] md:text-sm px-2">Юнит</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:10%"><i class="ph-fill ph-headset text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Обращение</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:78.28%;--y:21.72%"><i class="ph-fill ph-handshake text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Лид / сделка</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:90%;--y:50%"><i class="ph-fill ph-file-text text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Договор</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:78.28%;--y:78.28%"><i class="ph-fill ph-receipt text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Отчёт / платёж</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:90%"><i class="ph-fill ph-user-circle-plus text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Кандидат</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:21.72%;--y:78.28%"><i class="ph-fill ph-shopping-cart text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Заявка</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:10%;--y:50%"><i class="ph-fill ph-package text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Заказ</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:21.72%;--y:21.72%"><i class="ph-fill ph-check-square text-solar text-xl md:text-3xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-xs mt-1">Контроль качества</span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">Юнит — точка перехода от общих слов к точной экономике процесса</div>
         </div>
     </div>
 
@@ -1006,7 +1524,7 @@ window.addEventListener('load', function(){
     <!-- ============================================================== -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-21">
         <div class="content-z max-w-4xl w-full">
-<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black"><span class="text-solar">Источники данных</span> в To Be</h2><p class="text-center text-black/60 mb-4 md:mb-6 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент не должен работать в вакууме — без данных он генератор текста</p><div class="radial-fig mb-2 md:mb-3" style="width:min(100%,312px,40vh);--orbit:34%;--sat:clamp(80px,23.2%,134px);--core:clamp(78px,22%,126px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="34" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-robot text-solar text-2xl md:text-4xl mb-1"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm px-1">Агент</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:16%"><i class="ph-fill ph-address-book text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">CRM</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:79.44%;--y:33%"><i class="ph-fill ph-books text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">База<br>знаний</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:79.44%;--y:67%"><i class="ph-fill ph-file-text text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Доку&shy;менты</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:84%"><i class="ph-fill ph-user-circle text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">История клиента</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:20.56%;--y:67%"><i class="ph-fill ph-file-magnifying-glass text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Специфи&shy;кации</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:20.56%;--y:33%"><i class="ph-fill ph-plugs-connected text-solar text-xl md:text-3xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-xs mt-1">Внутренние<br>системы</span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">С данными агент становится частью операционной системы бизнеса</div>
+<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black"><span class="text-solar">Источники данных</span> в To Be</h2><p class="text-center text-black/60 mb-4 md:mb-6 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Агент не должен работать в вакууме — без данных он генератор текста</p><div class="radial-fig mb-2 md:mb-3" data-sats="6" style="width:min(100%,312px,40vh);--orbit:34%;--sat:clamp(80px,23.2%,134px);--core:clamp(78px,22%,126px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="34" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-robot text-solar text-2xl md:text-4xl mb-1"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm px-1">Агент</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:16%"><i class="ph-fill ph-address-book text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">CRM</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:79.44%;--y:33%"><i class="ph-fill ph-books text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">База<br>знаний</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:79.44%;--y:67%"><i class="ph-fill ph-file-text text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Доку&shy;менты</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:84%"><i class="ph-fill ph-user-circle text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">История клиента</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:20.56%;--y:67%"><i class="ph-fill ph-file-magnifying-glass text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Специфи&shy;кации</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:20.56%;--y:33%"><i class="ph-fill ph-plugs-connected text-solar text-xl md:text-3xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-xs mt-1">Внутренние<br>системы</span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">С данными агент становится частью операционной системы бизнеса</div>
         </div>
     </div>
 
@@ -1060,7 +1578,7 @@ window.addEventListener('load', function(){
     <!-- ============================================================== -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-27">
         <div class="content-z max-w-4xl w-full">
-<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-3 text-center text-black"><span class="text-solar">Три типа</span> эффекта</h2><p class="text-center text-black/60 mb-3 md:mb-4 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Чтобы расчётам доверяли, эффект ИИ нужно правильно классифицировать</p><div class="radial-fig mb-[-1.4rem] md:mb-[-2.4rem]" style="width:min(100%,296px,36vh);--orbit:35%;--sat:clamp(88px,24%,140px);--core:clamp(74px,22%,112px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="35" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-chart-line-up text-solar text-lg md:text-2xl mb-0.5"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm px-1">Эффект</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:15%"><i class="ph-fill ph-arrow-fat-line-down text-solar text-xl md:text-2xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Экономия</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:80.31%;--y:67.5%"><i class="ph-fill ph-prohibit text-solar text-xl md:text-2xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Предот&shy;вращение</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:19.69%;--y:67.5%"><i class="ph-fill ph-battery-charging text-solar text-xl md:text-2xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm mt-1">Мощность</span></div></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3 w-full max-w-3xl mx-auto mb-3 md:mb-4"><div class="bg-white border border-grayBase text-black rounded-2xl px-3 py-2 md:px-4 md:py-1.5 flex items-start gap-2 md:gap-3 text-left"><i class="ph-fill ph-arrow-fat-line-down text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span><span class="block font-black text-black text-[10px] md:text-[13px] leading-tight">Прямая экономия</span><span class="block text-black/55 font-medium text-[9px] md:text-[11px] leading-tight mt-0.5">Расходы реально исчезли из бюджета</span></span></div><div class="bg-white border border-grayBase text-black rounded-2xl px-3 py-2 md:px-4 md:py-1.5 flex items-start gap-2 md:gap-3 text-left"><i class="ph-fill ph-prohibit text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span><span class="block font-black text-black text-[10px] md:text-[13px] leading-tight">Предотвращённые затраты</span><span class="block text-black/55 font-medium text-[9px] md:text-[11px] leading-tight mt-0.5">Избежали будущих расходов — не наняли</span></span></div><div class="bg-black border-2 border-solar text-white rounded-2xl px-3 py-2 md:px-4 md:py-1.5 flex items-start gap-2 md:gap-3 text-left"><i class="ph-fill ph-battery-charging text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span><span class="block font-black text-solar text-[10px] md:text-[13px] leading-tight">Высвобождённая мощность</span><span class="block text-white/70 font-medium text-[9px] md:text-[11px] leading-tight mt-0.5">Время переключилось на более ценные задачи</span></span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">У каждого типа своя логика и своя финансовая доказательность</div>
+<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-3 text-center text-black"><span class="text-solar">Три типа</span> эффекта</h2><p class="text-center text-black/60 mb-3 md:mb-4 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Чтобы расчётам доверяли, эффект ИИ нужно правильно классифицировать</p><div class="radial-fig mb-[-1.4rem] md:mb-[-2.4rem]" data-sats="3" style="width:min(100%,296px,36vh);--orbit:35%;--sat:clamp(88px,24%,140px);--core:clamp(74px,22%,112px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="35" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-chart-line-up text-solar text-lg md:text-2xl mb-0.5"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm px-1">Эффект</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:15%"><i class="ph-fill ph-arrow-fat-line-down text-solar text-xl md:text-2xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Экономия</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:80.31%;--y:67.5%"><i class="ph-fill ph-prohibit text-solar text-xl md:text-2xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-sm mt-1">Предот&shy;вращение</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:19.69%;--y:67.5%"><i class="ph-fill ph-battery-charging text-solar text-xl md:text-2xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm mt-1">Мощность</span></div></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3 w-full max-w-3xl mx-auto mb-3 md:mb-4"><div class="bg-white border border-grayBase text-black rounded-2xl px-3 py-2 md:px-4 md:py-1.5 flex items-start gap-2 md:gap-3 text-left"><i class="ph-fill ph-arrow-fat-line-down text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span><span class="block font-black text-black text-[10px] md:text-[13px] leading-tight">Прямая экономия</span><span class="block text-black/55 font-medium text-[9px] md:text-[11px] leading-tight mt-0.5">Расходы реально исчезли из бюджета</span></span></div><div class="bg-white border border-grayBase text-black rounded-2xl px-3 py-2 md:px-4 md:py-1.5 flex items-start gap-2 md:gap-3 text-left"><i class="ph-fill ph-prohibit text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span><span class="block font-black text-black text-[10px] md:text-[13px] leading-tight">Предотвращённые затраты</span><span class="block text-black/55 font-medium text-[9px] md:text-[11px] leading-tight mt-0.5">Избежали будущих расходов — не наняли</span></span></div><div class="bg-black border-2 border-solar text-white rounded-2xl px-3 py-2 md:px-4 md:py-1.5 flex items-start gap-2 md:gap-3 text-left"><i class="ph-fill ph-battery-charging text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span><span class="block font-black text-solar text-[10px] md:text-[13px] leading-tight">Высвобождённая мощность</span><span class="block text-white/70 font-medium text-[9px] md:text-[11px] leading-tight mt-0.5">Время переключилось на более ценные задачи</span></span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">У каждого типа своя логика и своя финансовая доказательность</div>
         </div>
     </div>
 
@@ -1144,7 +1662,7 @@ window.addEventListener('load', function(){
     <!-- ============================================================== -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-36">
         <div class="content-z max-w-4xl w-full">
-<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black"><span class="text-solar">Полная стоимость</span> сотрудника</h2><p class="text-center text-black/60 mb-4 md:mb-6 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Сотрудник стоит дороже оклада — нужна полная стоимость</p><div class="radial-fig mb-3 md:mb-6" data-sats="8" style="width:min(100%,312px,40vh);--orbit:40%;--sat:clamp(74px,22.8%,138px);--core:clamp(84px,24%,140px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="40" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-user-circle text-solar text-2xl md:text-4xl mb-1"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm px-1">1&nbsp;FTE</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:10%"><i class="ph-fill ph-money text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Зарплата</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:78.28%;--y:21.72%"><i class="ph-fill ph-bank text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Налоги</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:90%;--y:50%"><i class="ph-fill ph-trophy text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Бонусы</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:78.28%;--y:78.28%"><i class="ph-fill ph-laptop text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Техника</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:90%"><i class="ph-fill ph-buildings text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Рабочее место</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:21.72%;--y:78.28%"><i class="ph-fill ph-graduation-cap text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Обучение</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:10%;--y:50%"><i class="ph-fill ph-users text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Админи&shy;страция</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:21.72%;--y:21.72%"><i class="ph-fill ph-stack text-solar text-xl md:text-3xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-xs mt-1">Накладные</span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">ИИ меняет реальную стоимость работы для компании — её и считаем</div>
+<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black"><span class="text-solar">Полная стоимость</span> сотрудника</h2><p class="text-center text-black/60 mb-4 md:mb-6 text-[11px] md:text-xl font-medium max-w-3xl mx-auto">Сотрудник стоит дороже оклада — нужна полная стоимость</p><div class="radial-fig mb-3 md:mb-6" data-sats="8" data-sats="8" style="width:min(100%,312px,40vh);--orbit:40%;--sat:clamp(74px,22.8%,138px);--core:clamp(84px,24%,140px)"><svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="50" cy="50" r="40" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg><div class="radial-core bg-black border-4 border-solar"><i class="ph-fill ph-user-circle text-solar text-2xl md:text-4xl mb-1"></i><span class="rf-label font-black text-solar text-[10px] md:text-sm px-1">1&nbsp;FTE</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:10%"><i class="ph-fill ph-money text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Зарплата</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:78.28%;--y:21.72%"><i class="ph-fill ph-bank text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Налоги</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:90%;--y:50%"><i class="ph-fill ph-trophy text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Бонусы</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:78.28%;--y:78.28%"><i class="ph-fill ph-laptop text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Техника</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:50%;--y:90%"><i class="ph-fill ph-buildings text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Рабочее место</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:21.72%;--y:78.28%"><i class="ph-fill ph-graduation-cap text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Обучение</span></div><div class="radial-sat bg-white border border-grayBase" style="--x:10%;--y:50%"><i class="ph-fill ph-users text-solar text-xl md:text-3xl"></i><span class="rf-label font-bold text-black text-[10px] md:text-xs mt-1">Админи&shy;страция</span></div><div class="radial-sat bg-black border-2 border-solar" style="--x:21.72%;--y:21.72%"><i class="ph-fill ph-stack text-solar text-xl md:text-3xl"></i><span class="rf-label font-black text-solar text-[10px] md:text-xs mt-1">Накладные</span></div></div><div class="bg-solar text-black font-black text-center text-[11px] md:text-base rounded-2xl p-3 md:p-4 max-w-4xl mx-auto w-full">ИИ меняет реальную стоимость работы для компании — её и считаем</div>
         </div>
     </div>
 
@@ -1885,22 +2403,36 @@ window.addEventListener('load', function(){
      обрубок в три буквы. */
   .radial-fig{
     --orbit:37% !important;
-    --sat:clamp(76px, 27%, 108px) !important;
-    --core:clamp(80px, 27%, 112px) !important;
+    /* На 390px орбита даёт всего ~120px между центрами соседних кружков.
+       При прежних 30% кружок занимал 92px из них — подписи ложились прямо на
+       соседей. Ужимаем кружки и саму фигуру, подпись отодвигаем ниже. */
+    --sat:clamp(58px, 23%, 96px) !important;
+    --core:clamp(54px, 20%, 86px) !important;
+    /* Во всю ширину колонки, а не 90%: каждый процент ширины — это ещё
+       0.345% зазора между подписью бокового спутника и подписью ядра, а
+       именно там подписи и сталкивались («Лучшая модель» × «Цикл обучения»). */
+    width:100% !important;
   }
-  .radial-sat{ padding:calc(var(--sat) * 0.045) !important; }
-  .radial-sat .rf-label{ font-size:9.5px !important; line-height:1.08 !important; }
-  .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }
-  .radial-sat i{ font-size:.95rem !important; margin-bottom:.05rem !important; }
-  .radial-core i{ font-size:1.1rem !important; }
+  .radial-sat{ padding:0 !important; }
+  .radial-sat .rf-label{ font-size:calc(var(--sat-dot) * 0.21) !important;
+                         top:calc(100% + .42em) !important; }
+  .radial-core .rf-label{ font-size:calc(var(--core) * 0.19) !important;
+                          top:calc(100% + .42em) !important;
+                          /* Длинная подпись центра («Постоянное улучшение») на 390px
+                             дотягивалась до соседних кружков — на телефоне даём ей
+                             перенос в две строки вместо одной длинной. */
+                          white-space:normal !important; max-width:9em !important;
+                          left:calc(-1.6 * var(--core)) !important;
+                          right:calc(-1.6 * var(--core)) !important; }
+  .radial-sat i{ margin-bottom:0 !important; }
 }
 /* Восемь спутников: при орбите 37% зазор между соседними кругами получается
    1.3% ширины — круги слипаются. Формула зазора W·(0.765·r − sat), поэтому
    многоспутниковым схемам нужна орбита шире. */
 .radial-fig[data-sats="8"]{ --orbit:41%; --sat:clamp(66px, 22%, 128px); }
 @media (max-width:520px){
-  .radial-fig[data-sats="8"]{ --orbit:41% !important; --sat:clamp(60px, 21%, 84px) !important; }
-  .radial-fig[data-sats="8"] .rf-label{ font-size:8.5px !important; }
+  .radial-fig[data-sats="7"],
+  .radial-fig[data-sats="8"]{ --orbit:41% !important; --sat:clamp(52px, 19%, 84px) !important; }
 }
 
 /* ПОДПИСЬ ЖИВЁТ ЗА КРУГОМ. Раньше внутри круга сидели и иконка, и текст, и
@@ -1916,7 +2448,10 @@ window.addEventListener('load', function(){
    растянута симметрично влево и вправо на диаметр кружка, а текст в ней
    выровнен по центру. z-index выше ядра, поэтому подпись читается поверх
    соседних кругов и кольца. */
-.radial-fig{ --sat-dot:calc(var(--sat) * 0.62); }
+/* Кружок спутника ЗАМЕТНО крупнее прежнего (0.62 → 0.80): иконка в нём
+   читалась как точка, а вокруг схемы оставалась пустота. Ядро при этом чуть
+   уменьшено — центр не должен давить на остальную схему. */
+.radial-fig{ --sat-dot:calc(var(--sat) * 0.86); }
 .radial-sat{
   width:var(--sat-dot) !important; height:var(--sat-dot) !important;
   left:calc(var(--x) - var(--sat-dot)/2) !important;
@@ -1924,22 +2459,92 @@ window.addEventListener('load', function(){
   padding:0 !important;
   overflow:visible !important;
 }
-.radial-sat i{ font-size:calc(var(--sat-dot) * 0.42) !important; margin:0 !important; }
+.radial-sat i{ font-size:calc(var(--sat-dot) * 0.56) !important; margin:0 !important; }
 .radial-sat .rf-label{
   position:absolute;
   top:calc(100% + .32em);
+  /* Пилюля цвета фона страницы: пунктир орбиты проходит ПОД подписью и не
+     читается как лишний символ внутри слов («Учёт /ошибок»). */
+  background:#FFFFFF;
+  padding:.08em .45em;
+  border-radius:.6em;
   /* Коробка подписи шире кружка на 1.6 диаметра в каждую сторону, то есть
      4.2 диаметра всего. Трёх не хватало: после уменьшения кружков длинные
      подписи («Сценарии понятны», «Промышленная сборка») перестали в неё
      влезать на узких фигурах. Расширять коробку правильнее, чем возвращать
      кружкам размер, — заказчик просил кружки поменьше. */
   left:calc(-1.6 * var(--sat-dot)); right:calc(-1.6 * var(--sat-dot));
-  width:auto !important; max-width:none !important;
+  width:max-content !important; max-width:none !important;
+  margin-left:auto !important; margin-right:auto !important;
   white-space:nowrap !important;
   text-align:center;
   line-height:1.1 !important;
   z-index:6;
   pointer-events:none;
+}
+html.dark .radial-sat .rf-label{ background:#0A0A0A; }
+/* Кегль подписи задан здесь и только здесь: подгонка её не трогает (она шире
+   кружка по замыслу), а прежние 8-9px были самым мелким текстом лекции —
+   мельче, чем те же подписи на телефоне. */
+.radial-sat .rf-label{ font-size:calc(var(--sat-dot) * 0.215) !important; }
+.radial-core .rf-label{ font-size:calc(var(--core) * 0.155) !important; }
+
+/* ЯДРО — ПО ТОМУ ЖЕ ПРАВИЛУ. Внутри круга подпись не помещалась: у .radial-core
+   стоит overflow:hidden, и «ИИ‑агент» рвался переносом, а вторая строка просто
+   срезалась краем круга. Так было на КАЖДОЙ схеме («ИИ‑индекс зрелости»,
+   «Постоянное улучшение», «Цикл обучения»). Теперь круг — это иконка, а подпись
+   пилюлей под ним: одна строка, без переносов, читается поверх кольца.
+   Цвет текста задаётся здесь: в разметке на подписи висит Tailwind-класс
+   text-white, а вне тёмного круга белым по белому её не видно. */
+.radial-core{ overflow:visible !important; }
+/* Размер иконки ядра — доля диаметра, а не Tailwind-класс: на выросшем
+   круге фиксированные text-4xl читались точкой в центре пустого круга. */
+.radial-core > i{ margin-bottom:0 !important; font-size:calc(var(--core) * 0.50) !important; }
+.radial-core .rf-label{
+  position:absolute;
+  top:calc(100% + .32em);
+  background:#FFFFFF; color:#0A0A0A !important;
+  -webkit-text-fill-color:#0A0A0A;
+  padding:.08em .45em;
+  border-radius:.6em;
+  /* Коробка симметрично шире круга — подпись центрируется без transform
+     (см. ловушку 1 в шапке блока). */
+  left:calc(-1.1 * var(--core)); right:calc(-1.1 * var(--core));
+  width:max-content !important; max-width:none !important;
+  margin-left:auto !important; margin-right:auto !important;
+  white-space:nowrap !important;
+  text-align:center;
+  line-height:1.1 !important;
+  z-index:7;
+  pointer-events:none;
+}
+html.dark .radial-core .rf-label{ background:#0A0A0A; color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF; }
+
+/* Телефон: длинная подпись центра («Постоянное улучшение») в одну строку
+   дотягивалась до соседних кружков. Здесь, ПОСЛЕ базового nowrap, разрешаем
+   ей перенос — иначе правило выше побеждало по порядку. */
+@media (max-width:520px){
+  .radial-core .rf-label{
+    white-space:normal !important; max-width:7em !important;
+    left:calc(-1.8 * var(--core)) !important; right:calc(-1.8 * var(--core)) !important;
+    line-height:1.15 !important;
+  }
+  /* Боковые спутники стоят в 34.5% ширины фигуры от центра. На телефоне это
+     ~104px, а подпись в одну строку («Лучшая модель», «Учёт ошибок»,
+     «Инфраструктура») занимала 105-135px и налезала на подпись ядра. Ширины
+     подобраны так, чтобы между коробками оставалось ~16px: ядро 7.5em,
+     спутник 6.2em. */
+  /* Чем больше спутников, тем ближе соседние подписи: у схемы на 7-8
+     кружков коробка обязана быть уже, иначе соседи наезжают друг на друга.
+     Число спутников проставлено в разметке атрибутом data-sats. */
+  .radial-fig[data-sats="7"] .radial-sat .rf-label,
+  .radial-fig[data-sats="8"] .radial-sat .rf-label{ max-width:6em !important; }
+  .radial-fig[data-sats="6"] .radial-sat .rf-label{ max-width:8.6em !important; }
+  .radial-sat .rf-label{
+    white-space:normal !important; max-width:10.5em !important;
+    left:calc(-1.9 * var(--sat-dot)) !important; right:calc(-1.9 * var(--sat-dot)) !important;
+    line-height:1.15 !important;
+  }
 }
 </style>
 <script id="slide-notes" type="application/json">
@@ -2004,17 +2609,23 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
   background-color:rgba(255,255,255,.07) !important;
 }
 
-/* 5. Заголовки слайдов крупнее — на телефоне они читались мелко.
-   Если после увеличения контент не влезает, portal-fit ужмёт слайд целиком. */
+/* 5. ЗАГОЛОВКИ ВСЕХ СЛАЙДОВ — ОДНОГО ЭКРАННОГО РАЗМЕРА.
+   Кегль задаёт portal-fit инлайном (TARGET / zoom слайда), потому что у
+   каждого слайда свой масштаб: одинаковый CSS-кегль давал на экране разброс
+   в полтора раза. Здесь остаются только межстрочный интервал и запасной
+   размер на случай, если скрипт не отработал. Никаких `!important` на
+   font-size: они били инлайновый стиль, и подгонка не применялась вовсе. */
 @media (max-width:767px){
-  .slide-container h1{ font-size:clamp(1.5rem,7vw,2.05rem) !important; line-height:1.16 !important; }
-  .slide-container h2{ font-size:clamp(1.28rem,5.9vw,1.7rem) !important; line-height:1.2 !important; }
+  .slide-container h1{ font-size:1.5rem; line-height:1.16 !important; }
+  .slide-container h2{ font-size:1.5rem; line-height:1.2 !important; }
   .slide-container h3{ font-size:clamp(.95rem,3.9vw,1.15rem) !important; }
 }
 @media (min-width:768px){
-  .slide-container h1{ font-size:clamp(2.3rem,4.3vw,3.75rem) !important; line-height:1.1 !important; }
-  .slide-container h2{ font-size:clamp(1.8rem,3.3vw,2.9rem) !important; line-height:1.15 !important; }
+  .slide-container h1{ font-size:2.7rem; line-height:1.1 !important; }
+  .slide-container h2{ font-size:2.7rem; line-height:1.15 !important; }
 }
+/* Заголовок с проставленным кеглем от portal-fit — только он источник правды. */
+.slide-container [data-slide-title]{ text-wrap:balance; }
 
 /* 6. Резерв под говорящую голову. Базовый стиль давал .content-z 120px снизу
    именно под кружок, но portal-deck перебивал его симметричным padding-block
@@ -2024,10 +2635,8 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
   /* Инфографика стоит РОВНО по центру слайда: сверху и снизу одинаково.
      Раньше низ был втрое больше верха — резерв под говорящую голову, — и
      контент visibly уезжал вверх. Голова теперь просто лежит поверх него. */
-  .slide-container .content-z{
-    padding-top:calc(clamp(2.3rem,9vw,3rem) + 2*clamp(.55rem,2vw,1rem) + 14px) !important;
-    padding-bottom:calc(clamp(2.3rem,9vw,3rem) + 2*clamp(.55rem,2vw,1rem) + 14px) !important;
-  }
+  /* Полосы сверху/снизу считает portal-fit и ставит инлайном — здесь их
+     переопределять нельзя (см. комментарий у .slide-container .content-z). */
   .slide-container .content-z > h1,
   .slide-container .content-z > h2{ max-width:min(100%, 34rem); }
 }
@@ -2087,19 +2696,23 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    правому краю, а голова — своим правым краем к ним же, поэтому её центр
    уезжал левее пары. Считаем от центра головы, а не от края экрана. */
 :root{
-  --bub:clamp(176px,15.5vw,236px);   /* диаметр говорящей головы */
+  --bub:clamp(150px,12.5vw,196px);   /* диаметр говорящей головы */
   --arw:58px;                        /* диаметр кнопки листания */
   --arw-gap:14px;                    /* просвет между кнопками */
   --arw-pair:calc(2*var(--arw) + var(--arw-gap));
   --bub-right:20px;                  /* отступ головы от правого края */
 }
+/* Голова и стрелки живут ПОВЕРХ слайда и на его раскладку не влияют вовсе
+   (правило заказчика). Поэтому важно одно: чтобы сам угол был как можно
+   компактнее. Стрелки стоят ПОД головой — так угол занимает ширину одной
+   головы, а не головы плюс двух кнопок в ряд. */
 #video-bubble{
   width:var(--bub) !important; height:var(--bub) !important;
   left:auto !important; right:var(--bub-right) !important;
-  top:auto !important; bottom:calc(22px + var(--arw) + 16px) !important;
+  top:auto !important; bottom:calc(16px + var(--arw) + 12px) !important;
 }
 #nav-prev, #nav-next{
-  top:auto !important; bottom:22px !important; transform:none !important;
+  top:auto !important; bottom:16px !important; transform:none !important;
   width:var(--arw) !important; height:var(--arw) !important;
   left:auto !important;
 }
@@ -2109,9 +2722,26 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
 #nav-prev i, #nav-next i{ font-size:1.35rem !important; }
 
 @media (max-width:1023px){
-  :root{ --bub:clamp(128px,32vw,168px); --arw:52px; --arw-gap:12px; --bub-right:14px; }
-  #video-bubble{ bottom:calc(16px + var(--arw) + 12px) !important; }
-  #nav-prev, #nav-next{ bottom:16px !important; }
+  :root{ --bub:clamp(112px,27vw,140px); --arw:46px; --arw-gap:10px; --bub-right:12px; }
+}
+
+/* ТЕЛЕФОН: голова и стрелки расходятся по углам и встают в ОДИН нижний ряд.
+   Раньше они стояли стопкой в правом углу и занимали полосу высотой ~190px —
+   аудит наложений показал, что голова закрывала текст на 24 слайдах из 42
+   («Человек в центре», «Пройти тест», примечания снизу). Ряд занимает высоту
+   одной головы, эту полосу portal-fit резервирует (chromeBand), и содержимое
+   до неё уже не доходит. Канон заказчика — «никаких наложений текста». */
+@media (max-width:767px){
+  :root{ --bub:clamp(84px,23vw,104px); --arw:44px; --arw-gap:10px; }
+  #video-bubble{
+    left:12px !important; right:auto !important;
+    bottom:14px !important;
+  }
+  #nav-prev, #nav-next{
+    bottom:calc(14px + (var(--bub) - var(--arw))/2) !important;
+  }
+  #nav-next{ right:12px !important; }
+  #nav-prev{ right:calc(12px + var(--arw) + var(--arw-gap)) !important; }
 }
 
 /* Широкие экраны. До 1600px всё как было — ступени начинаются выше, поэтому
@@ -2121,12 +2751,12 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    пикселях — на 2560 контент занимал 64% ширины островом, а вся обвязка
    выглядела мелкой. Дорожная карта в тех же условиях масштабируется целиком
    через body{zoom} 1.15 / 1.3 / 1.5 — повторяем те же ступени и те же границы.
-   Шапку масштабируем `zoom`ом как одно целое: лого, кнопки и «Консультация»
+   Шапку масштабируем `zoom`ом как одно целое: лого, кнопки и «Буткемп»
    растут вместе и не разъезжаются. Голову и кнопки листания растим через
    переменные — вся геометрия пары кнопок под головой считается от них,
    поэтому центрирование сохраняется само. */
 @media (min-width:1600px){
-  :root{ --bub:clamp(176px,15.5vw,271px); --arw:67px; --arw-gap:16px; --bub-right:23px; }
+  :root{ --bub:clamp(150px,12.5vw,226px); --arw:60px; --arw-gap:14px; --bub-right:23px; }
   #lecture-header{ zoom:1.15; }
 }
 @media (min-width:1900px){
@@ -2211,19 +2841,9 @@ html:not(.dark) .slide-container [class*="text-black/4"]{ color:rgba(0,0,0,.58) 
 html.dark .slide-container [class*="text-white/3"],
 html.dark .slide-container [class*="text-white/4"]{ color:rgba(255,255,255,.62) !important; }
 
-/* 21. ПРИЧИНА «скачков при наведении» на радиальных схемах: portal-deck гасит
-   любой transform на :hover, включая тот, которым элемент ЦЕНТРИРУЕТСЯ
-   (-translate-x-1/2). Спутник под курсором прыгал на полразмера.
-   Возвращаем именно центрирующий сдвиг. */
-.slide-container [class*="-translate-x-1/2"][class*="-translate-y-1/2"]:hover{
-  transform:translate(-50%,-50%) !important;
-}
-.slide-container [class*="-translate-x-1/2"]:not([class*="-translate-y-1/2"]):hover{
-  transform:translateX(-50%) !important;
-}
-.slide-container [class*="-translate-y-1/2"]:not([class*="-translate-x-1/2"]):hover{
-  transform:translateY(-50%) !important;
-}
+/* 21. Компенсация центрирующего сдвига на :hover больше не нужна: сплошной
+   `transform:none` убран (см. FR-LECTURE-20 выше), постоянные трансформы
+   при наведении никто не снимает, и возвращать нечего. */
 
 /* 22. Автоперенос рвал русские слова без дефиса («Неформализован/ные»):
    у браузера нет словаря переносов для русского. Переносим только по
@@ -2231,12 +2851,11 @@ html.dark .slide-container [class*="text-white/4"]{ color:rgba(255,255,255,.62) 
 .slide-container h1, .slide-container h2,
 .slide-container h3, .slide-container h4{ hyphens:manual !important; }
 
-/* 23. При открытой панели слайд сжимается вправо, а кружок с головой остаётся
-   на месте — широкие нижние плашки доезжали до него правым краем.
-   Отводим контент от зоны кружка. */
-@media (min-width:1024px){
-  body.notes-open .slide-container .content-z{ padding-right:calc(var(--bub) + 36px) !important; }
-}
+/* 23 (отменено). Раньше при открытой панели контенту добавлялся padding-right
+   под кружок с головой — но это ПЕРЕСТРАИВАЛО раскладку (карточки ужимались
+   и текст переносился иначе). Требование заказчика: при открытии текста
+   элементы не меняют форму, меняется только масштаб. Кружок, как и при
+   закрытой панели, просто лежит поверх слайда. */
 
 /* 15. В круговых схемах номера шагов не нужны (решение заказчика): они
    съедали высоту подписи и заставляли ломать слова. Сама фигура и всё
@@ -2248,6 +2867,84 @@ html.dark .slide-container [class*="text-white/4"]{ color:rgba(255,255,255,.62) 
 /* 16. Финальный слайд-обложка: фиолетовый доходит до самого низа, под полосой
    прогресса не остаётся чужой полоски фона. */
 .slide-container[class~="bg-black"]{ padding-bottom:0 !important; }
+
+/* 16b. Подсвеченный столбец диаграммы «Пять уровней»: scale-105 растёт от
+   ОСНОВАНИЯ, а не от центра — низ столбца не проваливается под базовую линию. */
+.slide-container [class*="rounded-t-"][class*="scale-105"]{ transform-origin:center bottom; }
+
+/* 16c. Точки-маркеры таймлайна (bg-white + border-4 + rounded-full): в тёмной
+   теме правило 18 делало их полупрозрачными, и линия таймлайна просвечивала
+   сквозь маркер. Маркеры непрозрачные. */
+html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounded-full"]{
+  background-color:#2E2E2E !important;
+}
+
+/* 24. «Дрыгание» при наведении: portal-deck гасит любой transform на :hover,
+   а у восьми акцентных карточек масштаб СТАТИЧЕСКИЙ (md:scale-105 /
+   lg:scale-105) — под курсором карточка сжималась и прыгала обратно.
+   Возвращаем статический масштаб (правило 21 сделало то же для
+   центрирующих -translate-сдвигов). */
+@media (min-width:768px){
+  .slide-container [class*="md:scale-105"]:hover{ transform:scale(1.05) !important; }
+}
+@media (min-width:1024px){
+  .slide-container [class*="lg:scale-105"]:hover{ transform:scale(1.05) !important; }
+}
+
+/* 25. На слайдах нечего нажимать — курсор всюду обычный; единственная
+   настоящая кнопка — «Пройти тест» на финальном слайде. */
+.slide-container .content-z, .slide-container .content-z *{ cursor:default; }
+.slide-container #open-quiz-btn, .slide-container #open-quiz-btn *{ cursor:pointer; }
+
+/* 26. Галочки/крестики списков: глиф центрируется по ПЕРВОЙ строке текста на
+   любом брейкпоинте. Фиксированный mt-0.5 при разных кеглях иконки и текста
+   давал разнобой — иконка то ниже, то выше строки. */
+.slide-container li > i[class*="ph-check"],
+.slide-container li > i[class*="ph-x"]{
+  margin-top:0 !important; line-height:inherit !important; align-self:flex-start;
+}
+
+/* 27. Подпись под «Практическим заданием» на экране результата теста. */
+.quiz-soon{
+  margin:0 auto; display:block; max-width:24rem;
+  font-size:.78rem; font-weight:600; letter-spacing:.02em; color:rgba(255,255,255,.55);
+}
+.quiz-soon i{ color:#F97316; margin-right:.4rem; }
+
+/* 29. Бейдж («ЯДРО», «МОЗГ») висит на верхнем крае карточки абсолютом. Своей
+   высоты он карточке не добавляет, поэтому первая строка содержимого — как
+   правило иконка — оказывалась ПОД ним и была видна наполовину. Даём карточке
+   верхний отступ ровно под бейдж. */
+.slide-container [class*="relative"]:has(> [class*="-top-2"]),
+.slide-container [class*="relative"]:has(> [class*="-top-3"]){
+  padding-top:1.5rem !important;
+}
+
+/* 28. МАРКЕР СТОИТ ВПЛОТНУЮ К СВОЕМУ ТЕКСТУ.
+   Строка «иконка + подпись» была flex-строкой с justify-center. Пока подпись
+   влезала в одну строку, всё выглядело правильно («ЧЕЛОВЕК В ЦЕНТРЕ»). Но как
+   только подпись переносилась на две, текстовый флекс-элемент растягивался на
+   всю ширину карточки — маркер уезжал к левому краю, а текст центрировался
+   отдельно от него, и между ними зияла дыра в полкарточки.
+   Делаем такие строки строчными: иконка становится частью ПЕРВОЙ строки и
+   центрируется ВМЕСТЕ с текстом. Зазор задаём margin'ом — gap во flex больше
+   не действует, да и просили галочки ближе к тексту.
+   :not([class*="flex-col"]) обязателен — под селектор иначе попадают карточки
+   с колоночной раскладкой, и они бы рассыпались. */
+.slide-container li[class*="justify-center"],
+.slide-container div[class~="w-full"][class*="uppercase"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]),
+.slide-container div[class*="text-center"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]){
+  display:block !important;
+  text-align:center !important;
+}
+.slide-container li[class*="justify-center"] > i,
+.slide-container div[class~="w-full"][class*="uppercase"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]) > i,
+.slide-container div[class*="text-center"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]) > i{
+  display:inline-block !important;
+  vertical-align:-.1em;
+  margin:0 .3em 0 0 !important;
+  align-self:auto !important;
+}
 </style>
 
 <style id="notes-panel-style">
@@ -2273,7 +2970,7 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
 .notes-head{
   flex:0 0 auto; display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem;
   /* сверху резерв под логотип AIT: он остаётся видимым НАД панелью */
-  padding:calc(clamp(2.3rem,9vw,3.2rem) + clamp(1.1rem,4vw,1.7rem)) clamp(1rem,2.6vw,1.6rem) .85rem;
+  padding:calc(clamp(2.3rem,9vw,3.2rem) + clamp(1.5rem,5vw,2.3rem)) clamp(1rem,2.6vw,1.6rem) .85rem;
   border-bottom:1px solid rgba(0,0,0,.09);
   background:linear-gradient(180deg, rgba(139,92,246,.07), rgba(139,92,246,0));
 }
@@ -2423,20 +3120,27 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 
 /* --- Раскладка при открытой панели --- */
 /* Десктоп: панель слева, инфографика и прогресс сдвигаются вправо на её ширину */
+/* Раньше слайд физически сужался (left/width), раскладка перестраивалась под
+   узкую колонку, и зритель успевал увидеть «неправильный» кадр до того, как
+   portal-fit пересчитает масштаб. Теперь слайд остаётся во всю ширину, а
+   содержимое одной анимацией уезжает вправо и уменьшается ровно во столько
+   раз, во сколько сузилась свободная полоса: раскладка не меняется ВООБЩЕ,
+   меняется только размер (FR-LECTURE-33). --fit-shrink считает скрипт. */
+/* --fit-shift — вертикальный сдвиг от portal-fit: сверху полоса шапки, снизу
+   стрелок и кружка, полосы разной высоты, и содержимое смещается на половину
+   разницы, чтобы стоять по центру СВОБОДНОЙ зоны. */
+.content-z{
+  transform-origin:center center;
+  transform:translateY(var(--fit-shift, 0px));
+  transition:transform .38s cubic-bezier(.22,1,.36,1);
+}
 @media (min-width:1024px){
-  body.notes-open .slide-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
+  body.notes-open .slide-container .content-z{
+    transform:translateX(calc(var(--notes-w) / 2)) translateY(var(--fit-shift, 0px)) scale(var(--fit-shrink,1));
+  }
   body.notes-open #progress-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
 }
-/* Слайд стал уже — слова НЕ должны рваться посреди («Автономност|ь»).
-   Переносим только по пробелам, а вписывание берёт на себя portal-fit (zoom). */
-@media (min-width:1024px){
-  body.notes-open .slide-container h1, body.notes-open .slide-container h2,
-  body.notes-open .slide-container h3, body.notes-open .slide-container h4,
-  body.notes-open .slide-container p,  body.notes-open .slide-container li,
-  body.notes-open .slide-container span{
-    overflow-wrap:normal !important; word-break:normal !important; hyphens:none !important;
-  }
-}
+@media (prefers-reduced-motion: reduce){ .content-z{ transition:none; } }
 /* Мобилка: панель на весь экран поверх всего */
 @media (max-width:1023px){
   #notes-panel{ width:100%; border-right:none; }
@@ -2540,7 +3244,7 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
     document.body.classList.toggle('notes-open', open);
     panel.setAttribute('aria-hidden', open ? 'false' : 'true');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.innerHTML = '<i class="ph-fill ph-book-open-text"></i>';
+    toggle.innerHTML = '<i class="ph-fill ph-book-open-text"></i><span>Текст</span>';
     if(open) render(activeIdx());
     // Пересчёт вписывания слайда: ширина слайда изменилась (portal-fit слушает resize)
     setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 40);

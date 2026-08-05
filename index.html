@@ -918,7 +918,7 @@
                 <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-user-tie" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Executive Management</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Strategic leadership in AI transformation</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
               </div>
               <div class="card rail-item" style="--accent:#F97316; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
-                <a href="https://andre.technology/automation/" rel="noopener" aria-label="Открыть курс по ИИ-автоматизации" style="display: flex; align-items: center; gap: 0.9rem; color: inherit;"><i class="fa-solid fa-gears" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Process Automation</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Automating business workflows with AI agents</p></div><span class="card-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+                <a href="https://andre.technology/automation/" data-href-en="https://andre.technology/automation/" data-href-ru="https://andre.technology/automation_ru/" rel="noopener" aria-label="Открыть курс по ИИ-автоматизации" style="display: flex; align-items: center; gap: 0.9rem; color: inherit;"><i class="fa-solid fa-gears" style="font-size: 28px; color: #F97316; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Process Automation</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Automating business workflows with AI agents</p></div><span class="card-go"><i class="fa-solid fa-arrow-right"></i></span></a>
               </div>
               <div class="card rail-item" style="--accent:#8854F3; padding: 1.1rem; text-align: left; display: flex; flex-direction: column;">
                 <div style="display: flex; align-items: center; gap: 0.9rem;"><i class="fa-solid fa-box-open" style="font-size: 28px; color: #8854F3; width: 2.4rem; text-align: center; flex-shrink: 0;"></i><div style="flex: 1; min-width: 0;"><h3 style="margin: 0 0 0.15rem 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">Product Development</h3><p style="margin: 0; font-size: 11px; line-height: 1.35; color: #94a3b8;">Create New Products End-to-End with AI</p></div><span class="card-loading" role="status" aria-label="В разработке"></span></div>
@@ -1277,6 +1277,11 @@
       if (v != null) el.setAttribute('placeholder', v);
     });
     document.querySelectorAll('.lang-opt').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-lang') === lang); });
+    /* у входа в курс своя страница на каждый язык (FR-SITE23) — ведём на нужную */
+    document.querySelectorAll('[data-href-ru]').forEach(function (el) {
+      var href = lang === 'ru' ? el.getAttribute('data-href-ru') : el.getAttribute('data-href-en');
+      if (href) el.setAttribute('href', href);
+    });
     /* кнопка формы управляется из JS (Sending/Contact me) — синхронизируем и её */
     if (leadSubmit && !leadSubmit.disabled) leadSubmit.textContent = L('Contact me', 'Связаться со мной');
     storeSet(LANG_KEY, lang);

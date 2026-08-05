@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<meta name="color-scheme" content="dark light">
+<script>
+/* Тема — до первой отрисовки, чтобы светлая не мигала чёрным. */
+(function(){try{if(localStorage.getItem('welcome-theme')==='light')document.documentElement.classList.add('light');}catch(e){}})();
+/* Язык: страница у каждого языка своя (адрес без пометки — английский,
+   с суффиксом _ru — русский). Если посетитель уже выбирал язык на
+   andre.technology, один раз за вкладку уводим его на нужную версию.
+   Роботам и превью-скрейперам это не мешает: они JS не исполняют. */
+(function(){
+  try{
+    if (sessionStorage.getItem('ait_lang_hop') === '1') return;
+    var pref = localStorage.getItem('ait_lang');
+    if ((pref === 'ru' || pref === 'en') && pref !== 'ru'){
+      sessionStorage.setItem('ait_lang_hop', '1');
+      location.replace('/automation/' + location.hash);
+    }
+  }catch(e){}
+})();
+</script>
+<title>Курс по автоматизации бизнес-процессов с помощью ИИ-агентов</title>
+<meta name="description" content="Курс для будущих ИИ-консультантов, ИИ-инженеров по автоматизации и ИИ-основателей: находить процессы для автоматизации, собирать ИИ-агентов и получать измеримый экономический эффект.">
+
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<link rel="canonical" href="https://andre.technology/automation_ru/">
+<link rel="alternate" hreflang="en" href="https://andre.technology/automation/">
+<link rel="alternate" hreflang="ru" href="https://andre.technology/automation_ru/">
+<link rel="alternate" hreflang="x-default" href="https://andre.technology/automation/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Andre AI Technologies">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Курс по автоматизации бизнес-процессов с помощью ИИ-агентов">
+<meta property="og:description" content="Курс для будущих ИИ-консультантов, ИИ-инженеров по автоматизации и ИИ-основателей: находить процессы для автоматизации, собирать ИИ-агентов и получать измеримый экономический эффект.">
+<meta property="og:url" content="https://andre.technology/automation_ru/">
+<meta property="og:image" content="https://andre.technology/assets/cover_auto.jpg">
+<meta property="og:image:width" content="960">
+<meta property="og:image:height" content="540">
+<meta property="og:image:alt" content="Курс по автоматизации бизнес-процессов с помощью ИИ-агентов">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Курс по автоматизации бизнес-процессов с помощью ИИ-агентов">
+<meta name="twitter:description" content="Курс для будущих ИИ-консультантов, ИИ-инженеров по автоматизации и ИИ-основателей: находить процессы для автоматизации, собирать ИИ-агентов и получать измеримый экономический эффект.">
+<meta name="twitter:image" content="https://andre.technology/assets/cover_auto.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  /* ============================================================
+     Andre AIT — вход в курс. Один экран = один блок.
+     Ни страница, ни сам блок не прокручиваются: колесо, свайп,
+     стрелки и точки справа переключают блок целиком. Если блок
+     не влезает в экран, скрипт ужимает его содержимое — резать
+     нельзя, листать внутри блока тоже нельзя.
+     ============================================================ */
+  :root{
+    --bg:#050505; --fg:#E5E7EB; --muted:rgba(255,255,255,.55);
+    --card-bg:rgba(255,255,255,.04); --card-border:rgba(255,255,255,.10);
+    --divider:rgba(255,255,255,.12); --navitem:rgba(255,255,255,.60);
+    --btn-bg:#FAFAFA; --btn-fg:#050505;
+    --ctrl-bg:rgba(255,255,255,.05); --ctrl-border:rgba(255,255,255,.10); --ctrl-fg:rgba(255,255,255,.80);
+    --tile-bg:#15151b;
+  }
+  html.light{
+    --bg:#FAFAFA; --fg:#0A0A0A; --muted:rgba(10,10,10,.55);
+    --card-bg:#fff; --card-border:rgba(0,0,0,.07);
+    --divider:rgba(0,0,0,.10); --navitem:rgba(0,0,0,.55);
+    --btn-bg:#0A0A0A; --btn-fg:#FAFAFA;
+    --ctrl-bg:rgba(0,0,0,.03); --ctrl-border:rgba(0,0,0,.10); --ctrl-fg:rgba(0,0,0,.70);
+    --tile-bg:#fff;
+  }
+  /* На белом фоне фирменный оранжевый выцветает (2.7:1), а вторичный текст
+     проваливается ниже 4.5:1 — в светлой теме берём те же цвета потемнее. */
+  html.light{ --muted:rgba(10,10,10,.62); }
+  html.light .flame, html.light .ico.f{ color:#D9520A; }
+  html.light .learn li:hover{ border-color:rgba(217,82,10,.45) }
+
+  *{box-sizing:border-box}
+  /* Обычная прокручиваемая страница: от «листания по блокам» отказались
+     (правка заказчика). Блоки просто идут друг за другом, прокрутка плавная. */
+  html{scroll-behavior:smooth}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--fg);
+    transition:background .25s ease,color .25s ease;
+    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1,h2,h3{letter-spacing:-.02em;margin:0}
+  ::selection{background:#8854F3;color:#fff}
+  a{text-decoration:none;color:inherit}
+  button{font-family:inherit;cursor:pointer}
+  *:focus-visible{outline:2px solid #8854F3;outline-offset:2px}
+  .plum{color:#8854F3}
+  .flame{color:#F97316}
+
+  /* Теней нет нигде (канон сайта) */
+  *, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
+  [class*="drop-shadow"]{ filter:none !important; }
+  img{ filter:none !important; }
+
+  @keyframes gradientShimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  @keyframes floatY{0%{transform:translateY(0)}50%{transform:translateY(-9px)}100%{transform:translateY(0)}}
+  @keyframes bounceDown{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+  @keyframes riseIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  /* ===== Grain (как на главном сайте) ===== */
+  .grain{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.06;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-size:180px 180px}
+  html.light .grain{mix-blend-mode:multiply;opacity:.04}
+
+  /* ===== Шапка =============================================================
+     Геометрия один в один с главной andre.technology: те же отступы шапки,
+     тот же размер логотипа, тот же переключатель языка и та же правая кнопка.
+     Роль бургера (круглая кнопка между языком и CTA) здесь играет переключатель
+     темы — размеры у него бургерные, поэтому ряд собирается точно так же. */
+  header{position:fixed;top:0;left:0;right:0;z-index:40;pointer-events:none;padding:1.1rem}
+  @media(min-width:1024px){header{padding:2rem}}
+  .header-row{position:relative;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+  .header-left{pointer-events:auto;display:flex;align-items:center;gap:.5rem;min-width:0}
+  .header-right{pointer-events:auto;display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+
+  .logo-btn{display:inline-flex;align-items:center;background:none;border:0;padding:0;cursor:pointer;flex-shrink:0}
+  .logo-img{width:clamp(2.85rem,12vw,3.7rem);height:clamp(2.85rem,12vw,3.7rem);object-fit:contain;transition:transform .2s ease}
+  @media(min-width:1024px){.logo-img{width:3.6rem;height:3.6rem}}
+  .logo-btn:hover .logo-img{transform:scale(1.05)}
+
+  /* Переключатель языка — как на главной: EN | RU, активный подсвечен.
+     Здесь это ссылки: у каждого языка своя страница со своим веб-превью.
+     На мобилке свободное место в шапке слева, поэтому переключатель уезжает
+     туда (margin-right:auto), а круглая кнопка и CTA остаются прижаты вправо. */
+  .lang-switch{display:flex;align-items:center;gap:.3rem;margin-right:clamp(.5rem,3.5vw,1.4rem);flex-shrink:0}
+  @media(max-width:1023px){
+    .header-right{flex:1 0 auto}
+    .lang-switch{margin-left:clamp(.5rem,2.2vw,1.5rem);margin-right:auto}
+  }
+  .lang-opt{background:none;border:0;padding:.2rem .05rem;font-size:11px;font-weight:500;
+    color:var(--navitem);letter-spacing:.08em;transition:color .2s ease;cursor:pointer}
+  .lang-opt.active{color:var(--fg);font-weight:700}
+  @media(hover:hover){.lang-opt:hover{color:var(--fg)}}
+  .lang-sep{color:var(--divider);font-size:10px;user-select:none}
+  @media(min-width:1024px){.lang-opt{font-size:12px}.lang-switch{margin-right:2rem}}
+  @media(min-width:1024px) and (max-width:1319px){.lang-switch{gap:.12rem;margin-right:1rem}.lang-opt{font-size:11px;letter-spacing:0}}
+
+  .ctrl{display:flex;align-items:center;justify-content:center;width:clamp(2.5rem,11vw,3.3rem);height:clamp(2.5rem,11vw,3.3rem);border-radius:999px;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);font-size:clamp(.95rem,3.2vw,1.15rem);line-height:1;flex-shrink:0;transition:background .2s ease}
+  @media(min-width:1024px){.ctrl{width:2.85rem;height:2.85rem;font-size:1.05rem}}
+  .ctrl:hover{background:rgba(136,84,243,.14)}
+
+  /* ===== CTA-кнопки: белые, шиммер-градиент на ховере ===== */
+  .btn-white{
+    display:inline-flex;align-items:center;justify-content:center;gap:.55rem;border:0;
+    border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+    background:var(--btn-bg);color:var(--btn-fg);
+    transition:all .3s ease;white-space:nowrap;
+  }
+  .btn-white:hover{
+    background:linear-gradient(100deg,#8854F3 0%,#F97316 50%,#8854F3 100%);background-size:250% 250%;
+    color:#fff;transform:translateY(-2px);
+    animation:gradientShimmer 4.5s ease infinite;
+  }
+  /* Правая кнопка шапки — те же размеры, что «Free AI Diagnostic» на главной */
+  /* Кнопка шапки. Класс исторический (раньше вела на буткемп) — теперь это
+     тот же вход в курс, что и кнопка внизу: призыв к действию на странице один. */
+  .consult{padding:clamp(.7rem,2.4vw,1.05rem) clamp(1rem,3.6vw,1.6rem);font-size:clamp(11px,3.1vw,15px);letter-spacing:clamp(.06em,.4vw,.1em);gap:clamp(.4rem,1.2vw,.6rem)}
+  @media(min-width:1024px){.consult{height:2.85rem;box-sizing:border-box;padding:0 1.6rem;font-size:14px;letter-spacing:.13em;gap:.55rem}}
+  @media(min-width:1024px) and (max-width:1319px){.consult{padding:0 1.1rem;font-size:12px;letter-spacing:.08em;gap:.4rem}}
+  @media(min-width:1320px) and (max-width:1479px){.consult{padding:0 1.35rem;font-size:13px;letter-spacing:.12em;gap:.5rem}}
+  /* ≤380px — компактная шапка, как на главной: четыре элемента в строку иначе не влезают */
+  @media(max-width:380px){
+    header{padding:.85rem .6rem}
+    .header-right{flex:0 0 auto;gap:.3rem}
+    .lang-switch{margin-left:0;margin-right:.25rem;gap:.12rem}
+    .lang-opt{font-size:10px;letter-spacing:.03em}
+    .logo-img{width:2.5rem;height:2.5rem}
+    .ctrl{width:2.3rem;height:2.3rem}
+    .consult{padding:.62rem .7rem;font-size:10px;letter-spacing:.02em}
+  }
+
+  /* Широкие экраны: масштабируем весь UI (как на главном сайте) */
+  @media(min-width:1600px){body{zoom:1.15}}
+  @media(min-width:1900px){body{zoom:1.3}}
+  @media(min-width:2300px){body{zoom:1.5}}
+
+  /* ===== Блоки страницы =====
+     Ритм страницы, а не «экран на блок»: min-height:100svh раздувал каждый
+     блок до полной высоты окна и оставлял между ними провалы в 300-450px.
+     Отступы такие же, как на странице буткемпа — блоки идут плотно и
+     читаются подряд, обычной прокруткой. */
+  .deck{position:relative;z-index:2}
+  .panel{
+    position:relative;display:flex;
+    padding:clamp(1.8rem,4.5vh,2.8rem) 1rem;
+  }
+  .panel:first-child{padding-top:clamp(6.5rem,17vh,9rem)}
+  .panel:last-child{padding-bottom:clamp(3.5rem,9vh,5.5rem)}
+  @media(min-width:640px){.panel{padding-left:2rem;padding-right:2rem}}
+  .wrap{margin:auto;width:100%;max-width:68rem;text-align:center}
+
+  /* Появление содержимого — когда блок доехал до экрана (IntersectionObserver
+     ставит класс .in). Пока блок не показывался, его содержимое приспущено. */
+  .panel .wrap > *{opacity:0;transform:translateY(16px)}
+  .panel.in .wrap > *{animation:riseIn .55s cubic-bezier(.22,1,.36,1) forwards}
+  .panel.in .wrap > *:nth-child(2){animation-delay:.06s}
+  .panel.in .wrap > *:nth-child(3){animation-delay:.12s}
+  .panel.in .wrap > *:nth-child(4){animation-delay:.18s}
+  .panel.in .wrap > *:nth-child(n+5){animation-delay:.24s}
+
+  /* ===== Блок 1: о курсе ===== */
+  /* zoom, а не transform: transform уменьшает только отрисовку, в потоке ряд
+     продолжал занимать полную высоту — подгонка блока считала её и ужимала
+     первый экран сильнее, чем требовалось. */
+  .float-row{display:flex;justify-content:center;align-items:flex-end;gap:.85rem;zoom:.82;margin:0 0 .25rem}
+  @media(min-width:640px){.float-row{zoom:1;margin-bottom:.85rem}}
+  .tile{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--tile-bg);border:1px solid var(--card-border);border-radius:1rem;animation:floatY 4s ease-in-out infinite}
+  .tile.sm{width:4rem;height:6rem;gap:.6rem}
+  .tile.lg{width:5rem;height:7.3rem;gap:.65rem;border-radius:1.1rem}
+  .tile .bar{height:3px;border-radius:2px}
+  .tile.sm .bar{width:1.8rem}
+  .tile.lg .bar{width:2.25rem}
+
+  .hero{font-size:clamp(1.55rem,5vw,3.3rem);font-weight:800;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;padding-top:.5rem}
+  .hero span.line{display:block}
+  .hero .plum,.hero .flame{white-space:nowrap}
+  .desc{color:var(--muted);max-width:min(62em,92vw);margin:1.35rem auto 0;font-size:clamp(15.5px,1.18vw,24px);line-height:1.6}
+  .desc .lb{display:none}
+  @media (min-width:680px){ .desc .lb{display:inline} }
+
+
+  /* заголовки блоков */
+  .h2{text-align:center;font-size:clamp(1.6rem,4.4vw,2.2rem);font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+  @media(min-width:1024px){.h2{font-size:clamp(2.4rem,2.6vw,3.2rem)}}
+
+  /* ===== Блок 2: для кого ===== */
+  .roles{margin-top:1.8rem;display:grid;grid-template-columns:1fr;gap:1rem}
+  @media(min-width:640px){.roles{grid-template-columns:repeat(3,1fr)}}
+  .card{border:1px solid var(--card-border);background:var(--card-bg);border-radius:1rem;transition:transform .2s ease,border-color .2s ease}
+  .card:hover{transform:translateY(-3px);border-color:rgba(136,84,243,.45)}
+  .role{padding:1.7rem 1.45rem;text-align:center}
+  .role .ico{margin:0 auto 1rem;display:inline-flex;align-items:center;justify-content:center;height:clamp(3.7rem,5vw,5rem);width:clamp(3.7rem,5vw,5rem);border-radius:1.1rem;font-size:clamp(1.6rem,2.2vw,2.2rem)}
+  .ico.p{background:rgba(136,84,243,.15);color:#8854F3}
+  .ico.f{background:rgba(249,115,22,.15);color:#F97316}
+  .role h3{font-size:clamp(1.08rem,1.45vw,1.4rem);font-weight:700;text-transform:uppercase}
+  /* Заголовок средней карточки занимает две строки — резерв даём всем трём,
+     иначе описания в ряду начинаются с разной высоты. */
+  @media(min-width:640px){.role h3{min-height:2.5em;display:flex;align-items:center;justify-content:center}}
+  .role p{color:var(--muted);margin:.55rem 0 0;font-size:clamp(.85rem,1.1vw,1.05rem);line-height:1.6}
+  .nb{white-space:nowrap}   /* «ИИ-агентами» не разрывается по дефису */
+
+  /* ===== Блок 3: чему научитесь ===== */
+  /* Номеров у пунктов нет: они ничего не сообщали, а резерв справа перекашивал
+     строку. Отступы поэтому симметричные. */
+  .learn{margin:1.8rem auto 0;max-width:67rem;display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem;list-style:none;padding:0;text-align:left}
+  @media(max-width:639px){.learn{grid-template-columns:1fr}}
+  .learn li{position:relative;display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border-radius:1rem;border:1px solid var(--card-border);background:var(--card-bg);transition:transform .2s ease,border-color .2s ease}
+  .learn li:hover{transform:translateY(-2px);border-color:rgba(249,115,22,.45)}
+  .learn .ico{height:clamp(2.4rem,3.3vw,3.1rem);width:clamp(2.4rem,3.3vw,3.1rem);border-radius:.65rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:clamp(1.1rem,1.55vw,1.5rem)}
+  .learn p{margin:0;font-size:clamp(.85rem,1.45vw,1.1rem);line-height:1.4}
+
+  /* ===== CTA ===== */
+  .cta-row{margin:1.9rem 0 0;display:flex;justify-content:center}
+  /* Кнопка на странице одна — она и есть главный акцент, поэтому крупнее
+     прежних трёх одинаковых. */
+  .btn-start{padding:clamp(1.3rem,1.45vw,2.1rem) clamp(2.7rem,3vw,4.6rem);font-size:clamp(15px,1.15vw,23px);letter-spacing:.15em}
+
+
+
+  /* Телефон: тот же ритм, только плотнее и с узкими полями. */
+  @media (max-width:639px){
+    .panel{padding:clamp(1.4rem,4vh,2.2rem) 1.4rem}
+    .panel:first-child{padding-top:clamp(5.2rem,13vh,6.4rem)}
+    .panel:last-child{padding-bottom:clamp(2.6rem,7vh,3.6rem)}
+    .desc{margin-top:1rem}
+    .cta-row{margin-top:1.15rem}
+    .roles{margin-top:1.2rem;gap:.65rem}
+    .role{padding:1.05rem 1rem}
+    .role .ico{height:2.9rem;width:2.9rem;margin-bottom:.6rem;font-size:1.25rem;border-radius:.9rem}
+    .role p{margin-top:.35rem;line-height:1.5}
+    .learn{margin-top:1.15rem;gap:.4rem}
+    .learn li{padding:.55rem .8rem;gap:.65rem;border-radius:.8rem}
+    .learn .ico{height:2.15rem;width:2.15rem;font-size:1rem;border-radius:.55rem}
+    .learn p{font-size:.82rem;line-height:1.3}
+  }
+  /* Низкие окна отдельным правилом больше не ужимаем: блоки не обязаны
+     влезать в экран, страница прокручивается обычным образом. */
+
+  @media print{
+    .panel{page-break-after:always}
+    .panel .wrap > *{opacity:1;transform:none}
+    header{display:none}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .panel .wrap > *{opacity:1;transform:none;animation:none}
+    .tile{animation:none}
+    .btn-white:hover{animation:none;transform:none}
+  }
+</style>
+<noscript><style>
+  /* Без скрипта появление блоков не запустится — показываем сразу. */
+  .panel .wrap > *{opacity:1;transform:none}
+  #theme{display:none}
+</style></noscript>
+</head>
+<body>
+
+  <div class="grain"></div>
+
+  <!-- HEADER -->
+  <header id="hdr">
+    <div class="header-row">
+      <div class="header-left">
+        <button class="logo-btn" aria-label="На главную" onclick="location.href='https://andre.technology'">
+          <img class="logo-img" src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="Andre AI">
+        </button>
+      </div>
+      <div class="header-right">
+        <div class="lang-switch" role="group" aria-label="Язык">
+          <a class="lang-opt" data-lang="en" href="/automation/" hreflang="en">EN</a>
+          <span class="lang-sep" aria-hidden="true">|</span>
+          <a class="lang-opt active" data-lang="ru" href="/automation_ru/" hreflang="ru" aria-current="true">RU</a>
+        </div>
+        <button class="ctrl" id="theme" aria-label="Сменить фон (тёмный/светлый)"><i class="fa-solid fa-sun"></i></button>
+        <button class="btn-white consult" onclick="location.href='https://andre.technology/automation/main'" aria-label="Начать обучение">
+          <span class="txt">Начать обучение</span>
+          <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="deck" id="deck">
+
+    <!-- ===== 1. О КУРСЕ ===== -->
+    <section class="panel" id="course" aria-label="О курсе">
+      <div class="wrap">
+        <div class="float-row" aria-hidden="true">
+          <div class="tile sm" style="border-color:rgba(136,84,243,.3)"><i class="fa-solid fa-magnifying-glass-chart" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,.5)"></div></div>
+          <div class="tile lg" style="border-color:rgba(249,115,22,.5);animation-delay:.2s"><i class="fa-solid fa-robot" style="font-size:38px;color:#F97316"></i><div class="bar" style="background:rgba(249,115,22,.5)"></div></div>
+          <div class="tile sm" style="border-color:rgba(136,84,243,.3);animation-delay:.4s"><i class="fa-solid fa-gears" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,.5)"></div></div>
+        </div>
+        <h1 class="hero" id="hero-h"><span class="line">Добро пожаловать на курс</span><span class="line">по автоматизации</span><span class="line"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span></h1>
+        <p class="desc" id="hero-d">Вы научитесь трансформировать бизнес в AI-First компанию: <br class="lb">автоматизировать процессы с помощью ИИ-агентов, масштабироваться <br class="lb">без роста штата и получать измеримый экономический эффект.</p>
+      </div>
+    </section>
+
+    <!-- ===== 2. ДЛЯ КОГО ===== -->
+    <section class="panel" id="roles" aria-label="Для кого этот курс">
+      <div class="wrap">
+        <h2 class="h2" id="roles-h">Для кого <span class="plum">этот курс</span></h2>
+        <div class="roles">
+          <article class="card role">
+            <div class="ico p"><i class="fa-solid fa-compass"></i></div>
+            <h3>ИИ-консультант</h3>
+            <p>Находит процессы<br>для <span class="nb">ИИ-автоматизации</span></p>
+          </article>
+          <article class="card role">
+            <div class="ico f"><i class="fa-solid fa-wrench"></i></div>
+            <h3>ИИ-инженер по автоматизации</h3>
+            <p>Автоматизирует бизнес<br>с <span class="nb">ИИ-агентами</span></p>
+          </article>
+          <article class="card role">
+            <div class="ico p"><i class="fa-solid fa-rocket"></i></div>
+            <h3>ИИ-основатель</h3>
+            <p>Строит бизнес<br>с помощью <span class="nb">ИИ-агентов</span></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 3. ЧЕМУ НАУЧИТЕСЬ ===== -->
+    <section class="panel" id="skills" aria-label="Чему вы научитесь">
+      <div class="wrap">
+        <h2 class="h2" id="skills-h">Чему вы <span class="flame">научитесь</span></h2>
+        <ol class="learn">
+          <li><span class="ico p"><i class="fa-solid fa-brain"></i></span><p>Управлять компанией как потоком данных</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-magnifying-glass"></i></span><p>Находить процессы для автоматизации</p></li>
+          <li><span class="ico p"><i class="fa-solid fa-clipboard-list"></i></span><p>Описывать текущий AS-IS процесс</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-pen-ruler"></i></span><p>Проектировать будущую TO-BE модель</p></li>
+          <li><span class="ico p"><i class="fa-solid fa-user-gear"></i></span><p>Определять роль ИИ-агента в процессе</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-robot"></i></span><p>Создавать ИИ-агентов</p></li>
+          <li><span class="ico p"><i class="fa-solid fa-network-wired"></i></span><p>Понимать логику мультиагентных систем</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-shield-halved"></i></span><p>Проверять качество и безопасность ИИ</p></li>
+          <li><span class="ico p"><i class="fa-solid fa-arrow-trend-up"></i></span><p>Оценивать эффект от автоматизации</p></li>
+          <li><span class="ico f"><i class="fa-solid fa-rocket"></i></span><p>Внедрить первого ИИ-агента в бизнес</p></li>
+        </ol>
+        <div class="cta-row">
+          <a class="btn-white btn-start" href="https://andre.technology/automation/main">
+            <span>Начать обучение</span>
+            <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <script>
+    function storeGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function storeSet(k, v){ try { localStorage.setItem(k, v); } catch (e) {} }
+
+    /* ===== Язык: у каждого своя страница. Клик по EN|RU запоминает выбор и
+       уводит на соседнюю версию; авто-переход при этом больше не срабатывает,
+       иначе ручной выбор отскакивал бы обратно. ===== */
+    (function(){
+      var opts = document.querySelectorAll('.lang-opt'), i;
+      for (i = 0; i < opts.length; i++){
+        opts[i].addEventListener('click', function(){
+          storeSet('ait_lang', this.getAttribute('data-lang'));
+          try { sessionStorage.setItem('ait_lang_hop', '1'); } catch (e) {}
+        });
+      }
+      // Осознанный выбор посетителя не перетираем — записываем язык только
+      // если он вообще ещё не выбирался.
+      if (storeGet('ait_lang') !== 'en' && storeGet('ait_lang') !== 'ru') storeSet('ait_lang', 'ru');
+    })();
+
+    /* ===== Тема: тёмная по умолчанию, .light по клику; ключ общий со
+       страницами курса ('welcome-theme') ===== */
+    (function(){
+      var root = document.documentElement;
+      var btn  = document.getElementById('theme');
+      function sync(){
+        var light = root.classList.contains('light');
+        btn.innerHTML = '<i class="fa-solid fa-' + (light ? 'moon' : 'sun') + '"></i>';
+        var tc = document.querySelector('meta[name="theme-color"]');
+        if (tc) tc.setAttribute('content', light ? '#FAFAFA' : '#050505');
+      }
+      btn.addEventListener('click', function(){
+        root.classList.toggle('light');
+        storeSet('welcome-theme', root.classList.contains('light') ? 'light' : 'dark');
+        sync();
+        if (window.fitDeck) window.fitDeck();
+      });
+      sync();
+    })();
+
+
+    /* ===== Плавное появление блоков при прокрутке ======================
+       Никакого перехвата колеса и свайпа: страница прокручивается как
+       обычная. Наблюдатель включает каскад появления, когда блок доехал до
+       экрана. */
+    (function(){
+      var panels = [].slice.call(document.querySelectorAll('.panel'));
+      var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!window.IntersectionObserver || REDUCED){
+        panels.forEach(function(p){ p.classList.add('in'); });
+      } else {
+        var io = new IntersectionObserver(function(entries){
+          entries.forEach(function(e){
+            if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+          });
+        }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+        panels.forEach(function(p){ io.observe(p); });
+        // Первый экран показываем сразу, не дожидаясь события наблюдателя.
+        if (panels[0]) panels[0].classList.add('in');
+      }
+
+      function goNext(from){
+        var i = panels.indexOf(from);
+        var next = panels[i + 1] || panels[panels.length - 1];
+        if (next) next.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
+      }
+      var els = document.querySelectorAll('[data-go="next"]'), i;
+      for (i = 0; i < els.length; i++){
+        els[i].addEventListener('click', function(){
+          var p = this.closest ? this.closest('.panel') : null;
+          goNext(p || panels[0]);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

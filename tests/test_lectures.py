@@ -202,6 +202,10 @@ _AI_KEEP = (
 
 
 def _strip_keep(text, extra=()):
+    # В вёрстке дефис в терминах вроде «AI-First» неразрывный (U+2011), иначе
+    # строка рвалась ровно по нему и на второй оставался огрызок. Для сверки
+    # словаря оба дефиса — одно и то же.
+    text = text.replace("\u2011", "-")
     for keep in sorted(_TERM_KEEP + tuple(extra), key=len, reverse=True):
         text = text.replace(keep, " ")
     return text
@@ -234,6 +238,110 @@ def test_book_terms_are_russian():
             "книга: остался англицизм %r — панель и книга разъедутся" % word
     blob = _strip_keep(blob, _AI_KEEP)
     assert not re.search(r"\bAI\b", blob), "книга: остался «AI» вместо «ИИ»"
+
+
+
+# ── Канон «ничего не листается» и «никакого мигания» ───────────────────────
+
+def test_no_scrolling_anywhere():
+    """Лекция — экран, а не документ: ни страница, ни слайд не прокручиваются.
+
+    Раньше у .slide-container стоял overflow-y:auto, и любой промах подгонки
+    превращался в скрытую прокрутку: заголовок уезжал под шапку, низ слайда
+    терялся. Теперь не влезло = дефект подгонки, а не повод листать.
+    """
+    for rel, html in _pages():
+        assert re.search(r"html \{[^}]*overflow: clip;", html, re.S), \
+            rel + ": у html должен стоять overflow:clip (страница не едет вовсе)"
+        slide = re.search(r"\.slide-container \{[^}]*\}", html, re.S)
+        assert slide and "overflow-y: auto" not in slide.group(0), \
+            rel + ": слайд не должен прокручиваться"
+        assert "padding-block: 10px !important" not in html, \
+            rel + ": вертикальные отступы content-z задаёт только portal-fit"
+
+
+def test_tailwind_is_prebuilt_not_cdn():
+    """Tailwind собран заранее — иначе первый кадр рисуется без стилей.
+
+    cdn.tailwindcss.com компилирует классы в браузере уже ПОСЛЕ первой
+    отрисовки: кнопки секунду выглядят «квадратными», потом становятся
+    нормальными. Обычный <link> блокирует отрисовку — промежуточного кадра
+    не существует.
+    """
+    for rel, html in _pages():
+        assert "<script src=\"https://cdn.tailwindcss.com\">" not in html, \
+            rel + ": Play-CDN Tailwind даёт мигание (упоминание в комментарии допустимо)"
+        assert re.search(r'<link rel="stylesheet" href="/assets/lecture-[\w-]+\.css">', html), \
+            rel + ": нужен статический собранный Tailwind из /assets"
+        assert "window.tailwind = window.tailwind || {}" in html, \
+            rel + ": рантайм-конфиг должен быть защищён от отсутствия CDN"
+
+
+def test_fit_does_not_compensate_min_height():
+    """min-height внутри zoom компенсировать НЕЛЬЗЯ (см. portal-fit).
+
+    Проценты внутри zoom считаются от высоты родителя, уже переведённой в
+    масштаб элемента; деление на z накладывалось второй раз и давало высоту
+    600/z² — слайд становился прокручиваемым.
+    """
+    for rel, html in _pages():
+        assert "minHeight = (100 / z)" not in html, rel + ": вернулась двойная компенсация min-height"
+
+
+def test_video_circle_shows_play_icon():
+    """На кружке сразу виден значок play; пауза — при наведении во время игры."""
+    for rel, html in _pages(("automation/1/index.html",)):
+        assert 'id="video-icon" class="ph-fill ph-play-circle' in html, \
+            rel + ": по умолчанию на кружке значок play"
+        assert "#video-bubble.is-playing #video-overlay{ opacity:0; }" in html, \
+            rel + ": во время воспроизведения значок скрыт"
+        assert "@media (hover:hover){ #video-bubble.is-playing:hover #video-overlay{ opacity:1; } }" in html, \
+            rel + ": при наведении во время игры показываем паузу"
+
+
+def test_head_and_arrows_do_not_cover_content_on_phones():
+    """Телефон: ряд управления внизу — и подгонка резервирует под него полосу.
+
+    Голова со стрелками стояла стопкой в правом углу (полоса ~190px) и лежала
+    ПОВЕРХ текста: аудит наложений ловил её на 24 слайдах из 42 («Человек в
+    центре», «Пройти тест», нижние примечания). На компьютере угол пустой и
+    резерв не нужен, на телефоне — обязателен.
+    """
+    for rel, html in _pages(("automation/1/index.html",)):
+        assert re.search(r"@media \(max-width:767px\)\{\s*\n\s*:root\{ --bub:", html), \
+            rel + ": на телефоне у угла свои размеры"
+        assert "#video-bubble{\n    left:12px !important; right:auto !important;" in html, \
+            rel + ": голова уходит в ЛЕВЫЙ угол, стрелки остаются в правом"
+        assert "if (window.innerWidth < 768){" in html and "bottom = Math.max(bottom, Math.round(14 + d + 12))" in html, \
+            rel + ": chromeBand резервирует полосу под ряд управления"
+
+
+def test_radial_figures_declare_their_density():
+    """У каждой радиальной схемы в разметке проставлено число спутников.
+
+    Правила `[data-sats="7"]`/`[data-sats="8"]` в таблице стилей были мёртвыми:
+    атрибута в разметке не существовало, и подписи тесных схем («Инфра-
+    структура», «Исследования») наезжали на соседние кружки на телефоне.
+    """
+    for rel, html in _pages(("automation/1/index.html",)):
+        figs = re.findall(r'<div class="radial-fig[^"]*"([^>]*)>', html)
+        assert figs, rel + ": не нашёл радиальных схем"
+        for attrs in figs:
+            assert re.search(r'data-sats="\d+"', attrs), \
+                rel + ": у схемы нет data-sats — правила плотности не сработают"
+
+
+def test_satellite_labels_wrap_on_phones():
+    """Перенос подписей спутников объявлен ПОСЛЕ базового nowrap.
+
+    Правило жило в раннем блоке @media (max-width:767px), а `white-space:nowrap
+    !important` объявлен ниже по файлу — при равной специфичности побеждает
+    последний, и перенос не работал вовсе.
+    """
+    for rel, html in _pages(("automation/1/index.html",)):
+        base = html.index("white-space:nowrap !important;\n  text-align:center;")
+        wrap = html.index(".radial-sat .rf-label{\n    white-space:normal !important;")
+        assert wrap > base, rel + ": правило переноса должно идти после базового nowrap"
 
 
 if __name__ == "__main__":

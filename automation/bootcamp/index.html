@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Буткемп по автоматизации бизнеса с ИИ-агентами | Andre AI Technology</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+<meta name="description" content="За 3 месяца ваша команда разработает и внедрит собственных ИИ-агентов на реальных бизнес-процессах компании: от диагностики бизнеса и ИИ-стратегии до пилота и расчёта экономического эффекта.">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="color-scheme" content="dark light">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Буткемп по автоматизации бизнеса с ИИ-агентами">
+<meta property="og:description" content="3 месяца, 12 практических семинаров, команда до 10 человек: от ИИ-стратегии до пилота на реальном бизнес-процессе и расчёта экономического эффекта.">
+<meta property="og:image" content="https://andre.technology/assets/cover_auto.jpg">
+<meta property="og:url" content="https://andre.technology/automation/bootcamp/">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Andre AIT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Буткемп по автоматизации бизнеса с ИИ-агентами">
+<meta name="twitter:description" content="3 месяца, 12 практических семинаров, команда до 10 человек: от ИИ-стратегии до пилота на реальном бизнес-процессе и расчёта экономического эффекта.">
+<meta name="twitter:image" content="https://andre.technology/assets/cover_auto.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Буткемп по автоматизации бизнеса с ИИ-агентами.
+     Стиль лекции (automation/1/) и практического задания:
+     Montserrat, иконки Phosphor вшиты SVG-спрайтом (не с CDN —
+     иначе при плохой сети они исчезают), фиолетовый #8B5CF6 +
+     оранжевый #F97316, карточки со скруглением, emphasis-блок
+     #4C1D95, теней нет нигде.
+     ============================================================ */
+  :root{
+    --bg:#FFFFFF; --fg:#0A0A0A; --muted:rgba(0,0,0,.60);
+    --card:#FFFFFF; --card-border:#E9E9E9;
+    --soft:rgba(0,0,0,.04); --soft-border:rgba(0,0,0,.08);
+    --ctrl-bg:#FFFFFF; --ctrl-fg:#111111; --ctrl-border:rgba(0,0,0,.12);
+    --ctrl-hover:#F1F1F1;
+    --line:#E9E9E9;
+  }
+  html.dark{
+    --bg:#0A0A0A; --fg:#FAFAFA; --muted:rgba(250,250,250,.62);
+    --card:#141414; --card-border:rgba(255,255,255,.12);
+    --soft:rgba(255,255,255,.06); --soft-border:rgba(255,255,255,.10);
+    --ctrl-bg:#141414; --ctrl-fg:#FAFAFA; --ctrl-border:rgba(255,255,255,.18);
+    --ctrl-hover:#1F1F1F;
+    --line:rgba(255,255,255,.14);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  /* Теней нет нигде — общее требование заказчика по всем страницам курса */
+  *, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
+
+  html{ -webkit-tap-highlight-color:transparent; background:var(--bg); }
+  body{
+    font-family:'Montserrat',sans-serif; background:var(--bg); color:var(--fg);
+    min-height:100dvh; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    transition:background .3s ease,color .3s ease;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  ::selection{background:#8B5CF6;color:#fff}
+  *:focus-visible{outline:2px solid #8B5CF6;outline-offset:3px;border-radius:4px}
+  p,li,h1,h2,h3,h4{overflow-wrap:break-word}
+  /* Иконка — вшитый SVG: размер задаётся font-size родителя, цвет — currentColor */
+  .ic{ width:1em; height:1em; fill:currentColor; flex-shrink:0; vertical-align:-.125em; }
+
+  /* Большие мониторы масштабируются целиком — как дорожная карта и главная */
+  @media (min-width:1600px){ body{zoom:1.15} }
+  @media (min-width:1900px){ body{zoom:1.3} }
+  @media (min-width:2300px){ body{zoom:1.5} }
+
+  /* ===== Шапка: геометрия один в один с шапкой лекции ===== */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+    padding:1.1rem; pointer-events:none;
+    background:linear-gradient(to bottom,var(--bg) 45%,transparent);
+  }
+  @media (min-width:1024px){ header{ padding:2rem; } }
+  header > *{ pointer-events:auto; }
+  .lec-logo{display:inline-flex;align-items:center;flex-shrink:0}
+  .lec-logo img{
+    width:clamp(2.85rem,12vw,3.7rem); height:clamp(2.85rem,12vw,3.7rem);
+    object-fit:contain; display:block;
+  }
+  @media (min-width:1024px){ .lec-logo img{ width:3.6rem; height:3.6rem; } }
+  /* Картинка лого не дошла — показываем текстовый знак вместо «битой картинки» */
+  .lec-logo .logo-fb{
+    display:none; align-items:center; font-weight:900; letter-spacing:-.04em;
+    font-size:clamp(1.5rem,6vw,1.9rem); color:#F97316;
+  }
+  .lec-right{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+  .lec-ctrl{
+    display:inline-flex;align-items:center;justify-content:center;
+    height:clamp(2.5rem,11vw,3.3rem); width:clamp(2.5rem,11vw,3.3rem);
+    border-radius:999px; border:1px solid var(--ctrl-border);
+    background:var(--ctrl-bg); color:var(--ctrl-fg);
+    font-size:clamp(1.05rem,4vw,1.3rem); line-height:1;
+    transition:background .2s ease,color .2s ease;
+  }
+  @media (min-width:1024px){ .lec-ctrl{ height:2.85rem; width:2.85rem; } }
+  .lec-ctrl:hover{ background:var(--ctrl-hover); }
+  /* Кнопка «Назад» — та же капсула, но с подписью; на узком экране только иконка */
+  .lec-lbl{
+    width:auto; padding:0 clamp(.8rem,2.8vw,1.15rem); gap:.45rem;
+    font-weight:800; text-transform:uppercase; letter-spacing:.07em;
+    font-size:clamp(10px,2.6vw,12px);
+  }
+  .lec-lbl .ic{ font-size:clamp(1.05rem,4vw,1.2rem); }
+  @media (max-width:640px){
+    .lec-lbl{ width:clamp(2.5rem,11vw,3.3rem); padding:0; }
+    .lec-lbl span{ display:none; }
+  }
+  .lec-consult{
+    display:inline-flex;align-items:center;justify-content:center;gap:clamp(.4rem,1.2vw,.6rem);
+    padding:clamp(.62rem,2.2vw,.95rem) clamp(.85rem,3.2vw,1.35rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-weight:800; text-transform:uppercase; letter-spacing:clamp(.06em,.4vw,.1em);
+    font-size:clamp(9px,2.7vw,12.5px); white-space:nowrap;
+    transition:transform .2s ease,background .2s ease;
+  }
+  @media (min-width:1024px){
+    .lec-consult{ height:2.85rem; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em; gap:.55rem; }
+  }
+  .lec-consult:hover{ transform:translateY(-1px); background:#7C3AED; }
+  @media (max-width:380px){
+    header{ padding:.85rem .6rem; gap:.3rem; }
+    .lec-right{ gap:.3rem; }
+    .lec-logo img{ width:2.5rem; height:2.5rem; }
+    .lec-ctrl, .lec-lbl{ width:2.3rem; height:2.3rem; }
+    .lec-consult{ padding:.6rem .55rem; font-size:8px; letter-spacing:.02em; }
+  }
+
+  /* ===== Полотно ===== */
+  main{
+    max-width:56rem; margin:0 auto;
+    padding:clamp(6.5rem,17vh,9rem) clamp(1rem,4vw,2rem) clamp(3rem,8vh,5rem);
+  }
+  @keyframes rise{ from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+  .rise{ animation:rise .55s cubic-bezier(.22,1,.36,1) both; }
+  .rise.d1{ animation-delay:.07s } .rise.d2{ animation-delay:.14s }
+  @media (prefers-reduced-motion:reduce){ .rise{ animation:none } }
+
+  /* ===== Первый экран ===== */
+  .hero{ text-align:center; }
+  .badge{
+    display:inline-flex; align-items:center; gap:.5rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:999px; padding:.45rem 1rem;
+    font-size:clamp(9px,2.4vw,11px); font-weight:800;
+    letter-spacing:.16em; text-transform:uppercase; color:#8B5CF6;
+    margin-bottom:clamp(.9rem,2.5vh,1.3rem);
+  }
+  .badge .ic{ font-size:1.25em; }
+  h1{
+    font-weight:900; font-size:clamp(1.7rem,6.2vw,3rem);
+    line-height:1.12; letter-spacing:-.02em; text-wrap:balance;
+  }
+  .accent{
+    background-image:linear-gradient(90deg,#8B5CF6 0%,#F97316 100%);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+  }
+  .hero p{
+    margin:clamp(.9rem,2.4vh,1.2rem) auto 0; max-width:40rem;
+    color:var(--muted); font-weight:500;
+    font-size:clamp(.9rem,2.9vw,1.1rem); line-height:1.65;
+  }
+  .hero .actions{ margin-top:clamp(1.4rem,4vh,2rem); }
+
+  /* ===== Кнопки ===== */
+  .actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:.6rem; }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.55rem;
+    border-radius:999px; padding:1rem 1.9rem; border:1px solid transparent;
+    font-weight:800; text-transform:uppercase; letter-spacing:.09em;
+    font-size:clamp(10px,2.7vw,12.5px); line-height:1; white-space:nowrap;
+    transition:transform .2s ease,background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .btn .ic{ font-size:1.25em; }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-primary{ background:#8B5CF6; color:#fff; }
+  .btn-primary:hover{ background:#7C3AED; }
+  .btn-light{ background:#FAFAFA; color:#0A0A0A; }
+  .btn-light:hover{ background:#fff; }
+  @media (max-width:400px){ .btn{ width:100%; } }
+
+  /* ===== Заголовок раздела ===== */
+  .sec{ margin-top:clamp(2.6rem,8vh,4.5rem); }
+  .sec-head{
+    display:flex; flex-direction:column; align-items:center; gap:.75rem;
+    text-align:center; margin-bottom:clamp(1.4rem,4vh,2.2rem);
+  }
+  .sec-ico{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,10vw,3.4rem); height:clamp(2.8rem,10vw,3.4rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-size:clamp(1.3rem,4.6vw,1.65rem);
+  }
+  .sec-head h2{
+    font-weight:900; letter-spacing:-.02em; text-wrap:balance;
+    font-size:clamp(1.35rem,5vw,2.1rem); line-height:1.2;
+  }
+  .sec-head p{
+    color:var(--muted); font-weight:600; max-width:34rem;
+    font-size:clamp(.85rem,2.7vw,1rem); line-height:1.6;
+  }
+
+  /* ===== Программа: месяц → недели ===== */
+  /* Внешней рамки у блока месяца нет (просьба заказчика): рамки остаются
+     только у самих карточек-недель, иначе получается «прямоугольник в
+     прямоугольнике». */
+  .month{ padding:0; }
+  .month + .month{ margin-top:clamp(.8rem,2.5vw,1.1rem); }
+  .month-head{ display:flex; align-items:center; gap:clamp(.8rem,3vw,1.15rem); }
+  .month-num{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.6rem,10vw,3.2rem); height:clamp(2.6rem,10vw,3.2rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-weight:900; letter-spacing:.02em; font-size:clamp(.85rem,3vw,1.05rem);
+  }
+  .month-head .kicker{
+    display:block; color:#F97316; font-weight:800; text-transform:uppercase;
+    letter-spacing:.16em; font-size:clamp(10px,2.6vw,11.5px);
+  }
+  .month-head h3{
+    margin-top:.25rem; font-weight:900; letter-spacing:-.01em;
+    font-size:clamp(1rem,3.9vw,1.5rem); line-height:1.25;
+  }
+  .weeks{
+    list-style:none; margin-top:clamp(1rem,3vw,1.4rem);
+    display:grid; grid-template-columns:1fr; gap:.6rem;
+  }
+  @media (min-width:768px){ .weeks{ grid-template-columns:1fr 1fr; gap:.75rem; } }
+  .week{
+    display:flex; align-items:flex-start; gap:.85rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:16px; padding:.95rem 1.05rem;
+  }
+  .w-num{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-weight:900; font-size:.95rem;
+  }
+  .week .w-lbl{
+    display:block; color:var(--muted); font-weight:700; text-transform:uppercase;
+    letter-spacing:.14em; font-size:clamp(9px,2.3vw,10px);
+  }
+  .week h4{
+    margin-top:.15rem; font-weight:800; letter-spacing:-.01em;
+    font-size:clamp(.9rem,3vw,1.05rem); line-height:1.3;
+  }
+  .week p{
+    margin-top:.35rem; color:var(--muted); font-weight:500;
+    font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.55;
+  }
+
+  /* ===== Что входит ===== */
+  .incl{
+    list-style:none; display:grid; grid-template-columns:1fr; gap:.6rem;
+  }
+  @media (min-width:768px){
+    .incl{ grid-template-columns:1fr 1fr; gap:.75rem; }
+    /* нечётный последний пункт занимает всю строку — ряд не остаётся полупустым */
+    .incl li:last-child{ grid-column:1 / -1; }
+  }
+  .incl li{
+    display:flex; align-items:center; gap:.8rem;
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:16px; padding:.95rem 1.05rem;
+    font-weight:600; font-size:clamp(.84rem,2.7vw,.98rem); line-height:1.45;
+  }
+  /* Плашка сплошная, иконка белая: иконка не должна совпадать по цвету
+     со своей подложкой (то же правило, что и в slide-polish лекции). */
+  .incl .ci{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-size:1.15rem;
+  }
+
+  /* ===== Результат ===== */
+  /* Без внешнего прямоугольника — только сами пункты в рамках. */
+  .result{ color:inherit; padding:0; }
+  .result > p{
+    text-align:center; font-weight:700; line-height:1.5;
+    font-size:clamp(.9rem,2.9vw,1.1rem);
+  }
+  .result ul{ list-style:none; margin-top:clamp(1.1rem,3.5vw,1.6rem); display:grid; gap:.55rem; }
+  @media (min-width:768px){
+    .result ul{ grid-template-columns:1fr 1fr; gap:.7rem; }
+    /* нечётный последний пункт занимает всю строку — ряд не остаётся полупустым */
+    .result li:last-child{ grid-column:1 / -1; }
+  }
+  .result li{
+    display:flex; align-items:center; gap:.75rem;
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:16px; padding:.85rem 1rem;
+    font-weight:600; font-size:clamp(.82rem,2.7vw,.96rem); line-height:1.45;
+  }
+  .result li .ic{ color:#F97316; font-size:1.15rem; }
+
+  /* ===== Стоимость ===== */
+  /* Без внешнего прямоугольника — сумма и условия стоят на фоне страницы. */
+  .price{ padding:clamp(.5rem,2vw,1rem) 0; text-align:center; }
+  .price .amount{
+    font-weight:900; letter-spacing:-.03em; line-height:1;
+    font-size:clamp(2.6rem,11vw,4.5rem); margin:.2rem 0 0;
+  }
+  .price .terms{
+    margin-top:clamp(.9rem,2.6vw,1.2rem); display:grid; gap:.5rem; justify-items:center;
+  }
+  .price .terms span{
+    display:inline-flex; align-items:center; gap:.6rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:999px; padding:.6rem 1.1rem;
+    color:var(--muted); font-weight:600;
+    font-size:clamp(.8rem,2.6vw,.95rem); line-height:1.35; text-align:left;
+  }
+  .price .terms span .ic{ color:#F97316; font-size:1.15rem; }
+  .price .actions{ margin-top:clamp(1.2rem,3.5vw,1.7rem); }
+
+  /* ===== Возврат назад ===== */
+  .back{ display:flex; justify-content:center; margin-top:clamp(1.6rem,4.5vh,2.4rem); }
+  .back button{
+    display:inline-flex; align-items:center; gap:.5rem; background:none; border:0;
+    color:var(--muted); font-weight:700; font-size:clamp(.8rem,2.6vw,.9rem);
+    transition:color .2s ease;
+  }
+  .back button:hover{ color:#8B5CF6; }
+
+  /* Печать / сохранение в PDF: программу распечатывают, поэтому убираем шапку
+     и служебные кнопки, а цвета сводим к бумажным. */
+  @media print{
+    header, .actions, .back{ display:none !important; }
+    body{ background:#fff !important; color:#000 !important; }
+    main{ padding:0; max-width:none; }
+    .incl li, .week{ background:#fff; border-color:#D9D9D9; break-inside:avoid; }
+    .week{ background:#fff; border-color:#D9D9D9; break-inside:avoid; }
+    .result li{ background:#fff; border-color:#D9D9D9; }
+    .rise{ animation:none; }
+    *{ print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  }
+</style>
+<script>
+/* Тема (фон) общая для всего клиентского пути (ключ 'welcome-theme', как в лекции):
+   по умолчанию тёмная, ?theme=light|dark перебивает сохранённую. */
+(function(){
+  var t=null; try{ t=new URLSearchParams(location.search).get('theme'); }catch(e){}
+  if(t!=='dark' && t!=='light'){ try{ t=localStorage.getItem('welcome-theme'); }catch(e){} }
+  document.documentElement.classList.toggle('dark', t!=='light');
+})();
+</script>
+</head>
+<body>
+
+  <!-- Иконки Phosphor (MIT) вшиты в страницу: с CDN они пропадают, если сеть
+       медленная или он недоступен. Здесь рисуются всегда, даже офлайн. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+    <symbol id="i-rocket-launch" viewBox="0 0 256 256"><path d="M101.85,191.14C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Zm122-144a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.4,27.07h0L88,108.7A8,8,0,0,1,76.67,97.39l26.56-26.57A4,4,0,0,0,100.41,64H74.35A15.9,15.9,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A16,16,0,0,0,192,181.65V155.59a4,4,0,0,0-6.83-2.82l-26.57,26.56a8,8,0,0,1-11.71-.42,8.2,8.2,0,0,1,.6-11.1l49.27-49.27h0C223.45,91.86,224.6,59.71,223.85,47.12Z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 256 256"><path d="M235.54,150.21a104.84,104.84,0,0,1-37,52.91A104,104,0,0,1,32,120,103.09,103.09,0,0,1,52.88,57.48a104.84,104.84,0,0,1,52.91-37,8,8,0,0,1,10,10,88.08,88.08,0,0,0,109.8,109.8,8,8,0,0,1,10,10Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 256 256"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm8,24a64,64,0,1,0,64,64A64.07,64.07,0,0,0,128,64ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></symbol>
+    <symbol id="i-graduation-cap" viewBox="0 0 256 256"><path d="M176,207.24a119,119,0,0,0,16-7.73V240a8,8,0,0,1-16,0Zm11.76-88.43-56-29.87a8,8,0,0,0-7.52,14.12L171,128l17-9.06Zm64-29.87-120-64a8,8,0,0,0-7.52,0l-120,64a8,8,0,0,0,0,14.12L32,117.87v48.42a15.91,15.91,0,0,0,4.06,10.65C49.16,191.53,78.51,216,128,216a130,130,0,0,0,48-8.76V130.67L171,128l-43,22.93L43.83,106l0,0L25,96,128,41.07,231,96l-18.78,10-.06,0L188,118.94a8,8,0,0,1,4,6.93v73.64a115.63,115.63,0,0,0,27.94-22.57A15.91,15.91,0,0,0,224,166.29V117.87l27.76-14.81a8,8,0,0,0,0-14.12Z"/></symbol>
+    <symbol id="i-list-checks" viewBox="0 0 256 256"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM117.66,149.66l-32,32a8,8,0,0,1-11.32,0l-16-16a8,8,0,0,1,11.32-11.32L80,164.69l26.34-26.35a8,8,0,0,1,11.32,11.32Zm0-64-32,32a8,8,0,0,1-11.32,0l-16-16A8,8,0,0,1,69.66,90.34L80,100.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM192,168H144a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Zm0-64H144a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-robot" viewBox="0 0 256 256"><path d="M200,48H136V16a8,8,0,0,0-16,0V48H56A32,32,0,0,0,24,80V192a32,32,0,0,0,32,32H200a32,32,0,0,0,32-32V80A32,32,0,0,0,200,48ZM172,96a12,12,0,1,1-12,12A12,12,0,0,1,172,96ZM96,184H80a16,16,0,0,1,0-32H96ZM84,120a12,12,0,1,1,12-12A12,12,0,0,1,84,120Zm60,64H112V152h32Zm32,0H160V152h16a16,16,0,0,1,0,32Z"/></symbol>
+    <symbol id="i-package" viewBox="0 0 256 256"><path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.35,44L178.57,92.29l-80.35-44Zm0,88L47.65,76,81.56,57.43l80.35,44Zm88,55.85h0l-80,43.79V133.83l32-17.51V152a8,8,0,0,0,16,0V107.56l32-17.51v85.76Z"/></symbol>
+    <symbol id="i-users-three" viewBox="0 0 256 256"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"/></symbol>
+    <symbol id="i-calendar-check" viewBox="0 0 256 256"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM169.66,133.66l-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L116,164.69l42.34-42.35a8,8,0,0,1,11.32,11.32ZM48,80V48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80Z"/></symbol>
+    <symbol id="i-chalkboard-teacher" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H53.39a8,8,0,0,0,7.23-4.57,48,48,0,0,1,86.76,0,8,8,0,0,0,7.23,4.57H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM104,168a32,32,0,1,1,32-32A32,32,0,0,1,104,168Zm112,32H159.43a63.93,63.93,0,0,0-13.16-16H192a8,8,0,0,0,8-8V80a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8v96a8,8,0,0,0,6,7.75A63.72,63.72,0,0,0,48.57,200H40V56H216Z"/></symbol>
+    <symbol id="i-chat-teardrop-text" viewBox="0 0 256 256"><path d="M132,24A100.11,100.11,0,0,0,32,124v84a16,16,0,0,0,16,16h84a100,100,0,0,0,0-200Zm32,128H96a8,8,0,0,1,0-16h68a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h68a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-buildings" viewBox="0 0 256 256"><path d="M239.73,208H224V96a16,16,0,0,0-16-16H164a4,4,0,0,0-4,4V208H144V32.41a16.43,16.43,0,0,0-6.16-13,16,16,0,0,0-18.72-.69L39.12,72A16,16,0,0,0,32,85.34V208H16.27A8.18,8.18,0,0,0,8,215.47,8,8,0,0,0,16,224H240a8,8,0,0,0,8-8.53A8.18,8.18,0,0,0,239.73,208ZM76,184a8,8,0,0,1-8.53,8A8.18,8.18,0,0,1,60,183.72V168.27A8.19,8.19,0,0,1,67.47,160,8,8,0,0,1,76,168Zm0-56a8,8,0,0,1-8.53,8A8.19,8.19,0,0,1,60,127.72V112.27A8.19,8.19,0,0,1,67.47,104,8,8,0,0,1,76,112Zm40,56a8,8,0,0,1-8.53,8,8.18,8.18,0,0,1-7.47-8.26V168.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Zm0-56a8,8,0,0,1-8.53,8,8.19,8.19,0,0,1-7.47-8.26V112.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Z"/></symbol>
+    <symbol id="i-map-trifold" viewBox="0 0 256 256"><path d="M228.92,49.69a8,8,0,0,0-6.86-1.45L160.93,63.52,99.58,32.84a8,8,0,0,0-5.52-.6l-64,16A8,8,0,0,0,24,56V200a8,8,0,0,0,9.94,7.76l61.13-15.28,61.35,30.68A8.15,8.15,0,0,0,160,224a8,8,0,0,0,1.94-.24l64-16A8,8,0,0,0,232,200V56A8,8,0,0,0,228.92,49.69ZM96,176a8,8,0,0,0-1.94.24L40,189.75V62.25L95.07,48.48l.93.46Zm120,17.75-55.07,13.77-.93-.46V80a8,8,0,0,0,1.94-.23L216,66.25Z"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 256 256"><path d="M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"/></symbol>
+    <symbol id="i-currency-circle-dollar" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm12,152h-4v8a8,8,0,0,1-16,0v-8H104a8,8,0,0,1,0-16h36a12,12,0,0,0,0-24H116a28,28,0,0,1,0-56h4V72a8,8,0,0,1,16,0v8h16a8,8,0,0,1,0,16H116a12,12,0,0,0,0,24h24a28,28,0,0,1,0,56Z"/></symbol>
+    <symbol id="i-credit-card" viewBox="0 0 256 256"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48ZM136,176H120a8,8,0,0,1,0-16h16a8,8,0,0,1,0,16Zm64,0H168a8,8,0,0,1,0-16h32a8,8,0,0,1,0,16ZM32,88V64H224V88Z"/></symbol>
+    <symbol id="i-seal-check" viewBox="0 0 256 256"><path d="M225.86,102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28,23.51,138.44,16,128,16s-18.27,7.51-25.18,14.14c-3.94,3.77-8,7.67-11.57,9.14C88,40.64,82.56,40.72,77.31,40.8c-9.76.15-20.82.31-28.51,8S41,67.55,40.8,77.31c-.08,5.25-.16,10.67-1.52,13.94-1.47,3.56-5.37,7.63-9.14,11.57C23.51,109.72,16,117.56,16,128s7.51,18.27,14.14,25.18c3.77,3.94,7.67,8,9.14,11.57,1.36,3.27,1.44,8.69,1.52,13.94.15,9.76.31,20.82,8,28.51s18.75,7.85,28.51,8c5.25.08,10.67.16,13.94,1.52,3.56,1.47,7.63,5.37,11.57,9.14C109.72,232.49,117.56,240,128,240s18.27-7.51,25.18-14.14c3.94-3.77,8-7.67,11.57-9.14,3.27-1.36,8.69-1.44,13.94-1.52,9.76-.15,20.82-.31,28.51-8s7.85-18.75,8-28.51c.08-5.25.16-10.67,1.52-13.94,1.47-3.56,5.37-7.63,9.14-11.57C232.49,146.28,240,138.44,240,128S232.49,109.73,225.86,102.82Zm-52.2,6.84-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+    <symbol id="i-paper-plane-tilt" viewBox="0 0 256 256"><path d="M231.4,44.34s0,.1,0,.15l-58.2,191.94a15.88,15.88,0,0,1-14,11.51q-.69.06-1.38.06a15.86,15.86,0,0,1-14.42-9.15L107,164.15a4,4,0,0,1,.77-4.58l57.92-57.92a8,8,0,0,0-11.31-11.31L96.43,148.26a4,4,0,0,1-4.58.77L17.08,112.64a16,16,0,0,1,2.49-29.8l191.94-58.2.15,0A16,16,0,0,1,231.4,44.34Z"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 256 256"><path d="M228,128a12,12,0,0,1-12,12H69l51.52,51.51a12,12,0,0,1-17,17l-72-72a12,12,0,0,1,0-17l72-72a12,12,0,0,1,17,17L69,116H216A12,12,0,0,1,228,128Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 256 256"><path d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z"/></symbol>
+  </defs></svg>
+
+  <header>
+    <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
+      <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
+      <span class="logo-fb" aria-hidden="true">AIT</span>
+    </a>
+    <div class="lec-right">
+      <button class="lec-ctrl lec-lbl js-back" type="button" aria-label="Вернуться назад" title="Вернуться назад"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg><span>Назад</span></button>
+      <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить фон (тёмный/светлый)"><svg class="ic" aria-hidden="true"><use href="#i-moon" xlink:href="#i-moon"></use></svg></button>
+      <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Записаться <svg class="ic" aria-hidden="true"><use href="#i-arrow-right" xlink:href="#i-arrow-right"></use></svg></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero rise">
+      <span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-rocket-launch" xlink:href="#i-rocket-launch"></use></svg> Буткемп · 3 месяца</span>
+      <h1>Буткемп по автоматизации бизнеса <span class="accent">с ИИ-агентами</span></h1>
+      <p>За 3 месяца ваша команда разработает и внедрит собственных ИИ-агентов на реальных бизнес-процессах компании.</p>
+      <p>Вместе с ментором вы пройдете путь от диагностики бизнеса и разработки ИИ-стратегии до пилотирования ИИ-агентов и расчета экономического эффекта.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://t.me/andre_andreevich" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-graduation-cap" xlink:href="#i-graduation-cap"></use></svg> Записаться на буткемп</a>
+      </div>
+    </section>
+
+    <!-- ПРОГРАММА -->
+    <section class="sec rise d1">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-list-checks" xlink:href="#i-list-checks"></use></svg></span>
+        <h2>Программа <span class="accent">буткемпа</span></h2>
+      </div>
+
+      <div class="month">
+        <div class="month-head">
+          <span class="month-num">I</span>
+          <div>
+            <span class="kicker">I месяц</span>
+            <h3>Стратегия и первый ИИ-агент</h3>
+          </div>
+        </div>
+        <ol class="weeks">
+          <li class="week">
+            <span class="w-num">1</span>
+            <div><span class="w-lbl">неделя</span><h4>Знакомство с ментором</h4>
+            <p>Определим цели компании и ожидаемые результаты буткемпа</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">2</span>
+            <div><span class="w-lbl">неделя</span><h4>Разработка ИИ-стратегии</h4>
+            <p>Оценим текущую зрелость бизнеса и сформируем дорожную карту ИИ-трансформации</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">3</span>
+            <div><span class="w-lbl">неделя</span><h4>Анализ бизнес-процессов</h4>
+            <p>Найдем процессы с наибольшим потенциалом автоматизации и выберем первый сценарий для внедрения ИИ-агентов</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">4</span>
+            <div><span class="w-lbl">неделя</span><h4>Создание первого ИИ-агента</h4>
+            <p>Спроектируем и разработаем первого агента под реальную задачу компании</p></div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="month">
+        <div class="month-head">
+          <span class="month-num">II</span>
+          <div>
+            <span class="kicker">II месяц</span>
+            <h3>Мультиагентная система</h3>
+          </div>
+        </div>
+        <ol class="weeks">
+          <li class="week">
+            <span class="w-num">5</span>
+            <div><span class="w-lbl">неделя</span><h4>Разработка мультиагентной системы</h4>
+            <p>Объединим несколько агентов в единую систему и распределим между ними роли</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">6</span>
+            <div><span class="w-lbl">неделя</span><h4>Продвинутые методы разработки ИИ-агентов</h4>
+            <p>Разработаем клиентскую часть с помощью вайбкодинга</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">7</span>
+            <div><span class="w-lbl">неделя</span><h4>Мониторинг ИИ-агентов</h4>
+            <p>Создадим дашборд для контроля качества работы агентов</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">8</span>
+            <div><span class="w-lbl">неделя</span><h4>Управление изменениями</h4>
+            <p>Подготовим сотрудников к внедрению нового формата работы</p></div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="month">
+        <div class="month-head">
+          <span class="month-num">III</span>
+          <div>
+            <span class="kicker">III месяц</span>
+            <h3>Пилотирование и результат</h3>
+          </div>
+        </div>
+        <ol class="weeks">
+          <li class="week">
+            <span class="w-num">9</span>
+            <div><span class="w-lbl">неделя</span><h4>Запуск пилота</h4>
+            <p>Внедрим ИИ-агентов в реальные бизнес-процессы компании</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">10</span>
+            <div><span class="w-lbl">неделя</span><h4>Расчет экономического эффекта</h4>
+            <p>Оценим влияние ИИ-агентов на скорость, затраты, выручку и качество процессов</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">11</span>
+            <div><span class="w-lbl">неделя</span><h4>Индивидуальная консультация с ментором</h4>
+            <p>Разберем результаты пилота, ограничения и следующие шаги ИИ-трансформации</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">12</span>
+            <div><span class="w-lbl">неделя</span><h4>Демо-день</h4>
+            <p>Команда представит созданное решение, результаты пилотирования и план масштабирования</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ЧТО ВХОДИТ -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-package" xlink:href="#i-package"></use></svg></span>
+        <h2>Что входит <span class="accent">в буткемп</span></h2>
+      </div>
+      <ul class="incl">
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> до 10 участников от одной компании</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-calendar-check" xlink:href="#i-calendar-check"></use></svg></span> 3 месяца совместной работы</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chalkboard-teacher" xlink:href="#i-chalkboard-teacher"></use></svg></span> 12 еженедельных практических семинаров</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chat-teardrop-text" xlink:href="#i-chat-teardrop-text"></use></svg></span> проверка заданий и обратная связь от ментора</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-buildings" xlink:href="#i-buildings"></use></svg></span> работа с реальными процессами вашей компании</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span> разработка и пилотирование собственных ИИ-агентов</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-map-trifold" xlink:href="#i-map-trifold"></use></svg></span> готовая дорожная карта дальнейшей ИИ-трансформации</li>
+      </ul>
+    </section>
+
+    <!-- РЕЗУЛЬТАТ -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-trophy" xlink:href="#i-trophy"></use></svg></span>
+        <h2>Результат</h2>
+      </div>
+      <div class="result">
+        <p>К завершению буткемпа у вашей компании будет:</p>
+        <ul>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> ИИ-стратегия и дорожная карта ИИ-трансформации</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Описанные AI-First бизнес-процессы для автоматизации</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Собственные ИИ-агенты и мультиагентная система</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Рабочий пилот на реальном бизнес-процессе</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Дашборд для мониторинга ИИ-агентов</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Расчет экономического эффекта</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> План дальнейшего масштабирования ИИ-агентов</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- СТОИМОСТЬ -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-currency-circle-dollar" xlink:href="#i-currency-circle-dollar"></use></svg></span>
+        <h2>Стоимость</h2>
+      </div>
+      <div class="price">
+        <p class="amount accent">$9&nbsp;900</p>
+        <div class="terms">
+          <span><svg class="ic" aria-hidden="true"><use href="#i-credit-card" xlink:href="#i-credit-card"></use></svg> Оплата — $3&nbsp;300 в месяц в течение 3-х месяцев</span>
+          <span><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg> Стоимость указана за участие команды до 10 человек</span>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://t.me/andre_andreevich" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-paper-plane-tilt" xlink:href="#i-paper-plane-tilt"></use></svg> Подать заявку</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="back">
+      <button class="js-back" type="button"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg> Вернуться назад</button>
+    </div>
+  </main>
+
+<script>
+(function(){
+  /* Кнопка «Назад»: возвращает на страницу, с которой пришли. Если истории нет
+     (страницу открыли по прямой ссылке), уводим на дорожную карту курса —
+     иначе кнопка была бы мёртвой. */
+  var FALLBACK = 'https://andre.technology/automation/main/';
+  Array.prototype.forEach.call(document.querySelectorAll('.js-back'), function(b){
+    b.addEventListener('click', function(){
+      if (history.length > 1) history.back(); else location.href = FALLBACK;
+    });
+  });
+
+  /* Смена фона: тёмный ⇄ светлый, выбор запоминается на весь путь */
+  var btn = document.getElementById('lec-theme');
+  if(!btn) return;
+  function sync(){
+    var dark = document.documentElement.classList.contains('dark');
+    btn.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-'+(dark?'sun':'moon')+'" xlink:href="#i-'+(dark?'sun':'moon')+'"></use></svg>';
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if(tc) tc.setAttribute('content', dark ? '#0A0A0A' : '#FFFFFF');
+  }
+  btn.addEventListener('click', function(){
+    var dark = document.documentElement.classList.toggle('dark');
+    try{ localStorage.setItem('welcome-theme', dark ? 'dark' : 'light'); }catch(e){}
+    sync();
+  });
+  sync();
+})();
+</script>
+</body>
+</html>
