@@ -1,0 +1,293 @@
+# -*- coding: utf-8 -*-
+"""Тесты графики поверх видео-приветствия курса (FR-SITE30, SPEC-SITE.md).
+Без зависимостей — запускается и как `python3 tests/test_welcome.py`, и через pytest.
+
+Второй ролик по тем же постоянным правилам, что и лекция 1 (FR-SITE27), но с
+одним новым свойством: слова субтитров лежат отдельным файлом и правятся без
+перерендера слоя. Проверяем то, что ломается молча: внешние зависимости,
+расхождение подписей с деком, рассинхрон таймингов и разрыв связи
+«страница — субтитры.srt — собрать.sh».
+"""
+import os
+import re
+
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DIR = os.path.join(_ROOT, "automation_ru", "overlay")
+_PAGE = os.path.join(_DIR, "index.html")
+_DECK = os.path.join(_ROOT, "automation_ru", "index.html")
+_SRT = os.path.join(_DIR, "субтитры.srt")
+_DURATION = 59.1           # 00:59 — длина ролика
+_WORDS = 121               # столько слов в сценарии владельца
+_POSTERS_TOP = 638         # верх рамок картин на стене
+
+
+def _html(path=_PAGE):
+    with open(path, encoding="utf-8") as f:
+        return f.read()
+
+
+def _scenes():
+    """[(id, in, out, [времена элементов])] по разметке сцен."""
+    html, out = _html(), []
+    for m in re.finditer(
+            r'<section class="scene" id="(\w+)" data-in="([\d.]+)" data-out="([\d.]+)">',
+            html):
+        end = html.index("</section>", m.end())
+        cues = [float(c) for c in re.findall(r'data-in="([\d.]+)"', html[m.end():end])]
+        out.append((m.group(1), float(m.group(2)), float(m.group(3)), cues))
+    return out
+
+
+def _labels():
+    """Подписи элементов, как их видит зритель (<br> — это пробел)."""
+    html = _html()
+    body = html[html.index('<div id="layer">'):html.index('<div id="cover">')]
+    out = []
+    for raw in re.findall(r'<p class="label">(.*?)</p>', body, re.S):
+        txt = re.sub(r"<br\s*/?>", " ", raw)
+        out.append(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", txt)).strip())
+    return out
+
+
+def _cues():
+    """[(начало, конец, текст)] из субтитры.srt."""
+    with open(_SRT, encoding="utf-8") as f:
+        text = f.read().replace("\r", "")
+    out = []
+    for block in re.split(r"\n\n+", text):
+        m = re.search(r"(\d\d):(\d\d):(\d\d),(\d\d\d)\s*-->\s*(\d\d):(\d\d):(\d\d),(\d\d\d)", block)
+        if not m:
+            continue
+        lines = block.split("\n")
+        body = " ".join(lines[lines.index(m.group(0)) + 1:]).strip() if m.group(0) in lines \
+            else " ".join(l for l in lines if "-->" not in l and not l.strip().isdigit()).strip()
+        a = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3)) + int(m.group(4)) / 1000.0
+        b = int(m.group(5)) * 3600 + int(m.group(6)) * 60 + int(m.group(7)) + int(m.group(8)) / 1000.0
+        out.append((a, b, body))
+    return out
+
+
+# ── FR-SITE30: страница самодостаточна ───────────────────────────────────
+
+def test_page_is_self_contained():
+    """В записи и офлайн страница обязана выглядеть так же, как на сайте."""
+    html = _html()
+    external = re.findall(r'(?:src|href)="(https?:)?//[^"]+"', html)
+    assert not external, "страница тянет внешние ресурсы: %r" % external
+    assert "fonts.googleapis" not in html and "cdnjs" not in html, "остался внешний шрифт или CDN иконок"
+    for f in re.findall(r"url\((fonts/[^)]+\.woff2)\)", html):
+        assert os.path.exists(os.path.join(_DIR, f)), "нет файла шрифта: %s" % f
+    assert os.path.exists(os.path.join(_DIR, "icons.js")), "нет набора иконок"
+
+
+def test_font_matches_the_deck():
+    """Дек курса набран JetBrains Mono — графика поверх видео обязана совпадать
+    с ним, иначе кадр и страница курса выглядят как из разных проектов."""
+    assert "JetBrains+Mono" in _html(_DECK), "дек больше не на JetBrains Mono — проверьте пару"
+    assert "'JetBrains Mono'" in _html(), "страница набрана не тем шрифтом, что дек"
+
+
+def test_icons_come_from_the_deck_set():
+    """Иконки берутся из того же набора и той же версии, что в деке: в FA 7
+    часть глифов перерисована, и кадр разошёлся бы с картинкой курса."""
+    icons = _html(os.path.join(_DIR, "icons.js"))
+    assert "6.4.0" in icons, "версия Font Awesome не зафиксирована"
+    used = set(re.findall(r'data-icon="([\w-]+)"', _html()))
+    assert used, "в разметке нет ни одной иконки"
+    for name in used:
+        assert ("'%s'" % name) in icons or re.search(r"\b%s\s*:" % re.escape(name), icons), \
+            "иконки нет в наборе: %s" % name
+
+
+# ── FR-SITE30: тайминги ──────────────────────────────────────────────────
+
+def test_scenes_do_not_overlap():
+    scenes = _scenes()
+    assert len(scenes) >= 5, "сцен подозрительно мало: %d" % len(scenes)
+    prev = 0.0
+    for sid, tin, tout, _ in scenes:
+        assert tin < tout, "%s: окно вывернуто" % sid
+        assert tin >= prev, "%s начинается раньше, чем кончилась предыдущая сцена" % sid
+        prev = tout
+    assert prev <= _DURATION, "последняя сцена выходит за длину ролика"
+
+
+def test_cues_are_within_scenes():
+    for sid, tin, tout, cues in _scenes():
+        for c in cues:
+            assert tin <= c <= tout, "%s: элемент на %.1f вне окна сцены %.1f–%.1f" % (sid, c, tin, tout)
+
+
+# ── FR-SITE30: тексты из дека, своего не досочиняем ──────────────────────
+
+def test_labels_come_from_the_deck():
+    """Подписи сокращены до сути, но каждое значимое слово обязано быть в деке:
+    иначе в кадре появится обещание, которого нет на странице курса."""
+    deck = re.sub(r"\s+", " ", _html(_DECK).replace("&nbsp;", " ").replace("&shy;", "")).lower()
+    skip = {"и", "в", "по", "как", "первого"}          # служебные слова
+    for label in _labels():
+        for word in re.findall(r"[\w-]+", label):
+            if word.lower() in skip or len(word) < 3:
+                continue
+            stem = (word[:-2] if len(word) > 6 else word).lower()   # падежи не считаем
+            assert stem in deck, "слова нет в деке, значит подпись досочинена: %r (из %r)" % (word, label)
+    assert len(_labels()) >= 15, "проверено подозрительно мало подписей (%d)" % len(_labels())
+
+
+def test_no_headings_in_frame():
+    """Правило 2: заголовки экранов в кадр не идут."""
+    html = _html()
+    layer = html[html.index('<div id="layer">'):html.index('<div id="cover">')]
+    layer = re.sub(r"<!--.*?-->", " ", layer, flags=re.S)   # комментарии в кадр не попадают
+    assert "<h1" not in layer and "<h2" not in layer and "<h3" not in layer, "в кадре заголовок"
+    for heading in ("Для кого", "Чему вы", "Добро пожаловать на курс"):
+        assert heading not in layer, "заголовок дека попал в кадр: %r" % heading
+
+
+def test_no_rectangular_blocks():
+    """Правило 1: круг — единственная допустимая оправа."""
+    html = _html()
+    css = html[html.index("<style>"):html.index("</style>")]
+    scene_css = css[css.index("/* ── Ряды."):css.index("/* ── Обложка")]
+    for radius in re.findall(r"border-radius:([^;}]+)", scene_css):
+        assert "50%" in radius, "в сценах не круглая оправа: border-radius:%s" % radius
+
+
+def test_no_small_print():
+    """Правило 3: только крупный текст. 24px при ширине кадра 1080 — это ~9px
+    на телефоне, меньше нельзя."""
+    css = _html()
+    css = css[css.index("/* ── Ряды."):css.index("/* ── Обложка")]
+    sizes = [float(x) for x in re.findall(r"\.label\{font-size:([\d.]+)px", css)]
+    sizes += [float(x) for x in re.findall(r"#s\d \.label\{font-size:([\d.]+)px", css)]
+    assert sizes, "не нашёл ни одного кегля подписей"
+    assert min(sizes) >= 24, "подпись мельче 24px: %s" % sorted(sizes)[:3]
+
+
+def test_no_hyphenation_at_all():
+    """Правило 5: слова не переносятся."""
+    html = _html()
+    assert "&shy;" not in html, "остался мягкий перенос"
+    flat = html.replace(" ", "")
+    assert "overflow-wrap:anywhere" not in flat, "anywhere рвёт слово посреди слога"
+    assert "hyphens:auto" not in flat, "автоперенос запрещён"
+
+
+def test_zone_stays_above_the_posters():
+    """Правило 6: графика не доходит до картин на стене."""
+    html = _html()
+    top = int(re.search(r"--zone-top:(\d+)px", html).group(1))
+    height = int(re.search(r"--zone-h:(\d+)px", html).group(1))
+    assert top + height <= _POSTERS_TOP, \
+        "зона графики (%d..%d) заходит на картины (y%d)" % (top, top + height, _POSTERS_TOP)
+
+
+# ── FR-SITE30: субтитры правятся без перерендера ─────────────────────────
+
+def test_subtitles_live_in_one_editable_file():
+    """Владелец просил «чтобы можно было какие-то слова поправить». Значит
+    слова лежат в ОДНОМ файле, и его же читают и превью, и сборка. Копия
+    внутри страницы означала бы, что правка расходится с тем, что видно."""
+    assert os.path.exists(_SRT), "нет файла субтитров"
+    html = _html()
+    assert "субтитры.srt" in html, "страница не читает файл субтитров"
+    assert "var SUBS = [];" in html, "в странице осталась своя копия слов — она разойдётся с файлом"
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "субтитры.srt" in script, "сборка вжигает не тот файл, который правит владелец"
+
+
+def test_layer_has_no_subtitles_in_it():
+    """Субтитров в слое нет намеренно: иначе правка слова требовала бы
+    перерендера всех 1773 кадров."""
+    html = _html()
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "subtitles=" in script, "субтитры не вжигаются при сборке"
+    assert "fontsdir" in script, "libass не найдёт шрифт: субтитры выйдут системным"
+    # Имя обязано быть ПОЛНЫМ: по семейному «JetBrains Mono» libass шрифт не
+    # находит и молча уходит в системный — кадр с ним побайтово совпал с кадром,
+    # где указан заведомо несуществующий шрифт.
+    assert "JetBrains Mono ExtraBold" in script, \
+        "в стиле не полное имя шрифта — субтитры выйдут системным, и молча"
+    assert os.path.exists(os.path.join(_DIR, "fonts", "JetBrainsMono-ExtraBold.ttf")), \
+        "нет ttf для вжигания: woff2 libass не понимает"
+
+
+def test_style_is_applied_through_ass_not_force_style():
+    """force_style здесь не работает: запятые внутри стиля ffmpeg считает
+    своими разделителями, и субтитр молча не рисуется — кадр остаётся чистым,
+    без единой ошибки в логе. Поэтому SRT переводится в ASS и правится стиль."""
+    html = _html()
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "force_style=" not in script, "через force_style субтитры молча не отрисуются"
+    assert "raw.ass" in script and "subs.ass" in script, "нет перевода SRT в ASS"
+    assert "PlayResX" in script and "PlayResY" in script, \
+        "ffmpeg пишет ASS в координатах 384x288 — без подмены кегль и отступ будут не те"
+
+
+def test_subs_follow_the_transcript():
+    cues = _cues()
+    assert len(cues) >= 30, "реплик подозрительно мало: %d" % len(cues)
+    prev_end = 0.0
+    words = 0
+    for a, b, text in cues:
+        assert a < b, "вывернутая реплика: %r" % text
+        assert a >= prev_end - 0.001, "реплики наезжают друг на друга: %r" % text
+        assert b <= _DURATION + 0.1, "реплика выходит за длину ролика: %r" % text
+        assert "[" not in text and "]" not in text, "ремарка в квадратных скобках в кадре: %r" % text
+        assert "TurboScribe" not in text, "водяной знак распознавалки в кадре"
+        n = len(text.split())
+        assert 1 <= n <= 4, "в реплике %d слов (можно 2–4): %r" % (n, text)
+        words += n
+        prev_end = b
+    assert words == _WORDS, "слов в субтитрах %d, а в сценарии %d" % (words, _WORDS)
+
+
+def test_subs_are_white_outlined_and_boxless():
+    """Правило 7 и вид субтитров: белые, тонкая чёрная обводка, без подложки."""
+    html = _html()
+    css = html[html.index("#sub{"):html.index("}", html.index("#sub{"))]
+    assert "color:#fff" in css.replace(" ", ""), "субтитры не белые"
+    assert "-webkit-text-stroke" in html, "нет обводки"
+    assert "paint-order:stroke fill" in html.replace("  ", " "), \
+        "без paint-order обводка съедает половину буквы изнутри"
+
+
+# ── FR-SITE30: слой и сборка ─────────────────────────────────────────────
+
+def test_rendered_layer_is_present_and_split():
+    for name in ("overlay_c.mp4", "overlay_a.mp4"):
+        path = os.path.join(_DIR, name)
+        assert os.path.exists(path), "нет слоя: %s" % name
+        assert os.path.getsize(path) > 100000, "слой подозрительно пустой: %s" % name
+
+
+def test_page_can_be_rendered_frame_by_frame():
+    html = _html()
+    assert "window.__renderAt" in html, "нет покадрового рендера — слой нечем собрать"
+    assert "an.currentTime" in html, "время анимаций не выставляется явно — появления размажутся"
+    assert "documentElement.style.background = 'transparent'" in html, \
+        "фон <html> не снят: снимки выйдут непрозрачными"
+
+
+def test_script_burns_the_layer_into_the_frame():
+    html = _html()
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "alphamerge" in script, "слой не сшивается из цвета и маски"
+    assert "shortest=1" in script, "без shortest длительность тянется по слою"
+    assert "$ROT" in script, "поворот кадра не учитывается"
+    assert "videotoolbox" in script, "на маке пересборка должна идти аппаратно"
+    assert "-f null" in script, "результат не проверяется декодированием"
+    assert "setpts=PTS-STARTPTS" in script, "дорожки ролика не прижаты к нулю — будет чёрный кадр"
+
+
+if __name__ == "__main__":
+    failed = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("ok   %s" % name)
+            except Exception as e:
+                failed += 1
+                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
+    raise SystemExit(1 if failed else 0)

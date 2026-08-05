@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Приветствие курса — анимированная графика поверх видео</title>
+<meta name="robots" content="noindex">
+
+<style>
+/* JetBrains Mono лежит рядом (fonts/), а не на Google Fonts: страницу
+   открывают и локально (file://) во время записи, а там CDN недоступен.
+   Тем же шрифтом набран дек курса — /automation_ru/. */
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:block;src:url(fonts/jetbrains-mono-cyrillic-400-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:block;src:url(fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:block;src:url(fonts/jetbrains-mono-cyrillic-500-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:block;src:url(fonts/jetbrains-mono-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:block;src:url(fonts/jetbrains-mono-cyrillic-700-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:block;src:url(fonts/jetbrains-mono-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:800;font-display:block;src:url(fonts/jetbrains-mono-cyrillic-800-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:800;font-display:block;src:url(fonts/jetbrains-mono-latin-800-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+:root{
+    /* Палитра лекции 1 (automation/1/index.html) — один в один. */
+    --solar:#8B5CF6;
+    --gray:#E9E9E9;
+
+    /* Зона графики = светлая стена НАД головой. Замеры по кадру
+       (1080×1920): верх постеров ≈ y638, макушка ≈ y816. Жёсткая граница —
+       макушка; верх постеров карточки перекрывают, они непрозрачные.
+       Правится на лету: ?zoneTop=48&zoneH=712 под конкретный кадр. */
+    --zone-top:70px;
+    --zone-h:500px;
+    --zone-pad:46px;
+
+    --ease:cubic-bezier(.22,1,.36,1);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:#0b0b10;overflow:hidden}
+body{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;color:#000;-webkit-font-smoothing:antialiased}
+
+/* ── Сцена: рабочая система координат ровно 1080×1920, всё остальное
+   масштабируется одним transform. Так вёрстка не «плывёт» между
+   превью в окне, фуллскрином и финальным рендером. ───────────────── */
+#stage{
+    position:absolute;top:50%;left:50%;
+    width:1080px;height:1920px;
+    transform-origin:50% 50%;
+    overflow:hidden;
+    background:#000;
+}
+body.transparent #stage,body.transparent{background:transparent}
+
+#clip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+#clip.ready{display:block}
+
+/* Демо-фон: приближённая реконструкция кадра, чтобы смотреть анимацию
+   до загрузки видео и проверять контраст на сиреневой стене. */
+#mock{position:absolute;inset:0;display:none}
+body.mock #mock{display:block}
+body.transparent #mock{display:none}
+
+/* ── Скрим: мягкое затемнение верхней трети. Подписи белые, а стена в
+   кадре светло-сиреневая — без затемнения белое по светлому не читается.
+   Заодно это тот же верхний виньет, что на обложке. ─────────────────── */
+#scrim{
+    position:absolute;left:0;right:0;top:0;height:820px;pointer-events:none;
+    background:linear-gradient(180deg,
+        rgba(14,7,28,.60) 0%,
+        rgba(14,7,28,.50) 44%,
+        rgba(14,7,28,.26) 72%,
+        rgba(14,7,28,0) 100%);
+    opacity:0;transition:opacity .7s ease;
+}
+#scrim.on{opacity:1}
+body.no-scrim #scrim{display:none}
+
+#layer{
+    position:absolute;left:0;right:0;
+    top:var(--zone-top);height:var(--zone-h);
+    padding:0 var(--zone-pad);
+}
+
+/* ── Сцены ───────────────────────────────────────────────────────── */
+.scene{
+    position:absolute;left:var(--zone-pad);right:var(--zone-pad);
+    top:0;height:100%;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    opacity:0;visibility:hidden;
+    transform:translateY(26px) scale(.985);
+    filter:blur(6px);
+    transition:opacity .35s var(--ease),transform .35s var(--ease),filter .35s var(--ease),visibility 0s linear .35s;
+}
+.scene.on{
+    opacity:1;visibility:visible;transform:none;filter:none;
+    transition:opacity .35s var(--ease),transform .35s var(--ease),filter .35s var(--ease),visibility 0s;
+}
+
+/* ── Появление элементов ─────────────────────────────────────────── */
+.el{
+    opacity:0;
+    transform:translateY(18px) scale(.96);
+    transition:opacity .4s var(--ease),transform .4s var(--ease);
+}
+.el.on{opacity:1;transform:none}
+/* Пункты списков въезжают сбоку — так глаз ловит порядок сверху вниз. */
+.el.slide-l{transform:translateX(-22px)}
+.el.slide-l.on{transform:none}
+
+/* Иконка «выстреливает» чуть позже своей карточки — оживляет появление. */
+.el .ico{transform:scale(.55);opacity:.2;transition:transform .62s var(--ease) .1s,opacity .4s ease .1s}
+.el.on .ico{transform:none;opacity:1}
+
+/* ── Подсветка: элемент уже на экране, но о нём говорят прямо сейчас ─ */
+.hot{animation:hot 2.6s var(--ease)}
+@keyframes hot{
+    0%{transform:none}
+    18%{transform:translateY(-12px) scale(1.06)}
+    72%{transform:translateY(-7px) scale(1.035)}
+    100%{transform:none}
+}
+.hot .circle{animation:hotRing 2.6s var(--ease)}
+@keyframes hotRing{
+    0%{box-shadow:0 12px 30px rgba(24,10,54,.20)}
+    18%{box-shadow:0 18px 40px rgba(139,92,246,.45),0 0 0 6px rgba(139,92,246,.55)}
+    72%{box-shadow:0 16px 34px rgba(139,92,246,.3),0 0 0 4px rgba(139,92,246,.35)}
+    100%{box-shadow:0 12px 30px rgba(24,10,54,.20)}
+}
+
+/* ── Элементы БЕЗ прямоугольных блоков (правило владельца) ────────
+   Никаких карточек, рамок и плашек: только круглая иконка и подпись
+   прямо на кадре. Круг — единственная допустимая «оправа». ────────── */
+.item{
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    flex:1 1 0;min-width:0;
+}
+.circle{
+    border-radius:50%;background:#fff;
+    display:flex;align-items:center;justify-content:center;flex:none;
+    box-shadow:0 12px 30px rgba(24,10,54,.20);
+    color:#141018;
+}
+/* Иконки Font Awesome не квадратные: у robot/user-gear/network-wired
+   viewBox 640×512, у arrow-trend-up 576×512. При одинаковых 52% глиф в
+   широком viewBox вписывается по ширине и выходит оптически мельче — 
+   доразмериваем так, чтобы ВЫСОТА глифа у всех была одна. */
+.circle svg{width:52%;height:52%}
+.circle svg[viewBox="0 0 640 512"]{width:65%;height:65%}
+.circle svg[viewBox="0 0 576 512"]{width:58.5%;height:58.5%}
+.circle.solar{background:#EDE4FE;color:var(--solar)}
+.circle.ember{background:#FFE6D2;color:#F97316}
+
+h1,h2,h3,p,ul{margin:0}
+ul{list-style:none;padding:0}
+
+/* Текст лежит на видео, а не на плашке: тёмный ореол держит контраст,
+   когда под белой буквой проезжает светлый угол стены. */
+.label,#s2 li{
+    text-shadow:0 3px 16px rgba(10,4,24,.6),0 1px 4px rgba(10,4,24,.75);
+}
+.label{
+    font-weight:900;line-height:1.1;letter-spacing:-.01em;color:#fff;
+    overflow-wrap:break-word;hyphens:none;
+}
+
+/* ── Ряды. Колонки НЕ равные (flex:0 1 auto + space-between): при равных
+   долях «Мультиагентные» (269px при 32px кегля) не влезает в свои 227px и
+   наезжает на соседа. Тот же приём, что в сцене 3 лекции 1. ─────────── */
+.row{display:flex;width:100%;align-items:flex-start;justify-content:space-between;gap:18px}
+.item{flex:0 1 auto}
+.circle{width:100px;height:100px;margin-bottom:16px}
+.label{font-size:32px}
+
+/* Кегли посчитаны по самой длинной строке подписи: JetBrains Mono
+   моноширинный, знак = 0.6em, полезная ширина 988px. */
+#s1 .label{font-size:32px}      /* 43 знака → 826px, зазоры по 54px */
+#s2 .label{font-size:32px}      /* 43 знака → 826px: при 34px крайние подписи упирались в край зоны */
+#s3 .label{font-size:36px}      /* 27 знаков → 583px, просторно */
+#s4 .label{font-size:30px}      /* 47 знаков → 846px, зазоры по 47px */
+
+/* Два и один элемент разводить по краям нечем — их место в середине. */
+#s5 .row{justify-content:center;gap:96px}
+#s5 .label{font-size:36px}
+#s6 .row{justify-content:center}
+#s6 .circle{width:136px;height:136px;margin-bottom:20px}
+#s6 .label{font-size:40px}
+
+/* ── Обложка: первые секунды готового ролика. Стык с видео жёсткий, без
+   растворения, — ровно так же его склеит ffmpeg, и превью не врёт. ─── */
+#cover{position:absolute;inset:0;display:none;background:#000}
+#cover img{width:100%;height:100%;object-fit:cover;display:block}
+body.on-cover #cover{display:block}
+/* На обложке нет ни графики, ни субтитров, ни скрима. */
+body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim{display:none}
+
+/* ── Субтитры ────────────────────────────────────────────────────────
+   Белые, с тонкой чёрной обводкой, без подложки (правило «без блоков»).
+   Позиция снята с кадра владельца: центр строки на 78.6% высоты — под
+   микрофоном и над руками. Двигается через ?subY=. */
+#sub{
+    position:absolute;left:70px;right:70px;top:1510px;
+    transform:translateY(-50%);
+    text-align:center;pointer-events:none;
+    font-size:50px;font-weight:800;line-height:1.18;letter-spacing:-.005em;
+    color:#fff;
+    /* paint-order обязателен: без него обводка съедает половину буквы
+       изнутри и текст выглядит тоньше, чем набран. */
+    -webkit-text-stroke:4px #0A0A0A;paint-order:stroke fill;
+    text-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+#sub:empty{display:none}
+#sub.pop{animation:subIn .16s ease-out}
+@keyframes subIn{from{opacity:0;transform:translateY(calc(-50% + 8px))}}
+body.no-subs #sub{display:none}
+
+/* ── Направляющие (?guides=1): где в кадре постеры и макушка ─────── */
+#guides{position:absolute;inset:0;display:none;pointer-events:none;font:700 20px/1 'JetBrains Mono',monospace}
+body.guides #guides{display:block}
+#guides .ln{position:absolute;left:0;right:0;border-top:2px dashed rgba(255,0,80,.85)}
+#guides .ln span{position:absolute;left:8px;top:4px;color:#fff;background:rgba(255,0,80,.85);padding:3px 8px;border-radius:5px}
+#guides .box{position:absolute;left:0;right:0;outline:2px dashed rgba(0,200,255,.8);background:rgba(0,200,255,.07)}
+
+/* ── HUD (в кадр не попадает: живёт вне #stage) ──────────────────── */
+#hud{
+    position:fixed;left:0;right:0;bottom:0;z-index:10;
+    background:rgba(10,10,16,.9);backdrop-filter:blur(10px);
+    border-top:1px solid rgba(255,255,255,.12);
+    color:#fff;font:500 13px/1.3 'JetBrains Mono',ui-monospace,monospace;
+    padding:10px 14px 12px;
+    display:flex;flex-direction:column;gap:8px;
+}
+body.rec #hud,body.rec #drop{display:none}
+#hud .line{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#hud button,#hud label.btn{
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+    color:#fff;border-radius:9px;padding:7px 13px;cursor:pointer;
+    font:700 13px 'JetBrains Mono',ui-monospace,monospace;
+}
+#hud button:hover,#hud label.btn:hover{background:rgba(139,92,246,.35);border-color:var(--solar)}
+#hud button.act{background:var(--solar);border-color:var(--solar);color:#0A0A0A}
+#hud input[type=file]{display:none}
+#time{font-variant-numeric:tabular-nums;font-weight:700;min-width:112px}
+#hint{color:rgba(255,255,255,.5);font-size:12px}
+#track{position:relative;height:24px;flex:1;min-width:220px;cursor:pointer}
+#track .bar{position:absolute;left:0;right:0;top:10px;height:4px;background:rgba(255,255,255,.16);border-radius:3px}
+#track .fill{position:absolute;left:0;top:10px;height:4px;background:var(--solar);border-radius:3px}
+#track .cue{position:absolute;top:4px;width:2px;height:16px;background:rgba(255,255,255,.45);border-radius:1px}
+#track .cue.sc{background:#F97316;height:22px;top:1px;width:3px}
+
+#drop{
+    position:fixed;inset:0;z-index:9;display:none;
+    align-items:center;justify-content:center;
+    background:rgba(10,10,16,.82);color:#fff;
+    font:800 26px 'JetBrains Mono',ui-monospace,monospace;
+    border:4px dashed var(--solar);
+}
+body.dragging #drop{display:flex}
+</style>
+</head>
+<body class="mock">
+
+<div id="stage">
+    <video id="clip" playsinline preload="auto"></video>
+
+    <!-- Демо-фон: сиреневая стена + два постера + силуэт. Только превью. -->
+    <div id="mock">
+        <svg viewBox="0 0 1080 1920" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+            <defs>
+                <radialGradient id="wall" cx="50%" cy="26%" r="78%">
+                    <stop offset="0%" stop-color="#d6cbe8"/>
+                    <stop offset="42%" stop-color="#bfaedd"/>
+                    <stop offset="72%" stop-color="#9a76c9"/>
+                    <stop offset="100%" stop-color="#6a3f9e"/>
+                </radialGradient>
+                <linearGradient id="glow" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stop-color="#d94fb0" stop-opacity=".75"/>
+                    <stop offset="45%" stop-color="#8b3fd0" stop-opacity=".25"/>
+                    <stop offset="100%" stop-color="#8b3fd0" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+            <rect width="1080" height="1920" fill="url(#wall)"/>
+            <rect y="1050" width="1080" height="870" fill="url(#glow)"/>
+            <!-- постеры -->
+            <rect x="30" y="638" width="410" height="630" fill="#f4f2ee" stroke="#111" stroke-width="16"/>
+            <rect x="590" y="638" width="460" height="630" fill="#f4f2ee" stroke="#111" stroke-width="16"/>
+            <path d="M110 760 q140 60 260 0 q-140 90 -260 30 z" fill="#12121a"/>
+            <path d="M110 900 q140 60 260 0 q-140 90 -260 30 z" fill="#12121a"/>
+            <path d="M110 1040 q140 60 260 0 q-140 90 -260 30 z" fill="#12121a"/>
+            <ellipse cx="820" cy="950" rx="180" ry="205" fill="#f06" opacity=".55"/>
+            <ellipse cx="820" cy="950" rx="120" ry="140" fill="#ff5a1f" opacity=".8"/>
+            <ellipse cx="820" cy="950" rx="58" ry="70" fill="#ff8a3d"/>
+            <!-- силуэт «говорящей головы» -->
+            <ellipse cx="560" cy="990" rx="128" ry="152" fill="#241a2e"/>
+            <path d="M300 1920 q0-420 260-420 q260 0 260 420 z" fill="#141019"/>
+            <rect y="1720" width="1080" height="200" fill="#c9a97e"/>
+        </svg>
+    </div>
+
+    <div id="scrim"></div>
+
+    <div id="layer">
+
+        <!-- ══ S1 · экран 1 «Приветствие»: что даёт курс — четыре обещания в ряд ══ -->
+        <section class="scene" id="s1" data-in="6.9" data-out="14.2">
+            <div class="row">
+                <div class="item el solar" data-in="7.3">
+                    <div class="circle solar ico" data-icon="robot"></div>
+                    <p class="label">AI-First<br>компания</p>
+                </div>
+                <div class="item el ember" data-in="8.6">
+                    <div class="circle ember ico" data-icon="gears"></div>
+                    <p class="label">Автоматизация<br>процессов</p>
+                </div>
+                <div class="item el solar" data-in="10.1">
+                    <div class="circle solar ico" data-icon="user-gear"></div>
+                    <p class="label">Без роста<br>штата</p>
+                </div>
+                <div class="item el ember" data-in="12.4">
+                    <div class="circle ember ico" data-icon="arrow-trend-up"></div>
+                    <p class="label">Экономический<br>эффект</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S2 · экран 2 «Для кого этот курс»: три роли (заголовок не берётся) ══ -->
+        <section class="scene" id="s2" data-in="14.7" data-out="21.8">
+            <div class="row">
+                <div class="item el solar" data-in="15.4">
+                    <div class="circle solar ico" data-icon="compass"></div>
+                    <p class="label">ИИ-консультант</p>
+                </div>
+                <div class="item el ember" data-in="16.7">
+                    <div class="circle ember ico" data-icon="wrench"></div>
+                    <p class="label">ИИ-инженер<br>по автоматизации</p>
+                </div>
+                <div class="item el solar" data-in="18.2">
+                    <div class="circle solar ico" data-icon="rocket"></div>
+                    <p class="label">ИИ-основатель</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S3 · экран 3 «Чему вы научитесь», пункты 1–4 ══ -->
+        <section class="scene" id="s3" data-in="22.2" data-out="30.2">
+            <div class="row">
+                <div class="item el solar" data-in="22.8">
+                    <div class="circle solar ico" data-icon="brain"></div>
+                    <p class="label">Поток<br>данных</p>
+                </div>
+                <div class="item el ember" data-in="25.2">
+                    <div class="circle ember ico" data-icon="magnifying-glass"></div>
+                    <p class="label">Находить<br>процессы</p>
+                </div>
+                <div class="item el solar" data-in="27.1">
+                    <div class="circle solar ico" data-icon="clipboard-list"></div>
+                    <p class="label">AS-IS<br>процесс</p>
+                </div>
+                <div class="item el ember" data-in="29.0">
+                    <div class="circle ember ico" data-icon="pen-ruler"></div>
+                    <p class="label">TO-BE<br>модель</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S4 · экран 3, пункты 5–8. Ряд держится и на фразе «управлять изменениями
+             в компании» — такого пункта в деке нет, досочинять его нельзя ══ -->
+        <section class="scene" id="s4" data-in="30.6" data-out="39.5">
+            <div class="row">
+                <div class="item el solar" data-in="31.3">
+                    <div class="circle solar ico" data-icon="user-gear"></div>
+                    <p class="label">Роль<br>ИИ-агента</p>
+                </div>
+                <div class="item el ember" data-in="33.8">
+                    <div class="circle ember ico" data-icon="robot"></div>
+                    <p class="label">Создавать<br>ИИ-агентов</p>
+                </div>
+                <div class="item el solar" data-in="34.8">
+                    <div class="circle solar ico" data-icon="network-wired"></div>
+                    <p class="label">Мультиагентные<br>системы</p>
+                </div>
+                <div class="item el ember" data-in="36.3">
+                    <div class="circle ember ico" data-icon="shield-halved"></div>
+                    <p class="label">Качество и<br>безопасность</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S5 · экран 3, пункты 9–10 — два элемента по центру ══ -->
+        <section class="scene" id="s5" data-in="39.9" data-out="48.0">
+            <div class="row">
+                <div class="item el ember" data-in="40.6">
+                    <div class="circle ember ico" data-icon="arrow-trend-up"></div>
+                    <p class="label">Оценивать<br>эффект</p>
+                </div>
+                <div class="item el solar" data-in="44.5">
+                    <div class="circle solar ico" data-icon="rocket"></div>
+                    <p class="label">Внедрить первого<br>ИИ-агента</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S6 · финал: «Начните строить AI-First бизнес» — то же понятие,
+             с которого ролик начался. До 54.5 кадр отдан говорящему ══ -->
+        <section class="scene" id="s6" data-in="54.5" data-out="59.0">
+            <div class="row">
+                <div class="item el solar" data-in="54.9">
+                    <div class="circle solar ico" data-icon="robot"></div>
+                    <p class="label">AI-First<br>компания</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Заставки у этого ролика нет: картинка подставляется только при ?cover= -->
+    <div id="cover"><img alt=""></div>
+
+    <div id="sub"></div>
+
+    <div id="guides">
+        <div class="box" style="top:70px;height:500px"></div>
+        <div class="ln" style="top:638px"><span>верх постеров · y638</span></div>
+        <div class="ln" style="top:816px"><span>макушка · y816</span></div>
+    </div>
+</div>
+
+<div id="drop">Отпустите видео здесь</div>
+
+<div id="hud">
+    <div class="line">
+        <div id="track"><div class="bar"></div><div class="fill"></div></div>
+        <span id="time">00:00.0 / 02:23</span>
+    </div>
+    <div class="line">
+        <button id="play">▶ Пуск</button>
+        <label class="btn">Загрузить видео<input type="file" id="file" accept="video/*"></label>
+        <button id="bMock" class="act">Демо-фон</button>
+        <button id="bJoin">Скрипт сборки</button>
+        <button id="bSubs" class="act">Субтитры</button>
+        <button id="bScrim" class="act">Скрим</button>
+        <button id="bGuide">Границы</button>
+        <button id="bRec">Режим записи</button>
+        <button id="bFull">Во весь экран</button>
+        <span id="subsnote" style="display:none;color:#FFB27A;font-weight:700"></span>
+        <span id="hint">Space — пуск/пауза · ←/→ ±1с · Shift+←/→ ±5с · H — спрятать панель · перетащите mp4 в окно</span>
+    </div>
+</div>
+
+<script src="icons.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    /* Иконки Font Awesome 6.4.0 (те же, что в деке) лежат рядом инлайновым
+       SVG — страница не тянет ни одного внешнего файла. */
+    [].slice.call(document.querySelectorAll('[data-icon]')).forEach(function (el) {
+        var svg = (window.ICONS || {})[el.getAttribute('data-icon')];
+        if (svg) el.innerHTML = svg;
+        else el.setAttribute('data-icon-missing', '1');
+    });
+
+    /* Субтитры лежат ОТДЕЛЬНЫМ файлом «субтитры.srt» и ТОЛЬКО там.
+       Поправить слово = открыть его любым текстовым редактором: страница
+       читает строки оттуда, и собрать.sh вжигает в кадр ТОТ ЖЕ файл. Копии
+       внутри страницы нет намеренно — иначе правка расходилась бы с превью.
+       Поэтому же в слое графики субтитров нет: правка слова не должна
+       требовать перерендера слоя. */
+    var SUBS = [];
+
+    function parseSRT(text) {
+        var out = [];
+        text.replace(/\r/g, '').split(/\n\n+/).forEach(function (block) {
+            var lines = block.split('\n'), i;
+            for (i = 0; i < lines.length; i++) {
+                var m = lines[i].match(/(\d\d):(\d\d):(\d\d)[,.](\d\d\d)\s*-->\s*(\d\d):(\d\d):(\d\d)[,.](\d\d\d)/);
+                if (!m) continue;
+                var txt = lines.slice(i + 1).join(' ').trim();
+                if (txt) out.push([
+                    (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3]) + (+m[4]) / 1000,
+                    (+m[5]) * 3600 + (+m[6]) * 60 + (+m[7]) + (+m[8]) / 1000,
+                    txt
+                ]);
+                break;
+            }
+        });
+        return out;
+    }
+
+    var DURATION = 59.1;                      // 00:59 — длина исходного ролика
+    var HOT = 2.6;                            // столько живёт подсветка .hot
+    /* Заставки у этого ролика нет: обложку в ленте задаёт первый кадр.
+       Механика с COVER оставлена — понадобится, положите cover.png рядом и
+       откройте с ?cover=0.1, тайминги от этого не поедут (считаются от
+       времени ВИДЕО, то есть time - COVER). */
+    var COVER = 0;
+
+    var stage = document.getElementById('stage');
+    var clip = document.getElementById('clip');
+    var scrim = document.getElementById('scrim');
+    var track = document.getElementById('track');
+    var fill = track.querySelector('.fill');
+    var timeEl = document.getElementById('time');
+    var playBtn = document.getElementById('play');
+    var subEl = document.getElementById('sub');
+
+    var scenes = [].slice.call(document.querySelectorAll('.scene'));
+    var els = [].slice.call(document.querySelectorAll('.el'));
+
+    els.forEach(function (el) {
+        el.__in = parseFloat(el.getAttribute('data-in'));
+        el.__hl = (el.getAttribute('data-hl') || '').split(/\s+/)
+            .filter(Boolean).map(parseFloat);
+    });
+    scenes.forEach(function (s) {
+        s.__in = parseFloat(s.getAttribute('data-in'));
+        s.__out = parseFloat(s.getAttribute('data-out'));
+    });
+
+    /* ── Часы. С видео ведущий — video.currentTime, без него — свой
+       таймер, чтобы анимацию можно было смотреть до загрузки mp4. ── */
+    var hasVideo = false, playing = false, t = 0, last = 0, onCover = true;
+
+    function videoLen() { return hasVideo && clip.duration ? clip.duration : DURATION; }
+    function total() { return COVER + videoLen(); }
+    /* Пока идёт заставка, ведёт свой таймер; дальше — сам ролик. */
+    function now() { return (hasVideo && !onCover) ? COVER + clip.currentTime : t; }
+
+    /* Состояние считается ИЗ времени каждый кадр (а не по событиям) —
+       иначе перемотка назад оставляла бы элементы включёнными. */
+    function render(time) {
+        document.body.classList.toggle('on-cover', time < COVER);
+        var vt = time - COVER;               // время внутри ролика = время SRT
+
+        scrim.classList.toggle('on', vt >= scenes[0].__in - 0.4 &&
+            vt < scenes[scenes.length - 1].__out + 0.5);
+
+        scenes.forEach(function (s) {
+            s.classList.toggle('on', vt >= s.__in && vt < s.__out);
+        });
+
+        els.forEach(function (el) {
+            var vis = vt >= el.__in;
+            if (el.classList.contains('on') !== vis) el.classList.toggle('on', vis);
+            var hot = false;
+            for (var i = 0; i < el.__hl.length; i++) {
+                if (vt >= el.__hl[i] && vt < el.__hl[i] + HOT) { hot = true; break; }
+            }
+            if (el.classList.contains('hot') !== hot) el.classList.toggle('hot', hot);
+        });
+
+        var line = '';
+        for (var k = 0; k < SUBS.length; k++) {
+            if (vt >= SUBS[k][0] && vt < SUBS[k][1]) { line = SUBS[k][2]; break; }
+        }
+        if (subEl.textContent !== line) {
+            subEl.textContent = line;
+            subEl.classList.remove('pop');
+            void subEl.offsetWidth;              // перезапуск анимации появления
+            if (line) subEl.classList.add('pop');
+        }
+
+        var d = total();
+        fill.style.width = (Math.min(time / d, 1) * 100) + '%';
+        timeEl.textContent = fmt(time) + ' / ' + fmt(d);
+    }
+
+    function fmt(s) {
+        s = Math.max(0, s);
+        var m = Math.floor(s / 60), r = s - m * 60;
+        return (m < 10 ? '0' : '') + m + ':' + (r < 10 ? '0' : '') + r.toFixed(1);
+    }
+
+    function frame(ts) {
+        if (!last) last = ts;
+        var dt = (ts - last) / 1000; last = ts;
+        if (playing) {
+            if (!hasVideo) {
+                t += dt;
+                if (t > total()) { t = total(); setPlaying(false); }
+            } else if (onCover) {
+                t += dt;
+                if (t >= COVER) { onCover = false; clip.currentTime = 0; play(); }
+            } else {
+                t = COVER + clip.currentTime;
+            }
+        }
+        render(now());
+        requestAnimationFrame(frame);
+    }
+
+    function setPlaying(p) {
+        playing = p;
+        playBtn.textContent = p ? '❚❚ Пауза' : '▶ Пуск';
+        if (!hasVideo) return;
+        if (!p || onCover) { clip.pause(); return; }
+        play();
+    }
+    // play() отдаёт промис и падает на нераспознанном кодеке — без catch
+    // получаем необработанное исключение и молча мёртвый таймлайн.
+    function play() {
+        var r = clip.play();
+        if (r && r.catch) r.catch(dropVideo);
+    }
+    function seek(time) {
+        t = Math.max(0, Math.min(total(), time));
+        onCover = t < COVER;
+        if (hasVideo) {
+            if (onCover) { clip.pause(); clip.currentTime = 0; }
+            else { clip.currentTime = t - COVER; if (playing) play(); }
+        }
+        render(t);
+    }
+
+    /* ── Масштаб сцены под окно ─────────────────────────────────── */
+    function fit() {
+        var pad = document.body.classList.contains('rec') ? 0 : 116;
+        var k = Math.min(window.innerWidth / 1080, (window.innerHeight - pad) / 1920);
+        stage.style.transform = 'translate(-50%,-50%) scale(' + k + ')';
+        stage.style.marginTop = document.body.classList.contains('rec') ? '0' : (-pad / 2) + 'px';
+    }
+    window.addEventListener('resize', fit);
+
+    /* ── Загрузка видео ─────────────────────────────────────────── */
+    var HINT = document.getElementById('hint').textContent;
+    function loadVideo(url) {
+        document.getElementById('hint').textContent = HINT;   // снимаем прошлую жалобу
+        clip.src = url;
+        clip.classList.add('ready');
+        document.body.classList.remove('mock');
+        document.getElementById('bMock').classList.remove('act');
+        hasVideo = true;
+        clip.addEventListener('loadedmetadata', function () { render(0); }, { once: true });
+        clip.addEventListener('play', function () { setPlaying(true); });
+        clip.addEventListener('pause', function () { setPlaying(false); });
+        clip.addEventListener('error', dropVideo);
+    }
+
+    /* Браузер не смог открыть файл. Без этого возврата часы навсегда стояли
+       бы на video.currentTime = 0, и анимация выглядела бы «сломанной». */
+    function dropVideo() {
+        if (!hasVideo) return;
+        hasVideo = false; t = 0;
+        clip.classList.remove('ready');
+        clip.removeAttribute('src');
+        document.body.classList.add('mock');
+        document.getElementById('bMock').classList.add('act');
+        document.getElementById('hint').textContent =
+            'Браузер не открыл этот файл — играет демо-фон. Нужен mp4/webm, который тянет сам браузер.';
+        setPlaying(false);
+    }
+    document.getElementById('file').addEventListener('change', function (e) {
+        if (e.target.files[0]) {
+            videoFile = e.target.files[0];
+            videoName = videoFile.name;
+            loadVideo(URL.createObjectURL(videoFile));
+        }
+    });
+    ['dragenter', 'dragover'].forEach(function (n) {
+        window.addEventListener(n, function (e) { e.preventDefault(); document.body.classList.add('dragging'); });
+    });
+    ['dragleave', 'drop'].forEach(function (n) {
+        window.addEventListener(n, function (e) {
+            e.preventDefault();
+            if (n === 'dragleave' && e.relatedTarget) return;
+            document.body.classList.remove('dragging');
+            if (n === 'drop' && e.dataTransfer.files[0]) {
+                videoFile = e.dataTransfer.files[0];
+                videoName = videoFile.name;
+                loadVideo(URL.createObjectURL(videoFile));
+            }
+        });
+    });
+
+    /* ── Управление ─────────────────────────────────────────────── */
+    playBtn.addEventListener('click', function () { setPlaying(!playing); });
+    track.addEventListener('pointerdown', function scrub(e) {
+        var move = function (ev) {
+            var r = track.getBoundingClientRect();
+            seek((ev.clientX - r.left) / r.width * total());
+        };
+        move(e);
+        var up = function () {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+    });
+
+    function toggle(btn, cls) {
+        document.getElementById(btn).addEventListener('click', function () {
+            document.body.classList.toggle(cls);
+            this.classList.toggle('act', document.body.classList.contains(cls));
+            fit();
+        });
+    }
+    toggle('bMock', 'mock');
+    toggle('bGuide', 'guides');
+    toggle('bRec', 'rec');
+    /* ── Сборка «обложка + ролик» ────────────────────────────────
+       Браузер не умеет пересобирать mp4 без перекодирования, а
+       перекодировать дорожку ради двух секунд заставки — потерять
+       качество исходника. Поэтому кнопка готовит команду: обложка
+       кодируется под параметры ролика, а сам ролик копируется
+       потоком (-c copy), то есть остаётся байт в байт. */
+    var videoName = '', videoFile = null;
+    function joinScript() {
+        var v = videoName || 'video.mp4';
+        return [
+            '#!/bin/sh',
+            '# Ролик + графика + субтитры, вжжённые в кадр.',
+            '#',
+            '# Графику и субтитры нельзя доложить копированием дорожки — их надо',
+            '# нарисовать поверх КАЖДОГО кадра. Значит одна пересборка, с битрейтом',
+            '# исходника: второй проход на 10+ Мбит/с на глаз неотличим, а раздувать',
+            '# файл незачем.',
+            '#',
+            '# СЛОВА СУБТИТРОВ ЖИВУТ В ФАЙЛЕ «субтитры.srt» РЯДОМ. Поправили слово —',
+            '# просто запустите скрипт заново: перерендеривать графику не нужно,',
+            '# субтитров в слое нет, они вжигаются из этого файла.',
+            '#',
+            '# Запуск:  sh собрать.sh "ваше видео.MOV"   (кавычки — если в имени пробелы)',
+            'set -e',
+            'command -v ffmpeg  >/dev/null || { echo "Нет ffmpeg. macOS: brew install ffmpeg"; exit 1; }',
+            'command -v ffprobe >/dev/null || { echo "Нет ffprobe — он ставится вместе с ffmpeg"; exit 1; }',
+            'DIR=$(cd "$(dirname "$0")" && pwd)',
+            'for f in overlay_c.mp4 overlay_a.mp4 субтитры.srt fonts/JetBrainsMono-ExtraBold.ttf; do',
+            '  [ -f "$DIR/$f" ] || { echo "Рядом со скриптом нет $f"; exit 1; }',
+            'done',
+            'VIDEO="${1:-' + v + '}"',
+            '[ -f "$VIDEO" ] || { echo "Не найден файл: $VIDEO"; exit 1; }',
+            'OUT="${VIDEO%.*}-готовый.mp4"',
+            '',
+            'p()  { ffprobe -v error -select_streams "$1" -show_entries stream="$2"  -of csv=p=0 "$VIDEO"; }',
+            'pf() { ffprobe -v error -show_entries format="$1" -of csv=p=0 "$VIDEO"; }',
+            'W=$(p v:0 width);  H=$(p v:0 height)',
+            'PIX=$(p v:0 pix_fmt); VCODEC=$(p v:0 codec_name); ACODEC=$(p a:0 codec_name); BR=$(pf bit_rate)',
+            'ROT=$(ffprobe -v error -select_streams v:0 -show_entries stream_side_data=rotation -of csv=p=0 "$VIDEO" 2>/dev/null | head -1)',
+            ': "${ROT:=0}"',
+            '# Снятый телефоном ролик часто лежит боком плюс метка поворота: работаем',
+            '# в тех размерах, в каких кадр ВИДЕН, а не в каких хранится.',
+            'case "$ROT" in 90|-90|270|-270) DW=$H; DH=$W ;; *) DW=$W; DH=$H ;; esac',
+            'echo "Ролик: $VCODEC ${DW}x${DH}, поворот $ROT, звук ${ACODEC:-нет}"',
+            '',
+            '# Субтитры: SRT → ASS средствами самого ffmpeg, потом подменяется строка',
+            '# стиля. Через force_style то же самое не выходит: запятые внутри стиля',
+            '# ffmpeg считает своими разделителями, и субтитр молча не рисуется —',
+            '# проверено, кадр остаётся чистым, без единой ошибки в логе.',
+            '# Имена рабочих файлов латиницей и без пробелов: путь уходит внутрь',
+            '# фильтра, где двоеточия и пробелы пришлось бы экранировать.',
+            'TMP=.overlay-build',
+            'rm -rf "$TMP"; mkdir -p "$TMP/fonts"',
+            'cp "$DIR/fonts/JetBrainsMono-ExtraBold.ttf" "$TMP/fonts/"',
+            'ffmpeg -y -v error -i "$DIR/субтитры.srt" "$TMP/raw.ass"',
+            "SUBSIZE=$(awk -v h=\"$DH\" 'BEGIN{ printf \"%d\", h*0.028 }')",
+            "MARGIN=$(awk -v h=\"$DH\" 'BEGIN{ printf \"%d\", h*0.193 }')",
+            "OUTLINE=$(awk -v s=\"$SUBSIZE\" 'BEGIN{ v=int(s/13); if(v<3) v=3; printf \"%d\", v }')",
+            'STYLE="Style: Default,JetBrains Mono ExtraBold,$SUBSIZE,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,$OUTLINE,0,2,60,60,$MARGIN,1"',
+            '# Имя шрифта — ПОЛНОЕ («JetBrains Mono ExtraBold», это name ID 1 в ttf).',
+            '# По семейному имени «JetBrains Mono» libass шрифт не находит и молча',
+            '# уходит в системный: проверено — кадр с ним побайтово совпал с кадром,',
+            '# где указан заведомо несуществующий шрифт.',
+            '# ffmpeg пишет ASS в координатах 384x288 — переводим их в размер кадра,',
+            '# иначе кегль и отступ субтитров считаются не от того.',
+            'awk -v st="$STYLE" -v w="$DW" -v h="$DH" \'/^Style: Default,/{print st;next} /^PlayResX:/{print "PlayResX: " w;next} /^PlayResY:/{print "PlayResY: " h;next} {print}\' "$TMP/raw.ass" > "$TMP/subs.ass"',
+            '# Битрейт как у исходника, но не ниже 10 Мбит/с.',
+            'TARGET=$(awk -v b="${BR:-0}" \'BEGIN{ if(b<1) b=12000000; if(b<10000000) b=10000000; printf "%d", b }\')',
+            'HW=$(ffmpeg -hide_banner -encoders 2>/dev/null | grep -o "hevc_videotoolbox\\|h264_videotoolbox" | tr "\\n" " ")',
+            'case "$VCODEC:$HW" in',
+            '  hevc:*hevc_videotoolbox*) VE="hevc_videotoolbox -b:v $TARGET -tag:v hvc1" ;;',
+            '  *:*h264_videotoolbox*)    VE="h264_videotoolbox -b:v $TARGET" ;;',
+            '  hevc:*)                   VE="libx265 -preset medium -crf 18 -tag:v hvc1 -x265-params log-level=none" ;;',
+            '  *)                        VE="libx264 -preset medium -crf 17" ;;',
+            'esac',
+            'echo "Кодировщик: $VE"',
+            'echo "Собираю: ролик + графика + субтитры…"',
+            '',
+            '# [0] ролик · [1] цвет слоя · [2] маска слоя.',
+            '# Слой лежит ДВУМЯ файлами: прозрачности в mp4 нет, webm с альфой',
+            '# собирается не везде, а две дорожки в одном mp4 не переживают ремукс.',
+            '# alphamerge сшивает цвет с маской обратно в прозрачную картинку.',
+            '# shortest=1 обязателен: иначе длина тянется по слою.',
+            '# setpts/asetpts прижимают дорожки ролика к нулю: в MOV с телефона',
+            '# видеодорожка бывает начинается позже звука, и тогда в начале чёрный кадр.',
+            'VF="[1:v]scale=$DW:$DH:flags=lanczos[oc];[2:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[0:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:shortest=1,subtitles=$TMP/subs.ass:fontsdir=$TMP/fonts,format=$PIX,setsar=1[v]"',
+            'if [ -n "$ACODEC" ]; then',
+            '  ffmpeg -y -loglevel error -stats -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
+            '    -filter_complex "$VF;[0:a]aresample=async=1:first_pts=0,asetpts=PTS-STARTPTS[a]" \\',
+            '    -map "[v]" -map "[a]" -shortest -c:v $VE -pix_fmt "$PIX" -c:a aac -b:a 192k -movflags +faststart "$OUT"',
+            'else',
+            '  ffmpeg -y -loglevel error -stats -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
+            '    -filter_complex "$VF" \\',
+            '    -map "[v]" -c:v $VE -pix_fmt "$PIX" -an -movflags +faststart "$OUT"',
+            'fi',
+            'rm -rf "$TMP"',
+            '',
+            '# Проверка декодированием: файл нужного размера и длины может не играть.',
+            'ERR=$(ffmpeg -v error -i "$OUT" -f null - 2>&1 || true)',
+            '[ -z "$ERR" ] || { echo "ОШИБКА: результат не декодируется — $(echo "$ERR" | head -1)"; exit 1; }',
+            'echo "Готово: $OUT"'
+        ].join('\n') + '\n';
+    }
+
+    var joinBtn = document.getElementById('bJoin');
+    function tell(msg) { document.getElementById('hint').textContent = msg; }
+
+    /* Кнопка отдаёт скрипт, а не собирает сама.
+       Раньше сборка шла прямо здесь, в ffmpeg.wasm, и это работало — пока
+       речь была только о склейке обложки с роликом. Но графику и субтитры
+       «доложить» нельзя, их надо нарисовать поверх КАЖДОГО кадра, то есть
+       пересобрать ролик целиком. В wasm это десятки минут на вкладку;
+       у ffmpeg на маке тот же ролик проходит за минуту через VideoToolbox.
+       Поэтому путь один — скрипт, и он же честнее: видно, что происходит. */
+    joinBtn.addEventListener('click', function () {
+        var url = URL.createObjectURL(new Blob([joinScript()], { type: 'text/x-shellscript' }));
+        var a = document.createElement('a');
+        a.href = url; a.download = 'собрать.sh'; a.click();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+        tell('Скрипт скачан. Положите его в эту же папку (рядом с cover.png и ' +
+             'overlay.mp4) и запустите: sh собрать.sh "' +
+             (videoName || 'ваше-видео.mov') + '"');
+    });
+
+    document.getElementById('bSubs').addEventListener('click', function () {
+        document.body.classList.toggle('no-subs');
+        this.classList.toggle('act', !document.body.classList.contains('no-subs'));
+    });
+    document.getElementById('bScrim').addEventListener('click', function () {
+        document.body.classList.toggle('no-scrim');
+        this.classList.toggle('act', !document.body.classList.contains('no-scrim'));
+    });
+    document.getElementById('bFull').addEventListener('click', function () {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        var step = e.shiftKey ? 5 : 1;
+        if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); }
+        else if (e.code === 'ArrowRight') { e.preventDefault(); seek(now() + step); }
+        else if (e.code === 'ArrowLeft') { e.preventDefault(); seek(now() - step); }
+        else if (e.key === 'h' || e.key === 'H' || e.key === 'р' || e.key === 'Р') {
+            document.body.classList.toggle('rec'); fit();
+        }
+    });
+
+    /* ── Метки на таймлайне: видно, где что появляется ──────────── */
+    scenes.forEach(function (s) { mark(s.__in, 'sc'); });
+    els.forEach(function (el) { mark(el.__in, ''); });
+    function mark(vtime, cls) {
+        var d = document.createElement('div');
+        d.className = 'cue ' + cls;
+        d.style.left = ((COVER + vtime) / (COVER + DURATION) * 100) + '%';
+        track.appendChild(d);
+    }
+
+    /* ── Старт ──────────────────────────────────────────────────── */
+    var q = new URLSearchParams(location.search);
+    if (q.get('src')) loadVideo(q.get('src'));
+    if (q.get('guides')) document.body.classList.add('guides');
+    if (q.get('rec')) document.body.classList.add('rec');
+    if (q.get('mock') === '0') document.body.classList.remove('mock');
+    if (q.get('bg') === 'none') {
+        document.body.classList.add('transparent', 'rec');
+        // Фон живёт ещё и на <html>: без этого снимок выходит непрозрачным,
+        // и слой нечем накладывать на видео.
+        document.documentElement.style.background = 'transparent';
+    }
+    if (q.get('scrim') === '0') document.body.classList.add('no-scrim');
+    if (q.get('subs') === '0') document.body.classList.add('no-subs');
+    if (q.get('subY')) document.getElementById('sub').style.top = q.get('subY') + 'px';
+    if (q.get('cover')) {
+        COVER = parseFloat(q.get('cover'));
+        document.querySelector('#cover img').src = 'cover.png';
+    }
+    if (q.get('zoneTop')) document.documentElement.style.setProperty('--zone-top', q.get('zoneTop') + 'px');
+    if (q.get('zoneH')) document.documentElement.style.setProperty('--zone-h', q.get('zoneH') + 'px');
+
+    fit();
+
+    /* Субтитры приезжают из файла рядом. Из file:// браузер соседний файл не
+       отдаёт — тогда честно говорим об этом в панели, а не показываем пустоту
+       как норму: молчаливое отсутствие субтитров легко принять за «так и надо»
+       и уехать с ним в готовый ролик. */
+    function loadSubs() {
+        return new Promise(function (done) {
+            var x = new XMLHttpRequest();
+            x.open('GET', 'субтитры.srt' + '?' + Date.now());
+            x.onload = function () {
+                SUBS = parseSRT(x.responseText || '');
+                if (!SUBS.length) subsWarn('файл «субтитры.srt» пустой или без таймингов');
+                done();
+            };
+            x.onerror = function () {
+                subsWarn('«субтитры.srt» не прочитался — откройте страницу через Запустить.command');
+                done();
+            };
+            try { x.send(); } catch (e) { x.onerror(); }
+        });
+    }
+    function subsWarn(msg) {
+        var el = document.getElementById('subsnote');
+        if (el) { el.textContent = '⚠︎ ' + msg; el.style.display = 'block'; }
+    }
+
+    // Шрифт обязан приехать до первого кадра — иначе первая анимация
+    // проигрывается системным шрифтом и «прыгает» при подмене.
+    Promise.all([
+        document.fonts ? document.fonts.ready : Promise.resolve(),
+        loadSubs()
+    ]).then(function () {
+        seek(q.get('t') ? parseFloat(q.get('t')) : 0);
+        if (!q.get('still')) requestAnimationFrame(frame);
+        window.__seek = seek;
+
+        /* Покадровый рендер слоя (tools/render_overlay.py). Время КАЖДОЙ
+           анимации выставляется явно: иначе переходы играют по реальным
+           часам браузера, а снимки идут втрое медленнее реального времени,
+           и все появления в слое размазываются. Виртуальное время браузера
+           для этого не годится — под паузой он не отдаёт снимок вообще. */
+        window.__renderAt = function (time) {
+            seek(time);
+            if (!document.getAnimations) return;
+            document.getAnimations().forEach(function (an) {
+                var el = an.effect && an.effect.target;
+                if (!el) return;
+                var name = an.animationName || '';
+                var start = null, host, list, i;
+                if (name.indexOf('hot') === 0) {
+                    host = el.closest('[data-hl]');
+                    if (host) {
+                        list = host.getAttribute('data-hl').split(/\s+/).map(parseFloat);
+                        for (i = 0; i < list.length; i++) {
+                            if (time >= list[i] && time < list[i] + HOT) start = list[i];
+                        }
+                    }
+                } else if (name === 'era') {
+                    host = el.closest('[data-in]');
+                    if (host) start = parseFloat(host.getAttribute('data-in')) + 1.1;
+                } else if (el.id === 'sub') {
+                    for (i = 0; i < SUBS.length; i++) {
+                        if (time >= SUBS[i][0] && time < SUBS[i][1]) { start = SUBS[i][0]; break; }
+                    }
+                } else {
+                    host = el.closest('[data-in]');
+                    if (host) start = parseFloat(host.getAttribute('data-in'));
+                }
+                if (start === null) return;
+                an.pause();
+                try { an.currentTime = Math.max(0, (time - start) * 1000); } catch (ignored) {}
+            });
+        };
+        window.__ready = true;
+    });
+})();
+</script>
+</body>
+</html>

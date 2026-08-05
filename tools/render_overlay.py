@@ -9,9 +9,17 @@ import os, sys, time, glob
 from playwright.sync_api import sync_playwright
 
 FPS = 30
+# Оверлеев больше одного (лекция 1, приветствие курса), поэтому порт и папка
+# кадров — аргументы, а не константы: render_overlay.py <секунды> <порт> <папка>
 DUR = float(sys.argv[1]) if len(sys.argv) > 1 else 143.0
+PORT = sys.argv[2] if len(sys.argv) > 2 else "8903"
 BASE = "/tmp/claude-0/-home-user/5d638d64-9e0d-50f3-9130-4246e6d37007/scratchpad"
-OUT, LOG = BASE + "/frames", BASE + "/render.log"
+OUT = sys.argv[3] if len(sys.argv) > 3 else BASE + "/frames"
+# Лишние параметры адреса. Нужны, когда субтитры в слой не идут: у приветствия
+# курса они вжигаются отдельно, из субтитры.srt, и в слое дали бы вторую копию
+# поверх первой (проверено — на кадре две строки со сдвигом).
+EXTRA = sys.argv[4] if len(sys.argv) > 4 else ""
+LOG = OUT.rstrip("/") + ".log"
 os.makedirs(OUT, exist_ok=True)
 for f in glob.glob(OUT + "/*.png"):
     os.unlink(f)
@@ -24,7 +32,7 @@ with sync_playwright() as p:
                           args=["--no-sandbox", "--force-device-scale-factor=1", "--hide-scrollbars"])
     ctx = b.new_context(viewport={"width": 1080, "height": 1920})
     pg = ctx.new_page()
-    pg.goto("http://127.0.0.1:8903/index.html?bg=none&still=1&cover=0")
+    pg.goto("http://127.0.0.1:%s/index.html?bg=none&still=1&cover=0%s" % (PORT, EXTRA))
     pg.wait_for_function("window.__ready === true", timeout=30000)
     pg.wait_for_timeout(1500)                        # шрифты и первая раскладка
     for i in range(n):

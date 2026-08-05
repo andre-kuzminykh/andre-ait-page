@@ -35,7 +35,7 @@ def _scenes(html):
     return out
 
 
-# ── FR-SITE27: страница自足на, в записи и офлайн выглядит так же ──────────
+# ── FR-SITE27: страница самодостаточна, в записи и офлайн выглядит так же ──
 
 def test_overlay_is_self_contained():
     html = _html()
