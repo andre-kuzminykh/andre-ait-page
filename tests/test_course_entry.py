@@ -46,7 +46,7 @@ def _read(rel_or_abs):
 
 def _blocks(html):
     parts = re.split(r'<section class="panel', html)[1:]
-    assert len(parts) == 4, len(parts)
+    assert len(parts) == 3, len(parts)
     return parts
 
 
@@ -70,7 +70,7 @@ def test_pages_are_structurally_identical():
     en, ru = _read(_EN_PAGE), _read(_RU_PAGE)
     for page in (en, ru):
         assert re.findall(r'<section class="panel[^"]*" id="([^"]+)"', page) == \
-            ["course", "roles", "skills", "start"]
+            ["course", "roles", "skills"]
     style = lambda h: h[h.index("<style>"):h.index("</style>")]          # noqa: E731
     assert style(en) == style(ru), "стили должны быть одинаковыми"
     body = lambda h: h[h.index("<script>\n    function storeGet"):h.index("</script>\n</body>")]  # noqa: E731
@@ -246,69 +246,9 @@ def test_cta_on_every_block():
                 "%s: кнопка блока %d должна вести на дорожную карту" % (rel, i)
 
 
-# ── Портрет над кнопкой последнего блока, по ширине кнопки, без просвета ───
-
-def test_portrait_only_on_last_block_above_the_button():
-    for rel in _ENTRIES:
-        blocks = _blocks(_read(rel))
-        for i, block in enumerate(blocks[:-1]):
-            assert "cta-photo" not in block, "%s: портрет только на последнем блоке (найден в %d)" % (rel, i)
-        last = blocks[-1]
-        assert last.index("cta-photo") < last.index('id="final-cta"'), "портрет стоит НАД кнопкой"
 
 
-def test_portrait_goes_under_the_button():
-    """Снимок уходит ПОД кнопку до её середины: срез спрятан, просвета нет."""
-    for rel in _ENTRIES:
-        html = _read(rel)
-        assert re.search(r"\.cta-stack\{[^}]*flex-direction:column", html), \
-            "портрет и кнопка — один блок, чтобы анимация не разводила их"
-        assert re.search(r"\.cta-stack \.btn-start\{[^}]*z-index:1", html), \
-            "кнопка рисуется ПОВЕРХ снимка — иначе срез будет виден"
-        assert "photo.style.marginBottom = (-Math.round(h / 2))" in html, \
-            "заход под кнопку считается от её фактической высоты"
-        last = _blocks(html)[-1]
-        stack = last[last.index('class="cta-stack"'):]
-        assert stack.index("cta-photo") < stack.index('id="final-cta"')
-        assert "cta-row" not in stack, "между портретом и кнопкой не должно быть обёртки с отступом"
 
-
-def test_portrait_has_no_gradient():
-    """Заказчик просил убрать растворение: низ кадра обрезан «в стык»."""
-    from struct import unpack
-    png = os.path.join(_ROOT, "automation/andre-cta.png")
-    with open(png, "rb") as f:
-        head = f.read(24)
-    w, h = unpack(">II", head[16:24])
-    try:
-        from PIL import Image
-    except ImportError:                      # без PIL проверяем только разметку
-        return
-    alpha = Image.open(png).convert("RGBA").split()[3]
-    bottom = max(alpha.getpixel((x, h - 1)) for x in range(0, w, 4))
-    assert bottom > 200, "нижняя кромка должна быть непрозрачной, без затухания"
-
-
-def test_portrait_width_stays_inside_the_button():
-    """Чуть у́же кнопки — плечи не должны выходить за её края."""
-    for rel in _ENTRIES:
-        html = _read(rel)
-        assert "btn.offsetWidth" in html and "Math.round(w * 0.92)" in html, rel
-
-
-def test_portrait_files_exist_and_markup_matches():
-    from struct import unpack
-    png = os.path.join(_ROOT, "automation/andre-cta.png")
-    webp = os.path.join(_ROOT, "automation/andre-cta.webp")
-    assert os.path.exists(png) and os.path.exists(webp), "нужны оба файла портрета"
-    with open(png, "rb") as f:
-        head = f.read(24)
-    w, h = unpack(">II", head[16:24])
-    for rel in _ENTRIES:
-        m = re.search(r'class="cta-photo"[^>]*width="(\d+)" height="(\d+)"', _read(rel))
-        assert m, "%s: у портрета должны быть заявлены размеры" % rel
-        assert (int(m.group(1)), int(m.group(2))) == (w, h), \
-            "%s: размеры в разметке (%s) разошлись с файлом (%dx%d)" % (rel, m.groups(), w, h)
 
 
 # ── Кикеров 01/02 нет ──────────────────────────────────────────────────────

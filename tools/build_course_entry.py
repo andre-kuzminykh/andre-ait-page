@@ -55,7 +55,6 @@ RU = {
     "a_course": "О курсе",
     "a_roles": "Для кого этот курс",
     "a_skills": "Чему вы научитесь",
-    "a_start": "Начать обучение",
     "hero": ('<span class="line">Добро пожаловать на курс</span>'
              '<span class="line">по автоматизации</span>'
              '<span class="line"><span class="plum">бизнес-процессов</span> '
@@ -85,9 +84,6 @@ RU = {
         "Оценивать эффект от автоматизации",
         "Внедрить первого ИИ-агента в бизнес",
     ],
-    "final_h": 'Готовы <span class="plum">начать</span>?',
-    "final_lead": ('<span class="ln">Пройдите курс шаг за шагом — от поиска процесса</span>'
-                   '<span class="ln">до работающего <span class="nb">ИИ-агента</span> в вашем бизнесе.</span>'),
 }
 
 EN = {
@@ -112,7 +108,6 @@ EN = {
     "a_course": "About the course",
     "a_roles": "Who this course is for",
     "a_skills": "What you will learn",
-    "a_start": "Start learning",
     "hero": ('<span class="line">Welcome to the course on</span>'
              '<span class="line"><span class="plum">business process automation</span></span>'
              '<span class="line">with <span class="flame">AI agents</span></span>'),
@@ -138,9 +133,6 @@ EN = {
         "Measure the effect of automation",
         "Deploy your first AI agent in a business",
     ],
-    "final_h": 'Ready to <span class="plum">start</span>?',
-    "final_lead": ('<span class="ln">Take the course step by step — from finding a process</span>'
-                   '<span class="ln">to a working <span class="nb">AI agent</span> in your business.</span>'),
 }
 
 SKILL_ICONS = ("fa-brain", "fa-magnifying-glass", "fa-clipboard-list", "fa-pen-ruler",
@@ -431,20 +423,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   /* ===== CTA ===== */
   .cta-row{margin:1.9rem 0 0;display:flex;justify-content:center}
   .btn-start{padding:clamp(1.1rem,1.15vw,1.7rem) clamp(2.2rem,2.3vw,3.7rem);font-size:clamp(13px,.95vw,19px);letter-spacing:.15em}
-  .lead{color:var(--muted);max-width:44em;margin:1.1rem auto 0;font-size:clamp(.95rem,1.18vw,1.2rem);line-height:1.65}
-  .lead .ln{display:block}   /* «…в вашем бизнесе.» — всегда вторая строка */
 
-  /* Портрет и кнопка — один блок без просвета. Никакого градиента: снимок
-     обрезан «в стык» и уходит ПОД кнопку до её середины, поэтому срез не виден
-     и зазору взяться неоткуда. Кадр обрезан по силуэту в точке среза, так что
-     выше кнопки плечи заведомо у́же неё и за края не заходят. Ширину и заход
-     под кнопку считает скрипт — они зависят от фактического размера кнопки. */
-  .cta-stack{margin:1.5rem 0 0;display:flex;flex-direction:column;align-items:center}
-  .cta-photo{display:block;margin:0 auto;width:min(15rem,60vw);max-width:15rem;height:auto;pointer-events:none}
-  .cta-stack .btn-start{position:relative;z-index:1}   /* кнопка поверх снимка */
-
-  .site-link{display:inline-block;margin-top:clamp(1.3rem,4vh,2.1rem);color:var(--muted);font-size:.8rem;letter-spacing:.06em;border-bottom:1px solid var(--divider)}
-  .site-link:hover{color:#8854F3;border-color:#8854F3}
 
   /* Телефон: ужимаем блоки так, чтобы каждый влезал в экран целиком —
      внутри блока прокрутки нет вовсе. */
@@ -461,9 +440,6 @@ TEMPLATE = r"""<!DOCTYPE html>
     .learn li{padding:.55rem .8rem;gap:.65rem;border-radius:.8rem}
     .learn .ico{height:2.15rem;width:2.15rem;font-size:1rem;border-radius:.55rem}
     .learn p{font-size:.82rem;line-height:1.3}
-    .lead{margin-top:.7rem}
-    .cta-stack{margin-top:1.1rem}
-    .site-link{margin-top:1.1rem}
   }
   /* Низкие экраны — ещё плотнее. Условие по высоте без ограничения ширины:
      в альбомной ориентации телефона ширина уже 844px, и правило с
@@ -480,9 +456,6 @@ TEMPLATE = r"""<!DOCTYPE html>
     .panel{padding-top:clamp(4.2rem,14vh,5.2rem);padding-bottom:1.2rem}
     .desc{margin-top:.6rem}
     .scroll-hint{margin-top:.6rem}
-    .cta-stack{margin-top:.6rem}
-    .lead{margin-top:.5rem}
-    .site-link{margin-top:.7rem}
   }
 
   /* На печать уходят все четыре блока подряд, а не только активный */
@@ -592,25 +565,6 @@ TEMPLATE = r"""<!DOCTYPE html>
       </div>
     </section>
 
-    <!-- ===== 4. НАЧАТЬ ===== -->
-    <section class="panel" id="start" aria-label="{{A_START}}">
-      <div class="wrap">
-        <h2 class="h2" id="final-h">{{FINAL_H}}</h2>
-        <p class="lead">{{FINAL_LEAD}}</p>
-        <div class="cta-stack">
-          <picture>
-            <source srcset="/automation/andre-cta.webp" type="image/webp">
-            <img class="cta-photo" id="cta-photo" src="/automation/andre-cta.png" alt="" width="600" height="454" decoding="async" onerror="this.style.display='none'">
-          </picture>
-          <a class="btn-white btn-start" id="final-cta" href="{{COURSE}}">
-            <span>{{START}}</span>
-            <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
-          </a>
-        </div>
-        <a class="site-link" href="https://andre.technology">andre.technology</a>
-      </div>
-    </section>
-
   </main>
 
   <script>
@@ -651,25 +605,6 @@ TEMPLATE = r"""<!DOCTYPE html>
         if (window.fitDeck) window.fitDeck();
       });
       sync();
-    })();
-
-    /* ===== Портрет ровно по ширине кнопки «Начать обучение» ===== */
-    (function(){
-      var photo = document.getElementById('cta-photo');
-      var btn = document.getElementById('final-cta');
-      if (!photo || !btn) return;
-      window.sizePhoto = function(){
-        var w = btn.offsetWidth, h = btn.offsetHeight;
-        if (w > 40) {
-          // Чуть у́же кнопки — чтобы плечи гарантированно не выходили за её края.
-          var pw = Math.round(w * 0.92);
-          photo.style.width = pw + 'px';
-          photo.style.maxWidth = pw + 'px';
-        }
-        // Снимок заходит под кнопку до её середины: срез прячется, просвета нет.
-        if (h > 20) photo.style.marginBottom = (-Math.round(h / 2)) + 'px';
-      };
-      window.sizePhoto();
     })();
 
     /* ===== Дек: один блок в фокусе ==========================================
@@ -716,7 +651,6 @@ TEMPLATE = r"""<!DOCTYPE html>
         fitQueued = true;
         (window.requestAnimationFrame || setTimeout)(function(){
           fitQueued = false;
-          if (window.sizePhoto) window.sizePhoto();
           for (var i = 0; i < panels.length; i++) fit(panels[i]);
         }, 0);
       };
@@ -860,8 +794,6 @@ TEMPLATE = r"""<!DOCTYPE html>
       if (window.visualViewport) window.visualViewport.addEventListener('resize', window.fitDeck);
       window.addEventListener('load', window.fitDeck);
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(window.fitDeck);
-      var photoEl = document.getElementById('cta-photo');
-      if (photoEl) photoEl.addEventListener('load', window.fitDeck);
 
       var start = 0;
       if (location.hash){
@@ -939,13 +871,10 @@ def render(cur):
         "A_COURSE": cur["a_course"],
         "A_ROLES": cur["a_roles"],
         "A_SKILLS": cur["a_skills"],
-        "A_START": cur["a_start"],
         "HERO": cur["hero"],
         "HERO_DESC": cur["hero_desc"],
         "ROLES_H": cur["roles_h"],
         "SKILLS_H": cur["skills_h"],
-        "FINAL_H": cur["final_h"],
-        "FINAL_LEAD": cur["final_lead"],
         "LANG_SWITCH": _lang_switch(cur),
         "ROLE_CARDS": roles,
         "SKILL_ITEMS": skills,

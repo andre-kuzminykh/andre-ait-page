@@ -396,10 +396,7 @@ h1 .text-solar, h2 .text-solar {
 
 /* Премиальное «оживление» контента при показе слайда — каскадный fade-rise (FR-LECTURE-14).
    Класс .is-active ставит скрипт portal-fit при каждой смене слайда. */
-@keyframes deckRise { from { opacity:0; transform: translateY(22px) scale(0.985); } to { opacity:1; transform:none; } }
-@keyframes deckZoom { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform:none; } }
-@keyframes deckSlideX { from { opacity:0; transform: translateX(-28px); } to { opacity:1; transform:none; } }
-@keyframes deckFlip { from { opacity:0; transform: perspective(900px) rotateX(12deg) translateY(14px); } to { opacity:1; transform:none; } }
+@keyframes deckRise { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform:none; } }
 /* Заголовки никогда не должны быть невидимыми из-за анимации (FR-LECTURE-25) */
 .slide-container h1, .slide-container h2, .slide-container h3, .slide-container h4 { opacity:1 !important; }
 /* FR-LECTURE-28 — вертикальное центрирование + СИММЕТРИЧНЫЙ резерв сверху/снизу,
@@ -424,20 +421,21 @@ h1 .text-solar, h2 .text-solar {
 }
 /* Тематические переходы (FR-LECTURE-27): 4 варианта появления, чередуются по
    слайдам (класс anim-0..3 ставит portal-fit по индексу слайда). */
-.slide-container.is-active.anim-0 .content-z > * { animation-name: deckRise; }
-.slide-container.is-active.anim-1 .content-z > * { animation-name: deckZoom; }
-.slide-container.is-active.anim-2 .content-z > * { animation-name: deckSlideX; }
-.slide-container.is-active.anim-3 .content-z > * { animation-name: deckFlip; }
+/* Вариант появления ОДИН на всю лекцию: мягкий подъём с проявлением.
+   Четыре разных (зум, сдвиг вбок, переворот) читались как рывки, особенно
+   при быстром листании. */
 /* уровень 1 — крупные блоки слайда (заголовок, подзаголовок, основной блок) */
-.slide-container.is-active .content-z > * { animation: deckRise .6s cubic-bezier(0.22,1,0.36,1) both; }
-.slide-container.is-active .content-z > *:nth-child(2) { animation-delay:.08s; }
-.slide-container.is-active .content-z > *:nth-child(3) { animation-delay:.16s; }
-.slide-container.is-active .content-z > *:nth-child(4) { animation-delay:.24s; }
-.slide-container.is-active .content-z > *:nth-child(n+5) { animation-delay:.3s; }
+.slide-container.is-active .content-z > * { animation: deckRise .5s cubic-bezier(0.22,1,0.36,1) both; }
+.slide-container.is-active .content-z > *:nth-child(2) { animation-delay:.06s; }
+.slide-container.is-active .content-z > *:nth-child(3) { animation-delay:.12s; }
+.slide-container.is-active .content-z > *:nth-child(n+4) { animation-delay:.18s; }
 /* уровень 2 — отдельные карточки в сетках/рядах. Исключаем заголовки h1..h4,
    чтобы анимация уровня 2 не накладывалась на уровень 1 и не «гасила» заголовки. */
+/* Второго каскада на карточках больше нет: он проигрывался ПОВЕРХ первого на
+   тех же самых элементах, и они дважды ехали с места — это и читалось как
+   дрожь. Карточки появляются вместе со своим блоком. */
 .slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4),
-.slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4) { animation: deckRise .5s cubic-bezier(0.22,1,0.36,1) both; }
+.slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4) { animation: none; }
 .slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(2),
 .slide-container.is-active [class*="md:flex-row"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(2) { animation-delay:.1s; }
 .slide-container.is-active [class*="grid-cols"] > *:not(h1):not(h2):not(h3):not(h4):nth-child(3),
@@ -623,7 +621,9 @@ window.addEventListener('load', function(){
   // Насколько сильно разрешено УВЕЛИЧИВАТЬ контент, чтобы слайд не выглядел
   // пустым. Только на десктопе: на телефоне контент и так занимает весь экран,
   // а рост увёл бы нижние плашки под кружок с головой.
-  var MAX_GROW = 1.6;
+  // Насколько разрешено УВЕЛИЧИВАТЬ содержимое. 1.6 давало на большом экране
+  // огромные карточки — заказчик просил элементы мельче относительно экрана.
+  var MAX_GROW = 1.22;
   // На широком экране одного потолка мало: контент упирался в 1.6 и застывал,
   // а экран продолжал расти — на 2560 чернила занимали 64% ширины островом.
   // Ступени и границы те же, что у дорожной карты (body{zoom} 1.15/1.3/1.5),
@@ -641,7 +641,9 @@ window.addEventListener('load', function(){
   var TITLE_FLOOR = 0;               // общий потолок, найденный вторым проходом
   function titleTarget(){
     var w = window.innerWidth;
-    return w >= 768 ? Math.max(30, Math.min(48, w * 0.030))
+    // На компьютере заголовок заметно крупнее содержимого — так слайд читается
+    // как заголовок с иллюстрацией, а не как стена одинаковых блоков.
+    return w >= 768 ? Math.max(34, Math.min(64, w * 0.037))
                     : Math.max(19, Math.min(28, w * 0.062));
   }
   function titlePx(){
@@ -661,7 +663,9 @@ window.addEventListener('load', function(){
     // заказчика: «голова и стрелки никак не должны влиять на слайды»). Они
     // просто лежат поверх слайда, поэтому снизу оставляем лишь тонкий воздух —
     // столько же, сколько дышит слайд по краям.
-    return { top: top, bottom: 34 };
+    // Низ оставляем свободнее верха: содержимое встаёт выше геометрического
+    // центра, как просил заказчик («подтянуть повыше»).
+    return { top: top, bottom: Math.round(window.innerHeight * 0.10) };
   }
   function inkBox(c){
     // Объединённый бокс прямых детей content-z — по РАСКЛАДОЧНОЙ геометрии
@@ -1025,6 +1029,7 @@ window.addEventListener('load', function(){
   }
   function fitAll(){
     var nodes = document.querySelectorAll('.slide-container'), i, px;
+    lastW = window.innerWidth; lastH = window.innerHeight;
     TITLE_FLOOR = 0;
     for(i = 0; i < nodes.length; i++) fitOne(nodes[i]);
     // Где-то длинное слово в целевой кегль не влезло и заголовок ужался —
@@ -1053,9 +1058,6 @@ window.addEventListener('load', function(){
       }
       nodes[i].classList.toggle('is-active', active);
       if(active){
-        // тематический вариант появления по индексу слайда (FR-LECTURE-27)
-        nodes[i].classList.remove('anim-0','anim-1','anim-2','anim-3');
-        nodes[i].classList.add('anim-' + (i % 4));
       }
     }
   }
@@ -1074,11 +1076,18 @@ window.addEventListener('load', function(){
   // Активный слайд подгоняем сразу в том же кадре — иначе при перетаскивании
   // окна зритель успевает увидеть «непопавшую» раскладку, и она прыгает на
   // место только через паузу. Остальные 41 слайд догоняют с задержкой.
+  var lastW = 0, lastH = 0;
   function soon(){
     syncShrink();
+    var w = window.innerWidth, h = window.innerHeight;
+    // Порог по высоте — 80px: на телефоне при листании прячется адресная
+    // строка, окно «дышит» на 50-60px, и без порога каждый вздох перекраивал
+    // всю деку прямо под пальцем.
+    if(Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 80) return;
+    lastW = w; lastH = h;
     var live = document.querySelector('.slide-container.opacity-100');
     if(live) fitOne(live);
-    clearTimeout(t); t = setTimeout(fitAll, 60);
+    clearTimeout(t); t = setTimeout(fitAll, 90);
   }
   window.addEventListener('load', function(){
     syncShrink(); fitAll(); markActive();
@@ -1086,17 +1095,18 @@ window.addEventListener('load', function(){
       var orig = window.updateSlides;
       window.updateSlides = function(){
         var r = orig.apply(this, arguments);
-        requestAnimationFrame(function(){ fitAll(); markActive(); });
-        // Обязательный повтор ПОСЛЕ каскада появления. Первый замер идёт в тот
-        // момент, когда на слайде только что встал .is-active и его дети
-        // анимируются (deckRise: 0.6s + до 0.34s задержки) — их боксы сдвинуты
-        // трансформом, ink меряется неверно, и именно активный слайд, который
-        // видит зритель, оставался с zoom≈1, пока соседние масштабировались.
-        setTimeout(fitAll, 1050);
+        // ТОЛЬКО отметка активного слайда. Никакого пересчёта масштаба:
+        // содержимое не изменилось, значит и масштаб прежний. Раньше здесь
+        // стояли fitAll() и повтор через 1050 мс — именно они дёргали слайд
+        // уже после появления.
+        markActive();
         return r;
       };
     }
-    [250, 700, 1500].forEach(function(d){ setTimeout(fitAll, d); });
+    // Шрифты приезжают после первой отрисовки и меняют высоту чернил —
+    // единственный законный повторный пересчёт.
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
+    setTimeout(fitAll, 600);
   });
   window.addEventListener('resize', soon);
   window.addEventListener('orientationchange', function(){ setTimeout(fitAll, 150); });
@@ -2272,8 +2282,8 @@ window.addEventListener('load', function(){
     --core:clamp(80px, 27%, 112px) !important;
   }
   .radial-sat{ padding:calc(var(--sat) * 0.045) !important; }
-  .radial-sat .rf-label{ font-size:9.5px !important; line-height:1.08 !important; }
-  .radial-core .rf-label{ font-size:11px !important; line-height:1.1 !important; }
+  .radial-sat .rf-label{ font-size:11px !important; line-height:1.1 !important; }
+  .radial-core .rf-label{ font-size:12.5px !important; line-height:1.1 !important; }
   .radial-sat i{ font-size:.95rem !important; margin-bottom:.05rem !important; }
   .radial-core i{ font-size:1.1rem !important; }
 }
@@ -2283,7 +2293,7 @@ window.addEventListener('load', function(){
 .radial-fig[data-sats="8"]{ --orbit:41%; --sat:clamp(66px, 22%, 128px); }
 @media (max-width:520px){
   .radial-fig[data-sats="8"]{ --orbit:41% !important; --sat:clamp(60px, 21%, 84px) !important; }
-  .radial-fig[data-sats="8"] .rf-label{ font-size:8.5px !important; }
+  .radial-fig[data-sats="8"] .rf-label{ font-size:10px !important; }
 }
 
 /* ПОДПИСЬ ЖИВЁТ ЗА КРУГОМ. Раньше внутри круга сидели и иконка, и текст, и
@@ -2299,7 +2309,10 @@ window.addEventListener('load', function(){
    растянута симметрично влево и вправо на диаметр кружка, а текст в ней
    выровнен по центру. z-index выше ядра, поэтому подпись читается поверх
    соседних кругов и кольца. */
-.radial-fig{ --sat-dot:calc(var(--sat) * 0.62); }
+/* Кружок спутника ЗАМЕТНО крупнее прежнего (0.62 → 0.80): иконка в нём
+   читалась как точка, а вокруг схемы оставалась пустота. Ядро при этом чуть
+   уменьшено — центр не должен давить на остальную схему. */
+.radial-fig{ --sat-dot:calc(var(--sat) * 0.80); }
 .radial-sat{
   width:var(--sat-dot) !important; height:var(--sat-dot) !important;
   left:calc(var(--x) - var(--sat-dot)/2) !important;
@@ -2331,6 +2344,11 @@ window.addEventListener('load', function(){
   pointer-events:none;
 }
 html.dark .radial-sat .rf-label{ background:#0A0A0A; }
+/* Кегль подписи задан здесь и только здесь: подгонка её не трогает (она шире
+   кружка по замыслу), а прежние 8-9px были самым мелким текстом лекции —
+   мельче, чем те же подписи на телефоне. */
+.radial-sat .rf-label{ font-size:clamp(11px, 1.05vw, 16px) !important; }
+.radial-core .rf-label{ font-size:clamp(12px, 1.2vw, 18px) !important; }
 
 /* ЯДРО — ПО ТОМУ ЖЕ ПРАВИЛУ. Внутри круга подпись не помещалась: у .radial-core
    стоит overflow:hidden, и «ИИ‑агент» рвался переносом, а вторая строка просто
