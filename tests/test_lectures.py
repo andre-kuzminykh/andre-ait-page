@@ -299,6 +299,51 @@ def test_video_circle_shows_play_icon():
             rel + ": при наведении во время игры показываем паузу"
 
 
+def test_head_and_arrows_do_not_cover_content_on_phones():
+    """Телефон: ряд управления внизу — и подгонка резервирует под него полосу.
+
+    Голова со стрелками стояла стопкой в правом углу (полоса ~190px) и лежала
+    ПОВЕРХ текста: аудит наложений ловил её на 24 слайдах из 42 («Человек в
+    центре», «Пройти тест», нижние примечания). На компьютере угол пустой и
+    резерв не нужен, на телефоне — обязателен.
+    """
+    for rel, html in _pages(("automation/1/index.html",)):
+        assert re.search(r"@media \(max-width:767px\)\{\s*\n\s*:root\{ --bub:", html), \
+            rel + ": на телефоне у угла свои размеры"
+        assert "#video-bubble{\n    left:12px !important; right:auto !important;" in html, \
+            rel + ": голова уходит в ЛЕВЫЙ угол, стрелки остаются в правом"
+        assert "if (window.innerWidth < 768){" in html and "bottom = Math.max(bottom, Math.round(14 + d + 12))" in html, \
+            rel + ": chromeBand резервирует полосу под ряд управления"
+
+
+def test_radial_figures_declare_their_density():
+    """У каждой радиальной схемы в разметке проставлено число спутников.
+
+    Правила `[data-sats="7"]`/`[data-sats="8"]` в таблице стилей были мёртвыми:
+    атрибута в разметке не существовало, и подписи тесных схем («Инфра-
+    структура», «Исследования») наезжали на соседние кружки на телефоне.
+    """
+    for rel, html in _pages(("automation/1/index.html",)):
+        figs = re.findall(r'<div class="radial-fig[^"]*"([^>]*)>', html)
+        assert figs, rel + ": не нашёл радиальных схем"
+        for attrs in figs:
+            assert re.search(r'data-sats="\d+"', attrs), \
+                rel + ": у схемы нет data-sats — правила плотности не сработают"
+
+
+def test_satellite_labels_wrap_on_phones():
+    """Перенос подписей спутников объявлен ПОСЛЕ базового nowrap.
+
+    Правило жило в раннем блоке @media (max-width:767px), а `white-space:nowrap
+    !important` объявлен ниже по файлу — при равной специфичности побеждает
+    последний, и перенос не работал вовсе.
+    """
+    for rel, html in _pages(("automation/1/index.html",)):
+        base = html.index("white-space:nowrap !important;\n  text-align:center;")
+        wrap = html.index(".radial-sat .rf-label{\n    white-space:normal !important;")
+        assert wrap > base, rel + ": правило переноса должно идти после базового nowrap"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

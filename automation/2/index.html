@@ -452,13 +452,10 @@ body:has(#slide-41.opacity-100) .lec-consult:hover{ background:#FFFFFF !importan
   .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]){
     grid-template-columns:1fr !important;
   }
-  /* Подпись кружка радиальной схемы может переноситься: «Мультимодальность»
-     одной строкой уезжала под центральный круг. */
-  .radial-sat .rf-label{
-    white-space:normal !important; max-width:7.5em !important;
-    left:calc(-1.9 * var(--sat-dot)) !important; right:calc(-1.9 * var(--sat-dot)) !important;
-    line-height:1.15 !important;
-  }
+  /* Подписи спутников радиальной схемы на телефоне переносятся — но правило
+     живёт НИЖЕ по файлу (см. блок @media (max-width:520px) в самом конце):
+     базовый `white-space:nowrap !important` объявлен позже этого места и
+     перебивал бы отсюда любую попытку разрешить перенос. */
 }
 
 /* Никаких свечений и размытых ореолов внутри слайда: на чёрном фоне они
@@ -485,8 +482,11 @@ html.dark .slide-container .content-z [class*="rounded-2xl"] > i:only-child{ col
 .slide-container .content-z [class*="bg-white"] > i:only-child{ color:inherit; }
 
 /* Нижняя плашка-вывод должна совпадать по ширине с рядом карточек над ней:
-   разные max-w-* у соседей давали ступеньку в 60-115px и ломали колонку. */
-.slide-container .content-z > [class*="rounded"][class*="bg-"]{ max-width:100% !important; }
+   разные max-w-* у соседей давали ступеньку в 60-115px и ломали колонку.
+   Выравнивает их portal-fit (общий max-width по самому широкому соседу).
+   Здесь остаётся только страховка от выхода за борт слайда: элементу БЕЗ
+   собственного max-w-* шире 100% быть незачем. */
+.slide-container .content-z > [class*="rounded"][class*="bg-"]:not([class*="max-w-"]){ max-width:100% !important; }
 
 /* Тематические переходы (FR-LECTURE-27): 4 варианта появления, чередуются по
    слайдам (класс anim-0..3 ставит portal-fit по индексу слайда). */
@@ -734,13 +734,22 @@ window.addEventListener('load', function(){
   function chromeBand(){
     var h = document.getElementById('lecture-header');
     var top = (h ? h.getBoundingClientRect().height : 56) + 16;
-    // Кружок с головой и стрелки навигации в резерв НЕ входят (правило
-    // заказчика: «голова и стрелки никак не должны влиять на слайды»). Они
-    // просто лежат поверх слайда, поэтому снизу оставляем лишь тонкий воздух —
-    // столько же, сколько дышит слайд по краям.
     // Низ оставляем свободнее верха: содержимое встаёт выше геометрического
     // центра, как просил заказчик («подтянуть повыше»).
-    return { top: top, bottom: Math.round(window.innerHeight * 0.10) };
+    var bottom = Math.round(window.innerHeight * 0.10);
+    // На компьютере голова стоит в пустом углу справа от содержимого и в
+    // резерв не входит («голова и стрелки не влияют на слайды»). На телефоне
+    // угла нет: ряд управления лежит ровно поверх текста, и аудит наложений
+    // ловил его на 24 слайдах из 42. Там полосу резервируем — иначе канон
+    // «никаких наложений» невыполним в принципе.
+    if (window.innerWidth < 768){
+      var bub = document.getElementById('video-bubble');
+      // getComputedStyle отдаёт ширину даже у display:none — кружок появляется
+      // только когда видео готово, а резерв нужен с первого кадра.
+      var d = bub ? parseFloat(window.getComputedStyle(bub).width) : 0;
+      if (d > 0) bottom = Math.max(bottom, Math.round(14 + d + 12));
+    }
+    return { top: top, bottom: bottom };
   }
   function inkBox(c){
     // Объединённый бокс прямых детей content-z — по РАСКЛАДОЧНОЙ геометрии
@@ -1028,8 +1037,18 @@ window.addEventListener('load', function(){
       var caps = [], cn = [c].concat(kids), cj, cv;
       for(cj = 0; cj < cn.length; cj++){
         cv = window.getComputedStyle(cn[cj]).maxWidth;
-        if(/px$/.test(cv) && parseFloat(cv) > 0) caps.push({ el: cn[cj], cap: parseFloat(cv) });
+        if(/px$/.test(cv) && parseFloat(cv) > 0)
+          caps.push({ el: cn[cj], cap: parseFloat(cv), kid: cn[cj] !== c });
       }
+      // Прямые дети слайда стоят одной колонкой: разные max-w-* у соседей
+      // давали ступеньку в 60-115px. Выравниваем по самому широкому — но
+      // ТОЛЬКО среди тех, кто ширину себе объявил. Раньше это делало правило
+      // `max-width:100% !important`, и на слайдах с узкой схемой (сл. 38)
+      // нижняя плашка растягивалась на всю ширину экрана и заезжала под
+      // кружок с головой.
+      var wide = 0, ck;
+      for(ck = 0; ck < caps.length; ck++) if (caps[ck].kid && caps[ck].cap > wide) wide = caps[ck].cap;
+      if (wide > 0) for(ck = 0; ck < caps.length; ck++) if (caps[ck].kid) caps[ck].cap = wide;
 
       function target(natH, natW){
         // 0.97, а не 1.0: слайд не должен упираться в края свободной зоны.
@@ -1382,7 +1401,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика по эталону .radial-fig: ядро «Процесс» + семь
                  обязательных элементов-спутников. Круг остаётся кругом и на мобилке. -->
-            <div class="radial-fig" style="width:min(100%,600px,54vh);--orbit:37%;--sat:clamp(72px,20.8%,136px);--core:clamp(84px,25%,148px)">
+            <div class="radial-fig" data-sats="7" style="width:min(100%,600px,54vh);--orbit:37%;--sat:clamp(72px,20.8%,136px);--core:clamp(84px,25%,148px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="37" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1432,7 +1451,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика по эталону .radial-fig: ядро «Метрика» + пять
                  семейств измерений. Подпись в круге — одно слово, расшифровка на md+. -->
-            <div class="radial-fig" style="width:min(100%,600px,54vh);--orbit:37%;--sat:clamp(80px,22.4%,146px);--core:clamp(84px,25%,148px)">
+            <div class="radial-fig" data-sats="5" style="width:min(100%,600px,54vh);--orbit:37%;--sat:clamp(80px,22.4%,146px);--core:clamp(84px,25%,148px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="37" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -1928,7 +1947,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика по эталону .radial-fig: ядро «Реальная картина»
                  собирается из шести методов-спутников. Круг сохраняется и на мобилке. -->
-            <div class="radial-fig" style="width:min(100%,600px,54vh);--orbit:37%;--sat:clamp(78px,22.4%,146px);--core:clamp(86px,25%,150px)">
+            <div class="radial-fig" data-sats="6" style="width:min(100%,600px,54vh);--orbit:37%;--sat:clamp(78px,22.4%,146px);--core:clamp(86px,25%,150px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="37" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -2458,7 +2477,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика по эталону .radial-fig: ядро «Оценка точки»
                  и пять критериев-спутников. Круг сохраняется и на мобилке. -->
-            <div class="radial-fig" style="width:min(100%,600px,56vh);--orbit:37%;--sat:clamp(80px,22.4%,146px);--core:clamp(86px,25%,150px)">
+            <div class="radial-fig" data-sats="5" style="width:min(100%,600px,56vh);--orbit:37%;--sat:clamp(80px,22.4%,146px);--core:clamp(86px,25%,150px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="37" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -2693,7 +2712,7 @@ window.addEventListener('load', function(){
 
             <!-- «Ядро + спутники»: было четыре карточки в ряд, стало круговая схема
                  по эталону .radial-fig. Круг остаётся кругом на любой ширине. -->
-            <div class="radial-fig" style="width:min(100%,580px,52vh);--orbit:37%;--sat:clamp(80px,23.2%,146px);--core:clamp(88px,27%,154px)">
+            <div class="radial-fig" data-sats="4" style="width:min(100%,580px,52vh);--orbit:37%;--sat:clamp(80px,23.2%,146px);--core:clamp(88px,27%,154px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="37" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -3649,7 +3668,10 @@ window.addEventListener('load', function(){
        соседей. Ужимаем кружки и саму фигуру, подпись отодвигаем ниже. */
     --sat:clamp(58px, 23%, 96px) !important;
     --core:clamp(54px, 20%, 86px) !important;
-    width:90% !important;
+    /* Во всю ширину колонки, а не 90%: каждый процент ширины — это ещё
+       0.345% зазора между подписью бокового спутника и подписью ядра, а
+       именно там подписи и сталкивались («Лучшая модель» × «Цикл обучения»). */
+    width:100% !important;
   }
   .radial-sat{ padding:0 !important; }
   .radial-sat .rf-label{ font-size:calc(var(--sat-dot) * 0.21) !important;
@@ -3669,7 +3691,8 @@ window.addEventListener('load', function(){
    многоспутниковым схемам нужна орбита шире. */
 .radial-fig[data-sats="8"]{ --orbit:41%; --sat:clamp(66px, 22%, 128px); }
 @media (max-width:520px){
-  .radial-fig[data-sats="8"]{ --orbit:41% !important; --sat:clamp(60px, 21%, 84px) !important; }
+  .radial-fig[data-sats="7"],
+  .radial-fig[data-sats="8"]{ --orbit:41% !important; --sat:clamp(52px, 19%, 84px) !important; }
 }
 
 /* ПОДПИСЬ ЖИВЁТ ЗА КРУГОМ. Раньше внутри круга сидели и иконка, и текст, и
@@ -3762,8 +3785,24 @@ html.dark .radial-core .rf-label{ background:#0A0A0A; color:#FFFFFF !important; 
    ей перенос — иначе правило выше побеждало по порядку. */
 @media (max-width:520px){
   .radial-core .rf-label{
-    white-space:normal !important; max-width:8.5em !important;
+    white-space:normal !important; max-width:7em !important;
     left:calc(-1.8 * var(--core)) !important; right:calc(-1.8 * var(--core)) !important;
+    line-height:1.15 !important;
+  }
+  /* Боковые спутники стоят в 34.5% ширины фигуры от центра. На телефоне это
+     ~104px, а подпись в одну строку («Лучшая модель», «Учёт ошибок»,
+     «Инфраструктура») занимала 105-135px и налезала на подпись ядра. Ширины
+     подобраны так, чтобы между коробками оставалось ~16px: ядро 7.5em,
+     спутник 6.2em. */
+  /* Чем больше спутников, тем ближе соседние подписи: у схемы на 7-8
+     кружков коробка обязана быть уже, иначе соседи наезжают друг на друга.
+     Число спутников проставлено в разметке атрибутом data-sats. */
+  .radial-fig[data-sats="7"] .radial-sat .rf-label,
+  .radial-fig[data-sats="8"] .radial-sat .rf-label{ max-width:6em !important; }
+  .radial-fig[data-sats="6"] .radial-sat .rf-label{ max-width:8.6em !important; }
+  .radial-sat .rf-label{
+    white-space:normal !important; max-width:10.5em !important;
+    left:calc(-1.9 * var(--sat-dot)) !important; right:calc(-1.9 * var(--sat-dot)) !important;
     line-height:1.15 !important;
   }
 }
@@ -3944,6 +3983,25 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
 
 @media (max-width:1023px){
   :root{ --bub:clamp(112px,27vw,140px); --arw:46px; --arw-gap:10px; --bub-right:12px; }
+}
+
+/* ТЕЛЕФОН: голова и стрелки расходятся по углам и встают в ОДИН нижний ряд.
+   Раньше они стояли стопкой в правом углу и занимали полосу высотой ~190px —
+   аудит наложений показал, что голова закрывала текст на 24 слайдах из 42
+   («Человек в центре», «Пройти тест», примечания снизу). Ряд занимает высоту
+   одной головы, эту полосу portal-fit резервирует (chromeBand), и содержимое
+   до неё уже не доходит. Канон заказчика — «никаких наложений текста». */
+@media (max-width:767px){
+  :root{ --bub:clamp(84px,23vw,104px); --arw:44px; --arw-gap:10px; }
+  #video-bubble{
+    left:12px !important; right:auto !important;
+    bottom:14px !important;
+  }
+  #nav-prev, #nav-next{
+    bottom:calc(14px + (var(--bub) - var(--arw))/2) !important;
+  }
+  #nav-next{ right:12px !important; }
+  #nav-prev{ right:calc(12px + var(--arw) + var(--arw-gap)) !important; }
 }
 
 /* Широкие экраны. До 1600px всё как было — ступени начинаются выше, поэтому
