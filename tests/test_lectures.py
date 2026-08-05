@@ -344,6 +344,54 @@ def test_satellite_labels_wrap_on_phones():
         assert wrap > base, rel + ": правило переноса должно идти после базового nowrap"
 
 
+def test_desktop_uses_horizontal_space():
+    """Десктоп занимает горизонталь: потолки ширины растут вместе с экраном.
+
+    Авторские max-w-* рассчитаны на ~1280px; на 1920-2560 контент оставался
+    узким островом — карточки стояли узкими вертикальными колонками с пустыми
+    полями по бокам (скрины заказчика). Расширение не заходит в колонку
+    кружка с головой, иначе широкие панели ложились под него.
+    """
+    for rel, html in _pages():
+        assert "Math.min(1.5, Math.max(1, freeW / 1280))" in html, \
+            rel + ": потолки ширины должны расти со свободной шириной"
+        assert "var corner = window.innerWidth - 2 * (bubW + 20 + 40)" in html, \
+            rel + ": расширение не заходит в колонку кружка"
+
+
+def test_mobile_stacked_cards_fold_into_rows():
+    """Телефон: карточка «иконка сверху» в стопке складывается в строку.
+
+    Стопка вертикальных карточек была «простынёй» — каждая тянула высоту,
+    подгонка ужимала весь слайд и текст мельчал. Строкой (иконка слева,
+    текст справа — как принятый заказчиком список на входной странице)
+    карточка втрое ниже.
+    """
+    for rel, html in _pages():
+        assert "grid-template-columns:auto minmax(0,1fr);" in html, \
+            rel + ": мобильная карточка — сетка «иконка | текст»"
+        assert ':not([class*="absolute"])' in html, \
+            rel + ": абсолютный бейдж-пилюля не должен приниматься за иконку"
+
+
+def test_fitting_is_budgeted_not_frozen():
+    """Подгонка 42 слайдов не замораживает страницу.
+
+    42 синхронных fitOne × 4 вызова на загрузке давали ~2.2с блокировки
+    главного потока (замерено PerformanceObserver longtask). Теперь синхронно
+    подгоняется только видимый слайд, скрытые — пачками по бюджету 8мс/кадр;
+    слайд, до которого пачка не дошла, дожимает markActive при показе.
+    """
+    for rel, html in _pages():
+        assert "performance.now() - t0 < 8" in html, rel + ": пачки по бюджету времени"
+        assert "if(active && !fitFresh(nodes[i])){ fitOne(nodes[i]); fitMark(nodes[i]); }" in html, \
+            rel + ": непосчитанный слайд дожимается при показе"
+        assert 'preload="auto"' not in html, \
+            rel + ": видео не тянет мегабайты на загрузке страницы"
+        if "<video " in html:  # именно тег, а не упоминание в комментарии
+            assert 'preload="metadata"' in html, rel + ": у видео метаданные вместо auto"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
