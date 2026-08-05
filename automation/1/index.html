@@ -512,7 +512,9 @@ h1 .text-solar, h2 .text-solar {
    оказывался прямо под кнопками шапки. Теперь резерв фиксированный, в
    экранных пикселях, и от масштаба не зависит. */
 .slide-container .content-z {
-  justify-content: center !important;
+  /* flex-start + авто-поля: заголовок стоит на одной высоте на всех слайдах,
+     а всё, что под ним, центрируется в оставшейся части экрана. */
+  justify-content: flex-start !important;
   /* Вертикальные отступы задаёт ТОЛЬКО portal-fit (инлайном, в экранных
      пикселях): сверху полоса шапки, снизу воздух. Любое правило с !important
      здесь перебивало расчёт, и содержимое снова не влезало в экран. */
@@ -521,6 +523,39 @@ h1 .text-solar, h2 .text-solar {
      заезжало под шапку. Высоту держит min-height:100% — этого достаточно. */
   height: auto !important;
 }
+.slide-container .content-z > h1 + *,
+.slide-container .content-z > h2 + *{ margin-top:auto !important; }
+.slide-container .content-z > *:last-child{ margin-bottom:auto !important; }
+/* Слайд без заголовка центрируется целиком, как раньше */
+.slide-container .content-z:not(:has(> h1)):not(:has(> h2)){ justify-content:center !important; }
+
+/* Никаких свечений и размытых ореолов внутри слайда: на чёрном фоне они
+   читаются как грязное пятно, а канон — минимализм. Тени уже погашены
+   глобально, здесь добиваем filter (drop-shadow/blur). Картинки и видео
+   не трогаем — им filter может быть нужен по делу. */
+.slide-container .content-z,
+.slide-container .content-z *:not(img):not(video){ filter:none !important; }
+/* И ни одной «подсветки» фоном: радиальные градиенты-ореолы у акцентных
+   карточек давали то самое размытое пятно на чёрном. */
+.slide-container .content-z [class*="shadow"]{ box-shadow:none !important; }
+
+/* Приглушённая иконка в тёмном кружке была серой на тёмно-сером — на грани
+   различимости. Даём ей акцентный цвет и нормальный размер: кружок без
+   собственного цвета = иконка фиолетовая. */
+.slide-container .content-z [class*="rounded-full"] > i:only-child,
+.slide-container .content-z [class*="rounded-2xl"] > i:only-child{ color:#8B5CF6; }
+html.dark .slide-container .content-z [class*="rounded-full"] > i:only-child,
+html.dark .slide-container .content-z [class*="rounded-2xl"] > i:only-child{ color:#A78BFA; }
+/* …но если у кружка есть своя заливка (bg-solar / bg-black / оранжевая),
+   цвет иконки задан осознанно — не перебиваем. */
+.slide-container .content-z [class*="bg-solar"] > i:only-child,
+.slide-container .content-z [class~="bg-black"] > i:only-child,
+.slide-container .content-z [class*="bg-white"] > i:only-child{ color:inherit; }
+
+/* Нижняя плашка-вывод должна совпадать по ширине с рядом карточек над ней:
+   разные max-w-* у соседей давали ступеньку в 60-115px и ломали колонку. */
+.slide-container .content-z > [class*="rounded"][class*="bg-"]{ max-width:100% !important; }
+
 /* Тематические переходы (FR-LECTURE-27): 4 варианта появления, чередуются по
    слайдам (класс anim-0..3 ставит portal-fit по индексу слайда). */
 /* Вариант появления ОДИН на всю лекцию: мягкий подъём с проявлением.
@@ -736,6 +771,9 @@ window.addEventListener('load', function(){
   // уже проверенные 390 / 768 / 1440 не меняются.
   function growCap(){
     var w = window.innerWidth;
+    // На телефоне потолок роста свой: содержимое там и так близко к ширине
+    // экрана, но по высоте оставалось до половины пустоты.
+    if (w < 768) return 1.3;
     return MAX_GROW * (w >= 2300 ? 1.5 : w >= 1900 ? 1.3 : w >= 1600 ? 1.15 : 1);
   }
   // Высота полосы, в которую контенту заходить нельзя: сверху её занимает
@@ -1045,7 +1083,7 @@ window.addEventListener('load', function(){
       // На телефоне НЕ растим: zoom сжимает CSS-ширину, а минимумы clamp у
       // кругов заданы в пикселях — спутники становятся относительно больше
       // и наезжают друг на друга.
-      var grow = window.innerWidth >= 768;
+      var grow = true;
 
       // ── Потолки ширины компенсируем масштабом ────────────────────────────
       // max-w-5xl и подобные заданы в CSS-пикселях. Внутри zoom эти пиксели
@@ -1280,8 +1318,6 @@ window.addEventListener('load', function(){
     </div>
 
     <!-- Декоративный фон -->
-    <div class="bg-glow-1"></div>
-    <div class="bg-glow-2"></div>
 
     <!-- Индикатор прогресса -->
     <div id="progress-container" class="absolute bottom-0 left-0 h-1.5 bg-grayBase w-full z-50">
@@ -1542,7 +1578,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика: ядро «ИИ-агент» + шесть свойств-спутников.
                  Разметка по эталону слайда «Фреймворк AgentOps». -->
-            <div class="radial-fig" style="width:min(100%,660px);--orbit:36%;--sat:clamp(84px,28%,185px);--core:clamp(76px,24%,158px)">
+            <div class="radial-fig" style="width:min(100%,660px);--orbit:36%;--sat:clamp(84px,28%,185px);--core:clamp(70px,22%,145px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="36.0" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -2097,7 +2133,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика: ядро + 7 измерений зрелости.
                  Разметка по эталону слайда «Фреймворк AgentOps». -->
-            <div class="radial-fig" style="width:min(100%,640px);--orbit:38%;--sat:clamp(78px,24%,154px);--core:clamp(80px,27%,173px)">
+            <div class="radial-fig" style="width:min(100%,640px);--orbit:38%;--sat:clamp(78px,24%,154px);--core:clamp(64px,19%,122px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="38.0" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -2495,7 +2531,7 @@ window.addEventListener('load', function(){
             <!-- Круговая инфографика: одна композиция на все ширины.
                  Разметка-эталон, см. блок radial-fig — позиционирование
                  без transform, круги настоящие, hover-эффектов нет. -->
-            <div class="radial-fig" style="width:min(100%,660px);--sat:clamp(80px,25%,165px);--core:clamp(82px,27%,178px)">
+            <div class="radial-fig" style="width:min(100%,660px);--sat:clamp(80px,25%,165px);--core:clamp(66px,20%,132px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="37.5" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -2707,7 +2743,7 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика: цикл обучения. Разметка по эталону слайда
                  «Фреймворк AgentOps», см. блок radial-fig. -->
-            <div class="radial-fig mb-4 md:mb-6" style="width:min(100%,620px);--sat:clamp(90px,32%,198px);--core:clamp(78px,26%,161px)">
+            <div class="radial-fig mb-4 md:mb-6" style="width:min(100%,620px);--sat:clamp(90px,32%,198px);--core:clamp(74px,25%,155px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                     <circle cx="50" cy="50" r="34.5" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
@@ -3706,10 +3742,24 @@ window.addEventListener('load', function(){
      обрубок в три буквы. */
   .radial-fig{
     --orbit:37% !important;
-    --sat:clamp(84px, 30%, 120px) !important;
-    --core:clamp(96px, 33%, 134px) !important;
+    /* На 390px орбита даёт всего ~120px между центрами соседних кружков.
+       При прежних 30% кружок занимал 92px из них — подписи ложились прямо на
+       соседей. Ужимаем кружки и саму фигуру, подпись отодвигаем ниже. */
+    --sat:clamp(58px, 23%, 96px) !important;
+    --core:clamp(54px, 20%, 86px) !important;
+    width:90% !important;
   }
-  .radial-sat{ padding:calc(var(--sat) * 0.045) !important; }
+  .radial-sat{ padding:0 !important; }
+  .radial-sat .rf-label{ font-size:calc(var(--sat-dot) * 0.21) !important;
+                         top:calc(100% + .42em) !important; }
+  .radial-core .rf-label{ font-size:calc(var(--core) * 0.19) !important;
+                          top:calc(100% + .42em) !important;
+                          /* Длинная подпись центра («Постоянное улучшение») на 390px
+                             дотягивалась до соседних кружков — на телефоне даём ей
+                             перенос в две строки вместо одной длинной. */
+                          white-space:normal !important; max-width:9em !important;
+                          left:calc(-1.6 * var(--core)) !important;
+                          right:calc(-1.6 * var(--core)) !important; }
   .radial-sat i{ margin-bottom:0 !important; }
 }
 /* Восемь спутников: при орбите 37% зазор между соседними кругами получается
@@ -3804,6 +3854,17 @@ html.dark .radial-sat .rf-label{ background:#0A0A0A; }
   pointer-events:none;
 }
 html.dark .radial-core .rf-label{ background:#0A0A0A; color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF; }
+
+/* Телефон: длинная подпись центра («Постоянное улучшение») в одну строку
+   дотягивалась до соседних кружков. Здесь, ПОСЛЕ базового nowrap, разрешаем
+   ей перенос — иначе правило выше побеждало по порядку. */
+@media (max-width:520px){
+  .radial-core .rf-label{
+    white-space:normal !important; max-width:8.5em !important;
+    left:calc(-1.8 * var(--core)) !important; right:calc(-1.8 * var(--core)) !important;
+    line-height:1.15 !important;
+  }
+}
 </style>
 
 <script id="slide-notes" type="application/json">
