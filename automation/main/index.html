@@ -103,7 +103,7 @@
     animation:gradientShimmer 4.5s ease infinite;
   }
   .consult{height:clamp(2.5rem,11vw,3.3rem);padding:0 clamp(1rem,2.2vw,1.6rem);font-size:clamp(10px,1.05vw,12.5px)}
-  @media(min-width:1024px){.consult{height:2.85rem;padding:0 1.4rem;font-size:11.5px;letter-spacing:.15em}}
+  @media(min-width:1024px){.consult{height:2.85rem;padding:0 1.6rem;font-size:14px;letter-spacing:.13em}}
   /* large screens: scale the whole UI up (like the main site) — otherwise everything looks tiny on big monitors */
   @media(min-width:1600px){body{zoom:1.15}}
   @media(min-width:1900px){body{zoom:1.3}}
@@ -118,10 +118,13 @@
   .title .nb{white-space:nowrap}  /* «бизнес-процессов» не разрывается по дефису */
 
   /* single-column grid with equal rows → all module cards are the same height (sized to the tallest) */
-  .list{list-style:none;margin:2rem 0 0;padding:0;display:grid;grid-template-columns:1fr;grid-auto-rows:1fr;gap:.625rem}
+  /* grid-auto-rows:1fr убран: он приравнивал ВСЕ карточки к высоте самой
+   высокой, и под коротким описанием оставалась пустая половина карточки.
+   Колонка чуть уже — так ряд читается спокойнее (просьба заказчика). */
+  .list{list-style:none;margin:2rem 0 0;padding:0;display:grid;grid-template-columns:1fr;gap:.625rem;max-width:52rem;margin-left:auto;margin-right:auto}
   .list li{display:flex}
   .module{
-    display:flex;align-items:flex-start;gap:1rem;width:100%;text-align:left;
+    display:flex;align-items:center;gap:1rem;width:100%;text-align:left;
     border:1px solid var(--card-border);background:var(--card-bg);box-shadow:var(--card-shadow);
     border-radius:1rem;padding:1.15rem 1.25rem;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
   }
@@ -185,7 +188,7 @@
 
       <div class="right">
         <button class="ctrl" id="theme" aria-label="Сменить фон (тёмный/светлый)"><i class="fa-solid fa-sun"></i></button>
-        <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Буткемп">
+        <button class="btn-white consult" onclick="location.href='/automation/bootcamp/'" aria-label="Буткемп">
           Буткемп
           <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
         </button>
@@ -271,7 +274,12 @@
   <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
     <div class="inner">
       <div class="grad"></div>
-      <video id="bubble-video" src="https://raw.githubusercontent.com/andre-kuzminykh/automation/ef144da/l1/videos/0.mp4" muted autoplay playsinline preload="auto"></video>
+      <!-- Ролик входа в курс лежит в репозитории: внешний CDN отдавал 404 и
+           кружок оставался пустым градиентом. Обложка стоит и постером, и
+           фоном — дыры на месте кружка нет никогда. -->
+      <video id="bubble-video" src="/assets/1_video/auto_0_sq.mp4" muted autoplay loop playsinline preload="auto"
+             poster="/assets/1_video/auto_cover_1.jpg"
+             style="background:#0A0A0A url(/assets/1_video/auto_cover_1.jpg) center/cover no-repeat"></video>
       <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><i class="fa-solid fa-volume-xmark"></i></div>
       <div class="bubble-play" aria-hidden="true"><i class="fa-solid fa-play"></i></div>
     </div>
@@ -385,6 +393,7 @@
       });
     })();
   </script>
+
 
 <script id="wizard-fit">
 /* Экран визарда не листается по замыслу — три шага живут в одном экране.

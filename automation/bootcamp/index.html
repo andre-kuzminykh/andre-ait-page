@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Буткемп по автоматизации бизнеса с ИИ-агентами | Andre AI Technology</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+<meta name="description" content="За 3 месяца ваша команда разработает и внедрит собственных ИИ-агентов на реальных бизнес-процессах компании: от диагностики бизнеса и ИИ-стратегии до пилота и расчёта экономического эффекта.">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="color-scheme" content="dark light">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Буткемп по автоматизации бизнеса с ИИ-агентами">
+<meta property="og:description" content="3 месяца, 12 практических семинаров, команда до 10 человек: от ИИ-стратегии до пилота на реальном бизнес-процессе и расчёта экономического эффекта.">
+<meta property="og:image" content="https://andre.technology/assets/cover_auto.jpg">
+<meta property="og:url" content="https://andre.technology/automation/bootcamp/">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Andre AIT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Буткемп по автоматизации бизнеса с ИИ-агентами">
+<meta name="twitter:description" content="3 месяца, 12 практических семинаров, команда до 10 человек: от ИИ-стратегии до пилота на реальном бизнес-процессе и расчёта экономического эффекта.">
+<meta name="twitter:image" content="https://andre.technology/assets/cover_auto.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Буткемп по автоматизации бизнеса с ИИ-агентами.
+
+     Устройство страницы — как у входа в курс (/automation/):
+     один экран = один блок. Ни страница, ни блок не прокручиваются;
+     колесо, свайп и стрелки переключают блок целиком, а блок, который
+     не влезает в экран, скрипт ужимает (резать содержимое нельзя).
+
+     Оформление — как у лекции и практического задания: Montserrat,
+     иконки Phosphor вшиты SVG-спрайтом (не с CDN — иначе при плохой
+     сети они исчезают), фиолетовый #8B5CF6 + оранжевый #F97316,
+     карточки со скруглением, emphasis-блок #4C1D95, теней нет нигде.
+     ============================================================ */
+  :root{
+    --bg:#FFFFFF; --fg:#0A0A0A; --muted:rgba(0,0,0,.60);
+    --card:#FFFFFF; --card-border:#E9E9E9;
+    --soft:rgba(0,0,0,.04); --soft-border:rgba(0,0,0,.08);
+    --ctrl-bg:#FFFFFF; --ctrl-fg:#111111; --ctrl-border:rgba(0,0,0,.12);
+    --ctrl-hover:#F1F1F1;
+    --line:#E9E9E9;
+  }
+  html.dark{
+    --bg:#0A0A0A; --fg:#FAFAFA; --muted:rgba(250,250,250,.62);
+    --card:#141414; --card-border:rgba(255,255,255,.12);
+    --soft:rgba(255,255,255,.06); --soft-border:rgba(255,255,255,.10);
+    --ctrl-bg:#141414; --ctrl-fg:#FAFAFA; --ctrl-border:rgba(255,255,255,.18);
+    --ctrl-hover:#1F1F1F;
+    --line:rgba(255,255,255,.14);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  /* Теней нет нигде — общее требование заказчика по всем страницам курса */
+  *, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
+
+  html{ -webkit-tap-highlight-color:transparent; background:var(--bg); }
+  html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+  body{
+    font-family:'Montserrat',sans-serif; background:var(--bg); color:var(--fg);
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    transition:background .3s ease,color .3s ease;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  ::selection{background:#8B5CF6;color:#fff}
+  *:focus-visible{outline:2px solid #8B5CF6;outline-offset:3px;border-radius:4px}
+  p,li,h1,h2,h3,h4{overflow-wrap:break-word}
+  /* Иконка — вшитый SVG: размер задаётся font-size родителя, цвет — currentColor */
+  .ic{ width:1em; height:1em; fill:currentColor; flex-shrink:0; vertical-align:-.125em; }
+
+  /* Большие мониторы масштабируются целиком — как лекция и вход в курс */
+  @media (min-width:1600px){ body{zoom:1.15} }
+  @media (min-width:1900px){ body{zoom:1.3} }
+  @media (min-width:2300px){ body{zoom:1.5} }
+
+  /* ===== Шапка: геометрия один в один с шапкой лекции ===== */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+    padding:1.1rem; pointer-events:none;
+  }
+  @media (min-width:1024px){ header{ padding:2rem; } }
+  header > *{ pointer-events:auto; }
+  .lec-logo{display:inline-flex;align-items:center;flex-shrink:0}
+  .lec-logo img{
+    width:clamp(2.85rem,12vw,3.7rem); height:clamp(2.85rem,12vw,3.7rem);
+    object-fit:contain; display:block;
+  }
+  @media (min-width:1024px){ .lec-logo img{ width:3.6rem; height:3.6rem; } }
+  /* Картинка лого не дошла — показываем текстовый знак вместо «битой картинки» */
+  .lec-logo .logo-fb{
+    display:none; align-items:center; font-weight:900; letter-spacing:-.04em;
+    font-size:clamp(1.5rem,6vw,1.9rem); color:#F97316;
+  }
+  .lec-right{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+  .lec-ctrl{
+    display:inline-flex;align-items:center;justify-content:center;
+    height:clamp(2.5rem,11vw,3.3rem); width:clamp(2.5rem,11vw,3.3rem);
+    border-radius:999px; border:1px solid var(--ctrl-border);
+    background:var(--ctrl-bg); color:var(--ctrl-fg);
+    font-size:clamp(1.05rem,4vw,1.3rem); line-height:1;
+    transition:background .2s ease,color .2s ease;
+  }
+  @media (min-width:1024px){ .lec-ctrl{ height:2.85rem; width:2.85rem; } }
+  .lec-ctrl:hover{ background:var(--ctrl-hover); }
+  /* Кнопка «Назад» — та же капсула, но с подписью; на узком экране только иконка */
+  .lec-lbl{
+    width:auto; padding:0 clamp(.8rem,2.8vw,1.15rem); gap:.45rem;
+    font-weight:800; text-transform:uppercase; letter-spacing:.07em;
+    font-size:clamp(10px,2.6vw,12px);
+  }
+  .lec-lbl .ic{ font-size:clamp(1.05rem,4vw,1.2rem); }
+  @media (max-width:640px){
+    .lec-lbl{ width:clamp(2.5rem,11vw,3.3rem); padding:0; }
+    .lec-lbl span{ display:none; }
+  }
+  .lec-consult{
+    display:inline-flex;align-items:center;justify-content:center;gap:clamp(.4rem,1.2vw,.6rem);
+    padding:clamp(.62rem,2.2vw,.95rem) clamp(.85rem,3.2vw,1.35rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-weight:800; text-transform:uppercase; letter-spacing:clamp(.06em,.4vw,.1em);
+    font-size:clamp(9px,2.7vw,12.5px); white-space:nowrap;
+    transition:transform .2s ease,background .2s ease;
+  }
+  @media (min-width:1024px){
+    .lec-consult{ height:2.85rem; box-sizing:border-box; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em; gap:.55rem; }
+  }
+  .lec-consult:hover{ transform:translateY(-1px); background:#7C3AED; }
+  @media (max-width:380px){
+    header{ padding:.85rem .6rem; gap:.3rem; }
+    .lec-right{ gap:.3rem; }
+    .lec-logo img{ width:2.5rem; height:2.5rem; }
+    .lec-ctrl, .lec-lbl{ width:2.3rem; height:2.3rem; }
+    .lec-consult{ padding:.6rem .55rem; font-size:8px; letter-spacing:.02em; }
+  }
+
+  /* ===== Дек блоков ====================================================== */
+  .deck{ position:fixed; inset:0; z-index:2; }
+  .panel{
+    position:absolute; inset:0; display:flex;
+    overflow:hidden; overscroll-behavior:none;
+    padding:clamp(5.4rem,13vh,7.5rem) 1rem clamp(2.6rem,6vh,4rem);
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .34s ease,visibility 0s linear .34s;
+  }
+  @media (min-width:640px){ .panel{ padding-left:2rem; padding-right:2rem; } }
+  .panel.on{ opacity:1; visibility:visible; pointer-events:auto; transition:opacity .34s ease,visibility 0s; }
+  /* margin:auto вместо align-items:center: если блок всё-таки выше экрана,
+     скрипт ужмёт .wrap и сам поставит верхний отступ. */
+  .wrap{ margin:auto; width:100%; max-width:58rem; text-align:center; }
+
+  /* Появление содержимого: каскад перезапускается при каждом показе блока */
+  @keyframes rise{ from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+  .panel.on .wrap > *{ animation:rise .5s cubic-bezier(.22,1,.36,1) both; }
+  .panel.on .wrap > *:nth-child(2){ animation-delay:.06s }
+  .panel.on .wrap > *:nth-child(3){ animation-delay:.12s }
+  .panel.on .wrap > *:nth-child(n+4){ animation-delay:.18s }
+  .panel.on .weeks > *,.panel.on .incl > *,.panel.on .result li{
+    animation:rise .45s cubic-bezier(.22,1,.36,1) both;
+  }
+  .panel.on .weeks > *:nth-child(2),.panel.on .incl > *:nth-child(2),
+  .panel.on .result li:nth-child(2){ animation-delay:.08s }
+  .panel.on .weeks > *:nth-child(3),.panel.on .incl > *:nth-child(3),
+  .panel.on .result li:nth-child(3){ animation-delay:.14s }
+  .panel.on .weeks > *:nth-child(n+4),.panel.on .incl > *:nth-child(n+4),
+  .panel.on .result li:nth-child(n+4){ animation-delay:.2s }
+
+  /* Полоса прогресса вместо точек навигации: тонкая линия у нижнего края
+     показывает, где ты в семи блоках, и ничем не загораживает содержимое. */
+  .prog{
+    position:fixed; left:0; bottom:0; height:2px; width:0; z-index:45;
+    background:#8B5CF6; transition:width .34s cubic-bezier(.22,1,.36,1);
+    pointer-events:none;
+  }
+
+  /* ===== Первый экран ===== */
+  .badge{
+    display:inline-flex; align-items:center; gap:.5rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:999px; padding:.45rem 1rem;
+    font-size:clamp(9px,2.4vw,11px); font-weight:800;
+    letter-spacing:.16em; text-transform:uppercase; color:#8B5CF6;
+  }
+  .badge .ic{ font-size:1.25em; }
+  h1{
+    margin-top:clamp(.9rem,2.5vh,1.3rem);
+    font-weight:900; font-size:clamp(1.7rem,6.2vw,3rem);
+    line-height:1.12; letter-spacing:-.02em; text-wrap:balance;
+  }
+  @media (min-width:1024px){ h1{ font-size:clamp(2.5rem,3.4vw,4rem); } }
+  .accent{
+    background-image:linear-gradient(90deg,#8B5CF6 0%,#F97316 100%);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+  }
+  .lead{
+    margin:clamp(.9rem,2.4vh,1.2rem) auto 0; max-width:42rem;
+    color:var(--muted); font-weight:500;
+    font-size:clamp(.9rem,2.9vw,1.1rem); line-height:1.65;
+  }
+  @media (min-width:1024px){ .lead{ font-size:clamp(1rem,1.05vw,1.25rem); } }
+
+  /* ===== Кнопки ===== */
+  .actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:.6rem; margin-top:clamp(1.3rem,3.5vh,2rem); }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.55rem;
+    border-radius:999px; padding:1rem 1.9rem; border:1px solid transparent;
+    font-weight:800; text-transform:uppercase; letter-spacing:.09em;
+    font-size:clamp(10px,2.7vw,12.5px); line-height:1; white-space:nowrap;
+    transition:transform .2s ease,background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .btn .ic{ font-size:1.25em; }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-primary{ background:#8B5CF6; color:#fff; }
+  .btn-primary:hover{ background:#7C3AED; }
+  @media (max-width:400px){ .btn{ width:100%; } }
+
+  .hint{
+    background:none; border:0; padding:0; margin-top:clamp(1.1rem,3vh,1.8rem);
+    color:var(--muted); font-size:clamp(9px,2.4vw,11px); font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase;
+    display:inline-flex; flex-direction:column; align-items:center; gap:.45rem;
+  }
+  @keyframes bounceDown{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+  .hint .ic{ font-size:1.4em; color:#8B5CF6; animation:bounceDown 1.8s ease-in-out infinite; }
+
+  /* ===== Заголовок блока ===== */
+  .sec-head{
+    display:flex; flex-direction:column; align-items:center; gap:.7rem;
+    margin-bottom:clamp(1.2rem,3.5vh,2rem);
+  }
+  .sec-ico{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.6rem,9vw,3.2rem); height:clamp(2.6rem,9vw,3.2rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-size:clamp(1.25rem,4.2vw,1.55rem);
+  }
+  .sec-head h2{
+    font-weight:900; letter-spacing:-.02em; text-wrap:balance;
+    font-size:clamp(1.35rem,5vw,2.1rem); line-height:1.2;
+  }
+  @media (min-width:1024px){ .sec-head h2{ font-size:clamp(2.1rem,2.5vw,2.9rem); } }
+  .kicker{
+    display:block; color:#F97316; font-weight:800; text-transform:uppercase;
+    letter-spacing:.16em; font-size:clamp(10px,2.6vw,11.5px);
+  }
+
+  /* ===== Программа: недели месяца ===== */
+  .weeks{
+    list-style:none; display:grid; grid-template-columns:1fr; gap:.6rem; text-align:left;
+  }
+  @media (min-width:768px){ .weeks{ grid-template-columns:1fr 1fr; gap:.7rem; } }
+  .week{
+    display:flex; align-items:flex-start; gap:.85rem;
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:16px; padding:.9rem 1rem;
+  }
+  .w-num{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.3rem; height:2.3rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-weight:900; font-size:.95rem;
+  }
+  .week .w-lbl{
+    display:block; color:var(--muted); font-weight:700; text-transform:uppercase;
+    letter-spacing:.14em; font-size:clamp(9px,2.3vw,10px);
+  }
+  .week h4{
+    margin-top:.15rem; font-weight:800; letter-spacing:-.01em;
+    font-size:clamp(.9rem,3vw,1.02rem); line-height:1.3;
+  }
+  .week p{
+    margin-top:.3rem; color:var(--muted); font-weight:500;
+    font-size:clamp(.78rem,2.5vw,.88rem); line-height:1.5;
+  }
+
+  /* ===== Что входит ===== */
+  .incl{ list-style:none; display:grid; grid-template-columns:1fr; gap:.55rem; text-align:left; }
+  @media (min-width:768px){
+    .incl{ grid-template-columns:1fr 1fr; gap:.7rem; }
+    /* нечётный последний пункт занимает всю строку — ряд не остаётся полупустым */
+    .incl li:last-child{ grid-column:1 / -1; }
+  }
+  .incl li{
+    display:flex; align-items:center; gap:.8rem;
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:16px; padding:.85rem 1rem;
+    font-weight:600; font-size:clamp(.82rem,2.7vw,.95rem); line-height:1.4;
+  }
+  /* Плашка сплошная, иконка белая: иконка не должна совпадать по цвету
+     со своей подложкой (то же правило, что и в slide-polish лекции). */
+  .incl .ci{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.3rem; height:2.3rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-size:1.1rem;
+  }
+
+  /* ===== Результат ===== */
+  .result{
+    background:#4C1D95; color:#fff; border:1px solid rgba(167,139,250,.55);
+    border-radius:clamp(20px,4vw,28px); padding:clamp(1.2rem,4vw,2rem);
+  }
+  .result > p{
+    text-align:center; font-weight:700; line-height:1.5;
+    font-size:clamp(.88rem,2.8vw,1.05rem);
+  }
+  .result ul{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; gap:.5rem; text-align:left; }
+  @media (min-width:768px){
+    .result ul{ grid-template-columns:1fr 1fr; gap:.6rem; }
+    .result li:last-child{ grid-column:1 / -1; }
+  }
+  .result li{
+    display:flex; align-items:center; gap:.7rem;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.10);
+    border-radius:14px; padding:.8rem .95rem;
+    font-weight:600; font-size:clamp(.8rem,2.6vw,.93rem); line-height:1.4;
+  }
+  .result li .ic{ color:#F97316; font-size:1.15rem; }
+
+  /* ===== Стоимость ===== */
+  .price{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:clamp(20px,4vw,28px); padding:clamp(1.4rem,4.5vw,2.4rem);
+    text-align:center;
+  }
+  .price .amount{
+    font-weight:900; letter-spacing:-.03em; line-height:1;
+    font-size:clamp(2.6rem,11vw,4.5rem); margin:0;
+  }
+  .price .terms{
+    margin-top:clamp(.9rem,2.6vw,1.2rem); display:grid; gap:.5rem; justify-items:center;
+  }
+  .price .terms span{
+    display:inline-flex; align-items:center; gap:.6rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:999px; padding:.6rem 1.1rem;
+    color:var(--muted); font-weight:600;
+    font-size:clamp(.78rem,2.5vw,.92rem); line-height:1.35; text-align:left;
+  }
+  .price .terms span .ic{ color:#F97316; font-size:1.15rem; }
+  .price .actions{ margin-top:clamp(1.1rem,3vw,1.6rem); }
+
+  .to-course{
+    display:inline-flex; align-items:center; gap:.5rem;
+    margin-top:clamp(1rem,3vh,1.5rem);
+    color:var(--muted); font-weight:700; font-size:clamp(.78rem,2.5vw,.88rem);
+    transition:color .2s ease;
+  }
+  .to-course:hover{ color:#8B5CF6; }
+
+  /* Телефон и низкие окна: ужимаем блоки, чтобы каждый влезал целиком —
+     скрипт масштабирует только то, что не поместилось после этого. */
+  @media (max-width:639px){
+    .panel{ padding-top:clamp(4.9rem,11vh,6rem); padding-bottom:1.8rem; padding-left:1.1rem; padding-right:1.1rem; }
+    .sec-head{ gap:.5rem; margin-bottom:1rem; }
+    .week{ padding:.7rem .85rem; gap:.7rem; border-radius:14px; }
+    .w-num{ width:2rem; height:2rem; font-size:.85rem; }
+    .incl li{ padding:.7rem .85rem; gap:.65rem; border-radius:14px; }
+    .incl .ci{ width:2rem; height:2rem; font-size:1rem; }
+    .result li{ padding:.65rem .8rem; }
+    .actions{ margin-top:1.1rem; }
+  }
+  @media (max-height:700px){
+    .panel{ padding-top:clamp(4.2rem,13vh,5.2rem); padding-bottom:1.2rem; }
+    .sec-head{ gap:.45rem; margin-bottom:.8rem; }
+    .weeks,.incl{ gap:.45rem; }
+    .week{ padding:.6rem .8rem; }
+    .incl li{ padding:.6rem .8rem; }
+    .actions{ margin-top:.9rem; }
+  }
+
+  /* Печать / сохранение в PDF: программу распечатывают, поэтому убираем шапку
+     и служебные кнопки, блоки выкладываем подряд, цвета сводим к бумажным. */
+  @media print{
+    html,body{ height:auto; overflow:visible; }
+    header, .actions, .hint, .prog, .to-course{ display:none !important; }
+    body{ background:#fff !important; color:#000 !important; }
+    .deck{ position:static; }
+    .panel{
+      position:static; opacity:1; visibility:visible; overflow:visible;
+      padding:0 0 1.5rem; page-break-after:always;
+    }
+    .panel .wrap{ transform:none !important; margin:0 auto !important; max-width:none; }
+    .week, .incl li, .price{ background:#fff; border-color:#D9D9D9; break-inside:avoid; }
+    .result{ background:#fff !important; color:#000 !important; border-color:#D9D9D9; }
+    .result li{ background:#fff; border-color:#D9D9D9; }
+    .panel.on .wrap > *,.panel.on .weeks > *,.panel.on .incl > *,.panel.on .result li{ animation:none; }
+    *{ print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .panel{ transition:none; }
+    .panel.on .wrap > *,.panel.on .weeks > *,.panel.on .incl > *,.panel.on .result li{ animation:none; }
+    .hint .ic{ animation:none; }
+    .btn:hover,.lec-consult:hover{ transform:none; }
+  }
+</style>
+<noscript><style>
+  /* Без скрипта дек не переключить — страница становится обычной,
+     прокручиваемой, все блоки видны подряд. */
+  html,body{ height:auto; overflow:auto; }
+  .deck{ position:static; }
+  .panel{ position:static; opacity:1; visibility:visible; pointer-events:auto; min-height:100vh; overflow:visible; }
+  .hint,.prog{ display:none; }
+</style></noscript>
+<script>
+/* Тема (фон) общая для всего клиентского пути (ключ 'welcome-theme', как в лекции):
+   по умолчанию тёмная, ?theme=light|dark перебивает сохранённую. */
+(function(){
+  var t=null; try{ t=new URLSearchParams(location.search).get('theme'); }catch(e){}
+  if(t!=='dark' && t!=='light'){ try{ t=localStorage.getItem('welcome-theme'); }catch(e){} }
+  document.documentElement.classList.toggle('dark', t!=='light');
+})();
+</script>
+</head>
+<body>
+
+  <!-- Иконки Phosphor (MIT) вшиты в страницу: с CDN они пропадают, если сеть
+       медленная или он недоступен. Здесь рисуются всегда, даже офлайн. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+    <symbol id="i-rocket-launch" viewBox="0 0 256 256"><path d="M101.85,191.14C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Zm122-144a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.4,27.07h0L88,108.7A8,8,0,0,1,76.67,97.39l26.56-26.57A4,4,0,0,0,100.41,64H74.35A15.9,15.9,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A16,16,0,0,0,192,181.65V155.59a4,4,0,0,0-6.83-2.82l-26.57,26.56a8,8,0,0,1-11.71-.42,8.2,8.2,0,0,1,.6-11.1l49.27-49.27h0C223.45,91.86,224.6,59.71,223.85,47.12Z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 256 256"><path d="M235.54,150.21a104.84,104.84,0,0,1-37,52.91A104,104,0,0,1,32,120,103.09,103.09,0,0,1,52.88,57.48a104.84,104.84,0,0,1,52.91-37,8,8,0,0,1,10,10,88.08,88.08,0,0,0,109.8,109.8,8,8,0,0,1,10,10Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 256 256"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm8,24a64,64,0,1,0,64,64A64.07,64.07,0,0,0,128,64ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></symbol>
+    <symbol id="i-graduation-cap" viewBox="0 0 256 256"><path d="M176,207.24a119,119,0,0,0,16-7.73V240a8,8,0,0,1-16,0Zm11.76-88.43-56-29.87a8,8,0,0,0-7.52,14.12L171,128l17-9.06Zm64-29.87-120-64a8,8,0,0,0-7.52,0l-120,64a8,8,0,0,0,0,14.12L32,117.87v48.42a15.91,15.91,0,0,0,4.06,10.65C49.16,191.53,78.51,216,128,216a130,130,0,0,0,48-8.76V130.67L171,128l-43,22.93L43.83,106l0,0L25,96,128,41.07,231,96l-18.78,10-.06,0L188,118.94a8,8,0,0,1,4,6.93v73.64a115.63,115.63,0,0,0,27.94-22.57A15.91,15.91,0,0,0,224,166.29V117.87l27.76-14.81a8,8,0,0,0,0-14.12Z"/></symbol>
+    <symbol id="i-robot" viewBox="0 0 256 256"><path d="M200,48H136V16a8,8,0,0,0-16,0V48H56A32,32,0,0,0,24,80V192a32,32,0,0,0,32,32H200a32,32,0,0,0,32-32V80A32,32,0,0,0,200,48ZM172,96a12,12,0,1,1-12,12A12,12,0,0,1,172,96ZM96,184H80a16,16,0,0,1,0-32H96ZM84,120a12,12,0,1,1,12-12A12,12,0,0,1,84,120Zm60,64H112V152h32Zm32,0H160V152h16a16,16,0,0,1,0,32Z"/></symbol>
+    <symbol id="i-package" viewBox="0 0 256 256"><path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.35,44L178.57,92.29l-80.35-44Zm0,88L47.65,76,81.56,57.43l80.35,44Zm88,55.85h0l-80,43.79V133.83l32-17.51V152a8,8,0,0,0,16,0V107.56l32-17.51v85.76Z"/></symbol>
+    <symbol id="i-users-three" viewBox="0 0 256 256"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"/></symbol>
+    <symbol id="i-calendar-check" viewBox="0 0 256 256"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM169.66,133.66l-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L116,164.69l42.34-42.35a8,8,0,0,1,11.32,11.32ZM48,80V48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80Z"/></symbol>
+    <symbol id="i-chalkboard-teacher" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H53.39a8,8,0,0,0,7.23-4.57,48,48,0,0,1,86.76,0,8,8,0,0,0,7.23,4.57H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM104,168a32,32,0,1,1,32-32A32,32,0,0,1,104,168Zm112,32H159.43a63.93,63.93,0,0,0-13.16-16H192a8,8,0,0,0,8-8V80a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8v96a8,8,0,0,0,6,7.75A63.72,63.72,0,0,0,48.57,200H40V56H216Z"/></symbol>
+    <symbol id="i-chat-teardrop-text" viewBox="0 0 256 256"><path d="M132,24A100.11,100.11,0,0,0,32,124v84a16,16,0,0,0,16,16h84a100,100,0,0,0,0-200Zm32,128H96a8,8,0,0,1,0-16h68a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h68a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-buildings" viewBox="0 0 256 256"><path d="M239.73,208H224V96a16,16,0,0,0-16-16H164a4,4,0,0,0-4,4V208H144V32.41a16.43,16.43,0,0,0-6.16-13,16,16,0,0,0-18.72-.69L39.12,72A16,16,0,0,0,32,85.34V208H16.27A8.18,8.18,0,0,0,8,215.47,8,8,0,0,0,16,224H240a8,8,0,0,0,8-8.53A8.18,8.18,0,0,0,239.73,208ZM76,184a8,8,0,0,1-8.53,8A8.18,8.18,0,0,1,60,183.72V168.27A8.19,8.19,0,0,1,67.47,160,8,8,0,0,1,76,168Zm0-56a8,8,0,0,1-8.53,8A8.19,8.19,0,0,1,60,127.72V112.27A8.19,8.19,0,0,1,67.47,104,8,8,0,0,1,76,112Zm40,56a8,8,0,0,1-8.53,8,8.18,8.18,0,0,1-7.47-8.26V168.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Zm0-56a8,8,0,0,1-8.53,8,8.19,8.19,0,0,1-7.47-8.26V112.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Z"/></symbol>
+    <symbol id="i-map-trifold" viewBox="0 0 256 256"><path d="M228.92,49.69a8,8,0,0,0-6.86-1.45L160.93,63.52,99.58,32.84a8,8,0,0,0-5.52-.6l-64,16A8,8,0,0,0,24,56V200a8,8,0,0,0,9.94,7.76l61.13-15.28,61.35,30.68A8.15,8.15,0,0,0,160,224a8,8,0,0,0,1.94-.24l64-16A8,8,0,0,0,232,200V56A8,8,0,0,0,228.92,49.69ZM96,176a8,8,0,0,0-1.94.24L40,189.75V62.25L95.07,48.48l.93.46Zm120,17.75-55.07,13.77-.93-.46V80a8,8,0,0,0,1.94-.23L216,66.25Z"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 256 256"><path d="M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"/></symbol>
+    <symbol id="i-currency-circle-dollar" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm12,152h-4v8a8,8,0,0,1-16,0v-8H104a8,8,0,0,1,0-16h36a12,12,0,0,0,0-24H116a28,28,0,0,1,0-56h4V72a8,8,0,0,1,16,0v8h16a8,8,0,0,1,0,16H116a12,12,0,0,0,0,24h24a28,28,0,0,1,0,56Z"/></symbol>
+    <symbol id="i-credit-card" viewBox="0 0 256 256"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48ZM136,176H120a8,8,0,0,1,0-16h16a8,8,0,0,1,0,16Zm64,0H168a8,8,0,0,1,0-16h32a8,8,0,0,1,0,16ZM32,88V64H224V88Z"/></symbol>
+    <symbol id="i-seal-check" viewBox="0 0 256 256"><path d="M225.86,102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28,23.51,138.44,16,128,16s-18.27,7.51-25.18,14.14c-3.94,3.77-8,7.67-11.57,9.14C88,40.64,82.56,40.72,77.31,40.8c-9.76.15-20.82.31-28.51,8S41,67.55,40.8,77.31c-.08,5.25-.16,10.67-1.52,13.94-1.47,3.56-5.37,7.63-9.14,11.57C23.51,109.72,16,117.56,16,128s7.51,18.27,14.14,25.18c3.77,3.94,7.67,8,9.14,11.57,1.36,3.27,1.44,8.69,1.52,13.94.15,9.76.31,20.82,8,28.51s18.75,7.85,28.51,8c5.25.08,10.67.16,13.94,1.52,3.56,1.47,7.63,5.37,11.57,9.14C109.72,232.49,117.56,240,128,240s18.27-7.51,25.18-14.14c3.94-3.77,8-7.67,11.57-9.14,3.27-1.36,8.69-1.44,13.94-1.52,9.76-.15,20.82-.31,28.51-8s7.85-18.75,8-28.51c.08-5.25.16-10.67,1.52-13.94,1.47-3.56,5.37-7.63,9.14-11.57C232.49,146.28,240,138.44,240,128S232.49,109.73,225.86,102.82Zm-52.2,6.84-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+    <symbol id="i-paper-plane-tilt" viewBox="0 0 256 256"><path d="M231.4,44.34s0,.1,0,.15l-58.2,191.94a15.88,15.88,0,0,1-14,11.51q-.69.06-1.38.06a15.86,15.86,0,0,1-14.42-9.15L107,164.15a4,4,0,0,1,.77-4.58l57.92-57.92a8,8,0,0,0-11.31-11.31L96.43,148.26a4,4,0,0,1-4.58.77L17.08,112.64a16,16,0,0,1,2.49-29.8l191.94-58.2.15,0A16,16,0,0,1,231.4,44.34Z"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 256 256"><path d="M228,128a12,12,0,0,1-12,12H69l51.52,51.51a12,12,0,0,1-17,17l-72-72a12,12,0,0,1,0-17l72-72a12,12,0,0,1,17,17L69,116H216A12,12,0,0,1,228,128Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 256 256"><path d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z"/></symbol>
+    <symbol id="i-caret-down" viewBox="0 0 256 256"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+  </defs></svg>
+
+  <header>
+    <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
+      <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
+      <span class="logo-fb" aria-hidden="true">AIT</span>
+    </a>
+    <div class="lec-right">
+      <button class="lec-ctrl lec-lbl js-back" type="button" aria-label="Вернуться назад" title="Вернуться назад"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg><span>Назад</span></button>
+      <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить фон (тёмный/светлый)"><svg class="ic" aria-hidden="true"><use href="#i-moon" xlink:href="#i-moon"></use></svg></button>
+      <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Записаться <svg class="ic" aria-hidden="true"><use href="#i-arrow-right" xlink:href="#i-arrow-right"></use></svg></a>
+    </div>
+  </header>
+
+  <main class="deck" id="deck">
+
+    <!-- ===== 1. О БУТКЕМПЕ ===== -->
+    <section class="panel on" id="intro" aria-label="О буткемпе">
+      <div class="wrap">
+        <span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-rocket-launch" xlink:href="#i-rocket-launch"></use></svg> Буткемп · 3 месяца</span>
+        <h1>Буткемп по автоматизации бизнеса <span class="accent">с ИИ‑агентами</span></h1>
+        <p class="lead">За 3 месяца ваша команда разработает и внедрит собственных ИИ‑агентов на реальных бизнес‑процессах компании.</p>
+        <p class="lead">Вместе с ментором вы пройдете путь от диагностики бизнеса и разработки ИИ‑стратегии до пилотирования ИИ‑агентов и расчета экономического эффекта.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://t.me/andre_andreevich" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-graduation-cap" xlink:href="#i-graduation-cap"></use></svg> Записаться на буткемп</a>
+        </div>
+        <button class="hint" type="button" data-go="next">
+          <span>Листайте вниз</span>
+          <svg class="ic" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== 2. I МЕСЯЦ ===== -->
+    <section class="panel" id="month-1" aria-label="Программа: первый месяц">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-map-trifold" xlink:href="#i-map-trifold"></use></svg></span>
+          <span class="kicker">Программа · I месяц</span>
+          <h2>Стратегия и <span class="accent">первый ИИ‑агент</span></h2>
+        </div>
+        <ol class="weeks">
+          <li class="week">
+            <span class="w-num">1</span>
+            <div><span class="w-lbl">неделя</span><h4>Знакомство с ментором</h4>
+            <p>Определим цели компании и ожидаемые результаты буткемпа</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">2</span>
+            <div><span class="w-lbl">неделя</span><h4>Разработка ИИ‑стратегии</h4>
+            <p>Оценим текущую зрелость бизнеса и сформируем дорожную карту ИИ‑трансформации</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">3</span>
+            <div><span class="w-lbl">неделя</span><h4>Анализ бизнес‑процессов</h4>
+            <p>Найдем процессы с наибольшим потенциалом автоматизации и выберем первый сценарий для внедрения ИИ‑агентов</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">4</span>
+            <div><span class="w-lbl">неделя</span><h4>Создание первого ИИ‑агента</h4>
+            <p>Спроектируем и разработаем первого агента под реальную задачу компании</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== 3. II МЕСЯЦ ===== -->
+    <section class="panel" id="month-2" aria-label="Программа: второй месяц">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span>
+          <span class="kicker">Программа · II месяц</span>
+          <h2><span class="accent">Мультиагентная</span> система</h2>
+        </div>
+        <ol class="weeks">
+          <li class="week">
+            <span class="w-num">5</span>
+            <div><span class="w-lbl">неделя</span><h4>Разработка мультиагентной системы</h4>
+            <p>Объединим несколько агентов в единую систему и распределим между ними роли</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">6</span>
+            <div><span class="w-lbl">неделя</span><h4>Продвинутые методы разработки ИИ‑агентов</h4>
+            <p>Разработаем клиентскую часть с помощью вайбкодинга</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">7</span>
+            <div><span class="w-lbl">неделя</span><h4>Мониторинг ИИ‑агентов</h4>
+            <p>Создадим дашборд для контроля качества работы агентов</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">8</span>
+            <div><span class="w-lbl">неделя</span><h4>Управление изменениями</h4>
+            <p>Подготовим сотрудников к внедрению нового формата работы</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== 4. III МЕСЯЦ ===== -->
+    <section class="panel" id="month-3" aria-label="Программа: третий месяц">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-rocket-launch" xlink:href="#i-rocket-launch"></use></svg></span>
+          <span class="kicker">Программа · III месяц</span>
+          <h2>Пилотирование и <span class="accent">результат</span></h2>
+        </div>
+        <ol class="weeks">
+          <li class="week">
+            <span class="w-num">9</span>
+            <div><span class="w-lbl">неделя</span><h4>Запуск пилота</h4>
+            <p>Внедрим ИИ‑агентов в реальные бизнес‑процессы компании</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">10</span>
+            <div><span class="w-lbl">неделя</span><h4>Расчет экономического эффекта</h4>
+            <p>Оценим влияние ИИ‑агентов на скорость, затраты, выручку и качество процессов</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">11</span>
+            <div><span class="w-lbl">неделя</span><h4>Индивидуальная консультация с ментором</h4>
+            <p>Разберем результаты пилота, ограничения и следующие шаги ИИ‑трансформации</p></div>
+          </li>
+          <li class="week">
+            <span class="w-num">12</span>
+            <div><span class="w-lbl">неделя</span><h4>Демо‑день</h4>
+            <p>Команда представит созданное решение, результаты пилотирования и план масштабирования</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== 5. ЧТО ВХОДИТ ===== -->
+    <section class="panel" id="included" aria-label="Что входит в буткемп">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-package" xlink:href="#i-package"></use></svg></span>
+          <h2>Что входит <span class="accent">в буткемп</span></h2>
+        </div>
+        <ul class="incl">
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> до 10 участников от одной компании</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-calendar-check" xlink:href="#i-calendar-check"></use></svg></span> 3 месяца совместной работы</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chalkboard-teacher" xlink:href="#i-chalkboard-teacher"></use></svg></span> 12 еженедельных практических семинаров</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chat-teardrop-text" xlink:href="#i-chat-teardrop-text"></use></svg></span> проверка заданий и обратная связь от ментора</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-buildings" xlink:href="#i-buildings"></use></svg></span> работа с реальными процессами вашей компании</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span> разработка и пилотирование собственных ИИ‑агентов</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-map-trifold" xlink:href="#i-map-trifold"></use></svg></span> готовая дорожная карта дальнейшей ИИ‑трансформации</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===== 6. РЕЗУЛЬТАТ ===== -->
+    <section class="panel" id="result" aria-label="Результат буткемпа">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-trophy" xlink:href="#i-trophy"></use></svg></span>
+          <h2>Результат</h2>
+        </div>
+        <div class="result">
+          <p>К завершению буткемпа у вашей компании будет:</p>
+          <ul>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> ИИ‑стратегия и дорожная карта ИИ‑трансформации</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Описанные AI‑First бизнес‑процессы для автоматизации</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Собственные ИИ‑агенты и мультиагентная система</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Рабочий пилот на реальном бизнес‑процессе</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Дашборд для мониторинга ИИ‑агентов</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Расчет экономического эффекта</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> План дальнейшего масштабирования ИИ‑агентов</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 7. СТОИМОСТЬ ===== -->
+    <section class="panel" id="price" aria-label="Стоимость буткемпа">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-currency-circle-dollar" xlink:href="#i-currency-circle-dollar"></use></svg></span>
+          <h2>Стоимость</h2>
+        </div>
+        <div class="price">
+          <p class="amount accent">$9&nbsp;900</p>
+          <div class="terms">
+            <span><svg class="ic" aria-hidden="true"><use href="#i-credit-card" xlink:href="#i-credit-card"></use></svg> Оплата — $3&nbsp;300 в месяц в течение 3‑х месяцев</span>
+            <span><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg> Стоимость указана за участие команды до 10 человек</span>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="https://t.me/andre_andreevich" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-paper-plane-tilt" xlink:href="#i-paper-plane-tilt"></use></svg> Подать заявку</a>
+          </div>
+        </div>
+        <a class="to-course" href="/automation/main/"><svg class="ic" aria-hidden="true"><use href="#i-graduation-cap" xlink:href="#i-graduation-cap"></use></svg> К программе курса</a>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="prog" id="prog" aria-hidden="true"></div>
+
+<script>
+(function(){
+  /* Кнопка «Назад»: возвращает на страницу, с которой пришли. Если истории нет
+     (страницу открыли по прямой ссылке), уводим на дорожную карту курса —
+     иначе кнопка была бы мёртвой. */
+  var FALLBACK = 'https://andre.technology/automation/main/';
+  Array.prototype.forEach.call(document.querySelectorAll('.js-back'), function(b){
+    b.addEventListener('click', function(){
+      if (history.length > 1) history.back(); else location.href = FALLBACK;
+    });
+  });
+
+  /* Смена фона: тёмный ⇄ светлый, выбор запоминается на весь путь */
+  var btn = document.getElementById('lec-theme');
+  if (btn){
+    var sync = function(){
+      var dark = document.documentElement.classList.contains('dark');
+      btn.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-'+(dark?'sun':'moon')+'" xlink:href="#i-'+(dark?'sun':'moon')+'"></use></svg>';
+      var tc = document.querySelector('meta[name="theme-color"]');
+      if(tc) tc.setAttribute('content', dark ? '#0A0A0A' : '#FFFFFF');
+    };
+    btn.addEventListener('click', function(){
+      var dark = document.documentElement.classList.toggle('dark');
+      try{ localStorage.setItem('welcome-theme', dark ? 'dark' : 'light'); }catch(e){}
+      sync();
+      if (window.fitDeck) window.fitDeck();
+    });
+    sync();
+  }
+})();
+
+/* ===== Дек: один блок в фокусе =========================================
+   Тот же механизм, что на входе в курс (/automation/). Ни страница, ни блок
+   не прокручиваются: колесо, свайп и стрелки переключают блок целиком —
+   гаснет один слой, зажигается другой, фон остаётся на месте. Блок, который
+   не влезает в экран, ужимается целиком (fit): резать содержимое и листать
+   внутри блока нельзя. */
+(function(){
+  var panels = [].slice.call(document.querySelectorAll('.panel'));
+  var prog = document.getElementById('prog');
+  var idx = 0;
+  var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SWITCH = REDUCED ? 120 : 380;      // сколько длится смена блока
+  var busyUntil = 0, pending = -1, firedAt = 0;
+
+  function now(){ return window.performance && performance.now ? performance.now() : Date.now(); }
+
+  /* ---- Блок всегда помещается в экран целиком ----------------------------
+     Считаем свободную высоту панели и, если содержимое выше, ужимаем .wrap
+     масштабом (transform работает везде, в отличие от zoom) и сами ставим
+     верхний отступ — margin:auto при переполнении уже не центрирует. */
+  function fit(p){
+    var w = p.querySelector('.wrap');
+    if (!w) return;
+    w.style.transform = '';
+    w.style.transformOrigin = '';
+    w.style.marginTop = '';
+    w.style.marginBottom = '';
+    var cs = window.getComputedStyle(p);
+    var avail = p.clientHeight - parseFloat(cs.paddingTop || 0) - parseFloat(cs.paddingBottom || 0);
+    var need = w.offsetHeight;
+    if (!avail || !need || need <= avail + 1) return;
+    // Ужимаем ровно настолько, насколько не хватает высоты. Пола нет
+    // намеренно: любой пол означал бы обрезанный низ блока, а прокрутить
+    // его нечем — колесо и свайп перехвачены декой.
+    var k = avail / need;
+    w.style.transformOrigin = 'top center';
+    w.style.transform = 'scale(' + k + ')';
+    w.style.marginTop = '0';
+    w.style.marginBottom = '0';
+  }
+  var fitQueued = false;
+  window.fitDeck = function(){
+    if (fitQueued) return;
+    fitQueued = true;
+    (window.requestAnimationFrame || setTimeout)(function(){
+      fitQueued = false;
+      for (var i = 0; i < panels.length; i++) fit(panels[i]);
+    }, 0);
+  };
+
+  function show(n){
+    n = Math.max(0, Math.min(panels.length - 1, n));
+    idx = n;
+    panels.forEach(function(p, i){
+      p.classList.toggle('on', i === idx);
+      p.setAttribute('aria-hidden', i === idx ? 'false' : 'true');
+    });
+    if (prog) prog.style.width = ((idx + 1) / panels.length * 100) + '%';
+  }
+
+  /* Единственная точка входа для жестов: пока идёт смена блока, осознанное
+     намерение не теряется, а откладывается до конца анимации. Хвост инерции
+     сюда не доходит — его отсекает жестовый слой ниже. */
+  function jump(n){
+    var t = now();
+    if (n < 0 || n > panels.length - 1) return;
+    if (t < busyUntil){ if (n !== idx) pending = n; return; }
+    if (n === idx) return;
+    show(n);
+    busyUntil = t + SWITCH;
+    firedAt = t;
+    disarmWheel();
+    setTimeout(function(){
+      var p = pending; pending = -1;
+      if (p >= 0 && p !== idx) jump(p);
+    }, SWITCH + 10);
+  }
+  function go(dir){ jump(idx + dir); }
+
+  /* ---- Колесо и тачпад --------------------------------------------------
+     Один осознанный жест = один блок. Инерция тачпада на macOS присылает
+     десятки затухающих событий после взмаха: пока они затухают, ничего не
+     делаем, а вот новый толчок (дельта перестала падать) снова взводит
+     курок — иначе второй взмах подряд «проглатывался». */
+  var THRESH   = 42;     // накопленная прокрутка, дающая переключение
+  var QUIET    = 170;    // пауза, после которой жест считается новым
+  var REARM    = 260;    // раньше этого нового толчка не ищем — там ещё анимация
+  var RISE_MIN = 12;     // дельта, ниже которой рост не считаем толчком
+  var RISE_LEN = 3;      // столько СТРОГО растущих кадров подряд = новый взмах
+  var COOL     = 500;    // жёсткий потолок: чаще этого колесо блок не меняет
+  var accum = 0, lastT = 0, prevAbs = 0, armed = true, rise = 0, wheelAt = 0;
+  // Курок взведён паузой (изолированный щелчок мыши) или ростом дельты
+  // (новый взмах поверх инерции) — от этого зависит, действует ли COOL.
+  var quietArm = true;
+
+  function armWheel(byQuiet){ armed = true; accum = 0; rise = 0; quietArm = !!byQuiet; }
+  // Любая смена блока снимает курок: иначе недоеденный хвост инерции доводил
+  // дек до следующего блока уже ПОСЛЕ осознанного жеста зрителя.
+  function disarmWheel(){ armed = false; accum = 0; rise = 0; }
+
+  window.addEventListener('wheel', function(e){
+    if (e.ctrlKey) return;                    // ctrl+колесо — это зум браузера
+    e.preventDefault();                       // ни страница, ни блок не едут
+    var d = e.deltaY;
+    if (e.deltaMode === 1) d *= 16;
+    else if (e.deltaMode === 2) d *= window.innerHeight;
+    var a = Math.abs(d);
+    if (a < 1) return;
+    if (Math.abs(e.deltaX) > a) return;       // горизонтальный жест — не наш
+    var t = now(), gap = t - lastT;
+    lastT = t;
+    // Курок взводит либо пауза, либо НОВЫЙ ТОЛЧОК — три кадра подряд со
+    // строго растущей дельтой. Нестрогое «не убывает» тут не годится:
+    // инерция macOS приходит округлённой до целых, в хвосте появляются
+    // плато (13,13,12,12), и на плато курок взводился сам.
+    if (gap > QUIET){ armWheel(true); }
+    else if (!armed && (t - firedAt) > REARM && a > prevAbs && a >= RISE_MIN){
+      if (++rise >= RISE_LEN) armWheel(false);
+    }
+    else if (a <= prevAbs){ rise = 0; }
+    prevAbs = a;
+    if (!armed) return;
+    accum += d;
+    if (Math.abs(accum) >= THRESH){
+      var dir = accum > 0 ? 1 : -1;   // направление СНАЧАЛА: disarm обнуляет accum
+      disarmWheel();
+      // Предохранитель поверх всей логики: чаще раза в COOL колесо блок не
+      // переключит. Действует он только ВНУТРИ потока: щелчок мыши приходит
+      // после паузы (quietArm) — это заведомо новое намерение, глотать его
+      // нельзя, иначе у мышиного колеса срабатывает лишь каждый второй щелчок.
+      if (!quietArm && t - wheelAt < COOL) return;
+      wheelAt = t;
+      go(dir);
+    }
+  }, {passive:false});
+
+  /* ---- Свайп ------------------------------------------------------------
+     Срабатываем прямо во время движения пальца, как только он прошёл порог:
+     ждать touchend — это те самые «полсекунды непонятно чего». */
+  var tsX = null, tsY = null, tFired = false;
+  window.addEventListener('touchstart', function(e){
+    if (e.touches.length !== 1){ tsY = null; return; }
+    tsX = e.touches[0].clientX;
+    tsY = e.touches[0].clientY;
+    tFired = false;
+  }, {passive:true});
+  window.addEventListener('touchmove', function(e){
+    if (tsY === null || e.touches.length !== 1) return;
+    e.preventDefault();                       // никакой «резинки» и оттяжки
+    if (tFired) return;
+    var dy = tsY - e.touches[0].clientY;
+    var dx = tsX - e.touches[0].clientX;
+    if (Math.abs(dx) > Math.abs(dy)) return;  // горизонтальный жест — не наш
+    if (Math.abs(dy) < 48) return;
+    tFired = true;
+    go(dy > 0 ? 1 : -1);
+  }, {passive:false});
+  window.addEventListener('touchend', function(){ tsY = null; }, {passive:true});
+
+  /* ---- Клавиатура ---------------------------------------------------- */
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;   // системные сочетания — браузеру
+    var k = e.key;
+    // Пробел на кнопке или ссылке под фокусом — это нажатие, а не листание
+    if (k === ' ' && e.target && e.target.closest && e.target.closest('button,a,input,textarea')) return;
+    if (k === 'ArrowDown' || k === 'PageDown' || k === ' ') { e.preventDefault(); go(1); }
+    else if (k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); go(-1); }
+    else if (k === 'Home') { e.preventDefault(); jump(0); }
+    else if (k === 'End') { e.preventDefault(); jump(panels.length - 1); }
+  });
+
+  var els = document.querySelectorAll('[data-go="next"]'), i;
+  for (i = 0; i < els.length; i++) els[i].addEventListener('click', function(){ go(1); });
+
+  window.addEventListener('resize', window.fitDeck);
+  window.addEventListener('orientationchange', window.fitDeck);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', window.fitDeck);
+  window.addEventListener('load', window.fitDeck);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(window.fitDeck);
+
+  var start = 0;
+  if (location.hash){
+    panels.forEach(function(p, i){ if ('#' + p.id === location.hash) start = i; });
+  }
+  show(start);
+  window.fitDeck();
+})();
+</script>
+</body>
+</html>

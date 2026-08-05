@@ -172,10 +172,10 @@
     animation:gradientShimmer 4.5s ease infinite;
   }
   /* Правая кнопка шапки — те же размеры, что «Free AI Diagnostic» на главной */
-  .consult{padding:clamp(.62rem,2.2vw,.95rem) clamp(.85rem,3.2vw,1.35rem);font-size:clamp(9px,2.7vw,12.5px);letter-spacing:clamp(.06em,.4vw,.1em);gap:clamp(.4rem,1.2vw,.6rem)}
-  @media(min-width:1024px){.consult{height:2.85rem;box-sizing:border-box;padding:0 1.4rem;font-size:11.5px;letter-spacing:.15em;gap:.55rem}}
-  @media(min-width:1024px) and (max-width:1319px){.consult{padding:0 .95rem;font-size:10px;letter-spacing:.08em;gap:.4rem}}
-  @media(min-width:1320px) and (max-width:1479px){.consult{padding:0 1.15rem;font-size:11px;letter-spacing:.12em;gap:.5rem}}
+  .consult{padding:clamp(.7rem,2.4vw,1.05rem) clamp(1rem,3.6vw,1.6rem);font-size:clamp(11px,3.1vw,15px);letter-spacing:clamp(.06em,.4vw,.1em);gap:clamp(.4rem,1.2vw,.6rem)}
+  @media(min-width:1024px){.consult{height:2.85rem;box-sizing:border-box;padding:0 1.6rem;font-size:14px;letter-spacing:.13em;gap:.55rem}}
+  @media(min-width:1024px) and (max-width:1319px){.consult{padding:0 1.1rem;font-size:12px;letter-spacing:.08em;gap:.4rem}}
+  @media(min-width:1320px) and (max-width:1479px){.consult{padding:0 1.35rem;font-size:13px;letter-spacing:.12em;gap:.5rem}}
   /* ≤380px — компактная шапка, как на главной: четыре элемента в строку иначе не влезают */
   @media(max-width:380px){
     header{padding:.85rem .6rem}
@@ -184,7 +184,7 @@
     .lang-opt{font-size:10px;letter-spacing:.03em}
     .logo-img{width:2.5rem;height:2.5rem}
     .ctrl{width:2.3rem;height:2.3rem}
-    .consult{padding:.6rem .55rem;font-size:8px;letter-spacing:.02em}
+    .consult{padding:.62rem .7rem;font-size:10px;letter-spacing:.02em}
   }
 
   /* Широкие экраны: масштабируем весь UI (как на главном сайте) */
@@ -279,27 +279,6 @@
   .cta-row{margin:1.9rem 0 0;display:flex;justify-content:center}
   .btn-start{padding:clamp(1.1rem,1.15vw,1.7rem) clamp(2.2rem,2.3vw,3.7rem);font-size:clamp(13px,.95vw,19px);letter-spacing:.15em}
 
-  /* ===== Говорящая голова ====================================================
-     Кружок лежит ПОВЕРХ блоков и на их раскладку не влияет — ровно как в
-     лекции. Пока видео не играет, виден кадр-обложка, поэтому дыры на месте
-     кружка нет никогда: обложка стоит и постером у <video>, и фоном самого
-     кружка (постер не показывается, если браузер уже начал буферизацию). */
-  .head{
-    position:fixed;z-index:35;right:clamp(.9rem,2vw,1.6rem);
-    bottom:calc(clamp(.9rem,2vw,1.6rem) + env(safe-area-inset-bottom,0px));
-    width:clamp(112px,13vw,190px);height:clamp(112px,13vw,190px);
-    border-radius:50%;overflow:hidden;cursor:pointer;padding:0;
-    background:#0A0A0A url("/assets/1_video/auto_cover_1.jpg") center/cover no-repeat;
-    border:1px solid rgba(255,255,255,.14);transition:transform .25s ease}
-  html.light .head{border-color:rgba(0,0,0,.10)}
-  .head:hover{transform:scale(1.03)}
-  .head video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-  /* Кнопка поверх кружка: видна, пока видео на паузе */
-  .head .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    background:rgba(0,0,0,.28);color:#fff;font-size:clamp(1.6rem,3vw,2.4rem);transition:opacity .25s ease}
-  .head.playing .play{opacity:0}
-  @media(max-width:520px){.head{width:104px;height:104px}}
-  @media print{.head{display:none}}
 
 
   /* Телефон: ужимаем блоки так, чтобы каждый влезал в экран целиком —
@@ -379,7 +358,7 @@
           <a class="lang-opt active" data-lang="ru" href="/automation_ru/" hreflang="ru" aria-current="true">RU</a>
         </div>
         <button class="ctrl" id="theme" aria-label="Сменить фон (тёмный/светлый)"><i class="fa-solid fa-sun"></i></button>
-        <button class="btn-white consult" onclick="window.open('https://t.me/andre_andreevich','_blank','noopener')" aria-label="Буткемп">
+        <button class="btn-white consult" onclick="location.href='/automation/bootcamp/'" aria-label="Буткемп">
           <span class="txt">Буткемп</span>
           <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
         </button>
@@ -469,13 +448,6 @@
 
   </main>
 
-  <!-- Говорящая голова: одна на всю страницу, поверх блоков. -->
-  <button class="head" id="head" type="button" aria-label="Видео о курсе — включить или поставить на паузу">
-    <video id="head-video" playsinline preload="none" muted loop
-           poster="/assets/1_video/auto_cover_1.jpg"
-           src="/assets/1_video/auto_0_sq.mp4"></video>
-    <span class="play" aria-hidden="true"><i class="fa-solid fa-play"></i></span>
-  </button>
 
   <script>
     function storeGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -517,28 +489,6 @@
       sync();
     })();
 
-    /* ===== Говорящая голова: клик — играть/пауза ===========================
-       Со звуком автозапуск браузеры запрещают, поэтому первый клик и включает
-       звук, и запускает ролик с начала. До первого клика видео молчит и
-       зациклено — кружок «живёт», но внимания не требует. */
-    (function(){
-      var box = document.getElementById('head');
-      var vid = document.getElementById('head-video');
-      if (!box || !vid) return;
-      var started = false;
-      box.addEventListener('click', function(){
-        if (vid.paused){
-          if (!started){ started = true; vid.muted = false; vid.loop = false; vid.currentTime = 0; }
-          var pr = vid.play();
-          if (pr && pr.catch) pr.catch(function(){});
-        } else {
-          vid.pause();
-        }
-      });
-      vid.addEventListener('play',  function(){ box.classList.add('playing'); });
-      vid.addEventListener('pause', function(){ box.classList.remove('playing'); });
-      vid.addEventListener('ended', function(){ box.classList.remove('playing'); });
-    })();
 
     /* ===== Дек: один блок в фокусе ==========================================
        Ни страница, ни блок не прокручиваются. Колесо, свайп, стрелки и точки

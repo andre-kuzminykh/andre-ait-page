@@ -351,6 +351,13 @@ def test_practice_header_matches_the_course():
     assert ">Буткемп " in html, "правая кнопка называется «Буткемп»"
 
 
+def test_bootcamp_button_opens_bootcamp_page():
+    """Кнопка «Буткемп» ведёт на страницу буткемпа, а не сразу в телеграм."""
+    for rel in _ENTRIES:
+        page = _read(rel)
+        assert "location.href='/automation/bootcamp/'" in page, rel
+
+
 def test_practice_is_linked_from_the_lecture():
     assert "/automation/1/practice/" in _read(_LECTURE1), \
         "кнопка «Задание» в лекции должна вести на страницу практики"
@@ -393,17 +400,11 @@ def test_cover_shows_while_video_is_idle():
     assert 'poster="%s"' % _COVER in html, "у видео лекции должен быть постер"
     assert _COVER in html.split('id="head-video"', 1)[1][:400], \
         "обложка должна стоять и фоном кружка — постер не виден после буферизации"
-    for rel in _ENTRIES:
-        page = _read(rel)
-        assert 'poster="%s"' % _COVER in page, rel + ": нужен постер"
-        assert _COVER in page, rel + ": нужна обложка фоном кружка"
 
 
-def test_entry_head_uses_its_own_video():
-    """У входа в курс свой ролик (_0), у лекции — свои 42."""
+def test_entry_has_no_video_circle():
+    """На входной странице кружка с головой НЕТ (просьба заказчика)."""
     for rel in _ENTRIES:
         page = _read(rel)
-        assert 'src="/assets/1_video/auto_0_sq.mp4"' in page, rel
-        assert 'id="head"' in page and 'id="head-video"' in page, rel
-        assert re.search(r"\.head\{[^}]*position:fixed", page), \
-            rel + ": кружок лежит поверх блоков и на раскладку не влияет"
+        assert 'id="head-video"' not in page, rel + ": кружок должен быть убран"
+        assert 'class="head"' not in page, rel + ": разметка кружка должна быть убрана"

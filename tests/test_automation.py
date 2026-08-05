@@ -68,9 +68,9 @@ def test_header_full_width_and_cta():
             rel + ": ряд шапки должен быть на всю ширину (без max-width)"
         assert re.search(r"@media\(min-width:1024px\)\{(?:\.row|header)\{padding:2rem\}\}", html), \
             rel + ": десктопный паддинг шапки 2rem (как на главной)"
-        assert re.search(r"height:2\.85rem;(?:box-sizing:border-box;)?padding:0 1\.4rem;"
-                         r"font-size:11\.5px;letter-spacing:\.15em", html), \
-            rel + ": десктопная кнопка «Буткемп» = метрики CTA главной"
+        assert re.search(r"height:2\.85rem;(?:box-sizing:border-box;)?padding:0 1\.6rem;"
+                         r"font-size:14px;letter-spacing:\.13em", html), \
+            rel + ": десктопная кнопка «Буткемп» — крупный кегль (заказчик просил больше)"
         assert "clamp(2.85rem,12vw,3.7rem)" in html and "3.6rem" in html, \
             rel + ": лого шапки того же размера, что на главной"
 
