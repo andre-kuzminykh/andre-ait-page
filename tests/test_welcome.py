@@ -343,15 +343,21 @@ def test_layer_end_does_not_cut_the_clip():
 
 
 def test_audio_is_copied_when_it_can_be():
-    """Владелец: «звук шипит… в оригинале всё ок». Значит виноват пережим.
-    Нуль-тест: копия дорожки даёт −inf дБ разницы, повторный AAC — реальный
-    остаток. Поэтому дорожку копируем, если она уже AAC и начинается там же,
-    где картинка; смещённую (edit list в MOV) пережимаем, иначе уедет синхрон."""
+    """Владелец: «звук шипит… в оригинале всё ок». Дорожка НИКОГДА не
+    пережимается (кроме не-AAC — их в mp4 копией не положить): идёт копией
+    отдельным входом, а смещение дорожек исходника (edit list в MOV)
+    воспроизводится контейнером — itsoffset при положительном сдвиге, срез
+    начала при отрицательном. Синхрон проверен корреляцией: 0 мс."""
     html = _html()
     script = html[html.index("function joinScript()"):html.index("var joinBtn")]
     assert '-c:a copy' in script, "звук всегда пережимается — это и слышно"
-    assert "stream=start_time" in script, "смещение дорожек не проверяется"
-    assert "aac_at" in script, "на маке есть кодировщик чище встроенного aac"
+    assert "-map 3:a:0" in script, "звук берётся не отдельным входом со сдвигом"
+    assert "stream=start_time" in script, "смещение дорожек не замеряется"
+    assert '-itsoffset' in script and '-ss ${OFF#-}' in script, \
+        "смещение не воспроизводится контейнером (itsoffset / срез начала)"
+    assert "aresample=async" not in script, \
+        "звук растягивается под склейку — это и слышалось как искажение"
+    assert "aac_at" in script, "для не-AAC дорожек не взят лучший кодировщик"
     assert "-b:a 192k" not in script, "остался пережим 192k"
 
 
