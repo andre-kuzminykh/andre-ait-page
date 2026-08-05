@@ -350,6 +350,27 @@ def test_brand_chrome_is_in_place():
     assert "body.on-cover #chrome" in html, "на обложке шапка обязана прятаться"
 
 
+def test_layer_end_does_not_cut_the_clip():
+    """Со shortest=1 ролик ДЛИННЕЕ слоя обрезался по слою: замер — 70-секундный
+    дубль выходил 59.12 с видео при 70 с звука, то есть 11 секунд черноты под
+    звук. eof_action=pass: слой кончился — картинка идёт дальше."""
+    html = _html()
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "eof_action=pass" in script, "слой обрежет ролик, который длиннее его"
+    assert "overlay=0:0:format=auto:shortest=1" not in script, \
+        "в самом фильтре остался shortest=1 — он режет дубль длиннее слоя"
+
+
+def test_audio_uses_the_best_encoder():
+    """Обложка спереди заставляет пережимать дорожку — склейка требует
+    одинаковых параметров. Раз пережим неизбежен, берём лучший доступный
+    кодировщик (на маке aac_at) и 256k вместо 192k."""
+    html = _html()
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "aac_at" in script, "не используется лучший кодировщик звука"
+    assert "-b:a 256k" in script and "-b:a 192k" not in script, "битрейт звука не поднят"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

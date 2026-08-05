@@ -300,7 +300,7 @@ def test_script_burns_the_layer_into_the_frame():
     html = _html()
     script = html[html.index("function joinScript()"):html.index("var joinBtn")]
     assert "alphamerge" in script, "слой не сшивается из цвета и маски"
-    assert "shortest=1" in script, "без shortest длительность тянется по слою"
+    assert "eof_action=pass" in script, "слой обязан отпускать картинку, а не резать её"
     assert "$ROT" in script, "поворот кадра не учитывается"
     assert "videotoolbox" in script, "на маке пересборка должна идти аппаратно"
     assert "-f null" in script, "результат не проверяется декодированием"
@@ -329,6 +329,30 @@ def test_brand_chrome_is_in_place():
     zone_top = int(re.search(r"--zone-top:(\d+)px", html).group(1))
     assert zone_top >= 224 + 20, "зона графики залезает под шапку (top %d)" % zone_top
     assert "body.on-cover #chrome" in html, "на обложке шапка обязана прятаться"
+
+
+def test_layer_end_does_not_cut_the_clip():
+    """Со shortest=1 ролик ДЛИННЕЕ слоя обрезался по слою: замер — 70-секундный
+    дубль выходил 59.12 с видео при 70 с звука, то есть 11 секунд черноты под
+    звук. eof_action=pass: слой кончился — картинка идёт дальше."""
+    html = _html()
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "eof_action=pass" in script, "слой обрежет ролик, который длиннее его"
+    assert "overlay=0:0:format=auto:shortest=1" not in script, \
+        "в самом фильтре остался shortest=1 — он режет дубль длиннее слоя"
+
+
+def test_audio_is_copied_when_it_can_be():
+    """Владелец: «звук шипит… в оригинале всё ок». Значит виноват пережим.
+    Нуль-тест: копия дорожки даёт −inf дБ разницы, повторный AAC — реальный
+    остаток. Поэтому дорожку копируем, если она уже AAC и начинается там же,
+    где картинка; смещённую (edit list в MOV) пережимаем, иначе уедет синхрон."""
+    html = _html()
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert '-c:a copy' in script, "звук всегда пережимается — это и слышно"
+    assert "stream=start_time" in script, "смещение дорожек не проверяется"
+    assert "aac_at" in script, "на маке есть кодировщик чище встроенного aac"
+    assert "-b:a 192k" not in script, "остался пережим 192k"
 
 
 if __name__ == "__main__":
