@@ -23,12 +23,13 @@
     --solar:#8B5CF6;
     --gray:#E9E9E9;
 
-    /* Зона графики = светлая стена НАД головой. Замеры по кадру
-       (1080×1920): верх постеров ≈ y638, макушка ≈ y816. Жёсткая граница —
-       макушка; верх постеров карточки перекрывают, они непрозрачные.
-       Правится на лету: ?zoneTop=48&zoneH=712 под конкретный кадр. */
-    --zone-top:70px;
-    --zone-h:500px;
+    /* Зона графики = светлая стена НАД головой, ПОД фирменной шапкой.
+       Замеры по кадру (1080×1920): верх постеров ≈ y638, макушка ≈ y816;
+       шапка (лого + «АКАДЕМИЯ ДАТАИСТА») занимает 128…224. Зона 250…630 —
+       не задевает ни шапку, ни картины.
+       Правится на лету: ?zoneTop=&zoneH= под конкретный кадр. */
+    --zone-top:250px;
+    --zone-h:380px;
     --zone-pad:46px;
 
     --ease:cubic-bezier(.22,1,.36,1);
@@ -79,6 +80,25 @@ body.no-scrim #scrim{display:none}
     top:var(--zone-top);height:var(--zone-h);
     padding:0 var(--zone-pad);
 }
+
+/* ── Фирменный хром: лого AIT слева + «АКАДЕМИЯ ДАТАИСТА» по центру шапки.
+   Геометрия 1:1 с хромом рилсов Академии: top 128, высота 96 (центр на
+   y176), лого 92px при left 56, тег 26px/700, разрядка .3em, капс.
+   Цвет тега — фирменный rgba(245,245,247,.30) + тонкий тёмный ореол:
+   в отличие от рилсов, под ним не чёрный #09080D, а живое видео.
+   Хром вшивается в слой при рендере, как и вся графика. ── */
+#chrome{
+    position:absolute;top:128px;left:56px;right:56px;height:96px;
+    z-index:8;display:flex;align-items:center;pointer-events:none;
+}
+#chrome img{height:92px;width:auto;max-width:300px;object-fit:contain;opacity:.95}
+#chrome .tag{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-size:26px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;
+    color:rgba(245,245,247,.30);white-space:nowrap;
+    text-shadow:0 2px 12px rgba(10,4,24,.5);
+}
+
 
 /* ── Сцены ───────────────────────────────────────────────────────── */
 .scene{
@@ -212,7 +232,7 @@ ul{list-style:none;padding:0}
 #cover img{width:100%;height:100%;object-fit:cover;display:block}
 body.on-cover #cover{display:block}
 /* На обложке нет ни графики, ни субтитров, ни скрима. */
-body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim{display:none}
+body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim,body.on-cover #chrome{display:none}
 
 /* ── Субтитры ────────────────────────────────────────────────────────
    Белые, с тонкой чёрной обводкой, без подложки (правило «без блоков»).
@@ -318,6 +338,11 @@ body.dragging #drop{display:flex}
     </div>
 
     <div id="scrim"></div>
+
+    <div id="chrome">
+        <img src="logo.png" alt="">
+        <div class="tag">АКАДЕМИЯ ДАТАИСТА</div>
+    </div>
 
     <div id="layer">
 

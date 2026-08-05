@@ -307,6 +307,30 @@ def test_script_burns_the_layer_into_the_frame():
     assert "setpts=PTS-STARTPTS" in script, "дорожки ролика не прижаты к нулю — будет чёрный кадр"
 
 
+def test_brand_chrome_is_in_place():
+    """Владелец: «сверху слева AIT и АКАДЕМИЯ ДАТАИСТА, а чуть ниже уже все
+    эти иконки». Геометрия — 1:1 с хромом рилсов Академии: шапка top 128 /
+    высота 96, лого 92px при left 56, тег 26px/700 с разрядкой .3em.
+    Зона графики обязана начинаться НИЖЕ шапки (224), иначе иконки лезут
+    под лого."""
+    html = _html()
+    assert 'id="chrome"' in html, "нет фирменной шапки"
+    assert "АКАДЕМИЯ ДАТАИСТА" in html, "нет тега «АКАДЕМИЯ ДАТАИСТА»"
+    assert 'src="logo.png"' in html, "лого не подключено"
+    assert os.path.exists(os.path.join(_DIR, "logo.png")), "нет файла logo.png рядом со страницей"
+    chrome = html[html.index("#chrome{"):html.index("#chrome .tag")]
+    assert "top:128px" in chrome and "height:96px" in chrome and "left:56px" in chrome, \
+        "геометрия шапки разошлась с хромом рилсов (top 128 / height 96 / left 56)"
+    assert "height:92px" in html[html.index("#chrome img"):html.index("#chrome .tag")], \
+        "лого не 92px"
+    tag = html[html.index("#chrome .tag"):html.index("}", html.index("#chrome .tag"))]
+    assert "font-size:26px" in tag and ".3em" in tag and "uppercase" in tag, \
+        "тег разошёлся со стилем рилсов (26px / .3em / капс)"
+    zone_top = int(re.search(r"--zone-top:(\d+)px", html).group(1))
+    assert zone_top >= 224 + 20, "зона графики залезает под шапку (top %d)" % zone_top
+    assert "body.on-cover #chrome" in html, "на обложке шапка обязана прятаться"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

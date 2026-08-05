@@ -187,7 +187,8 @@ def test_cover_precedes_the_clip():
     assert os.path.exists(os.path.join(os.path.dirname(_OVERLAY), "cover.png")), \
         "нет файла обложки рядом со страницей"
     assert "var vt = time - COVER;" in html, "время видео не сдвинуто на заставку"
-    assert "body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim{display:none}" in html
+    assert "body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim,body.on-cover #chrome{display:none}" in html, \
+        "на заставке обязаны прятаться графика, субтитры, скрим и фирменная шапка"
 
 
 def test_rendered_layer_is_present_and_split():
@@ -323,6 +324,30 @@ def test_no_headings_and_no_small_print():
     for sel, rule in _rules(_scene_css()):
         for size in re.findall(r"font-size:(\d+)px", rule):
             assert int(size) >= 24, "%s: кегль %spx — мелкий текст в кадре не нужен" % (sel, size)
+
+
+def test_brand_chrome_is_in_place():
+    """Владелец: «сверху слева AIT и АКАДЕМИЯ ДАТАИСТА, а чуть ниже уже все
+    эти иконки». Геометрия — 1:1 с хромом рилсов Академии: шапка top 128 /
+    высота 96, лого 92px при left 56, тег 26px/700 с разрядкой .3em.
+    Зона графики обязана начинаться НИЖЕ шапки (224), иначе иконки лезут
+    под лого."""
+    html = _html()
+    assert 'id="chrome"' in html, "нет фирменной шапки"
+    assert "АКАДЕМИЯ ДАТАИСТА" in html, "нет тега «АКАДЕМИЯ ДАТАИСТА»"
+    assert 'src="logo.png"' in html, "лого не подключено"
+    assert os.path.exists(os.path.join(os.path.dirname(_OVERLAY), "logo.png")), "нет файла logo.png рядом со страницей"
+    chrome = html[html.index("#chrome{"):html.index("#chrome .tag")]
+    assert "top:128px" in chrome and "height:96px" in chrome and "left:56px" in chrome, \
+        "геометрия шапки разошлась с хромом рилсов (top 128 / height 96 / left 56)"
+    assert "height:92px" in html[html.index("#chrome img"):html.index("#chrome .tag")], \
+        "лого не 92px"
+    tag = html[html.index("#chrome .tag"):html.index("}", html.index("#chrome .tag"))]
+    assert "font-size:26px" in tag and ".3em" in tag and "uppercase" in tag, \
+        "тег разошёлся со стилем рилсов (26px / .3em / капс)"
+    zone_top = int(re.search(r"--zone-top:(\d+)px", html).group(1))
+    assert zone_top >= 224 + 20, "зона графики залезает под шапку (top %d)" % zone_top
+    assert "body.on-cover #chrome" in html, "на обложке шапка обязана прятаться"
 
 
 if __name__ == "__main__":
