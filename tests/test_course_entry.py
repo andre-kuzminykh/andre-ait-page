@@ -377,3 +377,49 @@ if __name__ == "__main__":
         fn()
         print("PASS", fn.__name__)
     print("\nВсе тесты входа в курс пройдены:", len(fns))
+
+
+# ── Практическое задание к лекции 1 ────────────────────────────────────────
+
+_PRACTICE = "automation/1/practice/index.html"
+
+
+def test_practice_page_is_self_sufficient():
+    """Иконки задания вшиты в страницу и не зависят от внешнего CDN.
+
+    На лекции иконки жили на unpkg, и при недоступности CDN страница
+    оставалась вообще без иконок. У задания они — inline-SVG: рисуются
+    всегда, в том числе офлайн и при печати.
+    """
+    html = _read(_PRACTICE)
+    assert "unpkg.com" not in html and "cdnjs" not in html, \
+        "иконки задания не должны грузиться со стороннего CDN"
+    assert html.count("<symbol id=\"i-") >= 15, "нужен полный набор вшитых иконок"
+    for name in ("i-scan", "i-target", "i-rocket-launch", "i-arrow-left"):
+        assert 'id="%s"' % name in html and 'href="#%s"' % name in html, \
+            "иконка %s должна быть и объявлена, и использована" % name
+
+
+def test_practice_header_matches_the_course():
+    """Шапка задания — той же геометрии, что шапка лекции и главной."""
+    html = _read(_PRACTICE)
+    assert "padding:1.1rem" in html and "@media (min-width:1024px){ header{ padding:2rem; } }" in html
+    assert "clamp(2.85rem,12vw,3.7rem)" in html, "лого того же размера, что на главной"
+    assert "clamp(2.5rem,11vw,3.3rem)" in html, "круглая кнопка бургерных размеров"
+    assert "height:2.85rem; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em" in html, \
+        "правая кнопка — метрики CTA главной"
+    assert ">Буткемп " in html, "правая кнопка называется «Буткемп»"
+
+
+def test_practice_is_linked_from_the_lecture():
+    assert "/automation/1/practice/" in _read(_LECTURE1), \
+        "кнопка «Задание» в лекции должна вести на страницу практики"
+
+
+def test_practice_terms_do_not_break_on_hyphen():
+    """«ИИ-агентов» не должно распадаться на две строки по дефису."""
+    html = _read(_PRACTICE)
+    body = html.split("<body>", 1)[1]
+    plain = re.sub(r"<[^>]*>", " ", body)
+    for bad in ("ИИ-агент", "ИИ-модел", "ИИ-трансформац"):
+        assert bad not in plain, "%s: дефис в термине должен быть неразрывным (U+2011)" % bad

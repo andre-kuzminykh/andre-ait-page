@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Практическое задание — Лекция 1 | Andre AI Technology</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Практическое задание 1 — Лекция 1 | Andre AI Technology</title>
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
@@ -11,109 +11,408 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
-<meta name="description" content="Практическое задание к лекции 1 курса «Автоматизация бизнес-процессов с ИИ-агентами».">
+<meta name="description" content="Практическое задание к лекции 1 курса «Автоматизация бизнес-процессов с ИИ-агентами»: оцените зрелость бизнеса и выберите первый процесс для автоматизации.">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="color-scheme" content="dark light">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+  /* ============================================================
+     Практическое задание к лекции 1.
+     Стиль лекции (automation/1/): Montserrat, Phosphor, фиолетовый
+     #8B5CF6 + оранжевый #F97316, белые карточки с серой рамкой,
+     тёмные emphasis-блоки #4C1D95, теней нет нигде.
+     Страница не дек, а спокойная прокрутка: задание читают и делают,
+     а не листают.
+     ============================================================ */
   :root{
-    --bg:#FFFFFF; --fg:#0A0A0A; --muted:rgba(0,0,0,.55);
-    --card:rgba(0,0,0,.04); --card-border:rgba(0,0,0,.10);
-    --ctrl-bg:#fff; --ctrl-fg:#111; --ctrl-border:rgba(0,0,0,.12);
+    --bg:#FFFFFF; --fg:#0A0A0A; --muted:rgba(0,0,0,.60);
+    --card:#FFFFFF; --card-border:#E9E9E9;
+    --soft:rgba(0,0,0,.04); --soft-border:rgba(0,0,0,.08);
+    --ctrl-bg:#FFFFFF; --ctrl-fg:#111111; --ctrl-border:rgba(0,0,0,.12);
+    --ctrl-hover:#F1F1F1;
+    --line:#E9E9E9;
   }
   html.dark{
-    --bg:#0A0A0A; --fg:#FAFAFA; --muted:rgba(250,250,250,.6);
-    --card:rgba(255,255,255,.05); --card-border:rgba(255,255,255,.12);
-    --ctrl-bg:#141414; --ctrl-fg:#fafafa; --ctrl-border:rgba(255,255,255,.18);
+    --bg:#0A0A0A; --fg:#FAFAFA; --muted:rgba(250,250,250,.62);
+    --card:#141414; --card-border:rgba(255,255,255,.12);
+    --soft:rgba(255,255,255,.06); --soft-border:rgba(255,255,255,.10);
+    --ctrl-bg:#141414; --ctrl-fg:#FAFAFA; --ctrl-border:rgba(255,255,255,.18);
+    --ctrl-hover:#1F1F1F;
+    --line:rgba(255,255,255,.14);
   }
+
   *{margin:0;padding:0;box-sizing:border-box}
+  /* Теней нет нигде — общее требование заказчика по всем страницам курса */
   *, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
+
+  html{ -webkit-tap-highlight-color:transparent; background:var(--bg); }
   body{
     font-family:'Montserrat',sans-serif; background:var(--bg); color:var(--fg);
-    min-height:100dvh; display:flex; flex-direction:column;
+    min-height:100dvh; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     transition:background .3s ease,color .3s ease;
   }
+  a{color:inherit;text-decoration:none}
+  /* Иконка — вшитый SVG: размер задаётся font-size родителя, цвет — currentColor,
+     поэтому все прежние правила «размер иконки через font-size» продолжают работать. */
+  .ic{ width:1em; height:1em; fill:currentColor; flex-shrink:0; vertical-align:-.125em; }
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  ::selection{background:#8B5CF6;color:#fff}
+  *:focus-visible{outline:2px solid #8B5CF6;outline-offset:3px;border-radius:4px}
+  p,li,h1,h2,h3{overflow-wrap:break-word}
+
+  /* Большие мониторы масштабируются целиком — как дорожная карта и главная */
+  @media (min-width:1600px){ body{zoom:1.15} }
+  @media (min-width:1900px){ body{zoom:1.3} }
+  @media (min-width:2300px){ body{zoom:1.5} }
+
+  /* ===== Шапка: геометрия один в один с шапкой лекции ===== */
   header{
     position:fixed; top:0; left:0; right:0; z-index:40;
-    display:flex; align-items:center; justify-content:space-between; gap:.75rem;
-    padding:clamp(.55rem,2vw,1rem) clamp(.9rem,3.2vw,2rem);
+    display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+    padding:1.1rem; pointer-events:none;
   }
-  .lec-logo{display:inline-flex;align-items:center}
-  .lec-logo img{height:clamp(2.3rem,9vw,3.2rem);width:auto;display:block}
-  .lec-right{display:flex;align-items:center;gap:clamp(.5rem,2.2vw,.8rem)}
+  @media (min-width:1024px){ header{ padding:2rem; } }
+  header > *{ pointer-events:auto; }
+  .lec-logo{display:inline-flex;align-items:center;flex-shrink:0}
+  .lec-logo img{
+    width:clamp(2.85rem,12vw,3.7rem); height:clamp(2.85rem,12vw,3.7rem);
+    object-fit:contain; display:block;
+  }
+  @media (min-width:1024px){ .lec-logo img{ width:3.6rem; height:3.6rem; } }
+  /* Картинка лого не дошла — показываем текстовый знак вместо «битой картинки» */
+  .lec-logo .logo-fb{
+    display:none; align-items:center; font-weight:900; letter-spacing:-.04em;
+    font-size:clamp(1.5rem,6vw,1.9rem); color:#F97316;
+  }
+  .lec-right{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
   .lec-ctrl{
     display:inline-flex;align-items:center;justify-content:center;
-    height:clamp(2.3rem,9vw,3rem);width:clamp(2.3rem,9vw,3rem);border-radius:999px;
-    border:1px solid var(--ctrl-border);background:var(--ctrl-bg);color:var(--ctrl-fg);
-    font-size:clamp(1.05rem,4vw,1.3rem);line-height:1;cursor:pointer;
+    height:clamp(2.5rem,11vw,3.3rem); width:clamp(2.5rem,11vw,3.3rem);
+    border-radius:999px; border:1px solid var(--ctrl-border);
+    background:var(--ctrl-bg); color:var(--ctrl-fg);
+    font-size:clamp(1.05rem,4vw,1.3rem); line-height:1;
     transition:background .2s ease,color .2s ease;
   }
-  main{
-    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; padding:clamp(6rem,16vh,8rem) 1.25rem 3rem;
+  @media (min-width:1024px){ .lec-ctrl{ height:2.85rem; width:2.85rem; } }
+  .lec-ctrl:hover{ background:var(--ctrl-hover); }
+  /* Кнопка «Лекция» — та же капсула, но с подписью; на узком экране только иконка */
+  .lec-lbl{
+    width:auto; padding:0 clamp(.8rem,2.8vw,1.15rem); gap:.45rem;
+    font-weight:800; text-transform:uppercase; letter-spacing:.07em;
+    font-size:clamp(10px,2.6vw,12px);
   }
+  .lec-lbl .ic{ font-size:clamp(1.05rem,4vw,1.2rem); }
+  @media (max-width:640px){
+    .lec-lbl{ width:clamp(2.5rem,11vw,3.3rem); padding:0; }
+    .lec-lbl span{ display:none; }
+  }
+  .lec-consult{
+    display:inline-flex;align-items:center;justify-content:center;gap:clamp(.4rem,1.2vw,.6rem);
+    padding:clamp(.62rem,2.2vw,.95rem) clamp(.85rem,3.2vw,1.35rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-weight:800; text-transform:uppercase; letter-spacing:clamp(.06em,.4vw,.1em);
+    font-size:clamp(9px,2.7vw,12.5px); white-space:nowrap;
+    transition:transform .2s ease,background .2s ease;
+  }
+  @media (min-width:1024px){
+    .lec-consult{ height:2.85rem; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em; gap:.55rem; }
+  }
+  .lec-consult:hover{ transform:translateY(-1px); background:#7C3AED; }
+  @media (max-width:380px){
+    header{ padding:.85rem .6rem; gap:.3rem; }
+    .lec-right{ gap:.3rem; }
+    .lec-logo img{ width:2.5rem; height:2.5rem; }
+    .lec-ctrl, .lec-lbl{ width:2.3rem; height:2.3rem; }
+    .lec-consult{ padding:.6rem .55rem; font-size:8px; letter-spacing:.02em; }
+  }
+
+  /* ===== Полотно ===== */
+  main{
+    max-width:52rem; margin:0 auto;
+    padding:clamp(6.5rem,17vh,9rem) clamp(1rem,4vw,2rem) clamp(3rem,8vh,5rem);
+  }
+  @keyframes rise{ from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+  .rise{ animation:rise .55s cubic-bezier(.22,1,.36,1) both; }
+  .rise.d1{ animation-delay:.07s } .rise.d2{ animation-delay:.14s }
+  .rise.d3{ animation-delay:.2s }  .rise.d4{ animation-delay:.27s }
+  @media (prefers-reduced-motion:reduce){ .rise{ animation:none } }
+
+  /* ===== Шапка задания ===== */
+  .hero{ text-align:center; margin-bottom:clamp(1.8rem,5vh,2.8rem); }
   .badge{
     display:inline-flex; align-items:center; gap:.5rem;
-    font-size:clamp(10px,2.4vw,11.5px); font-weight:800; letter-spacing:.16em;
-    text-transform:uppercase; color:#8B5CF6; margin-bottom:1rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:999px; padding:.45rem 1rem;
+    font-size:clamp(9px,2.4vw,11px); font-weight:800;
+    letter-spacing:.16em; text-transform:uppercase; color:#8B5CF6;
+    margin-bottom:clamp(.9rem,2.5vh,1.3rem);
   }
-  h1{font-weight:900; font-size:clamp(1.6rem,6vw,3rem); line-height:1.15; letter-spacing:-.01em}
-  h1 .accent{
+  .badge .ic{ font-size:1.25em; }
+  h1{
+    font-weight:900; font-size:clamp(1.75rem,6.4vw,3rem);
+    line-height:1.12; letter-spacing:-.02em; text-wrap:balance;
+  }
+  .accent{
     background-image:linear-gradient(90deg,#8B5CF6 0%,#F97316 100%);
     -webkit-background-clip:text; background-clip:text;
     -webkit-text-fill-color:transparent; color:transparent;
   }
-  .card{
-    margin-top:clamp(1.4rem,4vh,2.2rem); max-width:34rem; width:100%;
+  /* «ИИ‑трансформацию бизнеса» стоит отдельной строкой, а сам термин не рвётся
+     по дефису (иначе перенос давал «ИИ-» в конце строки). */
+  .lead .nb{ white-space:nowrap; }
+  .lead{
+    margin:clamp(.8rem,2.2vh,1.1rem) auto 0; max-width:34rem;
+    color:var(--muted); font-weight:600;
+    font-size:clamp(.92rem,3vw,1.15rem); line-height:1.6;
+  }
+
+  /* ===== Шаг ===== */
+  .step{
     background:var(--card); border:1px solid var(--card-border);
-    border-radius:1.5rem; padding:clamp(1.3rem,4vw,2rem);
+    border-radius:clamp(20px,4vw,28px);
+    padding:clamp(1.2rem,4.5vw,2.2rem);
   }
-  .card i{font-size:2rem;color:#F97316}
-  .card p{margin-top:.7rem;color:var(--muted);font-size:clamp(.9rem,2.6vw,1rem);line-height:1.65;font-weight:600}
-  .back{
-    margin-top:clamp(1.6rem,4vh,2.4rem); display:inline-flex; align-items:center; gap:.55rem;
-    background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase;
-    letter-spacing:.09em; font-size:clamp(11px,2.6vw,13px);
-    padding:.95rem 1.9rem; border-radius:999px; text-decoration:none;
-    transition:background .2s ease;
+  .step-head{ display:flex; align-items:flex-start; gap:clamp(.85rem,3vw,1.25rem); }
+  .step-ico{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,11vw,3.6rem); height:clamp(2.8rem,11vw,3.6rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-size:clamp(1.35rem,5vw,1.8rem);
   }
-  .back:hover{background:#7C3AED}
+  .step-body{ min-width:0; flex:1; }
+  .kicker{
+    display:block; color:#F97316; font-weight:800; text-transform:uppercase;
+    letter-spacing:.16em; font-size:clamp(10px,2.6vw,12px);
+  }
+  .step h2{
+    margin-top:.3rem; font-weight:900; letter-spacing:-.01em;
+    font-size:clamp(1.05rem,4.2vw,1.65rem); line-height:1.25;
+  }
+  .step p.desc{
+    margin-top:clamp(.8rem,2.4vw,1.1rem); color:var(--muted);
+    font-weight:500; font-size:clamp(.88rem,2.9vw,1.05rem); line-height:1.65;
+  }
+
+  /* Кнопки шага */
+  .actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:.6rem; margin-top:clamp(1.1rem,3vw,1.5rem); }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.55rem;
+    border-radius:999px; padding:.85rem 1.5rem; border:1px solid transparent;
+    font-weight:800; text-transform:uppercase; letter-spacing:.08em;
+    font-size:clamp(10px,2.6vw,12px); line-height:1; white-space:nowrap;
+    transition:transform .2s ease,background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .btn .ic{ font-size:1.15em; }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-primary{ background:#8B5CF6; color:#fff; }
+  .btn-primary:hover{ background:#7C3AED; }
+  .btn-ghost{ background:transparent; color:var(--fg); border-color:var(--ctrl-border); }
+  .btn-ghost:hover{ border-color:#8B5CF6; color:#8B5CF6; }
+  .btn-light{ background:#FAFAFA; color:#0A0A0A; }
+  .btn-light:hover{ background:#fff; }
+  @media (max-width:400px){ .btn{ width:100%; } }
+
+  /* Связка между шагами — как стрелки-связи на слайдах лекции */
+  .link{ display:flex; flex-direction:column; align-items:center; padding:clamp(.6rem,2vh,1rem) 0; }
+  .link .bar{ width:2px; height:clamp(1.1rem,3vh,1.6rem); background:var(--line); }
+  .link .ic{ color:var(--line); font-size:1.25rem; margin-top:-.35rem; }
+
+  /* ===== Критерии «низковисящего фрукта» ===== */
+  .criteria{
+    list-style:none; margin-top:clamp(1rem,3vw,1.4rem);
+    display:grid; grid-template-columns:1fr; gap:.6rem;
+  }
+  @media (min-width:768px){
+    .criteria{ grid-template-columns:1fr 1fr; gap:.75rem; }
+    /* пятый критерий занимает всю строку — ряд не остаётся полупустым */
+    .criteria li:last-child{ grid-column:1 / -1; }
+  }
+  .criteria li{
+    display:flex; align-items:center; gap:.8rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:16px; padding:.85rem 1rem;
+    font-weight:600; font-size:clamp(.82rem,2.7vw,.98rem); line-height:1.45;
+  }
+  /* Плашка сплошная, иконка белая: фиолетовая иконка на фиолетовом тинте
+     растворялась в подложке — та же правка, что и в slide-polish лекции. */
+  .criteria .ci{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-size:1.15rem;
+  }
+
+  /* Врезка-итог: оранжевая полоса слева, как акцентные плашки лекции */
+  .note{
+    display:flex; align-items:center; gap:.75rem;
+    margin-top:clamp(1rem,3vw,1.4rem);
+    background:rgba(139,92,246,.14); border-left:4px solid #F97316;
+    border-radius:0 16px 16px 0; padding:.95rem 1.1rem;
+    font-weight:700; font-size:clamp(.85rem,2.8vw,1rem); line-height:1.5;
+  }
+  .note .ic{ color:#F97316; font-size:1.3rem; flex-shrink:0; }
+
+  /* ===== Финальный блок ===== */
+  .cta{
+    margin-top:clamp(1.6rem,5vh,2.6rem);
+    background:#4C1D95; color:#fff; border:1px solid rgba(167,139,250,.55);
+    border-radius:clamp(20px,4vw,28px);
+    padding:clamp(1.5rem,5vw,2.6rem); text-align:center;
+  }
+  .cta .cta-ico{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,11vw,3.6rem); height:clamp(2.8rem,11vw,3.6rem);
+    border-radius:999px; background:rgba(255,255,255,.10); color:#F97316;
+    font-size:clamp(1.35rem,5vw,1.8rem); margin-bottom:clamp(.8rem,2.5vw,1.1rem);
+  }
+  .cta h2{
+    font-weight:900; letter-spacing:-.01em; text-wrap:balance;
+    font-size:clamp(1.05rem,4.2vw,1.7rem); line-height:1.25;
+  }
+  .cta .btn{ margin-top:clamp(1.1rem,3.5vw,1.6rem); }
+
+  /* Возврат к лекции */
+  .back{ display:flex; justify-content:center; margin-top:clamp(1.4rem,4vh,2.2rem); }
+  .back a{
+    display:inline-flex; align-items:center; gap:.5rem;
+    color:var(--muted); font-weight:700; font-size:clamp(.8rem,2.6vw,.9rem);
+    transition:color .2s ease;
+  }
+  .back a:hover{ color:#8B5CF6; }
+
+  /* Печать / сохранение в PDF: задание распечатывают, поэтому убираем шапку
+     и служебные кнопки, а цвета сводим к бумажным. */
+  @media print{
+    header, .actions, .cta .btn, .back{ display:none !important; }
+    body{ background:#fff !important; color:#000 !important; }
+    main{ padding:0; max-width:none; }
+    .step{ background:#fff; border-color:#D9D9D9; break-inside:avoid; }
+    .criteria li{ background:#fff; border-color:#D9D9D9; break-inside:avoid; }
+    .cta{ background:#fff !important; color:#000 !important; border-color:#D9D9D9; }
+    .cta .cta-ico{ background:rgba(0,0,0,.06); }
+    .rise{ animation:none; }
+    *{ print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  }
 </style>
 <script>
+/* Тема общая для всего клиентского пути (ключ 'welcome-theme', как в лекции):
+   по умолчанию тёмная, ?theme=light|dark перебивает сохранённую. */
 (function(){
-  var saved=null; try{saved=localStorage.getItem('welcome-theme');}catch(e){}
-  document.documentElement.classList.toggle('dark', saved!=='light');
+  var t=null; try{ t=new URLSearchParams(location.search).get('theme'); }catch(e){}
+  if(t!=='dark' && t!=='light'){ try{ t=localStorage.getItem('welcome-theme'); }catch(e){} }
+  document.documentElement.classList.toggle('dark', t!=='light');
 })();
 </script>
 </head>
 <body>
+
+  <!-- Иконки Phosphor (MIT) вшиты в страницу: раньше они грузились с unpkg
+       и при недоступности CDN исчезали. Теперь рисуются всегда, даже офлайн. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+    <symbol id="i-presentation-chart" viewBox="0 0 256 256"><path d="M216,40H136V24a8,8,0,0,0-16,0V40H40A16,16,0,0,0,24,56V176a16,16,0,0,0,16,16H79.36L57.75,219a8,8,0,0,0,12.5,10l29.59-37h56.32l29.59,37a8,8,0,1,0,12.5-10l-21.61-27H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM104,144a8,8,0,0,1-16,0V120a8,8,0,0,1,16,0Zm32,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm32,0a8,8,0,0,1-16,0V88a8,8,0,0,1,16,0Z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 256 256"><path d="M235.54,150.21a104.84,104.84,0,0,1-37,52.91A104,104,0,0,1,32,120,103.09,103.09,0,0,1,52.88,57.48a104.84,104.84,0,0,1,52.91-37,8,8,0,0,1,10,10,88.08,88.08,0,0,0,109.8,109.8,8,8,0,0,1,10,10Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 256 256"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm8,24a64,64,0,1,0,64,64A64.07,64.07,0,0,0,128,64ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></symbol>
+    <symbol id="i-clipboard-text" viewBox="0 0 256 256"><path d="M200,32H163.74a47.92,47.92,0,0,0-71.48,0H56A16,16,0,0,0,40,48V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm-72,0a32,32,0,0,1,32,32H96A32,32,0,0,1,128,32Zm32,128H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 256 256"><path d="M224,40V80a8,8,0,0,1-16,0V48H176a8,8,0,0,1,0-16h40A8,8,0,0,1,224,40ZM80,208H48V176a8,8,0,0,0-16,0v40a8,8,0,0,0,8,8H80a8,8,0,0,0,0-16Zm136-40a8,8,0,0,0-8,8v32H176a8,8,0,0,0,0,16h40a8,8,0,0,0,8-8V176A8,8,0,0,0,216,168ZM40,88a8,8,0,0,0,8-8V48H80a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8V80A8,8,0,0,0,40,88Zm32-8v96a8,8,0,0,0,8,8h96a8,8,0,0,0,8-8V80a8,8,0,0,0-8-8H80A8,8,0,0,0,72,80Z"/></symbol>
+    <symbol id="i-book-open-text" viewBox="0 0 256 256"><path d="M232,48H168a32,32,0,0,0-32,32v87.73a8.17,8.17,0,0,1-7.47,8.25,8,8,0,0,1-8.53-8V80A32,32,0,0,0,88,48H24a8,8,0,0,0-8,8V200a8,8,0,0,0,8,8H96a24,24,0,0,1,24,23.94,7.9,7.9,0,0,0,5.12,7.55A8,8,0,0,0,136,232a24,24,0,0,1,24-24h72a8,8,0,0,0,8-8V56A8,8,0,0,0,232,48ZM208,168H168.27a8.17,8.17,0,0,1-8.25-7.47,8,8,0,0,1,8-8.53h39.73a8.17,8.17,0,0,1,8.25,7.47A8,8,0,0,1,208,168Zm0-32H168.27a8.17,8.17,0,0,1-8.25-7.47,8,8,0,0,1,8-8.53h39.73a8.17,8.17,0,0,1,8.25,7.47A8,8,0,0,1,208,136Zm0-32H168.27A8.17,8.17,0,0,1,160,96.53,8,8,0,0,1,168,88h39.73A8.17,8.17,0,0,1,216,95.47,8,8,0,0,1,208,104Z"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 256 256"><path d="M240,152v24a16,16,0,0,1-16,16H115.93a4,4,0,0,1-3.24-6.35L174.27,101a8.21,8.21,0,0,0-1.37-11.3,8,8,0,0,0-11.37,1.61l-72,99.06A4,4,0,0,1,86.25,192H32a16,16,0,0,1-16-16V153.13c0-1.79,0-3.57.13-5.33a4,4,0,0,1,4-3.8H48a8,8,0,0,0,8-8.53A8.17,8.17,0,0,0,47.73,128H23.92a4,4,0,0,1-3.87-5c12-43.84,49.66-77.13,95.52-82.28a4,4,0,0,1,4.43,4V72a8,8,0,0,0,8.53,8A8.17,8.17,0,0,0,136,71.73V44.67a4,4,0,0,1,4.43-4A112.18,112.18,0,0,1,236.23,123a4,4,0,0,1-3.88,5H208.27a8.17,8.17,0,0,0-8.25,7.47,8,8,0,0,0,8,8.53h27.92a4,4,0,0,1,4,3.86C240,149.23,240,150.61,240,152Z"/></symbol>
+    <symbol id="i-caret-down" viewBox="0 0 256 256"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,48,88H208a8,8,0,0,1,5.66,13.66Z"/></symbol>
+    <symbol id="i-target" viewBox="0 0 256 256"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></symbol>
+    <symbol id="i-chart-line-up" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM200,192H56a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v76.69l34.34-34.35a8,8,0,0,1,11.32,0L128,132.69,172.69,88H144a8,8,0,0,1,0-16h48a8,8,0,0,1,8,8v48a8,8,0,0,1-16,0V99.31l-50.34,50.35a8,8,0,0,1-11.32,0L104,131.31l-40,40V176H200a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-plugs" viewBox="0 0 256 256"><path d="M149.66,149.66,131.31,168l18.35,18.34a8,8,0,0,1-11.32,11.32L132,191.31l-23.31,23.32a32.06,32.06,0,0,1-45.26,0l-5.37-5.38-28.4,28.41a8,8,0,0,1-11.32-11.32l28.41-28.4-5.38-5.37a32,32,0,0,1,0-45.26L64.69,124l-6.35-6.34a8,8,0,0,1,11.32-11.32L88,124.69l18.34-18.35a8,8,0,0,1,11.32,11.32L99.31,136,120,156.69l18.34-18.35a8,8,0,0,1,11.32,11.32Zm88-131.32a8,8,0,0,0-11.32,0l-28.4,28.41-5.37-5.38a32.05,32.05,0,0,0-45.26,0L124,64.69l-6.34-6.35a8,8,0,0,0-11.32,11.32l80,80a8,8,0,0,0,11.32-11.32L191.31,132l23.32-23.31a32,32,0,0,0,0-45.26l-5.38-5.37,28.41-28.4A8,8,0,0,0,237.66,18.34Z"/></symbol>
+    <symbol id="i-users-three" viewBox="0 0 256 256"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"/></symbol>
+    <symbol id="i-database" viewBox="0 0 256 256"><path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64Zm-21.61,74.92C170.93,211.35,150.19,216,128,216s-42.93-4.65-58.39-13.08C55.88,195.43,48,185.62,48,176V159.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64V176C208,185.62,200.12,195.43,186.39,202.92Z"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 256 256"><path d="M212,76V72a44,44,0,0,0-74.86-31.31,3.93,3.93,0,0,0-1.14,2.8v88.72a4,4,0,0,0,6.2,3.33A47.67,47.67,0,0,1,167.68,128a8.18,8.18,0,0,1,8.31,7.58,8,8,0,0,1-8,8.42,32,32,0,0,0-32,32v33.88a4,4,0,0,0,1.49,3.12,47.92,47.92,0,0,0,74.21-17.16,4,4,0,0,0-4.49-5.56A68.06,68.06,0,0,1,192,192h-7.73a8.18,8.18,0,0,1-8.25-7.47,8,8,0,0,1,8-8.53h8a51.6,51.6,0,0,0,24-5.88v0A52,52,0,0,0,212,76Zm-12,36h-4a36,36,0,0,1-36-36V72a8,8,0,0,1,16,0v4a20,20,0,0,0,20,20h4a8,8,0,0,1,0,16ZM88,28A44.05,44.05,0,0,0,44,72v4a52,52,0,0,0-4,94.12h0A51.6,51.6,0,0,0,64,176h7.73A8.18,8.18,0,0,1,80,183.47,8,8,0,0,1,72,192H64a67.48,67.48,0,0,1-15.21-1.73,4,4,0,0,0-4.5,5.55A47.93,47.93,0,0,0,118.51,213a4,4,0,0,0,1.49-3.12V176a32,32,0,0,0-32-32,8,8,0,0,1-8-8.42A8.18,8.18,0,0,1,88.32,128a47.67,47.67,0,0,1,25.48,7.54,4,4,0,0,0,6.2-3.33V43.49a4,4,0,0,0-1.14-2.81A43.85,43.85,0,0,0,88,28Zm8,48a36,36,0,0,1-36,36H56a8,8,0,0,1,0-16h4A20,20,0,0,0,80,76V72a8,8,0,0,1,16,0Z"/></symbol>
+    <symbol id="i-rocket-launch" viewBox="0 0 256 256"><path d="M101.85,191.14C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Zm122-144a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.4,27.07h0L88,108.7A8,8,0,0,1,76.67,97.39l26.56-26.57A4,4,0,0,0,100.41,64H74.35A15.9,15.9,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A16,16,0,0,0,192,181.65V155.59a4,4,0,0,0-6.83-2.82l-26.57,26.56a8,8,0,0,1-11.71-.42,8.2,8.2,0,0,1,.6-11.1l49.27-49.27h0C223.45,91.86,224.6,59.71,223.85,47.12Z"/></symbol>
+    <symbol id="i-handshake" viewBox="0 0 256 256"><path d="M254.3,107.91,228.78,56.85a16,16,0,0,0-21.47-7.15L182.44,62.13,130.05,48.27a8.14,8.14,0,0,0-4.1,0L73.56,62.13,48.69,49.7a16,16,0,0,0-21.47,7.15L1.7,107.9a16,16,0,0,0,7.15,21.47l27,13.51,55.49,39.63a8.06,8.06,0,0,0,2.71,1.25l64,16a8,8,0,0,0,7.6-2.1l40-40,15.08-15.08,26.42-13.21a16,16,0,0,0,7.15-21.46Zm-54.89,33.37L165,113.72a8,8,0,0,0-10.68.61C136.51,132.27,116.66,130,104,122L147.24,80h31.81l27.21,54.41Zm-41.87,41.86L99.42,168.61l-49.2-35.14,28-56L128,64.28l9.8,2.59-45,43.68-.08.09a16,16,0,0,0,2.72,24.81c20.56,13.13,45.37,11,64.91-5L188,152.66Zm-25.72,34.8a8,8,0,0,1-7.75,6.06,8.13,8.13,0,0,1-1.95-.24L80.41,213.33a7.89,7.89,0,0,1-2.71-1.25L51.35,193.26a8,8,0,0,1,9.3-13l25.11,17.94L126,208.24A8,8,0,0,1,131.82,217.94Z"/></symbol>
+    <symbol id="i-graduation-cap" viewBox="0 0 256 256"><path d="M176,207.24a119,119,0,0,0,16-7.73V240a8,8,0,0,1-16,0Zm11.76-88.43-56-29.87a8,8,0,0,0-7.52,14.12L171,128l17-9.06Zm64-29.87-120-64a8,8,0,0,0-7.52,0l-120,64a8,8,0,0,0,0,14.12L32,117.87v48.42a15.91,15.91,0,0,0,4.06,10.65C49.16,191.53,78.51,216,128,216a130,130,0,0,0,48-8.76V130.67L171,128l-43,22.93L43.83,106l0,0L25,96,128,41.07,231,96l-18.78,10-.06,0L188,118.94a8,8,0,0,1,4,6.93v73.64a115.63,115.63,0,0,0,27.94-22.57A15.91,15.91,0,0,0,224,166.29V117.87l27.76-14.81a8,8,0,0,0,0-14.12Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 256 256"><path d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 256 256"><path d="M228,128a12,12,0,0,1-12,12H69l51.52,51.51a12,12,0,0,1-17,17l-72-72a12,12,0,0,1,0-17l72-72a12,12,0,0,1,17,17L69,116H216A12,12,0,0,1,228,128Z"/></symbol>
+  </defs></svg>
+
   <header>
     <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
-      <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
+      <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
+      <span class="logo-fb" aria-hidden="true">AIT</span>
     </a>
     <div class="lec-right">
-      <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить тему (тёмная/светлая)"><i class="ph-fill ph-moon"></i></button>
+      <a class="lec-ctrl lec-lbl" href="https://andre.technology/automation/1/" aria-label="Вернуться к лекции" title="Вернуться к лекции"><svg class="ic" aria-hidden="true"><use href="#i-presentation-chart" xlink:href="#i-presentation-chart"></use></svg><span>Лекция</span></a>
+      <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить тему (тёмная/светлая)"><svg class="ic" aria-hidden="true"><use href="#i-moon" xlink:href="#i-moon"></use></svg></button>
+      <a class="lec-consult" href="https://t.me/andre_andreevich" target="_blank" rel="noopener">Буткемп <svg class="ic" aria-hidden="true"><use href="#i-arrow-right" xlink:href="#i-arrow-right"></use></svg></a>
     </div>
   </header>
 
   <main>
-    <span class="badge"><i class="ph-fill ph-clipboard-text"></i> Лекция 1</span>
-    <h1>Практическое <span class="accent">задание</span></h1>
-    <div class="card">
-      <i class="ph-fill ph-hammer"></i>
-      <p>Задание к лекции «Стратегия внедрения ИИ в бизнес-процессы» появится здесь совсем скоро. Загляните после следующей лекции.</p>
+    <section class="hero rise">
+      <span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Лекция 1 · Практика</span>
+      <h1>Практическое <span class="accent">задание 1</span></h1>
+      <p class="lead">Ваша задача — определить, с чего начать<br>
+        <span class="nb">ИИ‑трансформацию</span> бизнеса</p>
+    </section>
+
+    <article class="step rise d1">
+      <div class="step-head">
+        <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-scan" xlink:href="#i-scan"></use></svg></span>
+        <div class="step-body">
+          <span class="kicker">Шаг 1</span>
+          <h2>Оцените зрелость бизнеса и сформируйте дорожную карту</h2>
+        </div>
+      </div>
+      <p class="desc">Определите, насколько ваша компания готова к внедрению ИИ‑агентов, какие изменения необходимо провести и с каких направлений лучше начать трансформацию.</p>
+      <div class="actions">
+        <a class="btn btn-ghost" href="https://andre.technology/automation/1/"><svg class="ic" aria-hidden="true"><use href="#i-book-open-text" xlink:href="#i-book-open-text"></use></svg> Изучить методику</a>
+        <a class="btn btn-primary" href="https://strategy.andre.technology/" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-gauge" xlink:href="#i-gauge"></use></svg> Бесплатно пройти диагностику</a>
+      </div>
+    </article>
+
+    <div class="link rise d2" aria-hidden="true">
+      <span class="bar"></span>
+      <svg class="ic" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg>
     </div>
-    <a class="back" href="https://andre.technology/automation/1/"><i class="ph-bold ph-arrow-left"></i> Вернуться к лекции</a>
+
+    <article class="step rise d2">
+      <div class="step-head">
+        <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span>
+        <div class="step-body">
+          <span class="kicker">Шаг 2</span>
+          <h2>Выберите первый бизнес-процесс для автоматизации</h2>
+        </div>
+      </div>
+      <p class="desc">Начните с «низковисящего фрукта» — процесса, который:</p>
+      <ul class="criteria">
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chart-line-up" xlink:href="#i-chart-line-up"></use></svg></span> заметно влияет на бизнес-результат</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg></span> не требует большого количества интеграций</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> зависит от минимального числа сотрудников</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg></span> использует доступные и структурированные данные</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-brain" xlink:href="#i-brain"></use></svg></span> может быть реализован с помощью готовых ИИ‑моделей</li>
+      </ul>
+      <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-rocket-launch" xlink:href="#i-rocket-launch"></use></svg> После выбора процесса можно переходить к разработке первого ИИ‑агента</p>
+    </article>
+
+    <section class="cta rise d3">
+      <span class="cta-ico"><svg class="ic" aria-hidden="true"><use href="#i-handshake" xlink:href="#i-handshake"></use></svg></span>
+      <h2>Нужна помощь с трансформацией бизнеса в AI‑First?</h2>
+      <a class="btn btn-light" href="https://t.me/andre_andreevich" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-graduation-cap" xlink:href="#i-graduation-cap"></use></svg> Записаться на буткемп</a>
+    </section>
+
+    <div class="back rise d4">
+      <a href="https://andre.technology/automation/1/"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg> Вернуться к лекции</a>
+    </div>
   </main>
 
 <script>
 (function(){
   var btn=document.getElementById('lec-theme');
+  if(!btn) return;
   function sync(){
     var dark=document.documentElement.classList.contains('dark');
-    btn.innerHTML='<i class="ph-fill ph-'+(dark?'sun':'moon')+'"></i>';
+    btn.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-'+(dark?'sun':'moon')+'" xlink:href="#i-'+(dark?'sun':'moon')+'"></use></svg>';
+    var tc=document.querySelector('meta[name="theme-color"]');
+    if(tc) tc.setAttribute('content', dark?'#0A0A0A':'#FFFFFF');
   }
   btn.addEventListener('click',function(){
     var dark=document.documentElement.classList.toggle('dark');
