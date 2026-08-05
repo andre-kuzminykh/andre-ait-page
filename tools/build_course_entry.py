@@ -48,8 +48,6 @@ RU = {
     "home_label": "На главную",
     "lang_group": "Язык",
     "theme_label": "Сменить фон (тёмный/светлый)",
-    "consult": "Буткемп",
-    "consult_label": "Буткемп",
     "start": "Начать обучение",
     "a_course": "О курсе",
     "a_roles": "Для кого этот курс",
@@ -64,11 +62,11 @@ RU = {
     "roles_h": 'Для кого <span class="plum">этот курс</span>',
     "roles": [
         ("p", "fa-compass", "ИИ-консультант",
-         'Находит процессы для <span class="nb">ИИ-автоматизации</span>'),
+         'Находит процессы<br>для <span class="nb">ИИ-автоматизации</span>'),
         ("f", "fa-wrench", "ИИ-инженер по автоматизации",
-         'Автоматизирует бизнес с <span class="nb">ИИ-агентами</span>'),
+         'Автоматизирует бизнес<br>с <span class="nb">ИИ-агентами</span>'),
         ("p", "fa-rocket", "ИИ-основатель",
-         'Строит бизнес с помощью <span class="nb">ИИ-агентов</span>'),
+         'Строит бизнес<br>с помощью <span class="nb">ИИ-агентов</span>'),
     ],
     "skills_h": 'Чему вы <span class="flame">научитесь</span>',
     "skills": [
@@ -100,8 +98,6 @@ EN = {
     "home_label": "Home",
     "lang_group": "Language",
     "theme_label": "Switch background (dark/light)",
-    "consult": "Bootcamp",
-    "consult_label": "Bootcamp",
     "start": "Start learning",
     "a_course": "About the course",
     "a_roles": "Who this course is for",
@@ -114,9 +110,9 @@ EN = {
                   '<br class="lb">and achieve a measurable economic effect.'),
     "roles_h": 'Who <span class="plum">this course</span> is for',
     "roles": [
-        ("p", "fa-compass", "AI Consultant", "Finds processes ready for AI automation"),
-        ("f", "fa-wrench", "AI Automation Engineer", "Automates business with AI agents"),
-        ("p", "fa-rocket", "AI Founder", "Builds a business powered by AI agents"),
+        ("p", "fa-compass", "AI Consultant", 'Finds processes<br>ready for <span class="nb">AI automation</span>'),
+        ("f", "fa-wrench", "AI Automation Engineer", 'Automates business<br>with <span class="nb">AI agents</span>'),
+        ("p", "fa-rocket", "AI Founder", 'Builds a business<br>powered by <span class="nb">AI agents</span>'),
     ],
     "skills_h": 'What you will <span class="flame">learn</span>',
     "skills": [
@@ -318,6 +314,8 @@ TEMPLATE = r"""<!DOCTYPE html>
     animation:gradientShimmer 4.5s ease infinite;
   }
   /* Правая кнопка шапки — те же размеры, что «Free AI Diagnostic» на главной */
+  /* Кнопка шапки. Класс исторический (раньше вела на буткемп) — теперь это
+     тот же вход в курс, что и кнопка внизу: призыв к действию на странице один. */
   .consult{padding:clamp(.7rem,2.4vw,1.05rem) clamp(1rem,3.6vw,1.6rem);font-size:clamp(11px,3.1vw,15px);letter-spacing:clamp(.06em,.4vw,.1em);gap:clamp(.4rem,1.2vw,.6rem)}
   @media(min-width:1024px){.consult{height:2.85rem;box-sizing:border-box;padding:0 1.6rem;font-size:14px;letter-spacing:.13em;gap:.55rem}}
   @media(min-width:1024px) and (max-width:1319px){.consult{padding:0 1.1rem;font-size:12px;letter-spacing:.08em;gap:.4rem}}
@@ -346,7 +344,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   .deck{position:relative;z-index:2}
   .panel{
     position:relative;display:flex;
-    padding:clamp(2.6rem,7vh,4.2rem) 1rem;
+    padding:clamp(1.8rem,4.5vh,2.8rem) 1rem;
   }
   .panel:first-child{padding-top:clamp(6.5rem,17vh,9rem)}
   .panel:last-child{padding-bottom:clamp(3.5rem,9vh,5.5rem)}
@@ -415,13 +413,15 @@ TEMPLATE = r"""<!DOCTYPE html>
 
   /* ===== CTA ===== */
   .cta-row{margin:1.9rem 0 0;display:flex;justify-content:center}
-  .btn-start{padding:clamp(1.1rem,1.15vw,1.7rem) clamp(2.2rem,2.3vw,3.7rem);font-size:clamp(13px,.95vw,19px);letter-spacing:.15em}
+  /* Кнопка на странице одна — она и есть главный акцент, поэтому крупнее
+     прежних трёх одинаковых. */
+  .btn-start{padding:clamp(1.3rem,1.45vw,2.1rem) clamp(2.7rem,3vw,4.6rem);font-size:clamp(15px,1.15vw,23px);letter-spacing:.15em}
 
 
 
   /* Телефон: тот же ритм, только плотнее и с узкими полями. */
   @media (max-width:639px){
-    .panel{padding:clamp(2rem,6vh,3rem) 1.4rem}
+    .panel{padding:clamp(1.4rem,4vh,2.2rem) 1.4rem}
     .panel:first-child{padding-top:clamp(5.2rem,13vh,6.4rem)}
     .panel:last-child{padding-bottom:clamp(2.6rem,7vh,3.6rem)}
     .desc{margin-top:1rem}
@@ -473,8 +473,8 @@ TEMPLATE = r"""<!DOCTYPE html>
 {{LANG_SWITCH}}
         </div>
         <button class="ctrl" id="theme" aria-label="{{THEME_LABEL}}"><i class="fa-solid fa-sun"></i></button>
-        <button class="btn-white consult" onclick="location.href='/automation/bootcamp/'" aria-label="{{CONSULT_LABEL}}">
-          <span class="txt">{{CONSULT}}</span>
+        <button class="btn-white consult" onclick="location.href='{{COURSE}}'" aria-label="{{START}}">
+          <span class="txt">{{START}}</span>
           <i class="fa-solid fa-arrow-right" style="font-size:.75rem"></i>
         </button>
       </div>
@@ -493,12 +493,6 @@ TEMPLATE = r"""<!DOCTYPE html>
         </div>
         <h1 class="hero" id="hero-h">{{HERO}}</h1>
         <p class="desc" id="hero-d">{{HERO_DESC}}</p>
-        <div class="cta-row">
-          <a class="btn-white btn-start" href="{{COURSE}}">
-            <span>{{START}}</span>
-            <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
-          </a>
-        </div>
       </div>
     </section>
 
@@ -508,12 +502,6 @@ TEMPLATE = r"""<!DOCTYPE html>
         <h2 class="h2" id="roles-h">{{ROLES_H}}</h2>
         <div class="roles">
 {{ROLE_CARDS}}
-        </div>
-        <div class="cta-row">
-          <a class="btn-white btn-start" href="{{COURSE}}">
-            <span>{{START}}</span>
-            <i class="fa-solid fa-arrow-right" style="font-size:1rem"></i>
-          </a>
         </div>
       </div>
     </section>
@@ -674,8 +662,6 @@ def render(cur):
         "HOME_LABEL": cur["home_label"],
         "LANG_GROUP": cur["lang_group"],
         "THEME_LABEL": cur["theme_label"],
-        "CONSULT": cur["consult"],
-        "CONSULT_LABEL": cur["consult_label"],
         "START": cur["start"],
         "A_COURSE": cur["a_course"],
         "A_ROLES": cur["a_roles"],

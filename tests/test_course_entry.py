@@ -177,12 +177,58 @@ def test_background_stays_put():
 
 
 
-def test_cta_on_every_block():
+def test_single_cta_at_the_bottom():
+    """Призыв к действию на странице ОДИН — внизу, после «чему научитесь».
+
+    Раньше кнопка «Начать обучение» стояла в каждом из трёх блоков. Заказчик
+    оставил одну: три одинаковые кнопки на коротком лендинге читаются как
+    навязчивость, а воздух под каждой из них раздувал страницу.
+    """
     for rel in _ENTRIES:
-        for i, block in enumerate(_blocks(_read(rel))):
-            assert "btn-start" in block, "%s: на блоке %d нет кнопки" % (rel, i)
-            assert "https://andre.technology/automation/main" in block, \
-                "%s: кнопка блока %d должна вести на дорожную карту" % (rel, i)
+        blocks = _blocks(_read(rel))
+        assert len(blocks) == 3, "%s: блоков должно быть три" % rel
+        for i, block in enumerate(blocks[:-1]):
+            assert "btn-start" not in block, \
+                "%s: в блоке %d кнопки быть не должно" % (rel, i)
+        assert "btn-start" in blocks[-1], rel + ": в последнем блоке кнопка обязана быть"
+        assert "https://andre.technology/automation/main" in blocks[-1], \
+            rel + ": кнопка ведёт на дорожную карту курса"
+
+
+def test_header_button_is_the_same_call_to_action():
+    """Кнопка шапки — тот же вход в курс, тем же текстом.
+
+    Была «Буткемп» и уводила на отдельную страницу — посетитель попадал не в
+    курс, а в другое предложение. Буткемп остаётся доступен из шапки лекции и
+    страницы задания.
+    """
+    for rel in _ENTRIES:
+        html = _read(rel)
+        label = "Начать обучение" if "_ru" in rel else "Start learning"
+        assert "location.href='https://andre.technology/automation/main'" in html, \
+            rel + ": кнопка шапки ведёт в курс"
+        assert html.count(label) >= 3, \
+            rel + ": подпись «%s» — и в шапке (текст + aria), и на кнопке внизу" % label
+        for gone in ("Буткемп", "Bootcamp", "/automation/bootcamp/"):
+            assert gone not in html, rel + ": буткемпа на входной странице больше нет (%s)" % gone
+
+
+def test_role_caption_breaks_into_two_lines():
+    """Подпись роли — ровно две строки, уточнение уходит на вторую.
+
+    «Автоматизирует бизнес с ИИ-агентами» одной строкой ломалось по-разному
+    на каждой ширине; заказчик зафиксировал перенос перед предлогом.
+    """
+    heads = {
+        "automation_ru/index.html": ("Находит процессы<br>для", "Автоматизирует бизнес<br>с",
+                                     "Строит бизнес<br>с помощью"),
+        "automation/index.html": ("Finds processes<br>ready for", "Automates business<br>with",
+                                  "Builds a business<br>powered by"),
+    }
+    for rel in _ENTRIES:
+        html = _read(rel)
+        for part in heads[rel]:
+            assert part in html, "%s: нет переноса «%s»" % (rel, part)
 
 
 
@@ -341,10 +387,13 @@ def test_practice_header_matches_the_course():
 
 
 def test_bootcamp_button_opens_bootcamp_page():
-    """Кнопка «Буткемп» ведёт на страницу буткемпа, а не сразу в телеграм."""
-    for rel in _ENTRIES:
-        page = _read(rel)
-        assert "location.href='/automation/bootcamp/'" in page, rel
+    """Кнопка «Буткемп» ведёт на страницу буткемпа, а не сразу в телеграм.
+
+    На входных страницах курса её больше нет (там единственный призыв —
+    «Начать обучение»), поэтому проверяем шапку страницы задания.
+    """
+    for rel in (_PRACTICE, "automation/1/index.html"):
+        assert 'href="/automation/bootcamp/"' in _read(rel), rel
 
 
 def test_practice_is_linked_from_the_lecture():
