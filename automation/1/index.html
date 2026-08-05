@@ -41,7 +41,41 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Иконки Phosphor. Раньше подключался ОДИН неверсионированный скрипт:
+         unpkg редиректил на последнюю версию, скрипт исполнялся и только потом
+         подтягивал четыре таблицы стилей — пять последовательных запросов до
+         первой отрисовки. Стоило CDN подтормозить или отдать ошибку, и на
+         странице не оставалось НИ ОДНОЙ иконки (кружки пустые). Теперь стили
+         грузятся напрямую и параллельно, версия закреплена, а если основной
+         CDN молчит — тот же набор подтягивается с запасного. -->
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+    <script>
+    (function(){
+        var VARIANTS = ['regular', 'bold', 'fill', 'duotone'];
+        function loaded(){
+            try {
+                if (!document.fonts) return true;          // проверить нечем — не мешаем
+                for (var i = 0; i < VARIANTS.length; i++)
+                    if (document.fonts.check('16px Phosphor' + (i ? '-' + VARIANTS[i] : ''))) return true;
+                return false;
+            } catch (e) { return true; }
+        }
+        function fallback(){
+            if (loaded()) return;
+            for (var i = 0; i < VARIANTS.length; i++){
+                var l = document.createElement('link');
+                l.rel = 'stylesheet';
+                l.href = 'https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/' + VARIANTS[i] + '/style.css';
+                document.head.appendChild(l);
+            }
+        }
+        setTimeout(fallback, 2500);
+        window.addEventListener('load', function(){ setTimeout(fallback, 300); });
+    })();
+    </script>
     <!-- Vimeo Player API -->
     <!-- video heads: native mp4 -->
 
@@ -690,15 +724,11 @@ window.addEventListener('load', function(){
   function chromeBand(){
     var h = document.getElementById('lecture-header');
     var top = (h ? h.getBoundingClientRect().height : 56) + 16;
-    var H = window.innerHeight;
-    var nav = document.getElementById('nav-next');
-    var bottom = nav ? (H - nav.getBoundingClientRect().top + 10) : 82;
-    var bub = document.getElementById('video-bubble');
-    if(bub && window.getComputedStyle(bub).display !== 'none'){
-      var b = H - bub.getBoundingClientRect().top + 10;
-      if(b > bottom) bottom = b;
-    }
-    return { top: top, bottom: bottom };
+    // Кружок с головой и стрелки навигации в резерв НЕ входят (правило
+    // заказчика: «голова и стрелки никак не должны влиять на слайды»). Они
+    // просто лежат поверх слайда, поэтому снизу оставляем лишь тонкий воздух —
+    // столько же, сколько дышит слайд по краям.
+    return { top: top, bottom: 34 };
   }
   function inkBox(c){
     // Объединённый бокс прямых детей content-z — по РАСКЛАДОЧНОЙ геометрии
@@ -3889,22 +3919,23 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
   --arw-pair:calc(2*var(--arw) + var(--arw-gap));
   --bub-right:20px;                  /* отступ головы от правого края */
 }
+/* Голова и стрелки живут ПОВЕРХ слайда и на его раскладку не влияют вовсе
+   (правило заказчика). Поэтому важно одно: чтобы сам угол был как можно
+   компактнее. Стрелки стоят ПОД головой — так угол занимает ширину одной
+   головы, а не головы плюс двух кнопок в ряд. */
 #video-bubble{
   width:var(--bub) !important; height:var(--bub) !important;
   left:auto !important; right:var(--bub-right) !important;
-  top:auto !important; bottom:16px !important;
+  top:auto !important; bottom:calc(16px + var(--arw) + 12px) !important;
 }
-/* Стрелки — СЛЕВА от головы, на одной с ней средней линии. Так весь нижний
-   правый угол становится одной невысокой полосой, а не колонной в треть
-   экрана, которая накрывала угол почти каждого слайда. */
 #nav-prev, #nav-next{
-  top:auto !important; transform:none !important;
-  bottom:calc(16px + (var(--bub) - var(--arw)) / 2) !important;
+  top:auto !important; bottom:16px !important; transform:none !important;
   width:var(--arw) !important; height:var(--arw) !important;
   left:auto !important;
 }
-#nav-next{ right:calc(var(--bub-right) + var(--bub) + var(--arw-gap)) !important; }
-#nav-prev{ right:calc(var(--bub-right) + var(--bub) + 2*var(--arw-gap) + var(--arw)) !important; }
+/* правый край пары = центр головы + половина пары */
+#nav-next{ right:calc(var(--bub-right) + var(--bub)/2 - var(--arw-pair)/2) !important; }
+#nav-prev{ right:calc(var(--bub-right) + var(--bub)/2 - var(--arw-pair)/2 + var(--arw) + var(--arw-gap)) !important; }
 #nav-prev i, #nav-next i{ font-size:1.35rem !important; }
 
 @media (max-width:1023px){
