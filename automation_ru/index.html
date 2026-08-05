@@ -90,7 +90,10 @@
   html.light .learn li:hover{ border-color:rgba(217,82,10,.45) }
 
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+  /* Обычная прокручиваемая страница: от «листания по блокам» отказались
+     (правка заказчика). Блоки просто идут друг за другом, прокрутка плавная. */
+  html{scroll-behavior:smooth}
+  html,body{margin:0}
   body{
     background:var(--bg); color:var(--fg);
     transition:background .25s ease,color .25s ease;
@@ -192,35 +195,27 @@
   @media(min-width:1900px){body{zoom:1.3}}
   @media(min-width:2300px){body{zoom:1.5}}
 
-  /* ===== Дек блоков ===== */
-  .deck{position:fixed;inset:0;z-index:2}
+  /* ===== Блоки страницы =====
+     Каждый блок занимает экран целиком, но это обычная прокрутка: никакого
+     перехвата колеса и свайпа. Так страница ведёт себя предсказуемо на любом
+     устройстве и ничего не «залипает». */
+  .deck{position:relative;z-index:2}
   .panel{
-    position:absolute;inset:0;display:flex;
-    overflow:hidden;overscroll-behavior:none;
+    position:relative;display:flex;
+    min-height:100svh;
     padding:clamp(5.5rem,13vh,7.5rem) 1rem clamp(3rem,7vh,4.5rem);
-    opacity:0;visibility:hidden;pointer-events:none;
-    transition:opacity .34s ease,visibility 0s linear .34s;
   }
   @media(min-width:640px){.panel{padding-left:2rem;padding-right:2rem}}
-  .panel.on{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .34s ease,visibility 0s}
-  /* margin:auto вместо align-items:center: если блок всё-таки выше экрана,
-     скрипт ужмёт .wrap и сам посчитает отступ сверху. */
   .wrap{margin:auto;width:100%;max-width:68rem;text-align:center}
 
-  /* Появление содержимого: каскад перезапускается при каждом показе блока */
-  .panel.on .wrap > *{animation:riseIn .5s cubic-bezier(.22,1,.36,1) both}
-  .panel.on .wrap > *:nth-child(2){animation-delay:.06s}
-  .panel.on .wrap > *:nth-child(3){animation-delay:.12s}
-  .panel.on .wrap > *:nth-child(4){animation-delay:.18s}
-  .panel.on .wrap > *:nth-child(n+5){animation-delay:.24s}
-  .panel.on .roles > *,.panel.on .learn > *{animation:riseIn .45s cubic-bezier(.22,1,.36,1) both}
-  .panel.on .roles > *:nth-child(2){animation-delay:.08s}
-  .panel.on .roles > *:nth-child(3){animation-delay:.14s}
-  .panel.on .learn > *:nth-child(n+3){animation-delay:.06s}
-  .panel.on .learn > *:nth-child(n+7){animation-delay:.12s}
-
-  /* Точек-навигации нет: блоки листаются колесом, свайпом и стрелками,
-     а лишний столбик кружков справа только рябил в глазах. */
+  /* Появление содержимого — когда блок доехал до экрана (IntersectionObserver
+     ставит класс .in). Пока блок не показывался, его содержимое приспущено. */
+  .panel .wrap > *{opacity:0;transform:translateY(16px)}
+  .panel.in .wrap > *{animation:riseIn .55s cubic-bezier(.22,1,.36,1) forwards}
+  .panel.in .wrap > *:nth-child(2){animation-delay:.06s}
+  .panel.in .wrap > *:nth-child(3){animation-delay:.12s}
+  .panel.in .wrap > *:nth-child(4){animation-delay:.18s}
+  .panel.in .wrap > *:nth-child(n+5){animation-delay:.24s}
 
   /* ===== Блок 1: о курсе ===== */
   /* zoom, а не transform: transform уменьшает только отрисовку, в потоке ряд
@@ -314,28 +309,21 @@
     .scroll-hint{margin-top:.6rem}
   }
 
-  /* На печать уходят все четыре блока подряд, а не только активный */
   @media print{
-    html,body{height:auto;overflow:visible}
-    .deck{position:static}
-    .panel{position:static;opacity:1;visibility:visible;overflow:visible;page-break-after:always}
-    .panel .wrap{transform:none !important;margin:0 auto !important}
+    .panel{min-height:auto;page-break-after:always}
+    .panel .wrap > *{opacity:1;transform:none}
     .scroll-hint,header{display:none}
   }
 
   @media (prefers-reduced-motion: reduce){
-    .panel{transition:none}
-    .panel.on .wrap > *,.panel.on .roles > *,.panel.on .learn > *{animation:none}
+    .panel .wrap > *{opacity:1;transform:none;animation:none}
     .tile,.scroll-hint i{animation:none}
     .btn-white:hover{animation:none;transform:none}
   }
 </style>
 <noscript><style>
-  /* Без скрипта дек не переключить — страница становится обычной,
-     прокручиваемой, все четыре блока видны подряд. */
-  html,body{height:auto;overflow:auto}
-  .deck{position:static}
-  .panel{position:static;opacity:1;visibility:visible;pointer-events:auto;min-height:100vh;overflow:visible}
+  /* Без скрипта появление блоков не запустится — показываем сразу. */
+  .panel .wrap > *{opacity:1;transform:none}
   .scroll-hint,#theme{display:none}
 </style></noscript>
 </head>
@@ -369,7 +357,7 @@
   <main class="deck" id="deck">
 
     <!-- ===== 1. О КУРСЕ ===== -->
-    <section class="panel on" id="course" aria-label="О курсе">
+    <section class="panel" id="course" aria-label="О курсе">
       <div class="wrap">
         <div class="float-row" aria-hidden="true">
           <div class="tile sm" style="border-color:rgba(136,84,243,.3)"><i class="fa-solid fa-magnifying-glass-chart" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,.5)"></div></div>
@@ -490,200 +478,39 @@
     })();
 
 
-    /* ===== Дек: один блок в фокусе ==========================================
-       Ни страница, ни блок не прокручиваются. Колесо, свайп, стрелки и точки
-       справа переключают блок целиком: гаснет один слой, зажигается другой,
-       фон остаётся на месте. Блок, который не влезает в экран, ужимается
-       целиком (fit) — резать содержимое и листать внутри блока нельзя. */
+    /* ===== Плавное появление блоков при прокрутке ======================
+       Никакого перехвата колеса и свайпа: страница прокручивается как
+       обычная. Наблюдатель включает каскад появления, когда блок доехал до
+       экрана, а «Листайте вниз» плавно уводит к следующему блоку. */
     (function(){
       var panels = [].slice.call(document.querySelectorAll('.panel'));
-      var idx = 0;
       var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var SWITCH = REDUCED ? 120 : 380;      // сколько длится смена блока
-      var busyUntil = 0, pending = -1, firedAt = 0;
 
-      function now(){ return window.performance && performance.now ? performance.now() : Date.now(); }
-
-      /* ---- Блок всегда помещается в экран целиком ----------------------------
-         Считаем свободную высоту панели и, если содержимое выше, ужимаем .wrap
-         масштабом (transform работает везде, в отличие от zoom) и сами ставим
-         верхний отступ — margin:auto при переполнении уже не центрирует. */
-      function fit(p){
-        var w = p.querySelector('.wrap');
-        if (!w) return;
-        w.style.transform = '';
-        w.style.transformOrigin = '';
-        w.style.marginTop = '';
-        w.style.marginBottom = '';
-        var cs = window.getComputedStyle(p);
-        var avail = p.clientHeight - parseFloat(cs.paddingTop || 0) - parseFloat(cs.paddingBottom || 0);
-        var need = w.offsetHeight;
-        if (!avail || !need || need <= avail + 1) return;
-        // Ужимаем ровно настолько, насколько не хватает высоты. Пола нет
-        // намеренно: любой пол означал бы обрезанный низ блока, а прокрутить
-        // его нечем — колесо и свайп перехвачены декой.
-        var k = avail / need;
-        w.style.transformOrigin = 'top center';
-        w.style.transform = 'scale(' + k + ')';
-        w.style.marginTop = '0';
-        w.style.marginBottom = '0';
-      }
-      var fitQueued = false;
-      window.fitDeck = function(){
-        if (fitQueued) return;
-        fitQueued = true;
-        (window.requestAnimationFrame || setTimeout)(function(){
-          fitQueued = false;
-          for (var i = 0; i < panels.length; i++) fit(panels[i]);
-        }, 0);
-      };
-
-      function show(n){
-        n = Math.max(0, Math.min(panels.length - 1, n));
-        idx = n;
-        panels.forEach(function(p, i){
-          p.classList.toggle('on', i === idx);
-          p.setAttribute('aria-hidden', i === idx ? 'false' : 'true');
-        });
-        // Якорь в адрес НЕ пишем: replaceState записей в историю не создаёт,
-        // «назад» им всё равно не воспользуешься, а «#start» в адресной строке
-        // выглядит мусором. Читать якорь при заходе продолжаем — ссылка вида
-        // /automation/#skills откроет нужный блок.
+      if (!window.IntersectionObserver || REDUCED){
+        panels.forEach(function(p){ p.classList.add('in'); });
+      } else {
+        var io = new IntersectionObserver(function(entries){
+          entries.forEach(function(e){
+            if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+          });
+        }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+        panels.forEach(function(p){ io.observe(p); });
+        // Первый экран показываем сразу, не дожидаясь события наблюдателя.
+        if (panels[0]) panels[0].classList.add('in');
       }
 
-      /* Единственная точка входа для жестов: пока идёт смена блока, осознанное
-         намерение не теряется, а откладывается до конца анимации. Хвост инерции
-         сюда не доходит — его отсекает жестовый слой ниже. */
-      function jump(n){
-        var t = now();
-        if (n < 0 || n > panels.length - 1) return;
-        if (t < busyUntil){ if (n !== idx) pending = n; return; }
-        if (n === idx) return;
-        show(n);
-        busyUntil = t + SWITCH;
-        firedAt = t;
-        disarmWheel();
-        setTimeout(function(){
-          var p = pending; pending = -1;
-          if (p >= 0 && p !== idx) jump(p);
-        }, SWITCH + 10);
+      function goNext(from){
+        var i = panels.indexOf(from);
+        var next = panels[i + 1] || panels[panels.length - 1];
+        if (next) next.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
       }
-      function go(dir){ jump(idx + dir); }
-
-      /* ---- Колесо и тачпад --------------------------------------------------
-         Один осознанный жест = один блок. Инерция тачпада на macOS присылает
-         десятки затухающих событий после взмаха: пока они затухают, ничего не
-         делаем, а вот новый толчок (дельта перестала падать) снова взводит
-         курок — иначе второй взмах подряд «проглатывался» и казалось, что
-         страница дёрнулась и не переключилась. */
-      var THRESH   = 42;     // накопленная прокрутка, дающая переключение
-      var QUIET    = 170;    // пауза, после которой жест считается новым
-      var REARM    = 260;    // раньше этого нового толчка не ищем — там ещё анимация
-      var RISE_MIN = 12;     // дельта, ниже которой рост не считаем толчком
-      var RISE_LEN = 3;      // столько СТРОГО растущих кадров подряд = новый взмах
-      var COOL     = 500;    // жёсткий потолок: чаще этого колесо блок не меняет
-      var accum = 0, lastT = 0, prevAbs = 0, armed = true, rise = 0, wheelAt = 0;
-      // Курок взведён паузой (изолированный щелчок мыши) или ростом дельты
-      // (новый взмах поверх инерции) — от этого зависит, действует ли COOL.
-      var quietArm = true;
-
-      function armWheel(byQuiet){ armed = true; accum = 0; rise = 0; quietArm = !!byQuiet; }
-      // Любая смена блока — хоть колесом, хоть точкой, хоть клавишей — снимает
-      // курок: иначе недоеденный хвост инерции доводил дек до следующего блока
-      // уже ПОСЛЕ того, как зритель осознанно ткнул в нужную точку.
-      function disarmWheel(){ armed = false; accum = 0; rise = 0; }
-
-      window.addEventListener('wheel', function(e){
-        if (e.ctrlKey) return;                    // ctrl+колесо — это зум браузера
-        e.preventDefault();                       // ни страница, ни блок не едут
-        var d = e.deltaY;
-        if (e.deltaMode === 1) d *= 16;
-        else if (e.deltaMode === 2) d *= window.innerHeight;
-        var a = Math.abs(d);
-        if (a < 1) return;
-        if (Math.abs(e.deltaX) > a) return;       // горизонтальный жест — не наш
-        var t = now(), gap = t - lastT;
-        lastT = t;
-        // Курок взводит либо пауза, либо НОВЫЙ ТОЛЧОК — три кадра подряд со
-        // строго растущей дельтой. Нестрогое «не убывает» тут не годится:
-        // инерция macOS приходит округлённой до целых, в хвосте появляются
-        // плато (13,13,12,12), и на плато курок взводился сам — один мягкий
-        // взмах уводил дек через два блока на третий. Взвода «по таймеру»
-        // тоже быть не должно: хвост идёт кадрами по 16 мс, пауза не
-        // набирается, и любой порог времени срабатывает на самом хвосте.
-        if (gap > QUIET){ armWheel(true); }
-        else if (!armed && (t - firedAt) > REARM && a > prevAbs && a >= RISE_MIN){
-          if (++rise >= RISE_LEN) armWheel(false);
-        }
-        else if (a <= prevAbs){ rise = 0; }
-        prevAbs = a;
-        if (!armed) return;
-        accum += d;
-        if (Math.abs(accum) >= THRESH){
-          var dir = accum > 0 ? 1 : -1;   // направление СНАЧАЛА: disarm обнуляет accum
-          disarmWheel();
-          // Предохранитель поверх всей логики: сколько бы событий ни принёс
-          // экзотический поток, чаще раза в COOL колесо блок не переключит.
-          // Один взмах = один блок при любом раскладе. Действует он только
-          // ВНУТРИ потока: щелчок мыши приходит после паузы (quietArm), это
-          // заведомо новое намерение — глотать его нельзя, иначе у мышиного
-          // колеса срабатывает лишь каждый второй щелчок.
-          if (!quietArm && t - wheelAt < COOL) return;
-          wheelAt = t;
-          go(dir);
-        }
-      }, {passive:false});
-
-      /* ---- Свайп ------------------------------------------------------------
-         Срабатываем прямо во время движения пальца, как только он прошёл порог:
-         ждать touchend — это те самые «полсекунды непонятно чего». */
-      var tsX = null, tsY = null, tFired = false;
-      window.addEventListener('touchstart', function(e){
-        if (e.touches.length !== 1){ tsY = null; return; }
-        tsX = e.touches[0].clientX;
-        tsY = e.touches[0].clientY;
-        tFired = false;
-      }, {passive:true});
-      window.addEventListener('touchmove', function(e){
-        if (tsY === null || e.touches.length !== 1) return;
-        e.preventDefault();                       // никакой «резинки» и оттяжки
-        if (tFired) return;
-        var dy = tsY - e.touches[0].clientY;
-        var dx = tsX - e.touches[0].clientX;
-        if (Math.abs(dx) > Math.abs(dy)) return;  // горизонтальный жест — не наш
-        if (Math.abs(dy) < 48) return;
-        tFired = true;
-        go(dy > 0 ? 1 : -1);
-      }, {passive:false});
-      window.addEventListener('touchend', function(){ tsY = null; }, {passive:true});
-
-      /* ---- Клавиатура ---------------------------------------------------- */
-      document.addEventListener('keydown', function(e){
-        if (e.metaKey || e.ctrlKey || e.altKey) return;   // системные сочетания — браузеру
-        var k = e.key;
-        // Пробел на кнопке или ссылке под фокусом — это нажатие, а не листание
-        if (k === ' ' && e.target && e.target.closest && e.target.closest('button,a,input,textarea')) return;
-        if (k === 'ArrowDown' || k === 'PageDown' || k === ' ') { e.preventDefault(); go(1); }
-        else if (k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); go(-1); }
-        else if (k === 'Home') { e.preventDefault(); jump(0); }
-        else if (k === 'End') { e.preventDefault(); jump(panels.length - 1); }
-      });
-
       var els = document.querySelectorAll('[data-go="next"]'), i;
-      for (i = 0; i < els.length; i++) els[i].addEventListener('click', function(){ go(1); });
-
-      window.addEventListener('resize', window.fitDeck);
-      window.addEventListener('orientationchange', window.fitDeck);
-      if (window.visualViewport) window.visualViewport.addEventListener('resize', window.fitDeck);
-      window.addEventListener('load', window.fitDeck);
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(window.fitDeck);
-
-      var start = 0;
-      if (location.hash){
-        panels.forEach(function(p, i){ if ('#' + p.id === location.hash) start = i; });
+      for (i = 0; i < els.length; i++){
+        els[i].addEventListener('click', function(){
+          var p = this.closest ? this.closest('.panel') : null;
+          goNext(p || panels[0]);
+        });
       }
-      show(start);
-      window.fitDeck();
     })();
   </script>
 </body>

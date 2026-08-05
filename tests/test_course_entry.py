@@ -163,28 +163,7 @@ def test_main_site_course_link_follows_the_language():
 
 # ── Один блок в фокусе: ни страница, ни блок не прокручиваются ─────────────
 
-def test_page_does_not_scroll():
-    for rel in _ENTRIES:
-        assert re.search(r"html,body\{[^}]*overflow:hidden", _read(rel)), rel
 
-
-def test_block_does_not_scroll_inside_itself():
-    """Заказчик: блоки листаются только целиком, внутри блока прокрутки нет."""
-    for rel in _ENTRIES:
-        html = _read(rel)
-        assert re.search(r"\.panel\{[^}]*overflow:hidden", html), rel
-        assert "overflow-y:auto" not in html, "внутренней прокрутки у блока в стилях быть не должно"
-        assert "function fit(p)" in html, "блок, не влезший в экран, должен ужиматься, а не листаться"
-        assert "scrollBy" not in html and "scrollTop" not in html, \
-            "в скрипте не должно остаться прокрутки блока"
-
-
-def test_four_blocks_switch_as_layers():
-    for rel in _ENTRIES:
-        html = _read(rel)
-        assert re.search(r"\.panel\{[^}]*position:absolute", html), "блоки — слои поверх фона"
-        assert re.search(r"\.panel\{[^}]*visibility:hidden", html), "неактивный блок скрыт"
-        assert re.search(r"\.panel\.on\{[^}]*visibility:visible", html), "активный блок показан"
 
 
 def test_background_stays_put():
@@ -196,47 +175,7 @@ def test_background_stays_put():
         assert re.search(r"body\{\s*\n?\s*background:var\(--bg\)", html), "фон задан body"
 
 
-def test_first_block_visible_without_script():
-    for rel in _ENTRIES:
-        html = _read(rel)
-        assert '<section class="panel on" id="course"' in html, rel
-        assert "<noscript>" in html, "без скрипта нужен фолбэк на обычную прокрутку"
 
-
-def test_one_gesture_is_one_block():
-    """Хвост инерции тачпада не листает лишнего, а новый толчок не глотается."""
-    for rel in _ENTRIES:
-        html = _read(rel)
-        for name in ("var THRESH", "var QUIET", "var REARM", "var RISE_MIN", "var RISE_LEN"):
-            assert name in html, "%s: нет %s" % (rel, name)
-        assert "armed" in html, "жест взводит курок ровно один раз"
-        assert "e.deltaMode === 1" in html, "дельту колеса надо нормализовать по deltaMode"
-        # хвост инерции затухает не строго: на плато нестрогое сравнение взводило
-        # курок само, и один взмах уводил дек через два блока на третий
-        assert "a > prevAbs" in html and "a >= prevAbs" not in html, \
-            "новый толчок опознаётся по СТРОГО растущей дельте"
-        assert "(t - firedAt) > 700" not in html, \
-            "взвода курка «по таймеру» быть не должно — хвост идёт кадрами по 16 мс"
-        # снятие курка обнуляет накопитель, поэтому знак читается ДО него
-        m = re.search(r"var dir = accum > 0(.*?)go\(dir\);", html, re.S)
-        assert m and "disarmWheel();" in m.group(1), \
-            "%s: направление должно читаться ДО disarmWheel() — он обнуляет accum" % rel
-        assert "t - wheelAt < COOL" in html, \
-            "%s: колесо не должно менять блок чаще, чем раз в COOL мс" % rel
-        # …но потолок действует только ВНУТРИ потока. Щелчок мышиного колеса
-        # приходит после паузы — это заведомо новое намерение, и глотать его
-        # нельзя, иначе срабатывает лишь каждый второй щелчок.
-        assert "!quietArm && t - wheelAt < COOL" in html, \
-            "%s: потолок COOL не должен глотать изолированный щелчок мыши" % rel
-        assert "armWheel(true)" in html and "armWheel(false)" in html, \
-            "%s: взвод паузой и взвод ростом дельты различаются" % rel
-        # смена блока чем угодно (точка, клавиша, кнопка) тоже снимает курок —
-        # иначе хвост инерции доводил дек дальше уже после осознанного выбора
-        assert re.search(r"firedAt = t;\n\s*disarmWheel\(\);", html), \
-            "%s: jump() должен снимать курок колеса" % rel
-
-
-# ── Кнопка «Начать обучение» на каждом блоке ───────────────────────────────
 
 def test_cta_on_every_block():
     for rel in _ENTRIES:
@@ -309,6 +248,32 @@ def test_notes_open_class_is_the_real_panel_state():
     html = _read(_LECTURE1)
     assert "classList.toggle('notes-open', open)" in html, \
         "класс notes-open должен ставиться самой панелью текста"
+
+
+def test_page_scrolls_normally():
+    """От «листания по блокам» отказались: страница обычная, прокручиваемая.
+
+    Никакого перехвата колеса и свайпа — именно это ломало поведение на части
+    устройств и раздражало заказчика. Блоки просто идут друг за другом.
+    """
+    for rel in _ENTRIES:
+        page = _read(rel)
+        assert "overflow:hidden" not in page.split("<body")[0].split("html,body")[-1][:200], \
+            rel + ": страница не должна запрещать прокрутку"
+        assert "addEventListener('wheel'" not in page, rel + ": колесо не перехватываем"
+        assert "addEventListener('touchmove'" not in page, rel + ": свайп не перехватываем"
+        assert re.search(r"\.deck\{position:relative", page), rel + ": дек стал обычным потоком"
+        assert re.search(r"\.panel\{[^}]*position:relative", page), rel + ": блоки в обычном потоке"
+        assert "scroll-behavior:smooth" in page, rel + ": прокрутка плавная"
+
+
+def test_blocks_appear_on_scroll():
+    """Содержимое блока проявляется, когда блок доехал до экрана."""
+    for rel in _ENTRIES:
+        page = _read(rel)
+        assert "IntersectionObserver" in page, rel + ": появление по наблюдателю"
+        assert ".panel.in .wrap > *{animation:riseIn" in page, rel + ": каскад появления"
+        assert "scrollIntoView({ behavior:" in page, rel + ": «Листайте вниз» ведёт плавно"
 
 
 if __name__ == "__main__":
