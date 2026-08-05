@@ -421,9 +421,9 @@ h1 .text-solar, h2 .text-solar {
    оказывался прямо под кнопками шапки. Теперь резерв фиксированный, в
    экранных пикселях, и от масштаба не зависит. */
 .slide-container .content-z {
-  /* flex-start + авто-поля: заголовок стоит на одной высоте на всех слайдах,
-     а всё, что под ним, центрируется в оставшейся части экрана. */
-  justify-content: flex-start !important;
+  /* Блок центрируется ЦЕЛИКОМ: заголовок стоит прямо над своим содержимым,
+     а не отрывается к верхней кромке экрана (правка заказчика). */
+  justify-content: center !important;
   /* Вертикальные отступы задаёт ТОЛЬКО portal-fit (инлайном, в экранных
      пикселях): сверху полоса шапки, снизу воздух. Любое правило с !important
      здесь перебивало расчёт, и содержимое снова не влезало в экран. */
@@ -432,11 +432,34 @@ h1 .text-solar, h2 .text-solar {
      заезжало под шапку. Высоту держит min-height:100% — этого достаточно. */
   height: auto !important;
 }
-.slide-container .content-z > h1 + *,
-.slide-container .content-z > h2 + *{ margin-top:auto !important; }
-.slide-container .content-z > *:last-child{ margin-bottom:auto !important; }
-/* Слайд без заголовка центрируется целиком, как раньше */
-.slide-container .content-z:not(:has(> h1)):not(:has(> h2)){ justify-content:center !important; }
+/* Финальный слайд залит фиолетовым — фиолетовая кнопка шапки на нём почти
+   сливается с фоном. Только на этом слайде CTA становится белой. */
+body:has(#slide-41.opacity-100) .lec-consult{ background:#FAFAFA !important; color:#0A0A0A !important; }
+body:has(#slide-41.opacity-100) .lec-consult:hover{ background:#FFFFFF !important; }
+
+/* Бейджи-ярлыки, приклеенные к верхнему краю карточки, не должны вылезать
+   за её борт: -top/-right у абсолютных бейджей выносило их наружу. */
+.slide-container .content-z [class*="absolute"][class*="-top-"]{ max-width:calc(100% - 1rem); }
+
+/* ТЕЛЕФОН: ряд из трёх и более карточек — это колонки по 105px и текст в
+   10px, читать невозможно. На узком экране такой ряд встаёт столбцом; вся
+   информация остаётся, меняется только форма (канон «две формы»). */
+@media (max-width:767px){
+  .slide-container .content-z [class~="flex-row"]:not([class*="md:flex-row"]):has(> *:nth-child(3)){
+    flex-direction:column !important;
+  }
+  .slide-container .content-z [class~="grid-cols-3"]:not([class*="md:grid-cols"]),
+  .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]){
+    grid-template-columns:1fr !important;
+  }
+  /* Подпись кружка радиальной схемы может переноситься: «Мультимодальность»
+     одной строкой уезжала под центральный круг. */
+  .radial-sat .rf-label{
+    white-space:normal !important; max-width:7.5em !important;
+    left:calc(-1.9 * var(--sat-dot)) !important; right:calc(-1.9 * var(--sat-dot)) !important;
+    line-height:1.15 !important;
+  }
+}
 
 /* Никаких свечений и размытых ореолов внутри слайда: на чёрном фоне они
    читаются как грязное пятно, а канон — минимализм. Тени уже погашены
@@ -1161,10 +1184,21 @@ window.addEventListener('load', function(){
         return r;
       };
     }
-    // Шрифты приезжают после первой отрисовки и меняют высоту чернил —
-    // единственный законный повторный пересчёт.
-    if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
-    setTimeout(fitAll, 600);
+    // ПОКАЗЫВАЕМ деку только когда подгонка отработала с УЖЕ загруженными
+    // шрифтами. Раньше первый кадр рисовался в масштабе 1, потом приезжали
+    // шрифты, потом подгонка — и зритель своими глазами видел, как элементы
+    // «подбиваются» и перескакивают. Теперь до этого момента слайдов просто
+    // не видно (класс fit-ready на body), а появляются они уже готовыми.
+    var revealed = false;
+    function reveal(){
+      if (revealed) return;
+      revealed = true;
+      fitAll();
+      document.body.classList.add('fit-ready');
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(reveal);
+    setTimeout(reveal, 1200);            // страховка, если шрифты не доехали
+    setTimeout(fitAll, 1800);            // поздний контрольный пересчёт (обычно ноль изменений)
   });
   window.addEventListener('resize', soon);
   window.addEventListener('orientationchange', function(){ setTimeout(fitAll, 150); });
