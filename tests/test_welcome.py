@@ -363,6 +363,22 @@ def test_audio_is_copied_when_it_can_be():
     assert "-b:a 192k" not in script, "остался пережим 192k"
 
 
+def test_script_picks_a_capable_ffmpeg():
+    """У владельца в терминале активна conda, и её урезанный ffmpeg затеняет
+    brew-шный: «No such filter: 'subtitles'». Команда ffmpeg не берётся на
+    веру — скрипт перебирает кандидатов (PATH, /opt/homebrew, /usr/local) и
+    берёт первого, у кого реально есть фильтр subtitles; иначе говорит
+    словами, что поставить."""
+    html = _html()
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert '/opt/homebrew/bin/ffmpeg' in script, "brew-путь не пробуется мимо PATH"
+    assert 'grep -q " subtitles "' in script, "кандидат не проверяется на фильтр subtitles"
+    assert 'brew install ffmpeg' in script, "нет понятного отказа без libass"
+    assert re.search(r"'p\(\)  \{ \"\$FP\"", script) or '"$FP" -v error' in script, \
+        "пробы идут не через выбранный ffprobe"
+    assert "ffmpeg -y -loglevel" not in script, "остался вызов ffmpeg мимо селектора"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
