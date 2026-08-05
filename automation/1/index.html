@@ -35,7 +35,16 @@
     <meta name="twitter:image" content="https://andre.technology/assets/1_long.jpg">
 
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind СОБРАН ЗАРАНЕЕ и лежит статикой.
+         Раньше здесь висел cdn.tailwindcss.com — «Play CDN»: браузер
+         рисовал страницу БЕЗ стилей Tailwind, скрипт скачивался,
+         компилировал классы в CSS уже в рантайме и только потом
+         подменял вид. Отсюда и брался кадр, на котором кнопки и
+         карточки сначала «квадратные», а через секунду становятся
+         нормальными. Обычный <link> блокирует первую отрисовку —
+         промежуточного кадра не существует в принципе.
+         Пересобирается tools/build_lecture_css.py. -->
+    <link rel="stylesheet" href="/assets/lecture-1.css">
     <!-- Google Fonts: Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,6 +89,10 @@
     <!-- video heads: native mp4 -->
 
     <script>
+        // Tailwind собран статикой (см. <link> выше). Конфиг оставлен
+        // как единственное описание палитры и брейкпоинтов лекции —
+        // сборщик tools/build_lecture_css.py повторяет его один в один.
+        window.tailwind = window.tailwind || {};
         tailwind.config = {
             theme: {
                 // ОДИН брейкпоинт на всю лекцию (правило заказчика: форм ровно две —
@@ -106,11 +119,25 @@
     html {
         background: #ffffff !important;
         -webkit-tap-highlight-color: transparent;
+        /* Лекция — не документ, а экран: прокрутки нет НИГДЕ. Раньше
+           overflow:hidden стоял только у body, и html всё равно отдавал
+           60-80px прокрутки — страница «ездила» под пальцем. */
+        height: 100%;
+        /* clip, а не только hidden: hidden запрещает жест, но программную
+           прокрутку оставляет — декоративное пятно bg-glow вылезало на 90px
+           за экран и страница «ездила». clip убирает саму возможность. */
+        overflow: hidden;
+        overflow: clip;
+        overscroll-behavior: none;
     }
 
     body {
         user-select: none;
+        /* clip вместо hidden: hidden оставляет элемент прокручиваемым
+           программно, и неактивные слайды (сдвинутые на 32px) давали
+           «фантомную» прокрутку страницы. */
         overflow: hidden;
+        overflow: clip;
         background-color: #ffffff !important;
         margin: 0;
         width: 100vw;
@@ -128,8 +155,11 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        overflow-y: auto;
-        overflow-x: hidden;
+        /* Слайд НИКОГДА не прокручивается (канон заказчика: «ни одна из этих
+           страниц не должна листаться»). Раньше здесь стоял overflow-y:auto —
+           и любой промах подгонки превращался в скрытую прокрутку: заголовок
+           уезжал под шапку, а низ слайда просто терялся. */
+        overflow: hidden;
         background: #ffffff;
     }
 
@@ -171,7 +201,10 @@
     }
 
     .bg-glow-1, .bg-glow-2 {
-        position: absolute;
+        /* fixed, а не absolute: пятно с bottom:-10% раздувало высоту документа
+           на 90px, и страница получала «фантомную» прокрутку. Фиксированный
+           слой живёт в области просмотра и высоту документа не трогает. */
+        position: fixed;
         border-radius: 50%;
         filter: blur(100px);
         z-index: 0;
@@ -480,7 +513,9 @@ h1 .text-solar, h2 .text-solar {
    экранных пикселях, и от масштаба не зависит. */
 .slide-container .content-z {
   justify-content: center !important;
-  padding-block: 10px !important;
+  /* Вертикальные отступы задаёт ТОЛЬКО portal-fit (инлайном, в экранных
+     пикселях): сверху полоса шапки, снизу воздух. Любое правило с !important
+     здесь перебивало расчёт, и содержимое снова не влезало в экран. */
   /* h-full из разметки жёстко приравнивал коробку к высоте слайда: после zoom
      центрирование считалось не от чернил, и на слайде-обложке содержимое
      заезжало под шапку. Высоту держит min-height:100% — этого достаточно. */
@@ -590,6 +625,13 @@ h1 .text-solar, h2 .text-solar {
 #nav-prev { right:80px !important; left:auto !important; }
 #nav-next { right:20px !important; left:auto !important; }
 #nav-prev i, #nav-next i { color:#FFFFFF !important; }
+/* Значок на кружке (правило заказчика): пока видео НЕ играет — «play» виден
+   всегда, чтобы было понятно, что кружок можно включить. Как только пошло
+   воспроизведение — значок уходит, а при наведении показывается «pause».
+   Никаких таймеров: состояние — это класс .is-playing на самом кружке. */
+#video-overlay{ opacity:1; }
+#video-bubble.is-playing #video-overlay{ opacity:0; }
+@media (hover:hover){ #video-bubble.is-playing:hover #video-overlay{ opacity:1; } }
 #video-bubble {
   width: clamp(140px, 22vw, 280px) !important; height: clamp(140px, 22vw, 280px) !important;
   left: clamp(1.5rem, 5vw, 4rem) !important; right:auto !important;
@@ -600,10 +642,6 @@ h1 .text-solar, h2 .text-solar {
   #nav-prev { right:66px !important; }
   #nav-next { right:12px !important; }
   #video-bubble { width:150px !important; height:150px !important; left:15px !important; bottom:15px !important; }
-  .slide-container .content-z {
-    padding-block: 10px !important;
-    padding-left:1rem !important; padding-right:1rem !important;
-  }
 }
 </style>
 <style id="portal-dark">
@@ -983,76 +1021,95 @@ window.addEventListener('load', function(){
       c.style.zoom = '';
       c.style.minHeight = '';
       c.style.width = '';
+      c.style.padding = '';
+      // сброс компенсации ширин от прошлой подгонки — иначе меряем уже гнутое
+      c.style.maxWidth = '';
+      var kids = [].slice.call(c.children), ki;
+      for(ki = 0; ki < kids.length; ki++) kids[ki].style.maxWidth = '';
       var availH = slide.clientHeight, availW = slide.clientWidth;
       if(!availH || !availW) return;
-      // Панель с текстом раскладку больше НЕ трогает: слайд остаётся полной
-      // ширины, а содержимое уезжает вправо и уменьшается чистым CSS-трансформом
-      // (--fit-shrink). Поэтому здесь про панель знать нечего — считаем всегда
-      // по полной ширине, и открытие панели не вызывает ни одного пересчёта.
-      var widthV = availW;
-      // И сжатие, и рост считаем по ОДНОЙ мере — «чернильному» боксу детей.
-      // offsetHeight/scrollHeight тут врут: у content-z стоит min-height:100%,
-      // поэтому offsetHeight всегда равен высоте слайда, а scrollHeight не
-      // растёт от flex-центрированного контента — переполнение молча уезжало
-      // вверх под шапку вместо того, чтобы ужаться.
-      var st = window.getComputedStyle(c);
-      var padY = (parseFloat(st.paddingTop) || 0) + (parseFloat(st.paddingBottom) || 0);
-      var padX = (parseFloat(st.paddingLeft) || 0) + (parseFloat(st.paddingRight) || 0);
-      var ink = inkBox(c);
-      if(!ink || ink.h < 40) return;
-      if(availH - padY <= 0 || availW - padX <= 0) return;
-      // Масштаб считается аналитически, а не подбором. Паддинги zoom тоже
-      // масштабирует, поэтому условие «чернила влезают» — это
-      //   natH*z + padY*z <= availH   →   z <= availH / (natH + padY),
-      // где natH — высота чернил в CSS-пикселях. Подбор вида z /= over только
-      // приближался снизу и на коротких слайдах недобирал процентов десять.
+
+      // МОДЕЛЬ (простая и потому надёжная):
+      //   content-z ровно с экран, его паддинги — это «мёртвые» полосы
+      //   (сверху шапка, снизу воздух), а содержимое центрируется флексом
+      //   внутри оставшейся коробки. Никаких вертикальных сдвигов transform:
+      //   раньше слайд смещался на полполосы, и ровно на эти пиксели низ
+      //   уезжал за край экрана — при overflow:hidden это выглядело как
+      //   обрезанный слайд, при auto — как «страница листается».
+      var band = chromeBand();
+      var freeH = availH - band.top - band.bottom;
+      if(freeH < availH * 0.45) freeH = availH * 0.45;   // страховка на низких окнах
+      var padX = window.innerWidth >= 768 ? 32 : 16;     // воздух по бокам, экранные px
+      var freeW = availW - padX * 2;
+      if(freeW < availW * 0.6) freeW = availW * 0.6;
       // На телефоне НЕ растим: zoom сжимает CSS-ширину, а минимумы clamp у
       // кругов заданы в пикселях — спутники становятся относительно больше
       // и наезжают друг на друга.
       var grow = window.innerWidth >= 768;
-      // «Мёртвая зона» слайда: сверху шапка лекции, снизу стрелки навигации.
-      // Вычитаем её из доступной высоты и НЕ отдаём zoom'у — иначе резерв
-      // ужимается вместе с контентом и перестаёт быть резервом. Полоса
-      // одинаковая сверху и снизу, поэтому контент остаётся ровно по центру
-      // слайда, а обе полосы гарантированно свободны.
-      var band = chromeBand();
-      var freeH = availH - band.top - band.bottom;
-      if(freeH < availH * 0.45) freeH = availH * 0.45;   // страховка на низких окнах
-      var shift = (band.top - band.bottom) / 2;          // центр свободной зоны
+
+      // ── Потолки ширины компенсируем масштабом ────────────────────────────
+      // max-w-5xl и подобные заданы в CSS-пикселях. Внутри zoom эти пиксели
+      // принадлежат ВНУТРЕННЕЙ системе координат, поэтому на экране колонка
+      // сжимается второй раз — вместе с масштабом: при z=0.45 «1024px»
+      // превращались в 460px, заголовок рвался на четыре строки, а круговая
+      // схема выглядела крошечной посреди пустого экрана. Делим каждый
+      // потолок на z — и колонка занимает ровно ту ширину, на которую её
+      // рассчитывали в вёрстке.
+      var caps = [], cn = [c].concat(kids), cj, cv;
+      for(cj = 0; cj < cn.length; cj++){
+        cv = window.getComputedStyle(cn[cj]).maxWidth;
+        if(/px$/.test(cv) && parseFloat(cv) > 0) caps.push({ el: cn[cj], cap: parseFloat(cv) });
+      }
+
       function target(natH, natW){
-        // 0.94, а не 0.99: слайд не должен упираться в края экрана — заказчик
-        // просил «совсем чуть-чуть поменьше».
-        var t = Math.min(freeH / (natH + padY), widthV / (natW + padX)) * 0.98;
+        // 0.97, а не 1.0: слайд не должен упираться в края свободной зоны.
+        var t = Math.min(freeH / natH, freeW / natW) * 0.97;
         return grow ? Math.min(t, growCap()) : Math.min(t, 1);
       }
-      var z = target(ink.h, ink.w);
-      if(z > 0.999 && z < 1.04){
-        sizeTitles(1);
-        c.style.setProperty('--fit-shift', shift + 'px');
-        return;                                          // кегль заголовка — всегда
+
+      // Паддинги задаём В СИСТЕМЕ КООРДИНАТ content-z (то есть делённые на
+      // zoom) — тогда на экране они дают ровно band.top / band.bottom.
+      function apply(z){
+        var q;
+        for(q = 0; q < caps.length; q++) caps[q].el.style.maxWidth = (caps[q].cap / z) + 'px';
+        sizeTitles(z);
+        c.style.setProperty('--fit-shift', '0px');
+        c.style.zoom = z;
+        c.style.paddingTop = (band.top / z) + 'px';
+        c.style.paddingBottom = (band.bottom / z) + 'px';
+        c.style.paddingLeft = (padX / z) + 'px';
+        c.style.paddingRight = (padX / z) + 'px';
+        // min-height НЕ компенсируем: внутри zoom проценты и так считаются от
+        // высоты родителя, переведённой в масштаб элемента. Прежняя поправка
+        // (100/z)% давала высоту 600/z² — при z=0.65 это 925px на экране в
+        // 600px, и слайд становился прокручиваемым.
+        c.style.minHeight = '';
+        slide.scrollTop = 0;
       }
-      apply(z);
-      // Повторяем: zoom сжимает CSS-ширину content-z, текст переносится иначе,
-      // и natH меняется. Делить на z тут НЕЛЬЗЯ: inkBox меряет offsetHeight,
-      // а он и так в раскладочных пикселях — zoom предка его не масштабирует.
-      // Пока делили, высота занижалась в z раз, масштаб выходил завышенным, и
-      // контент лез под шапку почти на каждом слайде.
-      for(var pass = 0; pass < 4; pass++){
-        var re = inkBox(c);
-        if(!re) break;
-        var next = target(re.h, re.w);
-        if(Math.abs(next - z) < 0.01) break;
+
+      apply(1);
+      var z = 1, i, ink;
+      // Итерации нужны потому, что zoom меняет CSS-ширину content-z: текст
+      // переносится иначе и высота чернил гуляет. Обычно хватает двух.
+      for(i = 0; i < 5; i++){
+        ink = inkBox(c);
+        if(!ink || ink.h < 20) return;
+        var next = target(ink.h, ink.w);
+        if(Math.abs(next - z) < 0.005) break;
         z = next;
         apply(z);
       }
-      // Страховка: сдвиг вверх не должен загнать верх содержимого под шапку.
-      // Слайд-обложка с обёрткой во всю высоту фактического масштаба не
-      // добирала, и отрицательный сдвиг доводил её заголовок до самой шапки.
-      var fin = inkBox(c);
-      if(fin){
-        var inkH = fin.h * z;
-        var minShift = band.top - (availH - inkH) / 2;
-        if(shift < minShift){ shift = Math.min(0, minShift); apply(z); }
+      // Финальная гарантия «влезло»: если после схождения чернила всё ещё выше
+      // свободной зоны (бывает на слайдах, где высота почти не зависит от
+      // ширины), дожимаем прямым делением.
+      for(i = 0; i < 3; i++){
+        ink = inkBox(c);
+        if(!ink) break;
+        var overH = ink.h * z - freeH, overW = ink.w * z - freeW;
+        if(overH <= 1 && overW <= 1) break;
+        z *= Math.min(overH > 1 ? freeH / (ink.h * z) : 1,
+                      overW > 1 ? freeW / (ink.w * z) : 1) * 0.995;
+        apply(z);
       }
     }catch(e){}
 
@@ -1071,19 +1128,6 @@ window.addEventListener('load', function(){
           if(need > box && box > 20) ttl[i].style.fontSize = Math.max(10, want * box / need) + 'px';
         }
       }
-    }
-    function apply(z){
-      sizeTitles(z);
-      // Сдвиг задаём переменной, а не инлайновым transform: тот же transform
-      // использует панель с текстом (--fit-shrink), и инлайн её бы перебил.
-      c.style.setProperty('--fit-shift', (shift / z) + 'px');
-      c.style.zoom = z;
-      // zoom масштабирует и рамку content-z. У неё min-height:100% = высота
-      // слайда, после zoom это 900×z — слайд (overflow-y:auto) становится
-      // прокручиваемым, и от остаточного скролла контент уезжал под шапку.
-      // Компенсируем: делим min-height ровно на коэффициент.
-      c.style.minHeight = (100 / z) + '%';
-      slide.scrollTop = 0;
     }
   }
   // Экранный размер заголовка слайда: инлайновый кегль × zoom его content-z.
@@ -1225,8 +1269,8 @@ window.addEventListener('load', function(){
                style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0A0A0A url(/assets/1_video/auto_cover_1.jpg) center/cover no-repeat;"></video>
 
         <!-- Оверлей для управления -->
-        <div id="video-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 transition-opacity text-white group z-20">
-            <i id="video-icon" class="ph-fill ph-pause-circle text-4xl md:text-6xl drop-shadow-md transition-transform transform group-hover:scale-110"></i>
+        <div id="video-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/35 transition-opacity text-white group z-20">
+            <i id="video-icon" class="ph-fill ph-play-circle text-4xl md:text-6xl drop-shadow-md transition-transform transform group-hover:scale-110"></i>
         </div>
 
         <!-- Спиннер загрузки -->
@@ -1494,13 +1538,13 @@ window.addEventListener('load', function(){
     <!-- СЛАЙД 7: Ключевые свойства -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-6">
         <div class="content-z w-full max-w-6xl flex flex-col items-center">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-8 text-center text-black">Свойства <span class="text-solar">ИИ‑агентов</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-1 md:mb-3 text-center text-black">Свойства <span class="text-solar">ИИ‑агентов</span></h2>
 
             <!-- Круговая инфографика: ядро «ИИ-агент» + шесть свойств-спутников.
                  Разметка по эталону слайда «Фреймворк AgentOps». -->
-            <div class="radial-fig" style="width:min(100%,926px,74vh);--orbit:36%;--sat:clamp(74px,21.5%,110px);--core:clamp(66px,20.5%,105px)">
+            <div class="radial-fig" style="width:min(100%,660px);--orbit:36%;--sat:clamp(84px,28%,185px);--core:clamp(76px,24%,158px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-                    <circle cx="50" cy="50" r="32.4" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                    <circle cx="50" cy="50" r="36.0" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
 
                 <div class="radial-core bg-black border-4 border-solar">
@@ -1508,27 +1552,27 @@ window.addEventListener('load', function(){
                     <span class="rf-label font-black text-[10px] md:text-sm text-white px-2">ИИ‑агент</span>
                 </div>
 
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:17.60%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:14.00%">
                     <i class="ph-fill ph-steering-wheel text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Авто&shy;номность</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:78.06%;--y:33.80%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:81.18%;--y:32.00%">
                     <i class="ph-fill ph-lightning text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Реак&shy;тивность</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:78.06%;--y:66.20%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:81.18%;--y:68.00%">
                     <i class="ph-fill ph-trend-up text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Про&shy;активность</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:82.40%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:86.00%">
                     <i class="ph-fill ph-graduation-cap text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Обу&shy;чаемость</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:21.94%;--y:66.20%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:18.82%;--y:68.00%">
                     <i class="ph-fill ph-users-three text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Взаимо&shy;действие</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:21.94%;--y:33.80%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:18.82%;--y:32.00%">
                     <i class="ph-fill ph-shapes text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Мульти&shy;модаль&shy;ность</span>
                 </div>
@@ -2048,14 +2092,14 @@ window.addEventListener('load', function(){
     <!-- СЛАЙД 19: Зачем нужен индекс зрелости -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-21">
         <div class="content-z w-full max-w-5xl mx-auto flex flex-col items-center">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-3 text-center text-black">Зачем компании нужен <span class="text-solar">ИИ‑индекс зрелости</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-3 text-center text-black">Зачем компании нужен<br><span class="text-solar">ИИ‑индекс зрелости</span></h2>
             <p class="text-black/60 text-xs md:text-xl mb-5 md:mb-6 text-center max-w-2xl lg:max-w-4xl">Без измерения невозможно управлять трансформацией</p>
 
             <!-- Круговая инфографика: ядро + 7 измерений зрелости.
                  Разметка по эталону слайда «Фреймворк AgentOps». -->
-            <div class="radial-fig" style="width:min(100%,896px,81vh);--orbit:37.5%;--sat:clamp(64px,18%,100px);--core:clamp(86px,24%,123px)">
+            <div class="radial-fig" style="width:min(100%,640px);--orbit:38%;--sat:clamp(78px,24%,154px);--core:clamp(80px,27%,173px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-                    <circle cx="50" cy="50" r="33.8" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                    <circle cx="50" cy="50" r="38.0" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
 
                 <div class="radial-core bg-black border-4 border-solar">
@@ -2063,37 +2107,37 @@ window.addEventListener('load', function(){
                     <span class="rf-label font-black text-[10px] md:text-sm text-white px-2">ИИ‑индекс зрелости</span>
                 </div>
 
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:16.25%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:12.00%">
                     <span class="rf-num text-black">1</span>
                     <i class="ph-fill ph-strategy text-lg md:text-2xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Стратегия</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:76.39%;--y:28.96%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:79.71%;--y:26.31%">
                     <span class="rf-num text-black">2</span>
                     <i class="ph-fill ph-users-three text-lg md:text-2xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Люди</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:82.90%;--y:57.51%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:87.04%;--y:58.46%">
                     <span class="rf-num text-black">3</span>
                     <i class="ph-fill ph-buildings text-lg md:text-2xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Инфра&shy;структура</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:64.64%;--y:80.41%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:66.48%;--y:84.24%">
                     <span class="rf-num text-black">4</span>
                     <i class="ph-fill ph-database text-lg md:text-2xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Данные</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:35.36%;--y:80.41%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:33.52%;--y:84.24%">
                     <span class="rf-num text-black">5</span>
                     <i class="ph-fill ph-brain text-lg md:text-2xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Модели</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:17.10%;--y:57.51%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:12.96%;--y:58.46%">
                     <span class="rf-num text-black">6</span>
                     <i class="ph-fill ph-rocket-launch text-lg md:text-2xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Внед&shy;рение</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:23.61%;--y:28.96%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:20.29%;--y:26.31%">
                     <span class="rf-num text-black">7</span>
                     <i class="ph-fill ph-flask text-lg md:text-2xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Иссле&shy;дования</span>
@@ -2131,8 +2175,7 @@ window.addEventListener('load', function(){
                     </ul>
                 </div>
                 <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
-                    <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-target text-[28px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-target text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
+                    <div class="w-24 h-24 md:w-44 md:h-44 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-target text-[46px] md:text-[92px]"></i></div>
                 </div>
             </div>
         </div>
@@ -2160,8 +2203,7 @@ window.addEventListener('load', function(){
                     </ul>
                 </div>
                 <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
-                    <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-users text-[28px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-users-three text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
+                    <div class="w-24 h-24 md:w-44 md:h-44 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-users text-[46px] md:text-[92px]"></i></div>
                 </div>
             </div>
         </div>
@@ -2189,8 +2231,7 @@ window.addEventListener('load', function(){
                     </ul>
                 </div>
                 <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
-                    <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-hard-drives text-[28px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-hard-drives text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
+                    <div class="w-24 h-24 md:w-44 md:h-44 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-hard-drives text-[46px] md:text-[92px]"></i></div>
                 </div>
             </div>
         </div>
@@ -2218,8 +2259,7 @@ window.addEventListener('load', function(){
                     </ul>
                 </div>
                 <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
-                    <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-database text-[28px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-database text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
+                    <div class="w-24 h-24 md:w-44 md:h-44 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-database text-[46px] md:text-[92px]"></i></div>
                 </div>
             </div>
         </div>
@@ -2247,8 +2287,7 @@ window.addEventListener('load', function(){
                     </ul>
                 </div>
                 <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
-                    <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-brain text-[28px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-cpu text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
+                    <div class="w-24 h-24 md:w-44 md:h-44 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-brain text-[46px] md:text-[92px]"></i></div>
                 </div>
             </div>
         </div>
@@ -2276,8 +2315,7 @@ window.addEventListener('load', function(){
                     </ul>
                 </div>
                 <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
-                    <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-rocket text-[28px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-rocket-launch text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
+                    <div class="w-24 h-24 md:w-44 md:h-44 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-rocket text-[46px] md:text-[92px]"></i></div>
                 </div>
             </div>
         </div>
@@ -2305,8 +2343,7 @@ window.addEventListener('load', function(){
                     </ul>
                 </div>
                 <div class="w-full md:w-[45%] lg:w-[36%] bg-black flex justify-center items-center text-white p-5 md:p-10 lg:min-h-[500px] h-auto relative overflow-hidden">
-                    <div class="w-16 h-16 md:w-32 md:h-32 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-flask text-[28px] md:text-[60px]"></i></div>
-                    <i class="ph-duotone ph-flask text-[110px] md:text-[300px] opacity-20 absolute -right-6 -bottom-8 md:-right-10 md:bottom-0 text-solar pointer-events-none"></i>
+                    <div class="w-24 h-24 md:w-44 md:h-44 bg-solar rounded-full text-[#0A0A0A] flex items-center justify-center shrink-0 z-10 shadow-2xl border-4 border-solar/50"><i class="ph-fill ph-flask text-[46px] md:text-[92px]"></i></div>
                 </div>
             </div>
         </div>
@@ -2453,14 +2490,14 @@ window.addEventListener('load', function(){
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-33">
         <div class="content-z max-w-6xl flex flex-col items-center w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-4 text-center text-black">Фреймворк <span class="text-solar">AgentOps</span></h2>
-            <p class="text-black/60 text-xs md:text-xl mb-6 md:mb-12 text-center max-w-2xl">Превращает ИИ из разового эксперимента в масштабируемый процесс</p>
+            <p class="text-black/60 text-xs md:text-xl mb-6 md:mb-12 text-center max-w-2xl md:max-w-none md:whitespace-nowrap">Превращает ИИ из разового эксперимента в масштабируемый процесс</p>
 
             <!-- Круговая инфографика: одна композиция на все ширины.
                  Разметка-эталон, см. блок radial-fig — позиционирование
                  без transform, круги настоящие, hover-эффектов нет. -->
-            <div class="radial-fig" style="width:min(100%,926px,77vh);--sat:clamp(64px,18%,106px);--core:clamp(80px,26%,147px)">
+            <div class="radial-fig" style="width:min(100%,660px);--sat:clamp(80px,25%,165px);--core:clamp(82px,27%,178px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-                    <circle cx="50" cy="50" r="31.5" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                    <circle cx="50" cy="50" r="37.5" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
 
                 <div class="radial-core bg-black border-4 border-solar">
@@ -2468,32 +2505,32 @@ window.addEventListener('load', function(){
                     <span class="rf-label font-black text-[10px] md:text-sm text-white px-1.5 leading-tight">Постоянное улучшение</span>
                 </div>
 
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:18.50%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:12.50%">
                     <span class="rf-num text-black">1</span>
                     <i class="ph-fill ph-target text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Анализ</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:77.28%;--y:34.25%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:82.48%;--y:31.25%">
                     <span class="rf-num text-black">2</span>
                     <i class="ph-fill ph-code text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Разра&shy;ботка</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:77.28%;--y:65.75%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:82.48%;--y:68.75%">
                     <span class="rf-num text-black">3</span>
                     <i class="ph-fill ph-plugs text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Внед&shy;рение</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:81.50%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:87.50%">
                     <span class="rf-num text-black">4</span>
                     <i class="ph-fill ph-brain text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Обучение</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:22.72%;--y:65.75%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:17.52%;--y:68.75%">
                     <span class="rf-num text-black">5</span>
                     <i class="ph-fill ph-scales text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Тесты</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:22.72%;--y:34.25%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:17.52%;--y:31.25%">
                     <span class="rf-num text-black">6</span>
                     <i class="ph-fill ph-chart-line-up text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Монито&shy;ринг</span>
@@ -2670,9 +2707,9 @@ window.addEventListener('load', function(){
 
             <!-- Круговая инфографика: цикл обучения. Разметка по эталону слайда
                  «Фреймворк AgentOps», см. блок radial-fig. -->
-            <div class="radial-fig mb-4 md:mb-6" style="width:min(100%,837px,77vh);--sat:clamp(88px,25%,132px);--core:clamp(73px,22%,105px)">
+            <div class="radial-fig mb-4 md:mb-6" style="width:min(100%,620px);--sat:clamp(90px,32%,198px);--core:clamp(78px,26%,161px)">
                 <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-                    <circle cx="50" cy="50" r="31.5" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
+                    <circle cx="50" cy="50" r="34.5" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
                 </svg>
 
                 <div class="radial-core bg-black border-4 border-solar">
@@ -2680,22 +2717,22 @@ window.addEventListener('load', function(){
                     <span class="rf-label font-black text-[10px] md:text-sm text-white px-2">Цикл обучения</span>
                 </div>
 
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:18.50%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:15.50%">
                     <span class="rf-num text-black">1</span>
                     <i class="ph-fill ph-play-circle text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Реальные данные</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:81.50%;--y:50.00%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:84.50%;--y:50.00%">
                     <span class="rf-num text-black">2</span>
                     <i class="ph-fill ph-list-checks text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Учёт ошибок</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:81.50%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50.00%;--y:84.50%">
                     <span class="rf-num text-black">3</span>
                     <i class="ph-fill ph-gear-fine text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Оптими&shy;зация промтов</span>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:18.50%;--y:50.00%">
+                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:15.50%;--y:50.00%">
                     <span class="rf-num text-black">4</span>
                     <i class="ph-fill ph-brain text-xl md:text-3xl text-solar"></i>
                     <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Лучшая модель</span>
@@ -3046,30 +3083,30 @@ window.addEventListener('load', function(){
         let loadedSlideIdx = -1;          // слайд, который реально загружен в плеер
         let overlayTimeout;
 
+        // Единственная точка правды о значке: играет → «pause» и он скрыт до
+        // наведения, не играет → «play» и он виден всегда.
+        function setPlayingUI(playing) {
+            const bubble = document.getElementById('video-bubble');
+            const icon = document.getElementById('video-icon');
+            if (bubble) bubble.classList.toggle('is-playing', !!playing);
+            if (icon) icon.className = 'ph-fill ph-' + (playing ? 'pause' : 'play') +
+                '-circle text-4xl md:text-6xl drop-shadow-md transition-transform transform group-hover:scale-110';
+        }
         function triggerOverlayAutoFade() {
-            const overlay = document.getElementById('video-overlay');
-            if (!overlay || !player) return;
-            overlay.classList.remove('opacity-0');
-            clearTimeout(overlayTimeout);
-            player.getPaused().then(paused => {
-                if (!paused) {
-                    overlayTimeout = setTimeout(() => overlay.classList.add('opacity-0'), 1500);
-                }
-            }).catch(() => {});
+            if (!player) return;
+            player.getPaused().then(paused => setPlayingUI(!paused)).catch(() => {});
         }
 
         function setupPlayerEvents(p) {
             p.on('ended', () => {
+                setPlayingUI(false);
                 // Открыт текст к слайду — читатель ещё читает: видео просто
                 // доигрывает, слайд НЕ переключается (FR-LECTURE-32).
                 if (document.body.classList.contains('notes-open')) return;
                 if (currentSlide < totalSlides - 1) nextSlide();
             });
             p.on('play', () => {
-                const icon = document.getElementById('video-icon');
-                if (icon) icon.className = 'ph-fill ph-pause-circle text-4xl md:text-6xl drop-shadow-md';
-                const overlay = document.getElementById('video-overlay');
-                if (overlay) overlay.classList.add('opacity-0');
+                setPlayingUI(true);
                 clearTimeout(overlayTimeout);
                 // Видео реально играет — гарантированно прячем лоадер
                 const loader = document.getElementById('video-loader');
@@ -3084,10 +3121,7 @@ window.addEventListener('load', function(){
                 }
             });
             p.on('pause', () => {
-                const icon = document.getElementById('video-icon');
-                if (icon) icon.className = 'ph-fill ph-play-circle text-4xl md:text-6xl drop-shadow-md';
-                const overlay = document.getElementById('video-overlay');
-                if (overlay) overlay.classList.remove('opacity-0');
+                setPlayingUI(false);
                 clearTimeout(overlayTimeout);
             });
         }
@@ -3112,12 +3146,7 @@ window.addEventListener('load', function(){
             if (loader) loader.classList.add('opacity-0');
         }
 
-        function showPlayPrompt() {
-            const overlay = document.getElementById('video-overlay');
-            const icon = document.getElementById('video-icon');
-            if (overlay) overlay.classList.remove('opacity-0');
-            if (icon) icon.className = 'ph-fill ph-play-circle text-4xl md:text-6xl drop-shadow-md';
-        }
+        function showPlayPrompt() { setPlayingUI(false); }
 
         // Публичное API: «переключи на этот слайд». Сериализует вызовы Vimeo loadVideo,
         // чтобы быстрые клики подряд не ломали внутреннее состояние плеера.
@@ -3126,8 +3155,6 @@ window.addEventListener('load', function(){
             desiredSlideIdx = slideIdx;
             // Лоадер и сброс старого play-overlay — сразу, для визуальной реактивности
             showLoaderInstant();
-            const overlay = document.getElementById('video-overlay');
-            if (overlay) overlay.classList.add('opacity-0');
             // Если сейчас уже идёт загрузка — она сама подхватит актуальный desiredSlideIdx по завершению
             if (!isLoadingVideo) runLoadCycle(); else { /*video-watchdog*/ try{clearTimeout(window.__dvw);}catch(e){} window.__dvw=setTimeout(function(){ if(isLoadingVideo){ isLoadingVideo=false; runLoadCycle(); } },4000); }
         }
@@ -3679,14 +3706,11 @@ window.addEventListener('load', function(){
      обрубок в три буквы. */
   .radial-fig{
     --orbit:37% !important;
-    --sat:clamp(76px, 27%, 108px) !important;
-    --core:clamp(80px, 27%, 112px) !important;
+    --sat:clamp(84px, 30%, 120px) !important;
+    --core:clamp(96px, 33%, 134px) !important;
   }
   .radial-sat{ padding:calc(var(--sat) * 0.045) !important; }
-  .radial-sat .rf-label{ font-size:11px !important; line-height:1.1 !important; }
-  .radial-core .rf-label{ font-size:12.5px !important; line-height:1.1 !important; }
-  .radial-sat i{ font-size:.95rem !important; margin-bottom:.05rem !important; }
-  .radial-core i{ font-size:1.1rem !important; }
+  .radial-sat i{ margin-bottom:0 !important; }
 }
 /* Восемь спутников: при орбите 37% зазор между соседними кругами получается
    1.3% ширины — круги слипаются. Формула зазора W·(0.765·r − sat), поэтому
@@ -3694,7 +3718,6 @@ window.addEventListener('load', function(){
 .radial-fig[data-sats="8"]{ --orbit:41%; --sat:clamp(66px, 22%, 128px); }
 @media (max-width:520px){
   .radial-fig[data-sats="8"]{ --orbit:41% !important; --sat:clamp(60px, 21%, 84px) !important; }
-  .radial-fig[data-sats="8"] .rf-label{ font-size:10px !important; }
 }
 
 /* ПОДПИСЬ ЖИВЁТ ЗА КРУГОМ. Раньше внутри круга сидели и иконка, и текст, и
@@ -3713,7 +3736,7 @@ window.addEventListener('load', function(){
 /* Кружок спутника ЗАМЕТНО крупнее прежнего (0.62 → 0.80): иконка в нём
    читалась как точка, а вокруг схемы оставалась пустота. Ядро при этом чуть
    уменьшено — центр не должен давить на остальную схему. */
-.radial-fig{ --sat-dot:calc(var(--sat) * 0.80); }
+.radial-fig{ --sat-dot:calc(var(--sat) * 0.86); }
 .radial-sat{
   width:var(--sat-dot) !important; height:var(--sat-dot) !important;
   left:calc(var(--x) - var(--sat-dot)/2) !important;
@@ -3721,7 +3744,7 @@ window.addEventListener('load', function(){
   padding:0 !important;
   overflow:visible !important;
 }
-.radial-sat i{ font-size:calc(var(--sat-dot) * 0.42) !important; margin:0 !important; }
+.radial-sat i{ font-size:calc(var(--sat-dot) * 0.56) !important; margin:0 !important; }
 .radial-sat .rf-label{
   position:absolute;
   top:calc(100% + .32em);
@@ -3748,8 +3771,8 @@ html.dark .radial-sat .rf-label{ background:#0A0A0A; }
 /* Кегль подписи задан здесь и только здесь: подгонка её не трогает (она шире
    кружка по замыслу), а прежние 8-9px были самым мелким текстом лекции —
    мельче, чем те же подписи на телефоне. */
-.radial-sat .rf-label{ font-size:clamp(11px, 1.05vw, 16px) !important; }
-.radial-core .rf-label{ font-size:clamp(12px, 1.2vw, 18px) !important; }
+.radial-sat .rf-label{ font-size:calc(var(--sat-dot) * 0.215) !important; }
+.radial-core .rf-label{ font-size:calc(var(--core) * 0.155) !important; }
 
 /* ЯДРО — ПО ТОМУ ЖЕ ПРАВИЛУ. Внутри круга подпись не помещалась: у .radial-core
    стоит overflow:hidden, и «ИИ‑агент» рвался переносом, а вторая строка просто
@@ -3759,7 +3782,9 @@ html.dark .radial-sat .rf-label{ background:#0A0A0A; }
    Цвет текста задаётся здесь: в разметке на подписи висит Tailwind-класс
    text-white, а вне тёмного круга белым по белому её не видно. */
 .radial-core{ overflow:visible !important; }
-.radial-core > i{ margin-bottom:0 !important; }
+/* Размер иконки ядра — доля диаметра, а не Tailwind-класс: на выросшем
+   круге фиксированные text-4xl читались точкой в центре пустого круга. */
+.radial-core > i{ margin-bottom:0 !important; font-size:calc(var(--core) * 0.50) !important; }
 .radial-core .rf-label{
   position:absolute;
   top:calc(100% + .32em);
@@ -3869,10 +3894,8 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
   /* Инфографика стоит РОВНО по центру слайда: сверху и снизу одинаково.
      Раньше низ был втрое больше верха — резерв под говорящую голову, — и
      контент visibly уезжал вверх. Голова теперь просто лежит поверх него. */
-  .slide-container .content-z{
-    padding-top:calc(clamp(2.3rem,9vw,3rem) + 2*clamp(.55rem,2vw,1rem) + 14px) !important;
-    padding-bottom:calc(clamp(2.3rem,9vw,3rem) + 2*clamp(.55rem,2vw,1rem) + 14px) !important;
-  }
+  /* Полосы сверху/снизу считает portal-fit и ставит инлайном — здесь их
+     переопределять нельзя (см. комментарий у .slide-container .content-z). */
   .slide-container .content-z > h1,
   .slide-container .content-z > h2{ max-width:min(100%, 34rem); }
 }

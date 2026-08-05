@@ -240,6 +240,65 @@ def test_book_terms_are_russian():
     assert not re.search(r"\bAI\b", blob), "книга: остался «AI» вместо «ИИ»"
 
 
+
+# ── Канон «ничего не листается» и «никакого мигания» ───────────────────────
+
+def test_no_scrolling_anywhere():
+    """Лекция — экран, а не документ: ни страница, ни слайд не прокручиваются.
+
+    Раньше у .slide-container стоял overflow-y:auto, и любой промах подгонки
+    превращался в скрытую прокрутку: заголовок уезжал под шапку, низ слайда
+    терялся. Теперь не влезло = дефект подгонки, а не повод листать.
+    """
+    for rel, html in _pages():
+        assert re.search(r"html \{[^}]*overflow: clip;", html, re.S), \
+            rel + ": у html должен стоять overflow:clip (страница не едет вовсе)"
+        slide = re.search(r"\.slide-container \{[^}]*\}", html, re.S)
+        assert slide and "overflow-y: auto" not in slide.group(0), \
+            rel + ": слайд не должен прокручиваться"
+        assert "padding-block: 10px !important" not in html, \
+            rel + ": вертикальные отступы content-z задаёт только portal-fit"
+
+
+def test_tailwind_is_prebuilt_not_cdn():
+    """Tailwind собран заранее — иначе первый кадр рисуется без стилей.
+
+    cdn.tailwindcss.com компилирует классы в браузере уже ПОСЛЕ первой
+    отрисовки: кнопки секунду выглядят «квадратными», потом становятся
+    нормальными. Обычный <link> блокирует отрисовку — промежуточного кадра
+    не существует.
+    """
+    for rel, html in _pages():
+        assert "<script src=\"https://cdn.tailwindcss.com\">" not in html, \
+            rel + ": Play-CDN Tailwind даёт мигание (упоминание в комментарии допустимо)"
+        assert re.search(r'<link rel="stylesheet" href="/assets/lecture-[\w-]+\.css">', html), \
+            rel + ": нужен статический собранный Tailwind из /assets"
+        assert "window.tailwind = window.tailwind || {}" in html, \
+            rel + ": рантайм-конфиг должен быть защищён от отсутствия CDN"
+
+
+def test_fit_does_not_compensate_min_height():
+    """min-height внутри zoom компенсировать НЕЛЬЗЯ (см. portal-fit).
+
+    Проценты внутри zoom считаются от высоты родителя, уже переведённой в
+    масштаб элемента; деление на z накладывалось второй раз и давало высоту
+    600/z² — слайд становился прокручиваемым.
+    """
+    for rel, html in _pages():
+        assert "minHeight = (100 / z)" not in html, rel + ": вернулась двойная компенсация min-height"
+
+
+def test_video_circle_shows_play_icon():
+    """На кружке сразу виден значок play; пауза — при наведении во время игры."""
+    for rel, html in _pages(("automation/1/index.html",)):
+        assert 'id="video-icon" class="ph-fill ph-play-circle' in html, \
+            rel + ": по умолчанию на кружке значок play"
+        assert "#video-bubble.is-playing #video-overlay{ opacity:0; }" in html, \
+            rel + ": во время воспроизведения значок скрыт"
+        assert "@media (hover:hover){ #video-bubble.is-playing:hover #video-overlay{ opacity:1; } }" in html, \
+            rel + ": при наведении во время игры показываем паузу"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
