@@ -164,8 +164,7 @@ ul{list-style:none;padding:0}
 }
 
 /* ── Ряды. Колонки НЕ равные (flex:0 1 auto + space-between): при равных
-   долях «Мультиагентные» (269px при 32px кегля) не влезает в свои 227px и
-   наезжает на соседа. Тот же приём, что в сцене 3 лекции 1. ─────────── */
+   долях длинная подпись не влезает в свою долю и наезжает на соседа. ── */
 .row{display:flex;width:100%;align-items:flex-start;justify-content:space-between;gap:18px}
 .item{flex:0 1 auto}
 .circle{width:100px;height:100px;margin-bottom:16px}
@@ -173,17 +172,66 @@ ul{list-style:none;padding:0}
 
 /* Кегли посчитаны по самой длинной строке подписи: JetBrains Mono
    моноширинный, знак = 0.6em, полезная ширина 988px. */
-#s1 .label{font-size:32px}      /* 43 знака → 826px, зазоры по 54px */
-#s2 .label{font-size:32px}      /* 43 знака → 826px: при 34px крайние подписи упирались в край зоны */
-#s3 .label{font-size:36px}      /* 27 знаков → 583px, просторно */
-#s4 .label{font-size:30px}      /* 47 знаков → 846px, зазоры по 47px */
 
-/* Два и один элемент разводить по краям нечем — их место в середине. */
-#s5 .row{justify-content:center;gap:96px}
-#s5 .label{font-size:36px}
-#s6 .row{justify-content:center}
-#s6 .circle{width:136px;height:136px;margin-bottom:20px}
-#s6 .label{font-size:40px}
+/* S1 — одна заглавная карточка по центру: 30 знаков × 24 = 720px при 40px. */
+#s1 .row{justify-content:center}
+#s1 .circle{width:124px;height:124px;margin-bottom:20px}
+#s1 .label{font-size:40px}
+
+/* S2 — три роли: 43 знака → 826px при 32px, зазоры по 54px. */
+#s2 .label{font-size:32px}
+
+/* S3 — самый плотный ряд: 18+14+14+11 = 57 знаков → 889px при 26px,
+   зазоры по 33px. 28px уже не влезает (957px). */
+#s3 .circle{width:88px;height:88px;margin-bottom:14px}
+#s3 .label{font-size:26px}
+
+/* S4 — «побольше размером, с иконкой робота в начале строки»:
+   ряд горизонтальный, круг слева от текста. 19 знаков × 26.4 = 502px
+   текста + круг 116 + зазор = 674px. */
+#s4 .row{justify-content:center}
+#s4 .item{flex-direction:row;align-items:center;gap:30px;text-align:left}
+#s4 .circle{width:116px;height:116px;margin-bottom:0}
+#s4 .label{font-size:44px}
+
+/* S5/S6 — один элемент по центру, палец ВЫСТРЕЛИВАЕТ отдельно от подписи:
+   подпись встаёт спокойно, а круг с пальцем выскакивает с перелётом
+   и качком — у дизлайка наклон в минус, у лайка в плюс. */
+#s5 .row,#s6 .row{justify-content:center}
+#s5 .circle,#s6 .circle{width:132px;height:132px;margin-bottom:20px}
+#s5 .label,#s6 .label{font-size:40px}
+.circle.slate{background:#ECECF1;color:#3A3A46}
+#s5 .el.on .circle{animation:thumbDown .85s var(--ease) .12s backwards}
+@keyframes thumbDown{
+    0%{transform:scale(.25) rotate(18deg);opacity:0}
+    55%{transform:scale(1.16) rotate(-9deg);opacity:1}
+    78%{transform:scale(.95) rotate(4deg)}
+    100%{transform:none;opacity:1}
+}
+#s6 .el.on .circle{animation:thumbUp .85s var(--ease) .12s backwards}
+@keyframes thumbUp{
+    0%{transform:scale(.25) rotate(-18deg);opacity:0}
+    55%{transform:scale(1.16) rotate(9deg);opacity:1}
+    78%{transform:scale(.95) rotate(-4deg)}
+    100%{transform:none;opacity:1}
+}
+
+/* S7 — финал: текст, сзади дышит фиолетовое сияние. Эллипс (50%) —
+   прямоугольных плашек в кадре не бывает; цвет — фирменный #8854F3. */
+#s7 .row{justify-content:center}
+#s7 .item{position:relative;justify-content:center}
+#s7 .label{font-size:48px;position:relative;z-index:1;padding:60px 0}
+#s7 .glow{
+    position:absolute;left:50%;top:50%;width:640px;height:300px;
+    transform:translate(-50%,-50%);border-radius:50%;
+    background:radial-gradient(closest-side,rgba(136,84,243,.8),rgba(136,84,243,.3) 55%,rgba(136,84,243,0) 74%);
+    filter:blur(16px);opacity:0;transition:opacity .6s ease;
+}
+#s7 .el.on .glow{opacity:1;animation:glowPulse 2.6s ease-in-out .2s infinite}
+@keyframes glowPulse{
+    0%,100%{transform:translate(-50%,-50%) scale(1)}
+    50%{transform:translate(-50%,-50%) scale(1.16)}
+}
 
 /* ── Обложка: первые секунды готового ролика. Стык с видео жёсткий, без
    растворения, — ровно так же его склеит ffmpeg, и превью не врёт. ─── */
@@ -300,112 +348,96 @@ body.dragging #drop{display:flex}
 
     <div id="layer">
 
-        <!-- ══ S1 · экран 1 «Приветствие»: что даёт курс — четыре обещания в ряд ══ -->
-        <section class="scene" id="s1" data-in="6.9" data-out="14.2">
+        <!-- ══ S1 · заглавная карточка курса. Держится, пока звучит обещание
+             курса, до появления ролей. Тексты — дословно слова владельца. ══ -->
+        <section class="scene" id="s1" data-in="1.6" data-out="14.2">
             <div class="row">
-                <div class="item el solar" data-in="7.3">
+                <div class="item el" data-in="1.8"> <!-- «по автоматизации» 1.70 -->
                     <div class="circle solar ico" data-icon="robot"></div>
-                    <p class="label">AI-First<br>компания</p>
-                </div>
-                <div class="item el ember" data-in="8.6">
-                    <div class="circle ember ico" data-icon="gears"></div>
-                    <p class="label">Автоматизация<br>процессов</p>
-                </div>
-                <div class="item el solar" data-in="10.1">
-                    <div class="circle solar ico" data-icon="user-gear"></div>
-                    <p class="label">Без роста<br>штата</p>
-                </div>
-                <div class="item el ember" data-in="12.4">
-                    <div class="circle ember ico" data-icon="arrow-trend-up"></div>
-                    <p class="label">Экономический<br>эффект</p>
+                    <p class="label">Автоматизации бизнес-процессов<br>с помощью ИИ-агентов</p>
                 </div>
             </div>
         </section>
 
-        <!-- ══ S2 · экран 2 «Для кого этот курс»: три роли (заголовок не берётся) ══ -->
+        <!-- ══ S2 · три роли из дека (заголовок «Для кого» не берётся) ══ -->
         <section class="scene" id="s2" data-in="14.7" data-out="21.8">
             <div class="row">
-                <div class="item el solar" data-in="15.4">
+                <div class="item el" data-in="15.4"> <!-- «будущим AI-консультантам» 15.28 -->
                     <div class="circle solar ico" data-icon="compass"></div>
                     <p class="label">ИИ-консультант</p>
                 </div>
-                <div class="item el ember" data-in="16.7">
+                <div class="item el" data-in="16.7"> <!-- «инженерам» внутри реплики 15.86–17.20 -->
                     <div class="circle ember ico" data-icon="wrench"></div>
                     <p class="label">ИИ-инженер<br>по автоматизации</p>
                 </div>
-                <div class="item el solar" data-in="18.2">
+                <div class="item el" data-in="18.2"> <!-- «и основателям» 18.12 -->
                     <div class="circle solar ico" data-icon="rocket"></div>
                     <p class="label">ИИ-основатель</p>
                 </div>
             </div>
         </section>
 
-        <!-- ══ S3 · экран 3 «Чему вы научитесь», пункты 1–4 ══ -->
-        <section class="scene" id="s3" data-in="22.2" data-out="30.2">
+        <!-- ══ S3 · чему научитесь: четыре пункта в ряд, формулировки владельца.
+             Ряд держится и на «и оценивать экономический эффект» — до конца
+             мысли про агентов. ══ -->
+        <section class="scene" id="s3" data-in="30.6" data-out="42.9">
             <div class="row">
-                <div class="item el solar" data-in="22.8">
-                    <div class="circle solar ico" data-icon="brain"></div>
-                    <p class="label">Поток<br>данных</p>
-                </div>
-                <div class="item el ember" data-in="25.2">
-                    <div class="circle ember ico" data-icon="magnifying-glass"></div>
-                    <p class="label">Находить<br>процессы</p>
-                </div>
-                <div class="item el solar" data-in="27.1">
-                    <div class="circle solar ico" data-icon="clipboard-list"></div>
-                    <p class="label">AS-IS<br>процесс</p>
-                </div>
-                <div class="item el ember" data-in="29.0">
-                    <div class="circle ember ico" data-icon="pen-ruler"></div>
-                    <p class="label">TO-BE<br>модель</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ══ S4 · экран 3, пункты 5–8. Ряд держится и на фразе «управлять изменениями
-             в компании» — такого пункта в деке нет, досочинять его нельзя ══ -->
-        <section class="scene" id="s4" data-in="30.6" data-out="39.5">
-            <div class="row">
-                <div class="item el solar" data-in="31.3">
+                <div class="item el" data-in="31.3"> <!-- «роль агента» 31.28 -->
                     <div class="circle solar ico" data-icon="user-gear"></div>
-                    <p class="label">Роль<br>ИИ-агента</p>
+                    <p class="label">ИИ-агент<br>AI-First процессах</p>
                 </div>
-                <div class="item el ember" data-in="33.8">
-                    <div class="circle ember ico" data-icon="robot"></div>
-                    <p class="label">Создавать<br>ИИ-агентов</p>
-                </div>
-                <div class="item el solar" data-in="34.8">
-                    <div class="circle solar ico" data-icon="network-wired"></div>
+                <div class="item el" data-in="33.9"> <!-- «создавать мультиагентные» 33.72 -->
+                    <div class="circle ember ico" data-icon="network-wired"></div>
                     <p class="label">Мультиагентные<br>системы</p>
                 </div>
-                <div class="item el ember" data-in="36.3">
-                    <div class="circle ember ico" data-icon="shield-halved"></div>
-                    <p class="label">Качество и<br>безопасность</p>
+                <div class="item el" data-in="36.3"> <!-- «их качество» 36.22 -->
+                    <div class="circle solar ico" data-icon="shield-halved"></div>
+                    <p class="label">Качество<br>и безопасность</p>
+                </div>
+                <div class="item el" data-in="38.1"> <!-- «управлять изменениями» 37.98 -->
+                    <div class="circle ember ico" data-icon="gears"></div>
+                    <p class="label">Управление<br>изменениями</p>
                 </div>
             </div>
         </section>
 
-        <!-- ══ S5 · экран 3, пункты 9–10 — два элемента по центру ══ -->
-        <section class="scene" id="s5" data-in="39.9" data-out="48.0">
+        <!-- ══ S4 · внедрение: один крупный элемент, робот В НАЧАЛЕ СТРОКИ
+             (владелец: «отдельно побольше размером с иконкой робота в начале») ══ -->
+        <section class="scene" id="s4" data-in="43.4" data-out="48.0">
             <div class="row">
-                <div class="item el ember" data-in="40.6">
-                    <div class="circle ember ico" data-icon="arrow-trend-up"></div>
-                    <p class="label">Оценивать<br>эффект</p>
-                </div>
-                <div class="item el solar" data-in="44.5">
-                    <div class="circle solar ico" data-icon="rocket"></div>
-                    <p class="label">Внедрить первого<br>ИИ-агента</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ══ S6 · финал: «Начните строить AI-First бизнес» — то же понятие,
-             с которого ролик начался. До 54.5 кадр отдан говорящему ══ -->
-        <section class="scene" id="s6" data-in="54.5" data-out="59.0">
-            <div class="row">
-                <div class="item el solar" data-in="54.9">
+                <div class="item el" data-in="44.5"> <!-- «вы внедрите» 44.40 -->
                     <div class="circle solar ico" data-icon="robot"></div>
-                    <p class="label">AI-First<br>компания</p>
+                    <p class="label">ИИ-агент в реальном<br>бизнес-процессе</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S5 · «Рутина» с дизлайком: большой палец выстреливает отдельно ══ -->
+        <section class="scene" id="s5" data-in="48.2" data-out="51.3">
+            <div class="row">
+                <div class="item el" data-in="48.9"> <!-- «рутиной» 48.94 -->
+                    <div class="circle slate ico" data-icon="thumbs-down"></div>
+                    <p class="label">Рутина</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S6 · «Создание будущего» с лайком, та же анимация в плюс ══ -->
+        <section class="scene" id="s6" data-in="51.7" data-out="54.6">
+            <div class="row">
+                <div class="item el" data-in="52.0"> <!-- «займёмся созданием» 51.92 -->
+                    <div class="circle solar ico" data-icon="thumbs-up"></div>
+                    <p class="label">Создание будущего</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S7 · финал: «Новая экономика», сзади дышит фиолетовое сияние ══ -->
+        <section class="scene" id="s7" data-in="56.9" data-out="59.0">
+            <div class="row">
+                <div class="item el" data-in="57.3"> <!-- «станьте частью» 57.18 -->
+                    <div class="glow"></div>
+                    <p class="label">Новая экономика</p>
                 </div>
             </div>
         </section>
