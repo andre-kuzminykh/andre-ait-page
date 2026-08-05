@@ -103,7 +103,7 @@ def test_icons_come_from_the_deck_set():
 
 def test_scenes_do_not_overlap():
     scenes = _scenes()
-    assert len(scenes) >= 5, "сцен подозрительно мало: %d" % len(scenes)
+    assert len(scenes) >= 9, "сцен подозрительно мало: %d" % len(scenes)
     prev = 0.0
     for sid, tin, tout, _ in scenes:
         assert tin < tout, "%s: окно вывернуто" % sid
@@ -145,13 +145,16 @@ def test_labels_come_from_the_deck():
                 continue
             stem = (word[:-2] if len(word) > 6 else word).lower()   # падежи не считаем
             assert stem in deck, "слова нет в деке, значит подпись досочинена: %r (из %r)" % (word, label)
-    assert len(_labels()) >= 12, "проверено подозрительно мало подписей (%d)" % len(_labels())
+    assert len(_labels()) >= 17, "проверено подозрительно мало подписей (%d)" % len(_labels())
 
 
 def test_finale_animations_are_in_place():
-    """Владелец просил три особых финала: дизлайк «выходит» у «Рутины», лайк —
-    у «Создания будущего», за «Новой экономикой» дышит фиолетовое сияние."""
+    """Особые сцены владельца: монетопад у «Экономического эффекта», дизлайк
+    «выходит» у «Рутины», лайк — у «Создания будущего», за «Новой экономикой»
+    дышит фиолетовое сияние и сияют звёздочки слева и справа."""
     html = _html()
+    assert "@keyframes coinFall" in html, "монетки у «Экономического эффекта» не сыплются"
+    assert html.count('data-icon="coins"') >= 6, "монеток подозрительно мало"
     assert "@keyframes thumbDown" in html, "нет анимации дизлайка"
     assert "@keyframes thumbUp" in html, "нет анимации лайка"
     assert 'data-icon="thumbs-down"' in html and 'data-icon="thumbs-up"' in html, \
@@ -159,6 +162,8 @@ def test_finale_animations_are_in_place():
     assert "glowPulse" in html and "infinite" in html[html.index("glowPulse"):], \
         "сияние за «Новой экономикой» не дышит"
     assert "136,84,243" in html, "сияние не фирменным фиолетовым (#8854F3)"
+    assert "@keyframes starTwinkle" in html, "звёздочки у финала не сияют"
+    assert html.count('data-icon="star"') == 6, "звёздочек должно быть по три слева и справа"
 
 
 def test_no_headings_in_frame():

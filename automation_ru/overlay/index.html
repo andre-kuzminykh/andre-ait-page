@@ -196,7 +196,7 @@ ul{list-style:none;padding:0}
 /* Кегли посчитаны по самой длинной строке подписи: JetBrains Mono
    моноширинный, знак = 0.6em, полезная ширина 988px. */
 
-/* S1 — одна заглавная карточка по центру: 30 знаков × 24 = 720px при 40px. */
+/* S1 — заглавная карточка по центру: 30 знаков × 24 = 720px при 40px. */
 #s1 .row{justify-content:center}
 #s1 .circle{width:124px;height:124px;margin-bottom:20px}
 #s1 .label{font-size:40px}
@@ -204,34 +204,70 @@ ul{list-style:none;padding:0}
 /* S2 — три роли: 43 знака → 826px при 32px, зазоры по 54px. */
 #s2 .label{font-size:32px}
 
-/* S3 — самый плотный ряд: 18+14+14+11 = 57 знаков → 889px при 26px,
+/* S3 — четыре коротких: 6+9+5+5 = 25 знаков → 540px при 36px, просторно. */
+#s3 .circle{width:92px;height:92px;margin-bottom:14px}
+#s3 .label{font-size:36px}
+
+/* S4 — самый плотный ряд: 18+14+14+11 = 57 знаков → 889px при 26px,
    зазоры по 33px. 28px уже не влезает (957px). */
-#s3 .circle{width:88px;height:88px;margin-bottom:14px}
-#s3 .label{font-size:26px}
+#s4 .circle{width:88px;height:88px;margin-bottom:14px}
+#s4 .label{font-size:26px}
 
-/* S4 — «побольше размером, с иконкой робота в начале строки»:
-   ряд горизонтальный, круг слева от текста. 19 знаков × 26.4 = 502px
-   текста + круг 116 + зазор = 674px. */
-#s4 .row{justify-content:center}
-#s4 .item{flex-direction:row;align-items:center;gap:30px;text-align:left}
-#s4 .circle{width:116px;height:116px;margin-bottom:0}
-#s4 .label{font-size:44px}
+/* S5 — ЭКОНОМИЧЕСКИЙ ЭФФЕКТ: подпись по центру, сверху сыплются монетки.
+   Подпись 20 знаков → 528px при 44px. Монетки — маленькие иконки FA coins
+   золотом; падают из-за верxa зоны за подпись, с вращением и разбегом по
+   фазе. Дырок в цикле нет: девять монет со сдвигом на 1/9 периода. */
+#s5 .row{justify-content:center}
+#s5 .item{position:relative;padding-top:150px}
+#s5 .label{font-size:44px;position:relative;z-index:1}
+#s5 .coins{position:absolute;left:50%;top:0;width:640px;height:150px;transform:translateX(-50%);pointer-events:none}
+#s5 .coin{position:absolute;top:-40px;display:block;width:44px;height:44px;color:#F9A83C;
+    filter:drop-shadow(0 3px 8px rgba(10,4,24,.45));opacity:0}
+#s5 .coin svg{width:100%;height:100%}
+#s5 .coin:nth-child(1){left:4%;width:34px;height:34px}
+#s5 .coin:nth-child(2){left:16%}
+#s5 .coin:nth-child(3){left:28%;width:30px;height:30px;color:#FDBA74}
+#s5 .coin:nth-child(4){left:40%;width:38px;height:38px}
+#s5 .coin:nth-child(5){left:52%;color:#FDBA74}
+#s5 .coin:nth-child(6){left:63%;width:32px;height:32px}
+#s5 .coin:nth-child(7){left:74%;width:40px;height:40px;color:#FDBA74}
+#s5 .coin:nth-child(8){left:85%;width:30px;height:30px}
+#s5 .coin:nth-child(9){left:94%;width:36px;height:36px}
+#s5 .el.on .coin{animation:coinFall 1.8s linear infinite}
+#s5 .el.on .coin:nth-child(2){animation-delay:.2s}
+#s5 .el.on .coin:nth-child(3){animation-delay:.4s}
+#s5 .el.on .coin:nth-child(4){animation-delay:.6s}
+#s5 .el.on .coin:nth-child(5){animation-delay:.8s}
+#s5 .el.on .coin:nth-child(6){animation-delay:1.0s}
+#s5 .el.on .coin:nth-child(7){animation-delay:1.2s}
+#s5 .el.on .coin:nth-child(8){animation-delay:1.4s}
+#s5 .el.on .coin:nth-child(9){animation-delay:1.6s}
+@keyframes coinFall{
+    0%{transform:translateY(0) rotate(-14deg);opacity:0}
+    12%{opacity:1}
+    82%{opacity:1}
+    100%{transform:translateY(190px) rotate(16deg);opacity:0}
+}
 
-/* S5/S6 — один элемент по центру, палец ВЫСТРЕЛИВАЕТ отдельно от подписи:
-   подпись встаёт спокойно, а круг с пальцем выскакивает с перелётом
-   и качком — у дизлайка наклон в минус, у лайка в плюс. */
-#s5 .row,#s6 .row{justify-content:center}
-#s5 .circle,#s6 .circle{width:132px;height:132px;margin-bottom:20px}
-#s5 .label,#s6 .label{font-size:40px}
+/* S6 — крупно, круг слева от текста (робот в начале строки). */
+#s6 .row{justify-content:center}
+#s6 .item{flex-direction:row;align-items:center;gap:30px;text-align:left}
+#s6 .circle{width:116px;height:116px;margin-bottom:0}
+#s6 .label{font-size:44px}
+
+/* S7/S8 — палец выстреливает отдельно от подписи, с перелётом и качком. */
+#s7 .row,#s8 .row{justify-content:center}
+#s7 .circle,#s8 .circle{width:132px;height:132px;margin-bottom:20px}
+#s7 .label,#s8 .label{font-size:40px}
 .circle.slate{background:#ECECF1;color:#3A3A46}
-#s5 .el.on .circle{animation:thumbDown .85s var(--ease) .12s backwards}
+#s7 .el.on .circle{animation:thumbDown .85s var(--ease) .12s backwards}
 @keyframes thumbDown{
     0%{transform:scale(.25) rotate(18deg);opacity:0}
     55%{transform:scale(1.16) rotate(-9deg);opacity:1}
     78%{transform:scale(.95) rotate(4deg)}
     100%{transform:none;opacity:1}
 }
-#s6 .el.on .circle{animation:thumbUp .85s var(--ease) .12s backwards}
+#s8 .el.on .circle{animation:thumbUp .85s var(--ease) .12s backwards}
 @keyframes thumbUp{
     0%{transform:scale(.25) rotate(-18deg);opacity:0}
     55%{transform:scale(1.16) rotate(9deg);opacity:1}
@@ -239,21 +275,38 @@ ul{list-style:none;padding:0}
     100%{transform:none;opacity:1}
 }
 
-/* S7 — финал: текст, сзади дышит фиолетовое сияние. Эллипс (50%) —
-   прямоугольных плашек в кадре не бывает; цвет — фирменный #8854F3. */
-#s7 .row{justify-content:center}
-#s7 .item{position:relative;justify-content:center}
-#s7 .label{font-size:48px;position:relative;z-index:1;padding:60px 0}
-#s7 .glow{
-    position:absolute;left:50%;top:50%;width:640px;height:300px;
+/* S9 — финал: текст, сзади дышит фиолетовое сияние (эллипс 50% —
+   прямоугольных плашек в кадре не бывает), слева и справа сияют звёздочки. */
+#s9 .row{justify-content:center}
+#s9 .item{position:relative;justify-content:center;flex-direction:row;align-items:center;gap:34px}
+#s9 .label{font-size:48px;position:relative;z-index:1;padding:60px 0}
+#s9 .glow{
+    position:absolute;left:50%;top:50%;width:760px;height:300px;
     transform:translate(-50%,-50%);border-radius:50%;
     background:radial-gradient(closest-side,rgba(136,84,243,.8),rgba(136,84,243,.3) 55%,rgba(136,84,243,0) 74%);
     filter:blur(16px);opacity:0;transition:opacity .6s ease;
 }
-#s7 .el.on .glow{opacity:1;animation:glowPulse 2.6s ease-in-out .2s infinite}
+#s9 .el.on .glow{opacity:1;animation:glowPulse 2.6s ease-in-out .2s infinite}
 @keyframes glowPulse{
     0%,100%{transform:translate(-50%,-50%) scale(1)}
     50%{transform:translate(-50%,-50%) scale(1.16)}
+}
+#s9 .stars{position:relative;z-index:1;display:flex;flex-direction:column;gap:18px}
+#s9 .st{display:block;color:#E9DFFF;filter:drop-shadow(0 0 10px rgba(196,181,253,.9));opacity:0}
+#s9 .st svg{width:100%;height:100%}
+#s9 .stars .st:nth-child(1){width:30px;height:30px}
+#s9 .stars .st:nth-child(2){width:46px;height:46px;color:#fff;margin-left:26px}
+#s9 .stars .st:nth-child(3){width:24px;height:24px}
+#s9 .stars-r .st:nth-child(2){margin-left:-26px}
+#s9 .el.on .st{animation:starTwinkle 1.6s ease-in-out infinite}
+#s9 .el.on .stars .st:nth-child(2){animation-delay:.5s}
+#s9 .el.on .stars .st:nth-child(3){animation-delay:1.0s}
+#s9 .el.on .stars-r .st:nth-child(1){animation-delay:.8s}
+#s9 .el.on .stars-r .st:nth-child(2){animation-delay:.2s}
+#s9 .el.on .stars-r .st:nth-child(3){animation-delay:1.3s}
+@keyframes starTwinkle{
+    0%,100%{opacity:.35;transform:scale(.75) rotate(-8deg)}
+    50%{opacity:1;transform:scale(1.15) rotate(8deg)}
 }
 
 /* ── Обложка: первые секунды готового ролика. Стык с видео жёсткий, без
@@ -376,8 +429,7 @@ body.dragging #drop{display:flex}
 
     <div id="layer">
 
-        <!-- ══ S1 · заглавная карточка курса. Держится, пока звучит обещание
-             курса, до появления ролей. Тексты — дословно слова владельца. ══ -->
+        <!-- ══ S1 · заглавная карточка курса, до появления ролей ══ -->
         <section class="scene" id="s1" data-in="1.6" data-out="14.2">
             <div class="row">
                 <div class="item el" data-in="1.8"> <!-- «по автоматизации» 1.70 -->
@@ -387,14 +439,14 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S2 · три роли из дека (заголовок «Для кого» не берётся) ══ -->
+        <!-- ══ S2 · три роли из дека ══ -->
         <section class="scene" id="s2" data-in="14.7" data-out="21.8">
             <div class="row">
                 <div class="item el" data-in="15.4"> <!-- «будущим AI-консультантам» 15.28 -->
                     <div class="circle solar ico" data-icon="compass"></div>
                     <p class="label">ИИ-консультант</p>
                 </div>
-                <div class="item el" data-in="16.7"> <!-- «инженерам» внутри реплики 15.86–17.20 -->
+                <div class="item el" data-in="16.7"> <!-- «инженерам» внутри 15.86–17.20 -->
                     <div class="circle ember ico" data-icon="wrench"></div>
                     <p class="label">ИИ-инженер<br>по автоматизации</p>
                 </div>
@@ -405,10 +457,30 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S3 · чему научитесь: четыре пункта в ряд, формулировки владельца.
-             Ряд держится и на «и оценивать экономический эффект» — до конца
-             мысли про агентов. ══ -->
-        <section class="scene" id="s3" data-in="30.6" data-out="42.9">
+        <!-- ══ S3 · чему научитесь, часть 1: поток данных → TO-BE ══ -->
+        <section class="scene" id="s3" data-in="22.2" data-out="30.2">
+            <div class="row">
+                <div class="item el" data-in="22.8"> <!-- «управлять компанией» 22.70 -->
+                    <div class="circle solar ico" data-icon="brain"></div>
+                    <p class="label">Поток<br>данных</p>
+                </div>
+                <div class="item el" data-in="25.2"> <!-- «находить» в конце 24.34–25.44 -->
+                    <div class="circle ember ico" data-icon="magnifying-glass"></div>
+                    <p class="label">Находить<br>процессы</p>
+                </div>
+                <div class="item el" data-in="27.1"> <!-- «описывать» в конце 26.04–27.54 -->
+                    <div class="circle solar ico" data-icon="clipboard-list"></div>
+                    <p class="label">AS-IS</p>
+                </div>
+                <div class="item el" data-in="29.0"> <!-- «проектировать будущую» 28.94 -->
+                    <div class="circle ember ico" data-icon="pen-ruler"></div>
+                    <p class="label">TO-BE</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S4 · чему научитесь, часть 2: агенты ══ -->
+        <section class="scene" id="s4" data-in="30.6" data-out="39.4">
             <div class="row">
                 <div class="item el" data-in="31.3"> <!-- «роль агента» 31.28 -->
                     <div class="circle solar ico" data-icon="user-gear"></div>
@@ -429,9 +501,20 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S4 · внедрение: один крупный элемент, робот В НАЧАЛЕ СТРОКИ
-             (владелец: «отдельно побольше размером с иконкой робота в начале») ══ -->
-        <section class="scene" id="s4" data-in="43.4" data-out="48.0">
+        <!-- ══ S5 · ЭКОНОМИЧЕСКИЙ ЭФФЕКТ: сверху сыплются монетки ══ -->
+        <section class="scene" id="s5" data-in="39.9" data-out="43.0">
+            <div class="row">
+                <div class="item el" data-in="40.6"> <!-- «экономический эффект» 40.52 -->
+                    <div class="coins" aria-hidden="true">
+                        <i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i>
+                    </div>
+                    <p class="label">Экономический эффект</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S6 · внедрение: крупно, робот в начале строки ══ -->
+        <section class="scene" id="s6" data-in="43.4" data-out="48.0">
             <div class="row">
                 <div class="item el" data-in="44.5"> <!-- «вы внедрите» 44.40 -->
                     <div class="circle solar ico" data-icon="robot"></div>
@@ -440,8 +523,8 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S5 · «Рутина» с дизлайком: большой палец выстреливает отдельно ══ -->
-        <section class="scene" id="s5" data-in="48.2" data-out="51.3">
+        <!-- ══ S7 · «Рутина»: дизлайк выстреливает отдельно ══ -->
+        <section class="scene" id="s7" data-in="48.2" data-out="51.3">
             <div class="row">
                 <div class="item el" data-in="48.9"> <!-- «рутиной» 48.94 -->
                     <div class="circle slate ico" data-icon="thumbs-down"></div>
@@ -450,8 +533,8 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S6 · «Создание будущего» с лайком, та же анимация в плюс ══ -->
-        <section class="scene" id="s6" data-in="51.7" data-out="54.6">
+        <!-- ══ S8 · «Создание будущего»: лайк, та же анимация в плюс ══ -->
+        <section class="scene" id="s8" data-in="51.7" data-out="54.6">
             <div class="row">
                 <div class="item el" data-in="52.0"> <!-- «займёмся созданием» 51.92 -->
                     <div class="circle solar ico" data-icon="thumbs-up"></div>
@@ -460,12 +543,14 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S7 · финал: «Новая экономика», сзади дышит фиолетовое сияние ══ -->
-        <section class="scene" id="s7" data-in="56.9" data-out="59.0">
+        <!-- ══ S9 · финал: сияние сзади, звёздочки сияют слева и справа ══ -->
+        <section class="scene" id="s9" data-in="56.9" data-out="59.0">
             <div class="row">
                 <div class="item el" data-in="57.3"> <!-- «станьте частью» 57.18 -->
                     <div class="glow"></div>
+                    <span class="stars stars-l" aria-hidden="true"><i class="st" data-icon="star"></i><i class="st" data-icon="star"></i><i class="st" data-icon="star"></i></span>
                     <p class="label">Новая экономика</p>
+                    <span class="stars stars-r" aria-hidden="true"><i class="st" data-icon="star"></i><i class="st" data-icon="star"></i><i class="st" data-icon="star"></i></span>
                 </div>
             </div>
         </section>
