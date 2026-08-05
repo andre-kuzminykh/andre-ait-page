@@ -60,6 +60,9 @@ body.transparent #stage,body.transparent{background:transparent}
 #mock{position:absolute;inset:0;display:none}
 body.mock #mock{display:block}
 body.transparent #mock{display:none}
+/* Рендер слоя ТОЛЬКО субтитров (?only=subs): графика и шапка спрятаны.
+   Нужен для сборки без libass — см. запасной путь в собрать.sh. */
+body.only-subs #layer,body.only-subs #chrome,body.only-subs #scrim{display:none!important}
 
 /* ── Скрим: мягкое затемнение верхней трети. Подписи белые, а стена в
    кадре светло-сиреневая — без затемнения белое по светлому не читается.
@@ -781,17 +784,13 @@ body.dragging #drop{display:flex}
             '# урезана — без libass, то есть без фильтра subtitles («No such filter»).',
             '# Поэтому команда ffmpeg не берётся на веру: перебираем кандидатов и',
             '# берём первого, кто реально умеет вжигать субтитры.',
-            'FF=""',
+            'FF=""; FULL=0',
             'for c in ffmpeg /opt/homebrew/bin/ffmpeg /usr/local/bin/ffmpeg; do',
             '  command -v "$c" >/dev/null 2>&1 || continue',
-            '  "$c" -hide_banner -filters 2>/dev/null | grep -q " subtitles " || continue',
-            '  FF="$c"; break',
+            '  if "$c" -hide_banner -filters 2>/dev/null | grep -q " subtitles "; then FF="$c"; FULL=1; break; fi',
+            '  [ -n "$FF" ] || FF="$c"',
             'done',
-            '[ -n "$FF" ] || {',
-            '  echo "Не нашёл ffmpeg, умеющий вжигать субтитры (нужен libass)."',
-            '  echo "Поставьте полный: brew install ffmpeg"',
-            '  echo "(conda-ffmpeg урезан; можно также выйти из conda: conda deactivate)"',
-            '  exit 1; }',
+            '[ -n "$FF" ] || { echo "Нет ffmpeg вообще. macOS: brew install ffmpeg"; exit 1; }',
             'FP="$(dirname "$FF")/ffprobe"; [ -x "$FP" ] || FP=ffprobe',
             'command -v "$FP" >/dev/null || { echo "Рядом с $FF нет ffprobe"; exit 1; }',
             'echo "ffmpeg: $FF"',
@@ -799,6 +798,25 @@ body.dragging #drop{display:flex}
             'for f in overlay_c.mp4 overlay_a.mp4 субтитры.srt fonts/JetBrainsMono-ExtraBold.ttf; do',
             '  [ -f "$DIR/$f" ] || { echo "Рядом со скриптом нет $f"; exit 1; }',
             'done',
+            '',
+            '# Запасной путь без libass: субтитры лежат ГОТОВЫМ слоем (subs_c/subs_a),',
+            '# нужны только overlay и alphamerge — они есть даже в урезанной сборке.',
+            '# Но слой отрендерен из конкретного текста: если субтитры.srt правился,',
+            '# честно останавливаемся, а не собираем со старыми словами.',
+            'if [ "$FULL" = 0 ]; then',
+            '  for f in subs_c.mp4 subs_a.mp4 субтитры.sha; do',
+            '    [ -f "$DIR/$f" ] || { echo "Этот ffmpeg без libass, а запасного слоя субтитров ($f) нет. Поставьте полный: brew install ffmpeg"; exit 1; }',
+            '  done',
+            '  WANT=$(cat "$DIR/субтитры.sha")',
+            '  GOT=$( (shasum -a 256 "$DIR/субтитры.srt" 2>/dev/null || sha256sum "$DIR/субтитры.srt") | cut -d" " -f1 )',
+            '  if [ "$GOT" != "$WANT" ]; then',
+            '    echo "субтитры.srt правился, а этот ffmpeg вжигать текст не умеет (нет libass):"',
+            '    echo "готовый слой субтитров собран из ПРЕЖНЕГО текста, правки бы потерялись."',
+            '    echo "Поставьте полный ffmpeg (brew install ffmpeg) — тогда правки вожгутся, — или пришлите новый субтитры.srt мне, пересоберу слой."',
+            '    exit 1',
+            '  fi',
+            '  echo "Субтитры: ffmpeg без libass — беру готовый слой (текст совпадает с субтитры.srt)"',
+            'fi',
             'VIDEO="${1:-' + v + '}"',
             '[ -f "$VIDEO" ] || { echo "Не найден файл: $VIDEO"; exit 1; }',
             'OUT="${VIDEO%.*}-готовый.mp4"',
@@ -824,6 +842,7 @@ body.dragging #drop{display:flex}
             '# Имена рабочих файлов латиницей и без пробелов: путь уходит внутрь',
             '# фильтра, где двоеточия и пробелы пришлось бы экранировать.',
             'TMP=.overlay-build',
+            'if [ "$FULL" = 1 ]; then',
             'rm -rf "$TMP"; mkdir -p "$TMP/fonts"',
             'cp "$DIR/fonts/JetBrainsMono-ExtraBold.ttf" "$TMP/fonts/"',
             '"$FF" -y -v error -i "$DIR/субтитры.srt" "$TMP/raw.ass"',
@@ -838,6 +857,7 @@ body.dragging #drop{display:flex}
             '# ffmpeg пишет ASS в координатах 384x288 — переводим их в размер кадра,',
             '# иначе кегль и отступ субтитров считаются не от того.',
             'awk -v st="$STYLE" -v w="$DW" -v h="$DH" \'/^Style: Default,/{print st;next} /^PlayResX:/{print "PlayResX: " w;next} /^PlayResY:/{print "PlayResY: " h;next} {print}\' "$TMP/raw.ass" > "$TMP/subs.ass"',
+            'fi',
             '# Битрейт как у исходника, но не ниже 10 Мбит/с.',
             'TARGET=$(awk -v b="${BR:-0}" \'BEGIN{ if(b<1) b=12000000; if(b<10000000) b=10000000; printf "%d", b }\')',
             'HW=$("$FF" -hide_banner -encoders 2>/dev/null | grep -o "hevc_videotoolbox\\|h264_videotoolbox" | tr "\\n" " ")',
@@ -859,7 +879,13 @@ body.dragging #drop{display:flex}
             '# 59.12 с видео при 70 с звука — 11 секунд черноты под звук.',
             '# setpts/asetpts прижимают дорожки ролика к нулю: в MOV с телефона',
             '# видеодорожка бывает начинается позже звука, и тогда в начале чёрный кадр.',
-            'VF="[1:v]scale=$DW:$DH:flags=lanczos[oc];[2:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[0:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass,subtitles=filename=$TMP/subs.ass:fontsdir=$TMP/fonts,format=$PIX,setsar=1[v]"',
+            'if [ "$FULL" = 1 ]; then',
+            '  VF="[1:v]scale=$DW:$DH:flags=lanczos[oc];[2:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[0:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass,subtitles=filename=$TMP/subs.ass:fontsdir=$TMP/fonts,format=$PIX,setsar=1[v]"',
+            '  EXTRA=""',
+            'else',
+            '  VF="[1:v]scale=$DW:$DH:flags=lanczos[oc];[2:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[4:v]scale=$DW:$DH:flags=lanczos[tc];[5:v]scale=$DW:$DH:flags=lanczos[ta];[tc][ta]alphamerge[tv];[0:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass[m1];[m1][tv]overlay=0:0:format=auto:eof_action=pass,format=$PIX,setsar=1[v]"',
+            '  EXTRA="-i $DIR/subs_c.mp4 -i $DIR/subs_a.mp4"',
+            'fi',
             '# ЗВУК НЕ ТРОГАЕМ ВООБЩЕ — как в лекции. Дорожка идёт копией из',
             '# исходника отдельным входом (проверено md5 — бит-в-бит). Если в',
             '# исходнике дорожки были смещены (edit list в MOV с телефона), сдвиг',
@@ -881,13 +907,17 @@ body.dragging #drop{display:flex}
             'else',
             '  AOPT="-c:a $AENC -b:a 256k"; echo "Звук: дорожка $ACODEC — в mp4 её копией не положить, пережимаю через $AENC 256k"',
             'fi',
+            '# Входы: 0 ролик · 1-2 слой графики · 3 ролик со сдвигом (только звук)',
+            '# · 4-5 слой субтитров (только запасной путь). Аудиовход при EXTRA',
+            '# остаётся третьим: EXTRA добавляется ПОСЛЕ него.',
             'if [ -n "$ACODEC" ]; then',
             '  "$FF" -y -loglevel error -stats -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
-            '    $AIN -i "$VIDEO" \\',
+            '    $AIN -i "$VIDEO" $EXTRA \\',
             '    -filter_complex "$VF" \\',
             '    -map "[v]" -map 3:a:0 -c:v $VE -pix_fmt "$PIX" $AOPT -movflags +faststart "$OUT"',
             'else',
             '  "$FF" -y -loglevel error -stats -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
+            '    -f lavfi -t 0.1 -i anullsrc $EXTRA \\',
             '    -filter_complex "$VF" \\',
             '    -map "[v]" -c:v $VE -pix_fmt "$PIX" -an -movflags +faststart "$OUT"',
             'fi',
@@ -966,6 +996,7 @@ body.dragging #drop{display:flex}
         document.documentElement.style.background = 'transparent';
     }
     if (q.get('scrim') === '0') document.body.classList.add('no-scrim');
+    if (q.get('only') === 'subs') document.body.classList.add('only-subs');
     if (q.get('subs') === '0') document.body.classList.add('no-subs');
     if (q.get('subY')) document.getElementById('sub').style.top = q.get('subY') + 'px';
     if (q.get('cover')) {

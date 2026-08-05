@@ -379,6 +379,27 @@ def test_script_picks_a_capable_ffmpeg():
     assert "ffmpeg -y -loglevel" not in script, "остался вызов ffmpeg мимо селектора"
 
 
+def test_fallback_subs_layer_matches_the_srt():
+    """Запасной путь для ffmpeg без libass (конда): субтитры лежат готовым
+    слоем subs_c/subs_a. Слой отрендерен из конкретного текста — хэш этого
+    текста лежит рядом, и сборка сверяет его с субтитры.srt, чтобы не собрать
+    ролик со старыми словами. Этот тест ловит то же самое в репозитории:
+    правка субтитры.srt без перерендера слоя."""
+    import hashlib
+    for f in ("subs_c.mp4", "subs_a.mp4", "субтитры.sha"):
+        assert os.path.exists(os.path.join(_DIR, f)), "нет файла запасного слоя: %s" % f
+    want = open(os.path.join(_DIR, "субтитры.sha"), encoding="utf-8").read().strip()
+    got = hashlib.sha256(open(_SRT, "rb").read()).hexdigest()
+    assert got == want, \
+        "субтитры.srt правился, а слой subs_c/subs_a не перерендерен — сборка без libass соберёт старые слова"
+    html = _html()
+    assert "only-subs" in html, "нет режима ?only=subs — слой субтитров нечем рендерить"
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "subs_c.mp4" in script and "subs_a.mp4" in script, "в сборке нет запасного пути"
+    assert "субтитры.sha" in script, "сборка не сверяет хэш текста со слоем"
+    assert "правился" in script, "нет честной остановки при правленом тексте без libass"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
