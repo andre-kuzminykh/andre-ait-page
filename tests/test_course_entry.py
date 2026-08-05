@@ -396,6 +396,31 @@ def test_bootcamp_button_opens_bootcamp_page():
         assert 'href="/automation/bootcamp/"' in _read(rel), rel
 
 
+def test_methodology_button_opens_the_book():
+    """«Изучить методику» открывает книгу «AI Maturity Index», а не лекцию.
+
+    Три вещи, которые здесь легко сломать:
+      · файл должен лежать в репозитории — иначе кнопка ведёт в 404;
+      · пробелы в имени обязаны быть закодированы (%20): с «живым» пробелом
+        ссылка рвётся на части серверов и в мессенджерах;
+      · target=_blank — 3.8МБ PDF не должен затирать страницу задания.
+    """
+    book = "books/AI MATURITY INDEX.pdf"
+    path = os.path.join(_ROOT, book)
+    assert os.path.exists(path), "книга должна лежать в репозитории: " + book
+    with open(path, "rb") as f:
+        assert f.read(5) == b"%PDF-", book + ": это должен быть настоящий PDF"
+
+    html = _read(_PRACTICE)
+    link = re.search(r'<a class="btn btn-ghost"[^>]*>(?:(?!</a>).)*Изучить методику', html, re.S)
+    assert link, "не нашёл кнопку «Изучить методику»"
+    tag = link.group(0)
+    assert 'href="/books/AI%20MATURITY%20INDEX.pdf"' in tag, \
+        "кнопка ведёт на книгу, путь — с кодированными пробелами"
+    assert 'target="_blank"' in tag and 'rel="noopener"' in tag, \
+        "книга открывается в новой вкладке, страница задания остаётся"
+
+
 def test_practice_is_linked_from_the_lecture():
     assert "/automation/1/practice/" in _read(_LECTURE1), \
         "кнопка «Задание» в лекции должна вести на страницу практики"
