@@ -310,8 +310,12 @@ def test_head_and_arrows_do_not_cover_content_on_phones():
     for rel, html in _pages(("automation/1/index.html",)):
         assert re.search(r"@media \(max-width:767px\)\{\s*\n\s*:root\{ --bub:", html), \
             rel + ": на телефоне у угла свои размеры"
-        assert "left:calc(12px * var(--view-scale,1)) !important; right:auto !important;" in html, \
-            rel + ": голова уходит в ЛЕВЫЙ угол, стрелки остаются в правом"
+        # Правка заказчика: голова крупнее и стоит НАД кнопками листания в
+        # правом углу; она лежит поверх слайда и перетаскивается пальцем.
+        assert "right:calc(12px * var(--view-scale,1)) !important; left:auto !important;" in html, \
+            rel + ": голова в правом углу над кнопками листания"
+        assert "bottom:calc(24px * var(--view-scale,1) + var(--arw)) !important;" in html, \
+            rel + ": голова стоит НАД кнопками, а не в их ряду"
         assert "mob: { w:390,  h:844, top:88,  bottom:124" in html, \
             rel + ": мобильная форма резервирует полосу под ряд управления"
 
@@ -331,17 +335,19 @@ def test_radial_figures_declare_their_density():
                 rel + ": у схемы нет data-sats — правила плотности не сработают"
 
 
-def test_satellite_labels_wrap_on_phones():
-    """Перенос подписей спутников объявлен ПОСЛЕ базового nowrap.
+def test_satellite_labels_are_single_line_everywhere():
+    """Подписи радиальных схем — В ОДНУ СТРОКУ на обеих формах.
 
-    Правило жило в раннем блоке @media (max-width:767px), а `white-space:nowrap
-    !important` объявлен ниже по файлу — при равной специфичности побеждает
-    последний, и перенос не работал вовсе.
+    Правка заказчика: на телефоне подписи рвались («Мультимодал/ьность»,
+    «Постоянное улучшение» в 4 строки) — переносы отменены, пилюля лежит
+    поверх кольца одной строкой. Стережём от возврата поздних правил с
+    white-space:normal, которые перебивали базовый nowrap.
     """
     for rel, html in _pages(("automation/1/index.html",)):
-        base = html.index("white-space:nowrap !important;\n  text-align:center;")
-        wrap = html.index(".radial-sat .rf-label{\n    white-space:normal !important;")
-        assert wrap > base, rel + ": правило переноса должно идти после базового nowrap"
+        assert "white-space:normal !important" not in html.split('<style id="radial-fig">')[1].split("</style>")[0], \
+            rel + ": в radial-fig не должно быть правил переноса подписей"
+        assert "hyphens:none !important; max-width:none !important" in html, \
+            rel + ": мобильные подписи схемы — одной строкой"
 
 
 def test_two_frozen_forms_scale_only():

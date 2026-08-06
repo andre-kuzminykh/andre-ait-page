@@ -528,16 +528,24 @@ body.on-last-slide .lec-consult:hover{ background:#FFFFFF !important; }
   .slide-container .content-z .js-card > .js-ico > i{
     font-size:1.15rem !important;
   }
-  /* Абсолютный бейдж («ИИ-модель», «Лидеры») в сложенной строкой карточке
-     встаёт в поток — маленькой пилюлей над заголовком. Вися абсолютом над
-     низкой карточкой, он наезжал на соседнюю. */
+  /* Бейдж («ИИ-модель», «Фокус курса») — на ВЕРХНЕЙ ГРАНИЦЕ карточки, как
+     на компе (правка заказчика). Карточке с бейджем добавляется верхний
+     отступ — пилюля не наезжает на соседнюю карточку стопки. */
+  .slide-container .content-z .js-card{ position:relative; overflow:visible; }
+  .slide-container .content-z .js-hasbadge{ margin-top:.65rem !important; }
   .slide-container .content-z .js-card > .js-badge{
-    position:static !important;
-    grid-column:2; justify-self:start;
-    margin:0 !important;
+    position:absolute !important;
+    top:-0.6rem; left:50%; transform:translateX(-50%);
+    margin:0 !important; z-index:2; white-space:nowrap;
+  }
+  /* Текст в сложенной карточке стоит ПО ЦЕНТРУ вертикально: собственные
+     нижние поля заголовков перекашивали сетку (сверху и снизу выходили
+     разные отступы). Ритм строк держит row-gap самой сетки. */
+  .slide-container .content-z .js-card > :not(.js-ico):not(.js-badge){
+    margin-top:0 !important; margin-bottom:0 !important;
   }
   /* Подписи спутников радиальной схемы на телефоне переносятся — но правило
-     живёт НИЖЕ по файлу (см. блок @media (max-width:520px) в самом конце):
+     живёт НИЖЕ по файлу (см. блок @media (max-width:767px) в самом конце):
      базовый `white-space:nowrap !important` объявлен позже этого места и
      перебивал бы отсюда любую попытку разрешить перенос. */
 }
@@ -786,7 +794,7 @@ window.addEventListener('load', function(){
   // масштаб --view-scale — той же механикой transform:scale, какой слайд
   // ужимается при открытой панели «Текст». Никаких промежуточных макетов.
   var REF = { pc:  { w:1440, h:900, top:128, bottom:90,  pad:32 },
-              mob: { w:390,  h:844, top:88,  bottom:124, pad:16 } };
+              mob: { w:390,  h:844, top:88,  bottom:124, pad:10 } };
   function form(){ return window.innerWidth < 768 ? 'mob' : 'pc'; }
   function refGeom(){ return REF[form()]; }
   function viewScale(){
@@ -1217,6 +1225,39 @@ window.addEventListener('load', function(){
           apply(z);
         }
       }
+      // Ширина чернил в пикселях ФОРМЫ — для панели «Текст»: ужатие при
+      // открытой панели считается от неё, а не от всей ширины холста.
+      ink = inkBox(c);
+      if(ink) slide.setAttribute('data-inkw', String(Math.round(ink.w * z)));
+      // Круги радиальных схем: кегль подписи и размер иконки — доля
+      // ФАКТИЧЕСКОГО диаметра круга. В чистом CSS это не выразить: --sat
+      // задан процентами, а проценты внутри font-size считаются от кегля
+      // родителя, не от ширины фигуры, — clamp схлопывался к минимуму, и
+      // «ИИ-агент» с подписями выходили мельче задуманного на каждой схеме.
+      // Подпись ядра НАМЕРЕННО того же кегля, что подписи спутников.
+      var figs = c.querySelectorAll('.radial-fig'), fq, s1, c1, dts, dq, lb2, off;
+      for(fq = 0; fq < figs.length; fq++){
+        s1 = figs[fq].querySelector('.radial-sat');
+        c1 = figs[fq].querySelector('.radial-core');
+        if(s1){
+          figs[fq].style.setProperty('--lbl', Math.max(12, Math.round(s1.offsetWidth * 0.18)) + 'px');
+          figs[fq].style.setProperty('--sat-ico', Math.round(s1.offsetWidth * 0.52) + 'px');
+        }
+        if(c1) figs[fq].style.setProperty('--core-ico', Math.round(c1.offsetWidth * 0.62) + 'px');
+        // Коробка подписи — симметричные ПИКСЕЛЬНЫЕ отступы от своего круга.
+        // CSS-вариант с процентными --sat/--core давал асимметрию: в контексте
+        // left/right проценты считаются от самого круга, clamp схлопывался, и
+        // авто-поля коробки разъезжались («ИИ-индекс зрелости» стоял правее
+        // своего ядра).
+        dts = figs[fq].querySelectorAll('.radial-sat, .radial-core');
+        for(dq = 0; dq < dts.length; dq++){
+          lb2 = dts[dq].querySelector('.rf-label');
+          if(!lb2) continue;
+          off = Math.round(dts[dq].offsetWidth * 1.6);
+          lb2.style.left = -off + 'px';
+          lb2.style.right = -off + 'px';
+        }
+      }
     }catch(e){}
 
     // Кегль заголовка = экранный размер / масштаб слайда: после умножения на
@@ -1329,6 +1370,7 @@ window.addEventListener('load', function(){
         var el = all[j];
         if (typeof el.className !== 'string') continue;
         var cl = ' ' + el.className + ' ';
+        if (cl.indexOf(' js-keep ') !== -1) continue;
         if (cl.indexOf(' flex-row ') !== -1 && cl.indexOf('md:flex-row') === -1 &&
             el.children.length >= 3){
           el.classList.add('js-stack');
@@ -1359,7 +1401,7 @@ window.addEventListener('load', function(){
           if (!ico) continue;
           kids[k].classList.add('js-card');
           ico.classList.add('js-ico');
-          if (badge) badge.classList.add('js-badge');
+          if (badge){ badge.classList.add('js-badge'); kids[k].classList.add('js-hasbadge'); }
         }
       }
     }
@@ -1390,7 +1432,22 @@ window.addEventListener('load', function(){
     var pnl = document.getElementById('notes-panel');
     var pw = (document.body.classList.contains('notes-open') && window.innerWidth >= 1024 && pnl)
       ? pnl.offsetWidth : 0;
-    document.body.style.setProperty('--fit-shrink', vw ? (vw - pw) / vw : 1);
+    if(!vw || !pw){ document.body.style.setProperty('--fit-shrink', '1'); return; }
+    // Ужимаем РОВНО настолько, чтобы чернила живого слайда поместились рядом
+    // с панелью. Холст формы по краям почти всегда пустой, и прежняя
+    // пропорция (vw-pw)/vw уменьшала слайд заметно сильнее необходимого —
+    // заказчик видел «сильно уменьшаешь, сколько слева и справа пространства».
+    // Пустые края холста при этом уходят под панель и за окно — это ничего
+    // не прячет, а слайд остаётся по центру свободной полосы (translateX).
+    var live = document.querySelector('.slide-container.opacity-100');
+    var iw = live ? parseFloat(live.getAttribute('data-inkw')) || 0 : 0;
+    var g = refGeom();
+    if(!iw) iw = g.w - g.pad * 2;
+    var need = (iw + g.pad * 2) * viewScale();
+    var sh = (vw - pw) / need;
+    if(sh > 1) sh = 1;
+    if(sh < 0.2) sh = 0.2;
+    document.body.style.setProperty('--fit-shrink', String(sh));
   }
   window.syncNotesShrink = syncShrink;
 
@@ -1419,6 +1476,10 @@ window.addEventListener('load', function(){
         // стояли fitAll() и повтор через 1050 мс — именно они дёргали слайд
         // уже после появления.
         markActive();
+        // При открытой панели ужатие своё у каждого слайда (по ширине его
+        // чернил) — пересчитываем под новый слайд. С закрытой панелью это
+        // мгновенный no-op (--fit-shrink остаётся 1).
+        syncShrink();
         return r;
       };
     }
@@ -4537,9 +4598,10 @@ window.addEventListener('load', function(){
   overflow:hidden;
 }
 .radial-core{
-  width:var(--core); height:var(--core);
-  left:calc(50% - var(--core)/2);
-  top:calc(50% - var(--core)/2);
+  /* --core-dot объявлен ниже, в блоке пропорций; здесь фолбэк на --core. */
+  width:var(--core-dot, var(--core)); height:var(--core-dot, var(--core));
+  left:calc(50% - var(--core-dot, var(--core))/2);
+  top:calc(50% - var(--core-dot, var(--core))/2);
   z-index:3;
 }
 .radial-sat{
@@ -4579,7 +4641,7 @@ window.addEventListener('load', function(){
 .radial-fig, .radial-fig *{ transition:none !important; }
 /* Телефон: композиция остаётся круговой, ужимаются размеры и кегль подписи.
    Разваливать круг в сетку нельзя — круг нужен и на мобилке. */
-@media (max-width:520px){
+@media (max-width:767px){
   /* !important обязателен: --sat/--core почти всегда заданы инлайном на самой
      фигуре, а инлайн бьёт обычное правило таблицы стилей — без !important
      телефонные размеры просто не применялись. */
@@ -4599,23 +4661,20 @@ window.addEventListener('load', function(){
     width:100% !important;
   }
   .radial-sat{ padding:0 !important; }
-  .radial-sat .rf-label{ font-size:calc(var(--sat-dot) * 0.21) !important;
-                         top:calc(100% + .42em) !important; }
-  .radial-core .rf-label{ font-size:calc(var(--core) * 0.19) !important;
-                          top:calc(100% + .42em) !important;
-                          /* Длинная подпись центра («Постоянное улучшение») на 390px
-                             дотягивалась до соседних кружков — на телефоне даём ей
-                             перенос в две строки вместо одной длинной. */
-                          white-space:normal !important; max-width:9em !important;
-                          left:calc(-1.6 * var(--core)) !important;
-                          right:calc(-1.6 * var(--core)) !important; }
+  /* Все подписи схемы — В ОДНУ СТРОКУ и на телефоне (правка заказчика):
+     пилюли лежат поверх кольца и друг друга не рвут. Отступы коробок ставит
+     обмер в portal-fit (инлайном, в px). */
+  .radial-sat .rf-label,
+  .radial-core .rf-label{ top:calc(100% + .42em) !important;
+                          white-space:nowrap !important; hyphens:none !important;
+                          max-width:none !important; }
   .radial-sat i{ margin-bottom:0 !important; }
 }
 /* Восемь спутников: при орбите 37% зазор между соседними кругами получается
    1.3% ширины — круги слипаются. Формула зазора W·(0.765·r − sat), поэтому
    многоспутниковым схемам нужна орбита шире. */
 .radial-fig[data-sats="8"]{ --orbit:41%; --sat:clamp(66px, 22%, 128px); }
-@media (max-width:520px){
+@media (max-width:767px){
   .radial-fig[data-sats="7"],
   .radial-fig[data-sats="8"]{ --orbit:41% !important; --sat:clamp(52px, 19%, 84px) !important; }
 }
@@ -4633,10 +4692,10 @@ window.addEventListener('load', function(){
    растянута симметрично влево и вправо на диаметр кружка, а текст в ней
    выровнен по центру. z-index выше ядра, поэтому подпись читается поверх
    соседних кругов и кольца. */
-/* Кружок спутника ЗАМЕТНО крупнее прежнего (0.62 → 0.80): иконка в нём
-   читалась как точка, а вокруг схемы оставалась пустота. Ядро при этом чуть
-   уменьшено — центр не должен давить на остальную схему. */
-.radial-fig{ --sat-dot:calc(var(--sat) * 0.86); }
+/* Кружки чуть МЕНЬШЕ, а иконки в них чуть КРУПНЕЕ (правка заказчика):
+   круг — это рамка иконки, а не самостоятельная фигура. Ядро уменьшается
+   тем же способом (--core-dot) — центр не должен давить на схему. */
+.radial-fig{ --sat-dot:calc(var(--sat) * 0.78); --core-dot:calc(var(--core) * 0.86); }
 .radial-sat{
   width:var(--sat-dot) !important; height:var(--sat-dot) !important;
   left:calc(var(--x) - var(--sat-dot)/2) !important;
@@ -4644,7 +4703,7 @@ window.addEventListener('load', function(){
   padding:0 !important;
   overflow:visible !important;
 }
-.radial-sat i{ font-size:calc(var(--sat-dot) * 0.56) !important; margin:0 !important; }
+.radial-sat i{ font-size:var(--sat-ico, calc(var(--sat-dot) * 0.66)) !important; margin:0 !important; }
 .radial-sat .rf-label{
   position:absolute;
   top:calc(100% + .32em);
@@ -4671,8 +4730,8 @@ html.dark .radial-sat .rf-label{ background:#0A0A0A; }
 /* Кегль подписи задан здесь и только здесь: подгонка её не трогает (она шире
    кружка по замыслу), а прежние 8-9px были самым мелким текстом лекции —
    мельче, чем те же подписи на телефоне. */
-.radial-sat .rf-label{ font-size:calc(var(--sat-dot) * 0.215) !important; }
-.radial-core .rf-label{ font-size:calc(var(--core) * 0.155) !important; }
+.radial-sat .rf-label,
+.radial-core .rf-label{ font-size:var(--lbl, 14px) !important; }
 
 /* ЯДРО — ПО ТОМУ ЖЕ ПРАВИЛУ. Внутри круга подпись не помещалась: у .radial-core
    стоит overflow:hidden, и «ИИ‑агент» рвался переносом, а вторая строка просто
@@ -4684,7 +4743,7 @@ html.dark .radial-sat .rf-label{ background:#0A0A0A; }
 .radial-core{ overflow:visible !important; }
 /* Размер иконки ядра — доля диаметра, а не Tailwind-класс: на выросшем
    круге фиксированные text-4xl читались точкой в центре пустого круга. */
-.radial-core > i{ margin-bottom:0 !important; font-size:calc(var(--core) * 0.50) !important; }
+.radial-core > i{ margin-bottom:0 !important; font-size:var(--core-ico, calc(var(--core-dot, var(--core)) * 0.60)) !important; }
 .radial-core .rf-label{
   position:absolute;
   top:calc(100% + .32em);
@@ -4694,7 +4753,7 @@ html.dark .radial-sat .rf-label{ background:#0A0A0A; }
   border-radius:.6em;
   /* Коробка симметрично шире круга — подпись центрируется без transform
      (см. ловушку 1 в шапке блока). */
-  left:calc(-1.1 * var(--core)); right:calc(-1.1 * var(--core));
+  left:calc(-1.2 * var(--core-dot, var(--core))); right:calc(-1.2 * var(--core-dot, var(--core)));
   width:max-content !important; max-width:none !important;
   margin-left:auto !important; margin-right:auto !important;
   white-space:nowrap !important;
@@ -4708,26 +4767,15 @@ html.dark .radial-core .rf-label{ background:#0A0A0A; color:#FFFFFF !important; 
 /* Телефон: длинная подпись центра («Постоянное улучшение») в одну строку
    дотягивалась до соседних кружков. Здесь, ПОСЛЕ базового nowrap, разрешаем
    ей перенос — иначе правило выше побеждало по порядку. */
-@media (max-width:520px){
+@media (max-width:767px){
   .radial-core .rf-label{
-    white-space:normal !important; max-width:7em !important;
-    left:calc(-1.8 * var(--core)) !important; right:calc(-1.8 * var(--core)) !important;
     line-height:1.15 !important;
   }
-  /* Боковые спутники стоят в 34.5% ширины фигуры от центра. На телефоне это
-     ~104px, а подпись в одну строку («Лучшая модель», «Учёт ошибок»,
-     «Инфраструктура») занимала 105-135px и налезала на подпись ядра. Ширины
-     подобраны так, чтобы между коробками оставалось ~16px: ядро 7.5em,
-     спутник 6.2em. */
-  /* Чем больше спутников, тем ближе соседние подписи: у схемы на 7-8
-     кружков коробка обязана быть уже, иначе соседи наезжают друг на друга.
-     Число спутников проставлено в разметке атрибутом data-sats. */
-  .radial-fig[data-sats="7"] .radial-sat .rf-label,
-  .radial-fig[data-sats="8"] .radial-sat .rf-label{ max-width:6em !important; }
-  .radial-fig[data-sats="6"] .radial-sat .rf-label{ max-width:8.6em !important; }
+  /* Подписи спутников — В ОДНУ СТРОКУ и на телефоне (правка заказчика):
+     прежние переносы («Мультимодал/ьность») убраны, пилюли лежат поверх
+     кольца и друг друга. Отступы коробок ставит обмер в portal-fit. */
   .radial-sat .rf-label{
-    white-space:normal !important; max-width:10.5em !important;
-    left:calc(-1.9 * var(--sat-dot)) !important; right:calc(-1.9 * var(--sat-dot)) !important;
+    white-space:nowrap !important; hyphens:none !important; max-width:none !important;
     line-height:1.15 !important;
   }
 }
@@ -4929,15 +4977,17 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    одной головы, эту полосу portal-fit резервирует (chromeBand), и содержимое
    до неё уже не доходит. Канон заказчика — «никаких наложений текста». */
 @media (max-width:767px){
-  :root{ --bub:calc(96px * var(--view-scale,1));
+  :root{ --bub:calc(120px * var(--view-scale,1));
          --arw:calc(44px * var(--view-scale,1));
          --arw-gap:calc(10px * var(--view-scale,1)); }
+  /* Кружок с головой — крупнее и НАД кнопками листания (правка заказчика);
+     он лежит поверх слайда и перетаскивается, юзер сам подвинет куда хочет. */
   #video-bubble{
-    left:calc(12px * var(--view-scale,1)) !important; right:auto !important;
-    bottom:calc(14px * var(--view-scale,1)) !important;
+    right:calc(12px * var(--view-scale,1)) !important; left:auto !important;
+    bottom:calc(24px * var(--view-scale,1) + var(--arw)) !important;
   }
   #nav-prev, #nav-next{
-    bottom:calc(14px * var(--view-scale,1) + (var(--bub) - var(--arw))/2) !important;
+    bottom:calc(14px * var(--view-scale,1)) !important;
   }
   #nav-next{ right:calc(12px * var(--view-scale,1)) !important; }
   #nav-prev{ right:calc(12px * var(--view-scale,1) + var(--arw) + var(--arw-gap)) !important; }

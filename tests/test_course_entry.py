@@ -396,6 +396,21 @@ def test_bootcamp_button_opens_bootcamp_page():
         assert 'href="/automation/bootcamp/"' in _read(rel), rel
 
 
+def test_diagnostic_button_opens_maturity():
+    """«Бесплатно пройти диагностику» ведёт на maturity.andre.technology.
+
+    Диагностика живёт на maturity-поддомене (правка заказчика); strategy —
+    это кабинет, и отправлять туда человека без пройденного теста нельзя.
+    """
+    html = open(os.path.join(_ROOT, "automation/1/practice/index.html"), encoding="utf-8").read()
+    i = html.find("Бесплатно пройти диагностику")
+    assert i != -1, "кнопка диагностики пропала со страницы практики"
+    a = html.rfind("<a ", 0, i)
+    tag = html[a:i]
+    assert 'href="https://maturity.andre.technology/"' in tag, \
+        "диагностика должна открываться на maturity.andre.technology: " + tag[:120]
+
+
 def test_methodology_button_opens_the_book():
     """«Изучить методику» открывает книгу «AI Maturity Index», а не лекцию.
 
