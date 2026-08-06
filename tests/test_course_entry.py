@@ -452,24 +452,23 @@ def test_practice_terms_do_not_break_on_hyphen():
 
 # ── Говорящая голова: обложка вместо дыры, локальные видео ─────────────────
 
-_COVER = "/assets/1_video/auto_cover_1.jpg"
+_COVER = "/assets/video_sq/poster_auto_0.jpg"
 
 
 def test_lecture_videos_are_local_and_in_order():
-    """42 ролика лежат в репозитории и идут по слайдам в порядке глав.
-
-    Раньше они грузились с raw.githubusercontent.com по хешу коммита чужого
-    репозитория — то есть жили на честном слове.
-    """
-    import os
+    """42 ролика лежат в репозитории (assets/video_sq, новые записи «кв») и
+    идут по слайдам в порядке глав. Старая папка 1_video удалена владельцем."""
+    import os, urllib.parse
     html = _read(_LECTURE1)
     assert "raw.githubusercontent.com" not in html, "видео должны браться из репозитория"
-    urls = re.findall(r"'(/assets/1_video/auto_[^']+\.mp4)'", html)
+    assert "/assets/1_video/" not in html, "ссылок на удалённую папку быть не должно"
+    urls = re.findall(r"'(/assets/video_sq/[^']*%D0%BA%D0%B2[^']*\.mp4)'", html)
     assert len(urls) == 42, "по одному ролику на слайд, а не %d" % len(urls)
-    order = [tuple(map(int, re.search(r"auto_(\d+)-sq-(\d+)", u).groups())) for u in urls]
+    order = [tuple(map(int, re.search(r"auto_(\d+)-%D0%BA%D0%B2-(\d+)", u).groups())) for u in urls]
     assert order == sorted(order), "порядок роликов должен идти по главам и номерам"
-    for u in urls + [_COVER, "/assets/1_video/auto_0_sq.mp4"]:
-        assert os.path.isfile(os.path.join(_ROOT, u.lstrip("/"))), "нет файла " + u
+    for u in urls + [_COVER]:
+        rel = urllib.parse.unquote(u.lstrip("/"))
+        assert os.path.isfile(os.path.join(_ROOT, rel)), "нет файла " + rel
 
 
 def test_cover_shows_while_video_is_idle():
