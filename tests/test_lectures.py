@@ -310,10 +310,10 @@ def test_head_and_arrows_do_not_cover_content_on_phones():
     for rel, html in _pages(("automation/1/index.html",)):
         assert re.search(r"@media \(max-width:767px\)\{\s*\n\s*:root\{ --bub:", html), \
             rel + ": на телефоне у угла свои размеры"
-        assert "#video-bubble{\n    left:12px !important; right:auto !important;" in html, \
+        assert "left:calc(12px * var(--view-scale,1)) !important; right:auto !important;" in html, \
             rel + ": голова уходит в ЛЕВЫЙ угол, стрелки остаются в правом"
-        assert "if (window.innerWidth < 768){" in html and "bottom = Math.max(bottom, Math.round(14 + d + 12))" in html, \
-            rel + ": chromeBand резервирует полосу под ряд управления"
+        assert "mob: { w:390,  h:844, top:88,  bottom:124" in html, \
+            rel + ": мобильная форма резервирует полосу под ряд управления"
 
 
 def test_radial_figures_declare_their_density():
@@ -344,19 +344,28 @@ def test_satellite_labels_wrap_on_phones():
         assert wrap > base, rel + ": правило переноса должно идти после базового nowrap"
 
 
-def test_desktop_uses_horizontal_space():
-    """Десктоп занимает горизонталь: потолки ширины растут вместе с экраном.
+def test_two_frozen_forms_scale_only():
+    """Ровно ДВЕ железные формы: веб 1440x900 и мобилка 390x844.
 
-    Авторские max-w-* рассчитаны на ~1280px; на 1920-2560 контент оставался
-    узким островом — карточки стояли узкими вертикальными колонками с пустыми
-    полями по бокам (скрины заказчика). Расширение не заходит в колонку
-    кружка с головой, иначе широкие панели ложились под него.
+    Канон заказчика: раскладка внутри формы не зависит от окна — текст
+    никогда не переносится иначе, элементы не едут. Реальное окно получает
+    готовый холст формы, умноженный на один общий масштаб --view-scale, той
+    же механикой transform:scale, какой слайд ужимается при открытой панели
+    «Текст». Ресайз ничего не пересобирает — кроме пересечения границы форм.
     """
     for rel, html in _pages():
-        assert "Math.min(1.5, Math.max(1, freeW / 1280))" in html, \
-            rel + ": потолки ширины должны расти со свободной шириной"
-        assert "var corner = window.innerWidth - 2 * (bubW + 20 + 40)" in html, \
-            rel + ": расширение не заходит в колонку кружка"
+        assert "var REF = { pc:  { w:1440, h:900" in html and "mob: { w:390,  h:844" in html, \
+            rel + ": две формы с фиксированными холстами"
+        assert "scale(calc(var(--fit-shrink,1) * var(--view-scale,1)))" in html, \
+            rel + ": окно применяется одним transform-масштабом"
+        assert "var availH = g.h, availW = g.w;" in html, \
+            rel + ": подгонка считает в координатах формы, не окна"
+        assert "if (form() === lastForm) return;" in html, \
+            rel + ": ресайз внутри формы ничего не пересобирает"
+        assert "freeW / 1280" not in html, \
+            rel + ": никакого расширения раскладки под ширину окна"
+        assert "--bub:calc(196px * var(--view-scale,1))" in html, \
+            rel + ": кружок с головой масштабируется тем же коэффициентом"
 
 
 def test_mobile_stacked_cards_fold_into_rows():
@@ -370,8 +379,43 @@ def test_mobile_stacked_cards_fold_into_rows():
     for rel, html in _pages():
         assert "grid-template-columns:auto minmax(0,1fr);" in html, \
             rel + ": мобильная карточка — сетка «иконка | текст»"
-        assert ':not([class*="absolute"])' in html, \
+        # Карточки размечает JS ОДИН раз на загрузке (классы js-*): цепочки
+        # :has(...) пересчитывались браузером при каждой смене классов body
+        # и давали задачу на ~1-1.8с при показе страницы.
+        assert "function annotate()" in html, \
+            rel + ": разметка карточек — один раз в JS, не в :has-селекторах"
+        assert ".js-card > .js-ico{" in html and ".js-card > .js-badge{" in html, \
+            rel + ": CSS матчится по готовым классам js-*"
+        assert "sc.indexOf('absolute') !== -1){ if(!badge) badge = sub[m]; }" in html, \
             rel + ": абсолютный бейдж-пилюля не должен приниматься за иконку"
+        assert "annotate(); syncShrink(); markActive();" in html, \
+            rel + ": разметка выполняется до первой подгонки"
+
+
+def test_visible_slide_never_relaid_after_reveal():
+    """После появления страницы видимый слайд НЕ перекладывается.
+
+    Заказчик дважды ловил «сначала одно положение, потом другое»: второй
+    проход «общий кегль заголовков» доезжал фоном через секунду и
+    пересобирал уже видимый слайд. Канон: показ — только когда шрифты
+    загружены, все 42 слайда подогнаны и общий кегль применён; после показа
+    проход общего кегля видимый слайд пропускает, а клик по стартовому окну
+    дожимает очередь синхронно.
+    """
+    for rel, html in _pages():
+        assert "fitAll(reveal);" in html, \
+            rel + ": показ страницы ждёт завершения ВСЕЙ очереди подгонки"
+        assert "function drainFits(){ chunkStep(fitEpoch, true); }" in html, \
+            rel + ": очередь дорабатывается синхронно перед показом"
+        assert "if(nodes[j] === live && revealed){" in html and "removeAttribute('data-fit')" in html, \
+            rel + ": после показа общий кегль не трогает видимый слайд"
+        # Дожим — только по НАСТОЯЩЕМУ клику: автостарт кликает по скрытому
+        # оверлею программно, и синхронный дожим по нему замораживал главный
+        # поток на ~1-2с (вся подгонка одной задачей).
+        assert "if (e.isTrusted) reveal();" in html, \
+            rel + ": живой клик по стартовому окну дожимает подгонку, автоклик — нет"
+        assert "setTimeout(reveal, 1200)" not in html, \
+            rel + ": страховка в 1.2с показывала страницу раньше шрифтов"
 
 
 def test_fitting_is_budgeted_not_frozen():
@@ -383,9 +427,9 @@ def test_fitting_is_budgeted_not_frozen():
     слайд, до которого пачка не дошла, дожимает markActive при показе.
     """
     for rel, html in _pages():
-        assert "performance.now() - t0 < 8" in html, rel + ": пачки по бюджету времени"
-        assert "if(active && !fitFresh(nodes[i])){ fitOne(nodes[i]); fitMark(nodes[i]); }" in html, \
-            rel + ": непосчитанный слайд дожимается при показе"
+        assert "performance.now() - t0 >= budget" in html, rel + ": пачки по бюджету времени"
+        assert "if(revealed && active && !fitFresh(nodes[i])){ fitOne(nodes[i]); fitMark(nodes[i]); }" in html, \
+            rel + ": слайд без свежей подгонки дожимается при показе"
         assert 'preload="auto"' not in html, \
             rel + ": видео не тянет мегабайты на загрузке страницы"
         if "<video " in html:  # именно тег, а не упоминание в комментарии

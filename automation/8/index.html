@@ -86,8 +86,20 @@
         color: #000000;
     }
 
+        /* Пока не отработала первая подгонка, слайдов не видно: иначе зритель
+       успевает увидеть неподогнанную раскладку, и она «подбивается» у него
+       на глазах. Ждём и шрифты — их метрики меняют высоту чернил. */
+    body:not(.fit-ready) .slide-container { opacity: 0 !important; transition: none !important; }
+
     .slide-container {
-        transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        /* visibility: скрытые слайды не участвуют в отрисовке. Прозрачные
+           (opacity:0) слои браузер всё равно растеризует — с transform-
+           масштабом на каждом content-z показ страницы давал одну задачу на
+           ~1.5-2с: собирались все слои разом. visibility анимируется
+           дискретно в конце перехода, поэтому перекрёстное затухание
+           слайдов сохраняется как было. */
+        visibility: hidden;
+        transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out, visibility 0.5s;
         position: absolute;
         top: 0;
         left: 0;
@@ -96,10 +108,14 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        /* Слайд не прокручивается: не влезло — значит дефект подгонки. */
+        /* Слайд не прокручивается: не влезло — значит дефект подгонки.
+           clip (с фолбэком hidden) запрещает и программную прокрутку: холст
+           формы бывает выше окна (ужимает его transform-масштаб). */
         overflow: hidden;
+        overflow: clip;
         background: #ffffff;
     }
+    .slide-container.opacity-100 { visibility: visible; }
 
     .slide-container::-webkit-scrollbar {
         display: none;
@@ -360,6 +376,13 @@ h1 .text-solar, h2 .text-solar {
    получал десктопную раскладку, планшет в портретной — мобильную, и форм
    выходило четыре вместо двух. */
 
+/* Паддинг САМОГО контейнера слайда (p-3/md:p-8 из разметки) сдвигал холст
+   формы: content-z ставится шириной ровно в форму (390/1440), и лишние 12px
+   слева давали горизонтальную прокрутку 414>390, а сверху — сдвиг холста
+   вниз. Весь воздух и полосы задаёт portal-fit паддингами content-z —
+   контейнеру паддинг не положен вовсе. */
+.slide-container{ padding:0 !important; }
+
 /* Колонки flex/grid могут ужиматься — нет горизонтального переполнения (FR-LECTURE-08) */
 .slide-container [class*="grid-cols"] > *,
 .slide-container [class*="flex-row"] > * { min-width: 0 !important; }
@@ -450,8 +473,8 @@ h1 .text-solar, h2 .text-solar {
 }
 /* Финальный слайд залит фиолетовым — фиолетовая кнопка шапки на нём почти
    сливается с фоном. Только на этом слайде CTA становится белой. */
-body:has(#slide-41.opacity-100) .lec-consult{ background:#FAFAFA !important; color:#0A0A0A !important; }
-body:has(#slide-41.opacity-100) .lec-consult:hover{ background:#FFFFFF !important; }
+body.on-last-slide .lec-consult{ background:#FAFAFA !important; color:#0A0A0A !important; }
+body.on-last-slide .lec-consult:hover{ background:#FFFFFF !important; }
 
 /* Бейджи-ярлыки, приклеенные к верхнему краю карточки, не должны вылезать
    за её борт: -top/-right у абсолютных бейджей выносило их наружу. */
@@ -461,9 +484,12 @@ body:has(#slide-41.opacity-100) .lec-consult:hover{ background:#FFFFFF !importan
    10px, читать невозможно. На узком экране такой ряд встаёт столбцом; вся
    информация остаётся, меняется только форма (канон «две формы»). */
 @media (max-width:767px){
-  .slide-container .content-z [class~="flex-row"]:not([class*="md:flex-row"]):has(> *:nth-child(3)){
-    flex-direction:column !important;
-  }
+  /* Селекторы здесь — по классам js-*, которые расставляет portal-fit ОДИН
+     раз на загрузке. Прежние цепочки :has(...) вычислялись браузером при
+     каждом пересчёте стилей: показ страницы (класс fit-ready на body)
+     превращался в одну задачу на ~1-1.8 секунды, и любая смена слайда
+     стоила десятки миллисекунд. */
+  .slide-container .content-z .js-stack{ flex-direction:column !important; }
   .slide-container .content-z [class~="grid-cols-3"]:not([class*="md:grid-cols"]),
   .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]){
     grid-template-columns:1fr !important;
@@ -472,15 +498,8 @@ body:has(#slide-41.opacity-100) .lec-consult:hover{ background:#FFFFFF !importan
      складывается в СТРОКУ: иконка слева, текст справа — как список «Чему вы
      научитесь» на входной странице (эту форму заказчик принял). Стопка из
      трёх-четырёх вертикальных карточек была «простынёй»: каждая тянула
-     высоту, подгонка ужимала весь слайд, текст мельчал. Строкой карточка
-     втрое ниже, слайд остаётся крупным. Берём только одноколоночные стопки:
-     в сетках 2×2 карточки узкие, строка туда не помещается. Кружок ищем
-     без класса absolute: у части карточек первым стоит абсолютный
-     бейдж-пилюля («ИИ-модель») — он не иконка. */
-  .slide-container .content-z [class~="grid-cols-1"] > [class*="bg-"][class*="rounded"]:has(> [class*="rounded-full"]:not([class*="absolute"])),
-  .slide-container .content-z [class~="grid-cols-3"]:not([class*="md:grid-cols"]) > [class*="bg-"][class*="rounded"]:has(> [class*="rounded-full"]:not([class*="absolute"])),
-  .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]) > [class*="bg-"][class*="rounded"]:has(> [class*="rounded-full"]:not([class*="absolute"])),
-  .slide-container .content-z [class~="flex-row"]:not([class*="md:flex-row"]):has(> *:nth-child(3)) > [class*="bg-"][class*="rounded"]:has(> [class*="rounded-full"]:not([class*="absolute"])){
+     высоту, подгонка ужимала весь слайд, текст мельчал. */
+  .slide-container .content-z .js-card{
     display:grid !important;
     grid-template-columns:auto minmax(0,1fr);
     column-gap:.8rem; row-gap:.15rem;
@@ -490,27 +509,18 @@ body:has(#slide-41.opacity-100) .lec-consult:hover{ background:#FFFFFF !importan
     padding:.7rem .95rem !important;
     transform:none !important;          /* md:scale-105 у акцентной карточки */
   }
-  .slide-container .content-z [class~="grid-cols-1"] > * > [class*="rounded-full"]:not([class*="absolute"]),
-  .slide-container .content-z [class~="grid-cols-3"]:not([class*="md:grid-cols"]) > * > [class*="rounded-full"]:not([class*="absolute"]),
-  .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]) > * > [class*="rounded-full"]:not([class*="absolute"]),
-  .slide-container .content-z [class~="flex-row"]:not([class*="md:flex-row"]):has(> *:nth-child(3)) > * > [class*="rounded-full"]:not([class*="absolute"]){
+  .slide-container .content-z .js-card > .js-ico{
     grid-column:1; grid-row:1 / span 9;
     margin:0 !important;
     width:2.5rem !important; height:2.5rem !important;
   }
-  .slide-container .content-z [class~="grid-cols-1"] > * > [class*="rounded-full"] > i,
-  .slide-container .content-z [class~="grid-cols-3"]:not([class*="md:grid-cols"]) > * > [class*="rounded-full"] > i,
-  .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]) > * > [class*="rounded-full"] > i,
-  .slide-container .content-z [class~="flex-row"]:not([class*="md:flex-row"]):has(> *:nth-child(3)) > * > [class*="rounded-full"] > i{
+  .slide-container .content-z .js-card > .js-ico > i{
     font-size:1.15rem !important;
   }
   /* Абсолютный бейдж («ИИ-модель», «Лидеры») в сложенной строкой карточке
      встаёт в поток — маленькой пилюлей над заголовком. Вися абсолютом над
      низкой карточкой, он наезжал на соседнюю. */
-  .slide-container .content-z [class~="grid-cols-1"] > [class*="bg-"][class*="rounded"]:has(> [class*="rounded-full"]:not([class*="absolute"])) > [class*="absolute"][class*="rounded-full"],
-  .slide-container .content-z [class~="grid-cols-3"]:not([class*="md:grid-cols"]) > [class*="bg-"][class*="rounded"]:has(> [class*="rounded-full"]:not([class*="absolute"])) > [class*="absolute"][class*="rounded-full"],
-  .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]) > [class*="bg-"][class*="rounded"]:has(> [class*="rounded-full"]:not([class*="absolute"])) > [class*="absolute"][class*="rounded-full"],
-  .slide-container .content-z [class~="flex-row"]:not([class*="md:flex-row"]):has(> *:nth-child(3)) > [class*="bg-"][class*="rounded"]:has(> [class*="rounded-full"]:not([class*="absolute"])) > [class*="absolute"][class*="rounded-full"]{
+  .slide-container .content-z .js-card > .js-badge{
     position:static !important;
     grid-column:2; justify-self:start;
     margin:0 !important;
@@ -689,42 +699,39 @@ html.dark [class*="border-black"] { border-color:rgba(255,255,255,0.18) !importa
 <style id="lecture-chrome">
 /* Шапка лекции: лого AIT слева, переключатель темы + «Буткемп» справа (без меню).
    Фиксированная, поверх слайдов, но ниже стартового оверлея/квиза. */
-/* Геометрия шапки — один в один с главной andre.technology: те же отступы,
-   тот же размер логотипа и правой кнопки. Круглые кнопки лекции живут по
-   размерам бургера главной, поэтому ряд собирается точно так же. */
-#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:1.1rem; pointer-events:none; }
-@media (min-width:1024px){ #lecture-header{ padding:2rem; } }
+/* Шапка — часть той же «железной» геометрии, что и холст слайда (канон «две
+   формы»): внутренние размеры — КОНСТАНТЫ двух форм (мобильная <768 и веб
+   ≥768, та же граница, что у REF в portal-fit), а реальное окно масштабирует
+   её ЦЕЛИКОМ тем же --view-scale (zoom), каким масштабируются холст, кружок
+   с головой и стрелки. Раньше здесь были vw-клампы и брейкпоинты 380/640/
+   1024/1600/1900/2300 — шапка жила своей жизнью: на промежуточных окнах
+   (планшет, узкий ноутбук) она была КРУПНЕЕ ужатого холста и накрывала
+   заголовки слайдов. Теперь её высота в форме постоянна и всегда меньше
+   полосы REF.top — наложение невозможно ни при каком окне. */
+#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:1.1rem; pointer-events:none; zoom:var(--view-scale,1); }
+@media (min-width:768px){ #lecture-header{ padding:2rem; } }
 #lecture-header > *{ pointer-events:auto; }
 #lecture-header .lec-logo{ display:inline-flex; align-items:center; flex-shrink:0; }
-#lecture-header .lec-logo img{ width:clamp(2.85rem,12vw,3.7rem); height:clamp(2.85rem,12vw,3.7rem); object-fit:contain; display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
-@media (min-width:1024px){ #lecture-header .lec-logo img{ width:3.6rem; height:3.6rem; } }
+#lecture-header .lec-logo img{ width:2.9rem; height:2.9rem; object-fit:contain; display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+@media (min-width:768px){ #lecture-header .lec-logo img{ width:3.6rem; height:3.6rem; } }
 #lecture-header .lec-right{ display:flex; align-items:center; gap:.4rem; flex-shrink:0; }
-#lecture-header .lec-ctrl{ display:inline-flex; align-items:center; justify-content:center; height:clamp(2.5rem,11vw,3.3rem); width:clamp(2.5rem,11vw,3.3rem); border-radius:999px; border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:clamp(1.05rem,4vw,1.3rem); line-height:1; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:background .2s ease,color .2s ease; }
-@media (min-width:1024px){ #lecture-header .lec-ctrl{ height:2.85rem; width:2.85rem; } }
+#lecture-header .lec-ctrl{ display:inline-flex; align-items:center; justify-content:center; height:2.7rem; width:2.7rem; border-radius:999px; border:1px solid rgba(0,0,0,.12); background:#fff; color:#111; font-size:1.05rem; line-height:1; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:background .2s ease,color .2s ease; }
+@media (min-width:768px){ #lecture-header .lec-ctrl{ height:2.85rem; width:2.85rem; font-size:1.3rem; } }
 #lecture-header .lec-ctrl:hover{ background:#f1f1f1; }
 /* Правая кнопка — размеры «Free AI Diagnostic» с главной. */
-#lecture-header .lec-consult{ display:inline-flex; align-items:center; justify-content:center; gap:clamp(.4rem,1.2vw,.6rem); padding:clamp(.62rem,2.2vw,.95rem) clamp(.85rem,3.2vw,1.35rem); border-radius:999px; background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:clamp(.06em,.4vw,.1em); font-size:clamp(9px,2.7vw,12.5px); white-space:nowrap; box-shadow:0 10px 24px -6px rgba(139,92,246,.5); transition:transform .2s ease,box-shadow .2s ease; }
-@media (min-width:1024px){ #lecture-header .lec-consult{ height:2.85rem; box-sizing:border-box; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em; gap:.55rem; } }
-@media (min-width:1024px) and (max-width:1319px){ #lecture-header .lec-consult{ padding:0 .95rem; font-size:10px; letter-spacing:.08em; gap:.4rem; } }
-@media (min-width:1320px) and (max-width:1479px){ #lecture-header .lec-consult{ padding:0 1.15rem; font-size:11px; letter-spacing:.12em; gap:.5rem; } }
+#lecture-header .lec-consult{ display:inline-flex; align-items:center; justify-content:center; gap:.4rem; padding:.62rem .85rem; border-radius:999px; background:#8B5CF6; color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:.06em; font-size:10.5px; white-space:nowrap; box-shadow:0 10px 24px -6px rgba(139,92,246,.5); transition:transform .2s ease,box-shadow .2s ease; }
+@media (min-width:768px){ #lecture-header .lec-consult{ height:2.85rem; box-sizing:border-box; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em; gap:.55rem; } }
 #lecture-header .lec-consult:hover{ transform:translateY(-1px); box-shadow:0 14px 30px -6px rgba(139,92,246,.6); }
 html.dark #lecture-header .lec-ctrl{ background:#141414; color:#fafafa; border-color:rgba(255,255,255,.18); box-shadow:0 6px 16px rgba(0,0,0,.5); }
 html.dark #lecture-header .lec-ctrl:hover{ background:#1f1f1f; }
 /* Кнопка «Практическое задание»: та же капсула, что и лек-кнопки, но с подписью.
-   На узких экранах остаётся только иконка — шапка не переполняется. */
-#lecture-header .lec-task, #lecture-header .lec-lbl{ width:auto; padding:0 clamp(.8rem,2.8vw,1.15rem); gap:.45rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:clamp(10px,2.6vw,12px); text-decoration:none; }
-#lecture-header .lec-task i, #lecture-header .lec-lbl i{ font-size:clamp(1.05rem,4vw,1.2rem); }
-@media (max-width:640px){
-  #lecture-header .lec-task, #lecture-header .lec-lbl{ width:clamp(2.5rem,11vw,3.3rem); padding:0; }
+   В мобильной форме остаётся только иконка — шапка не переполняется. */
+#lecture-header .lec-task, #lecture-header .lec-lbl{ width:auto; padding:0 1.15rem; gap:.45rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:12px; text-decoration:none; }
+#lecture-header .lec-task i, #lecture-header .lec-lbl i{ font-size:1.2rem; }
+@media (max-width:767px){
+  #lecture-header .lec-task, #lecture-header .lec-lbl{ width:2.7rem; padding:0; }
   #lecture-header .lec-task span, #lecture-header .lec-lbl span{ display:none; }
-}
-/* ≤380px — компактная шапка, как на главной */
-@media (max-width:380px){
-  #lecture-header{ padding:.85rem .6rem; gap:.3rem; }
-  #lecture-header .lec-right{ gap:.3rem; }
-  #lecture-header .lec-logo img{ width:2.5rem; height:2.5rem; }
-  #lecture-header .lec-ctrl, #lecture-header .lec-task, #lecture-header .lec-lbl{ width:2.3rem; height:2.3rem; }
-  #lecture-header .lec-consult{ padding:.6rem .55rem; font-size:8px; letter-spacing:.02em; }
+  #lecture-header .lec-task i, #lecture-header .lec-lbl i{ font-size:1.05rem; }
 }
 </style>
 <script id="portal-theme">
@@ -759,23 +766,29 @@ window.addEventListener('load', function(){
   // Насколько разрешено УВЕЛИЧИВАТЬ содержимое. 1.6 давало на большом экране
   // огромные карточки — заказчик просил элементы мельче относительно экрана.
   var MAX_GROW = 1.22;
-  // На широком экране одного потолка мало: контент упирался в 1.6 и застывал,
-  // а экран продолжал расти — на 2560 чернила занимали 64% ширины островом.
-  // Ступени и границы те же, что у дорожной карты (body{zoom} 1.15/1.3/1.5),
-  // чтобы страницы курса росли одинаково. Ниже 1600px потолок прежний, поэтому
-  // уже проверенные 390 / 768 / 1440 не меняются.
-  function growCap(){
-    var w = window.innerWidth;
-    // На телефоне потолок роста свой: содержимое там и так близко к ширине
-    // экрана, но по высоте оставалось до половины пустоты.
-    if (w < 768) return 1.3;
-    // Ступени НИЖЕ прежних (1.15/1.3/1.5): вместе с расширением потолков
-    // ширины прежний рост давал z≈1.54 при ширине, зажатой колонкой кружка
-    // (на широких экранах голова 300px), — текст раздувался, а карточки
-    // снова стояли узкими колоннами. Теперь ширина берёт своё расширением,
-    // а рост лишь добирает высоту.
-    return MAX_GROW * (w >= 2300 ? 1.28 : w >= 1900 ? 1.12 : w >= 1600 ? 1.06 : 1);
+
+  // ══ ДВЕ ЖЕЛЕЗНЫЕ ФОРМЫ (канон заказчика) ══════════════════════════════
+  // Веб 1440x900 и мобилка 390x844 — и НИЧЕГО между ними. Раскладка каждого
+  // слайда считается ТОЛЬКО в координатах своей формы и не зависит от
+  // реального окна: текст никогда не переносится иначе, элементы не едут.
+  // Реальное окно получает готовый холст формы, умноженный на ОДИН общий
+  // масштаб --view-scale — той же механикой transform:scale, какой слайд
+  // ужимается при открытой панели «Текст». Никаких промежуточных макетов.
+  var REF = { pc:  { w:1440, h:900, top:128, bottom:90,  pad:32 },
+              mob: { w:390,  h:844, top:88,  bottom:124, pad:16 } };
+  function form(){ return window.innerWidth < 768 ? 'mob' : 'pc'; }
+  function refGeom(){ return REF[form()]; }
+  function viewScale(){
+    var g = refGeom();
+    return Math.min(window.innerWidth / g.w, window.innerHeight / g.h);
   }
+  function setViewScale(){
+    document.documentElement.style.setProperty('--view-scale', String(viewScale()));
+  }
+  setViewScale();
+
+  // Потолок роста — константа формы: реальный экран на него не влияет.
+  function growCap(){ return form() === 'mob' ? 1.3 : MAX_GROW; }
   // Высота полосы, в которую контенту заходить нельзя: сверху её занимает
   // шапка лекции, снизу — стрелки навигации. Меряем шапку по факту, а не
   // константой: её размеры зависят от ширины экрана.
@@ -783,42 +796,22 @@ window.addEventListener('load', function(){
   // просил заказчик: телефон и компьютер, между ними только размер.
   var TITLE_FLOOR = 0;               // общий потолок, найденный вторым проходом
   function titleTarget(){
-    var w = window.innerWidth;
-    // На компьютере заголовок заметно крупнее содержимого — так слайд читается
-    // как заголовок с иллюстрацией, а не как стена одинаковых блоков.
-    return w >= 768 ? Math.max(34, Math.min(64, w * 0.037))
-                    : Math.max(19, Math.min(28, w * 0.062));
+    // Кегль считается от ширины ФОРМЫ, не окна: на компьютере заголовок
+    // заметно крупнее содержимого — слайд читается как заголовок с
+    // иллюстрацией, а не как стена одинаковых блоков.
+    var g = refGeom();
+    return form() === 'pc' ? Math.max(34, Math.min(64, g.w * 0.037))
+                           : Math.max(19, Math.min(28, g.w * 0.062));
   }
   function titlePx(){
     var t = titleTarget();
     return TITLE_FLOOR && TITLE_FLOOR < t ? TITLE_FLOOR : t;
   }
-  // Сверху полосу занимает шапка, снизу — стрелки навигации, а на телефоне ещё
-  // и кружок с говорящей головой: он широкий относительно экрана и накрывал
-  // нижний блок слайда. На компьютере кружок стоит в пустом углу справа от
-  // содержимого, поэтому там резервируем только стрелки. Полосы РАЗНЫЕ, и
-  // содержимое сдвигается на половину разницы — визуально оно остаётся по
-  // центру свободной зоны.
-  function chromeBand(){
-    var h = document.getElementById('lecture-header');
-    var top = (h ? h.getBoundingClientRect().height : 56) + 16;
-    // Низ оставляем свободнее верха: содержимое встаёт выше геометрического
-    // центра, как просил заказчик («подтянуть повыше»).
-    var bottom = Math.round(window.innerHeight * 0.10);
-    // На компьютере голова стоит в пустом углу справа от содержимого и в
-    // резерв не входит («голова и стрелки не влияют на слайды»). На телефоне
-    // угла нет: ряд управления лежит ровно поверх текста, и аудит наложений
-    // ловил его на 24 слайдах из 42. Там полосу резервируем — иначе канон
-    // «никаких наложений» невыполним в принципе.
-    if (window.innerWidth < 768){
-      var bub = document.getElementById('video-bubble');
-      // getComputedStyle отдаёт ширину даже у display:none — кружок появляется
-      // только когда видео готово, а резерв нужен с первого кадра.
-      var d = bub ? parseFloat(window.getComputedStyle(bub).width) : 0;
-      if (d > 0) bottom = Math.max(bottom, Math.round(14 + d + 12));
-    }
-    return { top: top, bottom: bottom };
-  }
+  // Полосы сверху (шапка) и снизу (стрелки, на телефоне ещё и кружок с
+  // головой) — КОНСТАНТЫ формы, зашитые в REF. Раньше они мерились по
+  // живому DOM и зависели от окна — раскладка «дышала» вместе с ним; теперь
+  // холст неподвижен, а реальная шапка накрывается полосой с запасом,
+  // потому что масштабируется тем же --view-scale, что и кружок со стрелками.
   function inkBox(c){
     // Объединённый бокс прямых детей content-z — по РАСКЛАДОЧНОЙ геометрии
     // (offsetTop/offsetHeight), а не по getBoundingClientRect.
@@ -1073,8 +1066,9 @@ window.addEventListener('load', function(){
       c.style.maxWidth = '';
       var kids = [].slice.call(c.children), ki;
       for(ki = 0; ki < kids.length; ki++) kids[ki].style.maxWidth = '';
-      var availH = slide.clientHeight, availW = slide.clientWidth;
-      if(!availH || !availW) return;
+      // Размеры — ФОРМЫ, не окна: раскладка одна и та же на любом экране.
+      var g = refGeom();
+      var availH = g.h, availW = g.w;
 
       // МОДЕЛЬ (простая и потому надёжная):
       //   content-z ровно с экран, его паддинги — это «мёртвые» полосы
@@ -1083,12 +1077,10 @@ window.addEventListener('load', function(){
       //   раньше слайд смещался на полполосы, и ровно на эти пиксели низ
       //   уезжал за край экрана — при overflow:hidden это выглядело как
       //   обрезанный слайд, при auto — как «страница листается».
-      var band = chromeBand();
+      var band = { top: g.top, bottom: g.bottom };
       var freeH = availH - band.top - band.bottom;
-      if(freeH < availH * 0.45) freeH = availH * 0.45;   // страховка на низких окнах
-      var padX = window.innerWidth >= 768 ? 32 : 16;     // воздух по бокам, экранные px
+      var padX = g.pad;                                  // воздух по бокам, px холста
       var freeW = availW - padX * 2;
-      if(freeW < availW * 0.6) freeW = availW * 0.6;
       // На телефоне НЕ растим: zoom сжимает CSS-ширину, а минимумы clamp у
       // кругов заданы в пикселях — спутники становятся относительно больше
       // и наезжают друг на друга.
@@ -1118,34 +1110,10 @@ window.addEventListener('load', function(){
       for(ck = 0; ck < caps.length; ck++) if (caps[ck].kid && caps[ck].cap > wide) wide = caps[ck].cap;
       if (wide > 0) for(ck = 0; ck < caps.length; ck++) if (caps[ck].kid) caps[ck].cap = wide;
 
-      // ── ДЕСКТОП ИСПОЛЬЗУЕТ ГОРИЗОНТАЛЬ ─────────────────────────────────
-      // Авторские потолки (max-w-4xl/5xl/6xl) рассчитаны на ~1280px. На
-      // 1600-2560 контент оставался узким островом: zoom растил его
-      // пропорционально, но карточки так и стояли узкими вертикальными
-      // колонками с пустыми полями по бокам (скрины заказчика). Расширяем
-      // потолки вместе со свободной шириной — текст переносится реже,
-      // карточки получают десктопную пропорцию (шире, а не выше), слайд
-      // занимает горизонталь. Это не третья версия макета: та же десктопная
-      // форма, плавно занимающая свою ширину (чисто техническая адаптация).
-      if (window.innerWidth >= 768){
-        var widen = Math.min(1.5, Math.max(1, freeW / 1280));
-        if (widen > 1){
-          // В колонку кружка с головой (правый нижний угол) расширенный
-          // контент не заходит: становясь шире, нижние карточки дотягивались
-          // до кружка, и он ложился на текст. Авторскую ширину при этом не
-          // ужимаем — до расширения она с кружком не пересекалась.
-          var bubEl = document.getElementById('video-bubble');
-          var bubW = bubEl ? parseFloat(window.getComputedStyle(bubEl).width) || 0 : 0;
-          // 40px запаса: у панелей бывают декоративные иконки у самой кромки,
-          // при 24px они цепляли кружок краем.
-          var corner = window.innerWidth - 2 * (bubW + 20 + 40);
-          for(ck = 0; ck < caps.length; ck++){
-            var wcap = Math.min(caps[ck].cap * widen, freeW);
-            if (corner > 0) wcap = Math.min(wcap, Math.max(caps[ck].cap, corner));
-            caps[ck].cap = wcap;
-          }
-        }
-      }
+      // Никакого расширения под реальное окно: холст формы фиксирован, окно
+      // получает его через общий масштаб --view-scale. Кружок с головой
+      // масштабируется тем же коэффициентом, поэтому в него ничего не
+      // заезжает по построению.
 
       function target(natH, natW){
         // 0.97, а не 1.0: слайд не должен упираться в края свободной зоны.
@@ -1165,11 +1133,13 @@ window.addEventListener('load', function(){
         c.style.paddingBottom = (band.bottom / z) + 'px';
         c.style.paddingLeft = (padX / z) + 'px';
         c.style.paddingRight = (padX / z) + 'px';
-        // min-height НЕ компенсируем: внутри zoom проценты и так считаются от
-        // высоты родителя, переведённой в масштаб элемента. Прежняя поправка
-        // (100/z)% давала высоту 600/z² — при z=0.65 это 925px на экране в
-        // 600px, и слайд становился прокручиваемым.
-        c.style.minHeight = '';
+        // Ширина и высота — ЖЁСТКО от холста формы (в px, делённых на z, как
+        // и всё остальное). Раньше ширина шла от окна (width:100%), и на
+        // окне уже холста текст переносился иначе — раскладка «плыла».
+        // Проценты для min-height нельзя: внутри zoom они масштабируются
+        // второй раз (высота 600/z² делала слайд прокручиваемым).
+        c.style.width = (availW / z) + 'px';
+        c.style.minHeight = (availH / z) + 'px';
         slide.scrollTop = 0;
       }
 
@@ -1196,6 +1166,45 @@ window.addEventListener('load', function(){
         z *= Math.min(overH > 1 ? freeH / (ink.h * z) : 1,
                       overW > 1 ? freeW / (ink.w * z) : 1) * 0.995;
         apply(z);
+      }
+      // Угол кружка с головой (веб-форма): в форме он занимает прямоугольник
+      // [availW-216..availW-20] x [availH-282..availH-86] и лежит ПОВЕРХ
+      // слайда. Общий бокс чернил сюда почти всегда дотягивается пустым краем
+      // сетки — это не страшно; страшно, когда в угол попадает ТЕКСТ или
+      // иконка. Проверяем реальные листовые прямоугольники и, пока есть
+      // попадание, ужимаем слайд шагами (центрирование само уводит края от
+      // угла). Геометрия угла — константа формы, поэтому результат один на
+      // любом окне. На телефоне кружок живёт в нижней полосе band.bottom,
+      // отдельная проверка не нужна.
+      if(form() === 'pc'){
+        var cp, cr2, cLeft, cTop, tEls, te, el2, tr2, hit;
+        for(cp = 0; cp < 4; cp++){
+          cr2 = c.getBoundingClientRect();
+          if(!cr2.width || !cr2.height) break;
+          // Пропорциональное отображение: прямоугольник content-z и есть холст
+          // формы (availW x availH), в каких бы экранных пикселях он ни жил.
+          cLeft = cr2.left + cr2.width * (availW - 216) / availW;
+          cTop  = cr2.top  + cr2.height * (availH - 282) / availH;
+          hit = false;
+          // Лист — как в аудите наложений: элемент с СОБСТВЕННЫМ текстом
+          // (текстовый узел прямо в нём), иконка или картинка. Обёртки без
+          // своего текста пропускаем — их прямоугольник накрывает угол
+          // пустым краем, а это не наложение.
+          tEls = c.querySelectorAll('*');
+          for(te = 0; te < tEls.length; te++){
+            el2 = tEls[te];
+            var own2 = false, nn2 = el2.firstChild;
+            for(; nn2; nn2 = nn2.nextSibling)
+              if(nn2.nodeType === 3 && nn2.textContent && nn2.textContent.replace(/\s+/g, '')){ own2 = true; break; }
+            if(!own2 && el2.tagName !== 'IMG' && el2.tagName !== 'I') continue;
+            tr2 = el2.getBoundingClientRect();
+            if(tr2.width < 2 || tr2.height < 2) continue;
+            if(tr2.right > cLeft + 3 && tr2.bottom > cTop + 3){ hit = true; break; }
+          }
+          if(!hit) break;
+          z *= 0.965;
+          apply(z);
+        }
       }
     }catch(e){}
 
@@ -1224,58 +1233,125 @@ window.addEventListener('load', function(){
     if(!t.length || !t[0].style.fontSize) return 0;
     return parseFloat(t[0].style.fontSize) * (parseFloat(window.getComputedStyle(c).zoom) || 1);
   }
-  // Подгонка всех 42 слайдов разом замораживала страницу: каждый fitOne —
-  // это несколько принудительных reflow (замер чернил + запись стилей), и
-  // 42 слайда × 6 итераций × 4 вызова fitAll на загрузке давали ~1000
-  // синхронных перекладок огромного DOM — вкладка висела больше секунды.
-  // Теперь синхронно подгоняется ТОЛЬКО видимый слайд, остальные 41 —
-  // скрытые (opacity-0) — пачками по кадрам: зритель этого не видит, а
-  // главный поток свободен. fitEpoch помечает, какой раскладке отвечает
-  // слайд: если зритель долистал до ещё не подогнанного, markActive дожмёт
-  // его синхронно.
-  var fitEpoch = 0, fitPend = 0;
+  // Подгонка всех 42 слайдов разом замораживала страницу: каждый fitOne — это
+  // несколько принудительных reflow, и 42 слайда × 6 итераций × 4 вызова
+  // fitAll на загрузке блокировали главный поток на ~2.2с. Теперь очередь
+  // идёт пачками по бюджету 8 мс на кадр. ГЛАВНОЕ ПРАВИЛО (из-за него слайды
+  // «скакали»): ПОСЛЕ появления страницы видимый слайд перекладывать НЕЛЬЗЯ.
+  // Раньше второй проход «общий кегль заголовков» доезжал фоном через
+  // секунду и перекладывал уже видимый слайд — зритель видел, как всё
+  // прыгает через секунду после открытия. Теперь до показа очередь
+  // дорабатывается целиком (drainFits), а после показа проход общего кегля
+  // видимый слайд пропускает и лишь снимает с него отметку свежести — его
+  // дожмёт markActive при следующей смене слайда, под её же анимацией.
+  var fitEpoch = 0, fitPend = 0, fitRest = [], fitDone = null;
+  var revealed = false;                 // страница уже показана зрителю
   function fitMark(el){ el.setAttribute('data-fit', String(fitEpoch)); }
   function fitFresh(el){ return el.getAttribute('data-fit') === String(fitEpoch); }
-  function fitAll(){
-    var nodes = document.querySelectorAll('.slide-container');
-    lastW = window.innerWidth; lastH = window.innerHeight;
+  function chunkStep(epoch, sync){
+    if(epoch !== fitEpoch) return;                 // пришла новая подгонка
+    // До показа страница скрыта за стартовым окном — кадр можно занимать
+    // щедрее (24 мс), чтобы успеть до страховочного таймера и не оставлять
+    // ему большой синхронный остаток. После показа — короткие 8 мс.
+    var budget = revealed ? 8 : 24;
+    var t0 = performance.now(), el;
+    while(fitRest.length){
+      el = fitRest.shift(); fitOne(el); fitMark(el);
+      if(!sync && performance.now() - t0 >= budget) break;
+    }
+    fitPend = fitRest.length;
+    if(fitRest.length){ requestAnimationFrame(function(){ chunkStep(epoch, false); }); return; }
+    // Очередь пуста. Где-то длинное слово в целевой кегль не влезло и
+    // заголовок ужался — опускаем цель для ВСЕЙ лекции и прогоняем ещё раз:
+    // «все заголовки одного размера» важнее, чем «максимально крупно».
+    var nodes = document.querySelectorAll('.slide-container'), j, px, min = Infinity;
+    for(j = 0; j < nodes.length; j++){
+      px = titleScreenPx(nodes[j]);
+      if(px && px < min) min = px;
+    }
+    if(!TITLE_FLOOR && min < titleTarget() - 0.5 && min > 8){
+      TITLE_FLOOR = min;
+      var live = document.querySelector('.slide-container.opacity-100');
+      for(j = 0; j < nodes.length; j++){
+        if(nodes[j] === live && revealed){
+          // Видимый слайд НЕ трогаем — иначе он прыгнет на глазах. Разница
+          // с общим кеглем ≈1px; дожмём при следующей смене слайда.
+          nodes[j].removeAttribute('data-fit');
+          continue;
+        }
+        fitRest.push(nodes[j]);
+      }
+      fitPend = fitRest.length;
+      if(sync) chunkStep(epoch, true);
+      else if(fitRest.length) requestAnimationFrame(function(){ chunkStep(epoch, false); });
+      return;
+    }
+    if(fitDone){ var cb = fitDone; fitDone = null; cb(); }
+  }
+  function fitAll(done){
+    var nodes = document.querySelectorAll('.slide-container'), i;
+    lastForm = form();
     TITLE_FLOOR = 0;
     fitEpoch++;
-    var epoch = fitEpoch;
+    fitDone = done || null;
+    fitRest = [];
     var live = document.querySelector('.slide-container.opacity-100');
     if(live){ fitOne(live); fitMark(live); }
-    var rest = [], i;
-    for(i = 0; i < nodes.length; i++) if(nodes[i] !== live) rest.push(nodes[i]);
-    fitPend = rest.length;
-    function chunk(){
-      if(epoch !== fitEpoch) return;                 // пришла новая подгонка
-      // Бюджет — 8 мс на кадр, а не фиксированное число слайдов: один fitOne
-      // стоит 20-35 мс, и пачка «по шесть» всё ещё давала задачи по 100-200 мс
-      // (замерено PerformanceObserver longtask). По бюджету кадр короткий,
-      // страница не подвисает вовсе — скрытые слайды тихо доезжают фоном.
-      var t0 = performance.now(), el;
-      do { el = rest.shift(); fitOne(el); fitMark(el); }
-      while(rest.length && performance.now() - t0 < 8);
-      fitPend = rest.length;
-      if(rest.length){ requestAnimationFrame(chunk); return; }
-      // Где-то длинное слово в целевой кегль не влезло и заголовок ужался —
-      // опускаем цель для ВСЕЙ лекции и прогоняем ещё раз (тоже пачками):
-      // «все заголовки одного размера» важнее, чем «максимально крупно».
-      var min = Infinity, px;
-      for(var j = 0; j < nodes.length; j++){
-        px = titleScreenPx(nodes[j]);
-        if(px && px < min) min = px;
+    for(i = 0; i < nodes.length; i++) if(nodes[i] !== live) fitRest.push(nodes[i]);
+    fitPend = fitRest.length;
+    chunkStep(fitEpoch, false);
+  }
+  // Синхронно дорабатывает текущую очередь (включая проход общего кегля).
+  // Зовётся перед самым показом страницы: к первому кадру всё уже стоит.
+  function drainFits(){ chunkStep(fitEpoch, true); }
+  // Раскладочные классы js-* вместо селекторов :has(...). Браузер пересчитывал
+  // такие цепочки при каждой смене классов на body (fit-ready, notes-open) —
+  // показ страницы стоил одну задачу на ~1-1.8 секунды: 42 слайда, у каждого
+  // перебор кандидатов :has. DOM слайдов статичен, поэтому размечаем один раз
+  // на загрузке, а CSS матчится по готовым классам за копейки.
+  function annotate(){
+    var zones = document.querySelectorAll('.slide-container .content-z');
+    for(var i=0;i<zones.length;i++){
+      var all = zones[i].querySelectorAll('*');
+      var parents = [];
+      for(var j=0;j<all.length;j++){
+        var el = all[j];
+        if (typeof el.className !== 'string') continue;
+        var cl = ' ' + el.className + ' ';
+        if (cl.indexOf(' flex-row ') !== -1 && cl.indexOf('md:flex-row') === -1 &&
+            el.children.length >= 3){
+          el.classList.add('js-stack');
+          parents.push(el);
+        } else if (cl.indexOf(' grid-cols-1 ') !== -1){
+          parents.push(el);
+        } else if ((cl.indexOf(' grid-cols-3 ') !== -1 || cl.indexOf(' grid-cols-4 ') !== -1) &&
+                   cl.indexOf('md:grid-cols') === -1){
+          parents.push(el);
+        }
       }
-      if(!TITLE_FLOOR && min < titleTarget() - 0.5 && min > 8){
-        TITLE_FLOOR = min;
-        var live2 = document.querySelector('.slide-container.opacity-100');
-        if(live2) fitOne(live2);
-        for(var q = 0; q < nodes.length; q++) if(nodes[q] !== live2) rest.push(nodes[q]);
-        fitPend = rest.length;
-        requestAnimationFrame(chunk);
+      // Карточка «кружок-иконка + текст» внутри стопки: сам бокс (bg-* +
+      // rounded), его неабсолютный кружок (js-ico) и абсолютный бейдж-пилюля
+      // (js-badge). Ровно то, что раньше ловили цепочки :has.
+      for(var p=0;p<parents.length;p++){
+        var kids = parents[p].children;
+        for(var k=0;k<kids.length;k++){
+          var kc = kids[k].className;
+          if (typeof kc !== 'string') continue;
+          if (kc.indexOf('bg-') === -1 || kc.indexOf('rounded') === -1) continue;
+          var ico = null, badge = null, sub = kids[k].children;
+          for(var m=0;m<sub.length;m++){
+            var sc = sub[m].className;
+            if (typeof sc !== 'string' || sc.indexOf('rounded-full') === -1) continue;
+            if (sc.indexOf('absolute') !== -1){ if(!badge) badge = sub[m]; }
+            else if (!ico) ico = sub[m];
+          }
+          if (!ico) continue;
+          kids[k].classList.add('js-card');
+          ico.classList.add('js-ico');
+          if (badge) badge.classList.add('js-badge');
+        }
       }
     }
-    if(rest.length) requestAnimationFrame(chunk);
   }
   // Помечаем активный слайд классом is-active — это перезапускает каскадное
   // появление контента (FR-LECTURE-14) при каждой смене слайда.
@@ -1289,7 +1365,11 @@ window.addEventListener('load', function(){
         void nodes[i].offsetWidth;                      // reflow
       }
       nodes[i].classList.toggle('is-active', active);
-      if(active && !fitFresh(nodes[i])){ fitOne(nodes[i]); fitMark(nodes[i]); }
+      // Финальный слайд-обложка красит CTA шапки в белый (см. portal-deck).
+      // Раньше это делал body:has(#slide-41...) — и не работал в лекциях,
+      // где слайдов не 42; класс от последнего слайда честен везде.
+      if(active) document.body.classList.toggle('on-last-slide', i === nodes.length - 1);
+      if(revealed && active && !fitFresh(nodes[i])){ fitOne(nodes[i]); fitMark(nodes[i]); }
     }
   }
   // Во сколько раз ужимается содержимое, когда слева встаёт панель с текстом.
@@ -1304,24 +1384,21 @@ window.addEventListener('load', function(){
   window.syncNotesShrink = syncShrink;
 
   var t;
-  // Активный слайд подгоняем сразу в том же кадре — иначе при перетаскивании
-  // окна зритель успевает увидеть «непопавшую» раскладку, и она прыгает на
-  // место только через паузу. Остальные 41 слайд догоняют с задержкой.
-  var lastW = 0, lastH = 0;
+  // Ресайз НИЧЕГО не перекладывает: раскладка формы железная, окно меняет
+  // только --view-scale (чистый transform, без reflow). Пересборка нужна в
+  // одном-единственном случае — окно пересекло границу форм 768px.
+  var lastForm = form();
   function soon(){
     syncShrink();
-    var w = window.innerWidth, h = window.innerHeight;
-    // Порог по высоте — 80px: на телефоне при листании прячется адресная
-    // строка, окно «дышит» на 50-60px, и без порога каждый вздох перекраивал
-    // всю деку прямо под пальцем.
-    if(Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 80) return;
-    lastW = w; lastH = h;
+    setViewScale();
+    if (form() === lastForm) return;
+    lastForm = form();
     var live = document.querySelector('.slide-container.opacity-100');
     if(live) fitOne(live);
-    clearTimeout(t); t = setTimeout(fitAll, 90);
+    clearTimeout(t); t = setTimeout(function(){ fitAll(); }, 90);
   }
   window.addEventListener('load', function(){
-    syncShrink(); markActive();
+    annotate(); syncShrink(); markActive();
     if(typeof window.updateSlides === 'function'){
       var orig = window.updateSlides;
       window.updateSlides = function(){
@@ -1334,23 +1411,52 @@ window.addEventListener('load', function(){
         return r;
       };
     }
-    // ПОКАЗЫВАЕМ деку только когда подгонка отработала с УЖЕ загруженными
-    // шрифтами. Раньше первый кадр рисовался в масштабе 1, потом приезжали
-    // шрифты, потом подгонка — и зритель своими глазами видел, как элементы
-    // «подбиваются» и перескакивают. Теперь до этого момента слайдов просто
-    // не видно (класс fit-ready на body), а появляются они уже готовыми.
-    var revealed = false;
+    // ПОКАЗЫВАЕМ деку только когда ВСЁ готово: шрифты загружены, все 42
+    // слайда подогнаны и проход «общий кегль заголовков» завершён. Раньше
+    // страница показывалась после подгонки одного видимого слайда, а
+    // остальное доезжало фоном — и второй проход через секунду перекладывал
+    // уже видимый слайд: зритель видел «сначала одно положение, потом
+    // другое». Ждать не больно: всё это время экран закрыт стартовым окном
+    // «Нажмите, чтобы начать». Клик по нему дожимает очередь синхронно —
+    // к первому кадру слайда всё стоит на месте раз и навсегда.
+    var fitStarted = false, fontsDone = !(document.fonts && document.fonts.ready);
+    function startFits(){
+      if (fitStarted) return;
+      fitStarted = true;
+      fitAll(reveal);                    // по завершении ВСЕЙ очереди — показать
+    }
     function reveal(){
       if (revealed) return;
       revealed = true;
-      fitAll();
+      if (!fitStarted){ fitStarted = true; fitAll(); }
+      drainFits();                       // дорабатываем остаток очереди сейчас
       document.body.classList.add('fit-ready');
     }
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(reveal);
-    setTimeout(reveal, 1200);            // страховка, если шрифты не доехали
+    if (!fontsDone){
+      document.fonts.ready.then(function(){
+        fontsDone = true;
+        // Показались раньше шрифтов (клик по стартовому окну или страховка) —
+        // метрики текста сменились, дожимаем ОДНИМ пересчётом. Это
+        // единственный случай, когда видимый слайд пересобирается на глазах,
+        // и без него он остался бы свёрстан запасным шрифтом.
+        if (revealed) fitAll();
+        else startFits();
+      });
+    } else startFits();
+    // Страховка на случай, если шрифты так и не доехали (обрыв сети/CDN).
+    setTimeout(reveal, 4000);
+    var so = document.getElementById('start-overlay');
+    // Дожим очереди синхронно — только по НАСТОЯЩЕМУ клику человека: ему
+    // нужен готовый слайд к первому кадру. Автостарт (portal-autostart)
+    // кликает по скрытому оверлею программно через 50 мс — если дожимать и
+    // его, вся подгонка (42 слайда, запись+чтение раскладки) схлопывается в
+    // одну задачу на ~1-2 секунды и главный поток замерзает. Программному
+    // клику ждать нечего: показ придёт из fitAll(reveal), когда фоновая
+    // очередь (порции по ~24 мс) доработает.
+    if (so) so.addEventListener('click', function(e){ if (e.isTrusted) reveal(); });
   });
   window.addEventListener('resize', soon);
-  window.addEventListener('orientationchange', function(){ setTimeout(fitAll, 150); });
+  window.addEventListener('orientationchange', function(){ setTimeout(soon, 150); });
 })();
 </script>
 
@@ -2731,7 +2837,9 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
 @media (max-width:767px){
   .slide-container h1{ font-size:1.5rem; line-height:1.16 !important; }
   .slide-container h2{ font-size:1.5rem; line-height:1.2 !important; }
-  .slide-container h3{ font-size:clamp(.95rem,3.9vw,1.15rem) !important; }
+  /* Кегль от ширины ФОРМЫ (390px), не окна: vw ломал «железную» раскладку —
+     на 430px телефоне текст был крупнее и переносился иначе, чем на 390. */
+  .slide-container h3{ font-size:.95rem !important; }
 }
 @media (min-width:768px){
   .slide-container h1{ font-size:2.7rem; line-height:1.1 !important; }
@@ -2793,9 +2901,17 @@ html:not(.dark) .slide-container [class~="text-grayBase"]{ color:rgba(0,0,0,.30)
 /* 12. Подзаголовок под заголовком слайда — крупнее, и после него больше воздуха. */
 .slide-container h1 + p, .slide-container h2 + p,
 .slide-container h1 + div > p:first-child{
-  font-size:clamp(.92rem,3.4vw,1.2rem) !important;
+  /* Значения — константы форм (vw зависел от окна и «плавил» раскладку). */
+  font-size:1.2rem !important;
   line-height:1.45 !important;
-  margin-bottom:clamp(1.1rem,3.4vw,1.9rem) !important;
+  margin-bottom:1.9rem !important;
+}
+@media (max-width:767px){
+  .slide-container h1 + p, .slide-container h2 + p,
+  .slide-container h1 + div > p:first-child{
+    font-size:.92rem !important;
+    margin-bottom:1.1rem !important;
+  }
 }
 
 /* 13. Полоса прогресса: заполненная часть — градиент, а трек под ней сливается
@@ -2809,11 +2925,15 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    правому краю, а голова — своим правым краем к ним же, поэтому её центр
    уезжал левее пары. Считаем от центра головы, а не от края экрана. */
 :root{
-  --bub:clamp(150px,12.5vw,196px);   /* диаметр говорящей головы */
-  --arw:58px;                        /* диаметр кнопки листания */
-  --arw-gap:14px;                    /* просвет между кнопками */
+  /* Вся обвязка масштабируется ТЕМ ЖЕ --view-scale, что и холст слайда:
+     геометрия «кружок — стрелки — контент» одна и та же на любом экране
+     (выверенная на 1440x900 и 390x844), просто крупнее или мельче. Поэтому
+     кружок не может наехать на текст ни при каком размере окна. */
+  --bub:calc(196px * var(--view-scale,1));   /* диаметр говорящей головы */
+  --arw:calc(58px * var(--view-scale,1));    /* диаметр кнопки листания */
+  --arw-gap:calc(14px * var(--view-scale,1));
   --arw-pair:calc(2*var(--arw) + var(--arw-gap));
-  --bub-right:20px;                  /* отступ головы от правого края */
+  --bub-right:calc(20px * var(--view-scale,1));
 }
 /* Голова и стрелки живут ПОВЕРХ слайда и на его раскладку не влияют вовсе
    (правило заказчика). Поэтому важно одно: чтобы сам угол был как можно
@@ -2822,10 +2942,10 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
 #video-bubble{
   width:var(--bub) !important; height:var(--bub) !important;
   left:auto !important; right:var(--bub-right) !important;
-  top:auto !important; bottom:calc(16px + var(--arw) + 12px) !important;
+  top:auto !important; bottom:calc(28px * var(--view-scale,1) + var(--arw)) !important;
 }
 #nav-prev, #nav-next{
-  top:auto !important; bottom:16px !important; transform:none !important;
+  top:auto !important; bottom:calc(16px * var(--view-scale,1)) !important; transform:none !important;
   width:var(--arw) !important; height:var(--arw) !important;
   left:auto !important;
 }
@@ -2834,9 +2954,7 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
 #nav-prev{ right:calc(var(--bub-right) + var(--bub)/2 - var(--arw-pair)/2 + var(--arw) + var(--arw-gap)) !important; }
 #nav-prev i, #nav-next i{ font-size:1.35rem !important; }
 
-@media (max-width:1023px){
-  :root{ --bub:clamp(112px,27vw,140px); --arw:46px; --arw-gap:10px; --bub-right:12px; }
-}
+
 
 /* ТЕЛЕФОН: голова и стрелки расходятся по углам и встают в ОДИН нижний ряд.
    Раньше они стояли стопкой в правом углу и занимали полосу высотой ~190px —
@@ -2845,19 +2963,23 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    одной головы, эту полосу portal-fit резервирует (chromeBand), и содержимое
    до неё уже не доходит. Канон заказчика — «никаких наложений текста». */
 @media (max-width:767px){
-  :root{ --bub:clamp(84px,23vw,104px); --arw:44px; --arw-gap:10px; }
+  :root{ --bub:calc(96px * var(--view-scale,1));
+         --arw:calc(44px * var(--view-scale,1));
+         --arw-gap:calc(10px * var(--view-scale,1)); }
   #video-bubble{
-    left:12px !important; right:auto !important;
-    bottom:14px !important;
+    left:calc(12px * var(--view-scale,1)) !important; right:auto !important;
+    bottom:calc(14px * var(--view-scale,1)) !important;
   }
   #nav-prev, #nav-next{
-    bottom:calc(14px + (var(--bub) - var(--arw))/2) !important;
+    bottom:calc(14px * var(--view-scale,1) + (var(--bub) - var(--arw))/2) !important;
   }
-  #nav-next{ right:12px !important; }
-  #nav-prev{ right:calc(12px + var(--arw) + var(--arw-gap)) !important; }
+  #nav-next{ right:calc(12px * var(--view-scale,1)) !important; }
+  #nav-prev{ right:calc(12px * var(--view-scale,1) + var(--arw) + var(--arw-gap)) !important; }
 }
 
-/* Широкие экраны. До 1600px всё как было — ступени начинаются выше, поэтому
+/* Широкие экраны: шапке больше не нужны ступени zoom — lecture-chrome
+   масштабирует её точным var(--view-scale) вместе со всем остальным. */
+/* (историческая справка) До 1600px всё как было — ступени начинались выше, поэтому
    уже проверенные 390 / 768 / 1440 не меняются вовсе.
    Дальше лекция переставала адаптироваться: контент упирался в потолок роста,
    а голова, кнопки листания, лого и шапка были заданы в фиксированных
@@ -2868,18 +2990,6 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    растут вместе и не разъезжаются. Голову и кнопки листания растим через
    переменные — вся геометрия пары кнопок под головой считается от них,
    поэтому центрирование сохраняется само. */
-@media (min-width:1600px){
-  :root{ --bub:clamp(150px,12.5vw,226px); --arw:60px; --arw-gap:14px; --bub-right:23px; }
-  #lecture-header{ zoom:1.15; }
-}
-@media (min-width:1900px){
-  :root{ --bub:clamp(176px,15.5vw,307px); --arw:75px; --arw-gap:18px; --bub-right:26px; }
-  #lecture-header{ zoom:1.3; }
-}
-@media (min-width:2300px){
-  :root{ --bub:clamp(176px,15.5vw,354px); --arw:87px; --arw-gap:21px; --bub-right:30px; }
-  #lecture-header{ zoom:1.5; }
-}
 
 /* Кнопка «К следующей лекции» на экране результата теста. Белая, при наведении
    заливается тем же градиентом, что и полоса прогресса. Стоит ПОД «Пройти ещё
@@ -3244,12 +3354,17 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
    разницы, чтобы стоять по центру СВОБОДНОЙ зоны. */
 .content-z{
   transform-origin:center center;
-  transform:translateY(var(--fit-shift, 0px));
+  /* ОКНО МЕНЯЕТ ТОЛЬКО МАСШТАБ (канон «две железные формы»): холст формы
+     всегда умножен на --view-scale — и при закрытой панели тоже. Раньше
+     scale стоял только в правиле body.notes-open, и на обычном просмотре
+     холст жил в натуральную величину: на окне ниже/уже формы он вылезал за
+     края (заголовок уходил под шапку), а на широких экранах не рос вовсе. */
+  transform:translateY(var(--fit-shift, 0px)) scale(calc(var(--fit-shrink,1) * var(--view-scale,1)));
   transition:transform .38s cubic-bezier(.22,1,.36,1);
 }
 @media (min-width:1024px){
   body.notes-open .slide-container .content-z{
-    transform:translateX(calc(var(--notes-w) / 2)) translateY(var(--fit-shift, 0px)) scale(var(--fit-shrink,1));
+    transform:translateX(calc(var(--notes-w) / 2)) translateY(var(--fit-shift, 0px)) scale(calc(var(--fit-shrink,1) * var(--view-scale,1)));
   }
   body.notes-open #progress-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
 }
