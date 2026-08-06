@@ -316,10 +316,14 @@
 
   /* ===== Стоимость ===== */
   /* Без внешнего прямоугольника — сумма и условия стоят на фоне страницы. */
-  .price{ padding:clamp(.5rem,2vw,1rem) 0; text-align:center; }
+  .price{ padding:0 0 clamp(.5rem,2vw,1rem); text-align:center; }
+  /* Сумма стоит ближе к заголовку «Стоимость» (правка владельца): своим
+     отрицательным полем поднимаем её, срезая часть общего отступа
+     .sec-head (у остальных секций он остаётся прежним). */
   .price .amount{
     font-weight:900; letter-spacing:-.03em; line-height:1;
-    font-size:clamp(2.6rem,11vw,4.5rem); margin:.2rem 0 0;
+    font-size:clamp(2.6rem,11vw,4.5rem);
+    margin:calc(-1 * clamp(.7rem,2.2vh,1.1rem)) 0 0;
   }
   .price .terms{
     margin-top:clamp(.9rem,2.6vw,1.2rem); display:grid; gap:.5rem; justify-items:center;
