@@ -11,9 +11,15 @@ permissions:
   contents: read
   pages: write
   id-token: write
+# cancel-in-progress:false — КРИТИЧНО. GitHub сегодня отдаёт события пуша
+# с задержкой и НЕ по порядку: ран для более старого коммита создавался
+# позже и своей отменой убивал уже стоявший в очереди ран с более свежим
+# кодом. С false раны не убивают друг друга, а выполняются по очереди —
+# последним применяется самый новый коммит (так же настроен официальный
+# шаблон Pages от GitHub).
 concurrency:
-  group: pages-manual
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
