@@ -242,6 +242,23 @@ def test_script_pins_clip_tracks_to_zero():
         "звук растягивается под склейку — это и слышалось как искажение"
 
 
+def test_cover_does_not_break_frame_rate():
+    """Проверено покадрово: после concat частота кадров ТЕРЯЕТСЯ, и без
+    явного -r ffmpeg молча писал 25 к/с, выбрасывая каждый шестой кадр
+    30-кадрового ролика. Фильтр fps после concat не годится — на конце
+    потока он съедал последний кадр. А без -framerate у входа-картинки
+    заставка выходила короче заказанного (25 к/с по умолчанию)."""
+    body = _html()
+    body = body[body.index("function joinScript()"):body.index("var joinBtn")]
+    assert "FPS=$(p v:0 r_frame_rate)" in body, "частота кадров исходника не замеряется"
+    assert '-r "$FPS"' in body, "нет явного -r: после concat ffmpeg молча пишет 25 к/с"
+    assert "concat=n=2:v=1[v]" in body and ",fps=$FPS[v]" not in body, \
+        "fps-фильтром после concat нельзя: он съедает последний кадр ролика"
+    assert '-loop 1 -framerate "$FPS" -t "$SEC"' in body, \
+        "без -framerate заставка на 30-кадровом ролике короче заказанного"
+    assert "fps=$FPS[c]" in body, "кадры обложки не приведены к темпу ролика до concat"
+
+
 def test_button_hands_over_the_script():
     """Сборка в браузере убрана намеренно: вжигание графики — это пересборка
     всего ролика, в wasm это десятки минут на вкладку."""

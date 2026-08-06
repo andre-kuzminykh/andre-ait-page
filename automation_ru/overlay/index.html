@@ -610,7 +610,8 @@ body.dragging #drop{display:flex}
         </section>
     </div>
 
-    <!-- Заставки у этого ролика нет: картинка подставляется только при ?cover= -->
+    <!-- Обложка: 0.2 с перед роликом (см. COVER). Src ставит скрипт —
+         при ?cover=0 картинка не запрашивается вовсе. -->
     <div id="cover"><img alt=""></div>
 
     <div id="sub"></div>
@@ -686,11 +687,11 @@ body.dragging #drop{display:flex}
 
     var DURATION = 59.1;                      // 00:59 — длина исходного ролика
     var HOT = 2.6;                            // столько живёт подсветка .hot
-    /* Заставки у этого ролика нет: обложку в ленте задаёт первый кадр.
-       Механика с COVER оставлена — понадобится, положите cover.png рядом и
-       откройте с ?cover=0.1, тайминги от этого не поедут (считаются от
-       времени ВИДЕО, то есть time - COVER). */
-    var COVER = 0;
+    /* Обложка cover.png держится 0.2 с перед роликом — она же становится
+       превью в ленте. Тайминги от неё не едут: сцены и субтитры считаются от
+       времени ВИДЕО (time - COVER), поэтому и слой графики рендерится с
+       ?cover=0. Другая длительность — ?cover=0.5, выключить — ?cover=0. */
+    var COVER = 0.2;
 
     var stage = document.getElementById('stage');
     var clip = document.getElementById('clip');
@@ -895,18 +896,17 @@ body.dragging #drop{display:flex}
     toggle('bMock', 'mock');
     toggle('bGuide', 'guides');
     toggle('bRec', 'rec');
-    /* ── Сборка «обложка + ролик» ────────────────────────────────
-       Браузер не умеет пересобирать mp4 без перекодирования, а
-       перекодировать дорожку ради двух секунд заставки — потерять
-       качество исходника. Поэтому кнопка готовит команду: обложка
-       кодируется под параметры ролика, а сам ролик копируется
-       потоком (-c copy), то есть остаётся байт в байт. */
+    /* ── Сборка «обложка + ролик + графика + субтитры» ───────────
+       Кнопка отдаёт шелл-скрипт: графику и субтитры надо нарисовать
+       поверх каждого кадра, значит видеодорожка пересобирается одна
+       (битрейт исходника, на глаз неотличимо), обложка приклеивается
+       concat-ом спереди, а звук идёт копией — байт в байт. */
     var videoName = '', videoFile = null;
     function joinScript() {
         var v = videoName || 'video.mp4';
         return [
             '#!/bin/sh',
-            '# Ролик + графика + субтитры, вжжённые в кадр.',
+            '# Обложка 0.2 с + ролик + графика + субтитры, вжжённые в кадр.',
             '#',
             '# Графику и субтитры нельзя доложить копированием дорожки — их надо',
             '# нарисовать поверх КАЖДОГО кадра. Значит одна пересборка, с битрейтом',
@@ -934,7 +934,7 @@ body.dragging #drop{display:flex}
             'command -v "$FP" >/dev/null || { echo "Рядом с $FF нет ffprobe"; exit 1; }',
             'echo "ffmpeg: $FF"',
             'DIR=$(cd "$(dirname "$0")" && pwd)',
-            'for f in overlay_c.mp4 overlay_a.mp4 субтитры.srt fonts/JetBrainsMono-ExtraBold.ttf; do',
+            'for f in cover.png overlay_c.mp4 overlay_a.mp4 субтитры.srt fonts/JetBrainsMono-ExtraBold.ttf; do',
             '  [ -f "$DIR/$f" ] || { echo "Рядом со скриптом нет $f"; exit 1; }',
             'done',
             '',
@@ -959,10 +959,12 @@ body.dragging #drop{display:flex}
             'VIDEO="${1:-' + v + '}"',
             '[ -f "$VIDEO" ] || { echo "Не найден файл: $VIDEO"; exit 1; }',
             'OUT="${VIDEO%.*}-готовый.mp4"',
+            'SEC=' + COVER + '   # обложка: столько секунд cover.png перед роликом',
             '',
             'p()  { "$FP" -v error -select_streams "$1" -show_entries stream="$2"  -of csv=p=0 "$VIDEO"; }',
             'pf() { "$FP" -v error -show_entries format="$1" -of csv=p=0 "$VIDEO"; }',
             'W=$(p v:0 width);  H=$(p v:0 height)',
+            'FPS=$(p v:0 r_frame_rate)',
             'PIX=$(p v:0 pix_fmt); VCODEC=$(p v:0 codec_name); ACODEC=$(p a:0 codec_name); BR=$(pf bit_rate)',
             'ROT=$("$FP" -v error -select_streams v:0 -show_entries stream_side_data=rotation -of csv=p=0 "$VIDEO" 2>/dev/null | head -1)',
             ': "${ROT:=0}"',
@@ -1007,35 +1009,44 @@ body.dragging #drop{display:flex}
             '  *)                        VE="libx264 -preset medium -crf 17" ;;',
             'esac',
             'echo "Кодировщик: $VE"',
-            'echo "Собираю: ролик + графика + субтитры…"',
+            'echo "Собираю: обложка ${SEC}с + ролик + графика + субтитры…"',
             '',
-            '# [0] ролик · [1] цвет слоя · [2] маска слоя.',
+            '# [0] обложка · [1] ролик · [2] цвет слоя · [3] маска слоя.',
             '# Слой лежит ДВУМЯ файлами: прозрачности в mp4 нет, webm с альфой',
             '# собирается не везде, а две дорожки в одном mp4 не переживают ремукс.',
             '# alphamerge сшивает цвет с маской обратно в прозрачную картинку.',
             '# eof_action=pass: слой кончился — картинка идёт дальше. Со shortest=1',
             '# ролик ДЛИННЕЕ слоя обрезался по слою: 70-секундный дубль выходил',
             '# 59.12 с видео при 70 с звука — 11 секунд черноты под звук.',
-            '# setpts/asetpts прижимают дорожки ролика к нулю: в MOV с телефона',
-            '# видеодорожка бывает начинается позже звука, и тогда в начале чёрный кадр.',
+            '# setpts прижимает видеодорожку ролика к нулю: в MOV с телефона она',
+            '# бывает начинается позже звука, и тогда в начале чёрный кадр.',
+            '# Обложка приклеивается concat-ом ПОСЛЕ графики и субтитров: они',
+            '# накладываются на чистое время ролика, и тайминги от заставки не едут.',
+            '# После concat частота кадров ТЕРЯЕТСЯ (переход через overlay), и без',
+            '# явного -r на выходе ffmpeg молча писал 25 к/с, выбрасывая каждый',
+            '# шестой кадр 30-кадрового ролика. Фильтр fps после concat не годится:',
+            '# он на конце потока съедал последний кадр. Проверено покадрово:',
+            '# только с -r выходит ровно (кадры обложки) + (кадры ролика).',
             'if [ "$FULL" = 1 ]; then',
-            '  VF="[1:v]scale=$DW:$DH:flags=lanczos[oc];[2:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[0:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass,subtitles=filename=$TMP/subs.ass:fontsdir=$TMP/fonts,format=$PIX,setsar=1[v]"',
+            '  VF="[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[1:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass,subtitles=filename=$TMP/subs.ass:fontsdir=$TMP/fonts,format=$PIX,setsar=1[m];[c][m]concat=n=2:v=1[v]"',
             '  EXTRA=""',
             'else',
-            '  VF="[1:v]scale=$DW:$DH:flags=lanczos[oc];[2:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[4:v]scale=$DW:$DH:flags=lanczos[tc];[5:v]scale=$DW:$DH:flags=lanczos[ta];[tc][ta]alphamerge[tv];[0:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass[m1];[m1][tv]overlay=0:0:format=auto:eof_action=pass,format=$PIX,setsar=1[v]"',
+            '  VF="[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[5:v]scale=$DW:$DH:flags=lanczos[tc];[6:v]scale=$DW:$DH:flags=lanczos[ta];[tc][ta]alphamerge[tv];[1:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass[m1];[m1][tv]overlay=0:0:format=auto:eof_action=pass,format=$PIX,setsar=1[m];[c][m]concat=n=2:v=1[v]"',
             '  EXTRA="-i $DIR/subs_c.mp4 -i $DIR/subs_a.mp4"',
             'fi',
-            '# ЗВУК НЕ ТРОГАЕМ ВООБЩЕ — как в лекции. Дорожка идёт копией из',
-            '# исходника отдельным входом (проверено md5 — бит-в-бит). Если в',
-            '# исходнике дорожки были смещены (edit list в MOV с телефона), сдвиг',
-            '# воспроизводится контейнером: положительный — звук начинается позже',
-            '# (-itsoffset), отрицательный — начало звука срезается (-ss) с',
-            '# точностью до одного AAC-кадра (~21 мс). Никакой растяжки aresample:',
-            '# она правила таймстемпы вставкой сэмплов и слышалась как искажение.',
+            '# ЗВУК НЕ ТРОГАЕМ ВООБЩЕ — как в лекции. Обложка нужна только',
+            '# КАРТИНКЕ: пересобирается одна видеодорожка, а звук идёт копией из',
+            '# исходника отдельным входом (проверено md5 — бит-в-бит), просто',
+            '# начинается на длину заставки позже. Сдвиг = заставка ПЛЮС исходное',
+            '# смещение дорожек (edit list в MOV с телефона), воспроизводится',
+            '# контейнером: положительный — звук позже (-itsoffset), отрицательный —',
+            '# начало срезается (-ss) с точностью до одного AAC-кадра (~21 мс).',
+            '# Никакой растяжки aresample: она правила таймстемпы вставкой сэмплов',
+            '# и слышалась как искажение.',
             'AS=$("$FP" -v error -select_streams a:0 -show_entries stream=start_time -of csv=p=0 "$VIDEO" 2>/dev/null || echo 0)',
             'VS=$("$FP" -v error -select_streams v:0 -show_entries stream=start_time -of csv=p=0 "$VIDEO" 2>/dev/null || echo 0)',
             ': "${AS:=0}"; : "${VS:=0}"',
-            'OFF=$(awk -v a="$AS" -v v="$VS" \'BEGIN{ printf "%.3f", a - v }\')',
+            'OFF=$(awk -v c="$SEC" -v a="$AS" -v v="$VS" \'BEGIN{ printf "%.3f", c + a - v }\')',
             'case "$OFF" in -*) AIN="-ss ${OFF#-}" ;; *) AIN="-itsoffset $OFF" ;; esac',
             '# Пережим остаётся только для не-AAC дорожек: их в mp4 копией не положить.',
             'AENC=aac; "$FF" -hide_banner -encoders 2>/dev/null | grep -q aac_at && AENC=aac_at',
@@ -1046,19 +1057,23 @@ body.dragging #drop{display:flex}
             'else',
             '  AOPT="-c:a $AENC -b:a 256k"; echo "Звук: дорожка $ACODEC — в mp4 её копией не положить, пережимаю через $AENC 256k"',
             'fi',
-            '# Входы: 0 ролик · 1-2 слой графики · 3 ролик со сдвигом (только звук)',
-            '# · 4-5 слой субтитров (только запасной путь). Аудиовход при EXTRA',
-            '# остаётся третьим: EXTRA добавляется ПОСЛЕ него.',
+            '# Входы: 0 обложка · 1 ролик · 2-3 слой графики · 4 ролик со сдвигом',
+            '# (из него берётся ТОЛЬКО звук) · 5-6 слой субтитров (только запасной',
+            '# путь). Аудиовход при EXTRA остаётся четвёртым: EXTRA идёт ПОСЛЕ него.',
+            '# -framerate у обложки обязателен: картинка по умолчанию идёт 25 к/с,',
+            '# и на 30-кадровом ролике заставка выходила 5 кадров (0.167 с) вместо 6.',
             'if [ -n "$ACODEC" ]; then',
-            '  "$FF" -y -loglevel error -stats -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
+            '  "$FF" -y -loglevel error -stats -loop 1 -framerate "$FPS" -t "$SEC" -i "$DIR/cover.png" \\',
+            '    -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
             '    $AIN -i "$VIDEO" $EXTRA \\',
             '    -filter_complex "$VF" \\',
-            '    -map "[v]" -map 3:a:0 -c:v $VE -pix_fmt "$PIX" $AOPT -movflags +faststart "$OUT"',
+            '    -map "[v]" -map 4:a:0 -r "$FPS" -c:v $VE -pix_fmt "$PIX" $AOPT -movflags +faststart "$OUT"',
             'else',
-            '  "$FF" -y -loglevel error -stats -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
+            '  "$FF" -y -loglevel error -stats -loop 1 -framerate "$FPS" -t "$SEC" -i "$DIR/cover.png" \\',
+            '    -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
             '    -f lavfi -t 0.1 -i anullsrc $EXTRA \\',
             '    -filter_complex "$VF" \\',
-            '    -map "[v]" -c:v $VE -pix_fmt "$PIX" -an -movflags +faststart "$OUT"',
+            '    -map "[v]" -r "$FPS" -c:v $VE -pix_fmt "$PIX" -an -movflags +faststart "$OUT"',
             'fi',
             'rm -rf "$TMP"',
             '',
@@ -1138,10 +1153,8 @@ body.dragging #drop{display:flex}
     if (q.get('only') === 'subs') document.body.classList.add('only-subs');
     if (q.get('subs') === '0') document.body.classList.add('no-subs');
     if (q.get('subY')) document.getElementById('sub').style.top = q.get('subY') + 'px';
-    if (q.get('cover')) {
-        COVER = parseFloat(q.get('cover'));
-        document.querySelector('#cover img').src = 'cover.png';
-    }
+    if (q.get('cover') !== null) COVER = parseFloat(q.get('cover')) || 0;
+    if (COVER > 0) document.querySelector('#cover img').src = 'cover.png';
     if (q.get('zoneTop')) document.documentElement.style.setProperty('--zone-top', q.get('zoneTop') + 'px');
     if (q.get('zoneH')) document.documentElement.style.setProperty('--zone-h', q.get('zoneH') + 'px');
 

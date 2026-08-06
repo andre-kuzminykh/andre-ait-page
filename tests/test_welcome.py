@@ -354,13 +354,16 @@ def test_layer_end_does_not_cut_the_clip():
 def test_audio_is_copied_when_it_can_be():
     """Владелец: «звук шипит… в оригинале всё ок». Дорожка НИКОГДА не
     пережимается (кроме не-AAC — их в mp4 копией не положить): идёт копией
-    отдельным входом, а смещение дорожек исходника (edit list в MOV)
-    воспроизводится контейнером — itsoffset при положительном сдвиге, срез
-    начала при отрицательном. Синхрон проверен корреляцией: 0 мс."""
+    отдельным входом, а сдвиг = заставка ПЛЮС смещение дорожек исходника
+    (edit list в MOV), и воспроизводится контейнером — itsoffset при
+    положительном, срез начала при отрицательном. Синхрон проверен
+    корреляцией: 0 мс; после обложки звук бит-в-бит (md5)."""
     html = _html()
     script = html[html.index("function joinScript()"):html.index("var joinBtn")]
     assert '-c:a copy' in script, "звук всегда пережимается — это и слышно"
-    assert "-map 3:a:0" in script, "звук берётся не отдельным входом со сдвигом"
+    assert "-map 4:a:0" in script, "звук берётся не отдельным входом со сдвигом"
+    assert re.search(r'OFF=\$\(awk -v c="\$SEC" -v a="\$AS" -v v="\$VS"', script), \
+        "сдвиг звука не учитывает заставку (OFF = SEC + AS - VS)"
     assert "stream=start_time" in script, "смещение дорожек не замеряется"
     assert '-itsoffset' in script and '-ss ${OFF#-}' in script, \
         "смещение не воспроизводится контейнером (itsoffset / срез начала)"
@@ -368,6 +371,47 @@ def test_audio_is_copied_when_it_can_be():
         "звук растягивается под склейку — это и слышалось как искажение"
     assert "aac_at" in script, "для не-AAC дорожек не взят лучший кодировщик"
     assert "-b:a 192k" not in script, "остался пережим 192k"
+
+
+def test_cover_precedes_the_clip():
+    """Владелец: «мне нужно ещё cover.png вставить на 0.2 сек в приветствие».
+    Обложка идёт ПЕРЕД роликом: на странице — экран #cover первые COVER
+    секунд, в сборке — картинка отдельным входом и concat спереди. Тайминги
+    от неё не едут: сцены и субтитры считаются от времени ВИДЕО
+    (time - COVER), а в сборке графика и субтитры накладываются ДО
+    приклейки обложки."""
+    html = _html()
+    cover = float(re.search(r"var COVER = ([\d.]+);", html).group(1))
+    assert cover == 0.2, "владелец просил 0.2 с, а стоит %s" % cover
+    assert os.path.exists(os.path.join(_DIR, "cover.png")), "нет файла обложки рядом со страницей"
+    assert "var vt = time - COVER;" in html, "время видео не сдвинуто на заставку"
+    assert "body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim,body.on-cover #chrome{display:none}" in html, \
+        "на заставке обязаны прятаться графика, субтитры, скрим и фирменная шапка"
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "SEC=' + COVER" in script, "длина заставки в сборке не берётся из COVER страницы"
+    assert '-t "$SEC" -i "$DIR/cover.png"' in script, "обложка не подаётся отдельным входом"
+    assert "concat=n=2:v=1" in script, "обложка не приклеивается к ролику"
+    assert script.index("subtitles=filename=") < script.index("concat=n=2:v=1"), \
+        "субтитры вжигаются ПОСЛЕ приклейки обложки — все тайминги уедут на SEC"
+    assert 'for f in cover.png ' in script, "сборка не проверяет наличие cover.png"
+
+
+def test_cover_does_not_break_frame_rate():
+    """Проверено покадрово на контейнере: после concat частота кадров
+    ТЕРЯЕТСЯ, и без явного -r ffmpeg молча писал 25 к/с, выбрасывая каждый
+    шестой кадр 30-кадрового ролика (1483 кадра вместо 1779). Фильтр fps
+    после concat не годится — на конце потока он съедал последний кадр.
+    А без -framerate у входа-картинки заставка выходила 5 кадров (0.167 с)
+    вместо 6."""
+    html = _html()
+    script = html[html.index("function joinScript()"):html.index("var joinBtn")]
+    assert "FPS=$(p v:0 r_frame_rate)" in script, "частота кадров исходника не замеряется"
+    assert '-r "$FPS"' in script, "нет явного -r: после concat ffmpeg молча пишет 25 к/с"
+    assert "concat=n=2:v=1[v]" in script and ",fps=$FPS[v]" not in script, \
+        "fps-фильтром после concat нельзя: он съедает последний кадр ролика"
+    assert '-loop 1 -framerate "$FPS" -t "$SEC"' in script, \
+        "без -framerate заставка на 30-кадровом ролике короче заказанного"
+    assert "fps=$FPS[c]" in script, "кадры обложки не приведены к темпу ролика до concat"
 
 
 def test_script_picks_a_capable_ffmpeg():
