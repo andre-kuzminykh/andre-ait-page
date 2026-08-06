@@ -539,3 +539,24 @@ def test_owner_canon_batch9():
     # Панель «Текст»: резерв под лого растёт с var(--view-scale) — шапка
     # зумится этим же множителем, иначе «СЛАЙД 1/42» налезает на лого (мак)
     assert "* var(--view-scale,1)) clamp(1rem,2.6vw,1.6rem) .85rem;" in html
+
+
+def test_lecture1_web_preview_image():
+    """Веб-превью лекции 1 — картинка владельца 1_lecture.jpg: она лежит в
+    репозитории, на неё указывают og:image и twitter:image, а размеры в тегах
+    совпадают с фактическими (соцсети верят тегам, а не качают файл)."""
+    from PIL import Image
+    path = os.path.join(_ROOT, "automation/1/1_lecture.jpg")
+    assert os.path.isfile(path), "нет файла automation/1/1_lecture.jpg"
+    w, h = Image.open(path).size
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    url = "https://andre.technology/automation/1/1_lecture.jpg"
+    for tag in ('<meta property="og:image" content="%s">' % url,
+                '<meta property="og:image:secure_url" content="%s">' % url,
+                '<meta name="twitter:image" content="%s">' % url,
+                '<meta property="og:image:width" content="%d">' % w,
+                '<meta property="og:image:height" content="%d">' % h,
+                '<meta name="twitter:card" content="summary_large_image">'):
+        assert tag in html, "нет тега: " + tag
+    assert "assets/1_long.jpg" not in html, "старая картинка превью должна уйти"
