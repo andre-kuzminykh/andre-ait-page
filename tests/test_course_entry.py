@@ -473,11 +473,18 @@ def test_lecture_videos_are_local_and_in_order():
 
 
 def test_cover_shows_while_video_is_idle():
-    """Пока ролик не играет, в кружке виден кадр-обложка, а не чёрная дыра."""
+    """Пока ролик не играет: виден его собственный ПЕРВЫЙ КАДР — размытый,
+    под кнопкой play (правка заказчика). Обложка остаётся только фоном на
+    время загрузки данных, постера-картинки больше нет."""
     html = _read(_LECTURE1)
-    assert 'poster="%s"' % _COVER in html, "у видео лекции должен быть постер"
-    assert _COVER in html.split('id="head-video"', 1)[1][:400], \
-        "обложка должна стоять и фоном кружка — постер не виден после буферизации"
+    tag = html.split('id="head-video"', 1)[1][:400]
+    assert 'poster=' not in tag, "постер — первый кадр самого ролика, не картинка"
+    assert _COVER in tag, "обложка должна остаться фоном на время загрузки"
+    assert 'preload="metadata"' in tag, "видео не тянет мегабайты на загрузке страницы"
+    assert "#video-bubble:not(.is-playing) #head-video{ filter:blur(" in html, \
+        "неиграющий кадр должен стоять размытым"
+    assert ".currentTime = 0.01" in html, \
+        "первый кадр отрисовывается сдвигом таймкода после загрузки метаданных"
 
 
 def test_entry_has_no_video_circle():

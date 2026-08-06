@@ -700,6 +700,11 @@ html.dark .slide-container .content-z [class*="rounded-2xl"] > i:only-child{ col
    Никаких таймеров: состояние — это класс .is-playing на самом кружке. */
 #video-overlay{ opacity:1; }
 #video-bubble.is-playing #video-overlay{ opacity:0; }
+/* Постер кружка — ПЕРВЫЙ КАДР самого ролика (правка заказчика): пока
+   воспроизведение не идёт, кадр стоит размытым под кнопкой play; scale
+   прячет кайму, которую blur тянет с краёв. */
+#head-video{ transition:filter .25s ease, transform .25s ease; }
+#video-bubble:not(.is-playing) #head-video{ filter:blur(5px); transform:scale(1.08); }
 @media (hover:hover){ #video-bubble.is-playing:hover #video-overlay{ opacity:1; } }
 #video-bubble {
   width: clamp(140px, 22vw, 280px) !important; height: clamp(140px, 22vw, 280px) !important;
