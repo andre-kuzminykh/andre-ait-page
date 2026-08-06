@@ -450,25 +450,52 @@ def test_practice_terms_do_not_break_on_hyphen():
         assert bad not in plain, "%s: дефис в термине должен быть неразрывным (U+2011)" % bad
 
 
-# ── Говорящая голова: обложка вместо дыры, локальные видео ─────────────────
+# ── Говорящая голова: обложка вместо дыры, видео с ветки media ─────────────
+# Канон хостинга (правка заказчика): деплой GitHub Pages падал по таймауту
+# из-за тяжёлого артефакта, поэтому все mp4 живут в ветке `media` и отдаются
+# через raw.githubusercontent.com; в main остаются только лёгкие ассеты.
 
 _COVER = "/assets/video_sq/poster_auto_0.jpg"
+_MEDIA = "https://raw.githubusercontent.com/andre-kuzminykh/andre-ait-page/refs/heads/media"
+# структура глав лекции 1 — ролики «кв» из assets/video_sq (в ветке media)
+_CHAPTERS = {1: 3, 2: 5, 3: 4, 4: 4, 5: 5, 6: 9, 7: 3, 8: 7, 9: 2}
 
 
-def test_lecture_videos_are_local_and_in_order():
-    """42 ролика лежат в репозитории (assets/video_sq, новые записи «кв») и
-    идут по слайдам в порядке глав. Старая папка 1_video удалена владельцем."""
+def test_lecture_videos_are_on_media_branch_and_in_order():
+    """42 ролика идут по слайдам в порядке глав и берутся с ветки media
+    (raw.githubusercontent.com), а не из артефакта Pages."""
     import os, urllib.parse
     html = _read(_LECTURE1)
-    assert "raw.githubusercontent.com" not in html, "видео должны браться из репозитория"
     assert "/assets/1_video/" not in html, "ссылок на удалённую папку быть не должно"
-    urls = re.findall(r"'(/assets/video_sq/[^']*%D0%BA%D0%B2[^']*\.mp4)'", html)
+    urls = re.findall(r"'(%s/assets/video_sq/[^']*%%D0%%BA%%D0%%B2[^']*\.mp4)'" % re.escape(_MEDIA), html)
     assert len(urls) == 42, "по одному ролику на слайд, а не %d" % len(urls)
     order = [tuple(map(int, re.search(r"auto_(\d+)-%D0%BA%D0%B2-(\d+)", u).groups())) for u in urls]
     assert order == sorted(order), "порядок роликов должен идти по главам и номерам"
-    for u in urls + [_COVER]:
-        rel = urllib.parse.unquote(u.lstrip("/"))
-        assert os.path.isfile(os.path.join(_ROOT, rel)), "нет файла " + rel
+    counts = {}
+    for ch, _ in order:
+        counts[ch] = counts.get(ch, 0) + 1
+    assert counts == _CHAPTERS, "структура глав разъехалась: %r" % counts
+    # обложка — лёгкий jpg, живёт в main как раньше
+    rel = urllib.parse.unquote(_COVER.lstrip("/"))
+    assert os.path.isfile(os.path.join(_ROOT, rel)), "нет файла " + rel
+
+
+def test_no_mp4_in_main_tree_or_local_links():
+    """Сторож канона: в main нет ни одного mp4 (артефакт Pages лёгкий, деплой
+    не упирается в таймаут очереди), а страницы не ссылаются на локальные mp4 —
+    только на https (ветка media или внешние репозитории)."""
+    import subprocess
+    tracked = subprocess.check_output(
+        ["git", "ls-files", "*.mp4"], cwd=_ROOT, text=True).strip()
+    assert tracked == "", "mp4 в main запрещены (видео — в ветку media): %s" % tracked
+    pages = subprocess.check_output(
+        ["git", "ls-files", "*.html"], cwd=_ROOT, text=True).split()
+    for page in pages:
+        html = _read(os.path.join(_ROOT, page))
+        for m in re.finditer(r"""["'(]([^"'()\s]+\.mp4)""", html):
+            src = m.group(1)
+            assert src.startswith("https://"), \
+                "%s: локальная ссылка на видео %s (нужен https с ветки media)" % (page, src)
 
 
 def test_cover_shows_while_video_is_idle():
