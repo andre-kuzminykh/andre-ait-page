@@ -490,8 +490,10 @@ def test_owner_canon_batch8():
     assert "--bub:calc(224px * var(--view-scale,1))" in html
     assert "--bub:calc(132px * var(--view-scale,1))" in html
     assert "var(--arw-gap)/2 - var(--bub)/2" in html, "кружок по центру над стрелками на мобиле"
-    # Финальный тест: варианты по центру, «Далее» по центру, автопрокрутка
-    assert "quiz-option text-center" in html and "items-center justify-center" in html
+    # Финальный тест (канон уточнён батчем 10): буква и текст ВАРИАНТА слева,
+    # по вертикали текст в центре кнопки; «Далее» по центру, автопрокрутка
+    assert "quiz-option text-left" in html and "quiz-option text-center" not in html
+    assert "flex items-center justify-start gap-3 md:gap-4" in html
     assert "tracking-widest self-center" in html
     assert "quizNextBtn.scrollIntoView" in html, "после ответа кнопка «Далее» подъезжает сама"
     # Радиалки: ядра «Цикл обучения»/«Постоянное улучшение» умерены
