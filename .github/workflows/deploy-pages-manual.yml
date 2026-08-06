@@ -1,0 +1,29 @@
+# Запасной деплой Pages в обход штатного «pages build and deployment»:
+# тот сегодня часами не получает раннеров и отменяется очередью (15 мин),
+# а обычные workflow-джобы планируются мгновенно. Запускается ТОЛЬКО
+# вручную (workflow_dispatch) и требует, чтобы в Settings → Pages
+# источником был выбран «GitHub Actions».
+name: deploy-pages-manual
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages-manual
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
