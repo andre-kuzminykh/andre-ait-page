@@ -1,10 +1,11 @@
 # Запасной деплой Pages в обход штатного «pages build and deployment»:
 # тот сегодня часами не получает раннеров и отменяется очередью (15 мин),
 # а обычные workflow-джобы планируются мгновенно. Запускается ТОЛЬКО
-# вручную (workflow_dispatch) и требует, чтобы в Settings → Pages
-# источником был выбран «GitHub Actions».
-name: deploy-pages-manual
+# на каждый пуш в main (источник в Settings → Pages: «GitHub Actions»).
+name: deploy-pages
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
