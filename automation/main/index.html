@@ -171,11 +171,11 @@
    (там clamp(150px,13.6vw,196px) на десктопе и 120px на мобилке —
    единый размер кружка на всех страницах курса). */
 .bubble{
-  left:auto !important; right:20px !important;
+  left:auto; right:20px; /* БЕЗ !important: перетаскивание пишет инлайновый style.left, важность из CSS его глушила — кружок ходил только по вертикали */
   width:clamp(150px,13.6vw,196px) !important; height:clamp(150px,13.6vw,196px) !important;
 }
 @media(max-width:768px){
-  .bubble{ left:auto !important; right:12px !important; width:120px !important; height:120px !important; }
+  .bubble{ left:auto; right:12px; width:120px !important; height:120px !important; }
 }
 </style>
 </head>
