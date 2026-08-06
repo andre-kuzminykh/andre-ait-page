@@ -601,6 +601,136 @@ TEMPLATE = r"""<!DOCTYPE html>
       }
     })();
   </script>
+
+<!-- ГОВОРЯЩАЯ ГОЛОВА (кружок): та же механика и размер, что на /automation/main.
+     Ролик — заглушка, заказчик заменит. Без звука не играет: стоит на кнопке
+     ▶; если звук включали раньше на пути (welcome-audio) — стартует сам. -->
+<style>
+/* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
+  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(140px,22vw,280px);height:clamp(140px,22vw,280px);touch-action:none;user-select:none;-webkit-user-select:none}
+  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:150px;height:150px}}
+  .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
+  .bubble.dragging .inner{cursor:grabbing}
+  .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
+  .bubble video{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}
+  .bubble-sound{position:absolute;z-index:3;left:50%;bottom:8%;transform:translateX(-50%);display:inline-flex;align-items:center;justify-content:center;height:1.5rem;min-width:1.5rem;padding:0 .4rem;border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font-size:.72rem;pointer-events:none;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);transition:opacity .2s ease}
+  .bubble.paused .bubble-sound{opacity:0}
+  .bubble-play{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.9rem;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity .2s ease;pointer-events:none}
+  .bubble.paused .bubble-play{opacity:1}
+/* Кружок справа, размеры как в лекциях */
+.bubble{ left:auto !important; right:20px !important;
+  width:clamp(140px,13vw,190px) !important; height:clamp(140px,13vw,190px) !important; }
+@media(max-width:768px){
+  .bubble{ left:auto !important; right:12px !important; width:100px !important; height:100px !important; }
+}
+</style>
+<div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
+    <div class="inner">
+      <div class="grad"></div>
+      <!-- Ролик входа в курс лежит в репозитории: внешний CDN отдавал 404 и
+           кружок оставался пустым градиентом. Обложка стоит и постером, и
+           фоном — дыры на месте кружка нет никогда. -->
+      <video id="bubble-video" src="/assets/1_video/auto_0_sq.mp4" muted playsinline preload="auto"
+             poster="/assets/1_video/auto_cover_1.jpg"
+             style="background:#0A0A0A url(/assets/1_video/auto_cover_1.jpg) center/cover no-repeat"></video>
+      <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M15.6 8.6 14.2 10l2 2-2 2 1.4 1.4 2-2 2 2L21 14l-2-2 2-2-1.4-1.4-2 2z"/></svg></div>
+      <div class="bubble-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></div>
+    </div>
+  </div>
+<script>
+(function(){
+// ===== Video bubble: tap = sound, then play/pause; drag to move (same as welcome) =====
+    (function(){
+      var bubble = document.getElementById('bubble');
+      var video  = document.getElementById('bubble-video');
+      var sound  = document.getElementById('bubble-sound');
+      if (!bubble || !video) return;
+
+      // ONE journey-wide audio memory (same flag as welcome/roles/skills): if the user enabled
+      // sound earlier in the path, the roadmap video starts WITH sound too (best-effort; falls back
+      // to muted if the browser blocks unmuted autoplay — one tap re-enables).
+      var WANT_SOUND = false;
+      try { WANT_SOUND = localStorage.getItem('welcome-audio') === '1'; } catch (e) {}
+      function rememberSound(){ try { localStorage.setItem('welcome-audio', '1'); } catch (e) {} }
+      // Дорожная карта — конечная страница пути: голова договаривает своё и
+      // замолкает, дальше выбирает пользователь. Зацикливать нельзя: на шагах
+      // мастера ролик по окончании ведёт на следующий шаг, а здесь вести некуда,
+      // и повтор превращался в бесконечно говорящую голову поверх списка модулей.
+      video.loop = false; video.muted = !WANT_SOUND;
+      // БЕЗ ЗВУКА НЕ ИГРАЕМ (правка заказчика): молчаливый ролик выглядел как
+      // сломанный. Если звук включали на предыдущем шаге пути — пробуем
+      // стартовать сразу СО ЗВУКОМ; если браузер запретил (NotAllowedError на
+      // свежей странице) или флага нет — стоим на кнопке ▶, клик всё включит.
+      function tryPlay(){
+        if (video.muted){ bubble.classList.add('paused'); return; }
+        var p = video.play && video.play();
+        if (p && p.catch) p.catch(function(err){
+          if (err && err.name === 'NotAllowedError'){ video.muted = true; video.pause(); bubble.classList.add('paused'); }
+        });
+      }
+      tryPlay();
+      video.addEventListener('loadedmetadata', tryPlay);
+      video.addEventListener('loadeddata', tryPlay);
+      video.addEventListener('canplay', tryPlay);
+      function syncSound(){
+        bubble.classList.toggle('muted', video.muted);
+        if (sound) sound.innerHTML = video.muted ? '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M15.6 8.6 14.2 10l2 2-2 2 1.4 1.4 2-2 2 2L21 14l-2-2 2-2-1.4-1.4-2 2z"/></svg>' : '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M14.5 12c0-1.8-1-3.3-2.5-4v8c1.5-.7 2.5-2.2 2.5-4z"/><path d="M12 3.2v2.1c2.9.9 5 3.6 5 6.7s-2.1 5.8-5 6.7v2.1c4-.9 7-4.5 7-8.8s-3-7.9-7-8.8z"/></svg>';
+      }
+      video.addEventListener('play',  function(){ bubble.classList.remove('paused'); });
+      video.addEventListener('pause', function(){ bubble.classList.add('paused'); });
+      // Договорил — показываем ▶, чтобы кружок не выглядел зависшим и ролик
+      // можно было пересмотреть. Отдельно от 'pause': по спецификации порядок
+      // событий в конце воспроизведения зависит от браузера.
+      video.addEventListener('ended', function(){ bubble.classList.add('paused'); });
+      video.addEventListener('volumechange', syncSound);
+      syncSound();
+      // safety net: show ▶ only if playback genuinely never started (rare with the muted fallback)
+      setTimeout(function(){ if (video.paused && video.currentTime < 0.1) bubble.classList.add('paused'); }, 2500);
+
+      // tap: first turn the SOUND on (unmute — allowed inside the user gesture); then toggle play/pause
+      function onTap(){
+        if (video.muted){ video.muted = false; rememberSound(); try { video.currentTime = 0; } catch (e) {} var q = video.play(); if (q && q.catch) q.catch(function(){}); } // включили звук → видео с начала
+        else if (video.paused){ var p2 = video.play(); if (p2 && p2.catch) p2.catch(function(){}); }
+        else video.pause();
+      }
+
+      // body{zoom} on big screens scales fixed elements: clientX / getBoundingClientRect are in
+      // RENDERED px while style.left is in LAYOUT px — reconcile via the measured zoom factor.
+      function zoomF(){ var r=bubble.getBoundingClientRect(); return (r.width && bubble.offsetWidth) ? r.width/bubble.offsetWidth : 1; }
+      // pointer drag; a tap (no real movement) triggers onTap (sound / play-pause)
+      var down=false, moved=false, sx=0, sy=0, ox=0, oy=0, TH=6;
+      bubble.addEventListener('pointerdown', function(e){
+        down=true; moved=false; sx=e.clientX; sy=e.clientY;
+        var r=bubble.getBoundingClientRect(), z=zoomF(); ox=r.left; oy=r.top;
+        bubble.style.left=(r.left/z)+'px'; bubble.style.top=(r.top/z)+'px';
+        bubble.style.right='auto'; bubble.style.bottom='auto';
+        if (bubble.setPointerCapture){ try { bubble.setPointerCapture(e.pointerId); } catch (err) {} }
+      });
+      bubble.addEventListener('pointermove', function(e){
+        if (!down) return;
+        var dx=e.clientX-sx, dy=e.clientY-sy;
+        if (!moved && (Math.abs(dx)>TH || Math.abs(dy)>TH)){ moved=true; bubble.classList.add('dragging'); }
+        if (moved){
+          var z=zoomF(), rw=bubble.offsetWidth*z, rh=bubble.offsetHeight*z;
+          var nx=Math.min(Math.max(0, ox+dx), window.innerWidth  - rw);
+          var ny=Math.min(Math.max(0, oy+dy), window.innerHeight - rh);
+          bubble.style.left=(nx/z)+'px'; bubble.style.top=(ny/z)+'px';
+        }
+      });
+      function endDrag(){ if (!down) return; down=false; bubble.classList.remove('dragging'); if (!moved) onTap(); }
+      bubble.addEventListener('pointerup', endDrag);
+      bubble.addEventListener('pointercancel', endDrag);
+
+      window.addEventListener('resize', function(){
+        if (!bubble.style.left) return;
+        var z=zoomF(), rw=bubble.offsetWidth*z, rh=bubble.offsetHeight*z;
+        var lx=Math.max(0,Math.min(parseFloat(bubble.style.left)*z, window.innerWidth  - rw));
+        var ly=Math.max(0,Math.min(parseFloat(bubble.style.top)*z,  window.innerHeight - rh));
+        bubble.style.left=(lx/z)+'px'; bubble.style.top=(ly/z)+'px';
+      });
+    })();
+})();
+</script>
 </body>
 </html>
 """

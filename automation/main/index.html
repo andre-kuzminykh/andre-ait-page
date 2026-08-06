@@ -277,7 +277,7 @@
       <!-- Ролик входа в курс лежит в репозитории: внешний CDN отдавал 404 и
            кружок оставался пустым градиентом. Обложка стоит и постером, и
            фоном — дыры на месте кружка нет никогда. -->
-      <video id="bubble-video" src="/assets/1_video/auto_0_sq.mp4" muted autoplay loop playsinline preload="auto"
+      <video id="bubble-video" src="/assets/1_video/auto_0_sq.mp4" muted playsinline preload="auto"
              poster="/assets/1_video/auto_cover_1.jpg"
              style="background:#0A0A0A url(/assets/1_video/auto_cover_1.jpg) center/cover no-repeat"></video>
       <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><i class="fa-solid fa-volume-xmark"></i></div>
@@ -325,12 +325,17 @@
       // мастера ролик по окончании ведёт на следующий шаг, а здесь вести некуда,
       // и повтор превращался в бесконечно говорящую голову поверх списка модулей.
       video.loop = false; video.muted = !WANT_SOUND;
-      // Only the autoplay-policy block (NotAllowedError) means "sound isn't allowed on this fresh page"
-      // → only THEN fall back to muted. Transient rejections (AbortError from an interrupted load) must
-      // NOT mute, otherwise we'd kill sound the browser would actually allow (e.g. Chrome after the user
-      // enabled sound earlier — media-engagement lets later pages start unmuted on their own).
-      var soundBlocked = false;
-      function tryPlay(){ var p = video.play && video.play(); if (p && p.catch) p.catch(function(err){ if (!video.muted && !soundBlocked && err && err.name === 'NotAllowedError'){ soundBlocked = true; video.muted = true; var q = video.play && video.play(); if (q && q.catch) q.catch(function(){}); } }); }
+      // БЕЗ ЗВУКА НЕ ИГРАЕМ (правка заказчика): молчаливый ролик выглядел как
+      // сломанный. Если звук включали на предыдущем шаге пути — пробуем
+      // стартовать сразу СО ЗВУКОМ; если браузер запретил (NotAllowedError на
+      // свежей странице) или флага нет — стоим на кнопке ▶, клик всё включит.
+      function tryPlay(){
+        if (video.muted){ bubble.classList.add('paused'); return; }
+        var p = video.play && video.play();
+        if (p && p.catch) p.catch(function(err){
+          if (err && err.name === 'NotAllowedError'){ video.muted = true; video.pause(); bubble.classList.add('paused'); }
+        });
+      }
       tryPlay();
       video.addEventListener('loadedmetadata', tryPlay);
       video.addEventListener('loadeddata', tryPlay);

@@ -275,6 +275,17 @@
 
 
 <style id="portal-deck">
+/* Центрирование холста держит justify-content сцены. У flex-элемента с
+   авто-маргинами переполнение по спеке уходит В КОНЕЦ (авто-маргины
+   обнуляются и прижимают его к началу): широкий холст (max-w-6xl, 1152px)
+   на окнах уже 1152px уезжал вправо и ломал замороженную форму. Без
+   авто-маргинов justify-content:center распределяет и отрицательное
+   свободное место симметрично — форма одна на любом окне. Печать не
+   трогаем: там .slide-container снова блочный и центрируют маргины. */
+@media screen{
+  .slide-container{ align-items:center; }
+  .slide-container > .content-z{ margin-left:0 !important; margin-right:0 !important; }
+}
 /* Сплошные оранжевые акцентные блоки и границы (исходно теал/мята → оранжевый);
    ровный перенос инлайн-выделений по строкам (FR-LECTURE-10) */
 [class~="bg-solar"] {
@@ -502,11 +513,15 @@ body.on-last-slide .lec-consult:hover{ background:#FFFFFF !important; }
   .slide-container .content-z .js-card{
     display:grid !important;
     grid-template-columns:auto minmax(0,1fr);
-    column-gap:.8rem; row-gap:.15rem;
+    column-gap:.85rem; row-gap:.2rem;
     align-items:center; align-content:center;
     justify-items:start;
     text-align:left !important;
-    padding:.7rem .95rem !important;
+    /* Квадратнее и крупнее (правка заказчика): карточка не тянется во всю
+       ширину формы — уже, зато выше и с большим воздухом внутри. */
+    width:100%; max-width:21.5rem;
+    margin-left:auto !important; margin-right:auto !important;
+    padding:.85rem 1.05rem !important;
     transform:none !important;          /* md:scale-105 у акцентной карточки */
   }
   .slide-container .content-z .js-card > .js-ico{
@@ -1175,24 +1190,32 @@ window.addEventListener('load', function(){
                       overW > 1 ? freeW / (ink.w * z) : 1) * 0.995;
         apply(z);
       }
-      // Угол кружка с головой (веб-форма): в форме он занимает прямоугольник
-      // [availW-216..availW-20] x [availH-282..availH-86] и лежит ПОВЕРХ
-      // слайда. Общий бокс чернил сюда почти всегда дотягивается пустым краем
-      // сетки — это не страшно; страшно, когда в угол попадает ТЕКСТ или
-      // иконка. Проверяем реальные листовые прямоугольники и, пока есть
-      // попадание, ужимаем слайд шагами (центрирование само уводит края от
-      // угла). Геометрия угла — константа формы, поэтому результат один на
-      // любом окне. На телефоне кружок живёт в нижней полосе band.bottom,
-      // отдельная проверка не нужна.
+      // Угол кружка с головой (веб-форма): кружок позиционирован fixed —
+      // right 20, bottom 28+58 (стрелка), диаметр 196, всё в px формы через
+      // --view-scale. В ЧИСТОЙ форме (окно 1440x900) его левый верхний угол
+      // стоит в (1440-216, 900-282). Контент по обеим осям центрируется, и в
+      // координатах «от центра окна» этот угол — константа формы:
+      // 504 = 1440/2 - 216, 168 = 900/2 - 282. На окнах шире/выше формы
+      // реальный кружок дальше от контента, чем эта точка, поэтому проверка
+      // строже реальности и ОДИНАКОВА на любом окне — раскладка остаётся
+      // замороженной (прежняя проекция через прямоугольник content-z врала:
+      // content-z уже холста из-за max-w-*). Кружок лежит ПОВЕРХ слайда;
+      // пустой край сетки под ним — не страшно, страшно, когда в угол
+      // попадает ТЕКСТ или иконка. Пока есть попадание, ужимаем слайд шагами
+      // (центрирование само уводит края от угла). На телефоне кружок живёт
+      // в нижней полосе band.bottom, отдельная проверка не нужна.
       if(form() === 'pc'){
-        var cp, cr2, cLeft, cTop, tEls, te, el2, tr2, hit;
-        for(cp = 0; cp < 4; cp++){
-          cr2 = c.getBoundingClientRect();
-          if(!cr2.width || !cr2.height) break;
-          // Пропорциональное отображение: прямоугольник content-z и есть холст
-          // формы (availW x availH), в каких бы экранных пикселях он ни жил.
-          cLeft = cr2.left + cr2.width * (availW - 216) / availW;
-          cTop  = cr2.top  + cr2.height * (availH - 282) / availH;
+        var cp, vs2, cLeft, cTop, tEls, te, el2, tr2, hit, an2, as2, ar2;
+        vs2 = viewScale();
+        cLeft = window.innerWidth  / 2 + 504 * vs2;
+        cTop  = window.innerHeight / 2 + 168 * vs2;
+        // Слайд из очереди подгонки ещё сдвинут прочь (translate-y-8) —
+        // приводим прямоугольники к положению АКТИВНОГО слайда: его бокс
+        // совпадает с боксом сцены (absolute, top/left 0).
+        var sr2 = slide.getBoundingClientRect(),
+            pr2 = slide.parentElement.getBoundingClientRect(),
+            dx2 = sr2.left - pr2.left, dy2 = sr2.top - pr2.top;
+        for(cp = 0; cp < 10; cp++){
           hit = false;
           // Лист — как в аудите наложений: элемент с СОБСТВЕННЫМ текстом
           // (текстовый узел прямо в нём), иконка или картинка. Обёртки без
@@ -1206,8 +1229,25 @@ window.addEventListener('load', function(){
               if(nn2.nodeType === 3 && nn2.textContent && nn2.textContent.replace(/\s+/g, '')){ own2 = true; break; }
             if(!own2 && el2.tagName !== 'IMG' && el2.tagName !== 'I') continue;
             tr2 = el2.getBoundingClientRect();
-            if(tr2.width < 2 || tr2.height < 2) continue;
-            if(tr2.right > cLeft + 3 && tr2.bottom > cTop + 3){ hit = true; break; }
+            // Видимый прямоугольник: обрезаем по предкам с overflow
+            // hidden/clip. Декоративные вылеты (планета слайда AI-First)
+            // срезаны панелью и в углу НЕ видны — не считаются.
+            for(an2 = el2.parentElement; an2 && an2 !== c; an2 = an2.parentElement){
+              as2 = getComputedStyle(an2);
+              if(/hidden|clip/.test(as2.overflow + ' ' + as2.overflowX + ' ' + as2.overflowY)){
+                ar2 = an2.getBoundingClientRect();
+                tr2 = { left:  Math.max(tr2.left,  ar2.left),
+                        top:   Math.max(tr2.top,   ar2.top),
+                        right: Math.min(tr2.right, ar2.right),
+                        bottom:Math.min(tr2.bottom,ar2.bottom) };
+                tr2.width = tr2.right - tr2.left; tr2.height = tr2.bottom - tr2.top;
+              }
+            }
+            // Допуски — в px ФОРМЫ (умножены на масштаб окна): экранные
+            // 2px на разных окнах — разная доля формы, и пограничный лист
+            // давал лишний шаг ужатия только на широких экранах.
+            if(tr2.width < 2 * vs2 || tr2.height < 2 * vs2) continue;
+            if(tr2.right - dx2 > cLeft + 2 * vs2 && tr2.bottom - dy2 > cTop + 2 * vs2){ hit = true; break; }
           }
           if(!hit) break;
           z *= 0.965;
