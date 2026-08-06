@@ -534,3 +534,6 @@ def test_owner_canon_batch9():
     assert '<span class="hidden">(по автоматизации)</span>' not in html
     # Обучение: «От универсального инструмента…» крупная и жирная
     assert '<p class="text-sm md:text-lg font-bold leading-snug"><i class="ph-fill ph-buildings' in html
+    # Панель «Текст»: резерв под лого растёт с var(--view-scale) — шапка
+    # зумится этим же множителем, иначе «СЛАЙД 1/42» налезает на лого (мак)
+    assert "* var(--view-scale,1)) clamp(1rem,2.6vw,1.6rem) .85rem;" in html

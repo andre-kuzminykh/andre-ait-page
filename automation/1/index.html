@@ -4677,8 +4677,10 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
 /* Шапка панели: счётчик и заголовок слева, крестик — у правого края панели */
 .notes-head{
   flex:0 0 auto; display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem;
-  /* сверху резерв под логотип AIT: он остаётся видимым НАД панелью */
-  padding:calc(clamp(2.3rem,9vw,3.2rem) + clamp(1.5rem,5vw,2.3rem)) clamp(1rem,2.6vw,1.6rem) .85rem;
+  /* Сверху резерв под логотип AIT: он остаётся видимым НАД панелью.
+     Шапка (и лого) зумится на var(--view-scale) — резерв обязан расти
+     тем же множителем, иначе на маке «СЛАЙД 1/42» налезает на лого. */
+  padding:calc((clamp(2.3rem,9vw,3.2rem) + clamp(1.5rem,5vw,2.3rem)) * var(--view-scale,1)) clamp(1rem,2.6vw,1.6rem) .85rem;
   border-bottom:1px solid rgba(0,0,0,.09);
   background:linear-gradient(180deg, rgba(139,92,246,.07), rgba(139,92,246,0));
 }
