@@ -607,8 +607,8 @@ TEMPLATE = r"""<!DOCTYPE html>
      ▶; если звук включали раньше на пути (welcome-audio) — стартует сам. -->
 <style>
 /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
-  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(140px,22vw,280px);height:clamp(140px,22vw,280px);touch-action:none;user-select:none;-webkit-user-select:none}
-  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:150px;height:150px}}
+  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(150px,13.6vw,196px);height:clamp(150px,13.6vw,196px);touch-action:none;user-select:none;-webkit-user-select:none}
+  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:120px;height:120px}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
   .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
@@ -619,9 +619,9 @@ TEMPLATE = r"""<!DOCTYPE html>
   .bubble.paused .bubble-play{opacity:1}
 /* Кружок справа, размеры как в лекциях */
 .bubble{ left:auto !important; right:20px !important;
-  width:clamp(140px,13vw,190px) !important; height:clamp(140px,13vw,190px) !important; }
+  width:clamp(150px,13.6vw,196px) !important; height:clamp(150px,13.6vw,196px) !important; }
 @media(max-width:768px){
-  .bubble{ left:auto !important; right:12px !important; width:100px !important; height:100px !important; }
+  .bubble{ left:auto !important; right:12px !important; width:120px !important; height:120px !important; }
 }
 </style>
 <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
@@ -630,9 +630,9 @@ TEMPLATE = r"""<!DOCTYPE html>
       <!-- Ролик входа в курс лежит в репозитории: внешний CDN отдавал 404 и
            кружок оставался пустым градиентом. Обложка стоит и постером, и
            фоном — дыры на месте кружка нет никогда. -->
-      <video id="bubble-video" src="/assets/1_video/auto_0_sq.mp4" muted playsinline preload="auto"
-             poster="/assets/1_video/auto_cover_1.jpg"
-             style="background:#0A0A0A url(/assets/1_video/auto_cover_1.jpg) center/cover no-repeat"></video>
+      <video id="bubble-video" src="/assets/video_sq/auto_welcome-sq.mp4" muted playsinline preload="auto"
+             poster="/assets/video_sq/poster_welcome.jpg"
+             style="background:#0A0A0A url(/assets/video_sq/poster_welcome.jpg) center/cover no-repeat"></video>
       <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M15.6 8.6 14.2 10l2 2-2 2 1.4 1.4 2-2 2 2L21 14l-2-2 2-2-1.4-1.4-2 2z"/></svg></div>
       <div class="bubble-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></div>
     </div>

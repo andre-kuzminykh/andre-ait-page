@@ -88,7 +88,14 @@ def test_logo_url():
 
 
 def test_no_underscore_asset_paths():
-    """Jekyll (GitHub Pages) не публикует файлы/папки, чьи имена начинаются с «_»."""
+    """Jekyll (GitHub Pages) не публикует файлы/папки, чьи имена начинаются
+    с «_» — если только в корне не лежит .nojekyll, который отключает Jekyll
+    целиком и заставляет Pages отдавать репозиторий как есть. Ролики говорящих
+    голов заказчик кладёт с именами вида «_auto_0-кв-1.mp4», поэтому контракт
+    такой: либо в путях нет «_», либо .nojekyll обязан существовать."""
+    import os
+    if os.path.isfile(os.path.join(_ROOT, ".nojekyll")):
+        return
     for rel, html in _pages():
         for m in re.finditer(r'(?:src|href)="(/[^"]*)"', html):
             parts = [p for p in m.group(1).split("/") if p]
