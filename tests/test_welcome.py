@@ -103,7 +103,7 @@ def test_icons_come_from_the_deck_set():
 
 def test_scenes_do_not_overlap():
     scenes = _scenes()
-    assert len(scenes) >= 9, "сцен подозрительно мало: %d" % len(scenes)
+    assert len(scenes) >= 13, "сцен подозрительно мало: %d" % len(scenes)
     prev = 0.0
     for sid, tin, tout, _ in scenes:
         assert tin < tout, "%s: окно вывернуто" % sid
@@ -145,7 +145,7 @@ def test_labels_come_from_the_deck():
                 continue
             stem = (word[:-2] if len(word) > 6 else word).lower()   # падежи не считаем
             assert stem in deck, "слова нет в деке, значит подпись досочинена: %r (из %r)" % (word, label)
-    assert len(_labels()) >= 17, "проверено подозрительно мало подписей (%d)" % len(_labels())
+    assert len(_labels()) >= 21, "проверено подозрительно мало подписей (%d)" % len(_labels())
 
 
 def test_finale_animations_are_in_place():

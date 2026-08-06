@@ -201,48 +201,56 @@ ul{list-style:none;padding:0}
 #s1 .circle{width:124px;height:124px;margin-bottom:20px}
 #s1 .label{font-size:40px}
 
-/* S2 — три роли: 43 знака → 826px при 32px, зазоры по 54px. */
-#s2 .label{font-size:32px}
+/* S2–S5 — обещания курса, по одному по центру: длинные слова
+   («трансформировать», «масштабироваться») в ряд не влезают без переносов.
+   Самая длинная строка — «получать экономический эффект», 29 знаков →
+   661px при 38px. */
+#s2 .row,#s3 .row,#s4 .row,#s5 .row{justify-content:center}
+#s2 .circle,#s3 .circle,#s4 .circle,#s5 .circle{width:112px;height:112px;margin-bottom:18px}
+#s2 .label,#s3 .label,#s4 .label,#s5 .label{font-size:38px}
 
-/* S3 — четыре коротких: 6+9+5+5 = 25 знаков → 540px при 36px, просторно. */
-#s3 .circle{width:92px;height:92px;margin-bottom:14px}
-#s3 .label{font-size:36px}
+/* S6 — три роли: 43 знака → 826px при 32px, зазоры по 54px. */
+#s6 .label{font-size:32px}
 
-/* S4 — самый плотный ряд: 18+14+14+11 = 57 знаков → 889px при 26px,
+/* S7 — четыре коротких: 6+9+5+5 = 25 знаков → 540px при 36px, просторно. */
+#s7 .circle{width:92px;height:92px;margin-bottom:14px}
+#s7 .label{font-size:36px}
+
+/* S8 — самый плотный ряд: 18+14+14+11 = 57 знаков → 889px при 26px,
    зазоры по 33px. 28px уже не влезает (957px). */
-#s4 .circle{width:88px;height:88px;margin-bottom:14px}
-#s4 .label{font-size:26px}
+#s8 .circle{width:88px;height:88px;margin-bottom:14px}
+#s8 .label{font-size:26px}
 
-/* S5 — ЭКОНОМИЧЕСКИЙ ЭФФЕКТ: подпись по центру, сверху сыплются монетки.
+/* S9 — ЭКОНОМИЧЕСКИЙ ЭФФЕКТ: подпись по центру, сверху сыплются монетки.
    Подпись 20 знаков → 528px при 44px. Монетки — маленькие иконки FA coins
    золотом; падают из-за верxa зоны за подпись, с вращением и разбегом по
    фазе. Дырок в цикле нет: девять монет со сдвигом на 1/9 периода. */
-#s5 .row{justify-content:center}
-#s5 .item{position:relative;padding-top:150px}
-#s5 .glow{top:60%;width:820px;height:340px}
-#s5 .label{font-size:44px;position:relative;z-index:1}
-#s5 .coins{position:absolute;left:50%;top:0;width:640px;height:150px;transform:translateX(-50%);pointer-events:none}
-#s5 .coin{position:absolute;top:-40px;display:block;width:44px;height:44px;color:#F9A83C;
+#s9 .row{justify-content:center}
+#s9 .item{position:relative;padding-top:150px}
+#s9 .glow{top:60%;width:820px;height:340px}
+#s9 .label{font-size:44px;position:relative;z-index:1}
+#s9 .coins{position:absolute;left:50%;top:0;width:640px;height:150px;transform:translateX(-50%);pointer-events:none}
+#s9 .coin{position:absolute;top:-40px;display:block;width:44px;height:44px;color:#F9A83C;
     filter:drop-shadow(0 3px 8px rgba(10,4,24,.45));opacity:0}
-#s5 .coin svg{width:100%;height:100%}
-#s5 .coin:nth-child(1){left:4%;width:34px;height:34px}
-#s5 .coin:nth-child(2){left:16%}
-#s5 .coin:nth-child(3){left:28%;width:30px;height:30px;color:#FDBA74}
-#s5 .coin:nth-child(4){left:40%;width:38px;height:38px}
-#s5 .coin:nth-child(5){left:52%;color:#FDBA74}
-#s5 .coin:nth-child(6){left:63%;width:32px;height:32px}
-#s5 .coin:nth-child(7){left:74%;width:40px;height:40px;color:#FDBA74}
-#s5 .coin:nth-child(8){left:85%;width:30px;height:30px}
-#s5 .coin:nth-child(9){left:94%;width:36px;height:36px}
-#s5 .el.on .coin{animation:coinFall 1.8s linear infinite}
-#s5 .el.on .coin:nth-child(2){animation-delay:.2s}
-#s5 .el.on .coin:nth-child(3){animation-delay:.4s}
-#s5 .el.on .coin:nth-child(4){animation-delay:.6s}
-#s5 .el.on .coin:nth-child(5){animation-delay:.8s}
-#s5 .el.on .coin:nth-child(6){animation-delay:1.0s}
-#s5 .el.on .coin:nth-child(7){animation-delay:1.2s}
-#s5 .el.on .coin:nth-child(8){animation-delay:1.4s}
-#s5 .el.on .coin:nth-child(9){animation-delay:1.6s}
+#s9 .coin svg{width:100%;height:100%}
+#s9 .coin:nth-child(1){left:4%;width:34px;height:34px}
+#s9 .coin:nth-child(2){left:16%}
+#s9 .coin:nth-child(3){left:28%;width:30px;height:30px;color:#FDBA74}
+#s9 .coin:nth-child(4){left:40%;width:38px;height:38px}
+#s9 .coin:nth-child(5){left:52%;color:#FDBA74}
+#s9 .coin:nth-child(6){left:63%;width:32px;height:32px}
+#s9 .coin:nth-child(7){left:74%;width:40px;height:40px;color:#FDBA74}
+#s9 .coin:nth-child(8){left:85%;width:30px;height:30px}
+#s9 .coin:nth-child(9){left:94%;width:36px;height:36px}
+#s9 .el.on .coin{animation:coinFall 1.8s linear infinite}
+#s9 .el.on .coin:nth-child(2){animation-delay:.2s}
+#s9 .el.on .coin:nth-child(3){animation-delay:.4s}
+#s9 .el.on .coin:nth-child(4){animation-delay:.6s}
+#s9 .el.on .coin:nth-child(5){animation-delay:.8s}
+#s9 .el.on .coin:nth-child(6){animation-delay:1.0s}
+#s9 .el.on .coin:nth-child(7){animation-delay:1.2s}
+#s9 .el.on .coin:nth-child(8){animation-delay:1.4s}
+#s9 .el.on .coin:nth-child(9){animation-delay:1.6s}
 @keyframes coinFall{
     0%{transform:translateY(0) rotate(-14deg);opacity:0}
     12%{opacity:1}
@@ -250,25 +258,25 @@ ul{list-style:none;padding:0}
     100%{transform:translateY(190px) rotate(16deg);opacity:0}
 }
 
-/* S6 — крупно, круг слева от текста (робот в начале строки). */
-#s6 .row{justify-content:center}
-#s6 .item{flex-direction:row;align-items:center;gap:30px;text-align:left}
-#s6 .circle{width:116px;height:116px;margin-bottom:0}
-#s6 .label{font-size:44px}
+/* S10 — крупно, круг слева от текста (робот в начале строки). */
+#s10 .row{justify-content:center}
+#s10 .item{flex-direction:row;align-items:center;gap:30px;text-align:left}
+#s10 .circle{width:116px;height:116px;margin-bottom:0}
+#s10 .label{font-size:44px}
 
-/* S7/S8 — палец выстреливает отдельно от подписи, с перелётом и качком. */
-#s7 .row,#s8 .row{justify-content:center}
-#s7 .circle,#s8 .circle{width:132px;height:132px;margin-bottom:20px}
-#s7 .label,#s8 .label{font-size:40px}
+/* S11/S12 — палец выстреливает отдельно от подписи, с перелётом и качком. */
+#s11 .row,#s12 .row{justify-content:center}
+#s11 .circle,#s12 .circle{width:132px;height:132px;margin-bottom:20px}
+#s11 .label,#s12 .label{font-size:40px}
 .circle.slate{background:#ECECF1;color:#3A3A46}
-#s7 .el.on .circle{animation:thumbDown .85s var(--ease) .12s backwards}
+#s11 .el.on .circle{animation:thumbDown .85s var(--ease) .12s backwards}
 @keyframes thumbDown{
     0%{transform:scale(.25) rotate(18deg);opacity:0}
     55%{transform:scale(1.16) rotate(-9deg);opacity:1}
     78%{transform:scale(.95) rotate(4deg)}
     100%{transform:none;opacity:1}
 }
-#s8 .el.on .circle{animation:thumbUp .85s var(--ease) .12s backwards}
+#s12 .el.on .circle{animation:thumbUp .85s var(--ease) .12s backwards}
 @keyframes thumbUp{
     0%{transform:scale(.25) rotate(-18deg);opacity:0}
     55%{transform:scale(1.16) rotate(9deg);opacity:1}
@@ -276,11 +284,11 @@ ul{list-style:none;padding:0}
     100%{transform:none;opacity:1}
 }
 
-/* S9 — финал: текст, сзади дышит фиолетовое сияние (эллипс 50% —
+/* S13 — финал: текст, сзади дышит фиолетовое сияние (эллипс 50% —
    прямоугольных плашек в кадре не бывает), слева и справа сияют звёздочки. */
-#s9 .row{justify-content:center}
-#s9 .item{position:relative;justify-content:center;flex-direction:row;align-items:center;gap:34px}
-#s9 .label{font-size:48px;position:relative;z-index:1;padding:60px 0}
+#s13 .row{justify-content:center}
+#s13 .item{position:relative;justify-content:center;flex-direction:row;align-items:center;gap:34px}
+#s13 .label{font-size:48px;position:relative;z-index:1;padding:60px 0}
 .glow{
     position:absolute;left:50%;top:50%;width:760px;height:300px;
     transform:translate(-50%,-50%);border-radius:50%;
@@ -296,19 +304,19 @@ ul{list-style:none;padding:0}
     0%,100%{transform:translate(-50%,-50%) scale(1)}
     50%{transform:translate(-50%,-50%) scale(1.16)}
 }
-#s9 .stars{position:relative;z-index:1;display:flex;flex-direction:column;gap:18px}
-#s9 .st{display:block;color:#E9DFFF;filter:drop-shadow(0 0 10px rgba(196,181,253,.9));opacity:0}
-#s9 .st svg{width:100%;height:100%}
-#s9 .stars .st:nth-child(1){width:30px;height:30px}
-#s9 .stars .st:nth-child(2){width:46px;height:46px;color:#fff;margin-left:26px}
-#s9 .stars .st:nth-child(3){width:24px;height:24px}
-#s9 .stars-r .st:nth-child(2){margin-left:-26px}
-#s9 .el.on .st{animation:starTwinkle 1.6s ease-in-out infinite}
-#s9 .el.on .stars .st:nth-child(2){animation-delay:.5s}
-#s9 .el.on .stars .st:nth-child(3){animation-delay:1.0s}
-#s9 .el.on .stars-r .st:nth-child(1){animation-delay:.8s}
-#s9 .el.on .stars-r .st:nth-child(2){animation-delay:.2s}
-#s9 .el.on .stars-r .st:nth-child(3){animation-delay:1.3s}
+#s13 .stars{position:relative;z-index:1;display:flex;flex-direction:column;gap:18px}
+#s13 .st{display:block;color:#E9DFFF;filter:drop-shadow(0 0 10px rgba(196,181,253,.9));opacity:0}
+#s13 .st svg{width:100%;height:100%}
+#s13 .stars .st:nth-child(1){width:30px;height:30px}
+#s13 .stars .st:nth-child(2){width:46px;height:46px;color:#fff;margin-left:26px}
+#s13 .stars .st:nth-child(3){width:24px;height:24px}
+#s13 .stars-r .st:nth-child(2){margin-left:-26px}
+#s13 .el.on .st{animation:starTwinkle 1.6s ease-in-out infinite}
+#s13 .el.on .stars .st:nth-child(2){animation-delay:.5s}
+#s13 .el.on .stars .st:nth-child(3){animation-delay:1.0s}
+#s13 .el.on .stars-r .st:nth-child(1){animation-delay:.8s}
+#s13 .el.on .stars-r .st:nth-child(2){animation-delay:.2s}
+#s13 .el.on .stars-r .st:nth-child(3){animation-delay:1.3s}
 @keyframes starTwinkle{
     0%,100%{opacity:.35;transform:scale(.75) rotate(-8deg)}
     50%{opacity:1;transform:scale(1.15) rotate(8deg)}
@@ -434,8 +442,8 @@ body.dragging #drop{display:flex}
 
     <div id="layer">
 
-        <!-- ══ S1 · заглавная карточка курса, до появления ролей ══ -->
-        <section class="scene" id="s1" data-in="1.6" data-out="14.2">
+        <!-- ══ S1 · заглавная карточка курса ══ -->
+        <section class="scene" id="s1" data-in="1.6" data-out="5.0">
             <div class="row">
                 <div class="item el" data-in="1.8"> <!-- «по автоматизации» 1.70 -->
                     <div class="circle solar ico" data-icon="robot"></div>
@@ -444,8 +452,48 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S2 · три роли из дека ══ -->
-        <section class="scene" id="s2" data-in="14.7" data-out="21.8">
+        <!-- ══ S2–S5 · четыре обещания курса, по одному под свою фразу:
+             в один ряд эти слова не влезают без переносов, а слова не
+             переносятся — правило владельца. Цвета иконок — как продиктовано:
+             фиолетовая · оранжевая · фиолетовая · оранжевая. ══ -->
+        <section class="scene" id="s2" data-in="5.3" data-out="8.2">
+            <div class="row">
+                <div class="item el" data-in="6.0"> <!-- «трансформировать бизнес» 5.90 -->
+                    <div class="circle solar ico" data-icon="arrows-rotate"></div>
+                    <p class="label">трансформировать бизнес<br>в AI-First компанию</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="scene" id="s3" data-in="8.3" data-out="9.8">
+            <div class="row">
+                <div class="item el" data-in="8.6"> <!-- «автоматизировать процессы» 8.48 -->
+                    <div class="circle ember ico" data-icon="gears"></div>
+                    <p class="label">автоматизировать процессы</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="scene" id="s4" data-in="9.9" data-out="11.4">
+            <div class="row">
+                <div class="item el" data-in="10.2"> <!-- «масштабироваться без» 10.04 -->
+                    <div class="circle solar ico" data-icon="arrow-trend-up"></div>
+                    <p class="label">масштабироваться<br>без роста штата</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="scene" id="s5" data-in="11.5" data-out="14.2">
+            <div class="row">
+                <div class="item el" data-in="11.8"> <!-- «и получать» 11.56 -->
+                    <div class="circle ember ico" data-icon="coins"></div>
+                    <p class="label">получать экономический эффект</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ S6 · три роли из дека ══ -->
+        <section class="scene" id="s6" data-in="14.7" data-out="21.8">
             <div class="row">
                 <div class="item el" data-in="15.4"> <!-- «будущим AI-консультантам» 15.28 -->
                     <div class="circle solar ico" data-icon="compass"></div>
@@ -462,8 +510,8 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S3 · чему научитесь, часть 1: поток данных → TO-BE ══ -->
-        <section class="scene" id="s3" data-in="22.2" data-out="30.2">
+        <!-- ══ S7 · чему научитесь: поток данных → TO-BE ══ -->
+        <section class="scene" id="s7" data-in="22.2" data-out="30.2">
             <div class="row">
                 <div class="item el" data-in="22.8"> <!-- «управлять компанией» 22.70 -->
                     <div class="circle solar ico" data-icon="brain"></div>
@@ -484,8 +532,8 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S4 · чему научитесь, часть 2: агенты ══ -->
-        <section class="scene" id="s4" data-in="30.6" data-out="39.4">
+        <!-- ══ S8 · агенты ══ -->
+        <section class="scene" id="s8" data-in="30.6" data-out="39.4">
             <div class="row">
                 <div class="item el" data-in="31.3"> <!-- «роль агента» 31.28 -->
                     <div class="circle solar ico" data-icon="user-gear"></div>
@@ -506,8 +554,8 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S5 · ЭКОНОМИЧЕСКИЙ ЭФФЕКТ: сверху сыплются монетки ══ -->
-        <section class="scene" id="s5" data-in="39.9" data-out="43.0">
+        <!-- ══ S9 · ЭКОНОМИЧЕСКИЙ ЭФФЕКТ: оранжевое сияние + монетопад ══ -->
+        <section class="scene" id="s9" data-in="39.9" data-out="43.0">
             <div class="row">
                 <div class="item el" data-in="40.6"> <!-- «экономический эффект» 40.52 -->
                     <div class="glow glow-ember"></div>
@@ -519,8 +567,8 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S6 · внедрение: крупно, робот в начале строки ══ -->
-        <section class="scene" id="s6" data-in="43.4" data-out="48.0">
+        <!-- ══ S10 · внедрение: крупно, робот в начале строки ══ -->
+        <section class="scene" id="s10" data-in="43.4" data-out="48.0">
             <div class="row">
                 <div class="item el" data-in="44.5"> <!-- «вы внедрите» 44.40 -->
                     <div class="circle solar ico" data-icon="robot"></div>
@@ -529,8 +577,8 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S7 · «Рутина»: дизлайк выстреливает отдельно ══ -->
-        <section class="scene" id="s7" data-in="48.2" data-out="51.3">
+        <!-- ══ S11 · «Рутина»: дизлайк выстреливает отдельно ══ -->
+        <section class="scene" id="s11" data-in="48.2" data-out="51.3">
             <div class="row">
                 <div class="item el" data-in="48.9"> <!-- «рутиной» 48.94 -->
                     <div class="circle slate ico" data-icon="thumbs-down"></div>
@@ -539,8 +587,8 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S8 · «Создание будущего»: лайк, та же анимация в плюс ══ -->
-        <section class="scene" id="s8" data-in="51.7" data-out="54.6">
+        <!-- ══ S12 · «Создание будущего»: лайк ══ -->
+        <section class="scene" id="s12" data-in="51.7" data-out="54.6">
             <div class="row">
                 <div class="item el" data-in="52.0"> <!-- «займёмся созданием» 51.92 -->
                     <div class="circle solar ico" data-icon="thumbs-up"></div>
@@ -549,8 +597,8 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ S9 · финал: сияние сзади, звёздочки сияют слева и справа ══ -->
-        <section class="scene" id="s9" data-in="56.9" data-out="59.0">
+        <!-- ══ S13 · финал: сияние + звёздочки ══ -->
+        <section class="scene" id="s13" data-in="56.9" data-out="59.0">
             <div class="row">
                 <div class="item el" data-in="57.3"> <!-- «станьте частью» 57.18 -->
                     <div class="glow"></div>
