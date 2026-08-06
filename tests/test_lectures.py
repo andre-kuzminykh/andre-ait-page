@@ -312,11 +312,11 @@ def test_head_and_arrows_do_not_cover_content_on_phones():
             rel + ": на телефоне у угла свои размеры"
         # Правка заказчика: голова крупнее и стоит НАД кнопками листания в
         # правом углу; она лежит поверх слайда и перетаскивается пальцем.
-        assert "right:calc(12px * var(--view-scale,1)) !important; left:auto !important;" in html, \
+        assert "right:calc(24px * var(--view-scale,1) + var(--arw) + var(--arw-gap)/2 - var(--bub)/2) !important;" in html, \
             rel + ": голова в правом углу над кнопками листания"
         assert "bottom:calc(24px * var(--view-scale,1) + var(--arw)) !important;" in html, \
             rel + ": голова стоит НАД кнопками, а не в их ряду"
-        assert "mob: { w:390,  h:844, top:88,  bottom:124" in html, \
+        assert "mob: { w:376,  h:844, top:88,  bottom:124" in html, \
             rel + ": мобильная форма резервирует полосу под ряд управления"
 
 
@@ -360,7 +360,7 @@ def test_two_frozen_forms_scale_only():
     «Текст». Ресайз ничего не пересобирает — кроме пересечения границы форм.
     """
     for rel, html in _pages():
-        assert "var REF = { pc:  { w:1440, h:900" in html and "mob: { w:390,  h:844" in html, \
+        assert "var REF = { pc:  { w:1380, h:864" in html and "mob: { w:376,  h:844" in html, \
             rel + ": две формы с фиксированными холстами"
         assert "scale(calc(var(--fit-shrink,1) * var(--view-scale,1)))" in html, \
             rel + ": окно применяется одним transform-масштабом"
@@ -370,7 +370,7 @@ def test_two_frozen_forms_scale_only():
             rel + ": ресайз внутри формы ничего не пересобирает"
         assert "freeW / 1280" not in html, \
             rel + ": никакого расширения раскладки под ширину окна"
-        assert "--bub:calc(196px * var(--view-scale,1))" in html, \
+        assert "--bub:calc(224px * var(--view-scale,1))" in html, \
             rel + ": кружок с головой масштабируется тем же коэффициентом"
 
 
@@ -453,3 +453,46 @@ if __name__ == "__main__":
                 failed += 1
                 print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
     raise SystemExit(1 if failed else 0)
+
+def test_owner_canon_batch8():
+    """Страж правок владельца (батч 8): тексты, однострочные подписи, широкие
+    карточки, размеры кружка, центр вариантов теста. Если это сломается —
+    значит кто-то откатил канон, чинить надо здесь, а не переспрашивать."""
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # RUN/CHANGE/DISRUPT: подписи зон
+    for t in ('leading-none">Процессы</p>', 'leading-none">Проекты</p>', 'leading-none">Продукты</p>'):
+        assert t in html, "зоны ценности подписаны Процессы/Проекты/Продукты"
+    assert "Ста&shy;бильные процессы" not in html and 'leading-none">Опти&shy;мизация' not in html
+    # Пять уровней — одной строкой, без переносов
+    for t in ("Разговорные", "Рассуждающие", "Автономные", "Креативные", "Мультиагентные"):
+        assert '<span class="whitespace-nowrap">%s</span>' % t in html, t + ": одной строкой"
+    # Архитектура агента: иконка+слово неразрывны
+    for t in ("Внешний мир", "Внешние API"):
+        assert '<span class="whitespace-nowrap">%s</span>' % t in html, t + ": неразрывно"
+    # Широкие карточные слайды (комп): маркер wide-cards
+    assert html.count("content-z") >= 42
+    assert html.count("wide-cards") >= 15, "широкие карточки на слайдах владельца (>=15 вхождений)"
+    assert ".content-z.wide-cards{ max-width:1280px; }" in html
+    # SWOT: квадраты
+    assert html.count("swot-q") >= 5 and ".swot-q{ aspect-ratio:1/1; }" in html
+    # Где строить своё: бейджи и тайтлы одной строкой
+    for t in ("РАЗРАБАТЫВАТЬ СВОЁ", "ГОТОВЫЕ ПЛАТФОРМЫ", "Поддерживающие", "Управленческие"):
+        assert '<span class="whitespace-nowrap">%s</span>' % t in html, t + ": одной строкой"
+    # Разработка: тексты карточек
+    assert "Сценарии поведения.<br>Где нужен код" in html
+    assert "с системами и данными<br>Принятие решений" in html
+    assert "Может давать первые результаты</p>" in html and "Рабочий MVP" not in html
+    # Новые роли
+    assert "Новые роли:<br><span" in html
+    assert '<span class="whitespace-nowrap">Создание ИИ-агентов</span>' in html
+    # Кружок: комп 224, мобила 132, по центру над стрелками
+    assert "--bub:calc(224px * var(--view-scale,1))" in html
+    assert "--bub:calc(132px * var(--view-scale,1))" in html
+    assert "var(--arw-gap)/2 - var(--bub)/2" in html, "кружок по центру над стрелками на мобиле"
+    # Финальный тест: варианты по центру, «Далее» по центру, автопрокрутка
+    assert "quiz-option text-center" in html and "items-center justify-center" in html
+    assert "tracking-widest self-center" in html
+    assert "quizNextBtn.scrollIntoView" in html, "после ответа кнопка «Далее» подъезжает сама"
+    # Радиалки: ядра «Цикл обучения»/«Постоянное улучшение» умерены
+    assert html.count("font-size:calc(var(--lbl,14px)*.86)") == 2

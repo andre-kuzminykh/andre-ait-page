@@ -286,6 +286,14 @@
 
 
 <style id="portal-deck">
+/* Широкие карточные слайды (правка заказчика «карточки пошире, текст в одну
+   строку»): кап колонок 1280 вместо 1152. Граница 768 — граница pc-формы,
+   чтобы раскладка оставалась замороженной на всех окнах компа. */
+@media (min-width:768px){
+  .content-z.wide-cards{ max-width:1280px; }
+  /* SWOT-квадранты — квадраты, а не вытянутые вверх прямоугольники */
+  .swot-q{ aspect-ratio:1/1; }
+}
 /* Центрирование холста держит justify-content сцены. У flex-элемента с
    авто-маргинами переполнение по спеке уходит В КОНЕЦ (авто-маргины
    обнуляются и прижимают его к началу): широкий холст (max-w-6xl, 1152px)
@@ -804,7 +812,7 @@ window.addEventListener('load', function(){
   // а рост увёл бы нижние плашки под кружок с головой.
   // Насколько разрешено УВЕЛИЧИВАТЬ содержимое. 1.6 давало на большом экране
   // огромные карточки — заказчик просил элементы мельче относительно экрана.
-  var MAX_GROW = 1.22;
+  var MAX_GROW = 1.3;
 
   // ══ ДВЕ ЖЕЛЕЗНЫЕ ФОРМЫ (канон заказчика) ══════════════════════════════
   // Веб 1440x900 и мобилка 390x844 — и НИЧЕГО между ними. Раскладка каждого
@@ -813,8 +821,8 @@ window.addEventListener('load', function(){
   // Реальное окно получает готовый холст формы, умноженный на ОДИН общий
   // масштаб --view-scale — той же механикой transform:scale, какой слайд
   // ужимается при открытой панели «Текст». Никаких промежуточных макетов.
-  var REF = { pc:  { w:1440, h:900, top:128, bottom:90,  pad:32 },
-              mob: { w:390,  h:844, top:88,  bottom:124, pad:10 } };
+  var REF = { pc:  { w:1380, h:864, top:128, bottom:88,  pad:32 },
+              mob: { w:376,  h:844, top:88,  bottom:124, pad:8 } };
   function form(){ return window.innerWidth < 768 ? 'mob' : 'pc'; }
   function refGeom(){ return REF[form()]; }
   function viewScale(){
@@ -1168,6 +1176,11 @@ window.addEventListener('load', function(){
         sizeTitles(z);
         c.style.setProperty('--fit-shift', '0px');
         c.style.zoom = z;
+        // Дубль зума CSS-переменной: translateX сдвига панели «Текст» живёт
+        // ВНУТРИ zoom-координат и рендерится умноженным на z — не поделив
+        // на z, слайды с z>1 уезжали правее центра свободной полосы и
+        // вылезали за экран (а с z<1 — не доезжали).
+        c.style.setProperty('--cz-zoom', String(z));
         c.style.paddingTop = (band.top / z) + 'px';
         c.style.paddingBottom = (band.bottom / z) + 'px';
         c.style.paddingLeft = (padX / z) + 'px';
@@ -1206,73 +1219,22 @@ window.addEventListener('load', function(){
                       overW > 1 ? freeW / (ink.w * z) : 1) * 0.995;
         apply(z);
       }
-      // Угол кружка с головой (веб-форма): кружок позиционирован fixed —
-      // right 20, bottom 28+58 (стрелка), диаметр 196, всё в px формы через
-      // --view-scale. В ЧИСТОЙ форме (окно 1440x900) его левый верхний угол
-      // стоит в (1440-216, 900-282). Контент по обеим осям центрируется, и в
-      // координатах «от центра окна» этот угол — константа формы:
-      // 504 = 1440/2 - 216, 168 = 900/2 - 282. На окнах шире/выше формы
-      // реальный кружок дальше от контента, чем эта точка, поэтому проверка
-      // строже реальности и ОДИНАКОВА на любом окне — раскладка остаётся
-      // замороженной (прежняя проекция через прямоугольник content-z врала:
-      // content-z уже холста из-за max-w-*). Кружок лежит ПОВЕРХ слайда;
-      // пустой край сетки под ним — не страшно, страшно, когда в угол
-      // попадает ТЕКСТ или иконка. Пока есть попадание, ужимаем слайд шагами
-      // (центрирование само уводит края от угла). На телефоне кружок живёт
-      // в нижней полосе band.bottom, отдельная проверка не нужна.
-      if(form() === 'pc'){
-        var cp, vs2, cLeft, cTop, tEls, te, el2, tr2, hit, an2, as2, ar2;
-        vs2 = viewScale();
-        cLeft = window.innerWidth  / 2 + 504 * vs2;
-        cTop  = window.innerHeight / 2 + 168 * vs2;
-        // Слайд из очереди подгонки ещё сдвинут прочь (translate-y-8) —
-        // приводим прямоугольники к положению АКТИВНОГО слайда: его бокс
-        // совпадает с боксом сцены (absolute, top/left 0).
-        var sr2 = slide.getBoundingClientRect(),
-            pr2 = slide.parentElement.getBoundingClientRect(),
-            dx2 = sr2.left - pr2.left, dy2 = sr2.top - pr2.top;
-        for(cp = 0; cp < 10; cp++){
-          hit = false;
-          // Лист — как в аудите наложений: элемент с СОБСТВЕННЫМ текстом
-          // (текстовый узел прямо в нём), иконка или картинка. Обёртки без
-          // своего текста пропускаем — их прямоугольник накрывает угол
-          // пустым краем, а это не наложение.
-          tEls = c.querySelectorAll('*');
-          for(te = 0; te < tEls.length; te++){
-            el2 = tEls[te];
-            var own2 = false, nn2 = el2.firstChild;
-            for(; nn2; nn2 = nn2.nextSibling)
-              if(nn2.nodeType === 3 && nn2.textContent && nn2.textContent.replace(/\s+/g, '')){ own2 = true; break; }
-            if(!own2 && el2.tagName !== 'IMG' && el2.tagName !== 'I') continue;
-            tr2 = el2.getBoundingClientRect();
-            // Видимый прямоугольник: обрезаем по предкам с overflow
-            // hidden/clip. Декоративные вылеты (планета слайда AI-First)
-            // срезаны панелью и в углу НЕ видны — не считаются.
-            for(an2 = el2.parentElement; an2 && an2 !== c; an2 = an2.parentElement){
-              as2 = getComputedStyle(an2);
-              if(/hidden|clip/.test(as2.overflow + ' ' + as2.overflowX + ' ' + as2.overflowY)){
-                ar2 = an2.getBoundingClientRect();
-                tr2 = { left:  Math.max(tr2.left,  ar2.left),
-                        top:   Math.max(tr2.top,   ar2.top),
-                        right: Math.min(tr2.right, ar2.right),
-                        bottom:Math.min(tr2.bottom,ar2.bottom) };
-                tr2.width = tr2.right - tr2.left; tr2.height = tr2.bottom - tr2.top;
-              }
-            }
-            // Допуски — в px ФОРМЫ (умножены на масштаб окна): экранные
-            // 2px на разных окнах — разная доля формы, и пограничный лист
-            // давал лишний шаг ужатия только на широких экранах.
-            if(tr2.width < 2 * vs2 || tr2.height < 2 * vs2) continue;
-            if(tr2.right - dx2 > cLeft + 2 * vs2 && tr2.bottom - dy2 > cTop + 2 * vs2){ hit = true; break; }
-          }
-          if(!hit) break;
-          z *= 0.965;
-          apply(z);
-        }
+      // Кружок с головой — перетаскиваемый ОВЕРЛЕЙ поверх слайда (канон
+      // заказчика, тот же, что на телефоне): контент под него больше НЕ
+      // ужимается — «кружок юзер сам подвинет куда хочет». Прежний
+      // corner-pass давил широкие слайды на треть и всё равно не спасал.
+      // «Подтяни повыше» (правка заказчика): если по вертикали остаётся
+      // запас, контент встаёт чуть выше центра — на 18% запаса, но не больше
+      // 30 px формы. Плотные слайды (запас ~0) не сдвигаются и не обрезаются.
+      // Значение — в координатах content-z (после zoom рендерится *z), а
+      // хотим px ФОРМЫ на экране (*viewScale) — отсюда *vs/z.
+      ink = inkBox(c);
+      if(ink){
+        var lift = Math.max(0, Math.min((freeH - ink.h * z) * 0.18, 30));
+        c.style.setProperty('--fit-shift', (-(lift * viewScale()) / z).toFixed(2) + 'px');
       }
       // Ширина чернил в пикселях ФОРМЫ — для панели «Текст»: ужатие при
       // открытой панели считается от неё, а не от всей ширины холста.
-      ink = inkBox(c);
       if(ink) slide.setAttribute('data-inkw', String(Math.round(ink.w * z)));
       // Круги радиальных схем: кегль подписи и размер иконки — доля
       // ФАКТИЧЕСКОГО диаметра круга. В чистом CSS это не выразить: --sat
@@ -1285,8 +1247,8 @@ window.addEventListener('load', function(){
         s1 = figs[fq].querySelector('.radial-sat');
         c1 = figs[fq].querySelector('.radial-core');
         if(s1){
-          figs[fq].style.setProperty('--lbl', Math.max(12, Math.round(s1.offsetWidth * 0.18)) + 'px');
-          figs[fq].style.setProperty('--sat-ico', Math.round(s1.offsetWidth * 0.52) + 'px');
+          figs[fq].style.setProperty('--lbl', Math.max(11, Math.round(s1.offsetWidth * 0.165)) + 'px');
+          figs[fq].style.setProperty('--sat-ico', Math.round(s1.offsetWidth * 0.48) + 'px');
         }
         if(c1) figs[fq].style.setProperty('--core-ico', Math.round(c1.offsetWidth * 0.62) + 'px');
         // Коробка подписи — симметричные ПИКСЕЛЬНЫЕ отступы от своего круга.
@@ -4988,7 +4950,7 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
      геометрия «кружок — стрелки — контент» одна и та же на любом экране
      (выверенная на 1440x900 и 390x844), просто крупнее или мельче. Поэтому
      кружок не может наехать на текст ни при каком размере окна. */
-  --bub:calc(196px * var(--view-scale,1));   /* диаметр говорящей головы */
+  --bub:calc(224px * var(--view-scale,1));   /* диаметр говорящей головы */
   --arw:calc(58px * var(--view-scale,1));    /* диаметр кнопки листания */
   --arw-gap:calc(14px * var(--view-scale,1));
   --arw-pair:calc(2*var(--arw) + var(--arw-gap));
@@ -5022,20 +4984,22 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    одной головы, эту полосу portal-fit резервирует (chromeBand), и содержимое
    до неё уже не доходит. Канон заказчика — «никаких наложений текста». */
 @media (max-width:767px){
-  :root{ --bub:calc(120px * var(--view-scale,1));
+  :root{ --bub:calc(132px * var(--view-scale,1));
          --arw:calc(44px * var(--view-scale,1));
          --arw-gap:calc(10px * var(--view-scale,1)); }
   /* Кружок с головой — крупнее и НАД кнопками листания (правка заказчика);
      он лежит поверх слайда и перетаскивается, юзер сам подвинет куда хочет. */
-  #video-bubble{
-    right:calc(12px * var(--view-scale,1)) !important; left:auto !important;
-    bottom:calc(24px * var(--view-scale,1) + var(--arw)) !important;
-  }
+  /* Кружок по центру НАД стрелками; сами стрелки — чуть левее края */
   #nav-prev, #nav-next{
     bottom:calc(14px * var(--view-scale,1)) !important;
   }
-  #nav-next{ right:calc(12px * var(--view-scale,1)) !important; }
-  #nav-prev{ right:calc(12px * var(--view-scale,1) + var(--arw) + var(--arw-gap)) !important; }
+  #nav-next{ right:calc(24px * var(--view-scale,1)) !important; }
+  #nav-prev{ right:calc(24px * var(--view-scale,1) + var(--arw) + var(--arw-gap)) !important; }
+  #video-bubble{
+    left:auto !important;
+    right:calc(24px * var(--view-scale,1) + var(--arw) + var(--arw-gap)/2 - var(--bub)/2) !important;
+    bottom:calc(24px * var(--view-scale,1) + var(--arw)) !important;
+  }
 }
 
 /* Широкие экраны: шапке больше не нужны ступени zoom — lecture-chrome
@@ -5425,7 +5389,9 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
 }
 @media (min-width:1024px){
   body.notes-open .slide-container .content-z{
-    transform:translateX(calc(var(--notes-w) / 2)) translateY(var(--fit-shift, 0px)) scale(calc(var(--fit-shrink,1) * var(--view-scale,1)));
+    /* Сдвиг задуман в РЕАЛЬНЫХ px, а применяется внутри css-zoom холста,
+       где px масштабируются зумом — делим на него (--cz-zoom из portal-fit). */
+    transform:translateX(calc(var(--notes-w) / 2 / var(--cz-zoom, 1))) translateY(var(--fit-shift, 0px)) scale(calc(var(--fit-shrink,1) * var(--view-scale,1)));
   }
   body.notes-open #progress-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
 }
