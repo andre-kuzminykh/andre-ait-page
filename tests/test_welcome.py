@@ -154,6 +154,8 @@ def test_finale_animations_are_in_place():
     дышит фиолетовое сияние и сияют звёздочки слева и справа."""
     html = _html()
     assert "@keyframes coinFall" in html, "монетки у «Экономического эффекта» не сыплются"
+    assert "glow-ember" in html and "249,115,22" in html, \
+        "за «Экономическим эффектом» нет оранжевого сияния (#F97316)"
     assert html.count('data-icon="coins"') >= 6, "монеток подозрительно мало"
     assert "@keyframes thumbDown" in html, "нет анимации дизлайка"
     assert "@keyframes thumbUp" in html, "нет анимации лайка"

@@ -219,6 +219,7 @@ ul{list-style:none;padding:0}
    фазе. Дырок в цикле нет: девять монет со сдвигом на 1/9 периода. */
 #s5 .row{justify-content:center}
 #s5 .item{position:relative;padding-top:150px}
+#s5 .glow{top:60%;width:820px;height:340px}
 #s5 .label{font-size:44px;position:relative;z-index:1}
 #s5 .coins{position:absolute;left:50%;top:0;width:640px;height:150px;transform:translateX(-50%);pointer-events:none}
 #s5 .coin{position:absolute;top:-40px;display:block;width:44px;height:44px;color:#F9A83C;
@@ -280,13 +281,17 @@ ul{list-style:none;padding:0}
 #s9 .row{justify-content:center}
 #s9 .item{position:relative;justify-content:center;flex-direction:row;align-items:center;gap:34px}
 #s9 .label{font-size:48px;position:relative;z-index:1;padding:60px 0}
-#s9 .glow{
+.glow{
     position:absolute;left:50%;top:50%;width:760px;height:300px;
     transform:translate(-50%,-50%);border-radius:50%;
     background:radial-gradient(closest-side,rgba(136,84,243,.8),rgba(136,84,243,.3) 55%,rgba(136,84,243,0) 74%);
     filter:blur(16px);opacity:0;transition:opacity .6s ease;
 }
-#s9 .el.on .glow{opacity:1;animation:glowPulse 2.6s ease-in-out .2s infinite}
+/* Оранжевый близнец фиолетового — за «Экономическим эффектом» (#F97316). */
+.glow.glow-ember{
+    background:radial-gradient(closest-side,rgba(249,115,22,.75),rgba(249,115,22,.28) 55%,rgba(249,115,22,0) 74%);
+}
+.el.on .glow{opacity:1;animation:glowPulse 2.6s ease-in-out .2s infinite}
 @keyframes glowPulse{
     0%,100%{transform:translate(-50%,-50%) scale(1)}
     50%{transform:translate(-50%,-50%) scale(1.16)}
@@ -505,6 +510,7 @@ body.dragging #drop{display:flex}
         <section class="scene" id="s5" data-in="39.9" data-out="43.0">
             <div class="row">
                 <div class="item el" data-in="40.6"> <!-- «экономический эффект» 40.52 -->
+                    <div class="glow glow-ember"></div>
                     <div class="coins" aria-hidden="true">
                         <i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i><i class="coin" data-icon="coins"></i>
                     </div>
