@@ -496,3 +496,41 @@ def test_owner_canon_batch8():
     assert "quizNextBtn.scrollIntoView" in html, "после ответа кнопка «Далее» подъезжает сама"
     # Радиалки: ядра «Цикл обучения»/«Постоянное улучшение» умерены
     assert html.count("font-size:calc(var(--lbl,14px)*.86)") == 2
+
+
+def test_owner_canon_batch9():
+    """Страж правок владельца (батч 9): иконки пунктов не отрываются от текста,
+    «Мышление» в две строки, радиалки/уровни мельче, SWOT-квадраты на мобиле,
+    подтайтл ИИ-инженера, крупная подпись на слайде обучения."""
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # Пункты «Почему ИИ-агенты»: иконка ЖИВЁТ ВНУТРИ nowrap-спана — li рендерится
+    # блоком, и спан без иконки переносился, оставляя стрелку/галочку сиротой
+    for t in ("Ускорение отдельных задач", "Процесс остается на человеке",
+              "Самостоятельные участники", "Выполняют целые функции",
+              "Иная архитектура компании", "Единая гибридная команда"):
+        m = re.search(r'<span class="whitespace-nowrap"><i class="ph-bold [^"]*"></i> %s</span>' % t, html)
+        assert m, t + ": иконка должна быть внутри неразрывного спана"
+    assert html.count("lg:px-5 rounded-[20px]") == 3, "карточкам слайда дан запас ширины"
+    # «Мышление»: две строки, хвост неразрывен
+    assert '<span class="whitespace-nowrap">разбивает на шаги и планирует</span>' in html
+    # Радиалки: подписи мельче (0.145), налегание на круги ушло
+    assert "s1.offsetWidth * 0.145" in html and "s1.offsetWidth * 0.165" not in html
+    # Пять уровней: названия на компе на шаг мельче
+    assert html.count("lg:text-sm mt-1 md:mt-2 leading-none") == 4
+    assert html.count("lg:text-base mt-1 md:mt-2 leading-none") == 1
+    assert "lg:text-lg mt-1 md:mt-2 leading-none" not in html
+    # SWOT: квадраты действуют и на мобиле — правило ВНЕ @media
+    assert html.index(".swot-q{ aspect-ratio:1/1; }") < html.index(".content-z.wide-cards{ max-width:1280px; }")
+    # …а на компе сетке дана ширина с перебиванием анти-overflow min-width:0
+    assert '"swot-grid grid grid-cols-2' in html
+    assert ".slide-container .grid.swot-grid{ min-width:24rem !important; }" in html
+    assert ".swot-q{ min-height:0; }" in html
+    # Слайд 13: без AI-Native в подписи зоны
+    assert "Новые бизнес-модели, создание продуктов" in html
+    assert "создание AI‑Native продуктов" not in html
+    # ИИ-инженер: «(по автоматизации)» — видимый второй подтайтл
+    assert '<span class="whitespace-nowrap">Создание ИИ-агентов</span><br><span class="whitespace-nowrap">(по автоматизации)</span>' in html
+    assert '<span class="hidden">(по автоматизации)</span>' not in html
+    # Обучение: «От универсального инструмента…» крупная и жирная
+    assert '<p class="text-sm md:text-lg font-bold leading-snug"><i class="ph-fill ph-buildings' in html

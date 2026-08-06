@@ -262,10 +262,18 @@
 /* Широкие карточные слайды (правка заказчика «карточки пошире, текст в одну
    строку»): кап колонок 1280 вместо 1152. Граница 768 — граница pc-формы,
    чтобы раскладка оставалась замороженной на всех окнах компа. */
+/* SWOT-квадранты — квадраты на всех окнах (и на мобиле), не прямоугольники.
+   На компе min-h карточки ломал 1:1 (колонка уже 140px из-за узкой сетки):
+   сетке даём ширину, min-h отпускаем — квадрат держит только aspect-ratio. */
+.swot-q{ aspect-ratio:1/1; }
+@media (min-width:1024px){
+  /* !important + специфичность (0,3,0): перебиваем анти-overflow правило
+     .slide-container [class*="flex-row"] > * { min-width:0 !important } */
+  .slide-container .grid.swot-grid{ min-width:24rem !important; }
+  .swot-q{ min-height:0; }
+}
 @media (min-width:768px){
   .content-z.wide-cards{ max-width:1280px; }
-  /* SWOT-квадранты — квадраты, а не вытянутые вверх прямоугольники */
-  .swot-q{ aspect-ratio:1/1; }
 }
 /* Центрирование холста держит justify-content сцены. У flex-элемента с
    авто-маргинами переполнение по спеке уходит В КОНЕЦ (авто-маргины
@@ -1220,7 +1228,7 @@ window.addEventListener('load', function(){
         s1 = figs[fq].querySelector('.radial-sat');
         c1 = figs[fq].querySelector('.radial-core');
         if(s1){
-          figs[fq].style.setProperty('--lbl', Math.max(11, Math.round(s1.offsetWidth * 0.165)) + 'px');
+          figs[fq].style.setProperty('--lbl', Math.max(11, Math.round(s1.offsetWidth * 0.145)) + 'px');
           figs[fq].style.setProperty('--sat-ico', Math.round(s1.offsetWidth * 0.48) + 'px');
         }
         if(c1) figs[fq].style.setProperty('--core-ico', Math.round(c1.offsetWidth * 0.62) + 'px');

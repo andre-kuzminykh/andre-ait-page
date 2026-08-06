@@ -363,10 +363,18 @@
 /* Широкие карточные слайды (правка заказчика «карточки пошире, текст в одну
    строку»): кап колонок 1280 вместо 1152. Граница 768 — граница pc-формы,
    чтобы раскладка оставалась замороженной на всех окнах компа. */
+/* SWOT-квадранты — квадраты на всех окнах (и на мобиле), не прямоугольники.
+   На компе min-h карточки ломал 1:1 (колонка уже 140px из-за узкой сетки):
+   сетке даём ширину, min-h отпускаем — квадрат держит только aspect-ratio. */
+.swot-q{ aspect-ratio:1/1; }
+@media (min-width:1024px){
+  /* !important + специфичность (0,3,0): перебиваем анти-overflow правило
+     .slide-container [class*="flex-row"] > * { min-width:0 !important } */
+  .slide-container .grid.swot-grid{ min-width:24rem !important; }
+  .swot-q{ min-height:0; }
+}
 @media (min-width:768px){
   .content-z.wide-cards{ max-width:1280px; }
-  /* SWOT-квадранты — квадраты, а не вытянутые вверх прямоугольники */
-  .swot-q{ aspect-ratio:1/1; }
 }
 /* Центрирование холста держит justify-content сцены. У flex-элемента с
    авто-маргинами переполнение по спеке уходит В КОНЕЦ (авто-маргины
@@ -1321,7 +1329,7 @@ window.addEventListener('load', function(){
         s1 = figs[fq].querySelector('.radial-sat');
         c1 = figs[fq].querySelector('.radial-core');
         if(s1){
-          figs[fq].style.setProperty('--lbl', Math.max(11, Math.round(s1.offsetWidth * 0.165)) + 'px');
+          figs[fq].style.setProperty('--lbl', Math.max(11, Math.round(s1.offsetWidth * 0.145)) + 'px');
           figs[fq].style.setProperty('--sat-ico', Math.round(s1.offsetWidth * 0.48) + 'px');
         }
         if(c1) figs[fq].style.setProperty('--core-ico', Math.round(c1.offsetWidth * 0.62) + 'px');
@@ -1798,33 +1806,33 @@ window.addEventListener('load', function(){
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-5 md:mb-16 text-center text-black">Почему именно <span class="text-solar">ИИ‑агенты?</span></h2>
 
             <div class="flex flex-col lg:flex-row gap-3 md:gap-8 items-stretch justify-center w-full">
-                <div class="bg-white border border-grayBase p-4 md:p-8 rounded-[20px] md:rounded-3xl flex-1 w-full flex flex-col items-center text-center shadow-sm h-full min-h-[110px]">
+                <div class="bg-white border border-grayBase p-4 md:p-8 lg:px-5 rounded-[20px] md:rounded-3xl flex-1 w-full flex flex-col items-center text-center shadow-sm h-full min-h-[110px]">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center mb-2 md:mb-5 border-2 md:border-4 border-white shadow-sm shrink-0"><i class="ph-fill ph-robot text-xl md:text-3xl text-black/50"></i></div>
                     <h3 class="font-black text-sm md:text-2xl text-black mb-1 md:mb-2">Раньше</h3>
                     <p class="text-[8px] md:text-[11px] font-bold text-black/40 uppercase tracking-widest mb-2 md:mb-5">Локальная автоматизация</p>
                     <ul class="text-[10px] md:text-sm text-black/70 w-full space-y-1 md:space-y-3">
-                        <li class="flex justify-center gap-2 md:gap-3"><i class="ph-bold ph-caret-right text-black/30 mt-0.5"></i> <span class="whitespace-nowrap">Ускорение отдельных задач</span></li>
-                        <li class="flex justify-center gap-2 md:gap-3"><i class="ph-bold ph-caret-right text-black/30 mt-0.5"></i> <span class="whitespace-nowrap">Процесс остается на человеке</span></li>
+                        <li class="flex justify-center gap-2 md:gap-3"><span class="whitespace-nowrap"><i class="ph-bold ph-caret-right text-black/30 mt-0.5"></i> Ускорение отдельных задач</span></li>
+                        <li class="flex justify-center gap-2 md:gap-3"><span class="whitespace-nowrap"><i class="ph-bold ph-caret-right text-black/30 mt-0.5"></i> Процесс остается на человеке</span></li>
                     </ul>
                 </div>
 
-                <div class="bg-white border border-grayBase p-4 md:p-8 rounded-[20px] md:rounded-3xl flex-1 w-full flex flex-col items-center text-center shadow-sm h-full min-h-[110px]">
+                <div class="bg-white border border-grayBase p-4 md:p-8 lg:px-5 rounded-[20px] md:rounded-3xl flex-1 w-full flex flex-col items-center text-center shadow-sm h-full min-h-[110px]">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center mb-2 md:mb-5 border-2 md:border-4 border-white shadow-sm shrink-0"><i class="ph-fill ph-users-three text-xl md:text-3xl text-black/70"></i></div>
                     <h3 class="font-black text-sm md:text-2xl text-black mb-1 md:mb-2">Агенты</h3>
                     <p class="text-[8px] md:text-[11px] font-bold text-black/50 uppercase tracking-widest mb-2 md:mb-5">Цифровые сотрудники</p>
                     <ul class="text-[10px] md:text-sm text-black/70 w-full space-y-1 md:space-y-3">
-                        <li class="flex justify-center gap-2 md:gap-3"><i class="ph-bold ph-caret-right text-black/40 mt-0.5"></i> <span class="whitespace-nowrap">Самостоятельные участники</span></li>
-                        <li class="flex justify-center gap-2 md:gap-3"><i class="ph-bold ph-caret-right text-black/40 mt-0.5"></i> <span class="whitespace-nowrap">Выполняют целые функции</span></li>
+                        <li class="flex justify-center gap-2 md:gap-3"><span class="whitespace-nowrap"><i class="ph-bold ph-caret-right text-black/40 mt-0.5"></i> Самостоятельные участники</span></li>
+                        <li class="flex justify-center gap-2 md:gap-3"><span class="whitespace-nowrap"><i class="ph-bold ph-caret-right text-black/40 mt-0.5"></i> Выполняют целые функции</span></li>
                     </ul>
                 </div>
 
-                <div class="bg-black text-white border-2 border-solar/30 p-4 md:p-8 rounded-[20px] md:rounded-3xl flex-1 w-full flex flex-col items-center text-center shadow-lg h-full min-h-[110px]">
+                <div class="bg-black text-white border-2 border-solar/30 p-4 md:p-8 lg:px-5 rounded-[20px] md:rounded-3xl flex-1 w-full flex flex-col items-center text-center shadow-lg h-full min-h-[110px]">
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mb-2 md:mb-5 border-2 md:border-4 border-white shadow-sm shrink-0"><i class="ph-fill ph-buildings text-xl md:text-3xl text-solar"></i></div>
                     <h3 class="font-black text-sm md:text-2xl mb-1 md:mb-2 text-solar">Новая форма</h3>
                     <p class="text-[8px] md:text-[11px] font-bold text-solar uppercase tracking-widest mb-2 md:mb-5">Синтез людей и ИИ</p>
                     <ul class="text-[10px] md:text-sm text-white/80 font-medium w-full space-y-1 md:space-y-3">
-                        <li class="flex justify-center gap-2 md:gap-3"><i class="ph-bold ph-check text-solar mt-0.5"></i> <span class="whitespace-nowrap">Иная архитектура компании</span></li>
-                        <li class="flex justify-center gap-2 md:gap-3"><i class="ph-bold ph-check text-solar mt-0.5"></i> <span class="whitespace-nowrap">Единая гибридная команда</span></li>
+                        <li class="flex justify-center gap-2 md:gap-3"><span class="whitespace-nowrap"><i class="ph-bold ph-check text-solar mt-0.5"></i> Иная архитектура компании</span></li>
+                        <li class="flex justify-center gap-2 md:gap-3"><span class="whitespace-nowrap"><i class="ph-bold ph-check text-solar mt-0.5"></i> Единая гибридная команда</span></li>
                     </ul>
                 </div>
             </div>
@@ -1850,7 +1858,7 @@ window.addEventListener('load', function(){
                     <div class="absolute -top-2 md:-top-4 left-0 right-0 mx-auto w-fit bg-solar text-[#0A0A0A] px-2 md:px-4 py-0.5 md:py-1.5 rounded-full text-[8px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap">ИИ‑модель</div>
                     <div class="w-8 h-8 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mb-2 md:mb-5 mt-1 md:mt-2 shrink-0"><i class="ph-fill ph-brain text-lg md:text-3xl text-solar"></i></div>
                     <h3 class="font-black text-[11px] md:text-2xl text-solar mb-1 md:mb-3">Мышление</h3>
-                    <p class="text-[8px] md:text-sm text-white/80 font-medium">Анализирует задачу, разбивает <span class="whitespace-nowrap">на шаги и планирует</span></p>
+                    <p class="text-[8px] md:text-sm text-white/80 font-medium">Анализирует задачу, <span class="whitespace-nowrap">разбивает на шаги и планирует</span></p>
                 </div>
 
                 <div class="bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-8 w-full shadow-sm text-center flex flex-col items-center h-full min-h-[100px]">
@@ -2058,24 +2066,24 @@ window.addEventListener('load', function(){
             <div class="flex flex-col md:flex-row items-end justify-center h-auto md:h-80 lg:h-[22rem] gap-2 md:gap-2 lg:gap-3 w-full max-w-5xl lg:max-w-3xl mx-auto border-b-2 border-grayBase pb-0">
                 <div class="flex-1 w-full bg-grayBase/50 rounded-t-xl md:rounded-t-2xl p-3 md:px-1 md:py-2 lg:px-2 lg:py-4 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[40%] min-h-[50px] md:min-h-[70px]">
                     <span class="text-black/40 font-bold text-[8px] md:text-[10px] uppercase tracking-widest leading-none">Ур. 1</span>
-                    <h3 class="font-bold text-black text-[10px] md:text-[9px] lg:text-base mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Разговорные</span></h3>
+                    <h3 class="font-bold text-black text-[10px] md:text-[9px] lg:text-sm mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Разговорные</span></h3>
                 </div>
                 <div class="flex-1 w-full bg-grayBase rounded-t-xl md:rounded-t-2xl p-3 md:px-1 md:py-2 lg:px-2 lg:py-4 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[55%] min-h-[50px] md:min-h-[70px]">
                     <span class="text-black/50 font-bold text-[8px] md:text-[10px] uppercase tracking-widest leading-none">Ур. 2</span>
-                    <h3 class="font-bold text-black text-[10px] md:text-[9px] lg:text-base mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Рассуждающие</span></h3>
+                    <h3 class="font-bold text-black text-[10px] md:text-[9px] lg:text-sm mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Рассуждающие</span></h3>
                 </div>
                 <div class="flex-1 w-full bg-black rounded-t-xl md:rounded-t-2xl p-3 md:px-1 md:py-2 lg:px-2 lg:py-4 flex flex-col justify-start text-center h-full md:h-[70%] shadow-xl transform md:scale-105 z-10 relative min-h-[60px] md:min-h-[80px]">
                     <div class="absolute -top-3 md:-top-5 left-0 right-0 mx-auto w-fit bg-solar text-[#0A0A0A] text-[9px] md:text-[10px] font-bold px-2 md:px-4 py-0.5 md:py-1.5 rounded-full uppercase tracking-widest whitespace-nowrap shadow-md">Мы здесь</div>
                     <span class="text-solar font-bold text-[8px] md:text-[10px] uppercase tracking-widest mt-1 md:mt-2 leading-none">Ур. 3</span>
-                    <h3 class="font-black text-white text-[11px] md:text-[10px] lg:text-lg mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Автономные</span></h3>
+                    <h3 class="font-black text-white text-[11px] md:text-[10px] lg:text-base mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Автономные</span></h3>
                 </div>
                 <div class="flex-1 w-full bg-grayBase rounded-t-xl md:rounded-t-2xl p-3 md:px-1 md:py-2 lg:px-2 lg:py-4 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[85%] min-h-[50px] md:min-h-[70px]">
                     <span class="text-black/50 font-bold text-[8px] md:text-[10px] uppercase tracking-widest leading-none">Ур. 4</span>
-                    <h3 class="font-bold text-black text-[10px] md:text-[9px] lg:text-base mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Креативные</span></h3>
+                    <h3 class="font-bold text-black text-[10px] md:text-[9px] lg:text-sm mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Креативные</span></h3>
                 </div>
                 <div class="flex-1 w-full bg-grayBase/50 rounded-t-xl md:rounded-t-2xl p-3 md:px-1 md:py-2 lg:px-2 lg:py-4 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[100%] min-h-[50px] md:min-h-[70px]">
                     <span class="text-black/40 font-bold text-[8px] md:text-[10px] uppercase tracking-widest leading-none">Ур. 5</span>
-                    <h3 class="font-bold text-black text-[10px] md:text-[9px] lg:text-base mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Мультиагентные</span></h3>
+                    <h3 class="font-bold text-black text-[10px] md:text-[9px] lg:text-sm mt-1 md:mt-2 leading-none"><span class="whitespace-nowrap">Мультиагентные</span></h3>
                 </div>
             </div>
 
@@ -2171,7 +2179,7 @@ window.addEventListener('load', function(){
                     <div class="w-10 h-10 md:w-16 md:h-16 bg-solar/20 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-5 shrink-0"><i class="ph-fill ph-rocket text-xl md:text-3xl text-black/60"></i></div>
                     <h3 class="font-black text-sm md:text-lg lg:text-3xl text-black mb-0.5 md:mb-2 leading-none">DISRUPT</h3>
                     <p class="text-[8px] md:text-[11px] font-bold text-black/40 uppercase tracking-widest mb-1 md:mb-4 leading-none">Продукты</p>
-                    <p class="text-[9px] md:text-sm text-black/60 leading-tight">Новые бизнес-модели, создание AI‑Native продуктов</p>
+                    <p class="text-[9px] md:text-sm text-black/60 leading-tight">Новые бизнес-модели, создание продуктов</p>
                 </div>
             </div>
 
@@ -2783,20 +2791,20 @@ window.addEventListener('load', function(){
             <p class="text-center text-black/60 font-medium mb-6 lg:mb-12 text-[13px] md:text-xl">Начинается со SWOT-анализа</p>
 
             <div class="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center justify-center w-full">
-                <div class="grid grid-cols-2 auto-rows-fr gap-2 md:gap-3 w-full max-w-3xl lg:min-w-[22rem]">
-                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl swot-q flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
+                <div class="swot-grid grid grid-cols-2 auto-rows-fr gap-2 md:gap-3 w-full max-w-3xl lg:min-w-[22rem]">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 rounded-[20px] md:rounded-3xl swot-q flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-trend-up text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-base leading-tight px-1">Сильные стороны</h4>
                     </div>
-                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl swot-q flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 rounded-[20px] md:rounded-3xl swot-q flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-trend-down text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-base leading-tight px-1">Слабые стороны</h4>
                     </div>
-                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl swot-q flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 rounded-[20px] md:rounded-3xl swot-q flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-lightbulb text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-base leading-tight px-1">Возможности</h4>
                     </div>
-                    <div class="bg-white border border-grayBase p-3 md:p-4 lg:px-4 lg:py-6 rounded-[20px] md:rounded-3xl swot-q flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
+                    <div class="bg-white border border-grayBase p-3 md:p-4 rounded-[20px] md:rounded-3xl swot-q flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-warning-circle text-lg md:text-2xl text-black"></i></div>
                         <h4 class="font-bold text-black text-[10px] md:text-base leading-tight px-1">Ограничения</h4>
                     </div>
@@ -3129,7 +3137,7 @@ window.addEventListener('load', function(){
             </div>
 
             <div class="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-[20px] md:rounded-[20px] w-full max-w-3xl text-center shadow-2xl mt-2 md:mt-2">
-                <p class="text-xs md:text-base font-medium leading-snug"><i class="ph-fill ph-buildings text-solar text-sm md:text-lg align-[-2px] mr-1.5"></i>От универсального инструмента к системе,<br>которая понимает <span class="text-solar font-bold">специфику вашей организации</span></p>
+                <p class="text-sm md:text-lg font-bold leading-snug"><i class="ph-fill ph-buildings text-solar text-sm md:text-lg align-[-2px] mr-1.5"></i>От универсального инструмента к системе,<br>которая понимает <span class="text-solar font-bold">специфику вашей организации</span></p>
             </div>
         </div>
     </div>
@@ -3274,8 +3282,8 @@ window.addEventListener('load', function(){
                     <div class="bg-white border border-grayBase p-2.5 md:p-6 lg:p-5 rounded-[18px] md:rounded-3xl shadow-sm flex-1 flex flex-row md:flex-col items-center text-left md:text-center gap-3 md:gap-0 w-full">
                         <div class="w-9 h-9 md:w-14 md:h-14 lg:w-14 lg:h-14 bg-grayBase rounded-full flex items-center justify-center md:mb-3 text-black shrink-0"><i class="ph-fill ph-code text-lg md:text-2xl lg:text-3xl"></i></div>
                         <div class="min-w-0">
-                            <h4 class="font-black text-black text-[11px] md:text-xl lg:text-xl mb-0.5 md:mb-1.5">ИИ‑инженер <span class="hidden">(по автоматизации)</span></h4>
-                            <p class="text-[9px] md:text-sm lg:text-base text-black/60 leading-tight"><span class="whitespace-nowrap">Создание ИИ-агентов</span></p>
+                            <h4 class="font-black text-black text-[11px] md:text-xl lg:text-xl mb-0.5 md:mb-1.5">ИИ‑инженер</h4>
+                            <p class="text-[9px] md:text-sm lg:text-base text-black/60 leading-tight"><span class="whitespace-nowrap">Создание ИИ-агентов</span><br><span class="whitespace-nowrap">(по автоматизации)</span></p>
                         </div>
                     </div>
                     <div class="bg-white border border-grayBase p-2.5 md:p-6 lg:p-5 rounded-[18px] md:rounded-3xl shadow-sm flex-1 flex flex-row md:flex-col items-center text-left md:text-center gap-3 md:gap-0 w-full">
