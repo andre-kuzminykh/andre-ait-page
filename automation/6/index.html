@@ -525,11 +525,11 @@ body.on-last-slide .lec-consult:hover{ background:#FFFFFF !important; }
      каждом пересчёте стилей: показ страницы (класс fit-ready на body)
      превращался в одну задачу на ~1-1.8 секунды, и любая смена слайда
      стоила десятки миллисекунд. */
-  .slide-container .content-z .js-stack{ flex-direction:column !important; row-gap:.6rem !important; }
+  .slide-container .content-z .js-stack{ flex-direction:column !important; row-gap:.85rem !important; }
   .slide-container .content-z [class~="grid-cols-3"]:not([class*="md:grid-cols"]),
   .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]){
     grid-template-columns:1fr !important;
-    row-gap:.6rem !important;           /* карточки в стопке слипались */
+    row-gap:.85rem !important;          /* карточки в стопке слипались */
   }
   /* «Норм края» на всей колоде (правка владельца, батч 12): потолки ширины,
      которые фиттер раздаёт детям слайда, на телефоне отменяются — контент
@@ -585,7 +585,10 @@ body.on-last-slide .lec-consult:hover{ background:#FFFFFF !important; }
      на компе (правка заказчика). Карточке с бейджем добавляется верхний
      отступ — пилюля не наезжает на соседнюю карточку стопки. */
   .slide-container .content-z .js-card{ position:relative; overflow:visible; }
-  .slide-container .content-z .js-hasbadge{ margin-top:.65rem !important; }
+  /* height:auto обязателен: h-full (100% высоты грид-ряда) + этот margin
+     сдвигали карточку вниз ЗА границу ряда — низ съедал зазор до следующей
+     карточки стопки («налипает», 3px вместо row-gap). */
+  .slide-container .content-z .js-hasbadge{ margin-top:.65rem !important; height:auto !important; }
   .slide-container .content-z .js-card > .js-badge{
     position:absolute !important;
     top:-0.6rem; left:50%; transform:translateX(-50%);
@@ -3502,7 +3505,7 @@ window.addEventListener('load', function(){
                 </button>
             </div>
 
-            <div id="quiz-result-block" class="hidden flex-1 flex-col items-center justify-start text-center py-8">
+            <div id="quiz-result-block" class="hidden flex-1 flex-col items-center justify-start text-center mb-8">
                 <div id="quiz-result-icon-wrap" class="w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center mb-5 md:mb-8 shadow-2xl">
                     <i id="quiz-result-icon" class="text-4xl md:text-6xl"></i>
                 </div>
@@ -3745,14 +3748,11 @@ window.addEventListener('load', function(){
             xOffset = currentX = tx; yOffset = currentY = ty;
             bubble.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
         }
-        // Кружок до закрытия стартового оверлея стоит display:none — на
-        // «load» его rect нулевой. Ждём, пока он реально появится.
-        function scheduleRestore() {
-            if (!bubble.getBoundingClientRect().width) { setTimeout(scheduleRestore, 350); return; }
-            restoreBubblePos();
-        }
-        if (document.readyState === 'complete') scheduleRestore();
-        else window.addEventListener('load', scheduleRestore);
+        // Восстановления позиции на ЛЕКЦИЯХ нет (правка владельца): при
+        // открытии лекции кружок всегда в исходном месте над стрелками.
+        // Сохранённую перетаскиванием позицию подхватывают курсовые
+        // страницы (/automation, main, буткемп, практика).
+        void restoreBubblePos;
 
         // ---- Свайп-навигация: листать слайды пальцем (влево/вверх = вперёд, вправо/вниз = назад) ----
         (function(){
@@ -3930,6 +3930,7 @@ window.addEventListener('load', function(){
             quizQuestionBlock.classList.add('flex');
             quizResultBlock.classList.add('hidden');
             quizResultBlock.classList.remove('flex');
+            quizProgressBar.parentElement.style.display = '';
             renderQuestion();
             if (video && !video.paused) video.pause();
         }
@@ -4025,6 +4026,9 @@ window.addEventListener('load', function(){
             quizQuestionBlock.classList.remove('flex');
             quizResultBlock.classList.remove('hidden');
             quizResultBlock.classList.add('flex');
+            // Полоса прогресса на экране результата не нужна — без неё итог
+            // стоит сразу под шапкой, а не проваливается вниз (правка владельца)
+            quizProgressBar.parentElement.style.display = 'none';
 
             const score = quizScore;
             document.getElementById('quiz-result-score').textContent = score;
@@ -4726,6 +4730,16 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 .slide-container div[class*="text-center"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]){
   display:block !important;
   text-align:center !important;
+  /* Блок с min-height прижимал строку кверху (плашки «РАЗРАБАТЫВАТЬ СВОЁ» и
+     т.п.) — align-content возвращает вертикальный центр и в block-раскладке. */
+  align-content:center;
+}
+/* Растянутая по высоте колонка-карточка (h-full в ряду grid/flex): без
+   явного justify-* контент липнет к верху, а короткая карточка ряда получает
+   пустое брюхо снизу («в карточках не к верху надо»). Центруем по вертикали;
+   карточки с flex-grow-параграфом это не трогает — там свободной высоты нет. */
+.slide-container .content-z [class~="h-full"][class*="flex-col"][class*="items-center"]:not([class*="justify-"]){
+  justify-content:center;
 }
 .slide-container li[class*="justify-center"] > i,
 .slide-container div[class~="w-full"][class*="uppercase"][class*="items-center"][class*="justify-center"]:not([class*="flex-col"]) > i,
