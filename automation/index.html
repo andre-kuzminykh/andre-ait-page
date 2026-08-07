@@ -481,7 +481,7 @@
 <style>
 /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
   .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(150px,13.6vw,196px);height:clamp(150px,13.6vw,196px);touch-action:none;user-select:none;-webkit-user-select:none}
-  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:120px;height:120px}}
+  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:150px;height:150px}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
   .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
@@ -497,7 +497,7 @@
 .bubble{ left:auto; right:20px; /* БЕЗ !important: перетаскивание пишет инлайновый style.left, важность из CSS его глушила — кружок ходил только по вертикали */
   width:clamp(150px,13.6vw,196px) !important; height:clamp(150px,13.6vw,196px) !important; }
 @media(max-width:768px){
-  .bubble{ left:auto; right:12px; width:120px !important; height:120px !important; }
+  .bubble{ left:auto; right:12px; width:150px !important; height:150px !important; }
 }
 </style>
 <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
@@ -573,6 +573,26 @@
       // body{zoom} on big screens scales fixed elements: clientX / getBoundingClientRect are in
       // RENDERED px while style.left is in LAYOUT px — reconcile via the measured zoom factor.
       function zoomF(){ var r=bubble.getBoundingClientRect(); return (r.width && bubble.offsetWidth) ? r.width/bubble.offsetWidth : 1; }
+      // Память позиции кружка (правка владельца): куда перетащили — там и
+      // живёт, на всех страницах курса и после перезагрузки. Храним ДОЛИ
+      // свободного места — позиция переживает смену размера экрана и формы.
+      function saveBubblePos(){
+        try{
+          var r=bubble.getBoundingClientRect();
+          var aw=window.innerWidth-r.width, ah=window.innerHeight-r.height;
+          localStorage.setItem('ait-bubble-pos', JSON.stringify({fx: aw>0? r.left/aw:0, fy: ah>0? r.top/ah:0}));
+        }catch(e){}
+      }
+      function restoreBubblePos(){
+        var s=null; try{ s=JSON.parse(localStorage.getItem('ait-bubble-pos')); }catch(e){}
+        if (!s || typeof s.fx!=='number' || typeof s.fy!=='number') return;
+        var z=zoomF(), rw=bubble.offsetWidth*z, rh=bubble.offsetHeight*z;
+        var aw=Math.max(0, window.innerWidth-rw), ah=Math.max(0, window.innerHeight-rh);
+        var x=Math.min(Math.max(0, s.fx*aw), aw), y=Math.min(Math.max(0, s.fy*ah), ah);
+        bubble.style.left=(x/z)+'px'; bubble.style.top=(y/z)+'px';
+        bubble.style.right='auto'; bubble.style.bottom='auto';
+      }
+      restoreBubblePos();
       // pointer drag; a tap (no real movement) triggers onTap (sound / play-pause)
       var down=false, moved=false, sx=0, sy=0, ox=0, oy=0, TH=6;
       bubble.addEventListener('pointerdown', function(e){
@@ -593,7 +613,7 @@
           bubble.style.left=(nx/z)+'px'; bubble.style.top=(ny/z)+'px';
         }
       });
-      function endDrag(){ if (!down) return; down=false; bubble.classList.remove('dragging'); if (!moved) onTap(); }
+      function endDrag(){ if (!down) return; down=false; bubble.classList.remove('dragging'); if (moved) saveBubblePos(); else onTap(); }
       bubble.addEventListener('pointerup', endDrag);
       bubble.addEventListener('pointercancel', endDrag);
 

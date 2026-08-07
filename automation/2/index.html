@@ -3529,10 +3529,10 @@ window.addEventListener('load', function(){
         let isDragging = false, currentX = 0, currentY = 0, initialX = 0, initialY = 0, xOffset = 0, yOffset = 0;
 
         bubble.addEventListener("mousedown", dragStart);
-        document.addEventListener("mouseup", () => isDragging = false);
+        document.addEventListener("mouseup", endBubbleDrag);
         document.addEventListener("mousemove", drag);
         bubble.addEventListener("touchstart", dragStart, {passive: false});
-        document.addEventListener("touchend", () => isDragging = false);
+        document.addEventListener("touchend", endBubbleDrag);
         document.addEventListener("touchmove", drag, {passive: false});
 
         function dragStart(e) {
@@ -3549,6 +3549,44 @@ window.addEventListener('load', function(){
             xOffset = currentX; yOffset = currentY;
             bubble.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
         }
+
+        // Память позиции кружка (правка владельца): куда перетащил — там и
+        // остаётся при листании слайдов, после перезагрузки и на других
+        // страницах курса. Храним ДОЛИ свободного места экрана — позиция
+        // переживает смену размера окна и формы (комп/мобилка).
+        function saveBubblePos() {
+            try {
+                const r = bubble.getBoundingClientRect();
+                const aw = window.innerWidth - r.width, ah = window.innerHeight - r.height;
+                localStorage.setItem('ait-bubble-pos', JSON.stringify({
+                    fx: aw > 0 ? r.left / aw : 0, fy: ah > 0 ? r.top / ah : 0 }));
+            } catch (e) {}
+        }
+        function endBubbleDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            saveBubblePos();
+        }
+        function restoreBubblePos() {
+            let s = null;
+            try { s = JSON.parse(localStorage.getItem('ait-bubble-pos')); } catch (e) {}
+            if (!s || typeof s.fx !== 'number' || typeof s.fy !== 'number') return;
+            const r0 = bubble.getBoundingClientRect();
+            if (!r0.width) return;
+            const aw = Math.max(0, window.innerWidth - r0.width), ah = Math.max(0, window.innerHeight - r0.height);
+            const tx = Math.min(Math.max(0, s.fx * aw), aw) - (r0.left - xOffset);
+            const ty = Math.min(Math.max(0, s.fy * ah), ah) - (r0.top - yOffset);
+            xOffset = currentX = tx; yOffset = currentY = ty;
+            bubble.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+        }
+        // Кружок до закрытия стартового оверлея стоит display:none — на
+        // «load» его rect нулевой. Ждём, пока он реально появится.
+        function scheduleRestore() {
+            if (!bubble.getBoundingClientRect().width) { setTimeout(scheduleRestore, 350); return; }
+            restoreBubblePos();
+        }
+        if (document.readyState === 'complete') scheduleRestore();
+        else window.addEventListener('load', scheduleRestore);
 
         // ---- Свайп-навигация: листать слайды пальцем (влево/вверх = вперёд, вправо/вниз = назад) ----
         (function(){
@@ -4287,7 +4325,7 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    одной головы, эту полосу portal-fit резервирует (chromeBand), и содержимое
    до неё уже не доходит. Канон заказчика — «никаких наложений текста». */
 @media (max-width:767px){
-  :root{ --bub:calc(132px * var(--view-scale,1));
+  :root{ --bub:calc(150px * var(--view-scale,1));
          --arw:calc(44px * var(--view-scale,1));
          --arw-gap:calc(10px * var(--view-scale,1)); }
   /* Кружок с головой — крупнее и НАД кнопками листания (правка заказчика);
