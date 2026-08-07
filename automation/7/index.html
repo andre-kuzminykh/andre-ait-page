@@ -3131,15 +3131,18 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
          --arw-gap:calc(10px * var(--view-scale,1)); }
   /* Кружок с головой — крупнее и НАД кнопками листания (правка заказчика);
      он лежит поверх слайда и перетаскивается, юзер сам подвинет куда хочет. */
-  /* Кружок по центру НАД стрелками; сами стрелки — чуть левее края */
+  /* Кружок ЦЕЛИКОМ на экране с отступом 12px от правого края (раньше он
+     центрировался над парой стрелок и вылезал за экран на 12px — правка
+     владельца), а пара стрелок центрируется ПОД кружком и потому стоит
+     левее края. */
   #nav-prev, #nav-next{
     bottom:calc(14px * var(--view-scale,1)) !important;
   }
-  #nav-next{ right:calc(24px * var(--view-scale,1)) !important; }
-  #nav-prev{ right:calc(24px * var(--view-scale,1) + var(--arw) + var(--arw-gap)) !important; }
+  #nav-next{ right:calc(12px * var(--view-scale,1) + var(--bub)/2 - var(--arw-pair)/2) !important; }
+  #nav-prev{ right:calc(12px * var(--view-scale,1) + var(--bub)/2 - var(--arw-pair)/2 + var(--arw) + var(--arw-gap)) !important; }
   #video-bubble{
     left:auto !important;
-    right:calc(24px * var(--view-scale,1) + var(--arw) + var(--arw-gap)/2 - var(--bub)/2) !important;
+    right:calc(12px * var(--view-scale,1)) !important;
     bottom:calc(24px * var(--view-scale,1) + var(--arw)) !important;
   }
 }

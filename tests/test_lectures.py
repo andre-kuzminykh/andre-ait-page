@@ -312,8 +312,13 @@ def test_head_and_arrows_do_not_cover_content_on_phones():
             rel + ": на телефоне у угла свои размеры"
         # Правка заказчика: голова крупнее и стоит НАД кнопками листания в
         # правом углу; она лежит поверх слайда и перетаскивается пальцем.
-        assert "right:calc(24px * var(--view-scale,1) + var(--arw) + var(--arw-gap)/2 - var(--bub)/2) !important;" in html, \
-            rel + ": голова в правом углу над кнопками листания"
+        # Канон уточнён: голова ЦЕЛИКОМ на экране (12px от правого края —
+        # раньше центрировалась над стрелками и вылезала на 12px за экран),
+        # а пара стрелок центрируется под головой и потому стоит левее.
+        assert "right:calc(12px * var(--view-scale,1)) !important;" in html, \
+            rel + ": голова у правого края целиком на экране"
+        assert "right:calc(12px * var(--view-scale,1) + var(--bub)/2 - var(--arw-pair)/2) !important;" in html, \
+            rel + ": стрелки по центру под головой"
         assert "bottom:calc(24px * var(--view-scale,1) + var(--arw)) !important;" in html, \
             rel + ": голова стоит НАД кнопками, а не в их ряду"
         assert "mob: { w:376,  h:844, top:88,  bottom:124" in html, \
@@ -486,10 +491,11 @@ def test_owner_canon_batch8():
     # Новые роли
     assert "Новые роли:<br><span" in html
     assert '<span class="whitespace-nowrap">Создание ИИ-агентов</span>' in html
-    # Кружок: комп 224, мобила 170 (батчи 11-12 укрупнили со 132), по центру над стрелками
+    # Кружок: комп 224, мобила 170 (батчи 11-12 укрупнили со 132); на мобиле
+    # он целиком на экране у правого края, стрелки по центру под ним
     assert "--bub:calc(224px * var(--view-scale,1))" in html
     assert "--bub:calc(170px * var(--view-scale,1))" in html
-    assert "var(--arw-gap)/2 - var(--bub)/2" in html, "кружок по центру над стрелками на мобиле"
+    assert "var(--bub)/2 - var(--arw-pair)/2" in html, "стрелки по центру под кружком на мобиле"
     # Финальный тест (канон уточнён батчем 10): буква и текст ВАРИАНТА слева,
     # по вертикали текст в центре кнопки; «Далее» по центру, автопрокрутка
     assert "quiz-option text-left" in html and "quiz-option text-center" not in html

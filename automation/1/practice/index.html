@@ -550,7 +550,11 @@
         bubble.style.left=(x/z)+'px'; bubble.style.top=(y/z)+'px';
         bubble.style.right='auto'; bubble.style.bottom='auto';
       }
-      restoreBubblePos();
+      // Позицию больше НЕ восстанавливаем (правка владельца): позиция,
+      // сохранённая на другой странице (лекции), ставила кружок куда
+      // попало — вплоть до верхнего угла поверх кнопок. Кружок всегда
+      // открывается в исходном месте внизу с небольшим отступом от края.
+      void restoreBubblePos;
       // pointer drag; a tap (no real movement) triggers onTap (sound / play-pause)
       var down=false, moved=false, sx=0, sy=0, ox=0, oy=0, TH=6;
       bubble.addEventListener('pointerdown', function(e){
