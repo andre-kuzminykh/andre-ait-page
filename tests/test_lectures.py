@@ -486,9 +486,9 @@ def test_owner_canon_batch8():
     # Новые роли
     assert "Новые роли:<br><span" in html
     assert '<span class="whitespace-nowrap">Создание ИИ-агентов</span>' in html
-    # Кружок: комп 224, мобила 150 (батч 11 укрупнил со 132), по центру над стрелками
+    # Кружок: комп 224, мобила 170 (батчи 11-12 укрупнили со 132), по центру над стрелками
     assert "--bub:calc(224px * var(--view-scale,1))" in html
-    assert "--bub:calc(150px * var(--view-scale,1))" in html
+    assert "--bub:calc(170px * var(--view-scale,1))" in html
     assert "var(--arw-gap)/2 - var(--bub)/2" in html, "кружок по центру над стрелками на мобиле"
     # Финальный тест (канон уточнён батчем 10): буква и текст ВАРИАНТА слева,
     # по вертикали текст в центре кнопки; «Далее» по центру, автопрокрутка

@@ -640,11 +640,22 @@ body.on-last-slide .lec-consult:hover{ background:#FFFFFF !important; }
      каждом пересчёте стилей: показ страницы (класс fit-ready на body)
      превращался в одну задачу на ~1-1.8 секунды, и любая смена слайда
      стоила десятки миллисекунд. */
-  .slide-container .content-z .js-stack{ flex-direction:column !important; }
+  .slide-container .content-z .js-stack{ flex-direction:column !important; row-gap:.6rem !important; }
   .slide-container .content-z [class~="grid-cols-3"]:not([class*="md:grid-cols"]),
   .slide-container .content-z [class~="grid-cols-4"]:not([class*="md:grid-cols"]){
     grid-template-columns:1fr !important;
+    row-gap:.6rem !important;           /* карточки в стопке слипались */
   }
+  /* «Норм края» на всей колоде (правка владельца, батч 12): потолки ширины,
+     которые фиттер раздаёт детям слайда, на телефоне отменяются — контент
+     тянется на всю форму, как плашка «Цикл замыкается». */
+  .slide-container .content-z > *{ max-width:100% !important; }
+  /* SWOT: квадраты компактнее, иконки и подписи крупнее, карта во всю ширину */
+  .slide-container .grid.swot-grid{ max-width:18rem !important; margin-left:auto !important; margin-right:auto !important; }
+  .slide-container .swot-q > div{ width:2.75rem !important; height:2.75rem !important; margin-bottom:.15rem; }
+  .slide-container .swot-q i{ font-size:1.35rem !important; }
+  .slide-container .swot-q h4{ font-size:.82rem !important; }
+  .slide-container .swot-road{ max-width:100% !important; }
   /* Карточка «кружок-иконка сверху, текст под ним» в мобильной стопке
      складывается в СТРОКУ: иконка слева, текст справа — как список «Чему вы
      научитесь» на входной странице (эту форму заказчик принял). Стопка из
@@ -653,25 +664,38 @@ body.on-last-slide .lec-consult:hover{ background:#FFFFFF !important; }
   .slide-container .content-z .js-card{
     display:grid !important;
     grid-template-columns:auto minmax(0,1fr);
-    column-gap:.85rem; row-gap:.2rem;
+    /* row-gap:0 — иконка растянута на 9 строк, и при 2-3 строках текста
+       пустые строки С ЗАЗОРАМИ давали фантомный воздух СНИЗУ: контент
+       выглядел прижатым к верху (жалоба владельца). Ритм строк теперь
+       держат margin-top соседних детей (правило ниже). */
+    column-gap:.9rem; row-gap:0;
     align-items:center; align-content:center;
     justify-items:start;
     text-align:left !important;
-    /* Квадратнее и крупнее (правка заказчика): карточка не тянется во всю
-       ширину формы — уже, зато выше и с большим воздухом внутри. */
-    width:100%; max-width:21.5rem;
+    /* Во всю ширину формы (правка владельца, батч 12): узкие карточки с
+       широкими полями по краям «криво нахуй» — эталон краёв задала плашка
+       «Цикл замыкается», растянутая на весь слайд. */
+    width:100%; max-width:100%;
     margin-left:auto !important; margin-right:auto !important;
-    padding:.85rem 1.05rem !important;
+    padding:1rem 1.1rem !important;
     transform:none !important;          /* md:scale-105 у акцентной карточки */
+  }
+  /* Ритм строк текста внутри сложенной карточки — вместо row-gap */
+  .slide-container .content-z .js-card > :not(.js-ico):not(.js-badge) + :not(.js-ico):not(.js-badge){
+    margin-top:.3rem !important;
   }
   .slide-container .content-z .js-card > .js-ico{
     grid-column:1; grid-row:1 / span 9;
     margin:0 !important;
-    width:2.5rem !important; height:2.5rem !important;
+    width:3rem !important; height:3rem !important;
   }
   .slide-container .content-z .js-card > .js-ico > i{
-    font-size:1.15rem !important;
+    font-size:1.4rem !important;
   }
+  /* Кегль в сложенных карточках — крупнее (правка владельца, батч 12):
+     базовые text-[9px]/text-xs после зума нечитаемы. */
+  .slide-container .content-z .js-card :is(h3,h4){ font-size:.9rem !important; line-height:1.3 !important; }
+  .slide-container .content-z .js-card p{ font-size:.74rem !important; line-height:1.4 !important; }
   /* Бейдж («ИИ-модель», «Фокус курса») — на ВЕРХНЕЙ ГРАНИЦЕ карточки, как
      на компе (правка заказчика). Карточке с бейджем добавляется верхний
      отступ — пилюля не наезжает на соседнюю карточку стопки. */
@@ -4531,7 +4555,7 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    одной головы, эту полосу portal-fit резервирует (chromeBand), и содержимое
    до неё уже не доходит. Канон заказчика — «никаких наложений текста». */
 @media (max-width:767px){
-  :root{ --bub:calc(150px * var(--view-scale,1));
+  :root{ --bub:calc(170px * var(--view-scale,1));
          --arw:calc(44px * var(--view-scale,1));
          --arw-gap:calc(10px * var(--view-scale,1)); }
   /* Кружок с головой — крупнее и НАД кнопками листания (правка заказчика);
