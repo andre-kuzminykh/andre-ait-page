@@ -131,6 +131,11 @@
         overscroll-behavior: none;
     }
 
+    /* «Далее» в тесте: автопрокрутка scrollIntoView(nearest) довозит кнопку
+       ровно до края экрана и margin остаётся за кадром — scroll-margin
+       заставляет прокрутку оставить воздух снизу (правка владельца). */
+    #quiz-next-btn{ scroll-margin-bottom: 2.5rem; }
+
     /* Бейдж «Эксперимент» (слайд A/B, батч 10): сидит верхом на границе
        карточки — translate(-50%) по вертикали кладёт его ровно пополам на
        борт при любой высоте. На телефоне по центру, на компе справа с
@@ -3412,7 +3417,9 @@ window.addEventListener('load', function(){
                     </div>
                     <p id="quiz-explanation-text" class="text-[11px] md:text-base text-white/80 leading-snug md:leading-relaxed"></p>
                 </div>
-                <button id="quiz-next-btn" type="button" class="hidden bg-solar text-black font-black text-sm md:text-lg px-6 md:px-10 py-3 md:py-4 rounded-full shadow-lg hover:scale-[1.02] transition-transform uppercase tracking-widest self-center">
+                <!-- mb-6/md:mb-8 — воздух под «Далее»: без него кнопка стояла
+                     впритык к нижнему краю экрана (правка владельца) -->
+                <button id="quiz-next-btn" type="button" class="hidden bg-solar text-black font-black text-sm md:text-lg px-6 md:px-10 py-3 md:py-4 rounded-full shadow-lg hover:scale-[1.02] transition-transform uppercase tracking-widest self-center mb-6 md:mb-8">
                     Далее <i class="ph-bold ph-arrow-right ml-1"></i>
                 </button>
             </div>
