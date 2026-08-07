@@ -312,7 +312,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   /* Кнопка шапки. Класс исторический (раньше вела на буткемп) — теперь это
      тот же вход в курс, что и кнопка внизу: призыв к действию на странице один. */
   .consult{padding:clamp(.7rem,2.4vw,1.05rem) clamp(1rem,3.6vw,1.6rem);font-size:clamp(11px,3.1vw,15px);letter-spacing:clamp(.06em,.4vw,.1em);gap:clamp(.4rem,1.2vw,.6rem)}
-  @media(min-width:1024px){.consult{height:2.85rem;box-sizing:border-box;padding:0 1.6rem;font-size:14px;letter-spacing:.13em;gap:.55rem}}
+  @media(min-width:1024px){.consult{height:3.1rem;box-sizing:border-box;padding:0 1.8rem;font-size:16px;letter-spacing:.13em;gap:.55rem}}
   @media(min-width:1024px) and (max-width:1319px){.consult{padding:0 1.1rem;font-size:12px;letter-spacing:.08em;gap:.4rem}}
   @media(min-width:1320px) and (max-width:1479px){.consult{padding:0 1.35rem;font-size:13px;letter-spacing:.12em;gap:.5rem}}
   /* ≤380px — компактная шапка, как на главной: четыре элемента в строку иначе не влезают */
@@ -594,7 +594,7 @@ TEMPLATE = r"""<!DOCTYPE html>
      ▶; если звук включали раньше на пути (welcome-audio) — стартует сам. -->
 <style>
 /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
-  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(150px,13.6vw,196px);height:clamp(150px,13.6vw,196px);touch-action:none;user-select:none;-webkit-user-select:none}
+  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(170px,13.6vw,260px);height:clamp(170px,13.6vw,260px);touch-action:none;user-select:none;-webkit-user-select:none}
   @media(max-width:768px){.bubble{left:15px;bottom:15px;width:170px;height:170px}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
@@ -609,7 +609,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   .bubble.paused .bubble-play{opacity:1}
 /* Кружок справа, размеры как в лекциях */
 .bubble{ left:auto; right:20px; /* БЕЗ !important: перетаскивание пишет инлайновый style.left, важность из CSS его глушила — кружок ходил только по вертикали */
-  width:clamp(150px,13.6vw,196px) !important; height:clamp(150px,13.6vw,196px) !important; }
+  width:clamp(170px,13.6vw,260px) !important; height:clamp(170px,13.6vw,260px) !important; }
 @media(max-width:768px){
   .bubble{ left:auto; right:12px; width:170px !important; height:170px !important; }
 }
