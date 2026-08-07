@@ -147,11 +147,16 @@ def test_language_switch_matches_main_site_markup():
         assert re.search(r"\.lang-opt\.active\{", html), "активный язык подсвечивается"
 
 
-def test_saved_language_takes_the_visitor_to_his_page():
-    for rel, other in ((_EN_PAGE, PATH_RU), (_RU_PAGE, PATH_EN)):
+def test_direct_link_wins_over_saved_language():
+    """Адрес — источник истины: прямой заход на языковую страницу НЕ уводится
+    авто-редиректом по сохранённому ait_lang (жалоба владельца: ссылка на
+    /automation_ru/ с мобилки открывала английскую версию). Страница сама
+    запоминает свой язык — его читает переключатель EN|RU."""
+    for rel, lang in ((_EN_PAGE, "en"), (_RU_PAGE, "ru")):
         html = _read(rel)
-        assert "location.replace('%s'" % other in html, rel
-        assert "ait_lang_hop" in html, "авто-переход срабатывает один раз за вкладку"
+        assert "ait_lang_hop" not in html, rel + ": авто-переход должен быть выпилен"
+        assert "location.replace('/automation" not in html, rel + ": никаких языковых редиректов"
+        assert "localStorage.setItem('ait_lang', '%s')" % lang in html, rel
 
 
 def test_main_site_course_link_follows_the_language():
@@ -313,12 +318,14 @@ def test_page_scrolls_normally():
         assert "scroll-behavior:smooth" in page, rel + ": прокрутка плавная"
 
 
-def test_blocks_appear_on_scroll():
-    """Содержимое блока проявляется, когда блок доехал до экрана."""
+def test_blocks_visible_immediately():
+    """Контент виден сразу, без анимаций появления (правка владельца:
+    на мобилке блоки «доезжали» каскадом и страница выглядела пустой)."""
     for rel in _ENTRIES:
         page = _read(rel)
-        assert "IntersectionObserver" in page, rel + ": появление по наблюдателю"
-        assert ".panel.in .wrap > *{animation:riseIn" in page, rel + ": каскад появления"
+        assert ".panel .wrap > *{opacity:1;transform:none}" in page, rel + ": контент виден сразу"
+        assert ".panel.in .wrap > *{animation:riseIn" not in page, rel + ": каскада появления больше нет"
+        assert ".panel .wrap > *{opacity:0" not in page, rel + ": контент не прячется"
         assert "scrollIntoView({ behavior:" in page, rel + ": переход к блоку плавный"
 
 

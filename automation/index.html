@@ -9,18 +9,13 @@
 /* Тема — до первой отрисовки, чтобы светлая не мигала чёрным. */
 (function(){try{if(localStorage.getItem('welcome-theme')==='light')document.documentElement.classList.add('light');}catch(e){}})();
 /* Язык: страница у каждого языка своя (адрес без пометки — английский,
-   с суффиксом _ru — русский). Если посетитель уже выбирал язык на
-   andre.technology, один раз за вкладку уводим его на нужную версию.
-   Роботам и превью-скрейперам это не мешает: они JS не исполняют. */
+   с суффиксом _ru — русский). АДРЕС — ИСТОЧНИК ИСТИНЫ: прямой заход по
+   ссылке на языковую страницу сам является выбором языка, поэтому никаких
+   авто-переходов (раньше сохранённый EN уводил гостей с /automation_ru/
+   на английскую версию — жалоба владельца). Просто запоминаем язык
+   страницы — его читает переключатель EN|RU. */
 (function(){
-  try{
-    if (sessionStorage.getItem('ait_lang_hop') === '1') return;
-    var pref = localStorage.getItem('ait_lang');
-    if ((pref === 'ru' || pref === 'en') && pref !== 'en'){
-      sessionStorage.setItem('ait_lang_hop', '1');
-      location.replace('/automation_ru/' + location.hash);
-    }
-  }catch(e){}
+  try{ localStorage.setItem('ait_lang', 'en'); }catch(e){}
 })();
 </script>
 <title>Business process automation course with AI agents</title>
@@ -212,14 +207,10 @@
   @media(min-width:640px){.panel{padding-left:2rem;padding-right:2rem}}
   .wrap{margin:auto;width:100%;max-width:68rem;text-align:center}
 
-  /* Появление содержимого — когда блок доехал до экрана (IntersectionObserver
-     ставит класс .in). Пока блок не показывался, его содержимое приспущено. */
-  .panel .wrap > *{opacity:0;transform:translateY(16px)}
-  .panel.in .wrap > *{animation:riseIn .55s cubic-bezier(.22,1,.36,1) forwards}
-  .panel.in .wrap > *:nth-child(2){animation-delay:.06s}
-  .panel.in .wrap > *:nth-child(3){animation-delay:.12s}
-  .panel.in .wrap > *:nth-child(4){animation-delay:.18s}
-  .panel.in .wrap > *:nth-child(n+5){animation-delay:.24s}
+  /* Никаких анимаций появления: весь контент виден сразу (правка владельца
+     — раньше блоки «доезжали» каскадом по IntersectionObserver, и на
+     мобилке страница выглядела пустой, пока элементы не появятся). */
+  .panel .wrap > *{opacity:1;transform:none}
 
   /* ===== Блок 1: о курсе ===== */
   /* zoom, а не transform: transform уменьшает только отрисовку, в потоке ряд
@@ -415,20 +406,16 @@
     function storeGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
     function storeSet(k, v){ try { localStorage.setItem(k, v); } catch (e) {} }
 
-    /* ===== Язык: у каждого своя страница. Клик по EN|RU запоминает выбор и
-       уводит на соседнюю версию; авто-переход при этом больше не срабатывает,
-       иначе ручной выбор отскакивал бы обратно. ===== */
+    /* ===== Язык: у каждого своя страница, адрес — источник истины
+       (авто-переходов больше нет). Клик по EN|RU просто запоминает выбор
+       и уводит на соседнюю версию по обычной ссылке. ===== */
     (function(){
       var opts = document.querySelectorAll('.lang-opt'), i;
       for (i = 0; i < opts.length; i++){
         opts[i].addEventListener('click', function(){
           storeSet('ait_lang', this.getAttribute('data-lang'));
-          try { sessionStorage.setItem('ait_lang_hop', '1'); } catch (e) {}
         });
       }
-      // Осознанный выбор посетителя не перетираем — записываем язык только
-      // если он вообще ещё не выбирался.
-      if (storeGet('ait_lang') !== 'en' && storeGet('ait_lang') !== 'ru') storeSet('ait_lang', 'en');
     })();
 
     /* ===== Тема: тёмная по умолчанию, .light по клику; ключ общий со
