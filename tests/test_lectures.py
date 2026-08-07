@@ -535,12 +535,41 @@ def test_owner_canon_batch9():
     assert '<span class="whitespace-nowrap">Создание ИИ-агентов</span><br><span class="whitespace-nowrap">(по автоматизации)</span>' in html
     assert '<span class="hidden">(по автоматизации)</span>' not in html
     # Обучение: «От универсального инструмента…» крупная и жирная
-    assert '<p class="text-sm md:text-lg font-bold leading-snug"><i class="ph-fill ph-buildings' in html
+    # (батч 10 укрупнил ещё раз: md:text-lg → md:text-xl)
+    assert '<p class="text-sm md:text-xl font-bold leading-snug"><i class="ph-fill ph-buildings' in html
     # Слайд 1: «От инструмента к агенту» — одной строкой (вопрос владельца)
     assert '<span class="whitespace-nowrap">От инструмента к агенту</span>' in html
     # Панель «Текст»: резерв под лого растёт с var(--view-scale) — шапка
     # зумится этим же множителем, иначе «СЛАЙД 1/42» налезает на лого (мак)
     assert "* var(--view-scale,1)) clamp(1rem,2.6vw,1.6rem) .85rem;" in html
+
+
+def test_owner_canon_batch10():
+    """Страж правок владельца (батч 10): «Дорожная карта» на SWOT-слайде шире
+    и с подписью в две строки, бейдж «Эксперимент» сидит верхом на границе
+    карточки, подчёркивание «С» без смещения вниз (как у «БЕЗ»)."""
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # SWOT: «Дорожная карта» шире — карте отдан весь остаток ряда (узкий
+    # lg:gap-3 и стрелка text-4xl высвобождают ширину; жёсткий min-width
+    # наезжал бы на стрелку — бюджет фиттера не резиновый), подпись ровно
+    # в 2 строки закреплена <br>-ом
+    assert '"swot-road w-full max-w-sm' in html
+    assert "План от быстрых побед<br>к масштабированию" in html
+    assert ".slide-container .grid.swot-grid{ flex: 0 0 24rem !important; }" in html
+    assert ".slide-container .swot-road.w-full{ width: 26rem !important; flex: 0 1 auto !important; max-width: 26rem !important; }" in html
+    swot_slide = html[html.index('id="slide-30"'):html.index('id="slide-31"')]
+    assert "gap-4 lg:gap-3" in swot_slide, "узкий lg-зазор ряда SWOT — ширина уходит карте"
+    assert "ph-arrow-right text-4xl" in swot_slide, "стрелка ужата до text-4xl ради ширины карты"
+    # A/B-слайд: бейдж на границе карточки (translate -50% по вертикали),
+    # на компе справа с внутренним отступом, не вылетая за правый край
+    assert '"vs-exp-badge bg-solar' in html
+    assert "transform: translate(-50%, -50%);" in html
+    assert ".vs-exp-badge{ left: auto; right: 1.5rem; transform: translateY(-50%); }" in html
+    assert 'md:absolute md:top-4 md:right-4' not in html, "старая посадка бейджа внутри карточки должна уйти"
+    # Черточка под «С» — ровно как у «БЕЗ», без pb-1 (он ронял линию вниз)
+    assert '<span class="border-b-2 border-solar">С</span>' in html
+    assert 'border-solar pb-1">С<' not in html
 
 
 def test_lecture1_web_preview_image():

@@ -131,6 +131,40 @@
         overscroll-behavior: none;
     }
 
+    /* Бейдж «Эксперимент» (слайд A/B, батч 10): сидит верхом на границе
+       карточки — translate(-50%) по вертикали кладёт его ровно пополам на
+       борт при любой высоте. На телефоне по центру, на компе справа с
+       внутренним отступом (правым краем за карточку не вылезает). */
+    .vs-exp-badge{
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        z-index: 20;
+    }
+    @media (min-width: 768px){
+        .vs-exp-badge{ left: auto; right: 1.5rem; transform: translateY(-50%); }
+    }
+
+    /* «Дорожная карта» на SWOT-слайде (батч 10): распределение ряда задано
+       ЯВНО — flex сам отдавал остаток сетке, и карта оставалась узкой колбасой
+       с подписью в 3-4 строки. Сетке — ровно её канонный пол 24rem (она и так
+       на нём стоит), карте — весь остаток с потолком 26rem; жёсткий min-width
+       не ставим — при тесном бюджете фиттера карта наезжала на стрелку.
+       Плюс lg:gap-3 вместо gap-8 и стрелка text-4xl — каждый отыгранный
+       пиксель уходит карте. Подпись в две строки закреплена <br>-ом.
+       Специфичность (0,3,0) — выше анти-overflow правила [class*="flex-row"]. */
+    @media (min-width: 1024px){
+        .slide-container .grid.swot-grid{ flex: 0 0 24rem !important; }
+        /* Именно width, а не flex-basis: контейнер слайда сайзится по
+           intrinsic-ширине содержимого, и в этот расчёт входит width, а
+           basis — нет (с одним basis карта оставалась 224px). Shrink
+           разрешён — при тесном бюджете карта мягко ужимается и не
+           наезжает на стрелку. */
+        .slide-container .swot-road.w-full{ width: 26rem !important; flex: 0 1 auto !important; max-width: 26rem !important; }
+    }
+
     body {
         user-select: none;
         /* clip вместо hidden: hidden оставляет элемент прокручиваемым
@@ -2786,11 +2820,18 @@ window.addEventListener('load', function(){
 
     <!-- СЛАЙД 28: Стратегия внедрения (SWOT) -->
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-30">
-        <div class="content-z max-w-6xl lg:max-w-4xl w-full">
+        <!-- Без lg:max-w-4xl: фиттер делит потолок ширины на zoom, и в 4xl
+             широкой «Дорожной карте» (26rem) не хватало места рядом со
+             SWOT-сеткой (пол 24rem) — карту сжимало до узкой колбасы. -->
+        <div class="content-z max-w-6xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-4 text-center text-black">Стратегия <span class="text-solar">внедрения ИИ</span></h2>
             <p class="text-center text-black/60 font-medium mb-6 lg:mb-12 text-[13px] md:text-xl">Начинается со SWOT-анализа</p>
 
-            <div class="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center justify-center w-full">
+            <!-- lg:gap-3 (было gap-8) и стрелка text-4xl (было 5xl): ширина
+                 слайда зажата бюджетом фиттера, и каждый отыгранный пиксель
+                 уходит «Дорожной карте» — иначе подпись ломалась на 3 строки
+                 (правка батча 10: карта шире, текст в две строки). -->
+            <div class="flex flex-col lg:flex-row gap-4 lg:gap-3 items-center justify-center w-full">
                 <div class="swot-grid grid grid-cols-2 auto-rows-fr gap-2 md:gap-3 w-full max-w-3xl lg:min-w-[22rem]">
                     <div class="bg-white border border-grayBase p-3 md:p-4 rounded-[20px] md:rounded-3xl swot-q flex flex-col items-center justify-center text-center gap-1 md:gap-3 h-full shadow-sm min-h-[90px] md:min-h-[140px] w-full">
                         <div class="w-8 h-8 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mb-1"><i class="ph-fill ph-trend-up text-lg md:text-2xl text-black"></i></div>
@@ -2810,13 +2851,13 @@ window.addEventListener('load', function(){
                     </div>
                 </div>
 
-                <i class="ph-bold ph-arrow-right text-5xl text-grayBase hidden lg:block"></i>
+                <i class="ph-bold ph-arrow-right text-4xl text-grayBase hidden lg:block shrink-0"></i>
                 <i class="ph-bold ph-arrow-down text-3xl text-grayBase lg:hidden my-1"></i>
 
-                <div class="w-full max-w-sm bg-black rounded-[20px] md:rounded-[32px] p-5 md:p-10 text-white flex flex-col items-center justify-center text-center shadow-2xl h-full min-h-[120px] lg:min-h-[280px] border border-solar/30 mt-2 md:mt-0">
+                <div class="swot-road w-full max-w-sm bg-black rounded-[20px] md:rounded-[32px] p-5 md:p-10 text-white flex flex-col items-center justify-center text-center shadow-2xl h-full min-h-[120px] lg:min-h-[280px] border border-solar/30 mt-2 md:mt-0">
                     <div class="w-12 h-12 md:w-20 md:h-20 bg-solar text-[#0A0A0A] rounded-full flex items-center justify-center mb-2 md:mb-6 shadow-lg"><i class="ph-fill ph-map-trifold text-2xl md:text-4xl"></i></div>
-                    <h3 class="font-black text-sm md:text-2xl mb-1 md:mb-3 text-solar">Дорожная карта</h3>
-                    <p class="text-[11px] md:text-base text-white/70">План от быстрых побед к масштабированию</p>
+                    <h3 class="font-black text-sm md:text-2xl mb-1 md:mb-3 text-solar"><span class="whitespace-nowrap">Дорожная карта</span></h3>
+                    <p class="text-[11px] md:text-base text-white/70">План от быстрых побед<br>к масштабированию</p>
                 </div>
             </div>
         </div>
@@ -3137,7 +3178,7 @@ window.addEventListener('load', function(){
             </div>
 
             <div class="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-[20px] md:rounded-[20px] w-full max-w-3xl text-center shadow-2xl mt-2 md:mt-2">
-                <p class="text-sm md:text-lg font-bold leading-snug"><i class="ph-fill ph-buildings text-solar text-sm md:text-lg align-[-2px] mr-1.5"></i>От универсального инструмента к системе,<br>которая понимает <span class="text-solar font-bold">специфику вашей организации</span></p>
+                <p class="text-sm md:text-xl font-bold leading-snug"><i class="ph-fill ph-buildings text-solar text-sm md:text-xl align-[-2px] mr-1.5"></i>От универсального инструмента к системе,<br>которая понимает <span class="text-solar font-bold">специфику вашей организации</span></p>
             </div>
         </div>
     </div>
@@ -3160,13 +3201,14 @@ window.addEventListener('load', function(){
                 <div class="flex items-center justify-center text-base md:text-2xl font-black uppercase tracking-widest text-grayBase">VS</div>
 
                 <div class="bg-black border-2 border-solar p-5 md:p-8 rounded-[24px] md:rounded-3xl flex-1 shadow-2xl relative z-10 flex flex-col justify-center text-white h-full mt-2 lg:mt-0 w-full">
-                    <!-- Бейдж сидит ВНУТРИ карточки: отрицательные -top/-right
-                         выносили его за борт, и он висел над углом отдельной
-                         пилюлей, заезжая правым краем за карточку. На телефоне
-                         угол занят заголовком, поэтому там бейдж встаёт в
-                         поток — отдельной строкой над заголовком. -->
-                    <div class="relative md:absolute md:top-4 md:right-4 mx-auto md:mx-0 w-fit mb-3 md:mb-0 bg-solar text-[#0A0A0A] px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[8px] md:text-xs font-bold uppercase shadow-lg tracking-widest">Эксперимент</div>
-                    <h3 class="font-black text-sm md:text-2xl text-solar mb-4 md:mb-8 text-center uppercase tracking-widest">Процесс <span class="border-b-2 border-solar pb-1">С</span> агентом</h3>
+                    <!-- Бейдж сидит ВЕРХОМ НА ГРАНИЦЕ карточки (правка батча 10):
+                         вертикальный translate(-50%) в .vs-exp-badge кладёт его
+                         ровно пополам на верхний борт при любой высоте бейджа.
+                         На компе он справа с ВНУТРЕННИМ отступом — правым краем
+                         за карточку не вылезает (жалоба одного из прошлых
+                         батчей), на телефоне — по центру борта. -->
+                    <div class="vs-exp-badge bg-solar text-[#0A0A0A] px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[8px] md:text-xs font-bold uppercase shadow-lg tracking-widest">Эксперимент</div>
+                    <h3 class="font-black text-sm md:text-2xl text-solar mb-4 md:mb-8 text-center uppercase tracking-widest">Процесс <span class="border-b-2 border-solar">С</span> агентом</h3>
                     <div class="space-y-2 md:space-y-4 text-[11px] md:text-base font-bold text-white/80 w-full">
                         <div class="flex justify-between border-b border-white/20 pb-1 md:pb-2 w-full"><span>Скорость:</span> <span class="text-solar flex items-center">Выше <i class="ph-bold ph-trend-up ml-1 md:ml-2 text-sm md:text-xl"></i></span></div>
                         <div class="flex justify-between border-b border-white/20 pb-1 md:pb-2 w-full"><span>Ошибки:</span> <span class="text-solar flex items-center">2% <i class="ph-bold ph-trend-down ml-1 md:ml-2 text-sm md:text-xl"></i></span></div>
