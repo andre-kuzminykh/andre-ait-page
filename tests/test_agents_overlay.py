@@ -17,6 +17,7 @@ _PAGE = os.path.join(_DIR, "index.html")
 _DECK = os.path.join(_ROOT, "automation", "1", "index.html")
 _SRT = os.path.join(_DIR, "субтитры.srt")
 _DURATION = 168.5          # 02:48 — длина дорожки
+_LAYER = 170.5             # слой длиннее: хвост держит шапку
 _WORDS = 369               # столько слов в сценарии владельца
 _POSTERS_TOP = 638         # верх рамок картин на стене
 
@@ -102,7 +103,7 @@ def test_icons_come_from_the_deck():
 
 def test_scenes_do_not_overlap():
     scenes = _scenes()
-    assert len(scenes) == 5, "сцен должно быть пять (слайды 4–8), а их %d" % len(scenes)
+    assert len(scenes) == 7, "сцен должно быть семь, а их %d" % len(scenes)
     prev = 0.0
     for sid, tin, tout, _ in scenes:
         assert tin < tout, "%s: окно вывернуто" % sid
@@ -134,7 +135,7 @@ def test_orbit_keeps_every_property_at_one_distance():
     html = _html()
     pos = re.findall(r'<div class="sat [\w-]+" style="left:(\d+)px;top:(\d+)px">', html)
     assert len(pos) == 6, "на орбите должно быть шесть свойств, а их %d" % len(pos)
-    m = re.search(r'#s4 \.core\{position:absolute;left:(\d+)px;top:(\d+)px', html)
+    m = re.search(r'#s\d \.core\{position:absolute;left:(\d+)px;top:(\d+)px', html)
     assert m, "не нашёл центр орбиты"
     cx, cy = float(m.group(1)), float(m.group(2))
     rr = [((float(x) - cx) ** 2 + (float(y) - cy) ** 2) ** 0.5 for x, y in pos]
@@ -144,15 +145,43 @@ def test_orbit_keeps_every_property_at_one_distance():
 
 def test_scenes_do_not_look_alike():
     """Владелец: «нужно более разнообразно… не просто кружки и текст».
-    У каждой сцены свой приём — ступени, ряд с ядром, поток, орбита,
-    сходящийся ряд. Проверяем, что приёмы на месте и не свелись обратно
-    к пяти одинаковым рядам."""
+    Приёмы: ряды, одиночный элемент с сиянием, поток со стрелками, орбита,
+    финальная пара с двумя сияниями."""
     html = _html()
-    assert "ступени" in html.lower() and "margin-top:68px" in html, "сцена-лестница исчезла"
     assert 'class="orbit"' in html and 'class="sat ' in html, "орбита исчезла"
     assert 'class="arr el"' in html, "поток со стрелками исчез"
-    assert "data-dim=" in html, "затухание отработавших элементов исчезло"
-    assert "data-cur=" in html, "подсветка текущего свойства исчезла"
+    assert html.count('class="glow') >= 3, "сияния за одиночными элементами исчезли"
+    assert "glow-ember" in html and "glowPulse" in html, "оранжевое сияние не дышит"
+    assert "data-cur=" in html, "подсветка «о нём говорят сейчас» исчезла"
+
+
+def test_highlight_is_a_ring_not_a_fade():
+    """Владелец: «когда какой-то элемент выделяешь — да, круто его увеличить
+    немного и во внешний круг взять и потом вернуть на место плавно по
+    размеру, но остальные не надо прозрачность увеличивать — и так везде».
+    Значит: выделение = кольцо + масштаб с переходом, и НИКАКОГО затухания
+    соседей."""
+    html = _html()
+    assert "data-dim=" not in html, "вернулось затухание соседей — владелец его запретил"
+    assert ".el.on.dim" not in html, "осталось правило затухания"
+    assert ".el.on.cur .circle{transform:scale(" in html, "выделение не увеличивает круг"
+    assert "border-color .5s var(--ease),transform .5s var(--ease)" in html, \
+        "кольцо и размер возвращаются рывком, а не плавно"
+
+
+def test_circles_are_one_size_in_a_row():
+    """Владелец: «они все разного размера и высоты, должны быть одной».
+    Разнокалиберные ряды и лесенка убраны: в рядовых сценах один диаметр и
+    одна высота. Орбита — отдельная фигура, там центр крупнее спутников."""
+    html = _html()
+    assert "margin-top:68px" not in html, "вернулась лесенка — круги на разной высоте"
+    layer = html[html.index('<div id="layer">'):html.index('<div id="cover">')]
+    # диаметры в рядовых сценах: всё, что вне орбиты
+    ряды = re.sub(r'<div class="orbit">.*?</div>\s*</section>', "", layer, flags=re.S)
+    d = [int(x) for x in re.findall(r'class="circle [\w ]*ico" style="width:(\d+)px', ряды)]
+    обычные = [x for x in d if x <= 100]
+    assert обычные, "не нашёл кругов рядовых сцен"
+    assert len(set(обычные)) == 1, "в рядах круги разного размера: %s" % sorted(set(обычные))
 
 
 def test_colours_alternate():
@@ -175,6 +204,8 @@ _OWNER_WORDING = {
     # не всегда дословно, но досочинёнными не являются.
     "локальная", "цифровые", "сотрудники", "единая", "гибридная", "команда",
     "зонт", "отель",
+    # финал продиктован владельцем: «Цель → Агент сделал сам»
+    "цель", "сделал", "сам",
 }
 
 
@@ -325,6 +356,23 @@ def test_script_picks_a_capable_ffmpeg():
     assert "/opt/homebrew/bin/ffmpeg" in body, "brew-путь не пробуется мимо PATH"
     assert 'grep -q " subtitles "' in body, "кандидат не проверяется на фильтр subtitles"
     assert "субтитры.sha" in body, "сборка не сверяет хэш текста со слоем"
+
+
+def test_chrome_survives_a_longer_clip():
+    """Владелец: «в конце исчезает лого и АКАДЕМИЯ ДАТАИСТА — это никогда не
+    исчезает, кроме обложки». Слой конечен, а дубль может оказаться длиннее:
+    после конца слоя шли голые кадры без шапки. tpad держит ПОСЛЕДНИЙ кадр
+    слоя (на нём только шапка) до конца ролика."""
+    body = _script()
+    assert "tpad=stop=-1:stop_mode=clone" in body, \
+        "слой не удерживает последний кадр — на длинном дубле шапка пропадёт"
+    html = _html()
+    assert re.search(r"var DURATION = 170\.5", html), \
+        "слой должен быть длиннее дорожки, чтобы в хвосте осталась одна шапка"
+    последняя = max(float(t) for _, _, t, _ in [(a, b, c, d) for a, b, c, d in _scenes()])
+    assert последняя <= _LAYER - 1.0, \
+        "последняя сцена (%.1f) не оставляет в слое хвоста под шапку" % последняя
+    assert "body.on-cover #chrome" in html, "шапка обязана прятаться только на обложке"
 
 
 def test_cover_precedes_the_clip():
