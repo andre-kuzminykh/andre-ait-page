@@ -108,6 +108,9 @@ echo "Собираю: обложка ${SEC}с + ролик + графика + с
 # Слой лежит ДВУМЯ файлами: прозрачности в mp4 нет, webm с альфой
 # собирается не везде, а две дорожки в одном mp4 не переживают ремукс.
 # alphamerge сшивает цвет с маской обратно в прозрачную картинку.
+# tpad=stop=-1:clone держит ПОСЛЕДНИЙ кадр слоя до конца ролика: на нём
+# только фирменная шапка, и она остаётся в кадре, даже если дубль
+# длиннее слоя. Без этого хвост ролика шёл вообще без шапки.
 # eof_action=pass: слой кончился — картинка идёт дальше. Со shortest=1
 # ролик ДЛИННЕЕ слоя обрезался по слою: 70-секундный дубль выходил
 # 59.12 с видео при 70 с звука — 11 секунд черноты под звук.
@@ -121,10 +124,10 @@ echo "Собираю: обложка ${SEC}с + ролик + графика + с
 # он на конце потока съедал последний кадр. Проверено покадрово:
 # только с -r выходит ровно (кадры обложки) + (кадры ролика).
 if [ "$FULL" = 1 ]; then
-  VF="[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[1:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass,subtitles=filename=$TMP/subs.ass:fontsdir=$TMP/fonts,format=$PIX,setsar=1[m];[c][m]concat=n=2:v=1[v]"
+  VF="[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge,tpad=stop=-1:stop_mode=clone[ov];[1:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass,subtitles=filename=$TMP/subs.ass:fontsdir=$TMP/fonts,format=$PIX,setsar=1[m];[c][m]concat=n=2:v=1[v]"
   EXTRA=""
 else
-  VF="[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge[ov];[5:v]scale=$DW:$DH:flags=lanczos[tc];[6:v]scale=$DW:$DH:flags=lanczos[ta];[tc][ta]alphamerge[tv];[1:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass[m1];[m1][tv]overlay=0:0:format=auto:eof_action=pass,format=$PIX,setsar=1[m];[c][m]concat=n=2:v=1[v]"
+  VF="[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge,tpad=stop=-1:stop_mode=clone[ov];[5:v]scale=$DW:$DH:flags=lanczos[tc];[6:v]scale=$DW:$DH:flags=lanczos[ta];[tc][ta]alphamerge[tv];[1:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass[m1];[m1][tv]overlay=0:0:format=auto:eof_action=pass,format=$PIX,setsar=1[m];[c][m]concat=n=2:v=1[v]"
   EXTRA="-i $DIR/subs_c.mp4 -i $DIR/subs_a.mp4"
 fi
 # ЗВУК НЕ ТРОГАЕМ ВООБЩЕ — как в лекции. Обложка нужна только
