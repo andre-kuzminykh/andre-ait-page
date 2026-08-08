@@ -226,26 +226,31 @@ ul{list-style:none;padding:0}
 
 /* ── СЦЕНА 4 · орбита ────────────────────────────────────────────────
    Круговая фигура — форма самого слайда 7 дека: агент в центре, свойства
-   вокруг. Подписи ко ВСЕМ шести вокруг орбиты не читаются (в один ряд
-   «Мультимодальность» садится на 12.9px), поэтому подпись одна и крупная,
-   справа: она показывает, о котором из шести идёт речь прямо сейчас.
-   Свойство появляется на своём «первое… второе… третье…» и остаётся
-   на орбите — к финалу вокруг агента стоят все шесть. */
-#s4 .orbit-wrap{display:flex;align-items:center;gap:34px;width:100%;height:100%}
-#s4 .orbit{position:relative;width:470px;height:380px;flex:0 0 auto}
-#s4 .core{position:absolute;left:235px;top:190px;margin:-59px 0 0 -59px}
-#s4 .sat{position:absolute;margin:-38px 0 0 -38px}
-#s4 .sat .el{transition:opacity .5s var(--ease),transform .58s var(--ease)}
-#s4 .sat .el.on.cur{transform:scale(1.16)}
+   вокруг. Орбита стоит по центру кадра; подпись каждого свойства лежит
+   СНАРУЖИ круга — у верхнего над кружком, у нижнего под ним, у боковых
+   сбоку. Так шесть подписей расходятся по разным сторонам и остаются
+   крупными: в один ряд «Мультимодальность» садилась бы на 12.9px.
+   Свойство прилетает на орбиту на своём «первое… второе… третье…»
+   и остаётся — к финалу вокруг агента стоят все шесть. */
+#s4 .orbit{position:relative;width:988px;height:380px}
+#s4 .core{position:absolute;left:494px;top:190px;margin:-46px 0 0 -46px}
+#s4 .sat{position:absolute;margin:-36px 0 0 -36px}
+#s4 .sat .el{position:relative}
+#s4 .sat .label{position:absolute;font-size:26px;white-space:nowrap}
+/* Зазор 18px и увеличение «текущего» всего на 1.08: при 1.16 и зазоре 16
+   выросший кружок вместе с кольцом упирался в собственную подпись —
+   между ними оставалось 2px. */
+#s4 .s-top .label{bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:18px}
+#s4 .s-bot .label{top:100%;left:50%;transform:translateX(-50%);margin-top:18px}
+#s4 .s-right .label{left:100%;top:50%;transform:translateY(-50%);margin-left:18px;text-align:left}
+#s4 .s-left .label{right:100%;top:50%;transform:translateY(-50%);margin-right:18px;text-align:right}
+/* Увеличивается только сам кружок: подпись должна остаться на месте. */
+#s4 .sat .el.on.cur .circle{transform:scale(1.08)}
 #s4 .sat .circle{position:relative}
 #s4 .sat .el.on.cur .circle::after{
     content:'';position:absolute;inset:-8px;border-radius:50%;pointer-events:none;
     border:3px solid rgba(255,255,255,.62);
 }
-#s4 .names{position:relative;flex:1 1 auto;height:200px;min-width:0}
-#s4 .name{position:absolute;inset:0;display:flex;align-items:center}
-#s4 .big{font-size:38px;line-height:1.1;text-align:left;white-space:nowrap}
-#s4 .big.on:not(.cur){opacity:0}
 
 /* ── СЦЕНА 5 · три источника и крупный результат ──────────────────────
    Результат — одной строкой: «Зонт с доставкой в отель» в колонке из
@@ -435,24 +440,26 @@ body.dragging #drop{display:flex}
 
         <!-- ══ СЦЕНА 4 · слайд 7 · орбита: агент и шесть свойств ══ -->
         <section class="scene" id="s4" data-in="109.0" data-out="165.0">
-            <div class="orbit-wrap">
             <div class="orbit">
-                <div class="core el" data-in="110.0"><div class="circle solar ico" style="width:118px;height:118px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M200,48H136V16a8,8,0,0,0-16,0V48H56A32,32,0,0,0,24,80V192a32,32,0,0,0,32,32H200a32,32,0,0,0,32-32V80A32,32,0,0,0,200,48ZM172,96a12,12,0,1,1-12,12A12,12,0,0,1,172,96ZM96,184H80a16,16,0,0,1,0-32H96ZM84,120a12,12,0,1,1,12-12A12,12,0,0,1,84,120Zm60,64H112V152h32Zm32,0H160V152h16a16,16,0,0,1,0,32Z"/></svg></div></div>
-                <div class="sat" style="left:235px;top:52px"><div class="el" data-in="112.0" data-cur="112.0 120.0"><div class="circle solar ico" style="width:76px;height:76px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM49.63,168H90.45l17,45.58A88.35,88.35,0,0,1,49.63,168ZM128,156a16,16,0,1,1,16-16A16,16,0,0,1,128,156Zm20.46,57.59L165.55,168h40.82A88.34,88.34,0,0,1,148.46,213.59ZM128,96a136.38,136.38,0,0,0-88,32.33V128a88,88,0,0,1,176,0v.33A136.38,136.38,0,0,0,128,96Z"/></svg></div></div></div>
-                <div class="sat" style="left:372px;top:121px"><div class="el" data-in="120.0" data-cur="120.0 128.0"><div class="circle ember ico" style="width:76px;height:76px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z"/></svg></div></div></div>
-                <div class="sat" style="left:372px;top:259px"><div class="el" data-in="128.0" data-cur="128.0 136.0"><div class="circle solar ico" style="width:76px;height:76px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M240,56v64a8,8,0,0,1-13.66,5.66L200,99.31l-58.34,58.35a8,8,0,0,1-11.32,0L96,123.31,29.66,189.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0L136,140.69,188.69,88,162.34,61.66A8,8,0,0,1,168,48h64A8,8,0,0,1,240,56Z"/></svg></div></div></div>
-                <div class="sat" style="left:235px;top:328px"><div class="el" data-in="136.0" data-cur="136.0 143.0"><div class="circle ember ico" style="width:76px;height:76px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M176,207.24a119,119,0,0,0,16-7.73V240a8,8,0,0,1-16,0Zm11.76-88.43-56-29.87a8,8,0,0,0-7.52,14.12L171,128l17-9.06Zm64-29.87-120-64a8,8,0,0,0-7.52,0l-120,64a8,8,0,0,0,0,14.12L32,117.87v48.42a15.91,15.91,0,0,0,4.06,10.65C49.16,191.53,78.51,216,128,216a130,130,0,0,0,48-8.76V130.67L171,128l-43,22.93L43.83,106l0,0L25,96,128,41.07,231,96l-18.78,10-.06,0L188,118.94a8,8,0,0,1,4,6.93v73.64a115.63,115.63,0,0,0,27.94-22.57A15.91,15.91,0,0,0,224,166.29V117.87l27.76-14.81a8,8,0,0,0,0-14.12Z"/></svg></div></div></div>
-                <div class="sat" style="left:98px;top:259px"><div class="el" data-in="143.0" data-cur="143.0 151.0"><div class="circle solar ico" style="width:76px;height:76px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"/></svg></div></div></div>
-                <div class="sat" style="left:98px;top:121px"><div class="el" data-in="151.0" data-cur="151.0 165.0"><div class="circle ember ico" style="width:76px;height:76px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></div></div></div>
-            </div>
-            <div class="names">
-                <div class="name"><p class="big el label" data-in="112.0" data-cur="112.0 120.0">Автономность</p></div>
-                <div class="name"><p class="big el label" data-in="120.0" data-cur="120.0 128.0">Реактивность</p></div>
-                <div class="name"><p class="big el label" data-in="128.0" data-cur="128.0 136.0">Проактивность</p></div>
-                <div class="name"><p class="big el label" data-in="136.0" data-cur="136.0 143.0">Обучаемость</p></div>
-                <div class="name"><p class="big el label" data-in="143.0" data-cur="143.0 151.0">Взаимодействие</p></div>
-                <div class="name"><p class="big el label" data-in="151.0" data-cur="151.0 165.0">Мультимодальность</p></div>
-            </div>
+                <div class="core el" data-in="110.0"><div class="circle solar ico" style="width:92px;height:92px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M200,48H136V16a8,8,0,0,0-16,0V48H56A32,32,0,0,0,24,80V192a32,32,0,0,0,32,32H200a32,32,0,0,0,32-32V80A32,32,0,0,0,200,48ZM172,96a12,12,0,1,1-12,12A12,12,0,0,1,172,96ZM96,184H80a16,16,0,0,1,0-32H96ZM84,120a12,12,0,1,1,12-12A12,12,0,0,1,84,120Zm60,64H112V152h32Zm32,0H160V152h16a16,16,0,0,1,0,32Z"/></svg></div></div>
+                <div class="sat s-top" style="left:494px;top:96px">
+                    <div class="el" data-in="112.0" data-cur="112.0 120.0"><div class="circle solar ico" style="width:72px;height:72px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM49.63,168H90.45l17,45.58A88.35,88.35,0,0,1,49.63,168ZM128,156a16,16,0,1,1,16-16A16,16,0,0,1,128,156Zm20.46,57.59L165.55,168h40.82A88.34,88.34,0,0,1,148.46,213.59ZM128,96a136.38,136.38,0,0,0-88,32.33V128a88,88,0,0,1,176,0v.33A136.38,136.38,0,0,0,128,96Z"/></svg></div><p class="label">Автономность</p></div>
+                </div>
+                <div class="sat s-right" style="left:615px;top:143px">
+                    <div class="el" data-in="120.0" data-cur="120.0 128.0"><div class="circle ember ico" style="width:72px;height:72px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z"/></svg></div><p class="label">Реактивность</p></div>
+                </div>
+                <div class="sat s-right" style="left:615px;top:237px">
+                    <div class="el" data-in="128.0" data-cur="128.0 136.0"><div class="circle solar ico" style="width:72px;height:72px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M240,56v64a8,8,0,0,1-13.66,5.66L200,99.31l-58.34,58.35a8,8,0,0,1-11.32,0L96,123.31,29.66,189.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0L136,140.69,188.69,88,162.34,61.66A8,8,0,0,1,168,48h64A8,8,0,0,1,240,56Z"/></svg></div><p class="label">Проактивность</p></div>
+                </div>
+                <div class="sat s-bot" style="left:494px;top:284px">
+                    <div class="el" data-in="136.0" data-cur="136.0 143.0"><div class="circle ember ico" style="width:72px;height:72px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M176,207.24a119,119,0,0,0,16-7.73V240a8,8,0,0,1-16,0Zm11.76-88.43-56-29.87a8,8,0,0,0-7.52,14.12L171,128l17-9.06Zm64-29.87-120-64a8,8,0,0,0-7.52,0l-120,64a8,8,0,0,0,0,14.12L32,117.87v48.42a15.91,15.91,0,0,0,4.06,10.65C49.16,191.53,78.51,216,128,216a130,130,0,0,0,48-8.76V130.67L171,128l-43,22.93L43.83,106l0,0L25,96,128,41.07,231,96l-18.78,10-.06,0L188,118.94a8,8,0,0,1,4,6.93v73.64a115.63,115.63,0,0,0,27.94-22.57A15.91,15.91,0,0,0,224,166.29V117.87l27.76-14.81a8,8,0,0,0,0-14.12Z"/></svg></div><p class="label">Обучаемость</p></div>
+                </div>
+                <div class="sat s-left" style="left:373px;top:237px">
+                    <div class="el" data-in="143.0" data-cur="143.0 151.0"><div class="circle solar ico" style="width:72px;height:72px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"/></svg></div><p class="label">Взаимодействие</p></div>
+                </div>
+                <div class="sat s-left" style="left:373px;top:143px">
+                    <div class="el" data-in="151.0" data-cur="151.0 165.0"><div class="circle ember ico" style="width:72px;height:72px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></div><p class="label">Мультимодальность</p></div>
+                </div>
             </div>
         </section>
 
