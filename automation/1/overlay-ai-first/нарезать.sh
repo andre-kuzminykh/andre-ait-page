@@ -168,15 +168,12 @@ if [ "$CAP" = 1 ]; then
 fi
 # Чем рисовать подпись. drawtext проще, но он есть не в каждой сборке
 # (нужен libfreetype), а subtitles — не в каждой другой (нужен libass).
-# Умеем обоими: что нашлось, тем и рисуем.
-CAPMODE=none
+# Умеем обоими.
+DRAWOK=0; ASSOK=0
 if [ "$CAP" = 1 ]; then
   FILTERS=$("$FF" -hide_banner -filters 2>/dev/null)
-  case "$FILTERS" in
-    *" drawtext "*)  CAPMODE=draw ;;
-    *" subtitles "*) CAPMODE=ass ;;
-    *) CAP=0; echo "Подпись «$CAPWORD N» не ставлю: в этой сборке ffmpeg нет ни drawtext, ни subtitles" ;;
-  esac
+  case "$FILTERS" in *" drawtext "*)  DRAWOK=1 ;; esac
+  case "$FILTERS" in *" subtitles "*) ASSOK=1 ;; esac
 fi
 : "${CAPSIZE:=$(awk -v h="$DH" 'BEGIN{ printf "%d", h*0.036 }')}"
 # 0.35 высоты = 672 при 1920. На обложках этой серии тайтл кончается около
@@ -184,7 +181,63 @@ fi
 # есть читается как часть того же блока, а не отдельной строкой в пустоте.
 : "${CAPY:=$(awk -v h="$DH" 'BEGIN{ printf "%d", h*0.35 }')}"
 BORD=$(awk -v s="$CAPSIZE" 'BEGIN{ v=int(s/16); if(v<3) v=3; printf "%d", v }')
-if [ "$CAP" = 1 ]; then echo "Подпись: «$CAPWORD N», кегль $CAPSIZE, от верха кадра $CAPY"; fi
+
+# Кусок фильтра, который рисует «Часть N». Отдельной функцией, потому что
+# им пользуется и самопроверка ниже, и сама нарезка.
+capfilter() {   # <номер части> <режим>
+  case "$2" in
+    draw)
+      echo ",drawtext=fontfile=$TMP/fonts/f.ttf:text='$CAPWORD $1':fontcolor=white:fontsize=$CAPSIZE:borderw=$BORD:bordercolor=black@0.55:x=(w-text_w)/2:y=$CAPY"
+      ;;
+    ass)
+      # Выравнивание 8 — по центру сверху, тогда MarginV считается от верха
+      # кадра, как y у drawtext. Имя шрифта ПОЛНОЕ («Montserrat Black»,
+      # это name ID 1 в ttf): по семейному libass молча берёт системный.
+      { echo "[Script Info]"
+        echo "ScriptType: v4.00+"
+        echo "PlayResX: $DW"
+        echo "PlayResY: $DH"
+        echo "[V4+ Styles]"
+        echo "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"
+        echo "Style: Cap,Montserrat Black,$CAPSIZE,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,$BORD,0,8,40,40,$CAPY,1"
+        echo "[Events]"
+        echo "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
+        echo "Dialogue: 0,0:00:00.00,0:00:30.00,Cap,,0,0,0,,$CAPWORD $1"
+      } > "$TMP/cap$1.ass"
+      echo ",subtitles=filename=$TMP/cap$1.ass:fontsdir=$TMP/fonts"
+      ;;
+  esac
+}
+
+# САМОПРОВЕРКА. Фильтр может отработать вхолостую и не сказать ни слова:
+# так уже было — подпись «не вставилась», а в логе всё чисто. Поэтому
+# рисуем пробную надпись на чёрном кадре и сверяем его с точно таким же
+# чёрным кадром без надписи. Совпали побайтово — значит не нарисовалось,
+# и мы пробуем второй способ, а не молчим.
+captest() {   # <режим> → 0, если пиксели изменились
+  # Имена переменных латиницей: dash кириллические не принимает.
+  plain=$("$FF" -v error -f lavfi -i "color=c=black:s=${DW}x${DH}" -frames:v 1 -f md5 - 2>/dev/null)
+  inked=$("$FF" -v error -f lavfi -i "color=c=black:s=${DW}x${DH}" -frames:v 1 \
+        -vf "null$(capfilter 1 "$1")" -f md5 - 2>/dev/null) || return 1
+  [ -n "$inked" ] && [ "$plain" != "$inked" ]
+}
+CAPMODE=none
+if [ "$CAP" = 1 ]; then
+  for m in draw ass; do
+    if [ "$m" = draw ] && [ "$DRAWOK" = 0 ]; then continue; fi
+    if [ "$m" = ass ]  && [ "$ASSOK"  = 0 ]; then continue; fi
+    if captest "$m"; then CAPMODE="$m"; break; fi
+    echo "⚠︎ Способ «$m» подпись не нарисовал — пробую другой"
+  done
+fi
+if [ "$CAP" = 1 ] && [ "$CAPMODE" = none ]; then
+  CAP=0
+  echo "⚠︎ ПОДПИСИ «$CAPWORD N» НЕ БУДЕТ: ни drawtext, ни subtitles в этой сборке"
+  echo "  ffmpeg её не рисуют. Обновите ffmpeg: brew install ffmpeg (или brew upgrade ffmpeg)."
+fi
+if [ "$CAP" = 1 ]; then
+  echo "Подпись: «$CAPWORD $((0+1))»…«$CAPWORD $N», кегль $CAPSIZE, от верха кадра $CAPY (способ: $CAPMODE, проверено на пробном кадре)"
+fi
 
 # Обложка части: своя cover1/2/3…, общая cover, иначе первый кадр части.
 pickcover() {   # <номер части> <секунда начала части>
@@ -219,27 +272,8 @@ for A in $STARTS; do
   echo "Часть $i: с $A с, длина $LEN с, обложка ${SEC}с — $WHAT → $OUT"
 
   # Подпись рисуется ПОВЕРХ обложки, до склейки: сам ролик она не трогает.
-  # Белым с тонкой тёмной обводкой — как весь текст в этих роликах.
   DRAW=""
-  if [ "$CAPMODE" = draw ]; then
-    DRAW=",drawtext=fontfile=$TMP/fonts/f.ttf:text='$CAPWORD $i':fontcolor=white:fontsize=$CAPSIZE:borderw=$BORD:bordercolor=black@0.55:x=(w-text_w)/2:y=$CAPY"
-  elif [ "$CAPMODE" = ass ]; then
-    # Выравнивание 8 — по центру сверху, тогда MarginV считается от верха
-    # кадра, как y у drawtext. Имя шрифта ПОЛНОЕ («Montserrat Black»,
-    # это name ID 1 в ttf): по семейному libass молча уходит в системный.
-    { echo "[Script Info]"
-      echo "ScriptType: v4.00+"
-      echo "PlayResX: $DW"
-      echo "PlayResY: $DH"
-      echo "[V4+ Styles]"
-      echo "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"
-      echo "Style: Cap,Montserrat Black,$CAPSIZE,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,$BORD,0,8,40,40,$CAPY,1"
-      echo "[Events]"
-      echo "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
-      echo "Dialogue: 0,0:00:00.00,0:00:30.00,Cap,,0,0,0,,$CAPWORD $i"
-    } > "$TMP/cap$i.ass"
-    DRAW=",subtitles=filename=$TMP/cap$i.ass:fontsdir=$TMP/fonts"
-  fi
+  if [ "$CAP" = 1 ]; then DRAW=$(capfilter "$i" "$CAPMODE"); fi
   # Превью: та же обложка с той же подписью, но картинкой — посмотреть
   # глазами, не гоняя кодировщик и не ловя в плеере 0.2 секунды.
   if [ "$PREVIEW" = 1 ]; then

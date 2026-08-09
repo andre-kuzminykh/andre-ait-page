@@ -503,7 +503,7 @@ def test_cut_labels_every_part():
     поменьше сделай»."""
     body = _cut()
     assert 'CAPWORD="Часть"' in body, "подпись частей исчезла"
-    assert "$CAPWORD $i" in body, "в подписи нет номера части"
+    assert "$CAPWORD $1" in body, "в подписи нет номера части"
     assert "Montserrat-Black.ttf" in body, "подпись не тем шрифтом, что весь текст роликов"
     # кегль подписи — заметно меньше тайтла обложки (тот в кадре 1080 около 110px)
     m = re.search(r'CAPSIZE:=\$\(awk -v h="\$DH" .BEGIN\{ printf "%d", h\*([\d.]+) \}', body)
@@ -518,12 +518,14 @@ def test_cut_draws_the_label_with_whatever_ffmpeg_can():
     """drawtext есть не в каждой сборке (нужен libfreetype), subtitles — не в
     каждой другой (нужен libass). Умеем обоими, иначе подпись молча пропала бы."""
     body = _cut()
-    assert "CAPMODE=draw" in body and "CAPMODE=ass" in body, "нет второго способа нарисовать подпись"
+    assert "DRAWOK=1" in body and "ASSOK=1" in body, "нет второго способа нарисовать подпись"
+    assert "for m in draw ass" in body, "способы не перебираются по очереди"
     assert "drawtext=fontfile=" in body, "drawtext без явного файла шрифта уйдёт в системный"
     assert "Style: Cap,Montserrat Black," in body, \
         "в ASS не полное имя шрифта — libass молча возьмёт системный"
     assert ",8,40,40,$CAPY,1" in body, "выравнивание не по верху: MarginV поедет от низа кадра"
-    assert "нет ни drawtext, ни subtitles" in body, "сборка без обоих фильтров не предупреждает"
+    assert "ни drawtext, ни subtitles в этой сборке" in body, \
+        "сборка без обоих фильтров не предупреждает"
 
 
 def test_cut_can_show_the_covers_as_pictures():
@@ -546,6 +548,29 @@ def test_cut_finds_a_font_even_without_the_folder():
         "шрифт не копируется под простое имя — путь с пробелом сломает фильтр"
 
 
+def test_cut_verifies_the_label_actually_landed():
+    """Владелец: «запустил скрипт, нарезалось всё, а подпись "Часть _" не
+    вставилось». Фильтр может отработать вхолостую и не сказать ни слова,
+    поэтому подпись проверяется на пробном кадре ДО нарезки."""
+    body = _cut()
+    assert "captest()" in body, "нет самопроверки подписи"
+    assert 'color=c=black:s=${DW}x${DH}' in body, "проверка не на пробном кадре"
+    assert "-f md5 -" in body, "результат проверки не сверяется побайтово"
+    assert "подпись не нарисовал — пробую другой" in body, \
+        "при осечке не пробуется второй способ"
+    assert "ПОДПИСИ «$CAPWORD N» НЕ БУДЕТ" in body, "молчит, когда не нарисовали оба способа"
+    assert "проверено на пробном кадре" in body, "в логе не видно, что подпись реально легла"
+
+
+def test_cut_builds_the_label_in_one_place():
+    """Один и тот же кусок фильтра идёт и в самопроверку, и в нарезку —
+    иначе проверили бы одно, а нарисовали другое."""
+    body = _cut()
+    assert body.count("capfilter() {") == 1, "функция подписи не одна"
+    assert 'capfilter 1 "$1"' in body, "самопроверка рисует не тем же фильтром"
+    assert 'DRAW=$(capfilter "$i" "$CAPMODE")' in body, "нарезка рисует не тем же фильтром"
+
+
 def test_cut_takes_covers_from_the_folder():
     """Владелец: «вставишь в начале те же обложки, что будут в cover стоять
     в папке». Своя на часть, общая на все, иначе первый кадр части."""
@@ -563,8 +588,8 @@ def test_cut_replaces_the_old_intro_instead_of_stacking():
     body = _cut()
     assert "freezedetect=n=0.001:d=0.08" in body, "стоп-кадр в начале не ищется"
     assert "заставка=*|intro=*" in body, "нет ручного переопределения длины старой заставки"
-    assert "-f md5" not in body, \
-        "хэши кадров не годятся: одна картинка кодируется с потерями и декодируется по-разному"
+    assert '-i "$VIDEO" -frames:v 1 -f md5' not in body, \
+        "хэши кадров ролика не годятся: одна картинка кодируется с потерями и декодируется по-разному"
 
 
 def test_cut_keeps_the_frame_rate_and_the_audio():
