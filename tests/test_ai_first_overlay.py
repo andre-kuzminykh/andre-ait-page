@@ -573,6 +573,19 @@ def test_cut_checks_the_label_on_the_finished_file():
     assert "полоска не посветлела" in body, "молчит, если подписи в готовом файле нет"
 
 
+def test_cut_has_a_double_click_launcher():
+    """Владелец работает двойным кликом, а не терминалом: у превью для этого
+    есть Запустить.command, у нарезки — свой."""
+    launcher = os.path.join(_DIR, "Нарезать на части.command")
+    assert os.path.exists(launcher), "нет запуска двойным кликом"
+    with open(launcher, encoding="utf-8") as f:
+        body = f.read()
+    assert 'cd "$(dirname "$0")"' in body, "запускается не из своей папки — обложку не найдёт"
+    assert "s/\\\\\\\\ / /g" in body, \
+        "перетащенный путь с пробелом не разэкранируется — файл «не найден» при том, что он есть"
+    assert 'sh "./нарезать.sh"' in body, "лаунчер зовёт не тот скрипт"
+
+
 def test_cut_builds_the_label_in_one_place():
     """Один и тот же кусок фильтра идёт и в самопроверку, и в нарезку —
     иначе проверили бы одно, а нарисовали другое."""
