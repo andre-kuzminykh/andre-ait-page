@@ -62,14 +62,14 @@ FP="$(dirname "$FF")/ffprobe"; [ -x "$FP" ] || FP=ffprobe
 command -v "$FP" >/dev/null || { echo "Рядом с $FF нет ffprobe"; exit 1; }
 DIR=$(cd "$(dirname "$0")" && pwd)
 
-VIDEO=""; CUTS=""; SEC=0.2; OLD=""; CAPY=""; CAPSIZE=""; CAPWORD="Часть"; PREVIEW=0
+VIDEO=""; CUTS=""; SEC=0.2; OLD=""; CAPY=""; CAPSIZE=""; CAPWORD="Часть"; PREVIEW=0; CAPSET=0
 # Разбор аргументов: первый не-ключ — файл, дальше числа реза, а пары
 # ключ=значение можно ставить где угодно.
 for a in "$@"; do
   case "$a" in
     низ=*|y=*)             CAPY="${a#*=}" ;;
     кегль=*|size=*)        CAPSIZE="${a#*=}" ;;
-    подпись=*|caption=*)   CAPWORD="${a#*=}" ;;
+    подпись=*|caption=*)   CAPWORD="${a#*=}"; CAPSET=1 ;;
     обложка=*|cover=*)     SEC="${a#*=}" ;;
     заставка=*|intro=*)    OLD="${a#*=}" ;;
     превью|превью=*|preview|preview=*) PREVIEW=1 ;;
@@ -154,6 +154,17 @@ TMP=".cut-build"; rm -rf "$TMP"; mkdir -p "$TMP"
 # сама по себе роняет скрипт — команда вернула бы ненулевой код.
 CAP=1
 case "$CAPWORD" in нет|no|off|"") CAP=0 ;; esac
+# Обложки cover1, cover2… — это ГОТОВЫЕ обложки частей: подпись на них уже
+# стоит, рисовать вторую поверх незачем. Явное «подпись=…» в команде это
+# правило перебивает.
+NUMCOVERS=0
+for e in png jpg jpeg webp; do
+  if [ -f "$DIR/cover1.$e" ]; then NUMCOVERS=1; fi
+done
+if [ "$CAP" = 1 ] && [ "$NUMCOVERS" = 1 ] && [ "$CAPSET" = 0 ]; then
+  CAP=0
+  echo "Подпись: не рисую — в папке лежат готовые cover1…coverN, на них она уже есть"
+fi
 # Шрифт ищем по списку: сначала фирменный рядом со скриптом, потом
 # системные. Скрипт часто кладут ОДИН, рядом с видео, — без запасного
 # варианта подпись в таком случае молча не появлялась бы.
