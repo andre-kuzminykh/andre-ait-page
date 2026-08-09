@@ -460,9 +460,9 @@ def test_audio_is_copied_when_it_can_be():
     assert "aresample=async" not in body, "звук растягивается под склейку — это и слышалось"
 
 
-# ── FR-SITE35: нарезка готового ролика на три части ──────────────────────
+# ── FR-SITE35: нарезка готового ролика на части с обложками ──────────────
 
-_CUT = os.path.join(_DIR, "нарезать3.sh")
+_CUT = os.path.join(_DIR, "нарезать.sh")
 
 
 def _cut():
@@ -470,7 +470,7 @@ def _cut():
         return f.read()
 
 
-def test_cut3_script_is_next_to_the_covers():
+def test_cut_script_is_next_to_the_covers():
     """Скрипт лежит в папке ролика: обложки он берёт из своей же папки."""
     assert os.path.exists(_CUT), "нет скрипта нарезки"
     assert _cut().startswith("#!/bin/sh"), "скрипт не на sh — на маке запускают им"
@@ -478,7 +478,7 @@ def test_cut3_script_is_next_to_the_covers():
         "обложки ищутся не рядом со скриптом — из другой папки нарезка их не найдёт"
 
 
-def test_cut3_has_no_cyrillic_function_names():
+def test_cut_has_no_cyrillic_names():
     """dash (это /bin/sh на маке через `sh файл`) кириллические имена функций
     не принимает: «Bad function name». Один раз уже наступали."""
     for имя in re.findall(r"^([^\s(]+)\(\)\s*\{", _cut(), re.M):
@@ -487,37 +487,67 @@ def test_cut3_has_no_cyrillic_function_names():
         assert имя.isascii(), "имя переменной %r не латиницей" % имя
 
 
-def test_cut3_makes_three_parts_from_two_numbers():
+def test_cut_makes_any_number_of_parts():
+    """Владелец: «я могу ещё нарезать на 4 части также с обложками».
+    Сколько чисел — столько резов, частей на одну больше."""
     body = _cut()
-    assert 'STARTS="$OLD $C1 $C2"' in body, "части считаются не от двух чисел"
-    assert 'ENDS="$C1 $C2"' in body, "у третьей части должен быть открытый конец"
-    assert "if awk -v a=\"$C1\" -v b=\"$C2\" 'BEGIN{ exit (a>b) ? 0 : 1 }'" in body, \
-        "числа не сортируются: «128 62» дало бы кусок отрицательной длины"
+    assert 'STARTS="$OLD $PTS"' in body, "части считаются не от списка чисел"
+    assert 'ENDS="$PTS"' in body, "у последней части должен быть открытый конец"
+    assert "sort -n" in body, "числа не сортируются: «128 62» дало бы кусок отрицательной длины"
     assert "sec() {" in body, "мм:сс не разбирается — «2:08» ушло бы в ffmpeg как есть"
+    assert "$(echo $PTS | wc -w) + 1" in body, "число частей не считается по числу резов"
 
 
-def test_cut3_takes_covers_from_the_folder():
+def test_cut_labels_every_part():
+    """Владелец: «под тайтлом чуть ниже пиши Часть 1 / Часть 2 / … шрифт
+    поменьше сделай»."""
+    body = _cut()
+    assert 'CAPWORD="Часть"' in body, "подпись частей исчезла"
+    assert "$CAPWORD $i" in body, "в подписи нет номера части"
+    assert "Montserrat-Black.ttf" in body, "подпись не тем шрифтом, что весь текст роликов"
+    # кегль подписи — заметно меньше тайтла обложки (тот в кадре 1080 около 110px)
+    m = re.search(r'CAPSIZE:=\$\(awk -v h="\$DH" .BEGIN\{ printf "%d", h\*([\d.]+) \}', body)
+    assert m, "не нашёл кегль подписи"
+    assert 24 <= float(m.group(1)) * 1920 <= 80, \
+        "кегль подписи %dpx — не «поменьше»" % (float(m.group(1)) * 1920)
+    assert "низ=" in body and "кегль=" in body, "подпись нельзя подвинуть и уменьшить"
+    assert "нет|no|off" in body, "подпись нельзя выключить"
+
+
+def test_cut_draws_the_label_with_whatever_ffmpeg_can():
+    """drawtext есть не в каждой сборке (нужен libfreetype), subtitles — не в
+    каждой другой (нужен libass). Умеем обоими, иначе подпись молча пропала бы."""
+    body = _cut()
+    assert "CAPMODE=draw" in body and "CAPMODE=ass" in body, "нет второго способа нарисовать подпись"
+    assert "drawtext=fontfile=" in body, "drawtext без явного файла шрифта уйдёт в системный"
+    assert "Style: Cap,Montserrat Black," in body, \
+        "в ASS не полное имя шрифта — libass молча возьмёт системный"
+    assert ",8,40,40,$CAPY,1" in body, "выравнивание не по верху: MarginV поедет от низа кадра"
+    assert "нет ни drawtext, ни subtitles" in body, "сборка без обоих фильтров не предупреждает"
+
+
+def test_cut_takes_covers_from_the_folder():
     """Владелец: «вставишь в начале те же обложки, что будут в cover стоять
-    в папке». Своя на часть, общая на все три, иначе первый кадр части."""
+    в папке». Своя на часть, общая на все, иначе первый кадр части."""
     body = _cut()
     assert '"$DIR/cover$1.$e"' in body, "нет отдельной обложки на каждую часть"
-    assert '"$DIR/cover.$e"' in body, "нет общей обложки на все три части"
+    assert '"$DIR/cover.$e"' in body, "нет общей обложки на все части"
     assert "png jpg jpeg webp" in body, "обложка ищется только одним расширением"
     assert '-ss "$2" -i "$VIDEO" -frames:v 1' in body, \
         "нет запасного варианта: без обложки в папке часть осталась бы без заставки"
 
 
-def test_cut3_replaces_the_old_intro_instead_of_stacking():
+def test_cut_replaces_the_old_intro_instead_of_stacking():
     """Ролик из собрать.sh уже начинается с заставки 0.2 с. Если приклеить
     вторую, зритель увидит стоп-кадр вдвое дольше."""
     body = _cut()
     assert "freezedetect=n=0.001:d=0.08" in body, "стоп-кадр в начале не ищется"
-    assert 'OLD="$5"' in body, "нет ручного переопределения длины старой заставки"
+    assert "заставка=*|intro=*" in body, "нет ручного переопределения длины старой заставки"
     assert "-f md5" not in body, \
         "хэши кадров не годятся: одна картинка кодируется с потерями и декодируется по-разному"
 
 
-def test_cut3_keeps_the_frame_rate_and_the_audio():
+def test_cut_keeps_the_frame_rate_and_the_audio():
     """Те же два правила, что в собрать.sh: явный -r после concat и звук копией."""
     body = _cut()
     assert '-r "$FPS"' in body, "нет явного -r: после concat ffmpeg молча пишет 25 к/с"
@@ -528,7 +558,7 @@ def test_cut3_keeps_the_frame_rate_and_the_audio():
     assert "aresample=async" not in body, "звук растягивается под склейку — это и слышалось"
 
 
-def test_cut3_checks_every_part():
+def test_cut_checks_every_part():
     body = _cut()
     assert '-f null - 2>&1 || true' in body, "результат не проверяется декодированием"
     assert "будет чернота" in body, "не проверяется, что видеодорожка не короче куска"
