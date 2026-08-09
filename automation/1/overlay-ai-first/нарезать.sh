@@ -152,7 +152,10 @@ if [ "$CAP" = 1 ]; then
   esac
 fi
 : "${CAPSIZE:=$(awk -v h="$DH" 'BEGIN{ printf "%d", h*0.036 }')}"
-: "${CAPY:=$(awk -v h="$DH" 'BEGIN{ printf "%d", h*0.365 }')}"
+# 0.35 высоты = 672 при 1920. На обложках этой серии тайтл кончается около
+# y636, между его строками 42px — подпись садится на 36px ниже тайтла, то
+# есть читается как часть того же блока, а не отдельной строкой в пустоте.
+: "${CAPY:=$(awk -v h="$DH" 'BEGIN{ printf "%d", h*0.35 }')}"
 BORD=$(awk -v s="$CAPSIZE" 'BEGIN{ v=int(s/16); if(v<3) v=3; printf "%d", v }')
 if [ "$CAP" = 1 ]; then echo "Подпись: «$CAPWORD N», кегль $CAPSIZE, от верха кадра $CAPY"; fi
 
