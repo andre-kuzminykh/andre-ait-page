@@ -35,12 +35,29 @@
 set -e
 # Версия печатается первой строкой: по ней сразу видно, какой файл
 # запустился. Старая копия в папке уже один раз стоила часа разбирательств.
-echo "нарезать.sh v4 — подпись «Часть N» рисуется при сборке"
-FF=""
-for c in ffmpeg /opt/homebrew/bin/ffmpeg /usr/local/bin/ffmpeg; do
-  command -v "$c" >/dev/null 2>&1 && { FF="$c"; break; }
+echo "нарезать.sh v5 — подпись «Часть N» рисуется при сборке"
+# ffmpeg-ов в системе бывает несколько, и первый в PATH — не обязательно
+# тот. С активной conda «ffmpeg» означает ЕЁ сборку: она урезана, в ней нет
+# ни drawtext (libfreetype), ни subtitles (libass), то есть текст в кадр она
+# не рисует вовсе. Именно из-за неё подпись «Часть N» не появлялась, а
+# скрипт честно говорил, что рисовать нечем. Поэтому первый попавшийся не
+# берём: перебираем кандидатов и выбираем того, кто УМЕЕТ рисовать текст.
+# Списки фильтров ffmpeg печатает через свой лог, а он у разных сборок то в
+# stdout, то в stderr — читаем оба (2>&1), иначе список окажется пустым.
+FF=""; FFCAP=""
+for c in ffmpeg /opt/homebrew/bin/ffmpeg /usr/local/bin/ffmpeg /opt/local/bin/ffmpeg; do
+  command -v "$c" >/dev/null 2>&1 || continue
+  [ -n "$FF" ] || FF="$c"
+  if "$c" -hide_banner -filters 2>&1 | grep -qE " (drawtext|subtitles) "; then
+    FFCAP="$c"; break
+  fi
 done
 [ -n "$FF" ] || { echo "Нет ffmpeg. macOS: brew install ffmpeg"; exit 1; }
+if [ -n "$FFCAP" ] && [ "$FFCAP" != "$FF" ]; then
+  echo "ffmpeg в PATH ($FF) текст в кадр не рисует — беру $FFCAP"
+fi
+[ -z "$FFCAP" ] || FF="$FFCAP"
+echo "ffmpeg: $FF"
 FP="$(dirname "$FF")/ffprobe"; [ -x "$FP" ] || FP=ffprobe
 command -v "$FP" >/dev/null || { echo "Рядом с $FF нет ffprobe"; exit 1; }
 DIR=$(cd "$(dirname "$0")" && pwd)
@@ -112,7 +129,7 @@ fi
 # Битрейт и кодировщик — как в собрать.sh: перекодируется только картинка,
 # и раздувать файл незачем. На маке идёт аппаратно, через VideoToolbox.
 TARGET=$(awk -v b="${BR:-0}" 'BEGIN{ if(b<1) b=12000000; if(b<10000000) b=10000000; printf "%d", b }')
-HW=$("$FF" -hide_banner -encoders 2>/dev/null | grep -o "hevc_videotoolbox\|h264_videotoolbox" | tr "\n" " ")
+HW=$("$FF" -hide_banner -encoders 2>&1 | grep -o "hevc_videotoolbox\|h264_videotoolbox" | tr "\n" " ")
 case "$VCODEC:$HW" in
   hevc:*hevc_videotoolbox*) VE="hevc_videotoolbox -b:v $TARGET -tag:v hvc1" ;;
   *:*h264_videotoolbox*)    VE="h264_videotoolbox -b:v $TARGET" ;;
@@ -120,7 +137,7 @@ case "$VCODEC:$HW" in
   *)                        VE="libx264 -preset medium -crf 17" ;;
 esac
 echo "Кодировщик: $VE"
-AENC=aac; "$FF" -hide_banner -encoders 2>/dev/null | grep -q aac_at && AENC=aac_at
+AENC=aac; "$FF" -hide_banner -encoders 2>&1 | grep -q aac_at && AENC=aac_at
 
 BASE="${VIDEO%.*}"
 BASE="${BASE%-готовый}"     # «ролик-готовый.mp4» → «ролик-часть1.mp4»
@@ -174,7 +191,7 @@ fi
 # Умеем обоими.
 DRAWOK=0; ASSOK=0
 if [ "$CAP" = 1 ]; then
-  FILTERS=$("$FF" -hide_banner -filters 2>/dev/null)
+  FILTERS=$("$FF" -hide_banner -filters 2>&1)
   case "$FILTERS" in *" drawtext "*)  DRAWOK=1 ;; esac
   case "$FILTERS" in *" subtitles "*) ASSOK=1 ;; esac
 fi
@@ -247,6 +264,7 @@ fi
 if [ "$CAP" = 1 ] && [ "$CAPMODE" = none ]; then
   CAP=0
   echo "⚠︎ ПОДПИСИ «$CAPWORD N» НЕ БУДЕТ: пробная надпись не нарисовалась."
+  echo "  ffmpeg: $FF"
   echo "  Шрифт: ${FONTNAME:-не найден}"
   echo "  drawtext в сборке: $DRAWOK, subtitles: $ASSOK (1 — есть, 0 — нет)"
   echo "  Пришлите мне эти три строки — по ним видно, в чём дело."

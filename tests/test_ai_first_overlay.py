@@ -603,6 +603,18 @@ def test_cut_prints_its_version():
         "версия печатается не первой строкой"
 
 
+def test_cut_picks_an_ffmpeg_that_can_draw_text():
+    """С активной conda «ffmpeg» — это ЕЁ урезанная сборка: ни drawtext, ни
+    subtitles. Именно из-за неё подпись не появлялась. Первый попавшийся
+    ffmpeg брать нельзя — как и в собрать.sh, выбираем умеющего."""
+    body = _cut()
+    assert '/opt/homebrew/bin/ffmpeg' in body, "brew-сборка не в списке кандидатов"
+    assert 'grep -qE " (drawtext|subtitles) "' in body, "кандидаты не проверяются на умение рисовать текст"
+    assert '-filters 2>&1' in body, \
+        "список фильтров читается только из stdout, а разные сборки печатают его в stderr"
+    assert 'текст в кадр не рисует — беру' in body, "подмена ffmpeg не видна в логе"
+
+
 def test_cut_builds_the_label_in_one_place():
     """Один и тот же кусок фильтра идёт и в самопроверку, и в нарезку —
     иначе проверили бы одно, а нарисовали другое."""
