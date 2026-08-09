@@ -460,6 +460,80 @@ def test_audio_is_copied_when_it_can_be():
     assert "aresample=async" not in body, "звук растягивается под склейку — это и слышалось"
 
 
+# ── FR-SITE35: нарезка готового ролика на три части ──────────────────────
+
+_CUT = os.path.join(_DIR, "нарезать3.sh")
+
+
+def _cut():
+    with open(_CUT, encoding="utf-8") as f:
+        return f.read()
+
+
+def test_cut3_script_is_next_to_the_covers():
+    """Скрипт лежит в папке ролика: обложки он берёт из своей же папки."""
+    assert os.path.exists(_CUT), "нет скрипта нарезки"
+    assert _cut().startswith("#!/bin/sh"), "скрипт не на sh — на маке запускают им"
+    assert 'DIR=$(cd "$(dirname "$0")" && pwd)' in _cut(), \
+        "обложки ищутся не рядом со скриптом — из другой папки нарезка их не найдёт"
+
+
+def test_cut3_has_no_cyrillic_function_names():
+    """dash (это /bin/sh на маке через `sh файл`) кириллические имена функций
+    не принимает: «Bad function name». Один раз уже наступали."""
+    for имя in re.findall(r"^([^\s(]+)\(\)\s*\{", _cut(), re.M):
+        assert имя.isascii(), "имя функции %r не латиницей — dash не примет" % имя
+    for имя in re.findall(r"^([A-Za-zА-Яа-яЁё_][\w]*)=", _cut(), re.M):
+        assert имя.isascii(), "имя переменной %r не латиницей" % имя
+
+
+def test_cut3_makes_three_parts_from_two_numbers():
+    body = _cut()
+    assert 'STARTS="$OLD $C1 $C2"' in body, "части считаются не от двух чисел"
+    assert 'ENDS="$C1 $C2"' in body, "у третьей части должен быть открытый конец"
+    assert "if awk -v a=\"$C1\" -v b=\"$C2\" 'BEGIN{ exit (a>b) ? 0 : 1 }'" in body, \
+        "числа не сортируются: «128 62» дало бы кусок отрицательной длины"
+    assert "sec() {" in body, "мм:сс не разбирается — «2:08» ушло бы в ffmpeg как есть"
+
+
+def test_cut3_takes_covers_from_the_folder():
+    """Владелец: «вставишь в начале те же обложки, что будут в cover стоять
+    в папке». Своя на часть, общая на все три, иначе первый кадр части."""
+    body = _cut()
+    assert '"$DIR/cover$1.$e"' in body, "нет отдельной обложки на каждую часть"
+    assert '"$DIR/cover.$e"' in body, "нет общей обложки на все три части"
+    assert "png jpg jpeg webp" in body, "обложка ищется только одним расширением"
+    assert '-ss "$2" -i "$VIDEO" -frames:v 1' in body, \
+        "нет запасного варианта: без обложки в папке часть осталась бы без заставки"
+
+
+def test_cut3_replaces_the_old_intro_instead_of_stacking():
+    """Ролик из собрать.sh уже начинается с заставки 0.2 с. Если приклеить
+    вторую, зритель увидит стоп-кадр вдвое дольше."""
+    body = _cut()
+    assert "freezedetect=n=0.001:d=0.08" in body, "стоп-кадр в начале не ищется"
+    assert 'OLD="$5"' in body, "нет ручного переопределения длины старой заставки"
+    assert "-f md5" not in body, \
+        "хэши кадров не годятся: одна картинка кодируется с потерями и декодируется по-разному"
+
+
+def test_cut3_keeps_the_frame_rate_and_the_audio():
+    """Те же два правила, что в собрать.sh: явный -r после concat и звук копией."""
+    body = _cut()
+    assert '-r "$FPS"' in body, "нет явного -r: после concat ffmpeg молча пишет 25 к/с"
+    assert '-loop 1 -framerate "$FPS" -t "$SEC"' in body, \
+        "без -framerate обложка на 30-кадровом ролике короче заказанной"
+    assert "-c:a copy" in body, "звук пережимается — владелец на это уже жаловался"
+    assert '-itsoffset "$SEC"' in body, "звук не сдвинут на длину обложки — уедет на её длину"
+    assert "aresample=async" not in body, "звук растягивается под склейку — это и слышалось"
+
+
+def test_cut3_checks_every_part():
+    body = _cut()
+    assert '-f null - 2>&1 || true' in body, "результат не проверяется декодированием"
+    assert "будет чернота" in body, "не проверяется, что видеодорожка не короче куска"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
