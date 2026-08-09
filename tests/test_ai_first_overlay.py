@@ -524,8 +524,10 @@ def test_cut_draws_the_label_with_whatever_ffmpeg_can():
     assert "Style: Cap,Montserrat Black," in body, \
         "в ASS не полное имя шрифта — libass молча возьмёт системный"
     assert ",8,40,40,$CAPY,1" in body, "выравнивание не по верху: MarginV поедет от низа кадра"
-    assert "ни drawtext, ни subtitles в этой сборке" in body, \
-        "сборка без обоих фильтров не предупреждает"
+    assert "пробная надпись не нарисовалась" in body, \
+        "осечка обоих способов не предупреждает"
+    assert "Пришлите мне эти три строки" in body, \
+        "при осечке в лог не идёт, чем именно рисовали и каким шрифтом"
 
 
 def test_cut_can_show_the_covers_as_pictures():
@@ -555,7 +557,10 @@ def test_cut_verifies_the_label_actually_landed():
     body = _cut()
     assert "captest()" in body, "нет самопроверки подписи"
     assert 'color=c=black:s=${DW}x${DH}' in body, "проверка не на пробном кадре"
-    assert "-f md5 -" in body, "результат проверки не сверяется побайтово"
+    assert "stripink() {" in body, "проверка не считает пиксели"
+    assert "-f md5" not in body, \
+        ("md5-муксер не годится: у свежего ffmpeg кодек по умолчанию "
+         "wrapped_avframe, и хэш не зависит от содержимого кадра")
     assert "подпись не нарисовал — пробую другой" in body, \
         "при осечке не пробуется второй способ"
     assert "ПОДПИСИ «$CAPWORD N» НЕ БУДЕТ" in body, "молчит, когда не нарисовали оба способа"
@@ -567,10 +572,14 @@ def test_cut_checks_the_label_on_the_finished_file():
     Значит мало проверить фильтр на пробном кадре — надо убедиться, что
     подпись доехала до ГОТОВОГО файла."""
     body = _cut()
-    assert "stripmean() {" in body, "яркость полоски подписи не меряется"
-    assert 'stripmean "$OUT" "-ss 0.02"' in body, "готовый файл не проверяется"
-    assert 'stripmean "$PIC"' in body, "не с чем сравнивать — нет замера исходной обложки"
-    assert "полоска не посветлела" in body, "молчит, если подписи в готовом файле нет"
+    assert "stripink() {" in body, "светлые пиксели подписи не считаются"
+    assert 'stripink "$OUT" "-ss 0.02"' in body, "готовый файл не проверяется"
+    assert 'stripink "$PIC"' in body, "не с чем сравнивать — нет замера исходной обложки"
+    assert "od -An -v -tu1" in body, \
+        "без od -v одинаковые строки схлопываются в «*» и счёт выходит меньше настоящего"
+    assert ",scale=1:1," not in body, \
+        "усреднение в один пиксель не годится: swscale при таком сжатии выбирает, а не усредняет"
+    assert "светлых пикселей столько же" in body, "молчит, если подписи в готовом файле нет"
 
 
 def test_cut_has_a_double_click_launcher():
