@@ -526,6 +526,26 @@ def test_cut_draws_the_label_with_whatever_ffmpeg_can():
     assert "нет ни drawtext, ни subtitles" in body, "сборка без обоих фильтров не предупреждает"
 
 
+def test_cut_can_show_the_covers_as_pictures():
+    """Обложка идёт 0.2 с — в плеере её не поймать. Режим «превью» кладёт
+    рядом картинки обложек, чтобы подпись можно было увидеть глазами."""
+    body = _cut()
+    assert "превью|превью=*|preview" in body, "нет режима превью"
+    assert '"$BASE-обложка$i.png"' in body, "превью не сохраняется картинкой"
+    assert "Ролики НЕ резались" in body, "превью молча притворяется нарезкой"
+
+
+def test_cut_finds_a_font_even_without_the_folder():
+    """Скрипт часто кладут ОДИН, рядом с видео. Без запасного шрифта подпись
+    в этом случае молча не появлялась бы."""
+    body = _cut()
+    assert "$HOME/Library/Fonts/Montserrat-Black.ttf" in body, "не ищет шрифт в системных папках мака"
+    assert "/System/Library/Fonts/Supplemental/Arial Bold.ttf" in body, "нет системного запасного шрифта"
+    assert "ПОДПИСИ «$CAPWORD N» НЕ БУДЕТ" in body, "молчит, когда шрифта нет вовсе"
+    assert 'cp "$f" "$TMP/fonts/f.ttf"' in body, \
+        "шрифт не копируется под простое имя — путь с пробелом сломает фильтр"
+
+
 def test_cut_takes_covers_from_the_folder():
     """Владелец: «вставишь в начале те же обложки, что будут в cover стоять
     в папке». Своя на часть, общая на все, иначе первый кадр части."""

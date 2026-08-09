@@ -42,7 +42,7 @@ FP="$(dirname "$FF")/ffprobe"; [ -x "$FP" ] || FP=ffprobe
 command -v "$FP" >/dev/null || { echo "Рядом с $FF нет ffprobe"; exit 1; }
 DIR=$(cd "$(dirname "$0")" && pwd)
 
-VIDEO=""; CUTS=""; SEC=0.2; OLD=""; CAPY=""; CAPSIZE=""; CAPWORD="Часть"
+VIDEO=""; CUTS=""; SEC=0.2; OLD=""; CAPY=""; CAPSIZE=""; CAPWORD="Часть"; PREVIEW=0
 # Разбор аргументов: первый не-ключ — файл, дальше числа реза, а пары
 # ключ=значение можно ставить где угодно.
 for a in "$@"; do
@@ -52,6 +52,7 @@ for a in "$@"; do
     подпись=*|caption=*)   CAPWORD="${a#*=}" ;;
     обложка=*|cover=*)     SEC="${a#*=}" ;;
     заставка=*|intro=*)    OLD="${a#*=}" ;;
+    превью|превью=*|preview|preview=*) PREVIEW=1 ;;
     *) if [ -z "$VIDEO" ]; then VIDEO="$a"; else CUTS="$CUTS $a"; fi ;;
   esac
 done
@@ -133,11 +134,37 @@ TMP=".cut-build"; rm -rf "$TMP"; mkdir -p "$TMP"
 # сама по себе роняет скрипт — команда вернула бы ненулевой код.
 CAP=1
 case "$CAPWORD" in нет|no|off|"") CAP=0 ;; esac
-if [ -f "$DIR/fonts/Montserrat-Black.ttf" ]; then
-  mkdir -p "$TMP/fonts"; cp "$DIR/fonts/Montserrat-Black.ttf" "$TMP/fonts/f.ttf"
-elif [ "$CAP" = 1 ]; then
-  echo "Подпись «$CAPWORD N» не ставлю: рядом нет fonts/Montserrat-Black.ttf"
-  CAP=0
+# Шрифт ищем по списку: сначала фирменный рядом со скриптом, потом
+# системные. Скрипт часто кладут ОДИН, рядом с видео, — без запасного
+# варианта подпись в таком случае молча не появлялась бы.
+# Найденный файл копируется в рабочую папку под именем f.ttf: путь уходит
+# внутрь фильтра, где пробелы и двоеточия пришлось бы экранировать, а
+# «/System/Library/Fonts/Supplemental/Arial Bold.ttf» — с пробелом.
+FONTNAME=""
+if [ "$CAP" = 1 ]; then
+  mkdir -p "$TMP/fonts"
+  for f in \
+      "$DIR/fonts/Montserrat-Black.ttf" \
+      "$HOME/Library/Fonts/Montserrat-Black.ttf" \
+      "/Library/Fonts/Montserrat-Black.ttf" \
+      "/System/Library/Fonts/Supplemental/Arial Bold.ttf" \
+      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf" \
+      "/Library/Fonts/Arial Bold.ttf" \
+      "/System/Library/Fonts/Helvetica.ttc" \
+      "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" ; do
+    if [ -f "$f" ]; then cp "$f" "$TMP/fonts/f.ttf"; FONTNAME="$f"; break; fi
+  done
+  if [ -z "$FONTNAME" ]; then
+    echo "⚠︎ ПОДПИСИ «$CAPWORD N» НЕ БУДЕТ: не нашёл ни одного шрифта."
+    echo "  Положите скрипт в папку ролика (там лежит fonts/Montserrat-Black.ttf)."
+    CAP=0
+  else
+    case "$FONTNAME" in
+      *Montserrat-Black.ttf) : ;;
+      *) echo "⚠︎ Фирменного fonts/Montserrat-Black.ttf рядом нет — подпись будет шрифтом $(basename "$FONTNAME")."
+         echo "  Чтобы вышло как надо, запускайте скрипт из папки ролика." ;;
+    esac
+  fi
 fi
 # Чем рисовать подпись. drawtext проще, но он есть не в каждой сборке
 # (нужен libfreetype), а subtitles — не в каждой другой (нужен libass).
@@ -213,6 +240,14 @@ for A in $STARTS; do
     } > "$TMP/cap$i.ass"
     DRAW=",subtitles=filename=$TMP/cap$i.ass:fontsdir=$TMP/fonts"
   fi
+  # Превью: та же обложка с той же подписью, но картинкой — посмотреть
+  # глазами, не гоняя кодировщик и не ловя в плеере 0.2 секунды.
+  if [ "$PREVIEW" = 1 ]; then
+    PNG="$BASE-обложка$i.png"
+    "$FF" -y -v error -i "$PIC" -vf "scale=$DW:$DH:flags=lanczos$DRAW" -frames:v 1 "$PNG"
+    echo "  превью обложки → $PNG"
+    continue
+  fi
   # [0] обложка · [1] картинка части · [2] та же часть, но из неё берётся
   # ТОЛЬКО звук, со сдвигом на длину обложки. Звук копией — без пережима.
   # -framerate у обложки обязателен: картинка по умолчанию идёт 25 к/с, и
@@ -245,4 +280,8 @@ for A in $STARTS; do
     if (v > 0 && c-v > 0.15)      printf "  ⚠︎ часть %s: видеодорожка на %.2f с короче — будет чернота\n", n, c-v }'
 done
 rm -rf "$TMP"
-echo "Готово: $i шт., $BASE-часть1.mp4 … $BASE-часть$i.mp4"
+if [ "$PREVIEW" = 1 ]; then
+  echo "Превью готовы: $i шт. Ролики НЕ резались — уберите слово «превью», чтобы нарезать."
+else
+  echo "Готово: $i шт., $BASE-часть1.mp4 … $BASE-часть$i.mp4"
+fi
