@@ -303,12 +303,9 @@ A('                <div class="node n2 el" data-in="17.38" data-cur="17.38 26.16
 A('                <div class="node n3 el" data-in="26.76" data-cur="26.76 35.76 38.66 40.14">'
   + circle("rocket", "solar", 96) +
   '<p class="label">DISRUPT</p><p class="role el" data-in="29.02">Продукты</p></div>\n')
-A('                <p class="core solar el" data-in="13.62" data-out="17.38">Финансовый эффект</p>\n')
-A('                <p class="core ember el" data-in="24.74" data-out="26.76">Принятие решений</p>\n')
-A('                <p class="core solar el" data-in="33.36" data-out="36.30">Генерация идей</p>\n')
 A('                <p class="core solar el" data-in="38.66" data-out="40.14">Бизнес-прорывы</p>\n')
 A('                <p class="core ember el" data-in="40.14" data-out="42.20">Адаптация к среде</p>\n')
-A('                <p class="core solar el" data-in="42.20">Сохранять устойчивость</p>\n')
+A('                <p class="core solar el" data-in="42.20">Сохранение устойчивости</p>\n')
 A('            </div>\n')
 A('        </section>\n\n')
 
