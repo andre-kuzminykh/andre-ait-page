@@ -280,6 +280,12 @@ ul{list-style:none;padding:0}
 }
 .net .hub.el{transform:translate(-50%,calc(-50% + 18px)) scale(.96)}
 .net .hub.el.on{transform:translate(-50%,-50%)}
+/* Ядро чуть дышит — сеть выглядит живой, а не нарисованной. */
+.scene.on .net .hub .circle{animation:breathe 3.2s ease-in-out infinite}
+@keyframes breathe{
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.045)}
+}
 .net .hub .label{font-size:30px;margin-top:10px;white-space:nowrap}
 .net .nd{
     position:absolute;display:flex;flex-direction:column;align-items:center;z-index:2;
@@ -377,13 +383,41 @@ ul{list-style:none;padding:0}
 #s8 .slot{height:104px}
 #s8 .label{font-size:30px;margin-top:12px;white-space:nowrap}
 
-/* ── СЦЕНА 9 · финал: три метрики ───────────────────────────────────── */
-#s9 .row{gap:40px;justify-content:center}
-#s9 .item{flex:0 1 auto}
-#s9 .slot{height:124px}
-#s9 .label{font-size:34px;margin-top:16px;white-space:nowrap}
-#s9 .row{position:relative}
-#s9 .glow{width:900px;height:340px;top:44%}
+/* ── СЦЕНА 9 · метрики по очереди ────────────────────────────────────
+   Владелец: «не в ряд, оранжевое / фиолетовое сияние по очереди».
+   Каждая метрика выходит одна, крупно, ровно на своём слове и уступает
+   место следующей; сияние за ней чередуется. У «Прибыли» сверху сыплются
+   монетки — тем же приёмом, что в ролике-приветствии. */
+#s9 .stack{position:relative;width:100%;height:290px}
+#s9 .item{
+    position:absolute;left:50%;top:0;transform:translateX(-50%);
+    flex:none;align-items:center;
+}
+#s9 .item.el{transform:translate(-50%,18px) scale(.96)}
+#s9 .item.el.on{transform:translateX(-50%)}
+#s9 .slot{height:162px}
+#s9 .label{font-size:46px;margin-top:18px;white-space:nowrap;position:relative;z-index:1}
+#s9 .glow{width:820px;height:330px;top:42%}
+/* Монетки падают сверху и тают — по одной, вразнобой. */
+#s9 .coins{position:absolute;left:50%;top:-56px;width:440px;height:250px;
+    transform:translateX(-50%);pointer-events:none;z-index:0}
+#s9 .coin{position:absolute;top:0;width:42px;height:42px;color:#FFC98A;opacity:0;
+    filter:drop-shadow(0 4px 10px rgba(10,4,24,.55))}
+#s9 .coin svg{width:100%;height:100%}
+#s9 .coin.c1{left:2%}   #s9 .coin.c2{left:22%}  #s9 .coin.c3{left:42%}
+#s9 .coin.c4{left:62%}  #s9 .coin.c5{left:82%}  #s9 .coin.c6{left:50%}
+#s9 .el.on .coin{animation:coinFall 1.9s ease-in infinite}
+#s9 .el.on .coin.c2{animation-delay:.35s}
+#s9 .el.on .coin.c3{animation-delay:.7s}
+#s9 .el.on .coin.c4{animation-delay:1.05s}
+#s9 .el.on .coin.c5{animation-delay:1.4s}
+#s9 .el.on .coin.c6{animation-delay:1.75s}
+@keyframes coinFall{
+    0%{opacity:0;transform:translateY(-30px) rotate(-18deg) scale(.7)}
+    18%{opacity:1}
+    72%{opacity:1}
+    100%{opacity:0;transform:translateY(240px) rotate(22deg) scale(1)}
+}
 
 /* ── Обложка: первые секунды готового ролика. Стык с видео жёсткий, без
    растворения, — ровно так же его склеит ffmpeg, и превью не врёт. ─── */
@@ -513,9 +547,9 @@ body.dragging #drop{display:flex}
                 <div class="node n1 el" data-in="7.16" data-cur="7.16 16.90 42.20 43.90"><div class="circle solar ico" style="width:96px;height:96px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></div><p class="label">RUN</p><p class="role el" data-in="9.86">Процессы</p></div>
                 <div class="node n2 el" data-in="17.38" data-cur="17.38 26.16 40.14 42.20"><div class="circle ember ico" style="width:96px;height:96px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M192,40v64a8,8,0,0,1-2.34,5.66L136,163.31V192h24a8,8,0,0,1,5.66,13.66l-32,32a8,8,0,0,1-11.32,0l-32-32A8,8,0,0,1,96,192h24V163.31L66.34,109.66A8,8,0,0,1,64,104V40a8,8,0,0,1,16,0v60.69l48,48,48-48V40a8,8,0,0,1,16,0Z"/></svg></div><p class="label">CHANGE</p><p class="role el" data-in="19.66">Проекты</p></div>
                 <div class="node n3 el" data-in="26.76" data-cur="26.76 35.76 38.66 40.14"><div class="circle solar ico" style="width:96px;height:96px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M152,224a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h32A8,8,0,0,1,152,224Zm71.62-68.17-12.36,55.63a16,16,0,0,1-25.51,9.11L158.51,200h-61L70.25,220.57a16,16,0,0,1-25.51-9.11L32.38,155.83a16.09,16.09,0,0,1,3.32-13.71l28.56-34.26a123.07,123.07,0,0,1,8.57-36.67c12.9-32.34,36-52.63,45.37-59.85a16,16,0,0,1,19.6,0c9.34,7.22,32.47,27.51,45.37,59.85a123.07,123.07,0,0,1,8.57,36.67l28.56,34.26A16.09,16.09,0,0,1,223.62,155.83Zm-139.23,34Q68.28,160.5,64.83,132.16L48,152.36,60.36,208l.18-.13ZM140,100a12,12,0,1,0-12,12A12,12,0,0,0,140,100Zm68,52.36-16.83-20.2q-3.42,28.28-19.56,57.69l23.85,18,.18.13Z"/></svg></div><p class="label">DISRUPT</p><p class="role el" data-in="29.02">Продукты</p></div>
-                <p class="core solar el" data-in="12.76" data-out="17.38">Сохранять устойчивость</p>
-                <p class="core ember el" data-in="21.34" data-out="26.76">Адаптация к среде</p>
-                <p class="core solar el" data-in="31.66" data-out="36.30">Бизнес-прорывы</p>
+                <p class="core solar el" data-in="13.62" data-out="17.38">Финансовый эффект</p>
+                <p class="core ember el" data-in="24.74" data-out="26.76">Принятие решений</p>
+                <p class="core solar el" data-in="33.36" data-out="36.30">Генерация идей</p>
                 <p class="core solar el" data-in="38.66" data-out="40.14">Бизнес-прорывы</p>
                 <p class="core ember el" data-in="40.14" data-out="42.20">Адаптация к среде</p>
                 <p class="core solar el" data-in="42.20">Сохранять устойчивость</p>
@@ -527,7 +561,7 @@ body.dragging #drop{display:flex}
             <div class="row">
                 <div class="item el" data-in="50.90" data-cur="50.90 55.12 76.02 77.82"><div class="slot"><div class="circle solar ico" style="width:96px;height:96px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></svg></div></div><p class="label">Основные</p><p class="sub">Создают ценность</p><p class="goal el" data-in="76.02">Рост выручки</p></div>
                 <div class="item el" data-in="55.72" data-cur="55.72 64.96 72.86 75.46"><div class="slot"><div class="circle ember ico" style="width:96px;height:96px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM96,128a32,32,0,1,1,32,32A32,32,0,0,1,96,128Zm88.28-67.6L155.79,88.9a47.84,47.84,0,0,0-55.58,0L71.72,60.4a87.83,87.83,0,0,1,112.56,0ZM71.72,195.6l28.49-28.5a47.84,47.84,0,0,0,55.58,0l28.49,28.5a87.83,87.83,0,0,1-112.56,0Z"/></svg></div></div><p class="label">Поддерживающие</p><p class="sub">HR, финансы, IT</p><p class="goal el" data-in="72.86">Снижение затрат</p></div>
-                <div class="item el" data-in="65.48" data-cur="65.48 69.10 78.18 81.46"><div class="slot"><div class="circle solar ico" style="width:96px;height:96px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M239.43,133l-32-80A8,8,0,0,0,200,48a8.27,8.27,0,0,0-1.73.21L136,62V40a8,8,0,0,0-16,0V65.58L54.27,80.21A8,8,0,0,0,48.57,85l-32,80a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133Zm-160,35H32.62L56,109.54Zm97.24-32L200,77.54,223.38,136Z"/></svg></div></div><p class="label">Управленческие</p><p class="sub">Планирование и контроль</p><p class="goal el" data-in="78.18">Принятие решений</p></div>
+                <div class="item el" data-in="65.48" data-cur="65.48 69.10 78.18 81.46"><div class="slot"><div class="circle solar ico" style="width:96px;height:96px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M239.43,133l-32-80A8,8,0,0,0,200,48a8.27,8.27,0,0,0-1.73.21L136,62V40a8,8,0,0,0-16,0V65.58L54.27,80.21A8,8,0,0,0,48.57,85l-32,80a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133Zm-160,35H32.62L56,109.54Zm97.24-32L200,77.54,223.38,136Z"/></svg></div></div><p class="label">Управленческие</p><p class="sub">Принятие решений</p><p class="goal el" data-in="78.18">Качество решений</p></div>
             </div>
         </section>
 
@@ -582,8 +616,8 @@ body.dragging #drop{display:flex}
         <!-- ══ СЦЕНА 7 · слайд 16 · узкие места и точки решений ══ -->
         <section class="scene" id="s7" data-in="131.3" data-out="150.9">
             <div class="row">
-                <div class="item el" data-in="131.50" data-cur="131.50 133.00 134.30 138.66 146.90 148.60"><div class="halo el" data-in="131.50"><div class="glow glow-ember"></div></div><div class="slot"><div class="circle ember ico" style="width:120px;height:120px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M227.81,66.76l-.08.09L160,139.17v55.49A16,16,0,0,1,152.87,208l-32,21.34A16,16,0,0,1,96,216V139.17L28.27,66.85l-.08-.09A16,16,0,0,1,40,40H216a16,16,0,0,1,11.84,26.76Z"/></svg></div></div><p class="label">Узкие места</p><p class="sub el" data-in="135.88">Время · Деньги<br>Ошибки</p></div>
-                <div class="item el" data-in="132.66" data-cur="132.66 134.20 139.26 143.46 148.60 150.84"><div class="halo el" data-in="132.66"><div class="glow"></div></div><div class="slot"><div class="circle solar ico" style="width:120px;height:120px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M239.43,133l-32-80A8,8,0,0,0,200,48a8.27,8.27,0,0,0-1.73.21L136,62V40a8,8,0,0,0-16,0V65.58L54.27,80.21A8,8,0,0,0,48.57,85l-32,80a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133Zm-160,35H32.62L56,109.54Zm97.24-32L200,77.54,223.38,136Z"/></svg></div></div><p class="label">Точки решений</p><p class="sub el" data-in="141.72">Анализ данных<br>Лучший вариант</p></div>
+                <div class="item el" data-in="131.50" data-cur="131.50 133.00 134.30 138.66 146.90 148.50"><div class="halo el" data-in="131.50"><div class="glow glow-ember"></div></div><div class="slot"><div class="circle ember ico" style="width:120px;height:120px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M227.81,66.76l-.08.09L160,139.17v55.49A16,16,0,0,1,152.87,208l-32,21.34A16,16,0,0,1,96,216V139.17L28.27,66.85l-.08-.09A16,16,0,0,1,40,40H216a16,16,0,0,1,11.84,26.76Z"/></svg></div></div><p class="label">Узкие места</p><p class="sub el" data-in="135.88">Время · Деньги<br>Ошибки</p></div>
+                <div class="item el" data-in="132.66" data-cur="132.66 134.20 139.26 143.46 148.74 150.84"><div class="halo el" data-in="132.66"><div class="glow"></div></div><div class="slot"><div class="circle solar ico" style="width:120px;height:120px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M239.43,133l-32-80A8,8,0,0,0,200,48a8.27,8.27,0,0,0-1.73.21L136,62V40a8,8,0,0,0-16,0V65.58L54.27,80.21A8,8,0,0,0,48.57,85l-32,80a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133Zm-160,35H32.62L56,109.54Zm97.24-32L200,77.54,223.38,136Z"/></svg></div></div><p class="label">Точки решений</p><p class="sub el" data-in="141.72">Анализ данных<br>Лучший вариант</p></div>
             </div>
         </section>
 
@@ -599,13 +633,13 @@ body.dragging #drop{display:flex}
             </div>
         </section>
 
-        <!-- ══ СЦЕНА 9 · слайд 16 · метрики, ради которых всё ══ -->
-        <section class="scene" id="s9" data-in="159.4" data-out="167.0">
-            <div class="row">
-                <div class="halo el" data-in="159.46"><div class="glow glow-ember"></div></div>
-                <div class="item el" data-in="159.46" data-cur="164.78 165.90"><div class="slot"><div class="circle ember ico" style="width:104px;height:104px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z"/></svg></div></div><p class="label">Скорость</p></div>
-                <div class="item el" data-in="159.46" data-cur="165.90 166.72"><div class="slot"><div class="circle solar ico" style="width:104px;height:104px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></svg></div></div><p class="label">Качество</p></div>
-                <div class="item el" data-in="159.46" data-cur="166.72 167.00"><div class="slot"><div class="circle ember ico" style="width:104px;height:104px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M226,88.08c-.4-1-.82-2-1.25-3a87.93,87.93,0,0,0-30.17-37H216a8,8,0,0,0,0-16H112a88.12,88.12,0,0,0-87.72,81A32,32,0,0,0,0,144a8,8,0,0,0,16,0,16,16,0,0,1,8.57-14.16A87.69,87.69,0,0,0,46,178.22l12.56,35.16A16,16,0,0,0,73.64,224H86.36a16,16,0,0,0,15.07-10.62l1.92-5.38h57.3l1.92,5.38A16,16,0,0,0,177.64,224h12.72a16,16,0,0,0,15.07-10.62L221.64,168H224a24,24,0,0,0,24-24V112A24,24,0,0,0,226,88.08ZM152,72H112a8,8,0,0,1,0-16h40a8,8,0,0,1,0,16Zm28,56a12,12,0,1,1,12-12A12,12,0,0,1,180,128Z"/></svg></div></div><p class="label">Прибыль</p></div>
+        <!-- ══ СЦЕНА 9 · слайд 16 · ради каких метрик всё ══ -->
+        <section class="scene" id="s9" data-in="159.4" data-out="167.1">
+            <div class="stack">
+                <div class="item el" data-in="159.46" data-out="164.78"><div class="halo"><div class="glow "></div></div><div class="slot"><div class="circle solar ico" style="width:140px;height:140px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></svg></div></div><p class="label">Конкретные метрики</p></div>
+                <div class="item el" data-in="164.78" data-out="165.90"><div class="halo"><div class="glow glow-ember"></div></div><div class="slot"><div class="circle ember ico" style="width:140px;height:140px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z"/></svg></div></div><p class="label">Скорость</p></div>
+                <div class="item el" data-in="165.90" data-out="166.72"><div class="halo"><div class="glow "></div></div><div class="slot"><div class="circle solar ico" style="width:140px;height:140px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></svg></div></div><p class="label">Качество</p></div>
+                <div class="item el" data-in="166.72"><div class="halo"><div class="glow glow-ember"></div></div><div class="slot"><div class="circle ember ico" style="width:140px;height:140px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M226,88.08c-.4-1-.82-2-1.25-3a87.93,87.93,0,0,0-30.17-37H216a8,8,0,0,0,0-16H112a88.12,88.12,0,0,0-87.72,81A32,32,0,0,0,0,144a8,8,0,0,0,16,0,16,16,0,0,1,8.57-14.16A87.69,87.69,0,0,0,46,178.22l12.56,35.16A16,16,0,0,0,73.64,224H86.36a16,16,0,0,0,15.07-10.62l1.92-5.38h57.3l1.92,5.38A16,16,0,0,0,177.64,224h12.72a16,16,0,0,0,15.07-10.62L221.64,168H224a24,24,0,0,0,24-24V112A24,24,0,0,0,226,88.08ZM152,72H112a8,8,0,0,1,0-16h40a8,8,0,0,1,0,16Zm28,56a12,12,0,1,1,12-12A12,12,0,0,1,180,128Z"/></svg></div></div><p class="label">Прибыль</p><span class="coins" aria-hidden="true"><i class="coin c1"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M160,152a16,16,0,0,1-16,16h-8V136h8A16,16,0,0,1,160,152Zm72-24A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-56,24a32,32,0,0,0-32-32h-8V88h4a16,16,0,0,1,16,16,8,8,0,0,0,16,0,32,32,0,0,0-32-32h-4V64a8,8,0,0,0-16,0v8h-4a32,32,0,0,0,0,64h4v32h-8a16,16,0,0,1-16-16,8,8,0,0,0-16,0,32,32,0,0,0,32,32h8v8a8,8,0,0,0,16,0v-8h8A32,32,0,0,0,176,152Zm-76-48a16,16,0,0,0,16,16h4V88h-4A16,16,0,0,0,100,104Z"/></svg></i><i class="coin c2"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M160,152a16,16,0,0,1-16,16h-8V136h8A16,16,0,0,1,160,152Zm72-24A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-56,24a32,32,0,0,0-32-32h-8V88h4a16,16,0,0,1,16,16,8,8,0,0,0,16,0,32,32,0,0,0-32-32h-4V64a8,8,0,0,0-16,0v8h-4a32,32,0,0,0,0,64h4v32h-8a16,16,0,0,1-16-16,8,8,0,0,0-16,0,32,32,0,0,0,32,32h8v8a8,8,0,0,0,16,0v-8h8A32,32,0,0,0,176,152Zm-76-48a16,16,0,0,0,16,16h4V88h-4A16,16,0,0,0,100,104Z"/></svg></i><i class="coin c3"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M160,152a16,16,0,0,1-16,16h-8V136h8A16,16,0,0,1,160,152Zm72-24A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-56,24a32,32,0,0,0-32-32h-8V88h4a16,16,0,0,1,16,16,8,8,0,0,0,16,0,32,32,0,0,0-32-32h-4V64a8,8,0,0,0-16,0v8h-4a32,32,0,0,0,0,64h4v32h-8a16,16,0,0,1-16-16,8,8,0,0,0-16,0,32,32,0,0,0,32,32h8v8a8,8,0,0,0,16,0v-8h8A32,32,0,0,0,176,152Zm-76-48a16,16,0,0,0,16,16h4V88h-4A16,16,0,0,0,100,104Z"/></svg></i><i class="coin c4"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M160,152a16,16,0,0,1-16,16h-8V136h8A16,16,0,0,1,160,152Zm72-24A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-56,24a32,32,0,0,0-32-32h-8V88h4a16,16,0,0,1,16,16,8,8,0,0,0,16,0,32,32,0,0,0-32-32h-4V64a8,8,0,0,0-16,0v8h-4a32,32,0,0,0,0,64h4v32h-8a16,16,0,0,1-16-16,8,8,0,0,0-16,0,32,32,0,0,0,32,32h8v8a8,8,0,0,0,16,0v-8h8A32,32,0,0,0,176,152Zm-76-48a16,16,0,0,0,16,16h4V88h-4A16,16,0,0,0,100,104Z"/></svg></i><i class="coin c5"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M160,152a16,16,0,0,1-16,16h-8V136h8A16,16,0,0,1,160,152Zm72-24A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-56,24a32,32,0,0,0-32-32h-8V88h4a16,16,0,0,1,16,16,8,8,0,0,0,16,0,32,32,0,0,0-32-32h-4V64a8,8,0,0,0-16,0v8h-4a32,32,0,0,0,0,64h4v32h-8a16,16,0,0,1-16-16,8,8,0,0,0-16,0,32,32,0,0,0,32,32h8v8a8,8,0,0,0,16,0v-8h8A32,32,0,0,0,176,152Zm-76-48a16,16,0,0,0,16,16h4V88h-4A16,16,0,0,0,100,104Z"/></svg></i><i class="coin c6"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M160,152a16,16,0,0,1-16,16h-8V136h8A16,16,0,0,1,160,152Zm72-24A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-56,24a32,32,0,0,0-32-32h-8V88h4a16,16,0,0,1,16,16,8,8,0,0,0,16,0,32,32,0,0,0-32-32h-4V64a8,8,0,0,0-16,0v8h-4a32,32,0,0,0,0,64h4v32h-8a16,16,0,0,1-16-16,8,8,0,0,0-16,0,32,32,0,0,0,32,32h8v8a8,8,0,0,0,16,0v-8h8A32,32,0,0,0,176,152Zm-76-48a16,16,0,0,0,16,16h4V88h-4A16,16,0,0,0,100,104Z"/></svg></i></span></div>
             </div>
         </section>
 

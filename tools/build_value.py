@@ -116,6 +116,12 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
 }
 .net .hub.el{transform:translate(-50%,calc(-50% + 18px)) scale(.96)}
 .net .hub.el.on{transform:translate(-50%,-50%)}
+/* Ядро чуть дышит — сеть выглядит живой, а не нарисованной. */
+.scene.on .net .hub .circle{animation:breathe 3.2s ease-in-out infinite}
+@keyframes breathe{
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.045)}
+}
 .net .hub .label{font-size:30px;margin-top:10px;white-space:nowrap}
 .net .nd{
     position:absolute;display:flex;flex-direction:column;align-items:center;z-index:2;
@@ -213,13 +219,41 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
 #s8 .slot{height:104px}
 #s8 .label{font-size:30px;margin-top:12px;white-space:nowrap}
 
-/* ── СЦЕНА 9 · финал: три метрики ───────────────────────────────────── */
-#s9 .row{gap:40px;justify-content:center}
-#s9 .item{flex:0 1 auto}
-#s9 .slot{height:124px}
-#s9 .label{font-size:34px;margin-top:16px;white-space:nowrap}
-#s9 .row{position:relative}
-#s9 .glow{width:900px;height:340px;top:44%}
+/* ── СЦЕНА 9 · метрики по очереди ────────────────────────────────────
+   Владелец: «не в ряд, оранжевое / фиолетовое сияние по очереди».
+   Каждая метрика выходит одна, крупно, ровно на своём слове и уступает
+   место следующей; сияние за ней чередуется. У «Прибыли» сверху сыплются
+   монетки — тем же приёмом, что в ролике-приветствии. */
+#s9 .stack{position:relative;width:100%;height:290px}
+#s9 .item{
+    position:absolute;left:50%;top:0;transform:translateX(-50%);
+    flex:none;align-items:center;
+}
+#s9 .item.el{transform:translate(-50%,18px) scale(.96)}
+#s9 .item.el.on{transform:translateX(-50%)}
+#s9 .slot{height:162px}
+#s9 .label{font-size:46px;margin-top:18px;white-space:nowrap;position:relative;z-index:1}
+#s9 .glow{width:820px;height:330px;top:42%}
+/* Монетки падают сверху и тают — по одной, вразнобой. */
+#s9 .coins{position:absolute;left:50%;top:-56px;width:440px;height:250px;
+    transform:translateX(-50%);pointer-events:none;z-index:0}
+#s9 .coin{position:absolute;top:0;width:42px;height:42px;color:#FFC98A;opacity:0;
+    filter:drop-shadow(0 4px 10px rgba(10,4,24,.55))}
+#s9 .coin svg{width:100%;height:100%}
+#s9 .coin.c1{left:2%}   #s9 .coin.c2{left:22%}  #s9 .coin.c3{left:42%}
+#s9 .coin.c4{left:62%}  #s9 .coin.c5{left:82%}  #s9 .coin.c6{left:50%}
+#s9 .el.on .coin{animation:coinFall 1.9s ease-in infinite}
+#s9 .el.on .coin.c2{animation-delay:.35s}
+#s9 .el.on .coin.c3{animation-delay:.7s}
+#s9 .el.on .coin.c4{animation-delay:1.05s}
+#s9 .el.on .coin.c5{animation-delay:1.4s}
+#s9 .el.on .coin.c6{animation-delay:1.75s}
+@keyframes coinFall{
+    0%{opacity:0;transform:translateY(-30px) rotate(-18deg) scale(.7)}
+    18%{opacity:1}
+    72%{opacity:1}
+    100%{opacity:0;transform:translateY(240px) rotate(22deg) scale(1)}
+}
 
 """
 html = html[:css_start] + CSS + html[css_end:]
@@ -269,9 +303,9 @@ A('                <div class="node n2 el" data-in="17.38" data-cur="17.38 26.16
 A('                <div class="node n3 el" data-in="26.76" data-cur="26.76 35.76 38.66 40.14">'
   + circle("rocket", "solar", 96) +
   '<p class="label">DISRUPT</p><p class="role el" data-in="29.02">Продукты</p></div>\n')
-A('                <p class="core solar el" data-in="12.76" data-out="17.38">Сохранять устойчивость</p>\n')
-A('                <p class="core ember el" data-in="21.34" data-out="26.76">Адаптация к среде</p>\n')
-A('                <p class="core solar el" data-in="31.66" data-out="36.30">Бизнес-прорывы</p>\n')
+A('                <p class="core solar el" data-in="13.62" data-out="17.38">Финансовый эффект</p>\n')
+A('                <p class="core ember el" data-in="24.74" data-out="26.76">Принятие решений</p>\n')
+A('                <p class="core solar el" data-in="33.36" data-out="36.30">Генерация идей</p>\n')
 A('                <p class="core solar el" data-in="38.66" data-out="40.14">Бизнес-прорывы</p>\n')
 A('                <p class="core ember el" data-in="40.14" data-out="42.20">Адаптация к среде</p>\n')
 A('                <p class="core solar el" data-in="42.20">Сохранять устойчивость</p>\n')
@@ -292,8 +326,8 @@ A(item("55.72", "lifebuoy", "ember", 96, "Поддерживающие",
              '<p class="goal el" data-in="72.86">Снижение затрат</p>'))
 A(item("65.48", "scales", "solar", 96, "Управленческие",
        cur="65.48 69.10 78.18 81.46",
-       extra='<p class="sub">Планирование и контроль</p>'
-             '<p class="goal el" data-in="78.18">Принятие решений</p>'))
+       extra='<p class="sub">Принятие решений</p>'
+             '<p class="goal el" data-in="78.18">Качество решений</p>'))
 A('            </div>\n')
 A('        </section>\n\n')
 
@@ -376,11 +410,11 @@ A('        <!-- ══ СЦЕНА 7 · слайд 16 · узкие места и
 A('        <section class="scene" id="s7" data-in="131.3" data-out="150.9">\n')
 A('            <div class="row">\n')
 A(item("131.50", "funnel", "ember", 120, "Узкие места",
-       cur="131.50 133.00 134.30 138.66 146.90 148.60",
+       cur="131.50 133.00 134.30 138.66 146.90 148.50",
        extra='<p class="sub el" data-in="135.88">Время · Деньги<br>Ошибки</p>',
        halo='<div class="halo el" data-in="131.50"><div class="glow glow-ember"></div></div>'))
 A(item("132.66", "scales", "solar", 120, "Точки решений",
-       cur="132.66 134.20 139.26 143.46 148.60 150.84",
+       cur="132.66 134.20 139.26 143.46 148.74 150.84",
        extra='<p class="sub el" data-in="141.72">Анализ данных<br>Лучший вариант</p>',
        halo='<div class="halo el" data-in="132.66"><div class="glow"></div></div>'))
 A('            </div>\n')
@@ -403,14 +437,29 @@ for in_, icon, colour, label in сетка:
 A('            </div>\n')
 A('        </section>\n\n')
 
-# ── СЦЕНА 9 · финал: метрики ────────────────────────────────────────
-A('        <!-- ══ СЦЕНА 9 · слайд 16 · метрики, ради которых всё ══ -->\n')
-A('        <section class="scene" id="s9" data-in="159.4" data-out="167.0">\n')
-A('            <div class="row">\n')
-A('                <div class="halo el" data-in="159.46"><div class="glow glow-ember"></div></div>\n')
-A(item("159.46", "lightning", "ember", 104, "Скорость", cur="164.78 165.90"))
-A(item("159.46", "check-circle", "solar", 104, "Качество", cur="165.90 166.72"))
-A(item("159.46", "piggy-bank", "ember", 104, "Прибыль", cur="166.72 167.00"))
+# ── СЦЕНА 9 · метрики по очереди, сияние чередуется ─────────────────
+A('        <!-- ══ СЦЕНА 9 · слайд 16 · ради каких метрик всё ══ -->\n')
+A('        <section class="scene" id="s9" data-in="159.4" data-out="167.1">\n')
+A('            <div class="stack">\n')
+
+
+def метрика(in_, out_, icon, colour, label, glow, extra=""):
+    a = ' data-in="%s"' % in_
+    if out_:
+        a += ' data-out="%s"' % out_
+    return ('                <div class="item el"%s>'
+            '<div class="halo"><div class="glow %s"></div></div>'
+            '<div class="slot">%s</div><p class="label">%s</p>%s</div>\n'
+            % (a, glow, circle(icon, colour, 140), label, extra))
+
+
+монетки = "".join('<i class="coin c%d">%s</i>' % (i, ico("currency-dollar"))
+                  for i in range(1, 7))
+A(метрика("159.46", "164.78", "target", "solar", "Конкретные метрики", ""))
+A(метрика("164.78", "165.90", "lightning", "ember", "Скорость", "glow-ember"))
+A(метрика("165.90", "166.72", "check-circle", "solar", "Качество", ""))
+A(метрика("166.72", None, "piggy-bank", "ember", "Прибыль", "glow-ember",
+          extra='<span class="coins" aria-hidden="true">%s</span>' % монетки))
 A('            </div>\n')
 A('        </section>\n\n')
 
