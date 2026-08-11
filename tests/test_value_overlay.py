@@ -20,6 +20,16 @@ _DURATION = 167.1          # 02:47 — длина дорожки
 _LAYER = 169.0             # слой длиннее: хвост держит шапку
 _WORDS = 366               # столько слов в сценарии владельца
 _POSTERS_TOP = 638         # верх рамок картин на стене
+_KEGL = 50                 # кегль субтитров на кадре 1080×1920
+_BAND = 940                # полоса под строку: #sub left:70px right:70px
+_FONT = os.path.join(_DIR, "fonts", "Montserrat-Black.ttf")
+
+
+def _шрифт():
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from ttf_width import Шрифт
+    return Шрифт(_FONT)
 
 
 def _html(path=_PAGE):
@@ -307,10 +317,28 @@ def test_subs_follow_the_script():
     for a, b, text in cues:
         assert "TurboScribe" not in text, "водяной знак распознавалки в кадре"
         n = len(text.split())
-        assert 2 <= n <= 4, "в реплике %d слов (можно 2–4): %r" % (n, text)
+        # Правило теперь не «сколько слов», а «влезает в одну строку»
+        # (см. test_no_cue_wraps_to_a_second_line): после реза по ширине
+        # бывают и однословные реплики.
+        assert 1 <= n <= 4, "в реплике %d слов (можно 1–4): %r" % (n, text)
         words += n
         assert b <= _DURATION + 0.1, "реплика выходит за длину ролика: %r" % text
     assert words == _WORDS, "слов в субтитрах %d, а в сценарии %d" % (words, _WORDS)
+
+
+def test_no_cue_wraps_to_a_second_line():
+    """Владелец: «у меня на видео субтитры друг на друга накладывались».
+
+    Реплики не пересекались по времени — на две строки переносилась ОДНА
+    реплика: четыре слова кеглем 50px не влезали в полосу. Меряем ширину
+    по метрикам шрифта (кернинг и letter-spacing делают строку чуть уже,
+    поэтому оценка идёт сверху) и требуем, чтобы влезало в обе полосы:
+    940px на странице и в слое, 960px у libass при вжигании."""
+    ш = _шрифт()
+    for _, _, text in _cues():
+        w = ш.ширина(text, _KEGL)
+        assert w <= _BAND, "реплика %.0fpx при полосе %dpx — уедет на вторую строку: %r" % (
+            w, _BAND, text)
 
 
 def test_recognition_mistakes_are_fixed():
@@ -357,6 +385,21 @@ def test_script_burns_the_layer_and_the_subtitles():
     assert "subtitles=filename=" in body, "субтитры не вжигаются явным ключом"
     assert '-r "$FPS"' in body, "нет явного -r: после concat ffmpeg молча пишет 25 к/с"
     assert "-c:a copy" in body, "звук пережимается"
+
+
+def test_burned_subtitles_are_the_same_size_as_the_preview():
+    """libass считает Fontsize по метрикам OS/2, а не по em: у Montserrat
+    Black winAscent+winDescent = 1.562em, поэтому «Fontsize 53» выходил в
+    кадр как 34px — в полтора раза мельче, чем на странице и в запасном
+    слое. Скрипт обязан умножать кегль на эту поправку, иначе один и тот
+    же ролик выглядит по-разному в зависимости от ffmpeg на машине."""
+    поправка = 1.0 / _шрифт().коэффициент_libass()
+    assert abs(поправка - 1.562) < 0.01, "поправка шрифта изменилась: %.3f" % поправка
+    body = _script()
+    assert "h*0.026" in body, "кегль субтитров больше не считается от высоты кадра как на странице"
+    assert "k*1.562" in body, "кегль не умножается на поправку libass — субтитры выйдут мельче превью"
+    # 1920 * 0.026 = 50px как на странице, 50 * 1.562 = 78 в ASS
+    assert "h*0.028" not in body, "остался прежний кегль: в кадре он даёт 34px вместо 50"
 
 
 def test_fallback_layer_survives_spaces_in_the_folder_name():

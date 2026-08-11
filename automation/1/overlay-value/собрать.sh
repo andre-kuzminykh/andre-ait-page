@@ -90,9 +90,17 @@ if [ "$FULL" = 1 ]; then
 rm -rf "$TMP"; mkdir -p "$TMP/fonts"
 cp "$DIR/fonts/Montserrat-Black.ttf" "$TMP/fonts/"
 "$FF" -y -v error -i "$DIR/субтитры.srt" "$TMP/raw.ass"
-SUBSIZE=$(awk -v h="$DH" 'BEGIN{ printf "%d", h*0.028 }')
+# Кегль. libass (как и VSFilter) считает Fontsize не по em, а по метрикам
+# OS/2: строка ростом winAscent+winDescent. У Montserrat Black это 1.562em,
+# поэтому «Fontsize 53» рисуется как 34px — в полтора раза мельче, чем
+# показывает страница-превью и чем лежит в запасном слое субтитров.
+# Проверено рендером: 53 → буквы шириной 505px, 78 → 743px, а в слое 738px.
+# Поэтому нужный кегль (50px на кадр 1920, как на странице) умножаем на
+# 1.562, и обе дороги сборки дают ОДИН И ТОТ ЖЕ кадр.
+KEGL=$(awk -v h="$DH" 'BEGIN{ printf "%.0f", h*0.026 }')
+SUBSIZE=$(awk -v k="$KEGL" 'BEGIN{ printf "%.0f", k*1.562 }')
 MARGIN=$(awk -v h="$DH" 'BEGIN{ printf "%d", h*0.193 }')
-OUTLINE=$(awk -v s="$SUBSIZE" 'BEGIN{ v=int(s/13); if(v<3) v=3; printf "%d", v }')
+OUTLINE=$(awk -v k="$KEGL" 'BEGIN{ v=int(k/13); if(v<3) v=3; printf "%d", v }')
 STYLE="Style: Default,Montserrat Black,$SUBSIZE,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,$OUTLINE,0,2,60,60,$MARGIN,1"
 # Имя шрифта — ПОЛНОЕ («Montserrat Black», это name ID 1 в ttf).
 # По семейному имени «JetBrains Mono» libass шрифт не находит и молча
