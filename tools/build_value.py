@@ -51,10 +51,13 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
    владельца), подписи снаружи дуги: у боковых снизу, у верхнего сверху,
    чтобы ничего не сталкивалось. */
 #s1 .arc{position:relative;width:940px;height:360px}
-#s1 .node{position:absolute;display:flex;flex-direction:column;align-items:center;text-align:center}
-#s1 .n1{left:0;bottom:6px}
-#s1 .n2{left:50%;transform:translateX(-50%);top:0}
-#s1 .n3{right:0;bottom:6px}
+/* Круги лежат ПОВЕРХ дуги (z-index) и опущены ниже: линия заходила на
+   иконку и торчала справа из-под DISRUPT. Дуга теперь кончается ровно в
+   центрах боковых кругов, и они её закрывают. */
+#s1 .node{position:absolute;display:flex;flex-direction:column;align-items:center;text-align:center;z-index:2}
+#s1 .n1{left:0;bottom:0}
+#s1 .n2{left:50%;transform:translateX(-50%);top:14px}
+#s1 .n3{right:0;bottom:0}
 #s1 .n1.el,#s1 .n3.el{transform:translateY(18px) scale(.96)}
 #s1 .n1.el.on,#s1 .n3.el.on{transform:none}
 #s1 .n2.el{transform:translate(-50%,18px) scale(.96)}
@@ -109,7 +112,7 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
 /* ── СЦЕНЫ 3 и 5 · сеть: ядро AI и четыре узла ──────────────────────
    Узлы равноудалены от ядра (радиус один на все), линии прочерчиваются
    от центра. В пятой сцене по тем же линиям бегут импульсы. */
-.net{position:relative;width:880px;height:360px}
+.net{position:relative;width:880px;height:300px;flex:none}
 .net .hub{
     position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
     display:flex;flex-direction:column;align-items:center;z-index:2;
@@ -123,11 +126,17 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
     50%{transform:scale(1.045)}
 }
 .net .hub .label{font-size:30px;margin-top:10px;white-space:nowrap}
+/* Узел центрируется по КРУГУ, а не по колонке «круг + подпись»: иначе
+   связь приходила в верхнюю часть круга и палки выглядели кривыми.
+   Подпись висит под кругом отдельно и на центровку не влияет. */
 .net .nd{
-    position:absolute;display:flex;flex-direction:column;align-items:center;z-index:2;
+    position:absolute;width:76px;height:76px;z-index:2;
     transform:translate(-50%,-50%);
 }
-.net .nd .label{font-size:26px;margin-top:8px;white-space:nowrap}
+.net .nd .label{
+    position:absolute;top:100%;left:50%;transform:translateX(-50%);
+    margin-top:8px;font-size:26px;white-space:nowrap;
+}
 .net .nd.el{opacity:0}
 .net .nd.el.on{opacity:1}
 .net svg.wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
@@ -191,7 +200,7 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
 #s6 .glow{width:880px;height:350px}
 
 /* ── СЦЕНА 7 · узкие места и точки решений ──────────────────────────── */
-#s7 .row{gap:70px;justify-content:center;align-items:flex-start}
+#s7 .row{gap:150px;justify-content:center;align-items:flex-start}
 #s7 .item{flex:0 1 auto}
 #s7 .slot{height:138px}
 #s7 .label{font-size:36px;margin-top:18px;white-space:nowrap}
@@ -224,18 +233,17 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
    Каждая метрика выходит одна, крупно, ровно на своём слове и уступает
    место следующей; сияние за ней чередуется. У «Прибыли» сверху сыплются
    монетки — тем же приёмом, что в ролике-приветствии. */
-#s9 .stack{position:relative;width:100%;height:290px}
+#s9 .stack{position:relative;width:100%;height:200px}
 #s9 .item{
     position:absolute;left:50%;top:0;transform:translateX(-50%);
     flex:none;align-items:center;
 }
 #s9 .item.el{transform:translate(-50%,18px) scale(.96)}
 #s9 .item.el.on{transform:translateX(-50%)}
-#s9 .slot{height:162px}
-#s9 .label{font-size:46px;margin-top:18px;white-space:nowrap;position:relative;z-index:1}
+#s9 .label{font-size:64px;white-space:nowrap;position:relative;z-index:1;margin-top:52px}
 #s9 .glow{width:820px;height:330px;top:42%}
 /* Монетки падают сверху и тают — по одной, вразнобой. */
-#s9 .coins{position:absolute;left:50%;top:-56px;width:440px;height:250px;
+#s9 .coins{position:absolute;left:50%;top:-70px;width:460px;height:230px;
     transform:translateX(-50%);pointer-events:none;z-index:0}
 #s9 .coin{position:absolute;top:0;width:42px;height:42px;color:#FFC98A;opacity:0;
     filter:drop-shadow(0 4px 10px rgba(10,4,24,.55))}
@@ -291,9 +299,11 @@ A = L.append
 A('        <!-- ══ СЦЕНА 1 · слайд 13 · RUN → CHANGE → DISRUPT ══ -->\n')
 A('        <section class="scene" id="s1" data-in="7.0" data-out="43.9">\n')
 A('            <div class="arc">\n')
-A('                <div class="halo el" data-in="36.30"><div class="glow" style="top:62%"></div></div>\n')
+A('                <div class="halo el" data-in="38.66" data-out="40.14"><div class="glow" style="top:62%"></div></div>\n')
+A('                <div class="halo el" data-in="40.14" data-out="42.20"><div class="glow glow-ember" style="top:62%"></div></div>\n')
+A('                <div class="halo el" data-in="42.20"><div class="glow" style="top:62%"></div></div>\n')
 A('                <svg class="curve" viewBox="0 0 940 360" preserveAspectRatio="none">'
-  '<path d="M 60 250 Q 470 40 880 250"/></svg>\n')
+  '<path d="M 48 218 Q 470 -46 892 218"/></svg>\n')
 A('                <div class="node n1 el" data-in="7.16" data-cur="7.16 16.90 42.20 43.90">'
   + circle("gear-six", "solar", 96) +
   '<p class="label">RUN</p><p class="role el" data-in="9.86">Процессы</p></div>\n')
@@ -333,12 +343,12 @@ def net(scene_id, hub_in, hub_cur, nodes, wires_extra="", pulses=False):
     """Сеть: ядро в центре, четыре узла на одном радиусе, линии от центра."""
     out = []
     out.append('            <div class="net">\n')
-    out.append('                <svg class="wires" viewBox="0 0 880 360">')
-    for x, y in [(132, 74), (748, 74), (132, 286), (748, 286)]:
-        out.append('<line x1="440" y1="180" x2="%d" y2="%d"/>' % (x, y))
+    out.append('                <svg class="wires" viewBox="0 0 880 300" preserveAspectRatio="none">')
+    for x, y in [(132, 62), (748, 62), (132, 238), (748, 238)]:
+        out.append('<line x1="440" y1="150" x2="%d" y2="%d"/>' % (x, y))
     out.append('</svg>\n')
     if pulses:
-        for i, (dx, dy) in enumerate([(-308, -106), (308, -106), (-308, 106), (308, 106)], 1):
+        for i, (dx, dy) in enumerate([(-308, -88), (308, -88), (-308, 88), (308, 88)], 1):
             out.append('                <span class="pulse p%d" style="--dx:%dpx;--dy:%dpx"></span>\n'
                        % (i, dx, dy))
     out.append('                <div class="hub el" data-in="%s"%s>%s'
@@ -346,7 +356,7 @@ def net(scene_id, hub_in, hub_cur, nodes, wires_extra="", pulses=False):
                % (hub_in, (' data-cur="%s"' % hub_cur) if hub_cur else "",
                   circle("brain", "solar", 132)))
     for (in_, icon, colour, label, left, top) in nodes:
-        out.append('                <div class="nd el" data-in="%s" style="left:%d%%;top:%d%%">%s'
+        out.append('                <div class="nd el" data-in="%s" style="left:%s%%;top:%s%%">%s'
                    '<p class="label">%s</p></div>\n'
                    % (in_, left, top, circle(icon, colour, 76), label))
     out.append('            </div>\n')
@@ -357,10 +367,10 @@ def net(scene_id, hub_in, hub_cur, nodes, wires_extra="", pulses=False):
 A('        <!-- ══ СЦЕНА 3 · слайд 15 · ИИ соединяет всё в единый контур ══ -->\n')
 A('        <section class="scene" id="s3" data-in="82.4" data-out="92.9">\n')
 A(net("s3", "82.40", "82.40 87.78", [
-    ("88.98", "briefcase", "ember", "Функции", 15, 22),
-    ("89.66", "arrows-merge", "solar", "Процессы", 85, 22),
-    ("90.32", "database", "ember", "Данные", 15, 78),
-    ("90.90", "users", "solar", "Люди", 85, 78),
+    ("87.78", "briefcase", "ember", "Функции", 15, "20.7"),
+    ("87.78", "arrows-merge", "solar", "Процессы", 85, "20.7"),
+    ("87.78", "database", "ember", "Данные", 15, "79.3"),
+    ("87.78", "users", "solar", "Люди", 85, "79.3"),
 ]))
 A('        </section>\n\n')
 
@@ -382,10 +392,10 @@ A('        </section>\n\n')
 A('        <!-- ══ СЦЕНА 5 · слайд 15 · ИИ убирает разрывы: импульсы по связям ══ -->\n')
 A('        <section class="scene" id="s5" data-in="103.2" data-out="120.9">\n')
 A(net("s5", "103.18", "103.18 105.34", [
-    ("105.34", "briefcase", "ember", "Функции", 15, 22),
-    ("105.34", "arrows-merge", "solar", "Процессы", 85, 22),
-    ("105.34", "database", "ember", "Данные", 15, 78),
-    ("105.34", "users", "solar", "Люди", 85, 78),
+    ("103.18", "briefcase", "ember", "Функции", 15, "20.7"),
+    ("103.18", "arrows-merge", "solar", "Процессы", 85, "20.7"),
+    ("103.18", "database", "ember", "Данные", 15, "79.3"),
+    ("103.18", "users", "solar", "Люди", 85, "79.3"),
 ], pulses=True))
 A('            <p class="verdict el" data-in="112.74" data-cur="112.74 120.90">'
   'Единая интеллектуальная система</p>\n')
@@ -441,13 +451,15 @@ A('            <div class="stack">\n')
 
 
 def метрика(in_, out_, icon, colour, label, glow, extra=""):
+    """Владелец: «где скорость / качество и т.д. — в конце, там не надо
+    эмодзи». Значит только слово и сияние за ним, без круга с иконкой."""
     a = ' data-in="%s"' % in_
     if out_:
         a += ' data-out="%s"' % out_
     return ('                <div class="item el"%s>'
             '<div class="halo"><div class="glow %s"></div></div>'
-            '<div class="slot">%s</div><p class="label">%s</p>%s</div>\n'
-            % (a, glow, circle(icon, colour, 140), label, extra))
+            '<p class="label">%s</p>%s</div>\n'
+            % (a, glow, label, extra))
 
 
 монетки = "".join('<i class="coin c%d">%s</i>' % (i, ico("currency-dollar"))

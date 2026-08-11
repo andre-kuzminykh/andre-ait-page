@@ -212,9 +212,11 @@ def test_network_has_one_radius_and_pulses():
     assert "@keyframes drawWire" in html, "связи сети не прочерчиваются"
     assert "@keyframes run{" in html, "по связям не бегут импульсы"
     assert "@keyframes breathe" in html, "ядро сети не дышит"
-    линии = re.findall(r'<line x1="440" y1="180" x2="(\d+)" y2="(\d+)"/>', html)
+    assert 'preserveAspectRatio="none"' in html, \
+        "без него svg вписывается «по меньшей стороне» и концы связей уезжают от кругов"
+    линии = re.findall(r'<line x1="440" y1="150" x2="(\d+)" y2="(\d+)"/>', html)
     assert len(линии) == 8, "связей должно быть по четыре в двух сценах: %d" % len(линии)
-    r = {round(((int(x) - 440) ** 2 + (int(y) - 180) ** 2) ** .5) for x, y in линии}
+    r = {round(((int(x) - 440) ** 2 + (int(y) - 150) ** 2) ** .5) for x, y in линии}
     assert len(r) == 1, "узлы не равноудалены от ядра: %s" % r
 
 
