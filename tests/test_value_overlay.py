@@ -308,11 +308,19 @@ def test_subtitles_live_in_one_editable_file():
 # ── FR-SITE36: обложки частей и сборка ───────────────────────────────────
 
 def test_four_part_covers_are_ready():
-    """Владелец: «тут надо сделать часть 1 / 2 / 3 / 4 обложки»."""
-    for f in ["cover.png", "cover1.png", "cover2.png", "cover3.png", "cover4.png"]:
-        p = os.path.join(_DIR, f)
-        assert os.path.exists(p), "нет обложки %s" % f
-        assert os.path.getsize(p) > 100000, "обложка %s подозрительно мала" % f
+    """Владелец: «тут надо сделать часть 1 / 2 / 3 / 4 обложки».
+    Обложка всего ролика — png (её ищет собрать.sh по точному имени),
+    обложки частей — jpg: пятью png папка перевешивала лимит на отправку,
+    а нарезать.sh расширение ищет сам."""
+    p = os.path.join(_DIR, "cover.png")
+    assert os.path.exists(p), "нет общей обложки cover.png"
+    assert os.path.getsize(p) > 100000, "обложка cover.png подозрительно мала"
+    for i in (1, 2, 3, 4):
+        нашлась = [e for e in ("png", "jpg", "jpeg", "webp")
+                   if os.path.exists(os.path.join(_DIR, "cover%d.%s" % (i, e)))]
+        assert нашлась, "нет обложки части %d" % i
+        путь = os.path.join(_DIR, "cover%d.%s" % (i, нашлась[0]))
+        assert os.path.getsize(путь) > 50000, "обложка части %d подозрительно мала" % i
 
 
 def test_cut_script_is_here():
