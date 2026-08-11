@@ -141,10 +141,13 @@ def shoot(lecture, indexes, out_dir, vendor=None, scale=1):
         with sync_playwright() as pw:
             browser = pw.chromium.launch(
                 executable_path=os.environ.get("CHROMIUM_PATH") or None,
-                args=["--no-sandbox", "--force-device-scale-factor=1",
-                      "--hide-scrollbars"])
+                args=["--no-sandbox", "--hide-scrollbars"])
+            # Вьюпорт ВСЕГДА 1920x1080 — раскладку менять нельзя, она обязана
+            # совпасть с тем, что видит зритель на сайте. Сверхсэмплинг даёт
+            # только device_scale_factor: кадр снимается вдвое крупнее и
+            # ужимается уже в ffmpeg, отчего мелкий текст чище.
             ctx = browser.new_context(
-                viewport={"width": W // scale, "height": H // scale},
+                viewport={"width": W, "height": H},
                 device_scale_factor=scale, reduced_motion="reduce")
             if vendor:
                 ctx.route("**/*", vendor_route(vendor))
@@ -222,10 +225,13 @@ def circle_mask(path, size):
 def segment(ff, png, clip, mask, dst, secs, diameter, margin):
     """Один слайд: неподвижный кадр + кружок с головой + её звук."""
     if clip:
-        vf = ("[1:v]scale=%d:%d,setsar=1[hv];"
+        # Кадр мог сниматься крупнее целевого (--supersample) — ужимаем его
+        # здесь: ресайз в ffmpeg (lanczos по умолчанию) чище браузерного.
+        vf = ("[0:v]scale=%d:%d[bg];"
+              "[1:v]scale=%d:%d,setsar=1[hv];"
               "[hv][2:v]alphamerge[circ];"
-              "[0:v][circ]overlay=W-w-%d:H-h-%d:format=auto[v]"
-              % (diameter, diameter, margin, margin))
+              "[bg][circ]overlay=W-w-%d:H-h-%d:format=auto[v]"
+              % (W, H, diameter, diameter, margin, margin))
         run([ff, "-y", "-loglevel", "error",
              "-loop", "1", "-framerate", str(FPS), "-t", "%.3f" % secs, "-i", png,
              "-i", clip, "-i", mask,
@@ -239,6 +245,7 @@ def segment(ff, png, clip, mask, dst, secs, diameter, margin):
              "-loop", "1", "-framerate", str(FPS), "-t", "%.3f" % secs, "-i", png,
              "-f", "lavfi", "-t", "%.3f" % secs,
              "-i", "anullsrc=channel_layout=stereo:sample_rate=48000",
+             "-vf", "scale=%d:%d" % (W, H),
              "-c:v", "libx264", "-preset", "medium", "-crf", "18",
              "-pix_fmt", "yuv420p", "-r", str(FPS),
              "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", dst])
