@@ -337,6 +337,16 @@ def test_script_burns_the_layer_and_the_subtitles():
     assert '-r "$FPS"' in body, "нет явного -r: после concat ffmpeg молча пишет 25 к/с"
     assert "-c:a copy" in body, "звук пережимается"
 
+
+def test_fallback_layer_survives_spaces_in_the_folder_name():
+    """Папка ролика называется «Где ИИ создаёт ценность». $EXTRA подставляется
+    в команду БЕЗ кавычек (иначе «-i файл» приедет одним аргументом), поэтому
+    путь со пробелами рвал команду: ffmpeg искал файл «…/Desktop/Где»."""
+    body = _script()
+    assert 'EXTRA="-i $DIR/subs_c.mp4' not in body,         "путь к запасному слою с пробелами развалит команду"
+    assert 'EXTRA="-i $TMP/sc.mp4 -i $TMP/sa.mp4"' in body,         "запасной слой не переложен в рабочую папку без пробелов"
+    assert 'cp "$DIR/subs_c.mp4" "$TMP/sc.mp4"' in body, "слой не копируется в рабочую папку"
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

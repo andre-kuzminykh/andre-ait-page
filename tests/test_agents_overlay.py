@@ -396,6 +396,17 @@ def test_cover_does_not_break_frame_rate():
         "без -framerate заставка на 30-кадровом ролике короче заказанного"
 
 
+def test_fallback_layer_survives_spaces_in_the_folder_name():
+    """$EXTRA подставляется в команду без кавычек, поэтому путь к запасному
+    слою не должен содержать пробелов: папку ролика владелец переименовывает
+    как угодно, и «Где ИИ создаёт ценность» рвало команду."""
+    body = _script()
+    assert 'EXTRA="-i $DIR/subs_c.mp4' not in body, \
+        "путь к запасному слою с пробелами развалит команду"
+    assert 'EXTRA="-i $TMP/sc.mp4 -i $TMP/sa.mp4"' in body, \
+        "запасной слой не переложен в рабочую папку без пробелов"
+
+
 def test_audio_is_copied_when_it_can_be():
     """Владелец: «звук шипит… в оригинале всё ок». Дорожка не пережимается."""
     body = _script()
