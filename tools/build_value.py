@@ -37,6 +37,11 @@ def подмена(старое, новое, имя):
     html = html.replace(старое, новое, 1)
 
 
+# ── зона графики выше: шапка кончается на 224, картины начинаются на 638,
+#    поэтому зону можно поднять с 250 до 238 и добрать 12px высоты ──────
+подмена("    --zone-top:250px;", "    --zone-top:238px;", "верх зоны")
+подмена("    --zone-h:380px;", "    --zone-h:392px;", "высота зоны")
+
 # ── заголовок страницы ───────────────────────────────────────────────
 подмена("<title>Эволюция ИИ и AI-First — анимированная графика поверх видео</title>",
         "<title>Где ИИ создаёт ценность — анимированная графика поверх видео</title>",
@@ -56,7 +61,7 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
    центрах боковых кругов, и они её закрывают. */
 #s1 .node{position:absolute;display:flex;flex-direction:column;align-items:center;text-align:center;z-index:2}
 #s1 .n1{left:0;bottom:0}
-#s1 .n2{left:50%;transform:translateX(-50%);top:14px}
+#s1 .n2{left:50%;transform:translateX(-50%);top:-16px}
 #s1 .n3{right:0;bottom:0}
 #s1 .n1.el,#s1 .n3.el{transform:translateY(18px) scale(.96)}
 #s1 .n1.el.on,#s1 .n3.el.on{transform:none}
@@ -112,6 +117,9 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
 /* ── СЦЕНЫ 3 и 5 · сеть: ядро AI и четыре узла ──────────────────────
    Узлы равноудалены от ядра (радиус один на все), линии прочерчиваются
    от центра. В пятой сцене по тем же линиям бегут импульсы. */
+/* Сцены сети прижаты к верху зоны: по центру подпись под сетью уходила
+   к самым картинам, а владелец просил «повыше». */
+#s3,#s5{justify-content:flex-start}
 .net{position:relative;width:880px;height:300px;flex:none}
 .net .hub{
     position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
@@ -139,15 +147,15 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
 }
 .net .nd.el{opacity:0}
 .net .nd.el.on{opacity:1}
-.net svg.wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.net svg.wires line{
+.net .wire{position:absolute;inset:0;pointer-events:none}
+/* .el сдвигает элемент на появлении — связи это не нужно, она чертится. */
+.net .wire.el,.net .wire.el.on{transform:none}
+.net .wire svg{width:100%;height:100%;overflow:visible}
+.net .wire line{
     stroke:rgba(255,255,255,.28);stroke-width:3;stroke-linecap:round;
     stroke-dasharray:400;stroke-dashoffset:400;
 }
-.scene.on .net svg.wires line{animation:drawWire 1s var(--ease) forwards}
-.scene.on .net svg.wires line:nth-child(2){animation-delay:.12s}
-.scene.on .net svg.wires line:nth-child(3){animation-delay:.24s}
-.scene.on .net svg.wires line:nth-child(4){animation-delay:.36s}
+.net .wire.el.on line{animation:drawWire .7s var(--ease) forwards}
 @keyframes drawWire{to{stroke-dashoffset:0}}
 /* Импульс — светлая точка, бегущая от ядра к узлу по той же линии. */
 .net .pulse{
@@ -200,7 +208,7 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
 #s6 .glow{width:880px;height:350px}
 
 /* ── СЦЕНА 7 · узкие места и точки решений ──────────────────────────── */
-#s7 .row{gap:150px;justify-content:center;align-items:flex-start}
+#s7 .row{gap:200px;justify-content:center;align-items:flex-start}
 #s7 .item{flex:0 1 auto}
 #s7 .slot{height:138px}
 #s7 .label{font-size:36px;margin-top:18px;white-space:nowrap}
@@ -233,35 +241,16 @@ CSS = """/* ── СЦЕНА 1 · арка RUN → CHANGE → DISRUPT ───
    Каждая метрика выходит одна, крупно, ровно на своём слове и уступает
    место следующей; сияние за ней чередуется. У «Прибыли» сверху сыплются
    монетки — тем же приёмом, что в ролике-приветствии. */
-#s9 .stack{position:relative;width:100%;height:200px}
+#s9 .stack{position:relative;width:100%;height:290px}
 #s9 .item{
     position:absolute;left:50%;top:0;transform:translateX(-50%);
     flex:none;align-items:center;
 }
 #s9 .item.el{transform:translate(-50%,18px) scale(.96)}
 #s9 .item.el.on{transform:translateX(-50%)}
-#s9 .label{font-size:64px;white-space:nowrap;position:relative;z-index:1;margin-top:52px}
+#s9 .slot{height:132px}
+#s9 .label{font-size:52px;white-space:nowrap;position:relative;z-index:1;margin-top:18px}
 #s9 .glow{width:820px;height:330px;top:42%}
-/* Монетки падают сверху и тают — по одной, вразнобой. */
-#s9 .coins{position:absolute;left:50%;top:-70px;width:460px;height:230px;
-    transform:translateX(-50%);pointer-events:none;z-index:0}
-#s9 .coin{position:absolute;top:0;width:42px;height:42px;color:#FFC98A;opacity:0;
-    filter:drop-shadow(0 4px 10px rgba(10,4,24,.55))}
-#s9 .coin svg{width:100%;height:100%}
-#s9 .coin.c1{left:2%}   #s9 .coin.c2{left:22%}  #s9 .coin.c3{left:42%}
-#s9 .coin.c4{left:62%}  #s9 .coin.c5{left:82%}  #s9 .coin.c6{left:50%}
-#s9 .el.on .coin{animation:coinFall 1.9s ease-in infinite}
-#s9 .el.on .coin.c2{animation-delay:.35s}
-#s9 .el.on .coin.c3{animation-delay:.7s}
-#s9 .el.on .coin.c4{animation-delay:1.05s}
-#s9 .el.on .coin.c5{animation-delay:1.4s}
-#s9 .el.on .coin.c6{animation-delay:1.75s}
-@keyframes coinFall{
-    0%{opacity:0;transform:translateY(-30px) rotate(-18deg) scale(.7)}
-    18%{opacity:1}
-    72%{opacity:1}
-    100%{opacity:0;transform:translateY(240px) rotate(22deg) scale(1)}
-}
 
 """
 html = html[:css_start] + CSS + html[css_end:]
@@ -303,7 +292,7 @@ A('                <div class="halo el" data-in="38.66" data-out="40.14"><div cl
 A('                <div class="halo el" data-in="40.14" data-out="42.20"><div class="glow glow-ember" style="top:62%"></div></div>\n')
 A('                <div class="halo el" data-in="42.20"><div class="glow" style="top:62%"></div></div>\n')
 A('                <svg class="curve" viewBox="0 0 940 360" preserveAspectRatio="none">'
-  '<path d="M 48 218 Q 470 -46 892 218"/></svg>\n')
+  '<path d="M 48 218 Q 470 -92 892 218"/></svg>\n')
 A('                <div class="node n1 el" data-in="7.16" data-cur="7.16 16.90 42.20 43.90">'
   + circle("gear-six", "solar", 96) +
   '<p class="label">RUN</p><p class="role el" data-in="9.86">Процессы</p></div>\n')
@@ -339,14 +328,17 @@ A('            </div>\n')
 A('        </section>\n\n')
 
 
-def net(scene_id, hub_in, hub_cur, nodes, wires_extra="", pulses=False):
-    """Сеть: ядро в центре, четыре узла на одном радиусе, линии от центра."""
-    out = []
-    out.append('            <div class="net">\n')
-    out.append('                <svg class="wires" viewBox="0 0 880 300" preserveAspectRatio="none">')
-    for x, y in [(132, 62), (748, 62), (132, 238), (748, 238)]:
-        out.append('<line x1="440" y1="150" x2="%d" y2="%d"/>' % (x, y))
-    out.append('</svg>\n')
+def net(scene_id, hub_in, hub_cur, nodes, pulses=False):
+    """Сеть: ядро в центре, узлы на одном радиусе. Связь у каждого узла СВОЯ
+    и приходит вместе с ним: владелец забраковал кадр, где палки уже
+    нарисованы, а кружков ещё нет."""
+    концы = [(132, 62), (748, 62), (132, 238), (748, 238)]
+    out = ['            <div class="net">\n']
+    for (in_, icon, colour, label, left, top), (x, y) in zip(nodes, концы):
+        out.append('                <div class="wire el" data-in="%s">'
+                   '<svg viewBox="0 0 880 300" preserveAspectRatio="none">'
+                   '<line x1="440" y1="150" x2="%d" y2="%d"/></svg></div>\n'
+                   % (in_, x, y))
     if pulses:
         for i, (dx, dy) in enumerate([(-308, -88), (308, -88), (-308, 88), (308, 88)], 1):
             out.append('                <span class="pulse p%d" style="--dx:%dpx;--dy:%dpx"></span>\n'
@@ -367,10 +359,10 @@ def net(scene_id, hub_in, hub_cur, nodes, wires_extra="", pulses=False):
 A('        <!-- ══ СЦЕНА 3 · слайд 15 · ИИ соединяет всё в единый контур ══ -->\n')
 A('        <section class="scene" id="s3" data-in="82.4" data-out="92.9">\n')
 A(net("s3", "82.40", "82.40 87.78", [
-    ("87.78", "briefcase", "ember", "Функции", 15, "20.7"),
-    ("87.78", "arrows-merge", "solar", "Процессы", 85, "20.7"),
-    ("87.78", "database", "ember", "Данные", 15, "79.3"),
-    ("87.78", "users", "solar", "Люди", 85, "79.3"),
+    ("88.98", "briefcase", "ember", "Функции", 15, "20.7"),
+    ("89.66", "arrows-merge", "solar", "Процессы", 85, "20.7"),
+    ("90.32", "database", "ember", "Данные", 15, "79.3"),
+    ("90.90", "users", "solar", "Люди", 85, "79.3"),
 ]))
 A('        </section>\n\n')
 
@@ -416,14 +408,14 @@ A('        </section>\n\n')
 A('        <!-- ══ СЦЕНА 7 · слайд 16 · узкие места и точки решений ══ -->\n')
 A('        <section class="scene" id="s7" data-in="131.3" data-out="150.9">\n')
 A('            <div class="row">\n')
-A(item("131.50", "funnel", "ember", 120, "Узкие места",
+A(item("131.50", "funnel", "solar", 120, "Узкие места",
        cur="131.50 133.00 134.30 138.66 146.90 148.50",
        extra='<p class="sub el" data-in="135.88">Время · Деньги<br>Ошибки</p>',
-       halo='<div class="halo el" data-in="131.50"><div class="glow glow-ember"></div></div>'))
-A(item("132.66", "scales", "solar", 120, "Точки решений",
+       halo='<div class="halo el" data-in="131.50"><div class="glow"></div></div>'))
+A(item("132.66", "scales", "ember", 120, "Точки решений",
        cur="132.66 134.20 139.26 143.46 148.74 150.84",
        extra='<p class="sub el" data-in="141.72">Анализ данных<br>Лучший вариант</p>',
-       halo='<div class="halo el" data-in="132.66"><div class="glow"></div></div>'))
+       halo='<div class="halo el" data-in="132.66"><div class="glow glow-ember"></div></div>'))
 A('            </div>\n')
 A('        </section>\n\n')
 
@@ -451,24 +443,20 @@ A('            <div class="stack">\n')
 
 
 def метрика(in_, out_, icon, colour, label, glow, extra=""):
-    """Владелец: «где скорость / качество и т.д. — в конце, там не надо
-    эмодзи». Значит только слово и сияние за ним, без круга с иконкой."""
+    """Владелец: «выше иконки вставь» — иконка над словом, сияние за ними."""
     a = ' data-in="%s"' % in_
     if out_:
         a += ' data-out="%s"' % out_
     return ('                <div class="item el"%s>'
             '<div class="halo"><div class="glow %s"></div></div>'
-            '<p class="label">%s</p>%s</div>\n'
-            % (a, glow, label, extra))
+            '<div class="slot">%s</div><p class="label">%s</p>%s</div>\n'
+            % (a, glow, circle(icon, colour, 118), label, extra))
 
 
-монетки = "".join('<i class="coin c%d">%s</i>' % (i, ico("currency-dollar"))
-                  for i in range(1, 7))
 A(метрика("159.46", "164.78", "target", "solar", "Конкретные метрики", ""))
 A(метрика("164.78", "165.90", "lightning", "ember", "Скорость", "glow-ember"))
 A(метрика("165.90", "166.72", "check-circle", "solar", "Качество", ""))
-A(метрика("166.72", None, "piggy-bank", "ember", "Прибыль", "glow-ember",
-          extra='<span class="coins" aria-hidden="true">%s</span>' % монетки))
+A(метрика("166.72", None, "piggy-bank", "ember", "Прибыль", "glow-ember"))
 A('            </div>\n')
 A('        </section>\n\n')
 

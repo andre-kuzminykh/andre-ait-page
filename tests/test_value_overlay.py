@@ -204,7 +204,26 @@ def test_final_metrics_come_one_by_one():
         "сияния не чередуются фиолетовое / оранжевое: %s" % сияния
     # четыре data-out: три у метрик (уступают место следующей) и один у секции
     assert s9.count("data-out=") == 4, "метрики не уступают место следующей"
-    assert "@keyframes coinFall" in html, "у «Прибыли» не сыплются монетки"
+    # Владелец: «убери анимацию из монет в конце, свечение оставь».
+    assert "@keyframes coinFall" not in html, "монетки вернулись — их просили убрать"
+    assert "coin" not in s9, "в финале остались монетки"
+    # «выше иконки вставь» — иконка над словом
+    assert s9.count('class="circle') == 4, "у метрик нет иконок над словом"
+
+
+def test_network_wires_come_with_their_node():
+    """Владелец: «палки по одной из четырёх появляются после того, как слова
+    называются, и с ними же иконки»."""
+    html = _html()
+    for sid in ("s3", "s5"):
+        кусок = html[html.index('<section class="scene" id="%s"' % sid):]
+        кусок = кусок[:кусок.index("</section>")]
+        связи = re.findall(r'<div class="wire el" data-in="([\d.]+)"', кусок)
+        узлы = re.findall(r'<div class="nd el" data-in="([\d.]+)"', кусок)
+        assert len(связи) == 4 and связи == узлы, \
+            "%s: связи приходят не вместе со своими узлами (%s против %s)" % (sid, связи, узлы)
+    assert ".net .wire.el.on line{animation:drawWire" in html, \
+        "связь чертится не по появлению своего узла"
 
 
 def test_network_has_one_radius_and_pulses():
