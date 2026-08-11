@@ -342,7 +342,7 @@ def test_subtitles_live_in_one_editable_file():
 
 def test_subs_follow_the_transcript():
     cues = _cues()
-    assert len(cues) >= 90, "реплик подозрительно мало: %d" % len(cues)
+    assert len(cues) >= 120, "реплик подозрительно мало: %d" % len(cues)
     prev_end, words = 0.0, 0
     for a, b, text in cues:
         assert a < b, "вывернутая реплика: %r" % text
@@ -350,10 +350,11 @@ def test_subs_follow_the_transcript():
         assert b <= _DURATION + 0.1, "реплика выходит за длину ролика: %r" % text
         assert "TurboScribe" not in text, "водяной знак распознавалки в кадре"
         n = len(text.split())
-        # Хвост дорожки — единственная реплика в пять слов: иначе «ими.»
-        # мигало бы отдельной строкой на четверть секунды.
-        предел = 5 if (a, b, text) == cues[-1] else 4
-        assert 2 <= n <= предел, "в реплике %d слов (можно 2–4): %r" % (n, text)
+        # Владелец: «субтитры наслаивались друг на друга» — длинная реплика
+        # переносилась на вторую строку. Теперь правило не «2–4 слова», а
+        # «влезает в одну строку»: реплики порезаны по ширине, поэтому
+        # бывают и однословные.
+        assert 1 <= n <= 4, "в реплике %d слов (можно 1–4): %r" % (n, text)
         words += n
         prev_end = b
     assert words == _WORDS, "слов в субтитрах %d, а в сценарии %d" % (words, _WORDS)
