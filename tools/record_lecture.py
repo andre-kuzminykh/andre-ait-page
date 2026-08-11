@@ -133,7 +133,7 @@ def serve():
 
 # ── съёмка слайдов ────────────────────────────────────────────────────────
 
-def shoot(lecture, indexes, out_dir, vendor=None, scale=1):
+def shoot(lecture, indexes, out_dir, vendor=None, scale=1, allow_fallback=False):
     from playwright.sync_api import sync_playwright
 
     titles, srv = {}, serve()
@@ -160,6 +160,8 @@ def shoot(lecture, indexes, out_dir, vendor=None, scale=1):
                           "'#start-overlay,#intro-overlay').forEach(e => e.remove())")
             page.wait_for_timeout(500)
 
+            check_font(page, allow_fallback)
+
             total = page.evaluate(
                 "() => document.querySelectorAll('.slide-container').length")
             for i in range(total):
@@ -182,6 +184,43 @@ def shoot(lecture, indexes, out_dir, vendor=None, scale=1):
     return titles
 
 
+def check_font(page, allow_fallback):
+    """Montserrat действительно применился, а не подменился системным.
+
+    Молчаливая подмена — худший из возможных исходов: ролик собирается без
+    единой ошибки и выглядит «почти как надо», а шрифт чужой. Ловим её
+    честно — меряем ширину строки в Montserrat и в заведомо другом шрифте:
+    совпали до пикселя, значит Montserrat не подгрузился и рисует фолбэк."""
+    applied = page.evaluate("""() => {
+        // Классическая проба: меряем строку в самом фолбэке и в связке
+        // «Montserrat, фолбэк». Совпало — значит Montserrat не подхватился
+        // и рисует фолбэк. Сравнивать с ЧУЖИМ шрифтом нельзя: отсутствующий
+        // Montserrat уедет на системный sans, ширины разойдутся, и проба
+        // соврёт, что всё хорошо.
+        const probe = (family) => {
+            const el = document.createElement('span');
+            el.textContent = 'Автоматизация бизнес-процессов ИИ-агентами';
+            el.style.cssText = 'position:absolute;left:-9999px;top:0;white-space:nowrap;'
+                             + 'font-size:64px;font-weight:800;font-family:' + family;
+            document.body.appendChild(el);
+            const w = el.getBoundingClientRect().width;
+            el.remove();
+            return w;
+        };
+        return ['monospace', 'serif', 'sans-serif'].some(
+            g => Math.abs(probe('"Montserrat",' + g) - probe(g)) > 1);
+    }""")
+    if applied:
+        return
+    msg = ("шрифт Montserrat НЕ применился — страница рисует системным.\n"
+           "   Обычно это значит, что до fonts.googleapis.com нет доступа.\n"
+           "   Либо дайте машине интернет, либо положите шрифт локально и\n"
+           "   передайте --vendor КАТАЛОГ (fonts/css2.css + fonts/files/*.woff2).")
+    if not allow_fallback:
+        sys.exit("СТОП: " + msg + "\n   Собрать всё равно: --allow-fallback-fonts")
+    print("ВНИМАНИЕ: " + msg)
+
+
 def vendor_route(vendor):
     """Офлайн-прогон: внешние CDN подменяются файлами из каталога --vendor.
     На машине с интернетом флаг не нужен — страница возьмёт всё сама."""
@@ -191,6 +230,23 @@ def vendor_route(vendor):
 
     def handler(route):
         url = route.request.url
+        # Шрифт лекции (Montserrat) — из vendor/fonts: css2.css с путями,
+        # переписанными на files/*.woff2. Без него страница молча уедет на
+        # системный шрифт, и ролик выйдет «не в дизайне».
+        if "fonts.googleapis.com/css2" in url:
+            path = os.path.join(vendor, "fonts", "css2.css")
+            if os.path.isfile(path):
+                return route.fulfill(status=200, body=open(path, "rb").read(),
+                                     content_type="text/css")
+        if "fonts.gstatic.com/" in url:
+            path = os.path.join(vendor, "fonts", "files",
+                                url.rsplit("/", 1)[1].split("?")[0])
+            if os.path.isfile(path):
+                return route.fulfill(status=200, body=open(path, "rb").read(),
+                                     content_type="font/woff2")
+        if url.startswith("https://fonts.googleapis.com/css2") or \
+                "fonts.gstatic.com/" in url:
+            return route.fulfill(status=404, body=b"")
         for host, subs in (("unpkg.com/@phosphor-icons/web@2.1.1/",
                             ("phosphor", "phosphor-icons-web-2.1.1")),
                            ("font-awesome/6.4.0/", ("fa",))):
@@ -278,6 +334,8 @@ def main():
     ap.add_argument("--sec", type=float, default=8.0,
                     help="секунд на слайд, когда звука нет (--no-head)")
     ap.add_argument("--vendor", help="каталог с офлайн-копиями CDN (для прогона без интернета)")
+    ap.add_argument("--allow-fallback-fonts", action="store_true",
+                    help="собрать даже если Montserrat не подгрузился (шрифт будет чужой)")
     ap.add_argument("--supersample", type=int, default=1, choices=(1, 2),
                     help="2 — снимать в двойном разрешении (чётче мелкий текст)")
     args = ap.parse_args()
@@ -297,8 +355,8 @@ def main():
     print("Лекция %d: слайдов %d, снимаем %d" % (args.lecture, total, len(indexes)))
 
     print("1/4 · кадры слайдов %dx%d" % (W, H))
-    titles = shoot(args.lecture, set(indexes), frames,
-                   vendor=args.vendor, scale=args.supersample)
+    titles = shoot(args.lecture, set(indexes), frames, vendor=args.vendor,
+                   scale=args.supersample, allow_fallback=args.allow_fallback_fonts)
 
     print("2/4 · клипы говорящей головы")
     local, secs = {}, {}
