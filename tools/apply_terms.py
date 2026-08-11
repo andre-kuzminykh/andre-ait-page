@@ -35,6 +35,8 @@ def do_panels():
     total = 0
     for n in range(1, 9):
         path = 'automation/%d/index.html' % n
+        if not os.path.exists(path):
+            continue  # закрытый модуль — файла нет
         html = open(path, encoding='utf-8').read()
         m = re.search(r'(<script id="slide-notes"[^>]*>)(.*?)(</script>)', html, re.S)
         data = json.loads(m.group(2))

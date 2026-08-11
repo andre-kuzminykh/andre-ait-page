@@ -36,6 +36,11 @@ _COURSE_PAGES = (
     "automation/skills/index.html",
     "automation/1/practice/index.html",
 ) + tuple("automation/%d/index.html" % n for n in range(1, 9))
+# Открыт только модуль 1: лекции 2-8 закрыты и не опубликованы (см.
+# tests/test_lectures.py::test_locked_modules_closed). Проверяем то, что
+# реально лежит на сайте, — вернувшийся модуль подхватится сам.
+_COURSE_PAGES = tuple(
+    p for p in _COURSE_PAGES if os.path.exists(os.path.join(_ROOT, p)))
 
 
 def _read(rel_or_abs):

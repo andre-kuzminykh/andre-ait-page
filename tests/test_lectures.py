@@ -10,7 +10,13 @@ import os
 import re
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
+_ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
+# Открыт только модуль 1: лекции 2-8 закрыты и НЕ опубликованы — их файлов нет
+# в репозитории, поэтому по адресу /automation/2/ отдаётся 404 и контент
+# недоступен даже прямой ссылкой (это стережёт test_locked_modules_closed).
+# Проверки идут по фактически опубликованным лекциям, так что вернувшийся
+# модуль автоматически попадает под весь набор тестов — без правки списка.
+_LECTURES = tuple(r for r in _ALL_LECTURES if os.path.exists(os.path.join(_ROOT, r)))
 _VIMEO = ("automation/3/index.html", "automation/4/index.html", "automation/5/index.html")
 _NATIVE_CDN = {
     "automation/6/index.html": "corp/6/videos",
@@ -21,7 +27,10 @@ _NATIVE_CDN = {
 
 def _pages(only=None):
     for rel in (only or _LECTURES):
-        with open(os.path.join(_ROOT, rel), encoding="utf-8") as f:
+        path = os.path.join(_ROOT, rel)
+        if not os.path.exists(path):
+            continue  # закрытый модуль — проверять нечего
+        with open(path, encoding="utf-8") as f:
             yield rel, f.read()
 
 
@@ -597,3 +606,52 @@ def test_lecture1_web_preview_image():
                 '<meta name="twitter:card" content="summary_large_image">'):
         assert tag in html, "нет тега: " + tag
     assert "assets/1_long.jpg" not in html, "старая картинка превью должна уйти"
+
+
+# ── Доступ к модулям 2-8 закрыт (правка владельца) ────────────────────────
+
+def _published_pages():
+    """Все страницы/скрипты сайта, которые реально отдаются с Pages."""
+    skip = {".git", "tests", "tools", ".github", ".pytest_cache"}
+    for base, dirs, files in os.walk(_ROOT):
+        dirs[:] = [d for d in dirs if d not in skip and not d.startswith(".")]
+        for name in files:
+            if name.endswith((".html", ".js", ".json", ".xml", ".txt", ".webmanifest")):
+                path = os.path.join(base, name)
+                with open(path, encoding="utf-8", errors="ignore") as f:
+                    yield os.path.relpath(path, _ROOT), f.read()
+
+
+def test_locked_modules_closed():
+    """Открыт только модуль 1. Лекций 2-8 нет в репозитории — значит их нет и в
+    артефакте Pages: по адресу /automation/2/ отдаётся 404, контент недоступен
+    даже прямой ссылкой (не редирект и не спрятанный CSS-ом слой, из которого
+    исходник всё равно вычитывается). Архив контента — тег lectures-2-8-archive.
+    """
+    assert os.path.exists(os.path.join(_ROOT, "automation/1/index.html")), \
+        "модуль 1 открыт и должен быть опубликован"
+    for n in range(2, 9):
+        assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
+            "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
+
+
+def test_no_links_to_locked_modules():
+    """Ни одна опубликованная страница не ведёт на закрытый модуль — на сайте
+    нет ссылок, которые упирались бы в 404."""
+    link = re.compile(r"automation/[2-8](?=[/\"'#?)\s]|$)")
+    for rel, text in _published_pages():
+        hits = link.findall(text)
+        assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
+
+
+def test_locked_module_cards_have_no_href():
+    """Карточки модулей 2-8 на /automation/main/ — под замком и без href."""
+    with open(os.path.join(_ROOT, "automation/main/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    cards = re.findall(r'<a class="module( locked)?"([^>]*)>', html)
+    assert len(cards) == 8, "на главной курса восемь карточек модулей"
+    opened = [c for c in cards if not c[0]]
+    assert len(opened) == 1 and "href=" in opened[0][1], "открыт ровно один модуль — первый"
+    for locked, attrs in [c for c in cards if c[0]]:
+        assert "href=" not in attrs, "закрытая карточка не должна иметь href: " + attrs
+        assert 'aria-disabled="true"' in attrs, "закрытая карточка помечена aria-disabled"
