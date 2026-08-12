@@ -99,9 +99,13 @@ window.__fx = (function(){
       var p = (t - cue.at) / (cue.dur || 2.5);
       if (p <= 0 || p >= 1) continue;
       var k = bump(p), color = cue.fx === 'glow-solar' ? SOLAR : VIOLET;
+      // Насколько подрастает элемент. Для слова внутри строки нужен почти
+      // нулевой рост (правка владельца: «выделил, но не расширяй сильно») —
+      // иначе оно наезжает на соседние слова. Задаётся полем grow в сценарии.
+      var grow = (typeof cue.grow === 'number') ? cue.grow : 0.06;
 
       if (cue.fx === 'pop'){
-        el.style.transform = 'scale(' + (1 + 0.05 * k) + ')';
+        el.style.transform = 'scale(' + (1 + (grow === 0.06 ? 0.05 : grow) * k) + ')';
         el.style.setProperty('filter', 'drop-shadow(0 0 ' + (26 * k)
           + 'px rgba(139,92,246,' + (0.8 * k) + '))', 'important');
       } else if (cue.fx === 'underline'){
@@ -111,7 +115,7 @@ window.__fx = (function(){
         el.style.backgroundSize = (100 * easeOut(p * 2.2)) + '% 4px';
         el.style.backgroundPosition = '0 100%';
       } else {
-        el.style.transform = 'scale(' + (1 + 0.06 * k) + ')';
+        el.style.transform = 'scale(' + (1 + grow * k) + ')';
         // ВАЖНО: в лекции живёт глобальное `*{box-shadow:none!important}`
         // (канон «теней нет нигде»). Без явного important свечение молча не
         // рисуется — в кадре остаётся одна обводка.
@@ -119,7 +123,7 @@ window.__fx = (function(){
           + 'px rgba(' + (color === SOLAR ? '249,115,22' : '139,92,246') + ','
           + (0.55 * k) + ')', 'important');
         el.style.outline = (2.5 * k) + 'px solid ' + color;
-        el.style.outlineOffset = (4 * k) + 'px';
+        el.style.outlineOffset = ((cue.tight ? 1 : 4) * k) + 'px';
         el.style.borderRadius = getComputedStyle(el).borderRadius;
       }
       el.style.transformOrigin = 'center center';
@@ -134,8 +138,8 @@ window.__fx = (function(){
           var x = r.left - o.x + r.width / 2
                   + Math.cos(ang) * (r.width * 0.34 + sp * tau);
           var y = r.top - o.y + r.height / 2
-                  + Math.sin(ang) * (r.height * 0.3 + sp * tau) + 420 * tau * tau;
-          var life = clamp(tau / (cue.dur * 0.75));
+                  + Math.sin(ang) * (r.height * 0.3 + sp * tau) + 200 * tau * tau;
+          var life = clamp(tau / (cue.dur * 0.5));
           if (life >= 1) continue;
           var s = document.createElement('span');
           s.textContent = cue.burst;
