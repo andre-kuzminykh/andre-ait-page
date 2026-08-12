@@ -14,12 +14,28 @@
 """
 import json
 import os
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "automation", "1", "overlay-transform", "index.html")
 DST = os.path.join(ROOT, "automation", "1", "overlay-index", "index.html")
 PH = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "ph.json"),
                     encoding="utf-8"))
+# Ширину заголовка меряем по метрикам шрифта: от неё зависит, сколько
+# места остаётся значкам по бокам. У «Исследований и разработок» его
+# почти нет, и значки улетали за край кадра.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from ttf_width import Шрифт
+
+ШРИФТ = Шрифт(os.path.join(ROOT, "automation", "1", "overlay-index",
+                           "fonts", "Montserrat-Black.ttf"))
+КЕГЛЬ_ЗАГОЛОВКА = 54
+
+
+def запас(подпись):
+    """Сколько пикселей от края заголовка до края кадра."""
+    голая = подпись.replace("&amp;", "&")
+    return (1080 - ШРИФТ.ширина(голая, КЕГЛЬ_ЗАГОЛОВКА)) / 2.0 - 56
 
 
 def ico(name):
@@ -96,18 +112,65 @@ CSS = """/* ── Общее для этого ролика ──────�
 .scene .row.duo>.item{flex:0 0 400px}
 .duo .label{font-size:34px;margin-top:16px;white-space:nowrap}
 
-/* ── Блок индекса: крупный круг сверху, чипы снизу ──────────────────
-   Ряд чипов — это «однотипные элементы в ряд»: они одного размера, и
-   подсвечивается только тот, о котором говорят. */
+/* ── Блок индекса: одно слово, сияние и разлёт значков ──────────────
+   Владелец: «давай только заголовки — Данные / Модели и т.д., без
+   иконок, а оранжевым / фиолетовым сзади свечением и эмодзи слева
+   справа, как ты уже делал». Круг с иконкой убран совсем: якорем стало
+   само слово, цвет держит сияние за ним, а значки вылетают из-за краёв
+   слова влево и вправо — по букве они не проходят.
+   Кегль 54: «Исследования и разработки» на 64 занимает 1029px и в кадр
+   шириной 988 не помещается (замерено по метрикам шрифта). */
 .block{display:flex;flex-direction:column;align-items:center;width:100%}
-.block .head{display:flex;flex-direction:column;align-items:center}
-.block .head .slot{height:128px}
-.block .head .label{font-size:34px;margin-top:12px;white-space:nowrap}
-.block .chips{display:flex;gap:18px;justify-content:center;width:100%;margin-top:16px}
-.block .chips .item{flex:1 1 0}
-.block .chips .slot{height:80px}
-.block .chips .label{font-size:23px;margin-top:8px;white-space:nowrap}
-.block .cores{margin-top:14px}
+.block .head{position:relative;display:flex;align-items:center;justify-content:center}
+.block .title{
+    font-size:54px;font-weight:900;color:#fff;white-space:nowrap;
+    position:relative;z-index:1;letter-spacing:-.01em;
+    text-shadow:0 3px 18px rgba(10,4,24,.65),0 1px 4px rgba(10,4,24,.8);
+}
+/* Фиолетовое сияние на фиолетовой стене почти не читается, поэтому у
+   заголовков центр облака взят светлее обычного — оно работает светом,
+   а не цветом. Оранжевому этого не нужно, стена не оранжевая. */
+.block .head .glow{
+    width:880px;height:300px;
+    background:radial-gradient(closest-side,rgba(226,210,255,.95),rgba(152,102,250,.42) 52%,rgba(136,84,243,0) 74%);
+}
+.block .head .glow.glow-ember{
+    background:radial-gradient(closest-side,rgba(249,140,60,.82),rgba(249,115,22,.30) 55%,rgba(249,115,22,0) 74%);
+}
+/* Чипы — просто слова: круги под ними и были теми «иконками», от
+   которых владелец отказался. Подсветка тут не кольцо, а цвет и лёгкий
+   подрост; соседи при этом НЕ гаснут — они остаются белыми. */
+.block .chips{display:flex;gap:34px;justify-content:center;margin-top:34px}
+.block .chip{
+    font-size:28px;font-weight:800;color:rgba(255,255,255,.92);white-space:nowrap;
+    text-shadow:0 3px 16px rgba(10,4,24,.6),0 1px 4px rgba(10,4,24,.75);
+    transition:opacity .5s var(--ease),transform .5s var(--ease),color .45s var(--ease);
+}
+.block .chip.on.cur{transform:scale(1.09)}
+.block .chip.solar.on.cur{color:#C9B2FF}
+.block .chip.ember.on.cur{color:#FFB380}
+.block .cores{margin-top:26px}
+
+/* Значки вылетают из-за краёв заголовка — влево из левого края, вправо
+   из правого. Это Phosphor того же набора, а не эмодзи: эмодзи рисуются
+   системным шрифтом, которого на чужой машине может не быть. */
+.fly{position:absolute;top:50%;width:0;height:0;pointer-events:none;z-index:0}
+.fly.l{left:-4px}
+.fly.r{right:-4px}
+.fly i{
+    position:absolute;left:-20px;top:-20px;display:block;width:40px;height:40px;
+    opacity:0;color:#fff;
+}
+.fly svg{width:100%;height:100%;fill:currentColor}
+.fly.solar i{filter:drop-shadow(0 0 10px rgba(136,84,243,.95)) drop-shadow(0 2px 6px rgba(10,4,24,.6))}
+.fly.ember i{filter:drop-shadow(0 0 10px rgba(249,115,22,.95)) drop-shadow(0 2px 6px rgba(10,4,24,.6))}
+.scene.on .fly.on i{animation:flyOut 3s ease-out infinite}
+@keyframes flyOut{
+    0%{opacity:0;transform:translate(0,0) scale(.4) rotate(0deg)}
+    22%{opacity:.95}
+    58%{opacity:.8}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.05) rotate(var(--rot))}
+}
 
 /* ── Семь блоков сеткой 4 + 3 ───────────────────────────────────────
    В один ряд семь подписей не влезают: на колонку осталось бы 140px, а
@@ -207,18 +270,45 @@ def сетка7(времена, cur=None):
     return "".join(out)
 
 
+# Куда летят значки из-за краёв слова: влево и вправо, врассыпную по
+# высоте, с разными задержками — строем они читались бы как одна деталь.
+РАЗЛЁТ = [(104, -50, -14, 0.00), (166, 12, 12, 0.70), (214, -24, -8, 1.40)]
+# Когда заголовок широкий и вбок лететь некуда, значки уходят вверх —
+# над словом место есть всегда, зона начинается заметно выше строки.
+ВВЕРХ = [(38, -74, -14, 0.00), (72, -108, 12, 0.70), (26, -132, -8, 1.40)]
+
+
+def fly(in_, цвет, значок, сторона, место):
+    знак = -1 if сторона == "l" else 1
+    доля = max(0.0, min(1.0, место / 214.0))
+    траектории = РАЗЛЁТ if доля >= 0.55 else ВВЕРХ
+    куски = []
+    for dx, dy, rot, задержка in траектории:
+        if траектории is РАЗЛЁТ:
+            dx = int(dx * доля)
+        куски.append('<i style="--dx:%dpx;--dy:%dpx;--rot:%ddeg;animation-delay:%.2fs">%s</i>'
+                     % (знак * dx, dy, знак * rot, задержка, ico(значок)))
+    return ('<span class="fly %s %s el" data-in="%s">%s</span>'
+            % (цвет, сторона, in_, "".join(куски)))
+
+
 def блок(sid, in_, out_, icon, colour, подпись, шапка, шапка_cur, чипы, фразы=""):
-    """Одна и та же раскладка на все семь измерений."""
+    """Одна и та же раскладка на все семь измерений: слово, сияние за
+    ним, значки по бокам и ряд коротких слов снизу."""
     цвета = ["ember" if colour == "solar" else "solar", colour]
     т = ['        <!-- ══ %s ══ -->\n' % подпись,
          '        <section class="scene" id="%s" data-in="%s" data-out="%s">\n' % (sid, in_, out_),
          '            <div class="block">\n',
-         '                <div class="head item el"%s>%s<p class="label">%s</p></div>\n'
-         % (атрибуты(шапка, cur=шапка_cur), '<div class="slot">%s</div>' % circle(icon, colour, 116),
-            подпись),
+         '                <div class="head el"%s>'
+         '<div class="halo"><div class="glow %s"></div></div>%s'
+         '<p class="title">%s</p>%s</div>\n'
+         % (атрибуты(шапка, cur=шапка_cur), "glow-ember" if colour == "ember" else "",
+            fly(шапка, colour, icon, "l", запас(подпись)), подпись,
+            fly(шапка, colour, icon, "r", запас(подпись))),
          '                <div class="chips">\n']
-    for i, (t, зн, текст, окно) in enumerate(чипы):
-        т.append(item(t, зн, цвета[i % 2], 70, текст, cur=окно))
+    for i, (t, _, текст, окно) in enumerate(чипы):
+        т.append('                    <p class="chip %s el"%s>%s</p>\n'
+                 % (цвета[i % 2], атрибуты(t, cur=окно), текст))
     т.append('                </div>\n')
     if фразы:
         т.append(фразы)
@@ -280,7 +370,7 @@ A(блок("s6", "47.4", "63.4", "users-three", "ember", "Люди и культ
 A(блок("s7", "63.5", "83.9", "cpu", "solar", "Инфраструктура",
        "64.51", "64.51 65.85",
        [("67.71", "buildings", "Фундамент", "67.71 70.19"),
-        ("74.31", "database", "Доступ к данным", "74.31 75.65"),
+        ("74.31", "database", "Доступ", "74.31 75.65"),
         ("76.60", "lifebuoy", "Безопасность", "76.60 77.33"),
         ("77.33", "plugs-connected", "Стабильность", "77.33 78.39")],
        cores(core("79.67", "Быстро запускать и масштабировать", "ember"))))
