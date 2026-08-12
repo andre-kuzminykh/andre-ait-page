@@ -56,14 +56,12 @@ def check(lecture, slide):
             errs.append("%s: n=%s вне 4..16" % (where, c.get("n")))
 
     # Привязка к речи — тем же кодом, что и рендер, чтобы проверка не врала.
-    before = [c.get("at") for c in cues]
     bound = cue_times(json.loads(json.dumps(cues)), words)
     rows, tail = [], (words[-1]["e"] if words else 0)
-    for k, (c, b, was) in enumerate(zip(cues, bound, before), 1):
-        hit = c.get("word") and abs(b["at"] - was) > 1e-9
-        if c.get("word") and not hit and words:
+    for k, (c, b) in enumerate(zip(cues, bound), 1):
+        if c.get("word") and words and not b.get("bound"):
             errs.append("реплика %d: слова %r нет в речи — время останется %.1f"
-                        % (k, c["word"], was))
+                        % (k, c["word"], c.get("at")))
         if b["at"] > tail + 0.5 and words:
             errs.append("реплика %d: %.1f с — уже после конца речи (%.1f с)"
                         % (k, b["at"], tail))
