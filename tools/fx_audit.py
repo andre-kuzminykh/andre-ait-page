@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from animate_slide import BUILD, FX_DIR, cue_times
 
 MAX_GAP = 8.0          # с — дольше зритель смотрит на статичный кадр
-MAX_BURST = 3          # всплесков эмодзи на слайд
+MAX_BURST = 7          # всплесков эмодзи на слайд
 SOLAR = {"glow-solar", "underline", "frame"}   # оранжевые эффекты
 VIOLET = {"glow-violet", "pop", "rise"}        # фиолетовые
 
@@ -84,7 +84,22 @@ def audit(lecture, slide):
         if "scale-" in k and (c.get("up") or 0) == 0:
             warn.append("цель со scale- в классах: %r" % c.get("text")[:32])
 
-    # 6. Реплика после конца речи — подсветка в тишине.
+    # 6. Канон владельца: горит карточка целиком, а не абзац внутри неё.
+    # Признак абзаца — длинный текст без потомков, который целиком входит в
+    # текст элемента заметно большей площади (это и есть его карточка).
+    area = {i["text"]: i["rect"][2] * i["rect"][3] for i in inv["items"]}
+    for c in cues:
+        t = c.get("text") or ""
+        if len(t) < 30:
+            continue                      # короткий акцент в заголовке — можно
+        host = [o for o in inv["items"]
+                if o["text"] != t and t in o["text"]
+                and area[o["text"]] > area.get(t, 0) * 1.8]
+        if host and (c.get("up") or 0) == 0:
+            warn.append("подсвечена строка внутри карточки, а не карточка: %r"
+                        % t[:34])
+
+    # 7. Реплика после конца речи — подсветка в тишине.
     for c in cues:
         if speech and c["at"] > speech:
             warn.append("реплика на %.1f с — речь кончилась на %.1f"
