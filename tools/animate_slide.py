@@ -84,6 +84,20 @@ window.__fx = (function(){
 
   var targets = CUES.map(findTarget);
   var bases = targets.map(function(el){ return el ? el.getAttribute('style') || '' : ''; });
+  // Собственный transform элемента (у карточек это md:scale-105 из вёрстки).
+  // Эффекты дописывают свой scale ПОВЕРХ него, иначе карточка в момент вспышки
+  // скачком «сдувается» к масштабу 1 — раньше из-за этого такие карточки
+  // приходилось обходить стороной.
+  var baseTf = targets.map(function(el){
+    if (!el) return '';
+    var t = getComputedStyle(el).transform;
+    return (!t || t === 'none') ? '' : t + ' ';
+  });
+  // Галочка внутри пункта списка — её «ставит» эффект check.
+  var marks = targets.map(function(el){
+    return el ? el.querySelector('i, svg, span') : null;
+  });
+  var markBases = marks.map(function(el){ return el ? el.getAttribute('style') || '' : ''; });
 
   function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
   function easeOut(p){ return 1 - Math.pow(1 - clamp(p), 3); }
@@ -119,7 +133,10 @@ window.__fx = (function(){
       var born = clamp(a / 0.18);          // рождение: 0.4 → 1 за 0.18 с
       var fade = q < 0.62 ? 1 : 1 - (q - 0.62) / 0.38;
       var s = document.createElement('span');
-      s.textContent = cue.burst;
+      // burst может быть списком: тогда вылетает не один значок, а набор
+      // (цифры для «цифровой революции» и т. п.).
+      s.textContent = (cue.burst instanceof Array)
+        ? cue.burst[j % cue.burst.length] : cue.burst;
       // Шрифт эмодзи задаём явно. Без него Chromium берёт текстовое начертание
       // из шрифта лекции: 👁 и ⚡ выходят чёрно-белыми контурами вместо цветных.
       s.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;'
@@ -140,6 +157,7 @@ window.__fx = (function(){
     // вспышка не появлялась в кадре вообще.
     for (var r = 0; r < CUES.length; r++){
       if (targets[r]) targets[r].setAttribute('style', bases[r]);
+      if (marks[r]) marks[r].setAttribute('style', markBases[r]);
     }
     // Геометрию снимаем на погашенном кадре: масштаб соседней подсветки не
     // должен смещать точку рождения эмодзи, иначе разлёт «дышит».
@@ -154,25 +172,26 @@ window.__fx = (function(){
       var p = tau / (cue.dur || 2.5);
       if (p <= 0 || p >= 1) continue;
       var k = bump(p), color = cue.fx === 'glow-solar' ? SOLAR : VIOLET;
+      var bt = baseTf[i];   // собственный масштаб карточки — эффект пишет поверх
       // Насколько подрастает элемент. Для слова внутри строки нужен почти
       // нулевой рост (правка владельца: «выделил, но не расширяй сильно») —
       // иначе оно наезжает на соседние слова. Задаётся полем grow в сценарии.
       var grow = (typeof cue.grow === 'number') ? cue.grow : 0.06;
 
       if (cue.fx === 'pop'){
-        el.style.transform = 'scale(' + (1 + (grow === 0.06 ? 0.05 : grow) * k) + ')';
+        el.style.transform = bt + 'scale(' + (1 + (grow === 0.06 ? 0.05 : grow) * k) + ')';
         el.style.setProperty('filter', 'drop-shadow(0 0 ' + (26 * k)
           + 'px rgba(139,92,246,' + (0.8 * k) + '))', 'important');
       } else if (cue.fx === 'frame'){
         // Просто рамка: только оранжевый контур, без ореола и без всплеска
         // (правка владельца по «Ключевое отличие — автономность»). Рост почти
         // нулевой — плашка стоит в потоке, дёргать её незачем.
-        el.style.transform = 'scale(' + (1 + (cue.grow || 0.01) * k) + ')';
+        el.style.transform = bt + 'scale(' + (1 + (cue.grow || 0.01) * k) + ')';
         el.style.outline = (3 * k) + 'px solid ' + SOLAR;
         el.style.outlineOffset = (3 * k) + 'px';
         el.style.borderRadius = getComputedStyle(el).borderRadius;
       } else if (cue.fx === 'underline'){
-        el.style.transform = 'scale(' + (1 + 0.04 * k) + ')';
+        el.style.transform = bt + 'scale(' + (1 + 0.04 * k) + ')';
         el.style.backgroundImage = 'linear-gradient(' + SOLAR + ',' + SOLAR + ')';
         el.style.backgroundRepeat = 'no-repeat';
         el.style.backgroundSize = (100 * easeOut(p * 2.2)) + '% 4px';
@@ -180,16 +199,49 @@ window.__fx = (function(){
       } else if (cue.fx === 'rise'){
         // Всплытие: карточка приподнимается и подсвечивается снизу. Для рядов
         // одинаковых плиток читается лучше обводки — глаз ловит движение.
-        el.style.transform = 'translateY(' + (-14 * k) + 'px) scale('
+        el.style.transform = bt + 'translateY(' + (-14 * k) + 'px) scale('
           + (1 + grow * k) + ')';
         el.style.setProperty('box-shadow', '0 ' + (18 * k) + 'px ' + (44 * k)
           + 'px -' + (10 * k) + 'px rgba('
           + (color === SOLAR ? '249,115,22' : '139,92,246') + ','
           + (0.75 * k) + ')', 'important');
+      } else if (cue.fx === 'zoom'){
+        // Просто увеличение, без рамки и свечения (правка владельца: слова и
+        // карточки, вокруг которых рамка не нужна, — «просто увеличить»).
+        el.style.transform = bt + 'scale('
+          + (1 + (typeof cue.grow === 'number' ? cue.grow : 0.09) * k) + ')';
+      } else if (cue.fx === 'check'){
+        // «Ставим галочку»: значок в пункте списка прорисовывается слева
+        // направо, подрастает и вспыхивает оранжевым. Сам пункт чуть подаётся
+        // вправо — как будто его только что отметили.
+        var mark = marks[i];
+        if (mark){
+          mark.style.setProperty('clip-path',
+            'inset(0 ' + (100 - 100 * easeOut(clamp(p / 0.45))) + '% 0 0)', 'important');
+          mark.style.setProperty('transform', 'scale(' + (1 + 0.6 * k) + ')', 'important');
+          mark.style.setProperty('color', SOLAR, 'important');
+          mark.style.setProperty('filter', 'drop-shadow(0 0 ' + (16 * k)
+            + 'px rgba(249,115,22,' + (0.9 * k) + '))', 'important');
+        }
+        el.style.transform = bt + 'translateX(' + (7 * k) + 'px)';
+      } else if (cue.fx === 'fill'){
+        // Заливка карточки снизу вверх: фиолетовое поле, на его фронте —
+        // оранжевая полоска (правка владельца вместо эмодзи снизу).
+        var h = 100 * easeOut(clamp(p / 0.6));
+        var a = p < 0.72 ? 1 : 1 - (p - 0.72) / 0.28;
+        var edge = h > 1.4 ? h - 1.4 : 0;
+        el.style.setProperty('background-image',
+          'linear-gradient(to top, rgba(139,92,246,' + (0.34 * a) + ') 0%,'
+          + 'rgba(139,92,246,' + (0.34 * a) + ') ' + edge + '%,'
+          + 'rgba(249,115,22,' + a + ') ' + edge + '%,'
+          + 'rgba(249,115,22,' + a + ') ' + h + '%,'
+          + 'rgba(0,0,0,0) ' + h + '%)', 'important');
+        el.style.setProperty('background-repeat', 'no-repeat', 'important');
+        el.style.setProperty('background-size', '100% 100%', 'important');
       } else if (cue.fx === 'none'){
         // Только всплеск эмодзи, элемент не трогаем (он служит якорем).
       } else {
-        el.style.transform = 'scale(' + (1 + grow * k) + ')';
+        el.style.transform = bt + 'scale(' + (1 + grow * k) + ')';
         // ВАЖНО: в лекции живёт глобальное `*{box-shadow:none!important}`
         // (канон «теней нет нигде»). Без явного important свечение молча не
         // рисуется — в кадре остаётся одна обводка.

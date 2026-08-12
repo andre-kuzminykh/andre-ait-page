@@ -24,10 +24,18 @@ MAX_GAP = 8.0          # с — дольше зритель смотрит на 
 MAX_BURST = 7          # всплесков эмодзи на слайд
 SOLAR = {"glow-solar", "underline", "frame"}   # оранжевые эффекты
 VIOLET = {"glow-violet", "pop", "rise"}        # фиолетовые
+NEUTRAL = {"zoom", "check", "none", "fill"}    # без своего цвета — не сливаются
+# Эффекты, рисующие рамку вокруг цели. Вокруг слова внутри строки такая рамка
+# запрещена (правка владельца: «не надо слова выделять в прямоугольники»).
+OUTLINE = {"glow-solar", "glow-violet", "frame"}
+# Признаки того, что у элемента УЖЕ есть своя коробка — по ней рамка уместна.
+BOXY = ("rounded", "border", "bg-")
 
 
 def tone(fx):
-    return "оранж" if fx in SOLAR else "фиолет" if fx in VIOLET else "фиолет"
+    if fx in NEUTRAL:
+        return "нейтр"
+    return "оранж" if fx in SOLAR else "фиолет"
 
 
 def audit(lecture, slide):
@@ -59,6 +67,8 @@ def audit(lecture, slide):
 
     # 2. Цвет: две подряд одного тона сливаются в одно длинное пятно.
     for a, b in zip(cues, cues[1:]):
+        if tone(a.get("fx")) == "нейтр":
+            continue
         if tone(a.get("fx")) == tone(b.get("fx")) \
                 and b["at"] - (a["at"] + a.get("dur", 2.5)) < 1.5:
             warn.append("подряд один цвет (%s): %.1f и %.1f с"
@@ -90,8 +100,8 @@ def audit(lecture, slide):
     area = {i["text"]: i["rect"][2] * i["rect"][3] for i in inv["items"]}
     for c in cues:
         t = c.get("text") or ""
-        if len(t) < 30:
-            continue                      # короткий акцент в заголовке — можно
+        if len(t) < 30 or c.get("fx") == "check":
+            continue      # короткий акцент в заголовке и галочка в пункте — можно
         host = [o for o in inv["items"]
                 if o["text"] != t and t in o["text"]
                 and area[o["text"]] > area.get(t, 0) * 1.8]
@@ -99,7 +109,23 @@ def audit(lecture, slide):
             warn.append("подсвечена строка внутри карточки, а не карточка: %r"
                         % t[:34])
 
-    # 7. Реплика после конца речи — подсветка в тишине.
+    # 7. Прямоугольник вокруг слова внутри строки — запрещён каноном. Признак:
+    # у элемента нет своей коробки в классах, а его текст целиком входит в
+    # текст элемента побольше (значит, это кусок чужой строки). Такому месту
+    # положено подчёркивание или увеличение, а не обводка.
+    by_text = {i["text"]: i for i in inv["items"]}
+    for c in cues:
+        if c.get("fx") not in OUTLINE or (c.get("up") or 0) > 0:
+            continue
+        it = by_text.get(c.get("text"))
+        if not it or any(b in (it.get("cls") or "") for b in BOXY):
+            continue
+        if any(o["text"] != it["text"] and it["text"] in o["text"]
+               for o in inv["items"]):
+            warn.append("рамка вокруг слова в строке: %r — нужно underline/zoom"
+                        % it["text"][:34])
+
+    # 8. Реплика после конца речи — подсветка в тишине.
     for c in cues:
         if speech and c["at"] > speech:
             warn.append("реплика на %.1f с — речь кончилась на %.1f"

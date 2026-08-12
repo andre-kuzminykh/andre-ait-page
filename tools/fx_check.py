@@ -18,7 +18,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from animate_slide import BUILD, FX_DIR, cue_times
 
-FX = {"pop", "glow-violet", "glow-solar", "frame", "underline", "rise", "none"}
+FX = {"pop", "glow-violet", "glow-solar", "frame", "underline", "rise", "none",
+      "zoom", "check", "fill"}
 
 
 def load(path):
