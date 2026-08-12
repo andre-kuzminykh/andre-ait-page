@@ -41,7 +41,10 @@ import urllib.parse
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PORT = 8321
+# Порт локального сервера. Через LECTURE_PORT его сдвигают, когда несколько
+# рендеров идут одновременно (42 слайда лекции гоним пачками параллельно) —
+# иначе второй процесс падает на «address already in use».
+PORT = int(os.environ.get("LECTURE_PORT") or 8321)
 W, H = 1920, 1080
 FPS = 30
 
