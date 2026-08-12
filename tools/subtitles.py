@@ -19,7 +19,7 @@
     эффекты будет не к чему;
   * local — faster-whisper на своей машине, без сети наружу.
 
-Ключ искать не нужно, инструмент找 сам — по порядку:
+Ключ искать не нужно, инструментищет сам — по порядку:
   1. переменные OPENAI_API_KEY / LLM_API_KEY;
   2. .env рядом с проектом и в домашнем каталоге;
   3. окружение systemd-юнитов проекта (andre-ai-web, andre-ai-test, andre-ai-dev).
@@ -40,7 +40,7 @@ import urllib.parse
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from record_lecture import ROOT, ffmpeg_bin, duration, head_clips, fetch
+from record_lecture import ROOT, duration, head_clips, fetch
 
 BUILD = os.path.join(ROOT, "build")
 TIMINGS = os.path.join(BUILD, "timings")
@@ -102,9 +102,25 @@ def find_key():
 
 # ── распознавание ─────────────────────────────────────────────────────────
 
+def soft_ffmpeg():
+    """ffmpeg тут не обязателен: он ускоряет загрузку (шлём звук вместо видео)
+    и знает длительность. Нет его — длительность придёт из ответа API."""
+    import shutil
+    exe = shutil.which("ffmpeg")
+    if exe:
+        return exe
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return None
+
+
 def audio_of(ff, clip, dst):
     """Отдельная звуковая дорожка: грузить на API 3 МБ видео вместо 0.5 МБ
     звука незачем. Не получилось — отдадим исходный файл, он тоже принимается."""
+    if not ff:
+        return clip
     try:
         subprocess.run([ff, "-y", "-loglevel", "error", "-i", clip, "-vn",
                         "-ac", "1", "-ar", "16000", "-c:a", "aac", dst],
@@ -139,7 +155,7 @@ def via_openai(path, key, base):
         data = json.loads(r.read().decode("utf-8"))
     words = [{"w": w["word"].strip(), "s": round(w["start"], 3),
               "e": round(w["end"], 3)} for w in data.get("words", [])]
-    return words, data.get("text", "")
+    return words, data.get("text", ""), data.get("duration")
 
 
 def via_local(path):
@@ -154,7 +170,7 @@ def via_local(path):
         for w in (seg.words or []):
             words.append({"w": w.word.strip(), "s": round(w.start, 3),
                           "e": round(w.end, 3)})
-    return words, " ".join(text)
+    return words, " ".join(text), None
 
 
 # ── SRT ───────────────────────────────────────────────────────────────────
@@ -188,7 +204,7 @@ def main():
                     help="показать план и найденный источник ключа, ничего не вызывая")
     args = ap.parse_args()
 
-    ff = ffmpeg_bin()
+    ff = soft_ffmpeg()
     os.makedirs(TIMINGS, exist_ok=True)
     os.makedirs(os.path.join(BUILD, "head-clips"), exist_ok=True)
 
@@ -217,6 +233,7 @@ def main():
 
     print("лекция %d: клипов %d, распознаём %d, движок %s"
           % (args.lecture, len(clips), len(idxs), args.engine))
+    print("ffmpeg: %s" % (ff or "нет — длительность возьму из ответа API"))
     if args.dry_run:
         print("сухой прогон: сетевых вызовов не делаю")
         return
@@ -230,14 +247,15 @@ def main():
         tj = os.path.join(TIMINGS, tag + ".json")
 
         if os.path.exists(tj):
-            words = json.load(open(tj, encoding="utf-8"))["words"]
+            saved = json.load(open(tj, encoding="utf-8"))
+            words, secs = saved["words"], saved.get("seconds")
             text = " ".join(w["w"] for w in words)
             print("  %d/%d · слайд %d — уже распознан" % (n, len(idxs), i + 1))
         else:
             src = audio_of(ff, clip, os.path.join(BUILD, "head-clips", tag + ".m4a"))
-            words, text = (via_openai(src, key, base) if args.engine == "openai"
-                           else via_local(src))
-            json.dump({"words": words, "text": text},
+            words, text, secs = (via_openai(src, key, base) if args.engine == "openai"
+                                 else via_local(src))
+            json.dump({"words": words, "text": text, "seconds": secs},
                       open(tj, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             print("  %d/%d · слайд %d — слов %d" % (n, len(idxs), i + 1, len(words)))
 
@@ -248,7 +266,11 @@ def main():
         shifted, no = srt(words, args.per, shift=clock, start_no=no)
         full += shifted
         plain.append(text)
-        clock += duration(ff, clip) or 0.0
+        # Сдвиг следующего слайда: длительность клипа. Порядок источников —
+        # ffmpeg, ответ API, конец последнего слова (последнее приблизительно,
+        # но лучше, чем ноль: иначе субтитры съедут на весь остаток лекции).
+        clock += ((duration(ff, clip) if ff else None) or secs
+                  or (words[-1]["e"] if words else 0.0))
 
     if len(idxs) > 1:
         stem = os.path.join(TIMINGS, "lecture%d-full" % args.lecture)
