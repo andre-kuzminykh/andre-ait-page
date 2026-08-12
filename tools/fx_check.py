@@ -40,8 +40,15 @@ def check(lecture, slide):
     errs, cues = [], scen.get("cues") or []
     if not cues:
         errs.append("пустой список cues")
-    if len(cues) > 9:
-        errs.append("реплик %d — больше семи рябит в кадре" % len(cues))
+    # Плотность, а не голое число: на минуту речи семь подсветок — редко,
+    # а на пятнадцать секунд — уже рябь. Предел — примерно одна на четыре
+    # секунды: перечисления в речи («восприятие — мышление — действие»)
+    # идут плотнее среднего темпа, и запрещать их нельзя.
+    speech = words[-1]["e"] if words else 0
+    limit = max(7, int(speech / 4) + 1) if speech else 9
+    if len(cues) > limit:
+        errs.append("реплик %d на %.0f с речи — рябит, предел %d"
+                    % (len(cues), speech, limit))
 
     for k, c in enumerate(cues, 1):
         where = "реплика %d (%s)" % (k, c.get("word") or c.get("text", "")[:20])
