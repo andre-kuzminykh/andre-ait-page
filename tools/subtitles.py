@@ -148,6 +148,25 @@ def _from_systemd():
     return None, None
 
 
+def base_from_files():
+    """Адрес сервера берём ОТТУДА ЖЕ, откуда ключ. Ключ из .env проекта, а
+    база — умолчанием OpenAI: если в .env свой LLM_BASE_URL (прокси, другой
+    провайдер), запрос ушёл бы не туда и вернулся 401."""
+    for path in ENV_FILES:
+        if not os.path.isfile(path):
+            continue
+        try:
+            text = open(path, encoding="utf-8", errors="ignore").read()
+        except OSError:
+            continue
+        for name in ("OPENAI_BASE_URL", "LLM_BASE_URL"):
+            m = re.search(r"^\s*(?:export\s+)?%s\s*=\s*[\"']?([^\"'\s#]+)" % name,
+                          text, re.M)
+            if m:
+                return m.group(1), path
+    return None, None
+
+
 def find_key():
     for probe in (_from_env, _from_files, _from_systemd):
         key, where = probe()
@@ -291,9 +310,15 @@ def main():
                      "   Задайте OPENAI_API_KEY=... перед командой либо "
                      "используйте --engine local."
                      % (", ".join(ENV_NAMES), ", ".join(ENV_FILES), ", ".join(UNITS)))
-        base = (os.environ.get("OPENAI_BASE_URL") or os.environ.get("LLM_BASE_URL")
-                or "https://api.openai.com/v1")
-        print("ключ найден: %s · сервер %s" % (where, base))
+        base = os.environ.get("OPENAI_BASE_URL") or os.environ.get("LLM_BASE_URL")
+        src = "переменная окружения"
+        if not base:
+            base, from_file = base_from_files()
+            src = from_file or ""
+        if not base:
+            base, src = "https://api.openai.com/v1", "умолчание"
+        print("ключ найден: %s" % where)
+        print("сервер: %s (%s)" % (base, src))
 
     print("лекция %d: клипов %d, распознаём %d, движок %s"
           % (args.lecture, len(clips), len(idxs), args.engine))
