@@ -80,6 +80,59 @@ CSS = """/* ── Общее для этого ролика ──────�
     100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.5)}
 }
 
+/* Вылетающие значки: из-под круга вверх идут цифры, мозги, роботы или
+   молнии — «где данные, цифры вылетают, где intelligence — мозги».
+   Значки те же, что в кругах (Phosphor), а не эмодзи: эмодзи рисуются
+   системным шрифтом, которого на чужой машине может не быть вовсе. */
+/* Значки вылетают ИЗ круга веером вверх: снизу под кругом стоит подпись,
+   и пролетающая мимо цифра садилась прямо на буквы. */
+.fly{
+    position:absolute;left:50%;top:56px;width:0;height:0;
+    pointer-events:none;z-index:0;
+}
+.fly i,.fly b{
+    position:absolute;left:-25px;top:-25px;display:block;width:50px;height:50px;
+    font:900 44px/1 'Montserrat',sans-serif;text-align:center;opacity:0;color:#fff;
+    text-shadow:0 3px 14px rgba(10,4,24,.7);
+}
+.item .slot{position:relative;z-index:1}
+.fly svg{width:100%;height:100%;fill:currentColor;
+    filter:drop-shadow(0 3px 10px rgba(10,4,24,.55))}
+/* Значок белый, а цвет ему даёт ореол: на оранжевом градиенте оранжевая
+   цифра пропадала, на фиолетовом — фиолетовый мозг. */
+.fly.solar i,.fly.solar b{filter:drop-shadow(0 0 10px rgba(136,84,243,.95)) drop-shadow(0 2px 6px rgba(10,4,24,.6))}
+.fly.ember i,.fly.ember b{filter:drop-shadow(0 0 10px rgba(249,115,22,.95)) drop-shadow(0 2px 6px rgba(10,4,24,.6))}
+.scene.on .fly.on i,.scene.on .fly.on b{animation:flyUp 3s ease-out infinite}
+@keyframes flyUp{
+    0%{opacity:0;transform:translate(0,8px) scale(.55) rotate(0deg)}
+    22%{opacity:1}
+    70%{opacity:.9}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.15) rotate(var(--rot))}
+}
+
+/* Перечёркивание: владелец просил «интуицию перечеркни анимацией». */
+.strike{
+    position:absolute;left:50%;top:56px;width:170px;height:170px;
+    transform:translate(-50%,-50%);pointer-events:none;z-index:3;overflow:visible;
+}
+.strike.el,.strike.el.on{opacity:1;transform:translate(-50%,-50%)}
+.strike line{
+    stroke:#fff;stroke-width:9;stroke-linecap:round;
+    stroke-dasharray:240;stroke-dashoffset:240;
+    filter:drop-shadow(0 2px 7px rgba(10,4,24,.85));
+}
+.strike.el.on line{animation:drawStrike .5s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes drawStrike{to{stroke-dashoffset:0}}
+
+/* Свечение, которое поднимается вверх (владелец про «предел цифровой
+   модели»): вместо ровной пульсации облако всплывает и тает. */
+.el.on .glow.rise{animation:glowRise 2.8s ease-out infinite}
+@keyframes glowRise{
+    0%{opacity:0;transform:translate(-50%,10%) scale(.75)}
+    35%{opacity:1}
+    100%{opacity:0;transform:translate(-50%,-78%) scale(1.25)}
+}
+
 /* Два элемента в кадре стоят ШИРОКО: владелец просил развести их так,
    чтобы каждый оказался над своей картиной, а середина осталась пустой
    (там его голова). Центры картин в кадре — 235 и 820 по горизонтали. */
@@ -261,12 +314,12 @@ def item(in_, icon, colour, size, label, cur=None, out=None, extra="", halo="", 
                '<div class="slot">%s</div>' % circle(icon, colour, size), label, extra))
 
 
-def core(in_, текст, цвет, out=None, halo=False):
+def core(in_, текст, цвет, out=None, halo=False, ещё=""):
     # ВНУТРИ <p> только строчные теги: <div> браузер закрывает абзац
     # раньше времени, и фраза вываливалась из .core — «Предел цифровой
     # модели» вышел системным кеглем 16px вместо 38.
-    гало = ('<span class="halo"><span class="glow %s"></span></span>'
-            % ("glow-ember" if цвет == "ember" else "")) if halo else ""
+    гало = ('<span class="halo"><span class="glow %s %s"></span></span>'
+            % ("glow-ember" if цвет == "ember" else "", ещё)) if halo else ""
     return ('            <p class="core %s el"%s>%s%s</p>\n'
             % (цвет, атрибуты(in_, out), гало, текст))
 
@@ -280,6 +333,38 @@ def sub(in_, текст):
     return '<p class="sub el" data-in="%s">%s</p>' % (in_, текст)
 
 
+def halo(цвет, in_, ещё=""):
+    return ('<div class="halo el" data-in="%s"><div class="glow %s %s"></div></div>'
+            % (in_, "glow-ember" if цвет == "ember" else "", ещё))
+
+
+# Разлёт значков: слева направо, каждый со своим сдвигом, поворотом и
+# задержкой — иначе они летят строем и выглядят как одна деталь.
+# Куда летит каждый значок: сдвиг по x, по y, поворот и задержка. Веер
+# вверх из центра круга — вниз нельзя, там подпись.
+# Выше -105 не поднимаем: круг стоит на y≈330, а зона графики кончается
+# на 238 — значок улетал бы под самую шапку.
+РАЗЛЁТ = [(-138, -52, -18, 0.00), (-78, -88, 12, 0.55), (0, -104, -8, 1.10),
+          (78, -84, 16, 1.65), (138, -48, -14, 2.20)]
+
+
+def fly(in_, цвет, значок=None, цифры=None):
+    куски = []
+    for (dx, dy, rot, задержка), знак in zip(РАЗЛЁТ, (цифры or [None] * 5)):
+        тег = "b" if цифры else "i"
+        нутро = знак if цифры else ico(значок)
+        куски.append('<%s style="--dx:%dpx;--dy:%dpx;--rot:%ddeg;animation-delay:%.2fs">%s</%s>'
+                     % (тег, dx, dy, rot, задержка, нутро, тег))
+    return ('<div class="fly %s el" data-in="%s">%s</div>' % (цвет, in_, "".join(куски)))
+
+
+def strike(in_):
+    """Перечёркивание круга: линия чертится по диагонали."""
+    return ('<div class="strike el" data-in="%s">'
+            '<svg viewBox="0 0 170 170"><line x1="20" y1="150" x2="150" y2="20"/></svg>'
+            '</div>' % in_)
+
+
 # ── СЦЕНА 1 · три трансформации ─────────────────────────────────────
 A('        <!-- ══ СЦЕНА 1 · слайд 17 · Agile → Цифровая → AI ══ -->\n')
 A('        <section class="scene" id="s1" data-in="0.9" data-out="40.25">\n')
@@ -289,13 +374,13 @@ A('                <div class="link el" data-in="3.85">'
   '<line x1="148" y1="56" x2="792" y2="56"/></svg></div>\n')
 A('            <div class="row">\n')
 A(item("3.85", "users-three", "solar", 104, "Agile",
-       cur="3.74 4.90 6.86 11.53 11.78 17.39 36.54 40.25",
+       cur="6.86 17.39",
        extra='<p class="role el" data-in="10.08">Команды</p>', cls="item i1"))
 A(item("4.62", "database", "ember", 104, "Цифровая",
-       cur="4.62 6.34 17.88 26.74",
+       cur="17.88 26.74",
        extra='<p class="role el" data-in="18.92">Данные</p>', cls="item i2"))
 A(item("5.30", "brain", "solar", 104, "ИИ",
-       cur="5.30 6.69 26.74 32.73",
+       cur="26.74 32.73",
        extra='<p class="role el" data-in="30.60">Решения</p>', cls="item i3"))
 A('            </div>\n')
 A(core("32.92", "Новый этап эволюции", "ember"))
@@ -322,7 +407,7 @@ A('                <div class="top item el" data-in="40.66" data-cur="40.66 42.1
 A('                <div class="down">\n')
 # Владелец: задачи подписаны по отдельности и выходят по очереди.
 for t, подпись in [("42.60", "Задача 1"), ("43.20", "Задача 2"), ("43.80", "Задача 3")]:
-    A(item(t, "list-checks", "ember", 96, подпись, cur="43.80 44.37"))
+    A(item(t, "list-checks", "ember", 96, подпись))
 A('                </div>\n')
 A(cores(18, core("44.46", "Контроль есть", "solar", out="45.74"),
         core("45.74", "Изменения — медленные", "ember")))
@@ -429,7 +514,8 @@ A('        </section>\n\n')
 A('        <!-- ══ СЦЕНА 9 · слайд 19 · решения по фактам, а не по интуиции ══ -->\n')
 A('        <section class="scene" id="s9" data-in="91.1" data-out="98.7">\n')
 A('            <div class="row duo">\n')
-A(item("93.08", "lightbulb", "solar", 104, "Интуиция", cur="93.08 94.66", cls="item dim"))
+A(item("93.08", "lightbulb", "solar", 104, "Интуиция", cur="93.08 94.66",
+       cls="item dim", extra=strike("94.30")))
 A(item("94.66", "check-circle", "ember", 104, "Факты", cur="94.66 95.49"))
 A('            </div>\n')
 A(core("96.34", "Data-driven управление", "solar"))
@@ -440,7 +526,7 @@ A('        <!-- ══ СЦЕНА 10 · слайд 19 · человек оста
 A('        <section class="scene" id="s10" data-in="98.8" data-out="106.9">\n')
 A('            <div class="row duo">\n')
 A(item("99.00", "user-gear", "solar", 112, "Человек", cur="98.84 102.14",
-       extra=sub("99.74", "Центр решений")))
+       extra=sub("99.74", "Центр решений"), halo=halo("solar", "99.00")))
 A(item("102.14", "warning", "ember", 112, "Ограничение", cur="102.14 106.81",
        extra=sub("105.12", "Дальше — ИИ"),
        halo='<div class="halo el" data-in="102.14"><div class="glow glow-ember"></div></div>'))
@@ -466,7 +552,7 @@ A('            <div class="row duo">\n')
 A(item("121.60", "clock", "ember", 104, "Скорость мышления", cur="121.60 123.36"))
 A(item("123.36", "eye", "solar", 104, "Масштаб внимания", cur="123.36 124.75"))
 A('            </div>\n')
-A(core("125.50", "Предел цифровой модели", "ember", halo=True))
+A(core("125.50", "Предел цифровой модели", "ember", halo=True, ещё="rise"))
 A('        </section>\n\n')
 
 # ── СЦЕНА 13 · data-driven → intelligence-driven ────────────────────
@@ -478,9 +564,10 @@ A('                <div class="link el" data-in="130.20">'
   '<line x1="272" y1="56" x2="676" y2="56"/>'
   '<polygon points="704,56 674,42 674,70"/></svg></div>\n')
 A('            <div class="row duo">\n')
-A(item("129.39", "chart-line-up", "ember", 104, "Data-driven", cur="129.39 130.92"))
+A(item("129.39", "chart-line-up", "ember", 104, "Data-driven", cur="129.39 130.92",
+       halo=halo("ember", "129.39") + fly("129.39", "ember", цифры=["1", "0", "1", "0", "1"])))
 A(item("130.92", "brain", "solar", 104, "Intelligence-driven", cur="130.92 133.13",
-       extra=sub("133.18", "Решает система") + sub("135.64", "В масштабе компании")))
+       halo=halo("solar", "130.92") + fly("130.92", "solar", значок="brain")))
 A('            </div>\n')
 A('            </div>\n')
 A(core("138.90", "Другой уровень управления", "ember"))
@@ -491,11 +578,11 @@ A('        <!-- ══ СЦЕНА 14 · слайд 21 · AI-driven → AI-first 
 A('        <section class="scene" id="s14" data-in="142.6" data-out="173.5">\n')
 A(cores(0, core("143.10", "Три уровня зрелости", "solar", out="146.54")))
 A('            <div class="row">\n')
-A(item("146.70", "wrench", "solar", 96, "AI-Driven", cur="146.70 147.60 149.68 157.79",
+A(item("146.70", "wrench", "solar", 96, "AI-Driven", cur="149.68 157.79",
        extra=sub("152.20", "ИИ как инструмент")))
-A(item("147.60", "gear-six", "ember", 96, "AI-First", cur="147.60 148.50 158.08 167.57",
+A(item("147.60", "gear-six", "ember", 96, "AI-First", cur="158.08 167.57",
        extra=sub("160.95", "Встроен в модель")))
-A(item("148.50", "rocket", "solar", 96, "AI-Native", cur="148.50 149.47 167.92 173.47",
+A(item("148.50", "rocket", "solar", 96, "AI-Native", cur="167.92 173.47",
        extra=sub("171.66", "ИИ и есть продукт")))
 A('            </div>\n')
 A('        </section>\n\n')
@@ -509,9 +596,10 @@ A('                <div class="link el" data-in="176.98">'
   '<line x1="272" y1="56" x2="676" y2="56"/>'
   '<polygon points="704,56 674,42 674,70"/></svg></div>\n')
 A('            <div class="row duo">\n')
-A(item("175.12", "robot", "solar", 108, "Использует ИИ", cur="175.12 176.98"))
+A(item("175.12", "robot", "solar", 108, "Использует ИИ", cur="175.12 176.98",
+       halo=halo("solar", "175.12") + fly("175.12", "solar", значок="robot")))
 A(item("177.58", "sparkle", "ember", 108, "Существует<br>благодаря ИИ", cur="177.58 179.65",
-       halo='<div class="halo el" data-in="177.58"><div class="glow glow-ember"></div></div>'))
+       halo=halo("ember", "177.58") + fly("177.58", "ember", значок="lightning")))
 A('            </div>\n')
 A('            </div>\n')
 A('        </section>\n\n')

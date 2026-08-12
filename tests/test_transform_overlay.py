@@ -230,6 +230,101 @@ def test_matrix_is_linked_diagonally():
     assert len(диагонали) >= 4, "диагоналей в матрице всего %d" % len(диагонали)
 
 
+def test_each_element_is_highlighted_once():
+    """Владелец: «зачем ты по нескольку раз выделяешь кружками + где-то ты
+    выделил кружками и цифру, и ИИ». Значит у элемента ровно одно окно
+    подсветки, и в один момент горит один круг — кроме случая, когда
+    группа загорается целиком (тогда окна совпадают в точности)."""
+    for m in re.finditer(r'<section class="scene" id="(\w+)"', _layer()):
+        layer = _layer()
+        кусок = layer[m.end():layer.index("</section>", m.end())]
+        окна = []
+        for c in re.findall(r'data-cur="([^"]+)"', кусок):
+            числа = [float(x) for x in c.split()]
+            assert len(числа) == 2, \
+                "в сцене %s элемент подсвечен %d раза: %s" % (m.group(1), len(числа) // 2, c)
+            окна.append((числа[0], числа[1]))
+        окна.sort()
+        for i in range(len(окна) - 1):
+            a, b = окна[i], окна[i + 1]
+            if a == b:
+                continue        # группа загорается разом — так и задумано
+            assert a[1] <= b[0] + 1e-6, \
+                "в сцене %s одновременно горят два кольца: %s и %s" % (m.group(1), a, b)
+
+
+def test_tasks_have_no_rings():
+    """Владелец: «задачи не выделяй кружками отдельно»."""
+    layer = _layer()
+    начало = layer.index('id="s2"')
+    кусок = layer[начало:layer.index("</section>", начало)]
+    задачи = [б for б in кусок.split('<div class="item el"')[1:] if "Задача" in б]
+    assert len(задачи) == 3, "задач должно быть три"
+    for б in задачи:
+        assert "data-cur" not in б.split("</div>")[0], "у задачи осталось кольцо"
+
+
+def test_intuition_is_crossed_out():
+    """Владелец: «интуицию перечеркни анимацией красиво»."""
+    html, layer = _html(), _layer()
+    начало = layer.index('id="s9"')
+    кусок = layer[начало:layer.index("</section>", начало)]
+    assert 'class="strike el"' in кусок, "интуиция не перечёркнута"
+    assert "drawStrike" in html, "перечёркивание не анимировано"
+    полоса = кусок[кусок.index('class="strike el"'):]
+    assert "<line" in полоса, "перечёркивание нарисовано не линией"
+
+
+def test_human_glows_like_the_limit():
+    """Владелец: «человек — выдели фиолетовым, как ограничение оранжевым»."""
+    layer = _layer()
+    начало = layer.index('id="s10"')
+    кусок = layer[начало:layer.index("</section>", начало)]
+    куски = кусок.split('<div class="item el"')
+    человек = [б for б in куски if "Человек" in б][0]
+    предел = [б for б in куски if "Ограничение" in б][0]
+    assert 'class="glow ' in человек and "glow-ember" not in человек.split("</div>")[0], \
+        "у «Человека» нет фиолетового сияния"
+    assert "glow-ember" in предел, "у «Ограничения» пропало оранжевое сияние"
+
+
+def test_limit_glow_rises():
+    """Владелец: «предел цифровой модели — оранжевое свечение вверх поднимается»."""
+    html, layer = _html(), _layer()
+    начало = layer.index('id="s12"')
+    кусок = layer[начало:layer.index("</section>", начало)]
+    assert "glow-ember rise" in кусок.replace("  ", " "), "свечение у «предела» не поднимается"
+    assert "glowRise" in html, "нет анимации поднимающегося свечения"
+
+
+def test_driven_pair_has_gradients_and_flying_icons():
+    """Владелец: «снизу ничего не подписывай, просто оранж и фиолетовое
+    сзади сделай градиенты + эмодзи вылетающие»."""
+    layer = _layer()
+    начало = layer.index('id="s13"')
+    кусок = layer[начало:layer.index("</section>", начало)]
+    assert 'class="sub' not in кусок, "под data/intelligence остались подписи"
+    assert кусок.count('class="glow ') == 2, "нет градиентов за обоими кругами"
+    assert 'class="fly ember el"' in кусок and 'class="fly solar el"' in кусок, \
+        "не вылетают значки"
+    цифры = re.findall(r'<b style="[^"]*">(\d)</b>', кусок)
+    assert len(цифры) >= 5, "у data-driven не вылетают цифры"
+
+
+def test_finale_has_robots_and_lightning():
+    """Владелец: «использует ИИ — снизу вылетают роботы и фиолетовое
+    свечение; существует благодаря ИИ — оранж сзади и вылетают молнии»."""
+    layer = _layer()
+    начало = layer.index('id="s15"')
+    кусок = layer[начало:layer.index("</section>", начало)]
+    куски = кусок.split('<div class="item el"')
+    использует = [б for б in куски if "Использует" in б][0]
+    существует = [б for б in куски if "Существует" in б][0]
+    assert 'class="fly solar el"' in использует, "роботы не вылетают"
+    assert 'class="fly ember el"' in существует, "молнии не вылетают"
+    assert "glow-ember" in существует, "нет оранжевого сзади"
+
+
 def test_maturity_levels_are_in_one_row_without_a_line():
     """Владелец: «AI Driven / AI First и AI Native на одной линии без полоски»."""
     layer = _layer()
