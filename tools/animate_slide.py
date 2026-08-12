@@ -133,15 +133,24 @@ window.__fx = (function(){
 
   function apply(t){
     layer.innerHTML = '';
+    // Сброс — ОТДЕЛЬНЫМ проходом по всем целям, до наложения подсветок. Пока
+    // сброс жил в одном цикле с наложением, две реплики на один и тот же узел
+    // (обычное дело: карточка берётся то напрямую, то через `up` от строки
+    // внутри неё) гасили друг друга — поздняя стирала стиль ранней, и ранняя
+    // вспышка не появлялась в кадре вообще.
+    for (var r = 0; r < CUES.length; r++){
+      if (targets[r]) targets[r].setAttribute('style', bases[r]);
+    }
+    // Геометрию снимаем на погашенном кадре: масштаб соседней подсветки не
+    // должен смещать точку рождения эмодзи, иначе разлёт «дышит».
+    var rects = targets.map(function(el){
+      return el ? el.getBoundingClientRect() : null;
+    });
     for (var i = 0; i < CUES.length; i++){
       var cue = CUES[i], el = targets[i];
       if (!el) continue;
-      el.setAttribute('style', bases[i]);
-      // Геометрию снимаем ДО подсветки: масштаб не должен смещать точку
-      // рождения эмодзи, иначе разлёт «дышит» вместе с карточкой.
-      var rect = el.getBoundingClientRect();
       var tau = t - cue.at;
-      if (cue.burst && tau > 0) burst(cue, rect, tau);
+      if (cue.burst && tau > 0) burst(cue, rects[i], tau);
       var p = tau / (cue.dur || 2.5);
       if (p <= 0 || p >= 1) continue;
       var k = bump(p), color = cue.fx === 'glow-solar' ? SOLAR : VIOLET;
@@ -273,7 +282,7 @@ def cue_times(cues, words):
     return cues
 
 
-def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0):
+def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=None):
     from playwright.sync_api import sync_playwright
 
     frames, srv = [], serve()
@@ -308,6 +317,20 @@ def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0):
                          "   Проверьте поле text в сценарии — оно должно совпадать\n"
                          "   с текстом элемента слайда дословно." % ", ".join(missing))
 
+            if at:
+                # Точечная проверка: кадр ровно на такой-то секунде речи. Нужна,
+                # чтобы глазами убедиться, что конкретная реплика реально горит,
+                # а не «должна гореть по сценарию».
+                for sec in at:
+                    page.evaluate("(t) => window.__fx.apply(t)", float(sec))
+                    path = os.path.join(out_dir, "at-%06.2f.png" % float(sec))
+                    page.screenshot(path=path)
+                    frames.append(path)
+                    print("   кадр на %.2f с" % float(sec))
+                ctx.close()
+                browser.close()
+                return frames
+
             step = max(1, total_frames // preview) if preview else 1
             for i in range(0, total_frames, step):
                 page.evaluate("(t) => window.__fx.apply(t)", i / float(FPS))
@@ -331,6 +354,8 @@ def main():
                     help="сначала распознать речь клипа (нужен интернет)")
     ap.add_argument("--preview", type=int, default=0,
                     help="снять N контрольных кадров вместо видео")
+    ap.add_argument("--at", help="секунды через запятую: снять кадры ровно на "
+                                 "этих отметках (проверка конкретных реплик)")
     ap.add_argument("--vendor")
     ap.add_argument("--allow-fallback-fonts", action="store_true")
     ap.add_argument("--out")
@@ -376,10 +401,11 @@ def main():
         print("1/3 · тайминга слов нет — реплики идут по полю at из сценария")
     cues = cue_times(cues, words)
 
+    at = [float(x) for x in args.at.split(",")] if args.at else None
     print("2/3 · кадры (%.1f с × %d fps)" % (secs, FPS))
     render(idx, cues, secs, frames_dir, args.vendor,
-           args.allow_fallback_fonts, preview=args.preview)
-    if args.preview:
+           args.allow_fallback_fonts, preview=args.preview, at=at)
+    if args.preview or at:
         print("\nконтрольные кадры: %s" % frames_dir)
         return
 
