@@ -56,10 +56,17 @@ window.__fx = (function(){
   var CUES = __CUES__;
   var SOLAR = '#F97316', VIOLET = '#8B5CF6';
 
-  // Слой для эмодзи — fixed, чтобы координаты совпадали с getBoundingClientRect
+  // Эмодзи вылетают ИЗ-ЗА карточек (правка владельца), а не поверх. Слой для
+  // этого живёт ВНУТРИ слайда с z-index:-1: отрицательный слой рисуется после
+  // фона слайда, но до карточек с их текстом. За body его класть нельзя —
+  // непрозрачный фон слайда накрывает весь экран и эмодзи не видно вовсе.
+  var slide = document.querySelector('.slide-container.opacity-100');
   var layer = document.createElement('div');
-  layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden';
-  document.body.appendChild(layer);
+  layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:-1;overflow:hidden';
+  slide.insertBefore(layer, slide.firstChild);
+  if (getComputedStyle(slide).position === 'static') slide.style.position = 'relative';
+  // Координаты элементов приходят в системе окна — переводим в систему слоя
+  function originOf(){ var r = layer.getBoundingClientRect(); return { x: r.left, y: r.top }; }
 
   function findTarget(cue){
     var all = document.querySelectorAll('.slide-container.opacity-100 *');
@@ -95,7 +102,8 @@ window.__fx = (function(){
 
       if (cue.fx === 'pop'){
         el.style.transform = 'scale(' + (1 + 0.05 * k) + ')';
-        el.style.filter = 'drop-shadow(0 0 ' + (26 * k) + 'px rgba(139,92,246,' + (0.8 * k) + '))';
+        el.style.setProperty('filter', 'drop-shadow(0 0 ' + (26 * k)
+          + 'px rgba(139,92,246,' + (0.8 * k) + '))', 'important');
       } else if (cue.fx === 'underline'){
         el.style.transform = 'scale(' + (1 + 0.04 * k) + ')';
         el.style.backgroundImage = 'linear-gradient(' + SOLAR + ',' + SOLAR + ')';
@@ -104,8 +112,12 @@ window.__fx = (function(){
         el.style.backgroundPosition = '0 100%';
       } else {
         el.style.transform = 'scale(' + (1 + 0.06 * k) + ')';
-        el.style.boxShadow = '0 0 ' + (60 * k) + 'px ' + (10 * k) + 'px rgba('
-          + (color === SOLAR ? '249,115,22' : '139,92,246') + ',' + (0.55 * k) + ')';
+        // ВАЖНО: в лекции живёт глобальное `*{box-shadow:none!important}`
+        // (канон «теней нет нигде»). Без явного important свечение молча не
+        // рисуется — в кадре остаётся одна обводка.
+        el.style.setProperty('box-shadow', '0 0 ' + (60 * k) + 'px ' + (10 * k)
+          + 'px rgba(' + (color === SOLAR ? '249,115,22' : '139,92,246') + ','
+          + (0.55 * k) + ')', 'important');
         el.style.outline = (2.5 * k) + 'px solid ' + color;
         el.style.outlineOffset = (4 * k) + 'px';
         el.style.borderRadius = getComputedStyle(el).borderRadius;
@@ -114,12 +126,15 @@ window.__fx = (function(){
 
       if (cue.burst){
         var r = el.getBoundingClientRect(), n = cue.n || 10, tau = t - cue.at;
+        var o = originOf();
         for (var j = 0; j < n; j++){
           // Разлёт считается формулой от времени — значит кадр повторяем
           var ang = (Math.PI * (0.15 + 0.7 * (j / (n - 1)))) * -1;
           var sp = 260 + ((j * 37) % 120);
-          var x = r.left + r.width / 2 + Math.cos(ang) * sp * tau;
-          var y = r.top + r.height / 2 + Math.sin(ang) * sp * tau + 420 * tau * tau;
+          var x = r.left - o.x + r.width / 2
+                  + Math.cos(ang) * (r.width * 0.34 + sp * tau);
+          var y = r.top - o.y + r.height / 2
+                  + Math.sin(ang) * (r.height * 0.3 + sp * tau) + 420 * tau * tau;
           var life = clamp(tau / (cue.dur * 0.75));
           if (life >= 1) continue;
           var s = document.createElement('span');
