@@ -288,13 +288,23 @@ def test_human_glows_like_the_limit():
     assert "glow-ember" in предел, "у «Ограничения» пропало оранжевое сияние"
 
 
-def test_limit_glow_rises():
-    """Владелец: «предел цифровой модели — оранжевое свечение вверх поднимается»."""
+def test_limit_has_no_glow_at_all():
+    """Владелец: «предел цифровой модели — там оранжевое свечение улетает
+    вверх, убери его вообще». Ни облака, ни анимации всплытия."""
     html, layer = _html(), _layer()
     начало = layer.index('id="s12"')
     кусок = layer[начало:layer.index("</section>", начало)]
-    assert "glow-ember rise" in кусок.replace("  ", " "), "свечение у «предела» не поднимается"
-    assert "glowRise" in html, "нет анимации поднимающегося свечения"
+    assert 'class="glow' not in кусок, "у «предела цифровой модели» осталось свечение"
+    assert "glowRise" not in html, "осталась мёртвая анимация всплывающего свечения"
+
+
+def test_matrix_circles_have_no_rings():
+    """Владелец: «где кросс-функциональные команды — не выделяй кружками
+    отдельно». Матрица работает связями и током, а не подсветкой."""
+    layer = _layer()
+    начало = layer.index('id="s3"')
+    кусок = layer[начало:layer.index("</section>", начало)]
+    assert "data-cur" not in кусок, "в матрице остались кольца подсветки"
 
 
 def test_driven_pair_has_gradients_and_flying_icons():

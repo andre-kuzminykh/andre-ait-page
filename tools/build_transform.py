@@ -124,15 +124,6 @@ CSS = """/* ── Общее для этого ролика ──────�
 .strike.el.on line{animation:drawStrike .5s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes drawStrike{to{stroke-dashoffset:0}}
 
-/* Свечение, которое поднимается вверх (владелец про «предел цифровой
-   модели»): вместо ровной пульсации облако всплывает и тает. */
-.el.on .glow.rise{animation:glowRise 2.8s ease-out infinite}
-@keyframes glowRise{
-    0%{opacity:0;transform:translate(-50%,10%) scale(.75)}
-    35%{opacity:1}
-    100%{opacity:0;transform:translate(-50%,-78%) scale(1.25)}
-}
-
 /* Два элемента в кадре стоят ШИРОКО: владелец просил развести их так,
    чтобы каждый оказался над своей картиной, а середина осталась пустой
    (там его голова). Центры картин в кадре — 235 и 820 по горизонтали. */
@@ -440,9 +431,9 @@ A('                <div class="grid">\n')
            ("48.50", "megaphone", "solar"), ("48.80", "users", "ember"),
            ("49.10", "wrench", "solar"), ("49.40", "headset", "ember")]
 for in_, icon, colour in матрица:
-    A(item(in_, icon, colour, 76, "", cur="51.91 53.50"))
+    A(item(in_, icon, colour, 76, ""))
 A('                </div>\n')
-A('                <p class="foot el" data-in="51.91" data-cur="51.91 53.50">'
+A('                <p class="foot el" data-in="51.91">'
   'Кросс-функциональные команды</p>\n')
 A(cores(14, core("53.50", "Сами решают", "solar", out="55.00"),
         core("55.00", "Отвечают за результат", "ember")))
@@ -552,7 +543,7 @@ A('            <div class="row duo">\n')
 A(item("121.60", "clock", "ember", 104, "Скорость мышления", cur="121.60 123.36"))
 A(item("123.36", "eye", "solar", 104, "Масштаб внимания", cur="123.36 124.75"))
 A('            </div>\n')
-A(core("125.50", "Предел цифровой модели", "ember", halo=True, ещё="rise"))
+A(core("125.50", "Предел цифровой модели", "ember"))
 A('        </section>\n\n')
 
 # ── СЦЕНА 13 · data-driven → intelligence-driven ────────────────────
