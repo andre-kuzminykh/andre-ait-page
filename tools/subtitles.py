@@ -34,13 +34,19 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import urllib.parse
 import urllib.request
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from record_lecture import ROOT, duration, head_clips, fetch
+# Файл намеренно самодостаточный: его можно просто скачать на VM и запустить,
+# не клонируя весь сайт. Всё нужное — список клипов и качалка — ниже.
+LIVE = "https://andre.technology/automation/%d/"
+_here = os.path.dirname(os.path.abspath(__file__))
+ROOT = (os.path.dirname(_here)
+        if os.path.isdir(os.path.join(os.path.dirname(_here), "automation"))
+        else os.getcwd())
 
 BUILD = os.path.join(ROOT, "build")
 TIMINGS = os.path.join(BUILD, "timings")
@@ -48,6 +54,52 @@ UNITS = ("andre-ai-web", "andre-ai-test", "andre-ai-dev")
 ENV_NAMES = ("OPENAI_API_KEY", "LLM_API_KEY")
 ENV_FILES = ("/home/andre/andre-ai-maturity/.env", "/home/andre/andre-ai-test/.env",
              os.path.expanduser("~/.env"), os.path.join(ROOT, ".env"))
+
+
+# ── исходники ─────────────────────────────────────────────────────────────
+
+def head_clips(lecture):
+    """Ссылки на клипы говорящей головы. Берём из лекции: локальной, если
+    рядом лежит репозиторий, иначе прямо с боевого сайта — тогда инструмент
+    работает и одиноким файлом на любой машине."""
+    path = os.path.join(ROOT, "automation/%d/index.html" % lecture)
+    if os.path.isfile(path):
+        html = open(path, encoding="utf-8").read()
+    else:
+        print("лекции нет рядом — читаю " + LIVE % lecture)
+        try:
+            with urllib.request.urlopen(LIVE % lecture, timeout=120) as r:
+                html = r.read().decode("utf-8", "ignore")
+        except Exception as e:
+            sys.exit("не открылась лекция на сайте (%s).\n"
+                     "   Положите файл рядом с репозиторием сайта либо "
+                     "проверьте выход в интернет." % e)
+    m = re.search(r"const videoIds = \[(.*?)\];", html, re.S)
+    return re.findall(r"'([^']+)'", m.group(1)) if m else []
+
+
+def fetch(url, dest):
+    if os.path.exists(dest) and os.path.getsize(dest) > 0:
+        return dest
+    tmp = dest + ".part"
+    with urllib.request.urlopen(url, timeout=300) as r, open(tmp, "wb") as f:
+        shutil.copyfileobj(r, f)
+    os.replace(tmp, dest)
+    return dest
+
+
+def duration(ff, path):
+    """Длительность по выводу ffmpeg. Нет ffmpeg — вернём None, дальше в дело
+    идёт длительность из ответа API."""
+    if not ff:
+        return None
+    out = subprocess.run([ff, "-hide_banner", "-i", path], stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT).stdout.decode("utf-8", "ignore")
+    m = re.search(r"Duration: (\d+):(\d+):(\d+\.\d+)", out)
+    if not m:
+        return None
+    h, mi, sec = m.groups()
+    return int(h) * 3600 + int(mi) * 60 + float(sec)
 
 
 # ── ключ ──────────────────────────────────────────────────────────────────
@@ -105,7 +157,6 @@ def find_key():
 def soft_ffmpeg():
     """ffmpeg тут не обязателен: он ускоряет загрузку (шлём звук вместо видео)
     и знает длительность. Нет его — длительность придёт из ответа API."""
-    import shutil
     exe = shutil.which("ffmpeg")
     if exe:
         return exe

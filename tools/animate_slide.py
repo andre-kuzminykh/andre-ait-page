@@ -108,6 +108,14 @@ window.__fx = (function(){
         el.style.transform = 'scale(' + (1 + (grow === 0.06 ? 0.05 : grow) * k) + ')';
         el.style.setProperty('filter', 'drop-shadow(0 0 ' + (26 * k)
           + 'px rgba(139,92,246,' + (0.8 * k) + '))', 'important');
+      } else if (cue.fx === 'frame'){
+        // Просто рамка: только оранжевый контур, без ореола и без всплеска
+        // (правка владельца по «Ключевое отличие — автономность»). Рост почти
+        // нулевой — плашка стоит в потоке, дёргать её незачем.
+        el.style.transform = 'scale(' + (1 + (cue.grow || 0.01) * k) + ')';
+        el.style.outline = (3 * k) + 'px solid ' + SOLAR;
+        el.style.outlineOffset = (3 * k) + 'px';
+        el.style.borderRadius = getComputedStyle(el).borderRadius;
       } else if (cue.fx === 'underline'){
         el.style.transform = 'scale(' + (1 + 0.04 * k) + ')';
         el.style.backgroundImage = 'linear-gradient(' + SOLAR + ',' + SOLAR + ')';
