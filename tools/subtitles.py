@@ -368,7 +368,7 @@ def main():
         open(stem + ".txt", "w", encoding="utf-8").write("\n\n".join(plain) + "\n")
         print("\nсквозные субтитры: %s.srt (%d реплик, %s)"
               % (stem, no - 1, stamp(clock).split(",")[0]))
-    print("готово: %s" % os.path.relpath(TIMINGS, ROOT))
+    print("готово: %s" % TIMINGS)   # абсолютный путь: скрипт запускают откуда угодно
 
 
 if __name__ == "__main__":
