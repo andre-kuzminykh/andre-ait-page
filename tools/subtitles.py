@@ -48,7 +48,11 @@ ROOT = (os.path.dirname(_here)
         if os.path.isdir(os.path.join(os.path.dirname(_here), "automation"))
         else os.getcwd())
 
-BUILD = os.path.join(ROOT, "build")
+# Куда писать. Рядом с репозиторием — в его build/, иначе в домашний каталог:
+# скрипт запускают из любого места (например из /opt/...), и туда может не
+# быть прав на запись. Переопределяется флагом --out-dir.
+BUILD = (os.path.join(ROOT, "build") if os.path.isdir(os.path.join(ROOT, "automation"))
+         else os.path.expanduser("~/ait-subtitles"))
 TIMINGS = os.path.join(BUILD, "timings")
 UNITS = ("andre-ai-web", "andre-ai-test", "andre-ai-dev")
 ENV_NAMES = ("OPENAI_API_KEY", "LLM_API_KEY")
@@ -246,17 +250,26 @@ def srt(words, per=2, shift=0.0, start_no=1):
 
 
 def main():
+    global BUILD, TIMINGS          # --out-dir переопределяет каталог вывода
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--lecture", type=int, default=1)
     ap.add_argument("--slides", help="например 5 или 1-10 (по умолчанию все)")
     ap.add_argument("--engine", choices=("openai", "local"), default="openai")
     ap.add_argument("--per", type=int, default=2, help="слов в реплике субтитров")
+    ap.add_argument("--out-dir", help="куда складывать результат (по умолчанию %s)" % BUILD)
     ap.add_argument("--dry-run", action="store_true",
                     help="показать план и найденный источник ключа, ничего не вызывая")
     args = ap.parse_args()
 
+    if args.out_dir:
+        BUILD = os.path.abspath(os.path.expanduser(args.out_dir))
+        TIMINGS = os.path.join(BUILD, "timings")
     ff = soft_ffmpeg()
-    os.makedirs(TIMINGS, exist_ok=True)
+    try:
+        os.makedirs(TIMINGS, exist_ok=True)
+    except OSError as e:
+        sys.exit("не могу писать в %s (%s).\n"
+                 "   Укажите свой каталог: --out-dir ~/ait-subtitles" % (BUILD, e))
     os.makedirs(os.path.join(BUILD, "head-clips"), exist_ok=True)
 
     clips = head_clips(args.lecture)
@@ -285,6 +298,7 @@ def main():
     print("лекция %d: клипов %d, распознаём %d, движок %s"
           % (args.lecture, len(clips), len(idxs), args.engine))
     print("ffmpeg: %s" % (ff or "нет — длительность возьму из ответа API"))
+    print("результат ляжет в %s" % TIMINGS)
     if args.dry_run:
         print("сухой прогон: сетевых вызовов не делаю")
         return
