@@ -90,13 +90,59 @@ window.__fx = (function(){
   // 0 → 1 → 0: элемент вспыхивает и мягко возвращается в исходное состояние
   function bump(p){ return (p <= 0 || p >= 1) ? 0 : Math.sin(Math.PI * clamp(p)); }
 
+  // Полёт эмодзи живёт СВОИМ временем, а не длительностью подсветки. Реплики
+  // «восприятие — мышление — действие» в живой речи идут через ~1.1 с, и пока
+  // разлёт был привязан к cue.dur, монетки исчезали через полсекунды после
+  // вылета. Теперь длительность полёта задаёт burst_dur (по умолчанию BDUR),
+  // а подсветка карточки по-прежнему гаснет к следующей реплике.
+  var BDUR = 1.8;
+  function burst(cue, r, tau){
+    var n = cue.n || 10, dur = cue.burst_dur || BDUR, o = originOf();
+    for (var j = 0; j < n; j++){
+      // Разлёт считается формулой от времени — значит кадр повторяем
+      var lag = (j % 4) * 0.05;            // вылетают не строем, а россыпью
+      var a = tau - lag;
+      if (a <= 0) continue;
+      var q = a / dur;
+      if (q >= 1) continue;
+      var ang = (Math.PI * (0.15 + 0.7 * (j / (n - 1)))) * -1;
+      var sp = 260 + ((j * 37) % 120);
+      // Путь замедляется к концу (1-(1-q)^2): эмодзи выстреливает и зависает,
+      // а не улетает за край кадра равномерной пулей.
+      var dist = sp * dur * 0.42 * (1 - Math.pow(1 - q, 2));
+      // Стартуют у самой кромки карточки (0.42 от её размера — чуть внутри):
+      // первые кадры эмодзи ещё спрятано за карточкой и сразу выходит из-за
+      // края. С прежними 0.34/0.30 разлёт полсекунды полз внутри плашки.
+      var x = r.left - o.x + r.width / 2 + Math.cos(ang) * (r.width * 0.42 + dist);
+      var y = r.top - o.y + r.height / 2 + Math.sin(ang) * (r.height * 0.42 + dist)
+              + 120 * dur * q * q;         // мягкая гравитация к концу полёта
+      var born = clamp(a / 0.18);          // рождение: 0.4 → 1 за 0.18 с
+      var fade = q < 0.62 ? 1 : 1 - (q - 0.62) / 0.38;
+      var s = document.createElement('span');
+      s.textContent = cue.burst;
+      // Шрифт эмодзи задаём явно. Без него Chromium берёт текстовое начертание
+      // из шрифта лекции: 👁 и ⚡ выходят чёрно-белыми контурами вместо цветных.
+      s.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;'
+        + 'font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;'
+        + 'font-size:' + (34 + (j % 3) * 10) + 'px;opacity:' + fade
+        + ';transform:translate(-50%,-50%) scale(' + (0.4 + 0.6 * born)
+        + ') rotate(' + ((j % 5 - 2) * 60 * q) + 'deg)';
+      layer.appendChild(s);
+    }
+  }
+
   function apply(t){
     layer.innerHTML = '';
     for (var i = 0; i < CUES.length; i++){
       var cue = CUES[i], el = targets[i];
       if (!el) continue;
       el.setAttribute('style', bases[i]);
-      var p = (t - cue.at) / (cue.dur || 2.5);
+      // Геометрию снимаем ДО подсветки: масштаб не должен смещать точку
+      // рождения эмодзи, иначе разлёт «дышит» вместе с карточкой.
+      var rect = el.getBoundingClientRect();
+      var tau = t - cue.at;
+      if (cue.burst && tau > 0) burst(cue, rect, tau);
+      var p = tau / (cue.dur || 2.5);
       if (p <= 0 || p >= 1) continue;
       var k = bump(p), color = cue.fx === 'glow-solar' ? SOLAR : VIOLET;
       // Насколько подрастает элемент. Для слова внутри строки нужен почти
@@ -135,28 +181,6 @@ window.__fx = (function(){
         el.style.borderRadius = getComputedStyle(el).borderRadius;
       }
       el.style.transformOrigin = 'center center';
-
-      if (cue.burst){
-        var r = el.getBoundingClientRect(), n = cue.n || 10, tau = t - cue.at;
-        var o = originOf();
-        for (var j = 0; j < n; j++){
-          // Разлёт считается формулой от времени — значит кадр повторяем
-          var ang = (Math.PI * (0.15 + 0.7 * (j / (n - 1)))) * -1;
-          var sp = 260 + ((j * 37) % 120);
-          var x = r.left - o.x + r.width / 2
-                  + Math.cos(ang) * (r.width * 0.34 + sp * tau);
-          var y = r.top - o.y + r.height / 2
-                  + Math.sin(ang) * (r.height * 0.3 + sp * tau) + 200 * tau * tau;
-          var life = clamp(tau / (cue.dur * 0.5));
-          if (life >= 1) continue;
-          var s = document.createElement('span');
-          s.textContent = cue.burst;
-          s.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;'
-            + 'font-size:' + (30 + (j % 3) * 10) + 'px;opacity:' + (1 - life)
-            + ';transform:translate(-50%,-50%) rotate(' + (j * 47 * tau) + 'deg)';
-          layer.appendChild(s);
-        }
-      }
     }
   }
 
