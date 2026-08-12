@@ -210,10 +210,25 @@ def cue_times(cues, words):
         for i, w in enumerate(words):
             if i in used:
                 continue
-            if key in re.sub(r"[^\w\-]", "", w["w"]).lower():
+            plain = re.sub(r"[^\w\-]", "", w["w"]).lower()
+            # Совпадение по корню (в речи «агента», в сценарии «агент» —
+            # падежи не должны ломать привязку), но не короче пяти букв.
+            # Иначе тире схлопывается в пустую строку, а односимвольное «В»
+            # даёт префикс, и реплика цепляется за первое попавшееся слово:
+            # так «восприятие» уезжало на «В» в середине фразы.
+            n = min(len(key), len(plain))
+            if n >= 5 and plain[:n] == key[:n]:
                 cue["at"] = w["s"]
                 used.add(i)
                 break
+    # Эффект живёт до СЛЕДУЮЩЕЙ реплики, а не фиксированные секунды. На живой
+    # речи «восприятие — мышление — действие» идут через 0.9 с: с жёсткими
+    # тремя секундами все три горели бы разом и перечисление читалось бы кашей.
+    order = sorted(cues, key=lambda c: c["at"])
+    for i, cue in enumerate(order):
+        gap = (order[i + 1]["at"] - cue["at"]) if i + 1 < len(order) else None
+        if gap and gap > 0:
+            cue["dur"] = max(0.8, min(cue.get("dur", 2.5), gap * 1.25))
     return cues
 
 
