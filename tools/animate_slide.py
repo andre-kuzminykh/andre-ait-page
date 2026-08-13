@@ -341,8 +341,13 @@ def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=Non
     total_frames = int(round(secs * FPS))
     try:
         with sync_playwright() as pw:
+            # Путь к браузеру задаём ЯВНО: у Playwright свой номер сборки, и
+            # после его обновления автопоиск уходит в несуществующий каталог
+            # (chromium_headless_shell-NNNN) — рендер молча падал на запуске,
+            # а рядом лежал готовый /opt/pw-browsers/chromium.
             browser = pw.chromium.launch(
-                executable_path=os.environ.get("CHROMIUM_PATH") or None,
+                executable_path=(os.environ.get("CHROMIUM_PATH")
+                                 or "/opt/pw-browsers/chromium"),
                 args=["--no-sandbox", "--hide-scrollbars"])
             ctx = browser.new_context(viewport={"width": W, "height": H},
                                       device_scale_factor=1,
