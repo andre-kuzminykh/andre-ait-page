@@ -116,3 +116,34 @@ speech         вся речь слайда одной строкой
 
 Проверка перед рендером: `python3 tools/fx_check.py` — сверяет каждый `text`
 с инвентарём, каждое `word` с речью и показывает итоговый тайминг.
+
+## Каталог `vendor/` — шрифт и иконки для офлайн-рендера
+
+Браузер рендера не всегда достаёт до внешних CDN (в контейнерах `unpkg.com`
+режет прокси, до `fonts.googleapis.com` не доходит Chromium). Без шрифта стенд
+честно останавливает сборку — «Montserrat НЕ применился», — а без иконок
+карточки рисуются пустыми кружками. Каталог в `.gitignore` (45 МБ), собирается
+одной пачкой команд:
+
+```bash
+mkdir -p vendor/fonts/files
+UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+curl -sS -A "$UA" "https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" -o vendor/fonts/css2.css
+grep -o "https://fonts.gstatic.com[^)]*" vendor/fonts/css2.css | sort -u | while read u; do
+  curl -sS -A "$UA" "$u" -o "vendor/fonts/files/$(basename "$u")"
+done
+curl -sS "https://registry.npmjs.org/@phosphor-icons/web/-/web-2.1.1.tgz" -o /tmp/ph.tgz
+mkdir -p /tmp/ph && tar -xzf /tmp/ph.tgz -C /tmp/ph && mkdir -p vendor/phosphor
+cp -r /tmp/ph/package/src vendor/phosphor/
+```
+
+Два подводных камня, оба стоили сборки:
+
+- **Ссылки в `css2.css` НЕ переписывать** на `files/*.woff2`. Обработчик
+  `vendor_route` подменяет шрифты по адресу `fonts.gstatic.com/...`; после
+  переписывания браузер попросит `fonts.googleapis.com/files/...`, не попадёт
+  ни в одну ветку и уйдёт в сеть — то есть мимо.
+- **Иконки берём из npm-реестра**, а не с `unpkg.com`: последний отдаёт 403
+  через прокси. Реестр в списке `noProxy`, поэтому работает.
+
+Запуск: `python3 tools/animate_slide.py --slide N --vendor vendor`.
