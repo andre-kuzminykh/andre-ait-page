@@ -219,6 +219,47 @@ def test_flying_icons_stay_in_frame():
                 "значок у %r улетает на %dpx при запасе %.0f" % (заголовок, dx, запас)
 
 
+def test_chips_go_in_two_rows_when_there_are_many():
+    """Владелец: «в два ряда можно». Больше четырёх слов в строку не
+    помещается, поэтому длинные наборы идут двумя рядами."""
+    layer = _layer()
+    for блок in re.findall(r'<div class="chips">(.*?)\n                </div>', layer, re.S):
+        ряды = re.findall(r'<div class="line">(.*?)</div>', блок, re.S)
+        assert ряды, "подсказки перестали лежать рядами"
+        всего = блок.count('class="chip ')
+        assert len(ряды) == (1 if всего <= 4 else 2), \
+            "%d подсказок разложены в %d ряд(а)" % (всего, len(ряды))
+        for р in ряды:
+            assert р.count('class="chip ') <= 4, "в ряду больше четырёх подсказок"
+
+
+def test_flying_icons_last_a_few_seconds():
+    """Владелец: «все эмодзи вылетающие сделай 3-4 секунды». Один проход
+    анимации, а не бесконечный цикл."""
+    html = _html()
+    m = re.search(r"\.scene\.on \.fly\.on i\{animation:flyOut ([\d.]+)s [^}]*\}", html)
+    assert m, "не нашёл анимацию разлёта значков"
+    assert "infinite" not in m.group(0), "значки летят весь блок, а не 3–4 секунды"
+    длительность = float(m.group(1))
+    задержки = sorted(float(x) for x in re.findall(r"animation-delay:([\d.]+)s", _layer()))
+    assert длительность + задержки[-1] <= 4.2, \
+        "разлёт тянется %.1f c" % (длительность + задержки[-1])
+
+
+def test_glow_is_sized_to_the_word():
+    """Владелец про «Данные» и «Модели»: «слишком большое свечение
+    относительно текста». Ширина облака считается по ширине заголовка."""
+    ш = _шрифт()
+    кегль = int(re.search(r"\.block \.title\{\s*font-size:(\d+)px", _html()).group(1))
+    for блок in re.findall(r'<div class="head el".*?</div>\n', _layer(), re.S):
+        сияние = re.search(r'class="glow[^"]*" style="width:(\d+)px"', блок)
+        assert сияние, "у заголовка нет облака заданной ширины"
+        заголовок = re.search(r'<p class="title">(.*?)</p>', блок).group(1)
+        w = ш.ширина(заголовок.replace("&amp;", "&"), кегль)
+        assert abs(int(сияние.group(1)) - max(520, min(900, w + 280))) <= 1, \
+            "облако у %r не по размеру слова" % заголовок
+
+
 def test_seven_blocks_are_a_grid():
     """Семь подписей в один ряд не влезают — 4 сверху и 3 снизу."""
     html, layer = _html(), _layer()
@@ -257,6 +298,24 @@ def test_roadmap_has_three_steps_and_an_arrow():
     кусок = layer[начало:layer.index("</section>", начало)]
     assert кусок.count('class="item el"') == 3, "в дорожной карте не три шага"
     assert "<polygon" in кусок, "у дорожной карты пропала стрелка"
+
+
+def test_roadmap_arrow_starts_and_ends_at_the_circles():
+    """Владелец прислал скрин: «надо от „сейчас“ и конец стрелки к
+    „AI-First“». Круги замерены в браузере — центры 197 / 540 / 883 по
+    кадру, радиус 50; svg связи начинается с 46, поэтому в его координатах
+    края кругов это 151±50 и 837±50."""
+    layer = _layer()
+    начало = layer.index('id="s13"')
+    кусок = layer[начало:layer.index("</section>", начало)]
+    x1 = int(re.search(r'<line x1="(\d+)"', кусок).group(1))
+    остриё = int(re.search(r'<polygon points="(\d+),', кусок).group(1))
+    левый_край, правый_край = 151 + 50, 837 - 50      # 201 и 787 в системе svg
+    assert левый_край <= x1 <= левый_край + 30, \
+        "линия начинается не от «Сейчас» (x1=%d, край круга %d)" % (x1, левый_край)
+    assert правый_край - 30 <= остриё <= правый_край, \
+        "остриё не доходит до «AI-first» или прячется под ним (%d, край круга %d)" % (
+            остриё, правый_край)
 
 
 # ── FR-SITE37: субтитры ──────────────────────────────────────────────────
@@ -336,6 +395,33 @@ def test_layers_are_here_and_long_enough():
         assert os.path.exists(p), "нет слоя %s" % f
         assert os.path.getsize(p) > 100000, "слой %s подозрительно мал" % f
     assert "var DURATION = 176.0" in _html(), "длина ролика на странице разошлась со слоем"
+
+
+def test_four_part_covers_are_ready():
+    """Резы от владельца: 47 / 105 / 159 — значит четыре части."""
+    p = os.path.join(_DIR, "cover.png")
+    assert os.path.exists(p), "нет общей обложки cover.png"
+    assert os.path.getsize(p) > 100000, "обложка cover.png подозрительно мала"
+    for i in range(1, 5):
+        нашлась = [e for e in ("png", "jpg", "jpeg", "webp")
+                   if os.path.exists(os.path.join(_DIR, "cover%d.%s" % (i, e)))]
+        assert нашлась, "нет обложки части %d" % i
+        путь = os.path.join(_DIR, "cover%d.%s" % (i, нашлась[0]))
+        assert os.path.getsize(путь) > 50000, "обложка части %d подозрительно мала" % i
+    assert not os.path.exists(os.path.join(_DIR, "cover5.jpg")), \
+        "частей должно быть четыре — лишняя обложка"
+
+
+def test_header_is_in_the_layer_from_the_first_frame():
+    """Владелец: «лого слева и академия датаиста должно быть с первой доли
+    секунды видео после обложки». Шапка вшита в слой и рисуется всегда —
+    прячется она только на самой обложке."""
+    html = _html()
+    assert "body.on-cover #chrome{display:none}" in html.replace("\n", "") or \
+        "body.on-cover #chrome" in html, "шапка не привязана к обложке"
+    assert re.search(r"#chrome\{[^}]*position:absolute", html), "шапки нет в кадре"
+    assert "opacity:0" not in re.search(r"#chrome\{[^}]*\}", html).group(0), \
+        "шапка появляется не сразу"
 
 
 def test_build_and_cut_scripts_are_here():
