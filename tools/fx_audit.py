@@ -100,8 +100,11 @@ def audit(lecture, slide):
     area = {i["text"]: i["rect"][2] * i["rect"][3] for i in inv["items"]}
     for c in cues:
         t = c.get("text") or ""
-        if len(t) < 30 or c.get("fx") == "check":
-            continue      # короткий акцент в заголовке и галочка в пункте — можно
+        # Правило про КОРОБКУ: рамку кладём на карточку, а не на абзац внутри
+        # неё. Эффекты без рамки канон разрешает прямо на строке —
+        # подчёркивание строки-тезиса, галочка в пункте, увеличение.
+        if len(t) < 30 or c.get("fx") not in OUTLINE:
+            continue
         host = [o for o in inv["items"]
                 if o["text"] != t and t in o["text"]
                 and area[o["text"]] > area.get(t, 0) * 1.8]
