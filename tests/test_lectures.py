@@ -388,6 +388,30 @@ def test_two_frozen_forms_scale_only():
             rel + ": кружок с головой масштабируется тем же коэффициентом"
 
 
+def test_mobile_canvas_follows_window_width():
+    """Мобильный холст тянется по ширине окна (FR-SITE27).
+
+    Было: холст 376×844 масштабировался min(по ширине, по высоте), и в широком
+    невысоком окне (744×825) побеждала высота — слайд висел полосой на 47%
+    экрана. Стало: константа формы — ВЫСОТА (с ней шапка, стрелки, кружок и
+    кегли), а ширина холста берётся по пропорции окна, не уже канонических
+    376px и не шире 620px.
+    """
+    for rel, html in _pages():
+        assert "var MOB_W_MAX = 620;" in html, rel + ": потолок ширины мобильного холста"
+        assert "var w = Math.round(g.h * window.innerWidth / window.innerHeight);" in html, \
+            rel + ": ширина холста — по пропорции окна"
+        assert "w = Math.max(g.w, Math.min(MOB_W_MAX, w));" in html, \
+            rel + ": холст не уже формы и не шире потолка"
+        assert "if(form() !== 'mob') return g;" in html, \
+            rel + ": веб-форма не меняется"
+        # процентные схемы держим в размерах формы — иначе подписи в пыль
+        assert 'html[data-form="mob"] .radial-fig{ max-width:calc(var(--form-w, 376px) - 16px) !important; }' in html, \
+            rel + ": круговая схема ограничена шириной формы"
+        assert "document.documentElement.setAttribute('data-form', form());" in html, \
+            rel + ": форма размечена на <html> для CSS"
+
+
 def test_mobile_stacked_cards_fold_into_rows():
     """Телефон: карточка «иконка сверху» в стопке складывается в строку.
 

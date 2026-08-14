@@ -971,14 +971,35 @@ window.addEventListener('load', function(){
   // ужимается при открытой панели «Текст». Никаких промежуточных макетов.
   var REF = { pc:  { w:1380, h:864, top:128, bottom:88,  pad:32 },
               mob: { w:376,  h:844, top:88,  bottom:124, pad:8 } };
+  // Ширина мобильного холста тянется за окном (жалоба заказчика: «свернул
+  // браузер — стало как мобилка, но слишком мелко»). Причина была в том, что
+  // холст 376×844 в широком и невысоком окне масштабировался ПО ВЫСОТЕ:
+  // 744×825 давали --view-scale 0.977, холст рисовался полосой 367px посреди
+  // экрана и занимал половину его ширины.
+  // Теперь константа формы — ВЫСОТА (а с ней шапка, стрелки, кружок и кегли:
+  // они не должны раздуваться вдвое), а ширина холста берётся по пропорции
+  // окна: холст закрывает окно по горизонтали целиком. Уже канонических 376px
+  // холст не бывает — на телефоне всё ровно как было.
+  var MOB_W_MAX = 620;   // шире карточка мобильной формы превращается в ленту
   function form(){ return window.innerWidth < 768 ? 'mob' : 'pc'; }
-  function refGeom(){ return REF[form()]; }
+  function refGeom(){
+    var g = REF[form()];
+    if(form() !== 'mob') return g;
+    var w = Math.round(g.h * window.innerWidth / window.innerHeight);
+    w = Math.max(g.w, Math.min(MOB_W_MAX, w));
+    return { w: w, h: g.h, top: g.top, bottom: g.bottom, pad: g.pad };
+  }
   function viewScale(){
     var g = refGeom();
     return Math.min(window.innerWidth / g.w, window.innerHeight / g.h);
   }
   function setViewScale(){
     document.documentElement.style.setProperty('--view-scale', String(viewScale()));
+    // Ширина холста мобильной формы теперь плавает — размечаем её на <html>,
+    // чтобы блоки, заданные в ПРОЦЕНТАХ (круговые схемы), не раздувались
+    // вместе с холстом: их размер должен остаться размером формы.
+    document.documentElement.setAttribute('data-form', form());
+    document.documentElement.style.setProperty('--form-w', REF[form()].w + 'px');
   }
   setViewScale();
 
@@ -4155,6 +4176,12 @@ window.addEventListener('load', function(){
       Никаких прямоугольных подложек под ними.
    Hover-эффектов у компонента нет вовсе: ни размера, ни сдвига, ни цвета. */
 
+/* Схема задана в процентах от контейнера. Холст мобильной формы тянется за
+   шириной окна, поэтому «100%» стало вдвое больше канонической формы: круг
+   раздувался на весь слайд, а подписи после общего ужатия превращались в
+   нечитаемую пыль. Держим схему в размерах ФОРМЫ — воздух по бокам лучше,
+   чем микроскопический текст. */
+html[data-form="mob"] .radial-fig{ max-width:calc(var(--form-w, 376px) - 16px) !important; }
 .radial-fig{
   position:relative;
   width:100%;
