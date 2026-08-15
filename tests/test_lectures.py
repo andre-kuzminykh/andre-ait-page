@@ -324,11 +324,14 @@ def test_head_and_arrows_do_not_cover_content_on_phones():
         # Канон уточнён: голова ЦЕЛИКОМ на экране (12px от правого края —
         # раньше центрировалась над стрелками и вылезала на 12px за экран),
         # а пара стрелок центрируется под головой и потому стоит левее.
-        assert "right:calc(12px * var(--view-scale,1)) !important;" in html, \
+        # Обвязка масштабируется --chrome-scale: он равен прежней общей формуле
+        # min(по ширине, по высоте), а холст слайда в мобильной форме
+        # увеличивается отдельно (FR-SITE27) — кнопки от этого не растут.
+        assert "right:calc(12px * var(--chrome-scale,1)) !important;" in html, \
             rel + ": голова у правого края целиком на экране"
-        assert "right:calc(12px * var(--view-scale,1) + var(--bub)/2 - var(--arw-pair)/2) !important;" in html, \
+        assert "right:calc(12px * var(--chrome-scale,1) + var(--bub)/2 - var(--arw-pair)/2) !important;" in html, \
             rel + ": стрелки по центру под головой"
-        assert "bottom:calc(24px * var(--view-scale,1) + var(--arw)) !important;" in html, \
+        assert "bottom:calc(24px * var(--chrome-scale,1) + var(--arw)) !important;" in html, \
             rel + ": голова стоит НАД кнопками, а не в их ряду"
         assert "mob: { w:376,  h:844, top:88,  bottom:124" in html, \
             rel + ": мобильная форма резервирует полосу под ряд управления"
@@ -384,32 +387,39 @@ def test_two_frozen_forms_scale_only():
             rel + ": ресайз внутри формы ничего не пересобирает"
         assert "freeW / 1280" not in html, \
             rel + ": никакого расширения раскладки под ширину окна"
-        assert "--bub:calc(224px * var(--view-scale,1))" in html, \
-            rel + ": кружок с головой масштабируется тем же коэффициентом"
+        assert "--bub:calc(224px * var(--chrome-scale,1))" in html, \
+            rel + ": кружок с головой масштабируется коэффициентом обвязки"
+        assert "function chromeScale(){" in html and \
+            "return Math.min(window.innerWidth / g.w, window.innerHeight / g.h);" in html, \
+            rel + ": обвязка живёт по прежней формуле min(ширина, высота)"
 
 
-def test_mobile_canvas_follows_window_width():
-    """Мобильный холст тянется по ширине окна (FR-SITE27).
+def test_mobile_slides_scale_up_without_stretching():
+    """Мобилка в окне браузера: НЕ растягивать, а увеличивать (FR-SITE27).
 
-    Было: холст 376×844 масштабировался min(по ширине, по высоте), и в широком
-    невысоком окне (744×825) побеждала высота — слайд висел полосой на 47%
-    экрана. Стало: константа формы — ВЫСОТА (с ней шапка, стрелки, кружок и
-    кегли), а ширина холста берётся по пропорции окна, не уже канонических
-    376px и не шире 620px.
+    Было: холст 376×844 вписывался как min(по ширине, по высоте) — в широком
+    невысоком окне (744×825) побеждала высота, слайд висел полосой на 47%
+    экрана и читался мелко. Растягивать холст нельзя (заказчик: «вот так как
+    справа растягивать не надо») — карточки превращаются в ленты.
+    Поэтому холст остаётся КАНОНИЧЕСКИМ, а масштаб каждый слайд получает свой:
+    насколько он сам может вырасти по ширине окна и по свободной высоте между
+    шапкой и кружком. Обвязка масштабируется отдельным --chrome-scale и не
+    раздувается.
     """
     for rel, html in _pages():
-        assert "var MOB_W_MAX = 620;" in html, rel + ": потолок ширины мобильного холста"
-        assert "var w = Math.round(g.h * window.innerWidth / window.innerHeight);" in html, \
-            rel + ": ширина холста — по пропорции окна"
-        assert "w = Math.max(g.w, Math.min(MOB_W_MAX, w));" in html, \
-            rel + ": холст не уже формы и не шире потолка"
-        assert "if(form() !== 'mob') return g;" in html, \
-            rel + ": веб-форма не меняется"
-        # процентные схемы держим в размерах формы — иначе подписи в пыль
-        assert 'html[data-form="mob"] .radial-fig{ max-width:calc(var(--form-w, 376px) - 16px) !important; }' in html, \
-            rel + ": круговая схема ограничена шириной формы"
-        assert "document.documentElement.setAttribute('data-form', form());" in html, \
-            rel + ": форма размечена на <html> для CSS"
+        assert "function refGeom(){ return REF[form()]; }" in html, \
+            rel + ": холст канонический, без растягивания"
+        assert "function slideScale(inkPainted){" in html, \
+            rel + ": у каждого слайда свой масштаб холста"
+        assert "var sTop = (mid - g.top * cs) / (half + off);" in html and \
+            "var sBot = (mid - g.bottom * cs) / Math.max(half - off, 1);" in html, \
+            rel + ": масштаб считается по фактическим краям чернил"
+        assert "return Math.max(cs, Math.min(sW, sTop, sBot));" in html, \
+            rel + ": мельче прежнего слайд не становится никогда"
+        assert "'--chrome-scale', String(chromeScale())" in html, \
+            rel + ": обвязка получает свой коэффициент"
+        assert "var lift = form() === 'mob' ? 0" in html, \
+            rel + ": в мобильной форме подтяжки вверх нет — иначе верх уйдёт под шапку"
 
 
 def test_mobile_stacked_cards_fold_into_rows():

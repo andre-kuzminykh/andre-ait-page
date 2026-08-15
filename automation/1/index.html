@@ -903,7 +903,7 @@ html.dark [class*="border-black"] { border-color:rgba(255,255,255,0.18) !importa
    (планшет, узкий ноутбук) она была КРУПНЕЕ ужатого холста и накрывала
    заголовки слайдов. Теперь её высота в форме постоянна и всегда меньше
    полосы REF.top — наложение невозможно ни при каком окне. */
-#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:1.1rem; pointer-events:none; zoom:var(--view-scale,1); }
+#lecture-header{ position:fixed; top:0; left:0; right:0; z-index:9000; display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:1.1rem; pointer-events:none; zoom:var(--chrome-scale,1); }
 @media (min-width:768px){ #lecture-header{ padding:2rem; } }
 #lecture-header > *{ pointer-events:auto; }
 #lecture-header .lec-logo{ display:inline-flex; align-items:center; flex-shrink:0; }
@@ -971,35 +971,74 @@ window.addEventListener('load', function(){
   // ужимается при открытой панели «Текст». Никаких промежуточных макетов.
   var REF = { pc:  { w:1380, h:864, top:128, bottom:88,  pad:32 },
               mob: { w:376,  h:844, top:88,  bottom:124, pad:8 } };
-  // Ширина мобильного холста тянется за окном (жалоба заказчика: «свернул
-  // браузер — стало как мобилка, но слишком мелко»). Причина была в том, что
-  // холст 376×844 в широком и невысоком окне масштабировался ПО ВЫСОТЕ:
-  // 744×825 давали --view-scale 0.977, холст рисовался полосой 367px посреди
-  // экрана и занимал половину его ширины.
-  // Теперь константа формы — ВЫСОТА (а с ней шапка, стрелки, кружок и кегли:
-  // они не должны раздуваться вдвое), а ширина холста берётся по пропорции
-  // окна: холст закрывает окно по горизонтали целиком. Уже канонических 376px
-  // холст не бывает — на телефоне всё ровно как было.
-  var MOB_W_MAX = 620;   // шире карточка мобильной формы превращается в ленту
+  // ── Мобильная форма: НЕ растягиваем, а УВЕЛИЧИВАЕМ ────────────────────
+  // Жалоба заказчика: «свернул браузер — стало как мобилка, но слишком мелко»,
+  // при этом «растягивать не надо». Разбор:
+  //   • раскладка холста 376×844 масштабировалась как min(по ширине, по
+  //     высоте). В широком и невысоком окне (744×825) побеждала ВЫСОТА —
+  //     масштаб 0.977, холст рисовался полосой 367px посреди экрана;
+  //   • если РАСТЯНУТЬ холст по ширине (376 → 620), карточки превращаются в
+  //     ленты: текст внутри остаётся мелким, а сама карточка едет вширь.
+  //     Заказчик такой вариант отверг.
+  // Поэтому ширина холста остаётся КАНОНИЧЕСКОЙ (376) — раскладка, переносы
+  // строк и пропорции карточек ровно как на телефоне, — а масштаб берётся
+  // ПО ШИРИНЕ окна: телефонный экран просто показывается крупнее. Высота
+  // холста при этом равна тому, что реально дало окно (winH / масштаб), и
+  // подгонка ужимает содержимое под неё, как ужимала бы на низком телефоне.
   function form(){ return window.innerWidth < 768 ? 'mob' : 'pc'; }
-  function refGeom(){
+  // Масштаб ОБВЯЗКИ (шапка, кружок с головой, стрелки). Он остаётся прежним:
+  // увеличивать надо содержимое слайда, а не кнопки — иначе в окне 744px
+  // шапка стала бы вдвое выше телефонной.
+  function chromeScale(){
     var g = REF[form()];
-    if(form() !== 'mob') return g;
-    var w = Math.round(g.h * window.innerWidth / window.innerHeight);
-    w = Math.max(g.w, Math.min(MOB_W_MAX, w));
-    return { w: w, h: g.h, top: g.top, bottom: g.bottom, pad: g.pad };
-  }
-  function viewScale(){
-    var g = refGeom();
     return Math.min(window.innerWidth / g.w, window.innerHeight / g.h);
   }
+  // Масштаб холста в корне — запасное значение (в вебе оно и есть рабочее).
+  // В мобильной форме каждый слайд получает свой --view-scale (см. ниже).
+  function viewScale(){ return chromeScale(); }
+  // Холст — КАНОНИЧЕСКИЙ, без вариантов: раскладка, переносы строк и
+  // пропорции карточек в мобильной форме ровно те же, что на телефоне.
+  function refGeom(){ return REF[form()]; }
   function setViewScale(){
     document.documentElement.style.setProperty('--view-scale', String(viewScale()));
-    // Ширина холста мобильной формы теперь плавает — размечаем её на <html>,
-    // чтобы блоки, заданные в ПРОЦЕНТАХ (круговые схемы), не раздувались
-    // вместе с холстом: их размер должен остаться размером формы.
-    document.documentElement.setAttribute('data-form', form());
-    document.documentElement.style.setProperty('--form-w', REF[form()].w + 'px');
+    document.documentElement.style.setProperty('--chrome-scale', String(chromeScale()));
+    applyViewScales();
+  }
+
+  // ── Масштаб холста в мобильной форме считается ДЛЯ КАЖДОГО СЛАЙДА ──────
+  // Общий масштаб упирался в самый плотный слайд: 591px чернил из 42 слайдов
+  // не давали увеличить НИ ОДИН. Слайды показываются по одному, и подгонка
+  // и так даёт каждому свой zoom (на вебе 0.68–1.3), поэтому масштаб холста
+  // тоже персональный: слайд увеличивается настолько, насколько сам может, —
+  // по ширине окна и по свободной высоте между шапкой и кружком с головой.
+  var SCALED = [];      // {el, ink} — высота чернил слайда в px холста
+  function slideScale(inkPainted){
+    var g = REF.mob, cs = chromeScale();
+    if(!(inkPainted > 0)) return cs;
+    var sW = window.innerWidth / g.w;          // холст закрывает окно по ширине
+    // Чернила центрированы в СВОБОДНОЙ полосе холста, а сама полоса
+    // несимметрична (сверху 88, снизу 124) — значит центр чернил стоит выше
+    // центра холста на (bottom-top)/2. При увеличении этот сдвиг растёт
+    // вместе с масштабом, поэтому считаем оба края честно, а не «полосой×2».
+    var half = inkPainted / 2, off = (g.bottom - g.top) / 2;
+    var mid = window.innerHeight / 2;
+    var sTop = (mid - g.top * cs) / (half + off);        // верх не заходит под шапку
+    var sBot = (mid - g.bottom * cs) / Math.max(half - off, 1);   // низ не заходит под кружок
+    return Math.max(cs, Math.min(sW, sTop, sBot));      // мельче прежнего не делаем никогда
+  }
+  function applyViewScales(){
+    var i, r;
+    for(i = 0; i < SCALED.length; i++){
+      r = SCALED[i];
+      if(!r.el.isConnected) continue;
+      r.el.style.setProperty('--view-scale',
+        form() === 'mob' ? String(slideScale(r.ink)) : '');
+    }
+  }
+  function rememberScale(el, ink){
+    var i;
+    for(i = 0; i < SCALED.length; i++) if(SCALED[i].el === el){ SCALED[i].ink = ink; return; }
+    SCALED.push({ el: el, ink: ink });
   }
   setViewScale();
 
@@ -1399,12 +1438,24 @@ window.addEventListener('load', function(){
       // хотим px ФОРМЫ на экране (*viewScale) — отсюда *vs/z.
       ink = inkBox(c);
       if(ink){
-        var lift = Math.max(0, Math.min((freeH - ink.h * z) * 0.18, 30));
+        // В мобильной форме подтяжки нет: масштаб слайда уже посчитан по
+        // фактическим краям чернил (slideScale), и лишний сдвиг вверх увёл бы
+        // заголовок под шапку — тем сильнее, чем крупнее слайд.
+        var lift = form() === 'mob' ? 0
+                 : Math.max(0, Math.min((freeH - ink.h * z) * 0.18, 30));
         c.style.setProperty('--fit-shift', (-(lift * viewScale()) / z).toFixed(2) + 'px');
       }
       // Ширина чернил в пикселях ФОРМЫ — для панели «Текст»: ужатие при
       // открытой панели считается от неё, а не от всей ширины холста.
       if(ink) slide.setAttribute('data-inkw', String(Math.round(ink.w * z)));
+      // Высота чернил в px холста — по ней слайд получает СВОЙ масштаб холста
+      // в мобильной форме (см. slideScale): лёгкий слайд увеличивается
+      // сильнее, плотный — насколько может, и ни один не мельче прежнего.
+      if(ink){
+        rememberScale(c, ink.h * z);
+        if(form() === 'mob') c.style.setProperty('--view-scale', String(slideScale(ink.h * z)));
+        else c.style.removeProperty('--view-scale');
+      }
       // Круги радиальных схем: кегль подписи и размер иконки — доля
       // ФАКТИЧЕСКОГО диаметра круга. В чистом CSS это не выразить: --sat
       // задан процентами, а проценты внутри font-size считаются от кегля
@@ -1634,6 +1685,9 @@ window.addEventListener('load', function(){
   var lastForm = form();
   function soon(){
     syncShrink();
+    // Ресайз внутри формы НИЧЕГО не перекладывает: холст канонический, меняется
+    // только масштаб — общий для обвязки и персональный у каждого слайда
+    // (setViewScale → applyViewScales, чистый transform, без reflow).
     setViewScale();
     if (form() === lastForm) return;
     lastForm = form();
@@ -4176,12 +4230,6 @@ window.addEventListener('load', function(){
       Никаких прямоугольных подложек под ними.
    Hover-эффектов у компонента нет вовсе: ни размера, ни сдвига, ни цвета. */
 
-/* Схема задана в процентах от контейнера. Холст мобильной формы тянется за
-   шириной окна, поэтому «100%» стало вдвое больше канонической формы: круг
-   раздувался на весь слайд, а подписи после общего ужатия превращались в
-   нечитаемую пыль. Держим схему в размерах ФОРМЫ — воздух по бокам лучше,
-   чем микроскопический текст. */
-html[data-form="mob"] .radial-fig{ max-width:calc(var(--form-w, 376px) - 16px) !important; }
 .radial-fig{
   position:relative;
   width:100%;
@@ -4548,15 +4596,18 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    правому краю, а голова — своим правым краем к ним же, поэтому её центр
    уезжал левее пары. Считаем от центра головы, а не от края экрана. */
 :root{
-  /* Вся обвязка масштабируется ТЕМ ЖЕ --view-scale, что и холст слайда:
+  /* Обвязка масштабируется --chrome-scale: он равен прежнему общему масштабу
+     (min по ширине и высоте), поэтому кнопки и кружок остаются телефонного
+     размера, даже когда холст слайда увеличен по ширине окна (FR-SITE27).
+     Раньше здесь стоял --view-scale — тот же коэффициент, что и у холста:
      геометрия «кружок — стрелки — контент» одна и та же на любом экране
      (выверенная на 1440x900 и 390x844), просто крупнее или мельче. Поэтому
      кружок не может наехать на текст ни при каком размере окна. */
-  --bub:calc(224px * var(--view-scale,1));   /* диаметр говорящей головы */
-  --arw:calc(58px * var(--view-scale,1));    /* диаметр кнопки листания */
-  --arw-gap:calc(14px * var(--view-scale,1));
+  --bub:calc(224px * var(--chrome-scale,1));   /* диаметр говорящей головы */
+  --arw:calc(58px * var(--chrome-scale,1));    /* диаметр кнопки листания */
+  --arw-gap:calc(14px * var(--chrome-scale,1));
   --arw-pair:calc(2*var(--arw) + var(--arw-gap));
-  --bub-right:calc(20px * var(--view-scale,1));
+  --bub-right:calc(20px * var(--chrome-scale,1));
 }
 /* Голова и стрелки живут ПОВЕРХ слайда и на его раскладку не влияют вовсе
    (правило заказчика). Поэтому важно одно: чтобы сам угол был как можно
@@ -4565,10 +4616,10 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
 #video-bubble{
   width:var(--bub) !important; height:var(--bub) !important;
   left:auto !important; right:var(--bub-right) !important;
-  top:auto !important; bottom:calc(28px * var(--view-scale,1) + var(--arw)) !important;
+  top:auto !important; bottom:calc(28px * var(--chrome-scale,1) + var(--arw)) !important;
 }
 #nav-prev, #nav-next{
-  top:auto !important; bottom:calc(16px * var(--view-scale,1)) !important; transform:none !important;
+  top:auto !important; bottom:calc(16px * var(--chrome-scale,1)) !important; transform:none !important;
   width:var(--arw) !important; height:var(--arw) !important;
   left:auto !important;
 }
@@ -4586,9 +4637,9 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
    одной головы, эту полосу portal-fit резервирует (chromeBand), и содержимое
    до неё уже не доходит. Канон заказчика — «никаких наложений текста». */
 @media (max-width:767px){
-  :root{ --bub:calc(170px * var(--view-scale,1));
-         --arw:calc(44px * var(--view-scale,1));
-         --arw-gap:calc(10px * var(--view-scale,1)); }
+  :root{ --bub:calc(170px * var(--chrome-scale,1));
+         --arw:calc(44px * var(--chrome-scale,1));
+         --arw-gap:calc(10px * var(--chrome-scale,1)); }
   /* Кружок с головой — крупнее и НАД кнопками листания (правка заказчика);
      он лежит поверх слайда и перетаскивается, юзер сам подвинет куда хочет. */
   /* Кружок ЦЕЛИКОМ на экране с отступом 12px от правого края (раньше он
@@ -4596,19 +4647,19 @@ html.dark #progress-container{ background:rgba(255,255,255,.18) !important; }
      владельца), а пара стрелок центрируется ПОД кружком и потому стоит
      левее края. */
   #nav-prev, #nav-next{
-    bottom:calc(14px * var(--view-scale,1)) !important;
+    bottom:calc(14px * var(--chrome-scale,1)) !important;
   }
-  #nav-next{ right:calc(12px * var(--view-scale,1) + var(--bub)/2 - var(--arw-pair)/2) !important; }
-  #nav-prev{ right:calc(12px * var(--view-scale,1) + var(--bub)/2 - var(--arw-pair)/2 + var(--arw) + var(--arw-gap)) !important; }
+  #nav-next{ right:calc(12px * var(--chrome-scale,1) + var(--bub)/2 - var(--arw-pair)/2) !important; }
+  #nav-prev{ right:calc(12px * var(--chrome-scale,1) + var(--bub)/2 - var(--arw-pair)/2 + var(--arw) + var(--arw-gap)) !important; }
   #video-bubble{
     left:auto !important;
-    right:calc(12px * var(--view-scale,1)) !important;
-    bottom:calc(24px * var(--view-scale,1) + var(--arw)) !important;
+    right:calc(12px * var(--chrome-scale,1)) !important;
+    bottom:calc(24px * var(--chrome-scale,1) + var(--arw)) !important;
   }
 }
 
 /* Широкие экраны: шапке больше не нужны ступени zoom — lecture-chrome
-   масштабирует её точным var(--view-scale) вместе со всем остальным. */
+   масштабирует её точным var(--chrome-scale) вместе со всей обвязкой. */
 /* (историческая справка) До 1600px всё как было — ступени начинались выше, поэтому
    уже проверенные 390 / 768 / 1440 не меняются вовсе.
    Дальше лекция переставала адаптироваться: контент упирался в потолок роста,
@@ -4833,9 +4884,9 @@ body.notes-open #notes-panel{ transform:none; visibility:visible; transition:tra
 .notes-head{
   flex:0 0 auto; display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem;
   /* Сверху резерв под логотип AIT: он остаётся видимым НАД панелью.
-     Шапка (и лого) зумится на var(--view-scale) — резерв обязан расти
+     Шапка (и лого) зумится на var(--chrome-scale) — резерв обязан расти
      тем же множителем, иначе на маке «СЛАЙД 1/42» налезает на лого. */
-  padding:calc((clamp(2.3rem,9vw,3.2rem) + clamp(1.5rem,5vw,2.3rem)) * var(--view-scale,1)) clamp(1rem,2.6vw,1.6rem) .85rem;
+  padding:calc((clamp(2.3rem,9vw,3.2rem) + clamp(1.5rem,5vw,2.3rem)) * var(--chrome-scale,1)) clamp(1rem,2.6vw,1.6rem) .85rem;
   border-bottom:1px solid rgba(0,0,0,.09);
   background:linear-gradient(180deg, rgba(139,92,246,.07), rgba(139,92,246,0));
 }
