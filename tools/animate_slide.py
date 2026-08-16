@@ -40,6 +40,7 @@ import sys
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import cinema as cinema_fx
 from record_lecture import (ROOT, W, H, FPS, BUB_D, BUB_MARGIN, CHROME_OFF,
                             PORT, ffmpeg_bin, run, duration, head_clips, fetch,
                             serve, vendor_route, check_font, circle_mask,
@@ -334,7 +335,8 @@ def cue_times(cues, words):
     return cues
 
 
-def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=None):
+def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=None,
+           cinema=False):
     from playwright.sync_api import sync_playwright
 
     frames, srv = [], serve()
@@ -349,9 +351,15 @@ def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=Non
                 executable_path=(os.environ.get("CHROMIUM_PATH")
                                  or "/opt/pw-browsers/chromium"),
                 args=["--no-sandbox", "--hide-scrollbars"])
-            ctx = browser.new_context(viewport={"width": W, "height": H},
-                                      device_scale_factor=1,
-                                      reduced_motion="reduce")
+            # В режиме «кино» слайд снимается в узком вьюпорте — ровно в
+            # ширину правой колонки. Портал-подгонка страницы сама вписывает
+            # холст формы в это окно, поэтому колонка получается штатным
+            # механизмом, без переопределения вёрстки слайдов.
+            ctx = browser.new_context(
+                viewport=(cinema_fx.viewport() if cinema
+                          else {"width": W, "height": H}),
+                device_scale_factor=1,
+                reduced_motion="reduce")
             if vendor:
                 ctx.route("**/*", vendor_route(vendor))
             page = ctx.new_page()
@@ -359,6 +367,8 @@ def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=Non
                       wait_until="load", timeout=120000)
             page.wait_for_timeout(3000)
             page.add_style_tag(content=CHROME_OFF)
+            if cinema:
+                page.add_style_tag(content=cinema_fx.CINEMA_CSS)
             page.evaluate("() => document.querySelectorAll("
                           "'#start-overlay,#intro-overlay').forEach(e => e.remove())")
             check_font(page, allow_fallback)
@@ -413,6 +423,9 @@ def main():
                     help="снять N контрольных кадров вместо видео")
     ap.add_argument("--at", help="секунды через запятую: снять кадры ровно на "
                                  "этих отметках (проверка конкретных реплик)")
+    ap.add_argument("--cinema", action="store_true",
+                    help="видео слева живьём, слайд справа, тёмный фон "
+                         "(вместо кружка в углу) — см. tools/cinema.py")
     ap.add_argument("--vendor")
     ap.add_argument("--allow-fallback-fonts", action="store_true")
     ap.add_argument("--out")
@@ -461,18 +474,49 @@ def main():
     at = [float(x) for x in args.at.split(",")] if args.at else None
     print("2/3 · кадры (%.1f с × %d fps)" % (secs, FPS))
     render(idx, cues, secs, frames_dir, args.vendor,
-           args.allow_fallback_fonts, preview=args.preview, at=at)
+           args.allow_fallback_fonts, preview=args.preview, at=at,
+           cinema=args.cinema)
     if args.preview or at:
         print("\nконтрольные кадры: %s" % frames_dir)
         return
 
     print("3/3 · сборка")
     out = args.out or os.path.join(BUILD, tag + ".mp4")
+    seq = os.path.join(frames_dir, "f-%05d.png")
+
+    if args.cinema:
+        # Кино: подложка + колонка слайда справа + живое видео слева, правый
+        # край которого растворяется маской-градиентом.
+        if not clip:
+            sys.exit("режим «кино» без клипа бессмыслен — левая панель пуста")
+        mask = os.path.join(BUILD, "cinema-mask.png")
+        cinema_fx.fade_mask(mask)
+        bg = os.path.join(BUILD, "cinema-bg.png")
+        cinema_fx.dark_canvas(ff, bg)
+        sw, sh = cinema_fx.probe_size(ff, clip)
+        crop = cinema_fx.crop_for(sw, sh)
+        print("   исходник %dx%d · кроп %s" % (sw, sh, crop or "не нужен"))
+        vf = cinema_fx.overlay_filter(bg_stream="0:v", clip_stream="2:v",
+                                      mask_stream="3:v", pane_stream="1:v",
+                                      crop=crop)
+        run([ff, "-y", "-loglevel", "error",
+             "-loop", "1", "-framerate", str(FPS), "-i", bg,
+             "-framerate", str(FPS), "-i", seq,
+             "-i", clip, "-i", mask, "-filter_complex", vf,
+             "-map", "[v]", "-map", "2:a?",
+             "-c:v", "libx264", "-preset", "medium", "-crf", "18",
+             "-pix_fmt", "yuv420p", "-r", str(FPS),
+             "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
+             "-shortest", "-movflags", "+faststart", out])
+        print("\nГотово (кино): %s\n  %s · %.0f МБ\n  %s"
+              % (out, timecode(secs), os.path.getsize(out) / 1024 / 1024,
+                 cinema_fx.geometry()))
+        return
+
     diameter = int(W * BUB_D) // 2 * 2
     margin = int(W * BUB_MARGIN)
     mask = os.path.join(BUILD, "circle-mask.png")
     circle_mask(mask, diameter)
-    seq = os.path.join(frames_dir, "f-%05d.png")
     if clip:
         vf = ("[1:v]scale=%d:%d,setsar=1[hv];[hv][2:v]alphamerge[circ];"
               "[0:v][circ]overlay=W-w-%d:H-h-%d:format=auto[v]"
