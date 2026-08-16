@@ -56,6 +56,11 @@ FX_JS = r"""
 window.__fx = (function(){
   var CUES = __CUES__;
   var SOLAR = '#F97316', VIOLET = '#8B5CF6';
+  // Размах разлёта эмодзи. В режиме «кино» кадр снимается на всю ширину
+  // и ложится ПОВЕРХ видео, поэтому всплески должны долетать до человека
+  // (правка владельца: «эмодзи могут вылетать за чёрное — прям на само
+  // видео»). При штатной съёмке множитель 1 — поведение не меняется.
+  var SPREAD = __SPREAD__;
 
   // Эмодзи вылетают ИЗ-ЗА карточек (правка владельца), а не поверх. Слой для
   // этого живёт ВНУТРИ слайда с z-index:-1: отрицательный слой рисуется после
@@ -121,7 +126,7 @@ window.__fx = (function(){
       var q = a / dur;
       if (q >= 1) continue;
       var ang = (Math.PI * (0.15 + 0.7 * (j / (n - 1)))) * -1;
-      var sp = 260 + ((j * 37) % 120);
+      var sp = (260 + ((j * 37) % 120)) * SPREAD;
       // Путь замедляется к концу (1-(1-q)^2): эмодзи выстреливает и зависает,
       // а не улетает за край кадра равномерной пулей.
       var dist = sp * dur * 0.42 * (1 - Math.pow(1 - q, 2));
@@ -368,7 +373,7 @@ def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=Non
             page.wait_for_timeout(3000)
             page.add_style_tag(content=CHROME_OFF)
             if cinema:
-                page.add_style_tag(content=cinema_fx.CINEMA_CSS)
+                page.add_style_tag(content=cinema_fx.css())
             page.evaluate("() => document.querySelectorAll("
                           "'#start-overlay,#intro-overlay').forEach(e => e.remove())")
             check_font(page, allow_fallback)
@@ -386,7 +391,9 @@ def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=Non
                           % (grown["k"], grown["w"], grown["h"],
                              cinema_fx.PANE_W, H))
 
-            page.evaluate(FX_JS.replace("__CUES__", json.dumps(cues, ensure_ascii=False)))
+            page.evaluate(FX_JS.replace("__CUES__", json.dumps(cues, ensure_ascii=False))
+                              .replace("__SPREAD__",
+                                       str(cinema_fx.SPREAD) if cinema else "1"))
             missing = page.evaluate("() => window.__fx.missing")
             if missing:
                 sys.exit("не нашёл на слайде элементы: %s\n"
@@ -400,7 +407,7 @@ def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=Non
                 for sec in at:
                     page.evaluate("(t) => window.__fx.apply(t)", float(sec))
                     path = os.path.join(out_dir, "at-%06.2f.png" % float(sec))
-                    page.screenshot(path=path)
+                    page.screenshot(path=path, omit_background=cinema)
                     frames.append(path)
                     print("   кадр на %.2f с" % float(sec))
                 ctx.close()
@@ -411,7 +418,7 @@ def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=Non
             for i in range(0, total_frames, step):
                 page.evaluate("(t) => window.__fx.apply(t)", i / float(FPS))
                 path = os.path.join(out_dir, "f-%05d.png" % i)
-                page.screenshot(path=path)
+                page.screenshot(path=path, omit_background=cinema)
                 frames.append(path)
                 if i % (FPS * 5) == 0:
                     print("   кадр %d/%d" % (i, total_frames))

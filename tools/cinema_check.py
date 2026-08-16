@@ -84,6 +84,7 @@ def main():
         print("STEP: клип %dx%d · %s" % (sw, sh, cinema_fx.configure(sw, sh)))
 
     vp = cinema_fx.viewport()
+    col_x = cinema_fx.PANE_X          # слева от него — видео, туда текст нельзя
     fails, srv = [], serve()
     try:
         with sync_playwright() as pw:
@@ -101,7 +102,7 @@ def main():
                       wait_until="load", timeout=120000)
             page.wait_for_timeout(2500)
             page.add_style_tag(content=CHROME_OFF)
-            page.add_style_tag(content=cinema_fx.CINEMA_CSS)
+            page.add_style_tag(content=cinema_fx.css())
             page.evaluate("() => document.querySelectorAll("
                           "'#start-overlay,#intro-overlay').forEach(e => e.remove())")
             for _ in range(args.slide - 1):
@@ -123,10 +124,10 @@ def main():
                 if alpha > 0.02 and _luma(rgb) < MIN_LUMA:
                     fails.append("текст тонет в фоне (%s, luma %.0f): %r"
                                  % (n["fill"], _luma(rgb), n["text"]))
-                if n["x"] < -0.5 or n["x"] + n["w"] > vp["width"] + 0.5:
+                if n["x"] < col_x - 0.5 or n["x"] + n["w"] > cinema_fx.W + 0.5:
                     fails.append("бокс вылез за колонку по ширине "
-                                 "(x=%.0f w=%.0f, колонка %d): %r"
-                                 % (n["x"], n["w"], vp["width"], n["text"]))
+                                 "(x=%.0f w=%.0f, колонка %d..%d): %r"
+                                 % (n["x"], n["w"], col_x, cinema_fx.W, n["text"]))
                 if n["y"] < -0.5 or n["y"] + n["h"] > vp["height"] + 0.5:
                     fails.append("бокс вылез за кадр по высоте "
                                  "(y=%.0f h=%.0f): %r"
@@ -135,11 +136,12 @@ def main():
                        max(box[2], n["x"] + n["w"]), max(box[3], n["y"] + n["h"])]
 
             print("STEP: текстовых узлов %d" % len(nodes))
-            print("STEP: контент занимает %.0f×%.0f из %d×%d "
+            print("STEP: контент занимает %.0f×%.0f из колонки %d×%d "
                   "(%.0f%% ширины, %.0f%% высоты)"
-                  % (box[2] - box[0], box[3] - box[1], vp["width"], vp["height"],
-                     100 * (box[2] - box[0]) / vp["width"],
-                     100 * (box[3] - box[1]) / vp["height"]))
+                  % (box[2] - box[0], box[3] - box[1], cinema_fx.PANE_W,
+                     cinema_fx.H,
+                     100 * (box[2] - box[0]) / cinema_fx.PANE_W,
+                     100 * (box[3] - box[1]) / cinema_fx.H))
             ctx.close()
             browser.close()
     finally:

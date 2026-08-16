@@ -89,9 +89,36 @@ BG = "#0A0A0A"
 # Порядок правил важен: сначала гасим общий текст, потом возвращаем акценты
 # (солнечный и фиолетовый) — иначе заголовок «операционное ядро» побелеет
 # вместе с остальным.
-CINEMA_CSS = """
-html, body, .slide-container { background: %(bg)s !important; }
+_CSS = """
+/* ПРОЗРАЧНЫЙ фон — принципиально. Кадр слайда снимается на всю ширину
+   1920 и кладётся ПОВЕРХ уже смонтированного видео, поэтому эмодзи FX
+   вылетают из колонки прямо на человека (правка владельца). Была бы
+   заливка — она закрыла бы видео целиком. Подложку рисует ffmpeg.
+
+   Селекторы с `html.dark` — не украшательство: у страницы своя тёмная тема
+   с !important на html/body/слайде, и правило меньшей специфичности она
+   перебивает. Первый заход именно на этом и сгорел — снимок вышел
+   непрозрачным и закрыл видео целиком. */
+html, html.dark, body, html.dark body,
+.slide-container, html.dark .slide-container {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
 .slide-container { color: #fff !important; }
+
+/* Контент прижат в правую колонку: слева живёт видео. Само вписывание
+   доделывает GROW_JS — он меряет чернила и двигает их transform-ом. */
+.slide-container { padding-left: %(pane)dpx !important; }
+
+/* Заголовок отделяем от всего, что окажется за ним: акцент рисуется
+   градиентом (заливка прозрачная), и на кучке оранжевых эмодзи фраза
+   «операционное ядро» переставала читаться. text-shadow на такой текст не
+   действует — тень кладём фильтром, он работает по форме глифов. */
+.slide-container h1, .slide-container h2 {
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,.95))
+          drop-shadow(0 0 26px rgba(0,0,0,.75)) !important;
+}
 
 /* Карточки: белые плитки светлой темы → графитовые, без теней. */
 .slide-container .bg-white,
@@ -141,7 +168,16 @@ html, body, .slide-container { background: %(bg)s !important; }
 
 /* Бейдж лекции: на тёмном обводка важнее заливки. */
 .slide-container .rounded-full[class*="border-grayBase"] p { color: rgba(255,255,255,.75) !important; }
-""" % {"bg": BG}
+"""
+
+
+def css():
+    """Стиль съёмки под ТЕКУЩУЮ геометрию (отступ колонки зависит от панели).
+
+    Функция, а не константа: ширина панели считается из клипа в configure(),
+    и зашитый на импорте отступ увёл бы контент не туда.
+    """
+    return _CSS % {"pane": PANE_X}
 
 
 # ── Догон масштаба колонки ────────────────────────────────────────────────
@@ -153,6 +189,12 @@ html, body, .slide-container { background: %(bg)s !important; }
 # но не вылезти. Именно transform, а не zoom: инлайновый zoom принадлежит
 # подгонке страницы, перебивать его нельзя, а FX-слой берёт координаты
 # через getBoundingClientRect и переживает масштаб без правок.
+# Размах разлёта эмодзи FX в этом режиме. Штатные ~250px гасли метров за
+# полтораста до панели, и всплеск упирался в невидимую границу колонки —
+# ровно то, что просил снять владелец («эмодзи могут вылетать за чёрное —
+# прям на само видео»). Выше 2.5 значки улетают за край кадра.
+SPREAD = 2.2
+
 FILL_W = 0.94          # доля ширины колонки, дальше — впритык к краю
 FILL_H = 0.88          # доля высоты кадра
 GROW_CAP = 1.6         # выше — интерполяция начинает мылить шрифт
@@ -181,28 +223,36 @@ GROW_JS = """
       x0 = Math.min(x0, r.left); y0 = Math.min(y0, r.top);
       x1 = Math.max(x1, r.right); y1 = Math.max(y1, r.bottom);
     });
-    return { w: x1 - x0, h: y1 - y0 };
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
   };
   c.style.transform = '';
   c.style.transformOrigin = 'center center';
-  let k = 1, box = ink();
+  let k = 1, dx = 0, box = ink();
   if (!(box.w > 0 && box.h > 0)) return null;
-  for (let i = 0; i < 5; i++) {
+  const put = () => {
+    c.style.transform = 'translateX(' + dx + 'px) scale(' + k + ')';
+  };
+  for (let i = 0; i < 6; i++) {
     box = ink();                                   // чернила КАК ЕСТЬ сейчас
     const need = Math.min(cfg.vw * cfg.fw / box.w, cfg.vh * cfg.fh / box.h);
-    if (Math.abs(need - 1) < 0.005) break;         // сошлись
-    k = Math.max(cfg.floor, Math.min(k * need, cfg.cap));
-    c.style.transform = 'scale(' + k + ')';
+    // Центр колонки — цель по горизонтали: кадр снимается на всю ширину
+    // 1920, чтобы эмодзи FX могли вылетать на видео, поэтому контент надо
+    // ещё и подвинуть вправо, а не только вписать по размеру.
+    const want = cfg.x0 + cfg.vw / 2;
+    dx += want - (box.x + box.w / 2);
+    if (Math.abs(need - 1) > 0.005)
+      k = Math.max(cfg.floor, Math.min(k * need, cfg.cap));
+    put();
   }
   box = ink();
-  return { k: k, w: box.w, h: box.h };
+  return { k: k, dx: dx, w: box.w, h: box.h, x: box.x };
 }
 """
 
 
 def grow_args():
     """Параметры для GROW_JS — держим рядом с геометрией, а не в вызове."""
-    return {"vw": PANE_W, "vh": H, "fw": FILL_W, "fh": FILL_H,
+    return {"vw": PANE_W, "vh": H, "x0": PANE_X, "fw": FILL_W, "fh": FILL_H,
             "cap": GROW_CAP, "floor": SHRINK_CAP}
 
 
@@ -243,15 +293,18 @@ def overlay_filter(bg_stream="0:v", clip_stream="1:v", mask_stream="2:v",
     вьюпорт); без него подложкой служит уже готовый кадр 1920×1080.
     graph — фрагмент от pane_graph(), отдающий метку [hv].
     """
-    parts = []
-    base = "[%s]" % bg_stream
-    if pane_stream:
-        parts.append("%s[%s]overlay=%d:0[base]" % (base, pane_stream, PANE_X))
-        base = "[base]"
-    parts.append(graph or ("[%s]scale=%d:%d,setsar=1[hv]"
-                           % (clip_stream, VIDEO_W, VIDEO_H)))
+    # ПОРЯДОК: подложка → видео → кадр слайда СВЕРХУ. Раньше видео клали
+    # последним, и оно перекрывало всё нарисованное браузером — эмодзи FX
+    # упирались в границу колонки. Кадр слайда снимается прозрачным на всю
+    # ширину, поэтому теперь всплески свободно вылетают на человека.
+    parts = [graph or ("[%s]scale=%d:%d,setsar=1[hv]"
+                       % (clip_stream, VIDEO_W, VIDEO_H))]
     parts.append("[hv][%s]alphamerge[pane]" % mask_stream)
-    parts.append("%s[pane]overlay=%d:%d:format=auto[v]" % (base, VIDEO_X, VIDEO_Y))
+    parts.append("[%s][pane]overlay=%d:%d:format=auto%s"
+                 % (bg_stream, VIDEO_X, VIDEO_Y,
+                    "[base]" if pane_stream else "[v]"))
+    if pane_stream:
+        parts.append("[base][%s]overlay=0:0:format=auto[v]" % pane_stream)
     return ";".join(parts)
 
 
@@ -352,8 +405,13 @@ def dark_canvas(ff, path, secs=None):
 
 
 def viewport():
-    """Вьюпорт съёмки слайда — ровно правая колонка кадра."""
-    return {"width": PANE_W, "height": H}
+    """Вьюпорт съёмки — ВЕСЬ кадр, а не одна колонка.
+
+    Кадр снимается на прозрачном фоне и кладётся ПОВЕРХ смонтированного
+    видео, поэтому эмодзи FX вылетают из колонки прямо на человека (правка
+    владельца). В колонку контент ставит GROW_JS.
+    """
+    return {"width": W, "height": H}
 
 
 def geometry():

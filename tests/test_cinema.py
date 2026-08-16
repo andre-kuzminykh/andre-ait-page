@@ -222,7 +222,7 @@ def test_every_color_rule_also_sets_text_fill():
     """Страница красит заголовки `-webkit-text-fill-color` с !important, и он
     перебивает `color`. Без парного правила вся колонка остаётся чёрной по
     чёрному — ровно этот дефект и был в первом прогоне."""
-    css = cinema.CINEMA_CSS
+    css = cinema.css()
     blocks = [b for b in css.split("}") if "color:" in b]
     for b in blocks:
         if "background" in b and "color:" not in b.replace("background-color:", ""):
@@ -237,14 +237,41 @@ def test_every_color_rule_also_sets_text_fill():
 def test_gradient_headings_keep_transparent_fill():
     """Акцент в заголовке рисуется градиентом через background-clip:text —
     заливка обязана остаться прозрачной, иначе градиент закрашивается."""
-    assert "-webkit-text-fill-color: transparent" in cinema.CINEMA_CSS
+    assert "-webkit-text-fill-color: transparent" in cinema.css()
 
 
-def test_background_is_one_tone_everywhere():
-    """Фон подложки ffmpeg и фон слайда — один цвет: иначе на стыке колонки
-    с тёмным полем видна ступенька."""
+def test_slide_frame_is_transparent():
+    """Кадр слайда снимается ПРОЗРАЧНЫМ и кладётся поверх видео — только так
+    эмодзи FX вылетают из колонки на человека (правка владельца). Любая
+    заливка в этом стиле закрыла бы видео целиком; фон рисует ffmpeg."""
+    css = cinema.css()
+    assert "background: transparent" in css, css[:400]
+    assert cinema.BG not in css, "заливка фона вернулась — видео закроется"
     assert cinema.BG.startswith("#") and len(cinema.BG) == 7
-    assert cinema.BG in cinema.CINEMA_CSS
+
+
+def test_slide_frame_goes_over_the_video():
+    """Порядок сборки: подложка → видео → кадр слайда. Если поменять местами,
+    видео снова перекроет эмодзи."""
+    f = cinema.overlay_filter(bg_stream="0:v", clip_stream="2:v",
+                              mask_stream="3:v", pane_stream="1:v")
+    steps = f.split(";")
+    video_at = next(i for i, s in enumerate(steps) if "[pane]overlay" in s)
+    slide_at = next(i for i, s in enumerate(steps) if "[1:v]overlay" in s)
+    assert video_at < slide_at, "кадр слайда обязан ложиться ПОВЕРХ видео: %s" % f
+    assert steps[slide_at].startswith("[base][1:v]overlay=0:0"), \
+        "кадр слайда кладётся на весь кадр, а не в колонку: %s" % f
+
+
+def test_column_offset_follows_the_pane():
+    """Отступ колонки в стиле считается из текущей панели: зашитый на импорте
+    увёл бы контент не туда после configure()."""
+    try:
+        cinema.configure(720, 1280)
+        assert "padding-left: %dpx" % cinema.PANE_X in cinema.css()
+        assert "padding-left: 608px" in cinema.css()
+    finally:
+        _restore()
 
 
 # ── Маска растворения ─────────────────────────────────────────────────────
@@ -268,11 +295,13 @@ def test_fade_mask_goes_from_opaque_to_clear():
         prev = px[x, 5]
 
 
-def test_viewport_matches_the_slide_column():
-    """Вьюпорт съёмки = ровно колонка: иначе кадр придётся масштабировать,
-    и текст поплывёт."""
+def test_viewport_covers_the_whole_frame():
+    """Вьюпорт съёмки — ВЕСЬ кадр, а не колонка: эмодзи FX должны иметь право
+    вылететь из колонки на видео, а нарисовать их можно только внутри снятой
+    области. В колонку контент ставит GROW_JS."""
     vp = cinema.viewport()
-    assert vp["width"] == cinema.PANE_W and vp["height"] == cinema.H
+    assert (vp["width"], vp["height"]) == (cinema.W, cinema.H)
+    assert vp["width"] > cinema.PANE_W, "иначе эмодзи упрутся в край колонки"
 
 
 if __name__ == "__main__":
