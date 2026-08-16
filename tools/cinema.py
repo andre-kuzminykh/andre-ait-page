@@ -24,11 +24,15 @@ import os
 W, H = 1920, 1080
 
 # ── Геометрия кадра ───────────────────────────────────────────────────────
-# Видеопанель 760×1000 (размер владельца, 2026-08-16) — ровно нативный
-# портретный клип, без масштабирования: пиксель в пиксель, ничего не мылится.
-VIDEO_W, VIDEO_H = 760, 1000
-# По вертикали панель центрирована: (1080 − 1000) / 2.
-VIDEO_X, VIDEO_Y = 0, (H - VIDEO_H) // 2
+# Видеопанель во всю высоту кадра (правка владельца 2026-08-16): 760×1000
+# исходника, увеличенные до 820×1080, — те же пропорции 0.76, поэтому рост
+# равномерный, лицо не растягивается.
+# Ширина ЧЁТНАЯ намеренно. Точный пересчёт даёт 821, но у yuv420p цветовые
+# плоскости вдвое меньше яркостной, и нечётная сторона валит фильтр pad
+# («Padded dimensions cannot be smaller than input dimensions») — сборка
+# падала на кодировании. 820 против 821 — это 0.09% пропорции, не видно.
+VIDEO_W, VIDEO_H = 820, H
+VIDEO_X, VIDEO_Y = 0, 0
 # Растворение правого края. 240px ≈ треть панели: короче — виден «обрыв»
 # кадра, длиннее — человек уходит в фон вместе с плечом.
 FADE = 240
@@ -37,11 +41,13 @@ FADE = 240
 PANE_X = VIDEO_W
 PANE_W = W - PANE_X
 
-# Кадрирование ИСХОДНИКА под панель. Для нативного портрета 760×1000 кроп не
-# нужен (CROP = None); строка вида «w:h:x:y» нужна, только когда на входе
-# другой формат — например запасной квадрат 720×720 из ветки media.
-CROP = None
-CROP_SQUARE = "600:720:30:0"
+# КАНОН ВЛАДЕЛЬЦА: человек обязан входить в панель ЦЕЛИКОМ по ширине. Значит
+# исходник подгоняем ПО ШИРИНЕ и никогда не режем бока — не хватило высоты,
+# добираем фоном (он тот же, шва не видно); высоты слишком много — режем
+# сверху/снизу, но со сдвигом к голове, чтобы не срезать макушку.
+CROP_BIAS_TOP = 0.35
+# Допуск притягивания к точной высоте панели (см. pane_filter).
+SNAP = 6
 
 # Фон кадра. Тот же цвет держит и слайд, и подложка ffmpeg — иначе на стыке
 # колонки со слайдом и тёмного поля видна ступенька.
@@ -107,6 +113,68 @@ html, body, .slide-container { background: %(bg)s !important; }
 """ % {"bg": BG}
 
 
+# ── Догон масштаба колонки ────────────────────────────────────────────────
+# Раскладка слайда считается в координатах формы 1380×864 и вписывается в
+# колонку целиком — а колонка почти квадратная (1099×1080). Из-за разницы
+# пропорций контент занимал ~74% ширины и ~40% высоты: воздуха больше, чем
+# самого слайда. Догоняем ФАКТИЧЕСКИМ замером: меряем чернила и растягиваем
+# content-z transform-ом ровно настолько, чтобы упереться в потолок (ниже),
+# но не вылезти. Именно transform, а не zoom: инлайновый zoom принадлежит
+# подгонке страницы, перебивать его нельзя, а FX-слой берёт координаты
+# через getBoundingClientRect и переживает масштаб без правок.
+FILL_W = 0.94          # доля ширины колонки, дальше — впритык к краю
+FILL_H = 0.88          # доля высоты кадра
+GROW_CAP = 1.6         # выше — интерполяция начинает мылить шрифт
+SHRINK_CAP = 0.55      # ниже — подписи в карточках нечитаемы
+
+# Подгон ИТЕРАТИВНЫЙ и умеет уменьшать. Два урока живого прогона:
+#   * одного замера мало — после масштаба фактические чернила оказывались
+#     шире расчётных, и колонка вылезала за край (слайды 1 и 2 обрезались по
+#     бокам на 60-70px). Замер после применения и поправка коэффициента
+#     сходятся за 2-3 шага независимо от причины расхождения;
+#   * уменьшать нужно не реже, чем увеличивать: слайд 3 («Четыре
+#     промышленные революции») вылезал за колонку на 15% САМ, без всякого
+#     догона — плотные слайды в узкой колонке не помещаются по построению.
+GROW_JS = """
+(cfg) => {
+  const slide = document.querySelector('.slide-container.opacity-100');
+  const c = slide && slide.querySelector('.content-z');
+  if (!c) return null;
+  const ink = () => {
+    let x0 = 1e6, y0 = 1e6, x1 = -1e6, y1 = -1e6;
+    c.querySelectorAll('*').forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none') return;
+      x0 = Math.min(x0, r.left); y0 = Math.min(y0, r.top);
+      x1 = Math.max(x1, r.right); y1 = Math.max(y1, r.bottom);
+    });
+    return { w: x1 - x0, h: y1 - y0 };
+  };
+  c.style.transform = '';
+  c.style.transformOrigin = 'center center';
+  let k = 1, box = ink();
+  if (!(box.w > 0 && box.h > 0)) return null;
+  for (let i = 0; i < 5; i++) {
+    box = ink();                                   // чернила КАК ЕСТЬ сейчас
+    const need = Math.min(cfg.vw * cfg.fw / box.w, cfg.vh * cfg.fh / box.h);
+    if (Math.abs(need - 1) < 0.005) break;         // сошлись
+    k = Math.max(cfg.floor, Math.min(k * need, cfg.cap));
+    c.style.transform = 'scale(' + k + ')';
+  }
+  box = ink();
+  return { k: k, w: box.w, h: box.h };
+}
+"""
+
+
+def grow_args():
+    """Параметры для GROW_JS — держим рядом с геометрией, а не в вызове."""
+    return {"vw": PANE_W, "vh": H, "fw": FILL_W, "fh": FILL_H,
+            "cap": GROW_CAP, "floor": SHRINK_CAP}
+
+
 def fade_mask(path, w=VIDEO_W, h=VIDEO_H, fade=FADE):
     """Альфа-маска видеопанели: слева непрозрачно, справа плавно в ноль.
 
@@ -129,50 +197,53 @@ def fade_mask(path, w=VIDEO_W, h=VIDEO_H, fade=FADE):
 
 
 def overlay_filter(bg_stream="0:v", clip_stream="1:v", mask_stream="2:v",
-                   pane_stream=None, crop=None):
+                   pane_stream=None, fit=None):
     """Фильтр ffmpeg: тёмная подложка + колонка слайда + видеопанель слева.
 
     pane_stream задаётся, когда колонка снята отдельным кадром (узкий
     вьюпорт); без него подложкой служит уже готовый кадр 1920×1080.
-    crop — строка «w:h:x:y», если исходник не нативного размера панели.
+    fit — цепочка от pane_filter(); по умолчанию простой масштаб.
     """
     parts = []
     base = "[%s]" % bg_stream
     if pane_stream:
         parts.append("%s[%s]overlay=%d:0[base]" % (base, pane_stream, PANE_X))
         base = "[base]"
-    crop = crop if crop is not None else CROP
-    head = "[%s]" % clip_stream
-    if crop:
-        head += "crop=%s," % crop
-    # scale держим всегда: он же приводит клип к панели, если исходник
-    # чуть другого размера, и стоит копейки, когда размеры совпали.
-    parts.append("%sscale=%d:%d,setsar=1[hv]" % (head, VIDEO_W, VIDEO_H))
+    fit = fit or ("scale=%d:%d" % (VIDEO_W, VIDEO_H))
+    parts.append("[%s]%s,setsar=1[hv]" % (clip_stream, fit))
     parts.append("[hv][%s]alphamerge[pane]" % mask_stream)
     parts.append("%s[pane]overlay=%d:%d:format=auto[v]" % (base, VIDEO_X, VIDEO_Y))
     return ";".join(parts)
 
 
-def crop_for(src_w, src_h):
-    """Кроп «cover» под панель: None, если пропорции уже совпали.
+def pane_filter(src_w, src_h):
+    """Цепочка ffmpeg, приводящая исходник к панели БЕЗ обрезки по ширине.
 
-    Нативный портрет 760×1000 проходит без кропа. Квадрат 720×720 из ветки
-    media (запись под кружок) обрезается по бокам — с лёгким сдвигом влево,
-    чтобы левая картина вошла целиком, а правая ушла под градиент.
+    Порядок жёсткий: сначала масштаб ПО ШИРИНЕ панели (человек входит в кадр
+    целиком — канон владельца), потом добор по высоте:
+      * высоты не хватило → pad фоном сверху и снизу (цвет тот же, что у
+        подложки, поэтому границы не видно);
+      * высоты в избытке → crop со сдвигом к голове (CROP_BIAS_TOP), иначе
+        уходит макушка, а срезать стол безопаснее.
+    Нативный портрет 760×1000 даёт ровно 821×1080 — ни pad, ни crop.
     """
-    if src_w <= 0 or src_h <= 0:
-        return None
-    want = VIDEO_W / float(VIDEO_H)
-    have = src_w / float(src_h)
-    if abs(have - want) < 0.01:
-        return None
-    if have > want:                                  # исходник шире — режем бока
-        w = int(round(src_h * want)) // 2 * 2
-        x = max(0, int(round((src_w - w) * 0.42)))   # 0.42, а не 0.5 — сдвиг влево
-        return "%d:%d:%d:0" % (w, src_h, x)
-    h = int(round(src_w / want)) // 2 * 2            # исходник уже — режем верх/низ
-    y = max(0, (src_h - h) // 2)
-    return "%d:%d:0:%d" % (src_w, h, y)
+    if src_w <= 0 or src_h <= 0:                     # клип не опознан
+        return "scale=%d:%d" % (VIDEO_W, VIDEO_H)
+    scaled_h = int(round(src_h * VIDEO_W / float(src_w))) // 2 * 2
+    # Притягивание к точной высоте панели. Округление до чётного оставляет
+    # у нативного портрета 760×1000 ровно 1px полосы сверху и снизу — шов на
+    # ровном фоне заметнее, чем искажение в 0.2%, которого глаз не видит.
+    if abs(scaled_h - VIDEO_H) <= SNAP:
+        return "scale=%d:%d" % (VIDEO_W, VIDEO_H)
+    chain = ["scale=%d:%d" % (VIDEO_W, scaled_h)]
+    if scaled_h < VIDEO_H:
+        chain.append("pad=%d:%d:0:%d:color=0x%s"
+                     % (VIDEO_W, VIDEO_H, (VIDEO_H - scaled_h) // 2,
+                        BG.lstrip("#")))
+    elif scaled_h > VIDEO_H:
+        y = int(round((scaled_h - VIDEO_H) * CROP_BIAS_TOP))
+        chain.append("crop=%d:%d:0:%d" % (VIDEO_W, VIDEO_H, y))
+    return ",".join(chain)
 
 
 def probe_size(ff, path):

@@ -376,6 +376,15 @@ def render(slide, cues, secs, out_dir, vendor, allow_fallback, preview=0, at=Non
                 page.evaluate("() => window.nextSlide && window.nextSlide()")
                 page.wait_for_timeout(160)
             page.wait_for_timeout(1200)
+            if cinema:
+                # Догон масштаба — ПОСЛЕ подгонки страницы и ДО FX: движок
+                # эффектов запоминает цели по тексту, а координаты берёт в
+                # момент кадра, поэтому масштаб ему безразличен.
+                grown = page.evaluate(cinema_fx.GROW_JS, cinema_fx.grow_args())
+                if grown:
+                    print("   колонка: ×%.2f → %.0f×%.0f из %d×%d"
+                          % (grown["k"], grown["w"], grown["h"],
+                             cinema_fx.PANE_W, H))
 
             page.evaluate(FX_JS.replace("__CUES__", json.dumps(cues, ensure_ascii=False)))
             missing = page.evaluate("() => window.__fx.missing")
@@ -494,11 +503,11 @@ def main():
         bg = os.path.join(BUILD, "cinema-bg.png")
         cinema_fx.dark_canvas(ff, bg)
         sw, sh = cinema_fx.probe_size(ff, clip)
-        crop = cinema_fx.crop_for(sw, sh)
-        print("   исходник %dx%d · кроп %s" % (sw, sh, crop or "не нужен"))
+        fit = cinema_fx.pane_filter(sw, sh)
+        print("   исходник %dx%d · подгонка: %s" % (sw, sh, fit))
         vf = cinema_fx.overlay_filter(bg_stream="0:v", clip_stream="2:v",
                                       mask_stream="3:v", pane_stream="1:v",
-                                      crop=crop)
+                                      fit=fit)
         run([ff, "-y", "-loglevel", "error",
              "-loop", "1", "-framerate", str(FPS), "-i", bg,
              "-framerate", str(FPS), "-i", seq,

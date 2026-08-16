@@ -21,6 +21,7 @@ def test_pane_fits_the_frame():
     assert cinema.VIDEO_X + cinema.VIDEO_W <= cinema.W
     assert cinema.VIDEO_Y + cinema.VIDEO_H <= cinema.H
     assert cinema.VIDEO_Y >= 0, "панель не должна вылезать за верх кадра"
+    assert cinema.VIDEO_H == cinema.H, "панель идёт во всю высоту кадра"
     assert cinema.PANE_X >= cinema.VIDEO_X + cinema.VIDEO_W - cinema.FADE, \
         "колонка слайда начинается раньше, чем растворился край видео"
     assert cinema.PANE_W == cinema.W - cinema.PANE_X
@@ -31,29 +32,65 @@ def test_fade_is_narrower_than_the_pane():
     assert 0 < cinema.FADE < cinema.VIDEO_W
 
 
-# ── Кроп исходника ────────────────────────────────────────────────────────
-
-def test_native_portrait_needs_no_crop():
-    """Клип ровно по размеру панели идёт пиксель в пиксель — без кропа."""
-    assert cinema.crop_for(cinema.VIDEO_W, cinema.VIDEO_H) is None
-
-
-def test_square_source_is_cropped_to_the_pane():
-    """Квадрат 720×720 (запись под кружок) режется по бокам, а не растягивается:
-    растяжение делает лицо шире, и это видно сразу."""
-    crop = cinema.crop_for(720, 720)
-    assert crop, "квадрат обязан кропаться"
-    w, h, x, y = [int(v) for v in crop.split(":")]
-    assert h == 720 and y == 0, "по высоте квадрат уже подходит"
-    assert abs(w / float(h) - cinema.VIDEO_W / float(cinema.VIDEO_H)) < 0.02
-    assert 0 <= x <= 720 - w
+def test_pane_sides_are_even():
+    """Все стороны панели и колонки — ЧЁТНЫЕ. У yuv420p цветовые плоскости
+    вдвое меньше яркостной, и нечётная сторона валит сборку: на ширине 821
+    фильтр pad падал с «Padded dimensions cannot be smaller than input
+    dimensions», ffmpeg не открывал кодек, файл выходил пустым."""
+    for name in ("VIDEO_W", "VIDEO_H", "PANE_W", "VIDEO_X", "VIDEO_Y", "W", "H"):
+        val = getattr(cinema, name)
+        assert val % 2 == 0, "%s = %d — нечётное, сборка упадёт" % (name, val)
 
 
-def test_crop_survives_a_taller_source():
-    """Исходник уже панели — режем верх/низ, ширину не трогаем."""
-    crop = cinema.crop_for(600, 1200)
-    w, h, x, y = [int(v) for v in crop.split(":")]
-    assert w == 600 and x == 0 and h <= 1200 and y >= 0
+# ── Подгонка исходника: человек не режется по ширине ──────────────────────
+
+def _scale_w(fit):
+    """Ширина первого scale в цепочке — она обязана равняться ширине панели."""
+    head = fit.split(",")[0]
+    assert head.startswith("scale="), fit
+    return int(head[len("scale="):].split(":")[0])
+
+
+def test_native_portrait_scales_to_the_pane_exactly():
+    """760×1000 → 821×1080: те же пропорции, только масштаб. Ни pad, ни crop —
+    иначе кадр либо режется, либо получает лишние поля."""
+    fit = cinema.pane_filter(760, 1000)
+    assert fit == "scale=%d:%d" % (cinema.VIDEO_W, cinema.VIDEO_H), fit
+
+
+def test_width_is_never_cropped():
+    """КАНОН: человек входит в панель целиком по ширине. Любой исходник
+    масштабируется ИМЕННО по ширине панели, боковой crop запрещён."""
+    for src in ((720, 720), (760, 1000), (1080, 1920), (1920, 1080), (900, 1600)):
+        fit = cinema.pane_filter(*src)
+        assert _scale_w(fit) == cinema.VIDEO_W, "%s: масштаб не по ширине: %s" % (src, fit)
+        for step in fit.split(","):
+            if step.startswith("crop="):
+                cw = int(step[len("crop="):].split(":")[0])
+                assert cw == cinema.VIDEO_W, \
+                    "%s: crop режет ширину (%d) — человек обрежется: %s" % (src, cw, fit)
+
+
+def test_short_source_is_padded_not_stretched():
+    """Квадрат 720×720 ниже панели: добираем фоном сверху/снизу, а не тянем —
+    растяжение сразу видно по лицу."""
+    fit = cinema.pane_filter(720, 720)
+    assert "pad=" in fit and "crop=" not in fit, fit
+    pad = [s for s in fit.split(",") if s.startswith("pad=")][0]
+    w, h = pad[len("pad="):].split(":")[:2]
+    assert (int(w), int(h)) == (cinema.VIDEO_W, cinema.VIDEO_H)
+    assert cinema.BG.lstrip("#").lower() in fit.lower(), "добор не цветом фона"
+
+
+def test_tall_source_is_cropped_towards_the_head():
+    """Исходник выше панели — режем по высоте со сдвигом вверх: срезать стол
+    безопаснее, чем макушку."""
+    fit = cinema.pane_filter(1080, 1920)
+    crop = [s for s in fit.split(",") if s.startswith("crop=")][0]
+    w, h, x, y = [int(v) for v in crop[len("crop="):].split(":")]
+    assert (w, h, x) == (cinema.VIDEO_W, cinema.VIDEO_H, 0)
+    scaled_h = int(round(1920 * cinema.VIDEO_W / 1080.0)) // 2 * 2
+    assert y < (scaled_h - cinema.VIDEO_H) / 2.0, "сдвиг обязан быть к голове"
 
 
 # ── Тёмная палитра ────────────────────────────────────────────────────────
