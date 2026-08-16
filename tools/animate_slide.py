@@ -448,6 +448,11 @@ def main():
     ap.add_argument("--cinema", action="store_true",
                     help="видео слева живьём, слайд справа, тёмный фон "
                          "(вместо кружка в углу) — см. tools/cinema.py")
+    ap.add_argument("--reuse-frames", action="store_true",
+                    help="не снимать кадры заново, собрать видео из уже "
+                         "готовых build/fxframes/<тег> — правка сборки "
+                         "(маски, порядок слоёв, длительность) не стоит "
+                         "четверти часа съёмки")
     ap.add_argument("--vendor")
     ap.add_argument("--allow-fallback-fonts", action="store_true")
     ap.add_argument("--out")
@@ -460,8 +465,14 @@ def main():
         os.makedirs(os.path.join(BUILD, d), exist_ok=True)
     frames_dir = os.path.join(BUILD, "fxframes", tag)
     os.makedirs(frames_dir, exist_ok=True)
-    for old in os.listdir(frames_dir):
-        os.remove(os.path.join(frames_dir, old))
+    if args.reuse_frames:
+        have = len([f for f in os.listdir(frames_dir) if f.endswith(".png")])
+        if not have:
+            sys.exit("--reuse-frames: в %s нет кадров" % frames_dir)
+        print("кадры не снимаю — беру готовые (%d шт.)" % have)
+    else:
+        for old in os.listdir(frames_dir):
+            os.remove(os.path.join(frames_dir, old))
 
     scen_path = os.path.join(FX_DIR, tag + ".json")
     if not os.path.exists(scen_path):
@@ -509,13 +520,16 @@ def main():
     cues = cue_times(cues, words)
 
     at = [float(x) for x in args.at.split(",")] if args.at else None
-    print("2/3 · кадры (%.1f с × %d fps)" % (secs, FPS))
-    render(idx, cues, secs, frames_dir, args.vendor,
-           args.allow_fallback_fonts, preview=args.preview, at=at,
-           cinema=args.cinema)
-    if args.preview or at:
-        print("\nконтрольные кадры: %s" % frames_dir)
-        return
+    if args.reuse_frames:
+        print("2/3 · кадры готовы (%.1f с × %d fps)" % (secs, FPS))
+    else:
+        print("2/3 · кадры (%.1f с × %d fps)" % (secs, FPS))
+        render(idx, cues, secs, frames_dir, args.vendor,
+               args.allow_fallback_fonts, preview=args.preview, at=at,
+               cinema=args.cinema)
+        if args.preview or at:
+            print("\nконтрольные кадры: %s" % frames_dir)
+            return
 
     print("3/3 · сборка")
     out = args.out or os.path.join(BUILD, tag + ".mp4")
@@ -555,6 +569,11 @@ def main():
              "-c:v", "libx264", "-preset", "medium", "-crf", "18",
              "-pix_fmt", "yuv420p", "-r", str(FPS),
              "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
+             # -t обязателен: подложка идёт «-loop 1», то есть бесконечна, и
+             # -shortest меряет длину по звуку клипа. С полным сегментом записи
+             # (2:45) файл выходил втрое длиннее слайда: картинка замирала на
+             # последнем кадре, а речь всё шла.
+             "-t", "%.3f" % secs,
              "-shortest", "-movflags", "+faststart", out])
         print("\nГотово (кино): %s\n  %s · %.0f МБ\n  %s"
               % (out, timecode(secs), os.path.getsize(out) / 1024 / 1024,

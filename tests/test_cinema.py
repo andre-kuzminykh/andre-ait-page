@@ -304,6 +304,40 @@ def test_viewport_covers_the_whole_frame():
     assert vp["width"] > cinema.PANE_W, "иначе эмодзи упрутся в край колонки"
 
 
+# ── Сборка ────────────────────────────────────────────────────────────────
+
+def _cinema_compose_source():
+    """Кусок animate_slide.main() со сборкой «кино» — от `if args.cinema:` до
+    `return`. Сама команда строится инлайном, импортировать нечего, поэтому
+    сторожим её текстом."""
+    src = open(os.path.join(_ROOT, "tools", "animate_slide.py"),
+               encoding="utf-8").read()
+    head = src.index("    if args.cinema:\n")
+    return src[head:src.index("\n        return\n", head)]
+
+
+def test_cinema_output_is_capped_by_the_slide_length():
+    """Подложка идёт «-loop 1» (бесконечна), поэтому -shortest меряет длину по
+    звуку клипа. Без явного -t слайд на 49 с превращался в 2:45 замершей
+    картинки под продолжающуюся речь."""
+    body = _cinema_compose_source()
+    assert '"-t", "%.3f" % secs' in body, \
+        "в сборке «кино» нет ограничения длительности:\n%s" % body
+    assert body.index('"-t", "%.3f" % secs') < body.index('"-shortest"'), \
+        "-t обязан идти как опция ВЫХОДА, до -shortest"
+
+
+def test_reuse_frames_does_not_wipe_the_frames():
+    """--reuse-frames существует ради правок сборки без четверти часа съёмки.
+    Если чистка каталога останется безусловной, флаг сотрёт то, что переиспользует."""
+    src = open(os.path.join(_ROOT, "tools", "animate_slide.py"),
+               encoding="utf-8").read()
+    wipe = src.index("os.remove(os.path.join(frames_dir, old))")
+    guard = src.index("if args.reuse_frames:")
+    assert guard < wipe, "чистка кадров не под флагом"
+    assert "--reuse-frames" in src
+
+
 if __name__ == "__main__":
     ok = 0
     for name, fn in sorted(globals().items()):
