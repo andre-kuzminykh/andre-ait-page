@@ -74,6 +74,24 @@ window.__fx = (function(){
   // Координаты элементов приходят в системе окна — переводим в систему слоя
   function originOf(){ var r = layer.getBoundingClientRect(); return { x: r.left, y: r.top }; }
 
+  // Второй слой — для подчёркиваний, которые НЕЛЬЗЯ рисовать фоном элемента
+  // (см. paintsTextViaBackground). Он поверх всего и в системе координат
+  // окна: position:fixed не наследует transform от .content-z, а
+  // getBoundingClientRect отдаёт как раз оконные координаты. Полоска ложится
+  // в пустоту под буквами, поэтому ничего не перекрывает.
+  var bars = document.createElement('div');
+  bars.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147483000';
+  document.body.appendChild(bars);
+
+  // Заголовки лекции красят БУКВЫ градиентом: background-clip:text плюс
+  // прозрачный -webkit-text-fill-color. У таких элементов фон — это и есть
+  // текст, и любая правка background-size превращает фразу в 4-пиксельную
+  // полоску (жалоба владельца: «"операционное ядро" пропадает»).
+  function paintsTextViaBackground(el){
+    var cs = getComputedStyle(el);
+    return (cs.webkitBackgroundClip || cs.backgroundClip) === 'text';
+  }
+
   function findTarget(cue){
     var all = document.querySelectorAll('.slide-container.opacity-100 *');
     var best = null;
@@ -156,6 +174,7 @@ window.__fx = (function(){
 
   function apply(t){
     layer.innerHTML = '';
+    bars.innerHTML = '';
     // Сброс — ОТДЕЛЬНЫМ проходом по всем целям, до наложения подсветок. Пока
     // сброс жил в одном цикле с наложением, две реплики на один и тот же узел
     // (обычное дело: карточка берётся то напрямую, то через `up` от строки
@@ -197,11 +216,26 @@ window.__fx = (function(){
         el.style.outlineOffset = (3 * k) + 'px';
         el.style.borderRadius = getComputedStyle(el).borderRadius;
       } else if (cue.fx === 'underline'){
-        el.style.transform = bt + 'scale(' + (1 + 0.04 * k) + ')';
-        el.style.backgroundImage = 'linear-gradient(' + SOLAR + ',' + SOLAR + ')';
-        el.style.backgroundRepeat = 'no-repeat';
-        el.style.backgroundSize = (100 * easeOut(p * 2.2)) + '% 4px';
-        el.style.backgroundPosition = '0 100%';
+        var sc = 1 + 0.04 * k;
+        el.style.transform = bt + 'scale(' + sc + ')';
+        var grown = 100 * easeOut(p * 2.2);
+        if (paintsTextViaBackground(el)){
+          // Фон занят буквами — подчёркивание рисуем отдельной полоской в
+          // верхнем слое, ровно под нижней кромкой (с учётом того же scale).
+          var rr = rects[i];
+          var full = rr.width * sc;
+          var bar = document.createElement('div');
+          bar.style.cssText = 'position:absolute;height:4px;background:' + SOLAR
+            + ';left:' + (rr.left + rr.width / 2 - full / 2) + 'px;'
+            + 'top:' + (rr.top + rr.height / 2 + rr.height * sc / 2 - 4) + 'px;'
+            + 'width:' + (full * grown / 100) + 'px';
+          bars.appendChild(bar);
+        } else {
+          el.style.backgroundImage = 'linear-gradient(' + SOLAR + ',' + SOLAR + ')';
+          el.style.backgroundRepeat = 'no-repeat';
+          el.style.backgroundSize = grown + '% 4px';
+          el.style.backgroundPosition = '0 100%';
+        }
       } else if (cue.fx === 'rise'){
         // Всплытие: карточка приподнимается и подсвечивается снизу. Для рядов
         // одинаковых плиток читается лучше обводки — глаз ловит движение.

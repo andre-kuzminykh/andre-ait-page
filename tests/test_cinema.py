@@ -304,6 +304,25 @@ def test_viewport_covers_the_whole_frame():
     assert vp["width"] > cinema.PANE_W, "иначе эмодзи упрутся в край колонки"
 
 
+def test_emoji_reach_lands_on_the_video_but_stays_in_frame():
+    """Разлёт эмодзи (burst() в animate_slide.py) считается формулой, поэтому
+    дальность вылета проверяема без браузера. Держим её в вилке: короче
+    растворения — значок гаснет, не долетев до человека; длиннее ширины видео
+    — улетает за левый край кадра."""
+    src = open(os.path.join(_ROOT, "tools", "animate_slide.py"),
+               encoding="utf-8").read()
+    bdur = float(src.split("var BDUR = ")[1].split(";")[0])
+    # sp = (260 + (j*37)%120) * SPREAD  →  максимум базы 379
+    # dist = sp * dur * 0.42 при q → 1;  по горизонтали cos(0.15π) = 0.891
+    reach = 0.891 * (260 + 119) * cinema.SPREAD * bdur * 0.42
+    assert reach > cinema.FADE, \
+        "разлёт %.0f px не выходит за растворение %d px — эмодзи не долетают " \
+        "до видео" % (reach, cinema.FADE)
+    assert reach < cinema.VIDEO_W, \
+        "разлёт %.0f px шире панели %d px — значки уходят за край кадра" \
+        % (reach, cinema.VIDEO_W)
+
+
 # ── Сборка ────────────────────────────────────────────────────────────────
 
 def _cinema_compose_source():
