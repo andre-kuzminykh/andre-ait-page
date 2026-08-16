@@ -211,7 +211,10 @@ window.__fx = (function(){
         // Просто рамка: только оранжевый контур, без ореола и без всплеска
         // (правка владельца по «Ключевое отличие — автономность»). Рост почти
         // нулевой — плашка стоит в потоке, дёргать её незачем.
-        el.style.transform = bt + 'scale(' + (1 + (cue.grow || 0.01) * k) + ')';
+        // Проверка именно на тип: `cue.grow || 0.01` превращала честный ноль
+        // обратно в процент, и запрет «не увеличивать карточки» не работал.
+        el.style.transform = bt + 'scale('
+          + (1 + (typeof cue.grow === 'number' ? cue.grow : 0.01) * k) + ')';
         el.style.outline = (3 * k) + 'px solid ' + SOLAR;
         el.style.outlineOffset = (3 * k) + 'px';
         el.style.borderRadius = getComputedStyle(el).borderRadius;

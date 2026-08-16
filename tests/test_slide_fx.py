@@ -105,6 +105,60 @@ def test_gradient_detection_reads_background_clip():
     assert "'text'" in fn
 
 
+# ── Канон сценариев ───────────────────────────────────────────────────────
+
+# Слайды, доведённые до канона «карточки не растут». Правило проверяется по
+# факту: у каждой реплики карточки grow:0, а zoom (эффект, у которого рост —
+# единственное содержание) не используется вовсе. Список растёт по мере
+# рендера остальных слайдов — вслепую его расширять нельзя, надо знать, какая
+# цель карточка, а какая заголовок.
+CANON_SLIDES = (1, 2)
+
+
+def _scenarios():
+    import glob
+    return sorted(glob.glob(os.path.join(_ROOT, "tools", "fx", "*.json")))
+
+
+def test_emoji_burst_happens_once_per_slide():
+    """Канон владельца: «только один раз эмодзи вылетают — больше не надо».
+    Всплеск — акцент, а не фон; семь штук за слайд превращали его в шум."""
+    import json
+    for p in _scenarios():
+        d = json.load(open(p, encoding="utf-8"))
+        n = sum(1 for c in d["cues"] if c.get("burst"))
+        assert n <= 1, "%s: всплесков %d, а канон — один" % (os.path.basename(p), n)
+
+
+def test_canon_slides_never_enlarge_cards():
+    """«Не надо текст в карточках увеличивать»: подсветка остаётся (ореол,
+    обводка, подъём), рост убран. zoom здесь запрещён — у него, кроме роста,
+    ничего нет, и с grow:0 реплика просто пропала бы из кадра."""
+    import json
+    for n in CANON_SLIDES:
+        p = os.path.join(_ROOT, "tools", "fx", "lecture1-slide%02d.json" % n)
+        d = json.load(open(p, encoding="utf-8"))
+        for c in d["cues"]:
+            assert c.get("fx") != "zoom", \
+                "слайд %d: реплика на %s осталась zoom — это чистый рост" % (n, c["at"])
+            if "grow" in c:
+                assert c["grow"] == 0, \
+                    "слайд %d: реплика на %s растит цель на %s" % (n, c["at"], c["grow"])
+
+
+def test_frame_honours_zero_grow():
+    """`cue.grow || 0.01` возвращал честный ноль обратно в процент, и запрет
+    «не увеличивать» молча не работал для рамки."""
+    js = _fx_js()
+    branch = js[js.index("cue.fx === 'frame'"):]
+    branch = branch[:branch.index("cue.fx === 'underline'")]
+    # комментарии выкидываем: в них та самая формула разобрана как ошибка
+    code = "\n".join(l for l in branch.splitlines()
+                     if not l.lstrip().startswith("//"))
+    assert "cue.grow ||" not in code, "рамка снова растит цель при grow:0"
+    assert "typeof cue.grow === 'number'" in code
+
+
 if __name__ == "__main__":
     ok = 0
     for name, fn in sorted(globals().items()):
