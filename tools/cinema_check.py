@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cinema as cinema_fx
-from record_lecture import PORT, CHROME_OFF, serve, vendor_route
+from record_lecture import PORT, CHROME_OFF, serve, vendor_route, ffmpeg_bin
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -73,8 +73,15 @@ def main():
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--slide", type=int, default=1)
+    ap.add_argument("--clip", help="клип головы: от него зависит ширина панели, "
+                                   "а значит и ширина колонки — без него стенд "
+                                   "проверял бы не ту геометрию")
     ap.add_argument("--vendor", default="vendor")
     args = ap.parse_args()
+
+    if args.clip:
+        sw, sh = cinema_fx.probe_size(ffmpeg_bin(), args.clip)
+        print("STEP: клип %dx%d · %s" % (sw, sh, cinema_fx.configure(sw, sh)))
 
     vp = cinema_fx.viewport()
     fails, srv = [], serve()

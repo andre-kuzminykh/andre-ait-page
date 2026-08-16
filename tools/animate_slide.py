@@ -432,6 +432,12 @@ def main():
                     help="снять N контрольных кадров вместо видео")
     ap.add_argument("--at", help="секунды через запятую: снять кадры ровно на "
                                  "этих отметках (проверка конкретных реплик)")
+    ap.add_argument("--clip", help="взять свой файл головы вместо клипа из "
+                                   "лекции (проверка раскладки на другом "
+                                   "исходнике)")
+    ap.add_argument("--seconds", type=float,
+                    help="ограничить длительность (по умолчанию — clip_seconds "
+                         "сценария, если задан --clip, иначе длина клипа)")
     ap.add_argument("--cinema", action="store_true",
                     help="видео слева живьём, слайд справа, тёмный фон "
                          "(вместо кружка в углу) — см. tools/cinema.py")
@@ -466,7 +472,22 @@ def main():
         except Exception as e:
             print("клип не скачался (%s) — видео будет без звука и головы" % e)
 
+    if args.clip:
+        clip = args.clip
+    if args.cinema and clip:
+        # Геометрию панели считаем ДО съёмки кадров: от ширины панели зависит
+        # ширина колонки, а значит и вьюпорт, в котором снимается слайд.
+        sw, sh = cinema_fx.probe_size(ff, clip)
+        print("клип %dx%d · %s" % (sw, sh, cinema_fx.configure(sw, sh)))
+
     secs = (duration(ff, clip) if clip else None) or scen.get("clip_seconds", 30.0)
+    if args.clip:
+        # Свой файл — это обычно целый сегмент записи, а не нарезка под слайд.
+        # Длительность берём из сценария, иначе рендер уходит на все 2:45
+        # исходника, а реплики FX кончаются на 50-й секунде.
+        secs = float(args.seconds or scen.get("clip_seconds", secs))
+    elif args.seconds:
+        secs = float(args.seconds)
 
     tj = os.path.join(BUILD, "timings", tag + ".json")
     if args.transcribe and clip:

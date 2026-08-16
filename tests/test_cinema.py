@@ -46,6 +46,80 @@ def test_pane_sides_are_even():
 
 _FORMATS = ((720, 720), (760, 1000), (1080, 1920), (1920, 1080), (900, 1600))
 
+# Дефолт модуля = панель под портрет 760×1000. configure() правит глобальную
+# геометрию, поэтому каждый тест, который её трогает, возвращает дефолт.
+_DEFAULT_SRC = (760, 1000)
+
+
+def _restore():
+    cinema.configure(*_DEFAULT_SRC)
+
+
+# ── configure(): панель под конкретный клип ───────────────────────────────
+
+def test_configure_fits_by_height_without_cropping():
+    """КАНОН владельца: «обрезать ничего не надо — берём по всей высоте».
+    Вертикаль 9:16 (720×1280) обязана дать панель во всю высоту кадра одним
+    масштабом: ни кропа, ни добора, ни растяжения."""
+    try:
+        cinema.configure(720, 1280)
+        assert (cinema.VIDEO_W, cinema.VIDEO_H) == (608, 1080)
+        assert cinema.pane_fill_height(720, 1280) == 0, "добор не нужен"
+        g = cinema.pane_graph(720, 1280, src="1:v")
+        assert g == "[1:v]scale=608:1080,setsar=1[hv]", g
+        # пропорции исходника сохранены — лицо не тянется
+        assert abs(608 / 1080.0 - 720 / 1280.0) < 0.005
+    finally:
+        _restore()
+
+
+def test_configure_leaves_room_for_the_slide():
+    """Панель не имеет права съесть кадр: у самого широкого исходника она
+    упирается в потолок, и колонке остаётся место."""
+    try:
+        cinema.configure(1920, 1080)
+        assert cinema.VIDEO_W <= cinema.PANE_MAX
+        assert cinema.PANE_W >= cinema.W - cinema.PANE_MAX > 0
+        assert cinema.PANE_X + cinema.PANE_W == cinema.W
+    finally:
+        _restore()
+
+
+def test_masks_follow_configure():
+    """Маски рисуются ПОД ТЕКУЩУЮ панель. Ловушка Python: значения по
+    умолчанию в сигнатуре вычисляются при определении функции — маска
+    оставалась прежнего размера после configure(), alphamerge падал на
+    несовпадении сторон, и сборка не открывала кодек (файл выходил пустым)."""
+    try:
+        from PIL import Image
+    except ImportError:                       # pragma: no cover
+        print("PIL нет — пропускаю проверку масок")
+        return
+    import tempfile
+    d = tempfile.mkdtemp()
+    try:
+        cinema.configure(720, 1280)
+        path = os.path.join(d, "fade.png")
+        cinema.fade_mask(path)
+        assert Image.open(path).size == (cinema.VIDEO_W, cinema.VIDEO_H), \
+            "маска растворения не следует за configure()"
+        assert Image.open(path).size == (608, 1080)
+    finally:
+        _restore()
+
+
+def test_fade_scales_with_the_pane():
+    """Растворение — доля ширины панели. Фиксированные 240px на узкой панели
+    608px съели бы человека вместе с плечом."""
+    try:
+        cinema.configure(720, 1280)
+        narrow = cinema.FADE
+        assert 0 < narrow < cinema.VIDEO_W / 2.0
+        cinema.configure(1920, 1080)
+        assert cinema.FADE > narrow, "на широкой панели растворение шире"
+    finally:
+        _restore()
+
 
 def test_native_portrait_scales_to_the_pane_exactly():
     """760×1000 → 820×1080: те же пропорции, только масштаб. Ни добора, ни
