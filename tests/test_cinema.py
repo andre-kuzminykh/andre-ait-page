@@ -346,6 +346,45 @@ def test_cinema_output_is_capped_by_the_slide_length():
         "-t обязан идти как опция ВЫХОДА, до -shortest"
 
 
+def test_head_stub_replaces_the_picture_but_not_the_sound():
+    """Заглушка головы — это ТОЛЬКО картинка панели. Звук, длительность и
+    тайминги слов обязаны остаться от родного клипа слайда: реплики FX
+    расставлены по его словам, и чужая дорожка рассинхронит весь слайд."""
+    src = open(os.path.join(_ROOT, "tools", "animate_slide.py"),
+               encoding="utf-8").read()
+    assert "--head-stub" in src
+    # звук всегда со входа 2 — это клип слайда, его порядковый номер не плавает
+    body = _cinema_compose_source()
+    assert '["-i", clip],' in body, "клип слайда должен быть входом №2"
+    assert body.index('["-i", clip],') < body.index('["-i", mask]'), \
+        "клип обязан идти до маски, иначе -map 2:a? возьмёт не ту дорожку"
+    assert '"-map", "2:a?"' in body, "звук берётся не с клипа слайда"
+    # а картинку панели рисуем из pic, который при заглушке смотрит на неё
+    assert 'if args.head_stub:' in body and 'ins.append(["-i", args.head_stub])' in body
+    assert "src=pic" in body and "clip_stream=pic" in body, \
+        "панель по-прежнему собирается из клипа, а не из заглушки"
+
+
+def test_head_stub_drives_the_geometry():
+    """Ширину панели считаем по тому, что РЕАЛЬНО видно: при заглушке — по
+    её сторонам. Иначе колонка слайда встанет под размер чужого файла."""
+    src = open(os.path.join(_ROOT, "tools", "animate_slide.py"),
+               encoding="utf-8").read()
+    assert "head_pic = args.head_stub or clip" in src
+    assert "cinema_fx.probe_size(ff, head_pic)" in src
+    assert "cinema_fx.probe_size(ff, clip)" not in src, \
+        "где-то геометрия всё ещё считается по клипу, а не по картинке панели"
+
+
+def test_cinema_inputs_are_numbered_by_the_list():
+    """Входы ffmpeg нумеруются позицией. Маска растушёвки и заглушка
+    появляются по обстоятельствам, поэтому индексы обязаны считаться от
+    длины списка — руками написанный «4:v» молча склеит не те потоки."""
+    body = _cinema_compose_source()
+    assert '"%d:v" % (len(ins) - 1)' in body, "индексы входов зашиты числом"
+    assert '= "4:v"' not in body
+
+
 def test_reuse_frames_does_not_wipe_the_frames():
     """--reuse-frames существует ради правок сборки без четверти часа съёмки.
     Если чистка каталога останется безусловной, флаг сотрёт то, что переиспользует."""

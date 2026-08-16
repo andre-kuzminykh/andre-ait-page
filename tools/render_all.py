@@ -36,8 +36,11 @@ def have_scenario(lecture, n):
         FX_DIR, "lecture%d-slide%02d.json" % (lecture, n)))
 
 
-def out_path(lecture, n):
-    return os.path.join(BUILD, "lecture%d-slide%02d.mp4" % (lecture, n))
+def out_path(lecture, n, cinema=False):
+    # Кино кладём под своим именем: кружковая версия лекции уже собрана и
+    # затирать её нельзя — пока это единственная полная сборка.
+    return os.path.join(BUILD, "%s%d-slide%02d.mp4"
+                        % ("cinema" if cinema else "lecture", lecture, n))
 
 
 def prefetch(lecture, slides):
@@ -61,15 +64,20 @@ def prefetch(lecture, slides):
             print("   ! клип слайда %d не скачался: %s" % (n, e))
 
 
-def render(lecture, n, port, vendor, allow_fallback):
+def render(lecture, n, port, vendor, allow_fallback, cinema=False, stub=None):
     env = dict(os.environ, LECTURE_PORT=str(port))
     cmd = [sys.executable, TOOL, "--lecture", str(lecture), "--slide", str(n),
-           "--out", out_path(lecture, n)]
+           "--out", out_path(lecture, n, cinema)]
+    if cinema:
+        cmd += ["--cinema"]
+    if stub:
+        cmd += ["--head-stub", stub]
     if vendor:
         cmd += ["--vendor", vendor]
     if allow_fallback:
         cmd += ["--allow-fallback-fonts"]
-    log = os.path.join(BUILD, "render-logs", "slide%02d.log" % n)
+    log = os.path.join(BUILD, "render-logs", "%sslide%02d.log"
+                       % ("cinema-" if cinema else "", n))
     os.makedirs(os.path.dirname(log), exist_ok=True)
     with open(log, "w", encoding="utf-8") as f:
         r = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, env=env)
@@ -79,14 +87,15 @@ def render(lecture, n, port, vendor, allow_fallback):
     return r.returncode, log
 
 
-def join(lecture, slides, out):
+def join(lecture, slides, out, cinema=False):
     """Склейка без перекодирования: у всех кусков одинаковые параметры."""
     ff = ffmpeg_bin()
-    parts = [out_path(lecture, n) for n in slides
-             if os.path.exists(out_path(lecture, n))]
+    parts = [out_path(lecture, n, cinema) for n in slides
+             if os.path.exists(out_path(lecture, n, cinema))]
     if not parts:
         sys.exit("склеивать нечего")
-    lst = os.path.join(BUILD, "lecture%d-parts.txt" % lecture)
+    lst = os.path.join(BUILD, "%s%d-parts.txt"
+                       % ("cinema" if cinema else "lecture", lecture))
     with open(lst, "w", encoding="utf-8") as f:
         for p in parts:
             f.write("file '%s'\n" % p.replace("'", "'\\''"))
@@ -105,6 +114,12 @@ def main():
     ap.add_argument("--jobs", type=int, default=2, help="сколько слайдов одновременно")
     ap.add_argument("--vendor")
     ap.add_argument("--allow-fallback-fonts", action="store_true")
+    ap.add_argument("--cinema", action="store_true",
+                    help="раскладка «кино» (видео слева, слайд справа) вместо "
+                         "кружка в углу — файлы идут в build/cinemaN-slideNN.mp4")
+    ap.add_argument("--head-stub",
+                    help="заглушка для левой панели «кино»: картинка отсюда, "
+                         "звук и тайминги — от родного клипа слайда")
     ap.add_argument("--only-missing", action="store_true",
                     help="пропустить слайды, у которых mp4 уже собран")
     ap.add_argument("--join-only", action="store_true", help="только склейка")
@@ -118,13 +133,16 @@ def main():
                     if have_scenario(args.lecture, n)])
     if not slides:
         sys.exit("нет ни одного сценария в tools/fx — сначала заведите их")
-    out = args.out or os.path.join(BUILD, "lecture%d-full.mp4" % args.lecture)
+    out = args.out or os.path.join(
+        BUILD, "%s%d-full.mp4" % ("cinema" if args.cinema else "lecture",
+                                  args.lecture))
 
     if args.join_only:
-        return join(args.lecture, slides, out)
+        return join(args.lecture, slides, out, args.cinema)
 
     todo = [n for n in slides
-            if not (args.only_missing and os.path.exists(out_path(args.lecture, n)))]
+            if not (args.only_missing
+                    and os.path.exists(out_path(args.lecture, n, args.cinema)))]
     print("слайдов к рендеру: %d (потоков %d)" % (len(todo), args.jobs))
     print("1/3 · клипы")
     prefetch(args.lecture, todo)
@@ -143,7 +161,8 @@ def main():
                 return
             t0 = time.time()
             code, log = render(args.lecture, n, 8400 + slot, args.vendor,
-                               args.allow_fallback_fonts)
+                               args.allow_fallback_fonts, args.cinema,
+                               args.head_stub)
             with lock:
                 if code:
                     fails.append(n)
@@ -165,7 +184,7 @@ def main():
         print("не собрались слайды: %s" % ", ".join(map(str, sorted(fails))))
     if not args.no_join:
         print("3/3 · склейка")
-        join(args.lecture, slides, out)
+        join(args.lecture, slides, out, args.cinema)
     return 1 if fails else 0
 
 

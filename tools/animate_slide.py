@@ -482,6 +482,12 @@ def main():
     ap.add_argument("--cinema", action="store_true",
                     help="видео слева живьём, слайд справа, тёмный фон "
                          "(вместо кружка в углу) — см. tools/cinema.py")
+    ap.add_argument("--head-stub",
+                    help="ЗАГЛУШКА для левой панели: картинку берём отсюда, а "
+                         "звук, длительность и тайминги слов остаются от "
+                         "родного клипа слайда. Нужна, пока портретной съёмки "
+                         "под каждый слайд нет, — в отличие от --clip, который "
+                         "подменяет клип целиком вместе с речью")
     ap.add_argument("--reuse-frames", action="store_true",
                     help="не снимать кадры заново, собрать видео из уже "
                          "готовых build/fxframes/<тег> — правка сборки "
@@ -526,10 +532,14 @@ def main():
 
     if args.clip:
         clip = args.clip
-    if args.cinema and clip:
+    # Картинка панели и звук — РАЗНЫЕ источники, когда голова взята заглушкой:
+    # портретной съёмки под каждый слайд пока нет, а речь и тайминги реплик
+    # обязаны остаться от своего клипа, иначе FX разъезжается со словами.
+    head_pic = args.head_stub or clip
+    if args.cinema and head_pic:
         # Геометрию панели считаем ДО съёмки кадров: от ширины панели зависит
         # ширина колонки, а значит и вьюпорт, в котором снимается слайд.
-        sw, sh = cinema_fx.probe_size(ff, clip)
+        sw, sh = cinema_fx.probe_size(ff, head_pic)
         print("клип %dx%d · %s" % (sw, sh, cinema_fx.configure(sw, sh)))
 
     secs = (duration(ff, clip) if clip else None) or scen.get("clip_seconds", 30.0)
@@ -578,27 +588,40 @@ def main():
         cinema_fx.fade_mask(mask)
         bg = os.path.join(BUILD, "cinema-bg.png")
         cinema_fx.dark_canvas(ff, bg)
-        sw, sh = cinema_fx.probe_size(ff, clip)
+        # Порядок входов считаем списком, а не руками: маска растушёвки и
+        # заглушка появляются по обстоятельствам, и любой сдвиг индекса
+        # молча склеивает не те потоки.
+        ins = [["-loop", "1", "-framerate", str(FPS), "-i", bg],
+               ["-framerate", str(FPS), "-i", seq],
+               ["-i", clip],                     # ЗВУК всегда отсюда
+               ["-i", mask]]
+        # Геометрию задаёт то, что реально видно в панели: при заглушке — она.
+        sw, sh = cinema_fx.probe_size(ff, head_pic)
         # Исходник ниже панели — добираем высоту размытой копией кадра, а стык
         # растушёвываем отдельной маской (её размер знает pane_fill_height).
         fill_h = cinema_fx.pane_fill_height(sw, sh)
-        extra, feather = [], None
+        feather = None
         if fill_h:
             soft = os.path.join(BUILD, "cinema-feather.png")
             cinema_fx.feather_mask(soft, cinema_fx.VIDEO_W, fill_h)
-            extra = ["-i", soft]
-            feather = "4:v"
-        graph = cinema_fx.pane_graph(sw, sh, src="2:v", feather=feather)
+            ins.append(["-i", soft])
+            feather = "%d:v" % (len(ins) - 1)
+        pic = "2:v"
+        if args.head_stub:
+            ins.append(["-i", args.head_stub])
+            pic = "%d:v" % (len(ins) - 1)
+            print("   картинка панели — заглушка %s (звук остаётся родной)"
+                  % os.path.relpath(args.head_stub, ROOT))
+        graph = cinema_fx.pane_graph(sw, sh, src=pic, feather=feather)
         print("   исходник %dx%d · панель %dx%d%s"
               % (sw, sh, cinema_fx.VIDEO_W, cinema_fx.VIDEO_H,
                  " (высоту добираем размытым фоном)" if fill_h else ""))
-        vf = cinema_fx.overlay_filter(bg_stream="0:v", clip_stream="2:v",
+        vf = cinema_fx.overlay_filter(bg_stream="0:v", clip_stream=pic,
                                       mask_stream="3:v", pane_stream="1:v",
                                       graph=graph)
-        run([ff, "-y", "-loglevel", "error",
-             "-loop", "1", "-framerate", str(FPS), "-i", bg,
-             "-framerate", str(FPS), "-i", seq,
-             "-i", clip, "-i", mask] + extra + ["-filter_complex", vf,
+        run([ff, "-y", "-loglevel", "error"]
+            + [a for group in ins for a in group]
+            + ["-filter_complex", vf,
              "-map", "[v]", "-map", "2:a?",
              "-c:v", "libx264", "-preset", "medium", "-crf", "18",
              "-pix_fmt", "yuv420p", "-r", str(FPS),
