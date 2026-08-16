@@ -146,6 +146,31 @@ def test_canon_slides_never_enlarge_cards():
                     "слайд %d: реплика на %s растит цель на %s" % (n, c["at"], c["grow"])
 
 
+# Заголовки и подписи, живущие ВНУТРИ карточек. Их нельзя брать целью
+# подсветки: вокруг слова рисуется прямоугольник, и слайд превращается в
+# набор рамок (правка владельца: «не надо выделять прямоугольником отдельные
+# тайтлы в словах, просто не трогай слова в карточках»). Подсвечиваем карточку
+# целиком либо не трогаем вовсе.
+CARD_WORDS = {
+    1: ("От инструмента к агенту", "AI‑First компании", "Новая роль человека"),
+    2: ("Лидеры", "Их клиенты", "AI‑First компании"),
+}
+# Эффекты, которые рисуют вокруг цели рамку или ореол.
+BOXING_FX = ("glow-violet", "glow-solar", "frame", "zoom", "pop")
+
+
+def test_words_inside_cards_are_left_alone():
+    import json
+    for n, words in CARD_WORDS.items():
+        p = os.path.join(_ROOT, "tools", "fx", "lecture1-slide%02d.json" % n)
+        d = json.load(open(p, encoding="utf-8"))
+        for c in d["cues"]:
+            if c["text"].strip() in words:
+                assert c["fx"] not in BOXING_FX, (
+                    "слайд %d: реплика на %s обводит %r — это заголовок внутри "
+                    "карточки" % (n, c["at"], c["text"]))
+
+
 def test_frame_honours_zero_grow():
     """`cue.grow || 0.01` возвращал честный ноль обратно в процент, и запрет
     «не увеличивать» молча не работал для рамки."""
