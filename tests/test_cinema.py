@@ -44,49 +44,98 @@ def test_pane_sides_are_even():
 
 # ── Подгонка исходника: человек не режется по ширине ──────────────────────
 
-def _scale_w(fit):
-    """Ширина первого scale в цепочке — она обязана равняться ширине панели."""
-    head = fit.split(",")[0]
-    assert head.startswith("scale="), fit
-    return int(head[len("scale="):].split(":")[0])
+_FORMATS = ((720, 720), (760, 1000), (1080, 1920), (1920, 1080), (900, 1600))
 
 
 def test_native_portrait_scales_to_the_pane_exactly():
-    """760×1000 → 821×1080: те же пропорции, только масштаб. Ни pad, ни crop —
-    иначе кадр либо режется, либо получает лишние поля."""
-    fit = cinema.pane_filter(760, 1000)
-    assert fit == "scale=%d:%d" % (cinema.VIDEO_W, cinema.VIDEO_H), fit
+    """760×1000 → 820×1080: те же пропорции, только масштаб. Ни добора, ни
+    кропа — иначе кадр либо режется, либо получает лишние поля."""
+    g = cinema.pane_graph(760, 1000, src="1:v")
+    assert g == "[1:v]scale=%d:%d,setsar=1[hv]" % (cinema.VIDEO_W, cinema.VIDEO_H), g
 
 
 def test_width_is_never_cropped():
-    """КАНОН: человек входит в панель целиком по ширине. Любой исходник
-    масштабируется ИМЕННО по ширине панели, боковой crop запрещён."""
-    for src in ((720, 720), (760, 1000), (1080, 1920), (1920, 1080), (900, 1600)):
-        fit = cinema.pane_filter(*src)
-        assert _scale_w(fit) == cinema.VIDEO_W, "%s: масштаб не по ширине: %s" % (src, fit)
-        for step in fit.split(","):
+    """КАНОН: человек входит в панель целиком по ширине. Кроп по ширине
+    запрещён на любом исходнике — единственный crop, который допустим,
+    режет ТОЛЬКО высоту (и ещё один кроп — у размытой подложки, она не
+    человек, ей можно)."""
+    for src in _FORMATS:
+        g = cinema.pane_graph(*src, src="1:v")
+        fg = g.split(";")[-2] if "boxblur" in g else g   # ветка самого кадра
+        for step in fg.split(","):
             if step.startswith("crop="):
                 cw = int(step[len("crop="):].split(":")[0])
                 assert cw == cinema.VIDEO_W, \
-                    "%s: crop режет ширину (%d) — человек обрежется: %s" % (src, cw, fit)
+                    "%s: crop режет ширину (%d) — человек обрежется: %s" % (src, cw, g)
+            if step.startswith("scale="):
+                sw = int(step[len("scale="):].split(":")[0])
+                assert sw == cinema.VIDEO_W, \
+                    "%s: масштаб не по ширине панели: %s" % (src, g)
 
 
-def test_short_source_is_padded_not_stretched():
-    """Квадрат 720×720 ниже панели: добираем фоном сверху/снизу, а не тянем —
-    растяжение сразу видно по лицу."""
-    fit = cinema.pane_filter(720, 720)
-    assert "pad=" in fit and "crop=" not in fit, fit
-    pad = [s for s in fit.split(",") if s.startswith("pad=")][0]
-    w, h = pad[len("pad="):].split(":")[:2]
-    assert (int(w), int(h)) == (cinema.VIDEO_W, cinema.VIDEO_H)
-    assert cinema.BG.lstrip("#").lower() in fit.lower(), "добор не цветом фона"
+def test_pane_always_covers_full_height():
+    """Панель обязана доходить до верхнего и нижнего края кадра при ЛЮБОМ
+    исходнике (замечание владельца: «видео не от края идёт»). Значит в графе
+    всегда есть ступень ровно в высоту панели — либо scale, либо crop, либо
+    подложка-cover под кадром."""
+    for src in _FORMATS:
+        g = cinema.pane_graph(*src, src="1:v")
+        full = ["%d:%d" % (cinema.VIDEO_W, cinema.VIDEO_H) in step
+                for step in g.replace(";", ",").split(",")]
+        assert any(full), "%s: нет ступени во всю высоту панели: %s" % (src, g)
+
+
+def test_short_source_is_filled_with_blur_not_bars():
+    """Квадрат 720×720 ниже панели: недостающую высоту добираем РАЗМЫТОЙ
+    копией кадра. Плоская заливка давала чёрные полосы сверху и снизу —
+    панель переставала читаться как кадр во всю высоту."""
+    g = cinema.pane_graph(720, 720, src="1:v")
+    assert "boxblur" in g, "добор без размытия — вернутся полосы: %s" % g
+    assert "split=2" in g, "подложка обязана быть копией того же кадра"
+    assert "force_original_aspect_ratio=increase" in g, "подложка не в край"
+    assert g.rstrip().endswith("[hv]"), "граф обязан отдавать метку hv: %s" % g
+
+
+def test_fill_height_is_reported_only_when_filling():
+    """Вызывающий должен знать высоту резкого кадра — под неё рисуется маска
+    растушёвки. Когда добор не нужен, высота 0 и маска не создаётся."""
+    assert cinema.pane_fill_height(760, 1000) == 0, "точное попадание"
+    assert cinema.pane_fill_height(1080, 1920) == 0, "тут кроп, а не добор"
+    h = cinema.pane_fill_height(720, 720)
+    assert 0 < h < cinema.VIDEO_H and h % 2 == 0, h
+
+
+def test_feather_mask_softens_both_edges():
+    """Маска стыка: непрозрачная в середине, к верхнему и нижнему краю плавно
+    в ноль. Без неё резкий кадр лежит на размытом фоне рамкой."""
+    try:
+        from PIL import Image
+    except ImportError:                       # pragma: no cover
+        print("PIL нет — пропускаю проверку маски стыка")
+        return
+    import tempfile
+    path = os.path.join(tempfile.mkdtemp(), "feather.png")
+    cinema.feather_mask(path, 40, 200, soft=50)
+    px = Image.open(path).load()
+    assert px[20, 100] == 255, "середина обязана быть непрозрачной"
+    assert px[20, 0] <= 6 and px[20, 199] <= 6, "края обязаны уйти в ноль"
+    assert px[20, 10] < px[20, 40] < px[20, 100], "спад сверху не монотонный"
+    assert px[20, 189] < px[20, 159] < px[20, 100], "спад снизу не монотонный"
+
+
+def test_feather_is_wired_into_the_graph():
+    """Растушёвка подключается отдельным входом — и только там, где идёт
+    добор: у точного попадания её нет и быть не должно."""
+    g = cinema.pane_graph(720, 720, src="1:v", feather="4:v")
+    assert "[4:v]alphamerge" in g, g
+    assert "[4:v]" not in cinema.pane_graph(760, 1000, src="1:v", feather="4:v")
 
 
 def test_tall_source_is_cropped_towards_the_head():
     """Исходник выше панели — режем по высоте со сдвигом вверх: срезать стол
     безопаснее, чем макушку."""
-    fit = cinema.pane_filter(1080, 1920)
-    crop = [s for s in fit.split(",") if s.startswith("crop=")][0]
+    g = cinema.pane_graph(1080, 1920, src="1:v")
+    crop = [s for s in g.split(",") if s.startswith("crop=")][0]
     w, h, x, y = [int(v) for v in crop[len("crop="):].split(":")]
     assert (w, h, x) == (cinema.VIDEO_W, cinema.VIDEO_H, 0)
     scaled_h = int(round(1920 * cinema.VIDEO_W / 1080.0)) // 2 * 2

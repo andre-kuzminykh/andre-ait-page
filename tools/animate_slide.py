@@ -503,15 +503,26 @@ def main():
         bg = os.path.join(BUILD, "cinema-bg.png")
         cinema_fx.dark_canvas(ff, bg)
         sw, sh = cinema_fx.probe_size(ff, clip)
-        fit = cinema_fx.pane_filter(sw, sh)
-        print("   исходник %dx%d · подгонка: %s" % (sw, sh, fit))
+        # Исходник ниже панели — добираем высоту размытой копией кадра, а стык
+        # растушёвываем отдельной маской (её размер знает pane_fill_height).
+        fill_h = cinema_fx.pane_fill_height(sw, sh)
+        extra, feather = [], None
+        if fill_h:
+            soft = os.path.join(BUILD, "cinema-feather.png")
+            cinema_fx.feather_mask(soft, cinema_fx.VIDEO_W, fill_h)
+            extra = ["-i", soft]
+            feather = "4:v"
+        graph = cinema_fx.pane_graph(sw, sh, src="2:v", feather=feather)
+        print("   исходник %dx%d · панель %dx%d%s"
+              % (sw, sh, cinema_fx.VIDEO_W, cinema_fx.VIDEO_H,
+                 " (высоту добираем размытым фоном)" if fill_h else ""))
         vf = cinema_fx.overlay_filter(bg_stream="0:v", clip_stream="2:v",
                                       mask_stream="3:v", pane_stream="1:v",
-                                      fit=fit)
+                                      graph=graph)
         run([ff, "-y", "-loglevel", "error",
              "-loop", "1", "-framerate", str(FPS), "-i", bg,
              "-framerate", str(FPS), "-i", seq,
-             "-i", clip, "-i", mask, "-filter_complex", vf,
+             "-i", clip, "-i", mask] + extra + ["-filter_complex", vf,
              "-map", "[v]", "-map", "2:a?",
              "-c:v", "libx264", "-preset", "medium", "-crf", "18",
              "-pix_fmt", "yuv420p", "-r", str(FPS),

@@ -46,8 +46,13 @@ PANE_W = W - PANE_X
 # добираем фоном (он тот же, шва не видно); высоты слишком много — режем
 # сверху/снизу, но со сдвигом к голове, чтобы не срезать макушку.
 CROP_BIAS_TOP = 0.35
-# Допуск притягивания к точной высоте панели (см. pane_filter).
+# Допуск притягивания к точной высоте панели (см. pane_graph).
 SNAP = 6
+# Радиус размытия подложки, которой добирается недостающая высота. Меньше —
+# в фоне читается второй, «призрачный» человек; больше — каша из пятен.
+BLUR = 30
+# Растушёвка стыка резкого кадра с размытой подложкой, px по вертикали.
+FEATHER = 90
 
 # Фон кадра. Тот же цвет держит и слайд, и подложка ffmpeg — иначе на стыке
 # колонки со слайдом и тёмного поля видна ступенька.
@@ -197,53 +202,100 @@ def fade_mask(path, w=VIDEO_W, h=VIDEO_H, fade=FADE):
 
 
 def overlay_filter(bg_stream="0:v", clip_stream="1:v", mask_stream="2:v",
-                   pane_stream=None, fit=None):
+                   pane_stream=None, graph=None):
     """Фильтр ffmpeg: тёмная подложка + колонка слайда + видеопанель слева.
 
     pane_stream задаётся, когда колонка снята отдельным кадром (узкий
     вьюпорт); без него подложкой служит уже готовый кадр 1920×1080.
-    fit — цепочка от pane_filter(); по умолчанию простой масштаб.
+    graph — фрагмент от pane_graph(), отдающий метку [hv].
     """
     parts = []
     base = "[%s]" % bg_stream
     if pane_stream:
         parts.append("%s[%s]overlay=%d:0[base]" % (base, pane_stream, PANE_X))
         base = "[base]"
-    fit = fit or ("scale=%d:%d" % (VIDEO_W, VIDEO_H))
-    parts.append("[%s]%s,setsar=1[hv]" % (clip_stream, fit))
+    parts.append(graph or ("[%s]scale=%d:%d,setsar=1[hv]"
+                           % (clip_stream, VIDEO_W, VIDEO_H)))
     parts.append("[hv][%s]alphamerge[pane]" % mask_stream)
     parts.append("%s[pane]overlay=%d:%d:format=auto[v]" % (base, VIDEO_X, VIDEO_Y))
     return ";".join(parts)
 
 
-def pane_filter(src_w, src_h):
-    """Цепочка ffmpeg, приводящая исходник к панели БЕЗ обрезки по ширине.
+def pane_fill_height(src_w, src_h):
+    """Высота резкого кадра внутри панели — 0, если добор не нужен.
+
+    Нужна вызывающему, чтобы заранее нарисовать маску растушёвки стыка ровно
+    под этот размер.
+    """
+    if src_w <= 0 or src_h <= 0:
+        return 0
+    scaled_h = int(round(src_h * VIDEO_W / float(src_w))) // 2 * 2
+    if abs(scaled_h - VIDEO_H) <= SNAP or scaled_h > VIDEO_H:
+        return 0
+    return scaled_h
+
+
+def feather_mask(path, w, h, soft=FEATHER):
+    """Маска резкого кадра: белая внутри, к верхнему и нижнему краю плавно
+    уходит в ноль. Тот же smoothstep, что у бокового растворения."""
+    from PIL import Image
+    img = Image.new("L", (w, h), 255)
+    px = img.load()
+    soft = max(1, min(soft, h // 2))
+    for y in range(soft):
+        t = (y + 0.5) / soft
+        a = int(round(255 * (t * t * (3.0 - 2.0 * t))))
+        for x in range(w):
+            px[x, y] = a
+            px[x, h - 1 - y] = a
+    img.save(path)
+    return path
+
+
+def pane_graph(src_w, src_h, src="1:v", out="hv", feather=None):
+    """Граф ffmpeg: исходник → панель VIDEO_W×VIDEO_H, БЕЗ обрезки по ширине.
 
     Порядок жёсткий: сначала масштаб ПО ШИРИНЕ панели (человек входит в кадр
     целиком — канон владельца), потом добор по высоте:
-      * высоты не хватило → pad фоном сверху и снизу (цвет тот же, что у
-        подложки, поэтому границы не видно);
-      * высоты в избытке → crop со сдвигом к голове (CROP_BIAS_TOP), иначе
-        уходит макушка, а срезать стол безопаснее.
-    Нативный портрет 760×1000 даёт ровно 821×1080 — ни pad, ни crop.
+      * ровно попали (нативный портрет 760×1000 → 820×1080) — один scale;
+      * высоты в избытке → crop со сдвигом к голове (CROP_BIAS_TOP): срезать
+        стол безопаснее, чем макушку;
+      * высоты не хватило → под кадр подкладывается РАЗМЫТАЯ копия его же,
+        растянутая «в край». Плоская заливка фоном давала чёрные полосы
+        сверху и снизу — панель переставала читаться как кадр во всю высоту
+        (замечание владельца по квадратной подложке). Размытие берёт цвет и
+        свет той же комнаты, поэтому стык не читается, а сам человек не
+        режется и не тянется.
     """
     if src_w <= 0 or src_h <= 0:                     # клип не опознан
-        return "scale=%d:%d" % (VIDEO_W, VIDEO_H)
+        return "[%s]scale=%d:%d,setsar=1[%s]" % (src, VIDEO_W, VIDEO_H, out)
     scaled_h = int(round(src_h * VIDEO_W / float(src_w))) // 2 * 2
-    # Притягивание к точной высоте панели. Округление до чётного оставляет
-    # у нативного портрета 760×1000 ровно 1px полосы сверху и снизу — шов на
-    # ровном фоне заметнее, чем искажение в 0.2%, которого глаз не видит.
+    # Притягивание к точной высоте панели: округление до чётного оставляет у
+    # портрета 760×1000 ровно 1px полосы, а шов на ровном фоне заметнее, чем
+    # искажение в 0.2%, которого глаз не видит.
     if abs(scaled_h - VIDEO_H) <= SNAP:
-        return "scale=%d:%d" % (VIDEO_W, VIDEO_H)
-    chain = ["scale=%d:%d" % (VIDEO_W, scaled_h)]
-    if scaled_h < VIDEO_H:
-        chain.append("pad=%d:%d:0:%d:color=0x%s"
-                     % (VIDEO_W, VIDEO_H, (VIDEO_H - scaled_h) // 2,
-                        BG.lstrip("#")))
-    elif scaled_h > VIDEO_H:
+        return "[%s]scale=%d:%d,setsar=1[%s]" % (src, VIDEO_W, VIDEO_H, out)
+    if scaled_h > VIDEO_H:
         y = int(round((scaled_h - VIDEO_H) * CROP_BIAS_TOP))
-        chain.append("crop=%d:%d:0:%d" % (VIDEO_W, VIDEO_H, y))
-    return ",".join(chain)
+        return ("[%s]scale=%d:%d,crop=%d:%d:0:%d,setsar=1[%s]"
+                % (src, VIDEO_W, scaled_h, VIDEO_W, VIDEO_H, y, out))
+    y = (VIDEO_H - scaled_h) // 2
+    # Растушёвка стыка: без неё резкий кадр лежит на размытом фоне ровным
+    # прямоугольником, и граница читается как рамка. Маску подаём отдельным
+    # входом (feather) — она дешевле, чем per-pixel geq на 1500 кадров.
+    fg = "[{o}fgv]".format(o=out)
+    if feather:
+        soft = ("[{o}fgv][{f}]alphamerge[{o}fgs]").format(o=out, f=feather)
+        fg = "[{o}fgs]".format(o=out)
+    return (
+        "[{src}]split=2[{o}bg][{o}fg];"
+        "[{o}bg]scale={w}:{h}:force_original_aspect_ratio=increase,"
+        "crop={w}:{h},boxblur={blur}:1,eq=brightness=-0.10:saturation=0.85[{o}bgv];"
+        "[{o}fg]scale={w}:{sh}[{o}fgv];"
+        "{soft}"
+        "[{o}bgv]{fg}overlay=0:{y}:format=auto,setsar=1[{o}]"
+    ).format(src=src, o=out, w=VIDEO_W, h=VIDEO_H, sh=scaled_h, y=y, blur=BLUR,
+             soft=(soft + ";") if feather else "", fg=fg)
 
 
 def probe_size(ff, path):
