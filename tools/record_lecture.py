@@ -119,8 +119,77 @@ def fetch(url, dest):
     return dest
 
 
+class _Slice:
+    """Кусок файла ровно нужной длины: copyfile льёт до EOF, а на запрос
+    диапазона отдать надо строго запрошенные байты."""
+
+    def __init__(self, f, length):
+        self.f, self.left = f, length
+
+    def read(self, size=-1):
+        if self.left <= 0:
+            return b""
+        if size is None or size < 0:
+            size = self.left
+        data = self.f.read(min(size, self.left))
+        self.left -= len(data)
+        return data
+
+    def close(self):
+        self.f.close()
+
+
+class RangeHandler(http.server.SimpleHTTPRequestHandler):
+    """Раздатчик с поддержкой Range.
+
+    Штатный SimpleHTTPRequestHandler диапазоны НЕ умеет: на «Range: bytes=…»
+    он молча отдаёт весь файл с кодом 200. Для картинок это неважно, а видео
+    так не играет — Chromium на первом же seek (страница лекции делает
+    `currentTime = 0.01`, чтобы показать первый кадр) обрывает запрос
+    net::ERR_ABORTED и ставит video.error = MEDIA_ERR_SRC_NOT_SUPPORTED.
+    Живой хостинг диапазоны поддерживает, поэтому без этого стенд «ломал»
+    ровно то, что должен проверять, — ролики на странице.
+    """
+
+    def send_head(self):
+        rng = (self.headers.get("Range") or "").strip()
+        m = re.match(r"bytes=(\d*)-(\d*)$", rng) if rng else None
+        path = self.translate_path(self.path)
+        if not m or not os.path.isfile(path):
+            return super().send_head()
+        size = os.path.getsize(path)
+        lo, hi = m.group(1), m.group(2)
+        if lo == "":                    # суффиксный диапазон: последние N байт
+            start, end = max(0, size - int(hi or 0)), size - 1
+        else:
+            start = int(lo)
+            end = int(hi) if hi else size - 1
+        end = min(end, size - 1)
+        if start > end or start >= size:
+            self.send_response(416)
+            self.send_header("Content-Range", "bytes */%d" % size)
+            self.end_headers()
+            return None
+        f = open(path, "rb")
+        f.seek(start)
+        self.send_response(206)
+        self.send_header("Content-Type", self.guess_type(path))
+        self.send_header("Content-Range", "bytes %d-%d/%d" % (start, end, size))
+        self.send_header("Content-Length", str(end - start + 1))
+        self.send_header("Accept-Ranges", "bytes")
+        self.end_headers()
+        return _Slice(f, end - start + 1)
+
+    def send_response_only(self, code, message=None):
+        # Диапазоны браузер запрашивает только если хост о них заявил, поэтому
+        # Accept-Ranges вешаем на КАЖДЫЙ ответ — 200 в том числе.
+        super().send_response_only(code, message)
+        if code == 200:
+            self.send_header("Accept-Ranges", "bytes")
+
+
 def serve():
-    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=ROOT)
+    handler = functools.partial(RangeHandler, directory=ROOT)
 
     class Quiet(socketserver.ThreadingTCPServer):
         allow_reuse_address = True

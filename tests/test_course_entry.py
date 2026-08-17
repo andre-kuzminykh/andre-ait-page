@@ -468,14 +468,17 @@ def test_practice_terms_do_not_break_on_hyphen():
 # через raw.githubusercontent.com; в main остаются только лёгкие ассеты.
 
 _COVER = "/assets/video_sq/poster_auto_0.jpg"
-_MEDIA = "https://raw.githubusercontent.com/andre-kuzminykh/andre-ait-page/refs/heads/media"
-# структура глав лекции 1 — ролики «кв» из assets/video_sq (в ветке media)
+# Ролики раздаются СО СВОЕГО домена: путь от корня сайта. Раньше тут стоял
+# raw.githubusercontent.com, и это сломало выдачу у зрителей — raw не CDN,
+# он режет по лимитам (залп из 20 запросов давал 5×429 и 1×503). История и
+# фактическая проверка доставки — tests/test_media.py и tools/media_check.py.
+_MEDIA = ""
+# структура глав лекции 1 — ролики «кв» из assets/video_sq
 _CHAPTERS = {1: 3, 2: 5, 3: 4, 4: 4, 5: 5, 6: 9, 7: 3, 8: 7, 9: 2}
 
 
-def test_lecture_videos_are_on_media_branch_and_in_order():
-    """42 ролика идут по слайдам в порядке глав и берутся с ветки media
-    (raw.githubusercontent.com), а не из артефакта Pages."""
+def test_lecture_videos_are_local_and_in_order():
+    """42 ролика идут по слайдам в порядке глав и раздаются со своего домена."""
     import os, urllib.parse
     html = _read(_LECTURE1)
     assert "/assets/1_video/" not in html, "ссылок на удалённую папку быть не должно"
@@ -492,22 +495,37 @@ def test_lecture_videos_are_on_media_branch_and_in_order():
     assert os.path.isfile(os.path.join(_ROOT, rel)), "нет файла " + rel
 
 
-def test_no_mp4_in_main_tree_or_local_links():
-    """Сторож канона: в main нет ни одного mp4 (артефакт Pages лёгкий, деплой
-    не упирается в таймаут очереди), а страницы не ссылаются на локальные mp4 —
-    только на https (ветка media или внешние репозитории)."""
+def test_pages_link_videos_locally_not_to_raw():
+    """Обратный сторож к прежнему канону. Раньше mp4 в main были ЗАПРЕЩЕНЫ —
+    ради лёгкого артефакта Pages. Но хостинг на raw.githubusercontent оказался
+    дороже: он не CDN и глушил выдачу зрителям (429/503), поэтому ролики
+    переехали на свой домен. Теперь запрещено обратное — тянуть их с raw."""
     import subprocess
-    tracked = subprocess.check_output(
-        ["git", "ls-files", "*.mp4"], cwd=_ROOT, text=True).strip()
-    assert tracked == "", "mp4 в main запрещены (видео — в ветку media): %s" % tracked
     pages = subprocess.check_output(
         ["git", "ls-files", "*.html"], cwd=_ROOT, text=True).split()
     for page in pages:
         html = _read(os.path.join(_ROOT, page))
         for m in re.finditer(r"""["'(]([^"'()\s]+\.mp4)""", html):
             src = m.group(1)
-            assert src.startswith("https://"), \
-                "%s: локальная ссылка на видео %s (нужен https с ветки media)" % (page, src)
+            assert "raw.githubusercontent.com" not in src, \
+                "%s: ролик снова тянется с raw — он режет по лимитам: %s" % (page, src)
+
+
+def test_pages_artifact_stays_light_enough_to_deploy():
+    """Причина, по которой видео когда-то вынесли из main, была не в опрятности,
+    а в весе артефакта Pages: тяжёлая выгрузка упиралась в таймаут очереди.
+    Ролики вернулись, значит вес надо держать под присмотром — иначе однажды
+    сюда положат многогигабайтный рендер и деплой встанет."""
+    import subprocess
+    files = subprocess.check_output(
+        ["git", "ls-files", "-z", "*.mp4"], cwd=_ROOT, text=True).split("\0")
+    total = sum(os.path.getsize(os.path.join(_ROOT, f))
+                for f in files if f and os.path.isfile(os.path.join(_ROOT, f)))
+    mb = total / 1024 / 1024
+    assert mb < 400, ("видео в main разрослось до %.0f МБ — деплой Pages "
+                      "начнёт упираться в очередь; выносите тяжёлое в "
+                      "объектное хранилище" % mb)
+    print("mp4 в артефакте: %.0f МБ" % mb)
 
 
 def test_cover_shows_while_video_is_idle():
