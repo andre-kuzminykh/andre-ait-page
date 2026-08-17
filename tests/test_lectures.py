@@ -701,24 +701,30 @@ def test_slack_windows_boost_as_one_picture():
 
 
 def test_resize_never_relays_out_same_form():
-    """Ресайз в пределах формы раскладку НЕ пересобирает — НИКОГДА.
+    """Ресайз в пределах формы раскладку НЕ пересобирает — НИКОГДА, а смена
+    формы пересобирает её СИНХРОННО, в том же кадре.
 
-    Жалоба владельца (регрессия 7c1bbbd): ранний выход был снят ради свежего
-    --fill-boost, и каждая пауза ресайза запускала полную перекладку. Она
-    сбрасывала общий кегль заголовков (TITLE_FLOOR = 0), кегль живого слайда
-    на секунду вырастал и возвращался — «элементы меняются», хотя содержимое
-    не менялось; а сам boost доезжал рывком через 120мс вместо плавного
-    следования за окном. Теперь оконные величины (--fill-boost, --fit-shift)
-    считает tuneOne на КАЖДОМ событии ресайза чистой математикой из кэша
-    замеров, а перекладка остаётся только на пересечении границы форм."""
+    Две жалобы владельца. Первая (регрессия 7c1bbbd): перекладка после паузы
+    дебаунса сбрасывала общий кегль заголовков (TITLE_FLOOR = 0) — кегль
+    живого слайда на секунду вырастал и возвращался, хотя содержимое не
+    менялось. Вторая («формы элементов меняются и куда-то улетают» на
+    переходе веб<->мобила): CSS-брейкпоинты перекладывают контент МГНОВЕННО
+    при пересечении 768px, а отложенная дебаунсом пересборка холста давала
+    2 кадра «кентавра» — мобильная вёрстка в веб-холсте с новым масштабом,
+    +315px за правый край окна. Лекарство одно на обе: оконные величины
+    (--fill-boost, --fit-shift) считает tuneOne на КАЖДОМ событии чистой
+    математикой из кэша, а пересборку формы обработчик делает сразу,
+    без setTimeout — браузер рисует один согласованный кадр."""
     with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
         html = f.read()
     i = html.index("function soon()")
     body = html[i:html.index("window.addEventListener('load'", i)]
-    assert "if(form() === lastForm) return;" in body, \
-        "перекладка на ресайзе разрешена ТОЛЬКО при смене формы"
-    assert "tuneAll();" in body.split("setTimeout")[0], \
-        "оконная подгонка обязана идти прямо на событии, до паузы дебаунса"
+    assert "setTimeout" not in body, \
+        "пересборка формы обязана быть синхронной: дебаунс рисует «кентавра»"
+    assert "if(form() !== lastForm){" in body and "fitAll();" in body, \
+        "перекладка разрешена только при смене формы — и сразу в обработчике"
+    assert "tuneAll();" in body, \
+        "оконная подгонка обязана идти на каждом событии ресайза"
     j = html.index("function tuneOne(")
     tune = html[j:html.index("function tuneAll(", j)]
     for frag in ("data-inkh", "data-inkw", "data-spillw",
@@ -731,3 +737,35 @@ def test_resize_never_relays_out_same_form():
     assert "c.setAttribute('data-inkh'" in html and \
            "c.setAttribute('data-spillw'" in html, \
         "fitOne должен кэшировать замеры формы для оконной подгонки"
+
+
+def test_content_breakpoints_live_on_the_form_boundary():
+    """Атомарность перехода веб<->мобила держится на том, что ВСЕ контентные
+    брейкпоинты сведены в границу формы 768px: пересборка холста синхронна
+    именно с ней. Правило на 1023/1024 переключало бы вёрстку ПОСРЕДИ
+    веб-формы, где перекладка не предусмотрена вовсе (ровно так swot-сетка,
+    #slide-20 и размеры кружка «прыгали» на окнах 768-1023). На 1023/1024
+    разрешена только панель «Текст» — оконная функциональность."""
+    import re
+
+    def blocks(text, pat):
+        out = []
+        for m in re.finditer(pat, text):
+            depth, i = 1, text.index("{", m.start()) + 1
+            while depth and i < len(text):
+                if text[i] == "{":
+                    depth += 1
+                elif text[i] == "}":
+                    depth -= 1
+                i += 1
+            out.append(text[m.start():i])
+        return out
+
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    for b in blocks(html, r"@media[^\{]*?\((?:max-width:\s*1023|min-width:\s*1024)px\)"):
+        assert "notes" in b, \
+            "контентный брейкпоинт вне границы формы 768:\n" + b[:200]
+    css = open(os.path.join(_ROOT, "assets/lecture-1.css"), encoding="utf-8").read()
+    assert not re.search(r"@media[^\{]*(?:640|1024|1280)px", css), \
+        "в собранном CSS появился брейкпоинт вне границы формы 768"

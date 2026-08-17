@@ -160,7 +160,9 @@
        Плюс lg:gap-3 вместо gap-8 и стрелка text-4xl — каждый отыгранный
        пиксель уходит карте. Подпись в две строки закреплена <br>-ом.
        Специфичность (0,3,0) — выше анти-overflow правила [class*="flex-row"]. */
-    @media (min-width: 1024px){
+    /* 768 = граница ФОРМЫ (веб-холст 1380 одинаков на всех окнах компа):
+       контентные правила на 1024 переключались бы серединой веб-формы. */
+    @media (min-width: 768px){
         .slide-container .grid.swot-grid{ flex: 0 0 24rem !important; }
         /* Именно width, а не flex-basis: контейнер слайда сайзится по
            intrinsic-ширине содержимого, и в этот расчёт входит width, а
@@ -384,7 +386,7 @@
         #slide-19 .content-z ul { width: fit-content; margin-left: auto; margin-right: auto; }
     }
 
-    @media (min-width: 1024px) {
+    @media (min-width: 768px) {
         #slide-20 { padding-left: 2rem; padding-right: 2rem; }
         #slide-20 .content-z { padding-left: 0 !important; padding-right: 0 !important; }
     }
@@ -406,7 +408,7 @@
    На компе min-h карточки ломал 1:1 (колонка уже 140px из-за узкой сетки):
    сетке даём ширину, min-h отпускаем — квадрат держит только aspect-ratio. */
 .swot-q{ aspect-ratio:1/1; }
-@media (min-width:1024px){
+@media (min-width:768px){
   /* !important + специфичность (0,3,0): перебиваем анти-overflow правило
      .slide-container [class*="flex-row"] > * { min-width:0 !important } */
   .slide-container .grid.swot-grid{ min-width:24rem !important; }
@@ -872,7 +874,7 @@ html.dark .slide-container .content-z [class*="rounded-2xl"] > i:only-child{ col
   left: clamp(1.5rem, 5vw, 4rem) !important; right:auto !important;
   top:auto !important; bottom: clamp(1.5rem, 5vh, 3rem) !important;
 }
-@media (max-width:1023px){
+@media (max-width:767px){
   #nav-prev, #nav-next { width:46px !important; height:46px !important; bottom:16px !important; }
   #nav-prev { right:66px !important; }
   #nav-next { right:12px !important; }
@@ -1708,28 +1710,33 @@ window.addEventListener('load', function(){
   }
   window.syncNotesShrink = syncShrink;
 
-  var t;
   // Ресайз раскладку НЕ перекладывает НИКОГДА (канон владельца: «элементы
   // ни в коем случае не меняются, всё плавно»). Всё оконное — чистые
   // transform-величины, и все обновляются ПРЯМО НА СОБЫТИИ: --view-scale,
   // --fit-shrink и tuneAll (--fill-boost, --fit-shift из кэша замеров).
-  // Прежняя перекладка после паузы дебаунса сбрасывала общий кегль
-  // заголовков (TITLE_FLOOR), и живой слайд «дышал» после каждого ресайза,
-  // а boost доезжал рывком через 120мс вместо плавного следования за окном.
-  // Единственное исключение — пересечение границы форм 768px: там честно
-  // меняется сама форма, и слайды пересобираются под неё.
+  //
+  // Единственное место, где раскладка честно меняется, — пересечение
+  // границы форм 768px, и оно обязано быть АТОМАРНЫМ: все CSS-брейкпоинты
+  // контента сведены в ту же границу 768 (это стережёт
+  // test_content_breakpoints_live_on_the_form_boundary), браузер
+  // перекладывает вёрстку мгновенно при пересечении — и если холст (zoom,
+  // --view-scale, ширины) пересобирать хоть на кадр позже (прежний дебаунс
+  // 120мс), зритель видит «кентавра»: мобильную вёрстку в веб-холсте с
+  // новым масштабом, вылетающую за окно (покадровый замер: 2 кадра,
+  // +315px за правый край). Поэтому пересборка формы идёт СИНХРОННО в
+  // этом же обработчике: браузер рисует один кадр, в котором сошлось всё
+  // сразу — брейкпоинты, масштаб и холст.
   var lastForm = form();
   function soon(){
-    syncShrink();
-    setViewScale();
-    tuneAll();
-    clearTimeout(t); t = setTimeout(function(){
-      if(form() === lastForm) return;
+    if(form() !== lastForm){
       lastForm = form();
-      var live = document.querySelector('.slide-container.opacity-100');
-      if(live){ fitOne(live); fitMark(live); }
-      fitAll();
-    }, 120);
+      setViewScale();
+      fitAll();                  // живой слайд — синхронно, остальные фоном
+    } else {
+      setViewScale();
+    }
+    syncShrink();
+    tuneAll();
   }
   window.addEventListener('load', function(){
     annotate(); syncShrink(); markActive();
@@ -4559,7 +4566,7 @@ html.dark .slide-container[class~="bg-black"]{ background:#4C1D95 !important; }
    именно под кружок, но portal-deck перебивал его симметричным padding-block
    (72px на мобилке) — из-за этого нижние плашки уезжали под голову почти на
    каждой лекции. Возвращаем асимметричный нижний резерв. */
-@media (max-width:1023px){
+@media (max-width:767px){
   /* Инфографика стоит РОВНО по центру слайда: сверху и снизу одинаково.
      Раньше низ был втрое больше верха — резерв под говорящую голову, — и
      контент visibly уезжал вверх. Голова теперь просто лежит поверх него. */
@@ -4824,7 +4831,7 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 @media (min-width:768px){
   .slide-container [class*="md:scale-105"]:hover{ transform:scale(1.05) !important; }
 }
-@media (min-width:1024px){
+@media (min-width:768px){
   .slide-container [class*="lg:scale-105"]:hover{ transform:scale(1.05) !important; }
 }
 
