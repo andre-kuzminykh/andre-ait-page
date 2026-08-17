@@ -1246,6 +1246,55 @@ window.addEventListener('load', function(){
     return m;
   }
 
+  // ── Оконная часть подгонки: только transform-величины ──────────────────
+  // Раскладка от окна НЕ зависит (формы железные). От окна зависят ровно
+  // две вещи, обе живут в transform: --fill-boost (дорастание мобильной
+  // формы) и --fit-shift (вертикальный сдвиг, внутри него --view-scale).
+  // tuneOne считает их из закэшированных fitOne замеров ЧИСТОЙ математикой,
+  // без единого чтения раскладки — поэтому его можно звать на КАЖДОЕ
+  // событие ресайза: картинка следует за окном плавно, а не прыгает после
+  // паузы дебаунса.
+  function tuneOne(slide){
+    var c = slide.querySelector('.content-z');
+    if(!c) return;
+    var inkH = parseFloat(c.getAttribute('data-inkh')) || 0;
+    var inkW = parseFloat(slide.getAttribute('data-inkw')) || 0;
+    if(!(inkH > 4 && inkW > 4)) return;          // слайд ещё не подгонялся
+    var z = parseFloat(c.style.getPropertyValue('--cz-zoom')) || 1;
+    var g = refGeom(), padX = g.pad;
+    var freeH = g.h - g.top - g.bottom, freeW = g.w - padX * 2;
+    var vs = viewScale();
+    var boost = 1;
+    if(form() === 'mob'){
+      var winWf = window.innerWidth / vs - padX * 2;
+      var winHf = window.innerHeight / vs - g.top - g.bottom;
+      var rWin  = Math.min(winWf / inkW, winHf / inkH);
+      var rForm = Math.min(freeW / inkW, freeH / inkH);
+      if(rWin > rForm && rForm > 0) boost = rWin / rForm;
+      // Страховка от слепого пятна inkBox: фактические рамки потомков
+      // (data-spillw, замерены при подгонке, px формы) не должны вылезать
+      // за окно.
+      var spill = parseFloat(c.getAttribute('data-spillw')) || 0;
+      if(spill && spill * vs * boost > window.innerWidth + 2)
+        boost = Math.max(1, (window.innerWidth / (spill * vs)) * 0.99);
+    }
+    c.style.setProperty('--fill-boost', String(boost));
+    // «Подтяни повыше»: запас — по факту ПОСЛЕ дорастания, сдвиг не должен
+    // толкать выросшую картинку под шапку.
+    var lift = Math.max(0, Math.min((freeH - inkH * boost) * 0.18, 30));
+    // Дорастание масштабирует вокруг центра ХОЛСТА, а чернила стоят по
+    // центру СВОБОДНОЙ зоны (полосы сверху и снизу разной высоты) —
+    // возвращаем выросшую картинку на центр свободной зоны, иначе на
+    // 748x826 она подлезала под шапку на ~14px. При boost=1 поправка
+    // нулевая: канон не трогается.
+    var off = (g.top + freeH / 2 - g.h / 2) * (1 - boost);
+    c.style.setProperty('--fit-shift', (((off - lift) * vs) / z).toFixed(2) + 'px');
+  }
+  function tuneAll(){
+    var nodes = document.querySelectorAll('.slide-container'), i;
+    for(i = 0; i < nodes.length; i++) tuneOne(nodes[i]);
+  }
+
   function fitOne(slide){
     var c = slide.querySelector('.content-z');
     if(!c) return;
@@ -1384,60 +1433,40 @@ window.addEventListener('load', function(){
       // окне (полэкрана, планшет: ширина < 768, но заметно больше телефона)
       // стояла крошечной колонкой посреди воздуха: --view-scale упирался в
       // высоту ХОЛСТА, а у холста над и под чернилами большой запас. Этот
-      // запас отдаём картинке: готовый слайд дорастает ОДНИМ
-      // transform-масштабом (--fill-boost). Никакого reflow: zoom и ширина
-      // раскладки не меняются, композиция физически та же — растёт
-      // картинка целиком, пропорции сохранены. На телефоне обычной ширины
-      // коэффициент ~1.2-1.3 заодно добирает ширину при низком окне
-      // (адресная строка), на канонической мобильной пропорции он равен 1.
-      var boost = 1;
-      if(ink && form() === 'mob'){
-        var vs2 = viewScale();
-        var winWf = window.innerWidth / vs2 - padX * 2;
-        var winHf = window.innerHeight / vs2 - band.top - band.bottom;
-        var iwF = ink.w * z, ihF = ink.h * z;
-        if(iwF > 4 && ihF > 4){
-          var rWin  = Math.min(winWf / iwF, winHf / ihF);
-          var rForm = Math.min(freeW / iwF, freeH / ihF);
-          if(rWin > rForm && rForm > 0) boost = rWin / rForm;
-        }
-      }
-      c.style.setProperty('--fill-boost', String(boost));
-      if(boost > 1){
-        // Страховка: inkBox слеп к ВНУКАМ (колонка с min-width может
-        // торчать из ряда, не меняя его offsetWidth). Меряем фактические
-        // рамки текстовых/медиа потомков НА ЭКРАНЕ (rect уже включает и
-        // zoom, и --view-scale, и --fill-boost) и подрезаем коэффициент.
-        var gb, gt, glo = Infinity, ghi = -Infinity, gds = c.querySelectorAll('*'), gi;
-        for(gi = 0; gi < gds.length; gi++){
-          gt = (gds[gi].textContent || '').trim();
-          if(!gt && !/^(IMG|SVG|VIDEO)$/i.test(gds[gi].tagName)) continue;
-          gb = gds[gi].getBoundingClientRect();
-          if(gb.width < 2 || gb.height < 2) continue;
-          if(gb.left < glo) glo = gb.left;
-          if(gb.right > ghi) ghi = gb.right;
-        }
-        if(ghi > glo && ghi - glo > window.innerWidth + 2){
-          boost = Math.max(1, boost * (window.innerWidth / (ghi - glo)) * 0.99);
-          c.style.setProperty('--fill-boost', String(boost));
-        }
-      }
+      // запас отдаётся картинке дорастанием --fill-boost — но сам
+      // коэффициент зависит от ОКНА, поэтому здесь только кэшируются замеры
+      // формы (окна они не знают), а считает и применяет его tuneOne: он же
+      // дёргается на каждом событии ресайза чистой математикой.
       if(ink){
-        // Запас — по факту ПОСЛЕ дорастания: сдвиг не должен толкать
-        // выросшую картинку под шапку.
-        var lift = Math.max(0, Math.min((freeH - ink.h * z * boost) * 0.18, 30));
-        // Дорастание масштабирует вокруг центра ХОЛСТА, а чернила стоят по
-        // центру СВОБОДНОЙ зоны (полосы сверху и снизу разной высоты).
-        // Возвращаем выросшую картинку на центр свободной зоны — без этого
-        // на 748x826 она подлезала под шапку на ~14px. При boost=1 поправка
-        // нулевая: канон не трогается.
-        var off = (band.top + freeH / 2 - availH / 2) * (1 - boost);
-        c.style.setProperty('--fit-shift',
-          (((off - lift) * viewScale()) / z).toFixed(2) + 'px');
+        // Ширина чернил в пикселях ФОРМЫ — для панели «Текст» (ужатие при
+        // открытой панели считается от неё, а не от всей ширины холста)
+        // и для оконной подгонки tuneOne.
+        slide.setAttribute('data-inkw', String(Math.round(ink.w * z)));
+        c.setAttribute('data-inkh', (ink.h * z).toFixed(2));
+        if(form() === 'mob'){
+          // Страховка: inkBox слеп к ВНУКАМ (колонка с min-width может
+          // торчать из ряда, не меняя его offsetWidth). Меряем фактические
+          // рамки текстовых/медиа потомков НА ЭКРАНЕ один раз здесь — rect
+          // включает zoom, --view-scale, --fit-shrink и сброшенный в начале
+          // подгонки --fill-boost=1 — и кэшируем в пикселях формы: tuneOne
+          // подрежет коэффициент, не читая раскладку.
+          var gb, gt, glo = Infinity, ghi = -Infinity, gds = c.querySelectorAll('*'), gi;
+          for(gi = 0; gi < gds.length; gi++){
+            gt = (gds[gi].textContent || '').trim();
+            if(!gt && !/^(IMG|SVG|VIDEO)$/i.test(gds[gi].tagName)) continue;
+            gb = gds[gi].getBoundingClientRect();
+            if(gb.width < 2 || gb.height < 2) continue;
+            if(gb.left < glo) glo = gb.left;
+            if(gb.right > ghi) ghi = gb.right;
+          }
+          var shr = parseFloat(window.getComputedStyle(document.body)
+                      .getPropertyValue('--fit-shrink')) || 1;
+          if(ghi > glo) c.setAttribute('data-spillw',
+            ((ghi - glo) / (viewScale() * shr)).toFixed(2));
+          else c.removeAttribute('data-spillw');
+        }
       }
-      // Ширина чернил в пикселях ФОРМЫ — для панели «Текст»: ужатие при
-      // открытой панели считается от неё, а не от всей ширины холста.
-      if(ink) slide.setAttribute('data-inkw', String(Math.round(ink.w * z)));
+      tuneOne(slide);
       // Круги радиальных схем: кегль подписи и размер иконки — доля
       // ФАКТИЧЕСКОГО диаметра круга. В чистом CSS это не выразить: --sat
       // задан процентами, а проценты внутри font-size считаются от кегля
@@ -1661,17 +1690,22 @@ window.addEventListener('load', function(){
   window.syncNotesShrink = syncShrink;
 
   var t;
-  // Ресайз раскладку НЕ перекладывает: во время самого ресайза окно меняет
-  // только --view-scale (чистый transform, без reflow). Но у мобильной
-  // формы есть --fill-boost, зависящий от окна, поэтому после паузы
-  // пересчитываем подгонку: на вебе это визуальный no-op (те же формы, тот
-  // же zoom), на мобиле — свежий коэффициент дорастания. Пересечение
-  // границы форм 768px накрывается тем же путём.
+  // Ресайз раскладку НЕ перекладывает НИКОГДА (канон владельца: «элементы
+  // ни в коем случае не меняются, всё плавно»). Всё оконное — чистые
+  // transform-величины, и все обновляются ПРЯМО НА СОБЫТИИ: --view-scale,
+  // --fit-shrink и tuneAll (--fill-boost, --fit-shift из кэша замеров).
+  // Прежняя перекладка после паузы дебаунса сбрасывала общий кегль
+  // заголовков (TITLE_FLOOR), и живой слайд «дышал» после каждого ресайза,
+  // а boost доезжал рывком через 120мс вместо плавного следования за окном.
+  // Единственное исключение — пересечение границы форм 768px: там честно
+  // меняется сама форма, и слайды пересобираются под неё.
   var lastForm = form();
   function soon(){
     syncShrink();
     setViewScale();
+    tuneAll();
     clearTimeout(t); t = setTimeout(function(){
+      if(form() === lastForm) return;
       lastForm = form();
       var live = document.querySelector('.slide-container.opacity-100');
       if(live){ fitOne(live); fitMark(live); }

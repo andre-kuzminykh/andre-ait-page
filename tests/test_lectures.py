@@ -380,9 +380,9 @@ def test_two_frozen_forms_scale_only():
             rel + ": окно применяется одним transform-масштабом (плюс дорастание мобилы)"
         assert "var availH = g.h, availW = g.w;" in html, \
             rel + ": подгонка считает в координатах формы, не окна"
-        # Ранний выход на ресайзе снят: --fill-boost мобильной формы зависит
-        # от окна (см. test_lecture_resize_refits_the_deck) — на вебе
-        # пересборка остаётся визуальным no-op, формы железные.
+        # Оконные величины (--fill-boost, --fit-shift) пересчитывает tuneOne
+        # прямо на событии ресайза чистой математикой — раскладка при этом
+        # не перекладывается (см. test_resize_never_relays_out_same_form).
         assert "freeW / 1280" not in html, \
             rel + ": никакого расширения раскладки под ширину окна"
         assert "--bub:calc(224px * var(--view-scale,1))" in html, \
@@ -678,24 +678,46 @@ def test_mobile_form_boosts_as_one_picture():
     assert html.count(
         "scale(calc(var(--fit-shrink,1) * var(--view-scale,1) * var(--fill-boost,1)))") == 2, \
         "--fill-boost должен стоять в обоих правилах transform"
-    assert "ink && form() === 'mob'" in html, \
+    j = html.index("function tuneOne(")
+    tune = html[j:html.index("function tuneAll(", j)]
+    assert "if(form() === 'mob'){" in tune, \
         "дорастание разрешено только мобильной форме — веб строго пропорционален"
     assert "var availH = g.h, availW = g.w;" in html, \
         "раскладка считается в координатах формы — reflow под окно запрещён"
-    assert "(band.top + freeH / 2 - availH / 2) * (1 - boost)" in html, \
+    assert "(g.top + freeH / 2 - g.h / 2) * (1 - boost)" in tune, \
         "нет поправки центра свободной зоны — картинка подлезет под шапку"
     assert "c.style.setProperty('--fill-boost', '1');" in html, \
         "коэффициент не сбрасывается перед подгонкой"
 
 
-def test_lecture_resize_refits_the_deck():
-    """--fill-boost зависит от окна, поэтому ресайз после паузы пересобирает
-    подгонку (на вебе это визуальный no-op — формы железные). Старый ранний
-    выход `if (form() === lastForm) return;` замораживал коэффициент до
-    перезагрузки страницы."""
+def test_resize_never_relays_out_same_form():
+    """Ресайз в пределах формы раскладку НЕ пересобирает — НИКОГДА.
+
+    Жалоба владельца (регрессия 7c1bbbd): ранний выход был снят ради свежего
+    --fill-boost, и каждая пауза ресайза запускала полную перекладку. Она
+    сбрасывала общий кегль заголовков (TITLE_FLOOR = 0), кегль живого слайда
+    на секунду вырастал и возвращался — «элементы меняются», хотя содержимое
+    не менялось; а сам boost доезжал рывком через 120мс вместо плавного
+    следования за окном. Теперь оконные величины (--fill-boost, --fit-shift)
+    считает tuneOne на КАЖДОМ событии ресайза чистой математикой из кэша
+    замеров, а перекладка остаётся только на пересечении границы форм."""
     with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
         html = f.read()
     i = html.index("function soon()")
     body = html[i:html.index("window.addEventListener('load'", i)]
-    assert "if (form() === lastForm) return;" not in body
-    assert "fitAll()" in body and "fitOne(live)" in body
+    assert "if(form() === lastForm) return;" in body, \
+        "перекладка на ресайзе разрешена ТОЛЬКО при смене формы"
+    assert "tuneAll();" in body.split("setTimeout")[0], \
+        "оконная подгонка обязана идти прямо на событии, до паузы дебаунса"
+    j = html.index("function tuneOne(")
+    tune = html[j:html.index("function tuneAll(", j)]
+    for frag in ("data-inkh", "data-inkw", "data-spillw",
+                 "--fill-boost", "--fit-shift", "--cz-zoom"):
+        assert frag in tune, "tuneOne считает из кэша замеров: " + frag
+    assert ("inkBox(" not in tune and "querySelectorAll('*')" not in tune
+            and "getBoundingClientRect" not in tune and "offsetWidth" not in tune), \
+        "tuneOne обязан быть чистой математикой без чтений раскладки"
+    # Кэш для tuneOne пишет fitOne: замеры формы окна не знают.
+    assert "c.setAttribute('data-inkh'" in html and \
+           "c.setAttribute('data-spillw'" in html, \
+        "fitOne должен кэшировать замеры формы для оконной подгонки"
