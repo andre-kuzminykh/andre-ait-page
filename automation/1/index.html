@@ -1111,6 +1111,27 @@ window.addEventListener('load', function(){
     return w;
   }
 
+  // Рамка для «обнимающего» текста (коробка сложилась ПО нему: подпись с
+  // запретом переноса в карточке, бейдж). Берём ближайшего предка, чья
+  // ширина задана НЕ этим текстом, и именно его КОНТЕНТ-бокс.
+  //
+  // Раньше здесь стоял паддинг-бокс (clientWidth - GUTTER), то есть подписи
+  // разрешалось «съесть» паддинг карточки целиком и выйти за её край:
+  // на слайде 3 «Управление на основе данных» торчало из карточки на 20-59px
+  // при формально пройденной проверке. Паддинг — часть карточки, а не запас
+  // для текста.
+  function frameW(el, need){
+    var p = el.parentNode, hops = 0, w;
+    while(p && p.nodeType === 1 && hops < 4){
+      w = contentW(p) - GUTTER;
+      // Предок, который сам сложился по этому же тексту, рамкой быть не
+      // может — поднимаемся выше (иначе гонимся за убегающей целью).
+      if(w > 4 && Math.abs(w - need) >= 24) return w;
+      p = p.parentNode; hops++;
+    }
+    return Infinity;
+  }
+
   // Сколько места нужно элементу и сколько у него есть. null — не наш случай.
   function demand(el){
     var cs = window.getComputedStyle(el);
@@ -1124,12 +1145,12 @@ window.addEventListener('load', function(){
     // слова: остальное браузер перенесёт по пробелам.
     var nowrap = cs.whiteSpace === 'nowrap' || cs.whiteSpace === 'pre';
     var need, i, w;
-    if(nowrap){ need = measure(txt, cs); }
-    else {
-      var parts = txt.split(' '), m = 0;
-      for(i = 0; i < parts.length; i++){ w = measure(parts[i], cs); if(w > m) m = w; }
-      need = m;
-    }
+    // Сколько нужно, если РАЗРЕШИТЬ перенос: самое длинное слово, остальное
+    // браузер разложит по строкам. Для строки с запретом переноса это
+    // запасной вариант — он позволяет сохранить кегль (см. ниже).
+    var parts = txt.split(' '), wrapNeed = 0;
+    for(i = 0; i < parts.length; i++){ w = measure(parts[i], cs); if(w > wrapNeed) wrapNeed = w; }
+    need = nowrap ? measure(txt, cs) : wrapNeed;
     // Внутри заголовка бывает кусок с запретом переноса — «ИИ‑инженер
     // <span class="whitespace-nowrap">(по автоматизации)</span>»: сам span
     // инлайновый, своей ширины у него нет, и по словам он проходит, а целиком
@@ -1140,6 +1161,7 @@ window.addEventListener('load', function(){
       if(!kt) continue;
       w = measure(kt, window.getComputedStyle(keep[i]));
       if(w > need) need = w;
+      if(w > wrapNeed) wrapNeed = w;   // такой кусок не разорвать и переносом
     }
     if(!need) return null;
     // Что считать рамкой.
@@ -1150,14 +1172,24 @@ window.addEventListener('load', function(){
     //   · Иначе рамка своя, если текст в неё не влезает.
     //   · Подпись под кружком радиальной схемы шире кружка ПО ЗАМЫСЛУ: её
     //     коробка широкая и текста не касается — такие не трогаем вовсе.
-    var own = boxW(el), par = boxW(el.parentNode), avail;
+    var own = boxW(el), par = frameW(el, need), avail;
     var hugs = isFinite(own) && Math.abs(own - need) < 24;
     if(hugs){
       if(isFinite(par) && need > par) avail = par; else return null;
     } else if(isFinite(own) && need > own){
       avail = own;
     } else return null;
-    if(!isFinite(avail) || avail <= 4 || need <= avail) return null;
+    if(!isFinite(avail) || avail <= 4) return null;
+    // ПЕРЕНОС ПРЕДПОЧТИТЕЛЬНЕЕ УМЕНЬШЕНИЯ. Подпись карточки с запретом
+    // переноса («Управление на основе данных») в узкой карточке не влезает
+    // строкой — раньше выбор был между «вылезти за карточку» и «ужаться до
+    // 9px». Обе крайности владелец видел на своих скринах. Правильный ответ
+    // третий: разрешить перенос и оставить кегль. Ужимаем только если и в
+    // две строки не помещается (тогда меряем по самому длинному слову).
+    if(nowrap && need > avail && wrapNeed < need){
+      return { size: size, need: wrapNeed, avail: avail, wrap: true };
+    }
+    if(need <= avail) return null;
     return { size: size, need: need, avail: avail };
   }
 
@@ -1184,6 +1216,7 @@ window.addEventListener('load', function(){
     // сброс прошлой подгонки — иначе замер идёт от уже ужатого кегля
     for(i = 0; i < els.length; i++){
       if(els[i].style.fontSize){ els[i].style.fontSize = ''; els[i].style.overflowWrap = ''; }
+      if(els[i].style.whiteSpace) els[i].style.whiteSpace = '';   // и разрешённый перенос
     }
     var groups = {}, order = [];
     // Сначала — выравнивание ряда по САМОМУ МЕЛКОМУ участнику: одинаковые по
@@ -1217,6 +1250,10 @@ window.addEventListener('load', function(){
       // bg-white), и она получала СВОЙ кегль — ряд начинал скакать.
       if(el.getAttribute('data-slide-title')) continue;   // у заголовка свой размер
       if(el.className && ('' + el.className).indexOf('rf-label') >= 0) continue;  // подпись кружка
+      // Строке разрешён перенос — кегль при этом сохраняется. Если и в
+      // несколько строк не влезает, элемент попадёт в группу и ужмётся.
+      if(d.wrap) el.style.whiteSpace = 'normal';
+      if(d.need <= d.avail) continue;
       key = el.tagName + '|' + rowKey(el);
       if(!groups[key]){ groups[key] = []; order.push(key); }
       groups[key].push({ el: el, d: d });
@@ -1232,11 +1269,22 @@ window.addEventListener('load', function(){
       var floor = Math.max(MIN_PX, Math.min(size * 0.4, FLOOR_CAP));
       var want = size * ratio;
       var px = Math.max(floor, want);
+      // Кегль назначается ВСЕМУ ряду, а не только тем, кто не влез. Иначе
+      // ряд рвётся: на слайде 3 три заголовка карточек оставались 18px, а
+      // четвёртый (самый длинный) уезжал на 13.7px. Канон тот же, что и у
+      // выравнивания в начале: одинаковые по роли подписи в ряду — одного
+      // размера.
+      var mem = rows[order[i]] ? rows[order[i]].els : [], k;
+      for(k = 0; k < mem.length; k++) mem[k].style.fontSize = px + 'px';
       for(j = 0; j < g.length; j++){
         g[j].el.style.fontSize = px + 'px';
         // Кружок спутника бывает уже слова даже на нижнем кегле — тогда
         // меньшее зло — перенос внутри кружка, а не слово поверх соседнего.
         g[j].el.style.overflowWrap = (want < floor) ? 'anywhere' : '';
+        // Строка с запретом переноса не влезает даже на нижнем кегле —
+        // разрешаем перенос: две строки внутри карточки лучше, чем одна
+        // строка, торчащая за её края (канон владельца «не выезжало нигде»).
+        g[j].el.style.whiteSpace = (want < floor) ? 'normal' : '';
       }
     }
   }
@@ -1448,13 +1496,23 @@ window.addEventListener('load', function(){
       var z = 1, i, ink;
       // Итерации нужны потому, что zoom меняет CSS-ширину content-z: текст
       // переносится иначе и высота чернил гуляет. Обычно хватает двух.
-      for(i = 0; i < 5; i++){
+      //
+      // И кегли пересчитываются на КАЖДОМ шаге, а не один раз в начале.
+      // apply(z) задаёт content-z ширину availW/z: при z>1 коробки в
+      // раскладочных пикселях УЖЕ, а кегль остаётся прежним — подпись,
+      // влезавшая при z=1, при z=1.3 уже не влезает (ровно это владелец и
+      // увидел: текст «выехал» из карточек). Замер обязан идти в той же
+      // системе координат, в какой слайд в итоге встанет. Детерминизм не
+      // страдает: состояние после apply(z)+textFit однозначно определяется
+      // числом z, а textFit перед замером сбрасывает прошлые кегли.
+      for(i = 0; i < 6; i++){
         ink = inkBox(c);
         if(!ink || ink.h < 20) return;
         var next = target(ink.h, ink.w);
         if(Math.abs(next - z) < 0.005) break;
         z = next;
         apply(z);
+        textFit(slide);
       }
       // Финальная гарантия «влезло»: если после схождения чернила всё ещё выше
       // свободной зоны (бывает на слайдах, где высота почти не зависит от
@@ -1467,6 +1525,7 @@ window.addEventListener('load', function(){
         z *= Math.min(overH > 1 ? freeH / (ink.h * z) : 1,
                       overW > 1 ? freeW / (ink.w * z) : 1) * 0.995;
         apply(z);
+        textFit(slide);          // кегли — под новую ширину коробок
       }
       // Кружок с головой — перетаскиваемый ОВЕРЛЕЙ поверх слайда (канон
       // заказчика, тот же, что на телефоне): контент под него больше НЕ
