@@ -1264,19 +1264,33 @@ window.addEventListener('load', function(){
     var g = refGeom(), padX = g.pad;
     var freeH = g.h - g.top - g.bottom, freeW = g.w - padX * 2;
     var vs = viewScale();
+    // Дорастание --fill-boost: запас окна отдаётся ГОТОВОЙ картинке одним
+    // transform-масштабом — на ОБЕИХ формах. Первая версия ограничивала
+    // его мобильной формой, и чуть ПРАВЕЕ границы 768px (портретное окно
+    // вполэкрана/вертикальный монитор) слайд схлопывался в крошечную
+    // колонку посреди пустоты: --view-scale упирался в ширину, огромный
+    // запас высоты пропадал, а на самой границе картинка прыгала с 97%
+    // ширины к 46%. На канонических пропорциях форм (веб 1440x900,
+    // телефон 376x844) коэффициент равен 1 по построению — эталонные окна
+    // как были.
+    var winWf = window.innerWidth / vs - padX * 2;
+    var winHf = window.innerHeight / vs - g.top - g.bottom;
+    var rWin  = Math.min(winWf / inkW, winHf / inkH);
+    var rForm = Math.min(freeW / inkW, freeH / inkH);
     var boost = 1;
-    if(form() === 'mob'){
-      var winWf = window.innerWidth / vs - padX * 2;
-      var winHf = window.innerHeight / vs - g.top - g.bottom;
-      var rWin  = Math.min(winWf / inkW, winHf / inkH);
-      var rForm = Math.min(freeW / inkW, freeH / inkH);
-      if(rWin > rForm && rForm > 0) boost = rWin / rForm;
-      // Страховка от слепого пятна inkBox: фактические рамки потомков
-      // (data-spillw, замерены при подгонке, px формы) не должны вылезать
-      // за окно.
-      var spill = parseFloat(c.getAttribute('data-spillw')) || 0;
-      if(spill && spill * vs * boost > window.innerWidth + 2)
-        boost = Math.max(1, (window.innerWidth / (spill * vs)) * 0.99);
+    if(rWin > rForm && rForm > 0) boost = rWin / rForm;
+    // Страховка от слепого пятна inkBox: фактические рамки потомков
+    // (data-spillw/data-spillh, замерены при подгонке, px формы) не должны
+    // вылезать за окно ни по ширине, ни по высоте.
+    var spill = parseFloat(c.getAttribute('data-spillw')) || 0, cap;
+    if(spill){
+      cap = (window.innerWidth / (spill * vs)) * 0.99;
+      if(cap < boost) boost = Math.max(1, cap);
+    }
+    spill = parseFloat(c.getAttribute('data-spillh')) || 0;
+    if(spill){
+      cap = (window.innerHeight / (spill * vs)) * 0.99;
+      if(cap < boost) boost = Math.max(1, cap);
     }
     c.style.setProperty('--fill-boost', String(boost));
     // «Подтяни повыше»: запас — по факту ПОСЛЕ дорастания, сдвиг не должен
@@ -1443,27 +1457,32 @@ window.addEventListener('load', function(){
         // и для оконной подгонки tuneOne.
         slide.setAttribute('data-inkw', String(Math.round(ink.w * z)));
         c.setAttribute('data-inkh', (ink.h * z).toFixed(2));
-        if(form() === 'mob'){
-          // Страховка: inkBox слеп к ВНУКАМ (колонка с min-width может
-          // торчать из ряда, не меняя его offsetWidth). Меряем фактические
-          // рамки текстовых/медиа потомков НА ЭКРАНЕ один раз здесь — rect
-          // включает zoom, --view-scale, --fit-shrink и сброшенный в начале
-          // подгонки --fill-boost=1 — и кэшируем в пикселях формы: tuneOne
-          // подрежет коэффициент, не читая раскладку.
-          var gb, gt, glo = Infinity, ghi = -Infinity, gds = c.querySelectorAll('*'), gi;
-          for(gi = 0; gi < gds.length; gi++){
-            gt = (gds[gi].textContent || '').trim();
-            if(!gt && !/^(IMG|SVG|VIDEO)$/i.test(gds[gi].tagName)) continue;
-            gb = gds[gi].getBoundingClientRect();
-            if(gb.width < 2 || gb.height < 2) continue;
-            if(gb.left < glo) glo = gb.left;
-            if(gb.right > ghi) ghi = gb.right;
-          }
-          var shr = parseFloat(window.getComputedStyle(document.body)
-                      .getPropertyValue('--fit-shrink')) || 1;
-          if(ghi > glo) c.setAttribute('data-spillw',
-            ((ghi - glo) / (viewScale() * shr)).toFixed(2));
-          else c.removeAttribute('data-spillw');
+        // Страховка: inkBox слеп к ВНУКАМ (колонка с min-width может
+        // торчать из ряда, не меняя его offsetWidth). Меряем фактические
+        // рамки текстовых/медиа потомков НА ЭКРАНЕ один раз здесь — rect
+        // включает zoom, --view-scale, --fit-shrink и сброшенный в начале
+        // подгонки --fill-boost=1 — и кэшируем в пикселях формы: tuneOne
+        // подрежет коэффициент, не читая раскладку.
+        var gb, gt, glo = Infinity, ghi = -Infinity,
+            gtp = Infinity, gbt = -Infinity, gds = c.querySelectorAll('*'), gi;
+        for(gi = 0; gi < gds.length; gi++){
+          gt = (gds[gi].textContent || '').trim();
+          if(!gt && !/^(IMG|SVG|VIDEO)$/i.test(gds[gi].tagName)) continue;
+          gb = gds[gi].getBoundingClientRect();
+          if(gb.width < 2 || gb.height < 2) continue;
+          if(gb.left < glo) glo = gb.left;
+          if(gb.right > ghi) ghi = gb.right;
+          if(gb.top < gtp) gtp = gb.top;
+          if(gb.bottom > gbt) gbt = gb.bottom;
+        }
+        var shr = parseFloat(window.getComputedStyle(document.body)
+                    .getPropertyValue('--fit-shrink')) || 1;
+        if(ghi > glo){
+          c.setAttribute('data-spillw', ((ghi - glo) / (viewScale() * shr)).toFixed(2));
+          c.setAttribute('data-spillh', ((gbt - gtp) / (viewScale() * shr)).toFixed(2));
+        } else {
+          c.removeAttribute('data-spillw');
+          c.removeAttribute('data-spillh');
         }
       }
       tuneOne(slide);
