@@ -1254,6 +1254,7 @@ window.addEventListener('load', function(){
       // чернил, и считать zoom до неё бессмысленно.
       textFit(slide);
       c.style.zoom = '';
+      c.style.setProperty('--fill-boost', '1');
       c.style.minHeight = '';
       c.style.width = '';
       c.style.padding = '';
@@ -1377,9 +1378,62 @@ window.addEventListener('load', function(){
       // Значение — в координатах content-z (после zoom рендерится *z), а
       // хотим px ФОРМЫ на экране (*viewScale) — отсюда *vs/z.
       ink = inkBox(c);
+      // «Побольше, но те же пропорции» (канон владельца, 4 скрина). Веб —
+      // строго пропорциональный: холст формы целиком масштабируется окном,
+      // и ТОЛЬКО им (скрины 1-2 «правильно»). Мобильная форма на среднем
+      // окне (полэкрана, планшет: ширина < 768, но заметно больше телефона)
+      // стояла крошечной колонкой посреди воздуха: --view-scale упирался в
+      // высоту ХОЛСТА, а у холста над и под чернилами большой запас. Этот
+      // запас отдаём картинке: готовый слайд дорастает ОДНИМ
+      // transform-масштабом (--fill-boost). Никакого reflow: zoom и ширина
+      // раскладки не меняются, композиция физически та же — растёт
+      // картинка целиком, пропорции сохранены. На телефоне обычной ширины
+      // коэффициент ~1.2-1.3 заодно добирает ширину при низком окне
+      // (адресная строка), на канонической мобильной пропорции он равен 1.
+      var boost = 1;
+      if(ink && form() === 'mob'){
+        var vs2 = viewScale();
+        var winWf = window.innerWidth / vs2 - padX * 2;
+        var winHf = window.innerHeight / vs2 - band.top - band.bottom;
+        var iwF = ink.w * z, ihF = ink.h * z;
+        if(iwF > 4 && ihF > 4){
+          var rWin  = Math.min(winWf / iwF, winHf / ihF);
+          var rForm = Math.min(freeW / iwF, freeH / ihF);
+          if(rWin > rForm && rForm > 0) boost = rWin / rForm;
+        }
+      }
+      c.style.setProperty('--fill-boost', String(boost));
+      if(boost > 1){
+        // Страховка: inkBox слеп к ВНУКАМ (колонка с min-width может
+        // торчать из ряда, не меняя его offsetWidth). Меряем фактические
+        // рамки текстовых/медиа потомков НА ЭКРАНЕ (rect уже включает и
+        // zoom, и --view-scale, и --fill-boost) и подрезаем коэффициент.
+        var gb, gt, glo = Infinity, ghi = -Infinity, gds = c.querySelectorAll('*'), gi;
+        for(gi = 0; gi < gds.length; gi++){
+          gt = (gds[gi].textContent || '').trim();
+          if(!gt && !/^(IMG|SVG|VIDEO)$/i.test(gds[gi].tagName)) continue;
+          gb = gds[gi].getBoundingClientRect();
+          if(gb.width < 2 || gb.height < 2) continue;
+          if(gb.left < glo) glo = gb.left;
+          if(gb.right > ghi) ghi = gb.right;
+        }
+        if(ghi > glo && ghi - glo > window.innerWidth + 2){
+          boost = Math.max(1, boost * (window.innerWidth / (ghi - glo)) * 0.99);
+          c.style.setProperty('--fill-boost', String(boost));
+        }
+      }
       if(ink){
-        var lift = Math.max(0, Math.min((freeH - ink.h * z) * 0.18, 30));
-        c.style.setProperty('--fit-shift', (-(lift * viewScale()) / z).toFixed(2) + 'px');
+        // Запас — по факту ПОСЛЕ дорастания: сдвиг не должен толкать
+        // выросшую картинку под шапку.
+        var lift = Math.max(0, Math.min((freeH - ink.h * z * boost) * 0.18, 30));
+        // Дорастание масштабирует вокруг центра ХОЛСТА, а чернила стоят по
+        // центру СВОБОДНОЙ зоны (полосы сверху и снизу разной высоты).
+        // Возвращаем выросшую картинку на центр свободной зоны — без этого
+        // на 748x826 она подлезала под шапку на ~14px. При boost=1 поправка
+        // нулевая: канон не трогается.
+        var off = (band.top + freeH / 2 - availH / 2) * (1 - boost);
+        c.style.setProperty('--fit-shift',
+          (((off - lift) * viewScale()) / z).toFixed(2) + 'px');
       }
       // Ширина чернил в пикселях ФОРМЫ — для панели «Текст»: ужатие при
       // открытой панели считается от неё, а не от всей ширины холста.
@@ -1607,18 +1661,22 @@ window.addEventListener('load', function(){
   window.syncNotesShrink = syncShrink;
 
   var t;
-  // Ресайз НИЧЕГО не перекладывает: раскладка формы железная, окно меняет
-  // только --view-scale (чистый transform, без reflow). Пересборка нужна в
-  // одном-единственном случае — окно пересекло границу форм 768px.
+  // Ресайз раскладку НЕ перекладывает: во время самого ресайза окно меняет
+  // только --view-scale (чистый transform, без reflow). Но у мобильной
+  // формы есть --fill-boost, зависящий от окна, поэтому после паузы
+  // пересчитываем подгонку: на вебе это визуальный no-op (те же формы, тот
+  // же zoom), на мобиле — свежий коэффициент дорастания. Пересечение
+  // границы форм 768px накрывается тем же путём.
   var lastForm = form();
   function soon(){
     syncShrink();
     setViewScale();
-    if (form() === lastForm) return;
-    lastForm = form();
-    var live = document.querySelector('.slide-container.opacity-100');
-    if(live) fitOne(live);
-    clearTimeout(t); t = setTimeout(function(){ fitAll(); }, 90);
+    clearTimeout(t); t = setTimeout(function(){
+      lastForm = form();
+      var live = document.querySelector('.slide-container.opacity-100');
+      if(live){ fitOne(live); fitMark(live); }
+      fitAll();
+    }, 120);
   }
   window.addEventListener('load', function(){
     annotate(); syncShrink(); markActive();
@@ -4974,14 +5032,14 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
      scale стоял только в правиле body.notes-open, и на обычном просмотре
      холст жил в натуральную величину: на окне ниже/уже формы он вылезал за
      края (заголовок уходил под шапку), а на широких экранах не рос вовсе. */
-  transform:translateY(var(--fit-shift, 0px)) scale(calc(var(--fit-shrink,1) * var(--view-scale,1)));
+  transform:translateY(var(--fit-shift, 0px)) scale(calc(var(--fit-shrink,1) * var(--view-scale,1) * var(--fill-boost,1)));
   transition:transform .38s cubic-bezier(.22,1,.36,1);
 }
 @media (min-width:1024px){
   body.notes-open .slide-container .content-z{
     /* Сдвиг задуман в РЕАЛЬНЫХ px, а применяется внутри css-zoom холста,
        где px масштабируются зумом — делим на него (--cz-zoom из portal-fit). */
-    transform:translateX(calc(var(--notes-w) / 2 / var(--cz-zoom, 1))) translateY(var(--fit-shift, 0px)) scale(calc(var(--fit-shrink,1) * var(--view-scale,1)));
+    transform:translateX(calc(var(--notes-w) / 2 / var(--cz-zoom, 1))) translateY(var(--fit-shift, 0px)) scale(calc(var(--fit-shrink,1) * var(--view-scale,1) * var(--fill-boost,1)));
   }
   body.notes-open #progress-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
 }

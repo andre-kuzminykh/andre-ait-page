@@ -376,12 +376,13 @@ def test_two_frozen_forms_scale_only():
     for rel, html in _pages():
         assert "var REF = { pc:  { w:1380, h:864" in html and "mob: { w:376,  h:844" in html, \
             rel + ": две формы с фиксированными холстами"
-        assert "scale(calc(var(--fit-shrink,1) * var(--view-scale,1)))" in html, \
-            rel + ": окно применяется одним transform-масштабом"
+        assert "scale(calc(var(--fit-shrink,1) * var(--view-scale,1) * var(--fill-boost,1)))" in html, \
+            rel + ": окно применяется одним transform-масштабом (плюс дорастание мобилы)"
         assert "var availH = g.h, availW = g.w;" in html, \
             rel + ": подгонка считает в координатах формы, не окна"
-        assert "if (form() === lastForm) return;" in html, \
-            rel + ": ресайз внутри формы ничего не пересобирает"
+        # Ранний выход на ресайзе снят: --fill-boost мобильной формы зависит
+        # от окна (см. test_lecture_resize_refits_the_deck) — на вебе
+        # пересборка остаётся визуальным no-op, формы железные.
         assert "freeW / 1280" not in html, \
             rel + ": никакого расширения раскладки под ширину окна"
         assert "--bub:calc(224px * var(--view-scale,1))" in html, \
@@ -655,3 +656,46 @@ def test_locked_module_cards_have_no_href():
     for locked, attrs in [c for c in cards if c[0]]:
         assert "href=" not in attrs, "закрытая карточка не должна иметь href: " + attrs
         assert 'aria-disabled="true"' in attrs, "закрытая карточка помечена aria-disabled"
+
+
+def test_mobile_form_boosts_as_one_picture():
+    """«Побольше, но те же пропорции как на мобиле» (канон владельца, 4
+    скрина). Веб — строго пропорциональный, его не трогаем. Мобильная форма
+    на среднем окне (полэкрана/планшет: ширина < 768, но больше телефона)
+    стояла крошечной колонкой посреди воздуха. Четыре сторожа:
+
+    1. Дорастание есть и это transform (--fill-boost), а НЕ zoom: zoom
+       меняет ширину раскладки и переносы текста — композиция «плывёт»,
+       ровно то, что владелец запретил («не надо элементы менять»).
+    2. Оно ограничено мобильной формой: form() === 'mob'.
+    3. Множитель стоит в ОБОИХ правилах transform (базовом и notes-open):
+       первая реализация попала только в notes-open и молча не работала.
+    4. Поправка центра свободной зоны: полосы сверху/снизу разной высоты,
+       без неё выросшая картинка подлезала под шапку на ~14px.
+    """
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    assert html.count(
+        "scale(calc(var(--fit-shrink,1) * var(--view-scale,1) * var(--fill-boost,1)))") == 2, \
+        "--fill-boost должен стоять в обоих правилах transform"
+    assert "ink && form() === 'mob'" in html, \
+        "дорастание разрешено только мобильной форме — веб строго пропорционален"
+    assert "var availH = g.h, availW = g.w;" in html, \
+        "раскладка считается в координатах формы — reflow под окно запрещён"
+    assert "(band.top + freeH / 2 - availH / 2) * (1 - boost)" in html, \
+        "нет поправки центра свободной зоны — картинка подлезет под шапку"
+    assert "c.style.setProperty('--fill-boost', '1');" in html, \
+        "коэффициент не сбрасывается перед подгонкой"
+
+
+def test_lecture_resize_refits_the_deck():
+    """--fill-boost зависит от окна, поэтому ресайз после паузы пересобирает
+    подгонку (на вебе это визуальный no-op — формы железные). Старый ранний
+    выход `if (form() === lastForm) return;` замораживал коэффициент до
+    перезагрузки страницы."""
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    i = html.index("function soon()")
+    body = html[i:html.index("window.addEventListener('load'", i)]
+    assert "if (form() === lastForm) return;" not in body
+    assert "fitAll()" in body and "fitOne(live)" in body
