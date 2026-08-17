@@ -489,7 +489,45 @@ def test_text_sizing_measures_in_canonical_state():
     body = html[i:html.index("function inkBox", i) if "function inkBox" in html[i:] else i + 9000]
     a, t = body.index("apply(1);"), body.index("textFit(slide);")
     assert a < t, "textFit обязан идти ПОСЛЕ apply(1) — иначе замер зависит от пути"
-    assert body.count("textFit(slide);") == 1, "textFit вызывается ровно один раз"
+    # И после КАЖДОГО последующего apply(z): при z>1 коробки в раскладочных
+    # px уже, кегль тот же — подпись, влезавшая при z=1, при z=1.3 вылезает
+    # из карточки (это владелец и увидел). Замер обязан идти в той системе
+    # координат, в какой слайд встанет.
+    import re as _re
+    calls = [m.end() for m in _re.finditer(r"apply\((?:1|z)\);", body)]
+    assert len(calls) >= 3, "в fitOne должны остаться вызовы apply(1) и apply(z) в обоих циклах"
+    for pos in calls:
+        assert "textFit(slide);" in body[pos:pos + 420], \
+            "после каждого apply(z) обязан идти textFit — иначе кегль меряется не в той системе"
+
+
+def test_text_never_leaves_its_card():
+    """Текст не выезжает за карточку: рамка — контент-бокс, перенос важнее
+    уменьшения, кегль — на весь ряд.
+
+    Скрин владельца: подписи карточек («Управление на основе данных») висели
+    поверх краёв карточки. Три причины, все закрыты здесь.
+    """
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # 1. Рамка — КОНТЕНТ-бокс предка (паддинг карточки текст съедать не в
+    #    праве). Раньше брался паддинг-бокс: проверка проходила, а текст
+    #    вылезал ровно на паддинг.
+    assert "function frameW(el, need)" in html and "w = contentW(p) - GUTTER;" in html, \
+        "рамка обнимающего текста должна считаться по контент-боксу предка"
+    assert "var own = boxW(el), par = frameW(el, need), avail;" in html, \
+        "demand() обязан брать рамку через frameW"
+    # 2. Перенос предпочтительнее уменьшения: подпись ложится в две строки
+    #    СВОИМ кеглем, а не ужимается до нечитаемого.
+    assert "if(nowrap && need > avail && wrapNeed < need){" in html, \
+        "нет попытки перенести строку до уменьшения кегля"
+    assert "if(d.wrap) el.style.whiteSpace = 'normal';" in html, \
+        "решение о переносе должно применяться к элементу"
+    # 3. Кегль — на весь ряд: иначе три заголовка карточек 18px, а четвёртый
+    #    (самый длинный) 13.7px.
+    assert "var mem = rows[order[i]] ? rows[order[i]].els : [], k;" in html and \
+           "for(k = 0; k < mem.length; k++) mem[k].style.fontSize = px + 'px';" in html, \
+        "кегль группы обязан применяться ко всему ряду, а не только к вылезающим"
 
 
 def test_fitting_is_budgeted_not_frozen():
