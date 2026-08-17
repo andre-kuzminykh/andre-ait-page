@@ -971,8 +971,18 @@ window.addEventListener('load', function(){
   // Реальное окно получает готовый холст формы, умноженный на ОДИН общий
   // масштаб --view-scale — той же механикой transform:scale, какой слайд
   // ужимается при открытой панели «Текст». Никаких промежуточных макетов.
-  var REF = { pc:  { w:1380, h:864, top:128, bottom:88,  pad:32 },
-              mob: { w:376,  h:844, top:88,  bottom:124, pad:8 } };
+  // floor — общий экранный кегль заголовков, КОНСТАНТА КОЛОДЫ: зависит
+  // только от текстов слайдов и от формы, но не от окна (проверено на
+  // 1440x900 / 1920x1080 и 390x844 / 376x667 — значения совпадают до
+  // сотых). Раньше он вычислялся на лету проходом по всем 42 слайдам, и
+  // этот проход занимал 1-2 секунды фоновой очереди: живой слайд успевал
+  // показаться с целевым кеглем и через секунду сжимался до общего —
+  // «не всегда одинаково получается». Готовое число ставит слайд сразу
+  // окончательным. Если тексты слайдов изменятся и кегль перестанет
+  // сходиться, самокалибровка в chunkStep опустит его сама (и тест
+  // test_title_floor_is_a_measured_constant напомнит обновить константу).
+  var REF = { pc:  { w:1380, h:864, top:128, bottom:88,  pad:32, floor:49.8533 },
+              mob: { w:376,  h:844, top:88,  bottom:124, pad:8,  floor:22.4659 } };
   function form(){ return window.innerWidth < 768 ? 'mob' : 'pc'; }
   function refGeom(){ return REF[form()]; }
   function viewScale(){
@@ -991,7 +1001,9 @@ window.addEventListener('load', function(){
   // константой: её размеры зависят от ширины экрана.
   // Экранный размер заголовка слайда — ОДИН на всю лекцию. Две формы, как и
   // просил заказчик: телефон и компьютер, между ними только размер.
-  var TITLE_FLOOR = 0;               // общий потолок, найденный вторым проходом
+  // Общий кегль заголовков — константа формы (REF.*.floor), а не результат
+  // прохода: подгонка сразу ставит окончательный размер.
+  var TITLE_FLOOR = REF[form()].floor || 0;
   function titleTarget(){
     // Кегль считается от ширины ФОРМЫ, не окна: на компьютере заголовок
     // заметно крупнее содержимого — слайд читается как заголовок с
@@ -1275,24 +1287,37 @@ window.addEventListener('load', function(){
     // ширины к 46%. На канонических пропорциях форм (веб 1440x900,
     // телефон 376x844) коэффициент равен 1 по построению — эталонные окна
     // как были.
-    var winWf = window.innerWidth / vs - padX * 2;
+    // «Чуть-чуть по бокам зазоры» (канон владельца): дорастание НИКОГДА не
+    // прижимает картинку к краям — в бюджет ширины заложен зазор минимум
+    // 12px с каждой стороны. На канонических окнах паддинг формы на экране
+    // и так больше — там формула совпадает с прежней и ничего не меняется.
+    var gap = Math.max(12, padX * vs);
+    var budgetW = window.innerWidth - gap * 2;
+    var winWf = budgetW / vs;
     var winHf = window.innerHeight / vs - g.top - g.bottom;
     var rWin  = Math.min(winWf / inkW, winHf / inkH);
     var rForm = Math.min(freeW / inkW, freeH / inkH);
     var boost = 1;
     if(rWin > rForm && rForm > 0) boost = rWin / rForm;
-    // Страховка от слепого пятна inkBox: фактические рамки потомков
-    // (data-spillw/data-spillh, замерены при подгонке, px формы) не должны
-    // вылезать за окно ни по ширине, ни по высоте.
-    var spill = parseFloat(c.getAttribute('data-spillw')) || 0, cap;
-    if(spill){
-      cap = (window.innerWidth / (spill * vs)) * 0.99;
-      if(cap < boost) boost = Math.max(1, cap);
+    // Бюджет — потолок и для случая, когда дорастания нет вовсе. На плотных
+    // слайдах (сл. 9) от края оставалось 4-7px: канон «чуть-чуть по бокам
+    // зазоры» не выполнялся. Поэтому коэффициент здесь может уйти и НИЖЕ
+    // единицы — картинка ужимается на считанные проценты (пол 0.9), зато
+    // поля есть всегда. Считаем ОТ ЦЕНТРА (data-halfw — максимальное
+    // удаление чернил от центра холста): масштаб идёт от центра, а чернила
+    // бывают смещены внутри холста, и проверка «по ширине» такую
+    // асимметрию пропускала. Там, где зазор и так велик (эталон 1440x900 —
+    // 52px), потолок выше единицы и ничего не трогает.
+    var halfW = parseFloat(c.getAttribute('data-halfw')) || inkW / 2;
+    var halfH = parseFloat(c.getAttribute('data-halfh')) || inkH / 2;
+    var cap;
+    if(halfW > 2){
+      cap = ((window.innerWidth / 2 - gap) / (halfW * vs)) * 0.995;
+      if(cap < boost) boost = Math.max(0.9, cap);
     }
-    spill = parseFloat(c.getAttribute('data-spillh')) || 0;
-    if(spill){
-      cap = (window.innerHeight / (spill * vs)) * 0.99;
-      if(cap < boost) boost = Math.max(1, cap);
+    if(halfH > 2){
+      cap = ((window.innerHeight / 2 - 4) / (halfH * vs)) * 0.995;
+      if(cap < boost) boost = Math.max(0.9, cap);
     }
     c.style.setProperty('--fill-boost', String(boost));
     // «Подтяни повыше»: запас — по факту ПОСЛЕ дорастания, сдвиг не должен
@@ -1315,9 +1340,14 @@ window.addEventListener('load', function(){
     var c = slide.querySelector('.content-z');
     if(!c) return;
     try{
-      // Сначала кегли, потом общий масштаб: подгонка шрифта меняет высоту
-      // чернил, и считать zoom до неё бессмысленно.
-      textFit(slide);
+      // Кегли текста считаются ДО общего масштаба (подгонка шрифта меняет
+      // высоту чернил), но ПОСЛЕ приведения холста к базовому состоянию
+      // формы — см. вызов textFit ниже, сразу за apply(1). Раньше textFit
+      // стоял здесь, ПЕРЕД сбросом, и мерил тексты при zoom и ширине,
+      // оставшихся от прошлой подгонки: после мобильной формы условия
+      // замера были одни, после веб-формы — другие, и мелкие подписи
+      // получали разный кегль на одном и том же окне. Это и был последний
+      // источник «не всегда одинаково получается».
       c.style.zoom = '';
       c.style.setProperty('--fill-boost', '1');
       c.style.minHeight = '';
@@ -1410,6 +1440,11 @@ window.addEventListener('load', function(){
       }
 
       apply(1);
+      // Холст приведён к базовому состоянию формы (zoom=1, ширина и
+      // паддинги — от REF, а не от окна). Только теперь меряем тексты:
+      // условия замера одинаковы на любом окне и по любому пути прихода,
+      // поэтому кегли получаются одни и те же.
+      textFit(slide);
       var z = 1, i, ink;
       // Итерации нужны потому, что zoom меняет CSS-ширину content-z: текст
       // переносится иначе и высота чернил гуляет. Обычно хватает двух.
@@ -1460,31 +1495,44 @@ window.addEventListener('load', function(){
         slide.setAttribute('data-inkw', String(Math.round(ink.w * z)));
         c.setAttribute('data-inkh', (ink.h * z).toFixed(2));
         // Страховка: inkBox слеп к ВНУКАМ (колонка с min-width может
-        // торчать из ряда, не меняя его offsetWidth). Меряем фактические
-        // рамки текстовых/медиа потомков НА ЭКРАНЕ один раз здесь — rect
-        // включает zoom, --view-scale, --fit-shrink и сброшенный в начале
-        // подгонки --fill-boost=1 — и кэшируем в пикселях формы: tuneOne
-        // подрежет коэффициент, не читая раскладку.
-        var gb, gt, glo = Infinity, ghi = -Infinity,
-            gtp = Infinity, gbt = -Infinity, gds = c.querySelectorAll('*'), gi;
+        // торчать из ряда, не меняя его offsetWidth). Меряем всех потомков
+        // — но по РАСКЛАДОЧНОЙ геометрии (offsetLeft/offsetWidth с
+        // накоплением по цепочке offsetParent), а не через
+        // getBoundingClientRect. Причина та же, что у inkBox: каскад
+        // появления анимирует детей через translateY/scale, и rect во время
+        // анимации отдаёт смещённые боксы — замер выходил на 5px шире,
+        // когда подгонка попадала на анимацию, и зазоры получались 64/61
+        // вместо 65/65. offsetLeft трансформом не задевается, поэтому итог
+        // одинаков, в какой бы момент ни считали.
+        var gt, glo = Infinity, ghi = -Infinity,
+            gtp = Infinity, gbt = -Infinity, gds = c.querySelectorAll('*'), gi,
+            gx, gy, gp;
         for(gi = 0; gi < gds.length; gi++){
           gt = (gds[gi].textContent || '').trim();
           if(!gt && !/^(IMG|SVG|VIDEO)$/i.test(gds[gi].tagName)) continue;
-          gb = gds[gi].getBoundingClientRect();
-          if(gb.width < 2 || gb.height < 2) continue;
-          if(gb.left < glo) glo = gb.left;
-          if(gb.right > ghi) ghi = gb.right;
-          if(gb.top < gtp) gtp = gb.top;
-          if(gb.bottom > gbt) gbt = gb.bottom;
+          if(gds[gi].offsetWidth < 2 || gds[gi].offsetHeight < 2) continue;
+          gx = 0; gy = 0; gp = gds[gi];
+          while(gp && gp !== c){ gx += gp.offsetLeft; gy += gp.offsetTop; gp = gp.offsetParent; }
+          if(gx < glo) glo = gx;
+          if(gx + gds[gi].offsetWidth > ghi) ghi = gx + gds[gi].offsetWidth;
+          if(gy < gtp) gtp = gy;
+          if(gy + gds[gi].offsetHeight > gbt) gbt = gy + gds[gi].offsetHeight;
         }
-        var shr = parseFloat(window.getComputedStyle(document.body)
-                    .getPropertyValue('--fit-shrink')) || 1;
         if(ghi > glo){
-          c.setAttribute('data-spillw', ((ghi - glo) / (viewScale() * shr)).toFixed(2));
-          c.setAttribute('data-spillh', ((gbt - gtp) / (viewScale() * shr)).toFixed(2));
+          // Кэшируем не ширину, а МАКСИМАЛЬНОЕ УДАЛЕНИЕ ОТ ЦЕНТРА холста:
+          // масштаб (и --view-scale, и --fill-boost) считается от центра, а
+          // чернила внутри холста бывают смещены (у блока слева отступ
+          // ml-4 — сл. 9). По одной ширине выходило, что всё влезает с
+          // запасом, а на экране слайд прижимался к левому краю на 4.6px.
+          // Значения — в координатах content-z; в px формы это ×z (как ink).
+          var cw = c.clientWidth / 2, ch = c.clientHeight / 2;
+          c.setAttribute('data-halfw',
+            (Math.max(cw - glo, ghi - cw) * z).toFixed(2));
+          c.setAttribute('data-halfh',
+            (Math.max(ch - gtp, gbt - ch) * z).toFixed(2));
         } else {
-          c.removeAttribute('data-spillw');
-          c.removeAttribute('data-spillh');
+          c.removeAttribute('data-halfw');
+          c.removeAttribute('data-halfh');
         }
       }
       tuneOne(slide);
@@ -1547,15 +1595,26 @@ window.addEventListener('load', function(){
   // Подгонка всех 42 слайдов разом замораживала страницу: каждый fitOne — это
   // несколько принудительных reflow, и 42 слайда × 6 итераций × 4 вызова
   // fitAll на загрузке блокировали главный поток на ~2.2с. Теперь очередь
-  // идёт пачками по бюджету 8 мс на кадр. ГЛАВНОЕ ПРАВИЛО (из-за него слайды
-  // «скакали»): ПОСЛЕ появления страницы видимый слайд перекладывать НЕЛЬЗЯ.
-  // Раньше второй проход «общий кегль заголовков» доезжал фоном через
-  // секунду и перекладывал уже видимый слайд — зритель видел, как всё
-  // прыгает через секунду после открытия. Теперь до показа очередь
-  // дорабатывается целиком (drainFits), а после показа проход общего кегля
-  // видимый слайд пропускает и лишь снимает с него отметку свежести — его
-  // дожмёт markActive при следующей смене слайда, под её же анимацией.
+  // идёт пачками по бюджету 8 мс на кадр, а до показа дорабатывается
+  // целиком (drainFits) — к первому кадру всё стоит на месте.
+  //
+  // Общий кегль заголовков — КОНСТАНТА ФОРМЫ (свойство колоды, не окна):
+  // считается ОДИН раз на форму и кэшируется в FLOORS. Раньше каждая
+  // пересборка сбрасывала его в 0 и искала заново, а финальный проход
+  // пропускал видимый слайд — итог зависел от ПУТИ: после ресайза
+  // туда-обратно кегль живого слайда оставался 39.3px, после листания —
+  // 38.3px, и владелец видел «не всегда одинаково получается». Теперь
+  // fitAll берёт кегль из кэша (все пути дают одно и то же), а
+  // единственный пересчёт на форму добегает и до видимого слайда: это
+  // разовый доводок ≤1px при ПЕРВОМ заходе в форму (на загрузке он
+  // успевает до показа), дальше — никогда.
   var fitEpoch = 0, fitPend = 0, fitRest = [], fitDone = null;
+  // Общий кегль по формам — сразу из констант колоды (REF.*.floor).
+  // Пустое значение означало бы «надо считать проходом», и первый заход в
+  // форму отдавал бы слайд сперва с целевым кеглем, а через секунду — с
+  // общим.
+  var FLOORS = { pc: REF.pc.floor || 0, mob: REF.mob.floor || 0 };
+  var CALIBRATED = {};                  // самокалибровка на форму — один раз
   var revealed = false;                 // страница уже показана зрителю
   function fitMark(el){ el.setAttribute('data-fit', String(fitEpoch)); }
   function fitFresh(el){ return el.getAttribute('data-fit') === String(fitEpoch); }
@@ -1572,37 +1631,39 @@ window.addEventListener('load', function(){
     }
     fitPend = fitRest.length;
     if(fitRest.length){ requestAnimationFrame(function(){ chunkStep(epoch, false); }); return; }
-    // Очередь пуста. Где-то длинное слово в целевой кегль не влезло и
-    // заголовок ужался — опускаем цель для ВСЕЙ лекции и прогоняем ещё раз:
-    // «все заголовки одного размера» важнее, чем «максимально крупно».
-    var nodes = document.querySelectorAll('.slide-container'), j, px, min = Infinity;
-    for(j = 0; j < nodes.length; j++){
-      px = titleScreenPx(nodes[j]);
-      if(px && px < min) min = px;
-    }
-    if(!TITLE_FLOOR && min < titleTarget() - 0.5 && min > 8){
-      TITLE_FLOOR = min;
-      var live = document.querySelector('.slide-container.opacity-100');
+    // Очередь пуста — САМОКАЛИБРОВКА, один раз на форму. Общий кегль уже
+    // взят из константы колоды, и обычно сходится до сотых: тогда здесь
+    // ничего не происходит и слайд остаётся ровно таким, каким его увидел
+    // зритель. Проверка нужна на случай, если тексты слайдов изменились и
+    // константа протухла: где-то длинное слово в кегль не влезло, textFit
+    // ужал заголовок — опускаем цель для ВСЕЙ лекции и прогоняем ещё раз
+    // («все заголовки одного размера» важнее, чем «максимально крупно»).
+    // Сверяем только ВНИЗ: поднимать кегль по живым замерам нельзя, это
+    // даёт колебание (подняли -> опять не влезло -> опустили).
+    if(!CALIBRATED[form()]){
+      CALIBRATED[form()] = true;
+      var nodes = document.querySelectorAll('.slide-container'), j, px, min = Infinity;
       for(j = 0; j < nodes.length; j++){
-        if(nodes[j] === live && revealed){
-          // Видимый слайд НЕ трогаем — иначе он прыгнет на глазах. Разница
-          // с общим кеглем ≈1px; дожмём при следующей смене слайда.
-          nodes[j].removeAttribute('data-fit');
-          continue;
-        }
-        fitRest.push(nodes[j]);
+        px = titleScreenPx(nodes[j]);
+        if(px && px < min) min = px;
       }
-      fitPend = fitRest.length;
-      if(sync) chunkStep(epoch, true);
-      else if(fitRest.length) requestAnimationFrame(function(){ chunkStep(epoch, false); });
-      return;
+      if(min > 8 && min < titleTarget() - 0.5 &&
+         min < (FLOORS[form()] || Infinity) * 0.85){
+        FLOORS[form()] = min;
+        TITLE_FLOOR = min;
+        for(j = 0; j < nodes.length; j++) fitRest.push(nodes[j]);
+        fitPend = fitRest.length;
+        if(sync) chunkStep(epoch, true);
+        else if(fitRest.length) requestAnimationFrame(function(){ chunkStep(epoch, false); });
+        return;
+      }
     }
     if(fitDone){ var cb = fitDone; fitDone = null; cb(); }
   }
   function fitAll(done){
     var nodes = document.querySelectorAll('.slide-container'), i;
     lastForm = form();
-    TITLE_FLOOR = 0;
+    TITLE_FLOOR = FLOORS[form()] || 0;   // кегль — константа формы, из кэша
     fitEpoch++;
     fitDone = done || null;
     fitRest = [];

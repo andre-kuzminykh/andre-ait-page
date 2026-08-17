@@ -414,22 +414,30 @@ def test_mobile_stacked_cards_fold_into_rows():
 
 
 def test_visible_slide_never_relaid_after_reveal():
-    """После появления страницы видимый слайд НЕ перекладывается.
+    """Видимый слайд не «прыгает»: показ страницы ждёт полной подгонки, а
+    общий кегль заголовков — константа формы.
 
     Заказчик дважды ловил «сначала одно положение, потом другое»: второй
     проход «общий кегль заголовков» доезжал фоном через секунду и
     пересобирал уже видимый слайд. Канон: показ — только когда шрифты
-    загружены, все 42 слайда подогнаны и общий кегль применён; после показа
-    проход общего кегля видимый слайд пропускает, а клик по стартовому окну
-    дожимает очередь синхронно.
+    загружены, все 42 слайда подогнаны и общий кегль применён; сам кегль
+    считается ОДИН раз на форму и кэшируется (FLOORS) — прежний «пропуск
+    видимого слайда» в проходе оставлял его на другом кегле до следующего
+    листания, и итог зависел от пути (жалоба «не всегда одинаково»).
     """
     for rel, html in _pages():
         assert "fitAll(reveal);" in html, \
             rel + ": показ страницы ждёт завершения ВСЕЙ очереди подгонки"
         assert "function drainFits(){ chunkStep(fitEpoch, true); }" in html, \
             rel + ": очередь дорабатывается синхронно перед показом"
-        assert "if(nodes[j] === live && revealed){" in html and "removeAttribute('data-fit')" in html, \
-            rel + ": после показа общий кегль не трогает видимый слайд"
+        assert "TITLE_FLOOR = FLOORS[form()] || 0;" in html and \
+               "var FLOORS = { pc: REF.pc.floor || 0, mob: REF.mob.floor || 0 };" in html, \
+            rel + ": общий кегль — константа формы, а не результат прохода"
+        assert "if(!CALIBRATED[form()]){" in html, \
+            rel + ": самокалибровка кегля — один раз на форму, как страховка"
+        assert "nodes[j] === live && revealed" not in html, \
+            rel + ": видимый слайд не должен пропускаться проходом кегля — " \
+                  "иначе итог зависит от пути"
         # Дожим — только по НАСТОЯЩЕМУ клику: автостарт кликает по скрытому
         # оверлею программно, и синхронный дожим по нему замораживал главный
         # поток на ~1-2с (вся подгонка одной задачей).
@@ -437,6 +445,51 @@ def test_visible_slide_never_relaid_after_reveal():
             rel + ": живой клик по стартовому окну дожимает подгонку, автоклик — нет"
         assert "setTimeout(reveal, 1200)" not in html, \
             rel + ": страховка в 1.2с показывала страницу раньше шрифтов"
+
+
+def test_title_floor_is_a_measured_constant():
+    """Общий кегль заголовков зашит числом — и это ЗАМЕРЕННЫЕ значения.
+
+    Кегль зависит только от текстов слайдов и формы: на 1440x900 и
+    1920x1080 он одинаков (49.8533), на 390x844 и 376x667 — тоже
+    (22.4659). Раньше его искали проходом по всем 42 слайдам, и проход
+    занимал 1-2 секунды фоновой очереди: слайд показывался с целевым
+    кеглем и через секунду сжимался до общего. Хуже того, проход не
+    сходился (после применения минимум опускался ещё ниже), поэтому итог
+    зависел от того, сколько раз он успел отработать — то есть от пути.
+
+    Если тексты слайдов изменятся, самокалибровка опустит кегль сама, но
+    константу надо будет переснять: `python3 tools/../measure_floor.py`
+    меряет её при выключенном floor. Тест держит числа под присмотром —
+    случайная правка REF уронит его.
+    """
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    assert "pad:32, floor:49.8533" in html, "кегль веб-формы не тот, что замерен"
+    assert "pad:8,  floor:22.4659" in html, "кегль мобильной формы не тот, что замерен"
+    # Самокалибровка страхует только от ГРУБОГО расхождения: сверка «на
+    # полпикселя» сползала бы вниз при каждом заходе в форму.
+    assert "min < (FLOORS[form()] || Infinity) * 0.85" in html, \
+        "самокалибровка сползёт вниз — нужен порог по грубому расхождению"
+
+
+def test_text_sizing_measures_in_canonical_state():
+    """Кегли текста меряются ПОСЛЕ приведения холста к базовому состоянию
+    формы (apply(1)), а не до сброса.
+
+    Последний источник «не всегда одинаково»: textFit стоял первым в
+    fitOne и мерил тексты при zoom и ширине, оставшихся от прошлой
+    подгонки. После мобильной формы условия замера были одни, после
+    веб-формы — другие, и мелкие подписи получали разный кегль на одном и
+    том же окне (страховочный замер расходился на 5px, зазоры выходили
+    64/61 против 65/65)."""
+    with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
+        html = f.read()
+    i = html.index("function fitOne(slide)")
+    body = html[i:html.index("function inkBox", i) if "function inkBox" in html[i:] else i + 9000]
+    a, t = body.index("apply(1);"), body.index("textFit(slide);")
+    assert a < t, "textFit обязан идти ПОСЛЕ apply(1) — иначе замер зависит от пути"
+    assert body.count("textFit(slide);") == 1, "textFit вызывается ровно один раз"
 
 
 def test_fitting_is_budgeted_not_frozen():
@@ -694,8 +747,19 @@ def test_slack_windows_boost_as_one_picture():
         "раскладка считается в координатах формы — reflow под окно запрещён"
     assert "(g.top + freeH / 2 - g.h / 2) * (1 - boost)" in tune, \
         "нет поправки центра свободной зоны — картинка подлезет под шапку"
-    assert "data-spillh" in tune and "window.innerHeight / (spill * vs)" in tune, \
+    assert "data-halfh" in tune and "window.innerHeight / 2 - 4" in tune, \
         "нет страховки по высоте — выросшая картинка может вылезти вниз"
+    # «Чуть-чуть по бокам зазоры»: владелец дал скрин, где плашка стояла
+    # впритык к краю окна. Бюджет ширины дорастания обязан резервировать
+    # зазор минимум 12px с каждой стороны — и в основной формуле, и в
+    # страховке по фактическим рамкам.
+    assert "var gap = Math.max(12, padX * vs);" in tune, \
+        "нет гарантированного бокового зазора в бюджете дорастания"
+    assert "var budgetW = window.innerWidth - gap * 2;" in tune and \
+           "cap = ((window.innerWidth / 2 - gap) / (halfW * vs)) * 0.995;" in tune, \
+        "бюджет с зазорами обязан считаться ОТ ЦЕНТРА (масштаб идёт от него)"
+    assert "boost = Math.max(0.9, cap)" in tune, \
+        "ради зазора подгонка должна уметь чуть ужимать картинку, не только растить"
     assert "c.style.setProperty('--fill-boost', '1');" in html, \
         "коэффициент не сбрасывается перед подгонкой"
 
@@ -727,7 +791,7 @@ def test_resize_never_relays_out_same_form():
         "оконная подгонка обязана идти на каждом событии ресайза"
     j = html.index("function tuneOne(")
     tune = html[j:html.index("function tuneAll(", j)]
-    for frag in ("data-inkh", "data-inkw", "data-spillw",
+    for frag in ("data-inkh", "data-inkw", "data-halfw",
                  "--fill-boost", "--fit-shift", "--cz-zoom"):
         assert frag in tune, "tuneOne считает из кэша замеров: " + frag
     assert ("inkBox(" not in tune and "querySelectorAll('*')" not in tune
@@ -735,7 +799,7 @@ def test_resize_never_relays_out_same_form():
         "tuneOne обязан быть чистой математикой без чтений раскладки"
     # Кэш для tuneOne пишет fitOne: замеры формы окна не знают.
     assert "c.setAttribute('data-inkh'" in html and \
-           "c.setAttribute('data-spillw'" in html, \
+           "c.setAttribute('data-halfw'," in html, \
         "fitOne должен кэшировать замеры формы для оконной подгонки"
 
 
