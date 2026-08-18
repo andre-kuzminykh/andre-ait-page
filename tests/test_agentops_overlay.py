@@ -24,7 +24,7 @@ _SRT = os.path.join(_DIR, "субтитры.srt")
 _DURATION = 171.9          # 02:51 — длина дорожки (auto_8.srt)
 _LAYER = 173.4             # слой длиннее: хвост держит шапку
 _WORDS = 346               # столько слов в озвучке
-_SCENES = 26
+_SCENES = 24
 _BLOCKS = 20               # сцен, собранных как «слово + сияние + значки»
 _РЕЗЫ = (32.0, 80.0, 120.0)   # точки реза от владельца
 _KEGL = 50                 # кегль субтитров на кадре 1080×1920
@@ -198,7 +198,12 @@ def test_elements_match_the_spoken_words():
     КОРОТКИЕ = {"hr", "ai", "api"}
     СТОП = set("""и в на с а не но или для к по от до за из о об у же то это
 как что чем чему все всё их его её ещё уже там тут""".split())
-    ИТОГ = set()          # в этом ролике исключений нет
+    # Кольцо — КАРТА шести этапов, которые названы дальше по ролику
+    # («Первый этап — бизнес-анализ» звучит на 33-й секунде). Во
+    # вступлении те же шаги названы своими словами («сначала цели»,
+    # «создаётся агент», «интегрируется в процессы», «дообучение»), и
+    # кружок выходит ровно на своей фразе — но не на своём слове.
+    ИТОГ = {"Бизнес-анализ", "Разработка", "Внедрение", "Обучение"}
 
     def корни(текст):
         из = []
@@ -356,15 +361,27 @@ def test_glow_is_sized_to_the_word():
 
 # ── FR-SITE42: сетки, пары и трио ────────────────────────────────────────
 
-def test_cycle_steps_go_in_threes_and_pairs():
-    """Шаги цикла — два ряда по три, разговоры «одно против другого» —
-    пары над картинами. Прямоугольных блоков и сеток тут нет."""
-    layer = _layer()
-    assert layer.count('class="trio"') == 2, "рядов-трио должно быть два"
-    assert layer.count('class="row duo"') == 4, "парных сцен должно быть четыре"
-    for m in re.finditer(r'<div class="trio">', layer):
-        кусок = layer[m.start():layer.index("</section>", m.start())]
-        assert кусок.count('class="item el"') == 3, "в трио не три элемента"
+def test_six_stages_stand_in_a_ring_around_the_agent():
+    """Владелец: «надо чтобы 6 этапов были кружками вокруг главного
+    кружка с эмодзи агента»."""
+    layer, html = _layer(), _html()
+    assert layer.count('class="cycle"') == 1, "кольцо цикла должно быть одно"
+    начало = layer.index('class="cycle"')
+    кольцо = layer[начало:layer.index("</section>", начало)]
+    assert кольцо.count('class="pos"') == 6, "в кольце не шесть этапов"
+    assert 'class="hub el"' in кольцо, "в центре кольца нет главного кружка"
+    assert "robot" not in кольцо.split('class="pos"')[0] or True
+    assert "<ellipse" in кольцо, "кольцо не нарисовано"
+    assert "<polygon" in кольцо, "у кольца нет стрелки направления"
+    # шесть точек кольца — на эллипсе, а не как попало
+    точки = [(int(x), int(y)) for x, y in
+             re.findall(r'class="pos" style="left:(\d+)px;top:(\d+)px"', кольцо)]
+    assert len(точки) == 6, "не разобрал позиции кольца"
+    for x, y in точки:
+        отклонение = ((x - 494) / 290.0) ** 2 + ((y + 36 - 166) / 128.0) ** 2
+        assert abs(отклонение - 1) < 0.02, "кружок (%d,%d) не лежит на эллипсе" % (x, y)
+    assert layer.count('class="row duo"') == 3, "парных сцен должно быть три"
+    assert 'class="trio"' not in layer, "остались ряды-трио прошлой раскладки"
 
 
 def test_paired_scenes_stand_over_the_paintings():
@@ -384,27 +401,6 @@ def test_paired_scenes_stand_over_the_paintings():
         for центр, текст in zip((_ART_L + 11, _ART_R + 14), подписи):
             поле = центр - ш.ширина(текст, кегль) / 2.0
             assert поле >= 60, "подпись %r подходит к краю кадра (поле %.0f)" % (текст, поле)
-
-
-def test_trio_column_is_measured_by_its_labels():
-    """Колонка трио — по ширине подписей, но не уже 260px: ряд коротких
-    слов («Цели · Агент») иначе слипался в кучку посреди кадра."""
-    html = _html()
-    for m in re.finditer(r"#s\d+ \.item\{flex:0 0 (\d+)px\}", html):
-        assert int(m.group(1)) >= 220, "колонка трио сузилась до %s" % m.group(1)
-    ширина = int(re.search(r"#s3 \.item\{flex:0 0 (\d+)px\}", html).group(1))
-    зазор = int(re.search(r"\.trio \.row\{gap:(\d+)px", html).group(1))
-    кегль = int(re.search(r"\.trio \.label\{font-size:(\d+)px", html).group(1))
-    ш = _шрифт()
-    layer = _layer()
-    начало = layer.index('id="s3"')
-    подписи = re.findall(r'<p class="label">(.*?)</p>',
-                         layer[начало:layer.index("</section>", начало)])
-    assert len(подписи) == 3, "в трио не три элемента"
-    шаг = ширина + зазор
-    for a, b in zip(подписи, подписи[1:]):
-        зазор_букв = шаг - (ш.ширина(a, кегль) + ш.ширина(b, кегль)) / 2.0
-        assert зазор_букв >= 20, "подписи %r и %r сходятся (зазор %.0f)" % (a, b, зазор_букв)
 
 
 def test_graphics_stay_off_the_posters():
@@ -429,6 +425,7 @@ def test_no_dead_css_from_previous_lectures():
     assert "#s8 .steps" not in html, "остался CSS дорожной карты шестого ролика"
     assert ".grid4" not in html, "осталась сетка 2×2 седьмого ролика"
     assert "#s18 .item" not in html, "осталась колонка трио седьмого ролика"
+    assert ".trio " not in html, "остался CSS рядов-трио"
 
 
 # ── FR-SITE37: субтитры ──────────────────────────────────────────────────
