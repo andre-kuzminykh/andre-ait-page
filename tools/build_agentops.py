@@ -87,24 +87,35 @@ CSS = """/* Пара над картинами: вывод шёл впритык
 .row.duo + .cores{margin-top:20px}
 
 /* ── Кольцо цикла: шесть этапов вокруг агента ───────────────────────
-   Владелец: «надо чтобы 6 этапов были кружками вокруг главного кружка
-   с эмодзи агента». В вертикальном кадре зона всего 392px высотой,
-   поэтому эллипс приплюснут (rx 290, ry 128), подписи стоят под
-   кружками, а нижняя строка кончается ровно на границе зоны.
+   Владелец: «6 этапов кружками вокруг главного кружка с эмодзи агента»,
+   потом — «это должен быть не овал, а круг, но чтобы ничего не залипало,
+   робота внутри можно без круга, пунктирной линии не надо».
+
+   Круг РОВНЫЙ: радиус 120 при центре (540, 434) по кадру. Больше не
+   влезает: у верхней точки подпись стоит НАД кружком (иначе она села бы
+   на боковые кружки — замер показал наезд на 42px), и её верх упирается
+   в границу зоны 240 при пределе 238; у нижней подпись снизу и кончается
+   на 628 при пределе 630. У боковых точек подписи уходят НАРУЖУ: внизу
+   они наезжали на агента в центре.
    Координаты внутри сцены: 0,0 — это (46, 238) по кадру. */
 .cycle{position:relative;width:988px;height:392px}
-.cycle .orbit{position:absolute;left:0;top:0;width:988px;height:392px;overflow:visible}
-.cycle .orbit ellipse{fill:none;stroke:rgba(255,255,255,.32);stroke-width:3;stroke-dasharray:9 13}
-.cycle .orbit polygon{fill:rgba(255,255,255,.92);filter:drop-shadow(0 2px 6px rgba(10,4,24,.55))}
-/* Точка кольца: сам .el центрировать нельзя — у .el.on стоит
-   transform:none, он сносит любой translate. Поэтому позицию держит
-   обёртка, а .el внутри неё живёт как обычно. */
-.cycle .pos{position:absolute;width:280px;margin-left:-140px}
+/* Точку кольца держит обёртка: сам .el центрировать нельзя — у .el.on
+   стоит transform:none, он сносит любой translate. */
+.cycle .pos{position:absolute}
+.cycle .pos.t,.cycle .pos.b{width:280px;margin-left:-140px}
+.cycle .pos.t .item{flex-direction:column-reverse}
+.cycle .pos.t .label{margin-top:0;margin-bottom:8px}
+.cycle .pos.side .item{flex-direction:row;align-items:center;gap:14px}
+.cycle .pos.side .label{margin-top:0}
+.cycle .pos.l .item{flex-direction:row-reverse}
 .cycle .label{font-size:26px;margin-top:8px;white-space:nowrap}
 .cycle .slot{height:72px}
-.cycle .hub{position:absolute;left:494px;top:116px;margin-left:-50px}
-/* Главный кружок — с сиянием: он центр кольца, а не один из шести. */
+/* Агент в середине — без оправы: только значок и сияние за ним. */
+.cycle .hub{position:absolute;left:494px;top:146px;width:100px;height:100px;margin-left:-50px}
 .cycle .hub .halo{position:absolute;inset:0}
+.cycle .agent{position:relative;width:100px;height:100px;color:#fff;
+    filter:drop-shadow(0 0 20px rgba(136,84,243,.95)) drop-shadow(0 3px 10px rgba(10,4,24,.6))}
+.cycle .agent svg{width:100%;height:100%;fill:currentColor}
 
 """
 html = html[:css_start] + CSS + html[css_end:]
@@ -236,33 +247,36 @@ def пара(sid, in_, out_, левый, правый, фразы="", комме
     return "".join(т)
 
 
-# Шесть точек НА эллипсе rx290/ry128 с центром (494, 166): углы 90°,
-# 30°, −30°, −90°, −150°, 150° — по часовой стрелке от верхней. По углам
-# прямоугольника они выглядели «мимо кольца»: пунктир проходил только
-# через верхний и нижний. Координаты внутри сцены: 0,0 = (46, 238).
-ЦИКЛ = [(494, 38), (745, 102), (745, 230), (494, 294), (243, 230), (243, 102)]
+# Шесть точек РОВНОГО круга R=120 с центром (494, 196) в координатах
+# сцены — по часовой стрелке от верхней. Буква рядом — куда уходит
+# подпись: «t» вверх, «b» вниз, «l» влево, «r» вправо. Наружу они ушли
+# не для красоты: подпись верхней точки, стоявшая снизу, наезжала на
+# боковой кружок (−42px), а подписи боковых — на агента в центре.
+ЦИКЛ = [(494, 76, "t"), (598, 136, "r"), (598, 256, "r"),
+        (494, 316, "b"), (390, 256, "l"), (390, 136, "l")]
+ВЫСОТА, ГОРИЗОНТ = 392, 988      # размер сцены: от них считаем bottom/right
 
 
-def кольцо(sid, in_, out_, дуга, центр, шаги, стрелка, комментарий=""):
-    """Шесть этапов кружками вокруг главного кружка с агентом."""
+def кольцо(sid, in_, out_, центр, шаги, комментарий=""):
+    """Шесть этапов кружками по ровному кругу вокруг агента."""
     assert len(шаги) == len(ЦИКЛ), "в кольце должно быть шесть этапов"
     т = ['        <!-- ══ %s ══ -->\n' % (комментарий or sid),
          '        <section class="scene" id="%s" data-in="%s" data-out="%s">\n' % (sid, in_, out_),
          '            <div class="cycle">\n',
-         '                <div class="orbit el" data-in="%s">'
-         '<svg viewBox="0 0 988 392" width="988" height="392">'
-         '<ellipse cx="494" cy="166" rx="290" ry="128"/>'
-         '</svg></div>\n' % дуга,
-         '                <div class="orbit el" data-in="%s">'
-         '<svg viewBox="0 0 988 392" width="988" height="392">'
-         '<polygon points="336,58 300,86 290,60"/>'
-         '</svg></div>\n' % стрелка,
          '                <div class="hub el" data-in="%s">'
-         '<div class="halo"><div class="glow"></div></div>%s</div>\n'
-         % (центр[0], circle(центр[1], центр[2], 100))]
-    for (x, y), ш in zip(ЦИКЛ, шаги):
-        т.append('                <div class="pos" style="left:%dpx;top:%dpx">%s</div>\n'
-                 % (x, y - 36, item(ш[0], ш[1], ш[2], 72, ш[3], cur=ш[4]).strip()))
+         '<div class="halo"><div class="glow"></div></div>'
+         '<div class="agent">%s</div></div>\n' % (центр[0], ico(центр[1]))]
+    for (x, y, где), ш in zip(ЦИКЛ, шаги):
+        кружок = item(ш[0], ш[1], ш[2], 72, ш[3], cur=ш[4]).strip()
+        if где == "t":
+            стиль, класс = 'left:%dpx;bottom:%dpx' % (x, ВЫСОТА - y - 36), "pos t"
+        elif где == "b":
+            стиль, класс = 'left:%dpx;top:%dpx' % (x, y - 36), "pos b"
+        elif где == "r":
+            стиль, класс = 'left:%dpx;top:%dpx' % (x - 36, y - 36), "pos side r"
+        else:
+            стиль, класс = 'right:%dpx;top:%dpx' % (ГОРИЗОНТ - x - 36, y - 36), "pos side l"
+        т.append('                <div class="%s" style="%s">%s</div>\n' % (класс, стиль, кружок))
     т.append('            </div>\n        </section>\n\n')
     return "".join(т)
 
@@ -278,16 +292,14 @@ A(пара("s2", "6.2", "11.2",
        ("8.80", "steering-wheel", "solar", "Управляемость", "8.80 10.58"),
        "", "СЦЕНА 2 · эксперименты превращаются в управляемый процесс"))
 
-A(кольцо("s3", "11.3", "32.0", "11.40",
-         ("11.40", "robot", "solar"),
+A(кольцо("s3", "11.3", "32.0", ("11.40", "robot"),
          [("14.05", "chart-pie-slice", "solar", "Бизнес-анализ", "14.05 15.98"),
           ("16.05", "code", "ember", "Разработка", "16.05 16.96"),
           ("17.45", "plugs-connected", "solar", "Внедрение", "17.45 19.46"),
           ("20.05", "graduation-cap", "ember", "Обучение", "20.05 22.62"),
           ("23.95", "list-checks", "solar", "Тестирование", "23.95 25.26"),
           ("27.00", "eye", "ember", "Мониторинг", "27.00 28.14")],
-         "29.15",
-         "СЦЕНА 3 · шесть этапов кольцом вокруг агента"))
+         "СЦЕНА 3 · шесть этапов кругом вокруг агента"))
 
 # ── ЧАСТЬ 2 (рез на 32) · бизнес-анализ и разработка ────────────────
 A(блок("s4", "32.9", "43.1", "chart-pie-slice", "solar", "Бизнес-анализ",
