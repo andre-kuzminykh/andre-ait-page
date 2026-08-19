@@ -466,6 +466,25 @@ def test_six_stages_stand_in_a_ring_around_the_agent():
     assert 'class="trio"' not in layer, "остались ряды-трио прошлой раскладки"
 
 
+def test_pairs_have_the_arrows_the_owner_asked_for():
+    """Владелец: «там где эксперименты в управляемость просто добавь
+    стрелочку», «„универсальный инструмент“ → тоже стрелочка „инструмент
+    под компанию“ — можно в две строчки», «процессы с ИИ „VS“ процессы
+    без ИИ», «агент дообучается и стрелочка эффективнее»."""
+    layer = _layer()
+    со_стрелкой = {"s2": "arrow", "s16": "arrow", "s19": "vs", "s24": "arrow"}
+    for sid, вид in со_стрелкой.items():
+        начало = layer.index('id="%s"' % sid)
+        кусок = layer[начало:layer.index("</section>", начало)]
+        assert 'class="%s el"' % вид in кусок, "в %s пропала середина пары (%s)" % (sid, вид)
+        # середина стоит МЕЖДУ элементами, а не сбоку
+        левый = кусок.index('class="item el"')
+        правый = кусок.rindex('class="item el"')
+        середина = кусок.index('class="%s el"' % вид)
+        assert левый < середина < правый, "%s: середина пары стоит не между кружками" % sid
+    assert layer.count('class="vs el"') == 1, "«VS» должно быть одно"
+
+
 def test_paired_scenes_stand_over_the_paintings():
     """Два элемента в кадре разведены над картинами, между ними голова."""
     html = _html()
@@ -474,14 +493,24 @@ def test_paired_scenes_stand_over_the_paintings():
     ш = _шрифт()
     кегль = int(re.search(r"\.duo \.label\{font-size:(\d+)px", html).group(1))
     layer = _layer()
-    пары = [layer[m.start():layer.index("</section>", m.start())]
+    # Кусок берём ОТ ТЕГА СЦЕНЫ: id нужен, чтобы понять, разрешён ли в
+    # этой паре перенос подписи (иначе id остаётся выше среза).
+    пары = [layer[layer.rindex('<section class="scene"', 0, m.start()):
+                  layer.index("</section>", m.start())]
             for m in re.finditer(r'<div class="row duo">', layer)]
     assert пары, "парных сцен не осталось"
+    # Владелец разрешил перенос в паре «Универсальный инструмент →
+    # Инструмент под компанию»: там подпись меряется по самому длинному
+    # СЛОВУ, а не по всей строке — строка честно идёт в две.
+    переносят = set(re.findall(r"#(s\d+) \.duo \.label\{white-space:normal", html))
     for кусок in пары:
+        sid = re.search(r'id="(s\d+)"', кусок)
         подписи = re.findall(r'<p class="label">(.*?)</p>', кусок)
         assert len(подписи) == 2, "в паре не два элемента: %r" % подписи
         for центр, текст in zip((_ART_L + 11, _ART_R + 14), подписи):
-            поле = центр - ш.ширина(текст, кегль) / 2.0
+            куски = текст.split() if (sid and sid.group(1) in переносят) else [текст]
+            ширина = max(ш.ширина(к, кегль) for к in куски)
+            поле = центр - ширина / 2.0
             assert поле >= 60, "подпись %r подходит к краю кадра (поле %.0f)" % (текст, поле)
 
 
