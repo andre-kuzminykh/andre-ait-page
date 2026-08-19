@@ -125,6 +125,11 @@ CSS = """/* Пара над картинами: вывод шёл впритык
 .cards .slot{height:104px}
 .cards .label{font-size:28px;margin-top:12px;white-space:nowrap}
 .cards .cores{margin-top:6px}
+/* Владелец: «чуть-чуть совсем повыше можно заголовки поднять».
+   Поднимаем ТОЛЬКО строку-заголовок и только относительным сдвигом:
+   в потоке она остаётся на месте, поэтому ряд иконок под ней не едет
+   и зона 238…630 не меняется. */
+.cards > .cores:first-child{position:relative;top:-22px}
 /* Кадр-точка: один кружок крупнее и с сиянием — это не список. */
 .cards.one .slot{height:132px}
 .cards.one .label{font-size:30px}
