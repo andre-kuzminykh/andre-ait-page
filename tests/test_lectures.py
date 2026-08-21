@@ -548,18 +548,6 @@ def test_fitting_is_budgeted_not_frozen():
             assert 'preload="metadata"' in html, rel + ": у видео метаданные вместо auto"
 
 
-if __name__ == "__main__":
-    failed = 0
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            try:
-                fn()
-                print("ok   %s" % name)
-            except Exception as e:  # AssertionError и любые сбои разбора
-                failed += 1
-                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
-    raise SystemExit(1 if failed else 0)
-
 def test_owner_canon_batch8():
     """Страж правок владельца (батч 8): тексты, однострочные подписи, широкие
     карточки, размеры кружка, центр вариантов теста. Если это сломается —
@@ -871,3 +859,21 @@ def test_content_breakpoints_live_on_the_form_boundary():
     css = open(os.path.join(_ROOT, "assets/lecture-1.css"), encoding="utf-8").read()
     assert not re.search(r"@media[^\{]*(?:640|1024|1280)px", css), \
         "в собранном CSS появился брейкпоинт вне границы формы 768"
+
+
+if __name__ == "__main__":
+    failed = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("ok   %s" % name)
+            except ModuleNotFoundError as e:
+                # Запускалка задумана как «нужен только python3»: тест, которому
+                # нужна необязательная библиотека (Pillow для размеров превью),
+                # пропускается, а не валит прогон. Под pytest он идёт как обычно.
+                print("skip %s: нет модуля %s" % (name, e.name))
+            except Exception as e:  # AssertionError и любые сбои разбора
+                failed += 1
+                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
+    raise SystemExit(1 if failed else 0)
