@@ -12,7 +12,7 @@ import re
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
 # Открыт только модуль 1: лекции 2-8 закрыты и НЕ опубликованы — их файлов нет
-# в репозитории, поэтому по адресу /automation/2/ отдаётся 404 и контент
+# в репозитории, поэтому по адресу /automation/3/ отдаётся 404 и контент
 # недоступен даже прямой ссылкой (это стережёт test_locked_modules_closed).
 # Проверки идут по фактически опубликованным лекциям, так что вернувшийся
 # модуль автоматически попадает под весь набор тестов — без правки списка.
@@ -465,8 +465,12 @@ def test_title_floor_is_a_measured_constant():
     """
     with open(os.path.join(_ROOT, "automation/1/index.html"), encoding="utf-8") as f:
         html = f.read()
-    assert "pad:32, floor:49.8533" in html, "кегль веб-формы не тот, что замерен"
-    assert "pad:8,  floor:22.4659" in html, "кегль мобильной формы не тот, что замерен"
+    # Числа живут в пер-лекционном блоке (portal-fit общий для всех лекций
+    # и констант лекции содержать не может — иначе блоки разъедутся).
+    assert re.search(r'<script id="lecture-floor">\s*\n(?:.|\n)*?window\.__FLOOR = \{pc:49\.8533,mob:22\.4659\};', html), \
+        "кегли лекции 1 должны жить в блоке lecture-floor"
+    assert "var LFLOOR = window.__FLOOR || {};" in html, \
+        "portal-fit должен читать кегли из пер-лекционного блока"
     # Самокалибровка страхует только от ГРУБОГО расхождения: сверка «на
     # полпикселя» сползала бы вниз при каждом заходе в форму.
     assert "min < (FLOORS[form()] || Infinity) * 0.85" in html, \
@@ -703,14 +707,15 @@ def _published_pages():
 
 
 def test_locked_modules_closed():
-    """Открыт только модуль 1. Лекций 2-8 нет в репозитории — значит их нет и в
-    артефакте Pages: по адресу /automation/2/ отдаётся 404, контент недоступен
+    """Открыты модули 1 и 2. Лекций 3-8 нет в репозитории — значит их нет и в
+    артефакте Pages: по адресу /automation/3/ отдаётся 404, контент недоступен
     даже прямой ссылкой (не редирект и не спрятанный CSS-ом слой, из которого
     исходник всё равно вычитывается). Архив контента — тег lectures-2-8-archive.
     """
-    assert os.path.exists(os.path.join(_ROOT, "automation/1/index.html")), \
-        "модуль 1 открыт и должен быть опубликован"
-    for n in range(2, 9):
+    for n in (1, 2):
+        assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
+            "модуль %d открыт и должен быть опубликован" % n
+    for n in range(3, 9):
         assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
             "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
 
@@ -718,20 +723,21 @@ def test_locked_modules_closed():
 def test_no_links_to_locked_modules():
     """Ни одна опубликованная страница не ведёт на закрытый модуль — на сайте
     нет ссылок, которые упирались бы в 404."""
-    link = re.compile(r"automation/[2-8](?=[/\"'#?)\s]|$)")
+    link = re.compile(r"automation/[3-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
 
 
 def test_locked_module_cards_have_no_href():
-    """Карточки модулей 2-8 на /automation/main/ — под замком и без href."""
+    """Карточки модулей 3-8 на /automation/main/ — под замком и без href."""
     with open(os.path.join(_ROOT, "automation/main/index.html"), encoding="utf-8") as f:
         html = f.read()
     cards = re.findall(r'<a class="module( locked)?"([^>]*)>', html)
     assert len(cards) == 8, "на главной курса восемь карточек модулей"
     opened = [c for c in cards if not c[0]]
-    assert len(opened) == 1 and "href=" in opened[0][1], "открыт ровно один модуль — первый"
+    assert len(opened) == 2 and all("href=" in o[1] for o in opened), \
+        "открыты ровно два модуля — первый и второй"
     for locked, attrs in [c for c in cards if c[0]]:
         assert "href=" not in attrs, "закрытая карточка не должна иметь href: " + attrs
         assert 'aria-disabled="true"' in attrs, "закрытая карточка помечена aria-disabled"
@@ -856,9 +862,15 @@ def test_content_breakpoints_live_on_the_form_boundary():
     for b in blocks(html, r"@media[^\{]*?\((?:max-width:\s*1023|min-width:\s*1024)px\)"):
         assert "notes" in b, \
             "контентный брейкпоинт вне границы формы 768:\n" + b[:200]
-    css = open(os.path.join(_ROOT, "assets/lecture-1.css"), encoding="utf-8").read()
-    assert not re.search(r"@media[^\{]*(?:640|1024|1280)px", css), \
-        "в собранном CSS появился брейкпоинт вне границы формы 768"
+    # Собранный CSS каждой опубликованной лекции — только граница 768
+    # (lecture-2-8.css закрытых лекций со стандартной сеткой не считается,
+    # опубликованные страницы на него не ссылаются).
+    for rel, page in _pages():
+        m = re.search(r'<link rel="stylesheet" href="/assets/(lecture-[\w-]+\.css)">', page)
+        assert m, rel + ": нет ссылки на собранный CSS"
+        css = open(os.path.join(_ROOT, "assets", m.group(1)), encoding="utf-8").read()
+        assert not re.search(r"@media[^\{]*(?:640|1024|1280)px", css), \
+            rel + ": в собранном CSS появился брейкпоинт вне границы формы 768"
 
 
 if __name__ == "__main__":
