@@ -358,13 +358,6 @@ def test_no_scroll_hint():
             assert mark not in page, rel + ": подсказка прокрутки убрана (" + mark + ")"
 
 
-if __name__ == "__main__":
-    fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
-    for fn in fns:
-        fn()
-        print("PASS", fn.__name__)
-    print("\nВсе тесты входа в курс пройдены:", len(fns))
-
 
 # ── Практическое задание к лекции 1 ────────────────────────────────────────
 
@@ -549,3 +542,11 @@ def test_entry_has_no_video_circle():
         page = _read(rel)
         assert 'id="head-video"' not in page, rel + ": кружок должен быть убран"
         assert 'class="head"' not in page, rel + ": разметка кружка должна быть убрана"
+
+
+if __name__ == "__main__":
+    fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
+    for fn in fns:
+        fn()
+        print("PASS", fn.__name__)
+    print("\nВсе тесты входа в курс пройдены:", len(fns))

@@ -955,6 +955,11 @@ window.addEventListener('load', function(){
   setTimeout(function(){ var o = document.getElementById('start-overlay'); if (o) o.click(); }, 50);
 });
 </script>
+<script id="lecture-floor">
+// Общий экранный кегль заголовков ЭТОЙ лекции (константа колоды,
+// замер по LECTURE-GUIDE, раздел 7; 0 = не замерен, ищет самокалибровка).
+window.__FLOOR = {pc:49.8533,mob:22.4659};
+</script>
 <script id="portal-fit">
 (function(){
   // Насколько сильно разрешено УВЕЛИЧИВАТЬ контент, чтобы слайд не выглядел
@@ -981,8 +986,16 @@ window.addEventListener('load', function(){
   // окончательным. Если тексты слайдов изменятся и кегль перестанет
   // сходиться, самокалибровка в chunkStep опустит его сама (и тест
   // test_title_floor_is_a_measured_constant напомнит обновить константу).
-  var REF = { pc:  { w:1380, h:864, top:128, bottom:88,  pad:32, floor:49.8533 },
-              mob: { w:376,  h:844, top:88,  bottom:124, pad:8,  floor:22.4659 } };
+  var REF = { pc:  { w:1380, h:864, top:128, bottom:88,  pad:32 },
+              mob: { w:376,  h:844, top:88,  bottom:124, pad:8 } };
+  // Кегль — у КАЖДОЙ лекции свой (тексты слайдов другие), а portal-fit обязан
+  // быть побайтово одинаковым во всех лекциях (test_shared_blocks_identical).
+  // Поэтому числа живут в пер-лекционном блоке <script id="lecture-floor">
+  // (window.__FLOOR), а здесь только читаются, с нулевым запасным значением:
+  // без констант самокалибровка найдёт кегль сама, просто позже.
+  var LFLOOR = window.__FLOOR || {};
+  REF.pc.floor = LFLOOR.pc || 0;
+  REF.mob.floor = LFLOOR.mob || 0;
   function form(){ return window.innerWidth < 768 ? 'mob' : 'pc'; }
   function refGeom(){ return REF[form()]; }
   function viewScale(){
