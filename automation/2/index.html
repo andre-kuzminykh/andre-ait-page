@@ -389,6 +389,15 @@
         .bg-glow-1, .bg-glow-2, #progress-container, .nav-arrow, #video-bubble, #lecture-header, #start-overlay { display: none !important; }
         .slide-container { position: relative !important; height: auto !important; min-height: 100vh; opacity: 1 !important; transform: none !important; page-break-after: always; break-after: page; }
     }
+
+/* Висячие бейджи схем («Задержка», «Возврат»): абсолютная коробка прижата
+   к узкому кружку, и подгонка текста разрешала перенос — буквы шли столбиком.
+   Щит тот же, что у подписей радиалок (radial-fig): nowrap + max-content
+   важнее инлайновых стилей подгонки. */
+.slide-container .js-hang-badge{
+  white-space:nowrap !important; hyphens:none !important;
+  width:max-content !important; max-width:none !important;
+}
 </style>
 
 
@@ -2047,7 +2056,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <p class="text-[10px] md:text-sm text-black/60 leading-relaxed text-left">Когда компания управляет только отделами и локальными задачами, она не видит, как работает весь поток создания ценности. Каждый улучшает свой участок, но общая система остаётся медленной</p>
                 </div>
 
-                <div class="flex items-center justify-center text-base md:text-2xl font-black uppercase tracking-widest text-black/30">против</div>
+                <div class="flex items-center justify-center px-1 md:px-3 text-base md:text-2xl font-black uppercase tracking-widest text-black/30">против</div>
 
                 <div class="bg-black border-2 border-solar rounded-[24px] md:rounded-3xl p-3.5 md:p-8 flex-1 shadow-2xl text-center flex flex-col h-full w-full z-10 md:scale-105 text-white">
                     <h3 class="font-black text-base md:text-2xl text-solar mb-2.5 md:mb-4 border-b border-white/20 pb-2.5 md:pb-4">Сквозной поток ценности</h3>
@@ -2151,40 +2160,48 @@ window.__FLOOR = {pc:51.06,mob:23.312};
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-4">
         <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Почему <span class="text-solar">метрика</span> обязательна</h2>
-            <p class="text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Без метрики процессом невозможно управлять. Только через измерение мы понимаем, работает процесс хорошо или плохо</p>
-
-            <!-- Круговая инфографика по эталону .radial-fig: ядро «Метрика» + пять
-                 семейств измерений. Подпись в круге — одно слово, расшифровка на md+. -->
-            <div class="radial-fig" data-sats="5" style="width:min(100%,600px,54vh);--orbit:37%;--sat:clamp(80px,22.4%,146px);--core:clamp(84px,25%,148px)">
-                <svg class="radial-ring" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-                    <circle cx="50" cy="50" r="37" class="text-grayBase" stroke="currentColor" stroke-width="0.7" stroke-dasharray="2.4 2.6" stroke-linecap="round"/>
-                </svg>
-
-                <div class="radial-core bg-black border-4 border-solar">
-                    <i class="ph-fill ph-gauge text-2xl md:text-4xl text-solar mb-1"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-white px-2">Метрика</span>
+            <p class="text-center text-black/60 mb-4 md:mb-8 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Без метрики процессом невозможно управлять. Только через измерение мы понимаем, работает процесс хорошо или плохо</p>
+            <!-- Дашборд из пяти семейств метрик: слайд рядом с радиальной схемой
+                 (сл. 4 «Из чего состоит процесс»), поэтому здесь сетка карточек,
+                 а не второе кольцо подряд (ревью: два радиала подряд — клоны). -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 w-full items-stretch">
+                <div class="bg-white border border-grayBase p-3 md:p-4 rounded-[14px] md:rounded-2xl shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-clock text-xl md:text-3xl text-solar mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm mb-0.5">Скорость</h4>
+                    <p class="text-[8px] md:text-xs text-black/55 leading-tight">время цикла</p>
                 </div>
-
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:13%">
-                    <i class="ph-fill ph-clock text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Скорость<span class="hidden md:inline font-medium text-[11px] leading-tight text-black/55"><br>время цикла</span></span>
+                <div class="bg-white border border-grayBase p-3 md:p-4 rounded-[14px] md:rounded-2xl shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-currency-dollar text-xl md:text-3xl text-solar mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm mb-0.5">Затраты</h4>
+                    <p class="text-[8px] md:text-xs text-black/55 leading-tight">стоимость кейса</p>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:85.19%;--y:38.57%">
-                    <i class="ph-fill ph-currency-dollar text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Затраты<span class="hidden md:inline font-medium text-[11px] leading-tight text-black/55"><br>стоимость кейса</span></span>
+                <div class="bg-white border border-grayBase p-3 md:p-4 rounded-[14px] md:rounded-2xl shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-target text-xl md:text-3xl text-solar mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm mb-0.5">Точность</h4>
+                    <p class="text-[8px] md:text-xs text-black/55 leading-tight">доля ошибок</p>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:71.75%;--y:79.93%">
-                    <i class="ph-fill ph-target text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Точность<span class="hidden md:inline font-medium text-[11px] leading-tight text-black/55"><br>доля ошибок</span></span>
+                <div class="bg-white border border-grayBase p-3 md:p-4 rounded-[14px] md:rounded-2xl shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-star text-xl md:text-3xl text-solar mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm mb-0.5">Качество</h4>
+                    <p class="text-[8px] md:text-xs text-black/55 leading-tight">оценка результата</p>
                 </div>
-                <div class="radial-sat bg-white border-2 border-grayBase" style="--x:28.25%;--y:79.93%">
-                    <i class="ph-fill ph-star text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Качество<span class="hidden md:inline font-medium text-[11px] leading-tight text-black/55"><br>оценка результата</span></span>
+                <div class="bg-black text-white border-2 border-solar p-3 md:p-4 rounded-[14px] md:rounded-2xl shadow-xl flex flex-col items-center text-center col-span-2 md:col-span-1">
+                    <i class="ph-fill ph-smiley text-xl md:text-3xl text-solar mb-1 md:mb-2"></i>
+                    <h4 class="font-black text-[10px] md:text-sm text-solar mb-0.5">Лояльность</h4>
+                    <p class="text-[8px] md:text-xs text-white/70 leading-tight">NPS / CSI</p>
                 </div>
-                <div class="radial-sat bg-black border-2 border-solar" style="--x:14.81%;--y:38.57%">
-                    <i class="ph-fill ph-smiley text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-solar mt-1">Лояль&shy;ность<span class="hidden md:inline font-medium text-[11px] leading-tight text-black/55"><br>NPS / CSI</span></span>
-                </div>
+            </div>
+            <div class="w-full max-w-3xl mx-auto mt-4 md:mt-8 bg-white border border-grayBase rounded-[20px] md:rounded-3xl p-3 md:p-5 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 text-center shadow-sm">
+                <div class="flex items-center gap-2"><span class="w-7 h-7 md:w-9 md:h-9 bg-grayBase rounded-full flex items-center justify-center shrink-0"><i class="ph-fill ph-ruler text-black text-sm md:text-lg"></i></span><span class="text-[10px] md:text-sm font-bold text-black whitespace-nowrap">Замер «до»</span></div>
+                <i class="ph-bold ph-arrow-right text-black/30 text-base md:text-2xl hidden md:block"></i>
+                <i class="ph-bold ph-arrow-down text-black/30 text-sm md:hidden"></i>
+                <div class="flex items-center gap-2"><span class="w-7 h-7 md:w-9 md:h-9 bg-grayBase rounded-full flex items-center justify-center shrink-0"><i class="ph-fill ph-robot text-black text-sm md:text-lg"></i></span><span class="text-[10px] md:text-sm font-bold text-black whitespace-nowrap">Внедрение ИИ</span></div>
+                <i class="ph-bold ph-arrow-right text-black/30 text-base md:text-2xl hidden md:block"></i>
+                <i class="ph-bold ph-arrow-down text-black/30 text-sm md:hidden"></i>
+                <div class="flex items-center gap-2"><span class="w-7 h-7 md:w-9 md:h-9 bg-solar rounded-full flex items-center justify-center shrink-0"><i class="ph-fill ph-chart-line-up text-sm md:text-lg" style="color:#111;-webkit-text-fill-color:#111"></i></span><span class="text-[10px] md:text-sm font-black text-black whitespace-nowrap">Замер «после»</span></div>
+            </div>
+            <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-5 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-3 md:mt-5">
+                <p class="text-[11px] md:text-lg text-black font-medium leading-snug">Управлять можно только тем, что <span class="font-black">измеряешь</span>: без цифр «до» эффект ИИ не доказать</p>
             </div>
         </div>
     </div>
@@ -2261,7 +2278,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-7">
         <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-8 text-center text-black">Пример <span class="text-solar">потока данных</span></h2>
-            <p class="hidden md:block text-center text-black/60 mb-8 text-lg font-medium">Одна заявка проходит через четыре системы и меняет состояние на каждом шаге</p>
+            <p class="text-center text-black/60 mb-3 md:mb-8 text-[10px] md:text-lg font-medium">Одна заявка проходит через четыре системы и меняет состояние на каждом шаге</p>
 
             <!-- Mobile: горизонтальная компактная цепочка из иконок + подписи снизу -->
             <div class="md:hidden w-full max-w-lg mx-auto">
@@ -2319,14 +2336,14 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                 </div>
                 <div class="bg-white border border-grayBase flex-1 min-w-0 p-3 lg:p-5 rounded-2xl text-center shadow-sm z-10 flex flex-col">
                     <i class="ph-fill ph-user-circle text-4xl lg:text-6xl text-black mb-2"></i>
-                    <h4 class="font-bold text-xs lg:text-base">Менед&shy;жер</h4>
+                    <h4 class="font-bold text-xs lg:text-base">Менеджер</h4>
                     <p class="text-[9px] lg:text-xs text-black/50 mt-1.5 leading-snug">Уточнение деталей</p>
                     <span class="mt-auto pt-2 mx-auto inline-block bg-grayBase/60 rounded px-1.5 py-0.5 text-[8px] lg:text-[10px] font-bold uppercase tracking-wider text-black/60">заказ</span>
                 </div>
                 <div class="bg-white border border-grayBase flex-1 min-w-0 p-3 lg:p-5 rounded-2xl text-center shadow-sm z-10 flex flex-col">
                     <i class="ph-fill ph-file-text text-4xl lg:text-6xl text-black mb-2"></i>
-                    <h4 class="font-bold text-xs lg:text-base">Фин&shy;система</h4>
-                    <p class="text-[9px] lg:text-xs text-black/50 mt-1.5 leading-snug">Формиро&shy;вание счёта</p>
+                    <h4 class="font-bold text-xs lg:text-base">Финсистема</h4>
+                    <p class="text-[9px] lg:text-xs text-black/50 mt-1.5 leading-snug">Формирует счёт</p>
                     <span class="mt-auto pt-2 mx-auto inline-block bg-grayBase/60 rounded px-1.5 py-0.5 text-[8px] lg:text-[10px] font-bold uppercase tracking-wider text-black/60">счёт</span>
                 </div>
                 <div class="bg-black border border-solar flex-1 min-w-0 p-3 lg:p-5 rounded-2xl text-center shadow-xl z-10 text-white flex flex-col">
@@ -2403,22 +2420,22 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                 <div class="flex-1 w-full bg-grayBase/30 rounded-t-xl md:rounded-t-2xl p-3 md:p-4 lg:p-6 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[46%]">
                     <span class="text-black/40 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 1</span>
                     <h3 class="font-bold text-black text-[11px] md:text-sm lg:text-base mt-1 md:mt-2 leading-tight">Правила и скрипты</h3>
-                    <p class="text-[8px] md:text-xs text-black/50 mt-2 hidden md:block">Жёсткая логика «если — то»</p>
+                    <p class="text-[8px] md:text-xs text-black/50 mt-1 md:mt-2">Жёсткая логика «если — то»</p>
                 </div>
                 <div class="flex-1 w-full bg-grayBase/60 rounded-t-xl md:rounded-t-2xl p-3 md:p-4 lg:p-6 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[64%]">
                     <span class="text-black/50 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 2</span>
                     <h3 class="font-bold text-black text-[11px] md:text-sm lg:text-base mt-1 md:mt-2 leading-tight">Робо&shy;тизация</h3>
-                    <p class="text-[8px] md:text-xs text-black/60 mt-2 hidden md:block">Робот повторяет действия человека в интерфейсе (RPA)</p>
+                    <p class="text-[8px] md:text-xs text-black/60 mt-1 md:mt-2">Робот повторяет действия человека (RPA)</p>
                 </div>
                 <div class="flex-1 w-full bg-grayBase rounded-t-xl md:rounded-t-2xl p-3 md:p-4 lg:p-6 flex flex-col justify-start text-center h-full md:h-[82%]">
                     <span class="text-black/60 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 3</span>
                     <h3 class="font-bold text-black text-[11px] md:text-sm lg:text-base mt-1 md:mt-2 leading-tight">Автома&shy;тизация процесса</h3>
-                    <p class="text-[8px] md:text-xs text-black/70 mt-2 hidden md:block">BPM-системы и API-интеграции</p>
+                    <p class="text-[8px] md:text-xs text-black/70 mt-1 md:mt-2">BPM-системы и API-интеграции</p>
                 </div>
                 <div class="flex-1 w-full bg-black rounded-t-xl md:rounded-t-2xl p-3 md:p-4 lg:p-6 flex flex-col justify-start text-center h-full md:h-[100%] shadow-xl transform md:scale-105 z-10 relative">
                     <span class="text-solar font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 4</span>
                     <h3 class="font-black text-white text-[12px] md:text-xs lg:text-lg mt-1 md:mt-2 text-solar leading-tight">Интеллек&shy;туальная автомати&shy;зация</h3>
-                    <p class="text-[9px] md:text-sm text-white/80 mt-2 hidden md:block">Агенты, понима&shy;ющие контекст и принима&shy;ющие решения</p>
+                    <p class="text-[9px] md:text-sm text-white/80 mt-1 md:mt-2">Агенты понимают контекст и принимают решения</p>
                 </div>
             </div>
         </div>
@@ -2470,7 +2487,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
 
             <div class="flex flex-col md:flex-row gap-3 md:gap-5 items-stretch justify-center w-full h-auto">
                 <div class="bg-white border border-grayBase rounded-[24px] md:rounded-3xl p-4 md:p-8 flex-1 shadow-sm flex flex-col justify-center text-center">
-                    <i class="ph-duotone ph-tornado text-3xl md:text-6xl text-red-400 mb-2 md:mb-4"></i>
+                    <i class="ph-duotone ph-tornado text-3xl md:text-6xl mb-2 md:mb-4" style="color:#F97316;-webkit-text-fill-color:#F97316"></i>
                     <h3 class="font-black text-sm md:text-xl text-black mb-2">Хаос без процесса</h3>
                     <p class="text-[10px] md:text-sm text-black/60 mb-3 md:mb-4">Если не понимать, как создаётся результат и где принимаются решения, внедрение ИИ превращается в хаотичную автоматизацию без эффекта</p>
                     <ul class="text-[10px] md:text-sm text-black/70 text-left space-y-1.5 md:space-y-2 mt-auto">
@@ -2515,7 +2532,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <div class="w-9 h-9 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-5 shadow-sm shrink-0"><i class="ph-fill ph-arrows-merge text-lg md:text-3xl text-black/60"></i></div>
                     <h3 class="font-black text-sm md:text-lg lg:text-3xl text-black mb-0.5 md:mb-2">CHANGE</h3>
                     <p class="text-[8px] md:text-[11px] font-bold text-black/40 uppercase tracking-widest mb-1 md:mb-4">Изме&shy;нения</p>
-                    <p class="text-[9px] md:text-xs lg:text-sm text-black/60">Оптими&shy;зация и развитие существу&shy;ющих процессов, проектная работа</p>
+                    <p class="text-[9px] md:text-xs lg:text-sm text-black/60">Оптими&shy;зация и развитие текущих процессов, проектная работа</p>
                 </div>
                 <!-- DISRUPT -->
                 <div class="bg-grayBase/30 border border-grayBase p-3 md:p-4 lg:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col text-center h-full w-full">
@@ -2595,7 +2612,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                         <h4 class="font-bold text-xs md:text-sm text-black">Привле&shy;чение</h4>
                     </div>
 
-                    <div class="bg-black border-2 border-solar p-2 md:p-3 lg:p-5 rounded-2xl text-center shadow-2xl w-full md:w-1/4 md:scale-110 relative text-white">
+                    <div class="bg-black border-2 border-solar p-2 md:p-3 lg:p-5 rounded-2xl text-center shadow-2xl w-full md:w-1/4 md:scale-110 relative text-white mt-3 md:mt-0">
                         <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-solar px-2 py-0.5 rounded text-[8px] font-bold uppercase whitespace-nowrap" style="color:#111;-webkit-text-fill-color:#111">Локальный процесс</div>
                         <span class="text-solar font-bold text-[10px] md:text-xs uppercase tracking-wider block mb-1">Шаг 2</span>
                         <h4 class="font-bold text-xs md:text-sm text-white">Обра&shy;ботка заказа</h4>
@@ -2692,25 +2709,25 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             <!-- Поток из пяти шагов: узкое место выделено и держит весь цикл -->
             <div class="relative w-full max-w-4xl mx-auto mt-1 md:mt-4">
                 <div class="hidden md:block absolute top-1/2 left-0 w-full h-2 bg-grayBase -translate-y-1/2 z-0 rounded-full"></div>
-                <div class="flex flex-row gap-1.5 md:gap-4 justify-between items-center w-full relative z-10">
-                    <div class="bg-white border border-grayBase p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-sm flex-1 min-w-0">
+                <div class="flex flex-col md:flex-row gap-1.5 md:gap-4 justify-between items-stretch md:items-center w-full relative z-10">
+                    <div class="bg-white border border-grayBase p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-sm md:flex-1 min-w-0 w-full">
                         <span class="text-[8px] md:text-[10px] font-bold text-black/40 uppercase tracking-wider block mb-0.5 md:mb-1">Шаг 1</span>
                         <p class="font-black text-[10px] md:text-lg text-black m-0 whitespace-nowrap">5 мин</p>
                     </div>
-                    <div class="bg-white border border-grayBase p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-sm flex-1 min-w-0">
+                    <div class="bg-white border border-grayBase p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-sm md:flex-1 min-w-0 w-full">
                         <span class="text-[8px] md:text-[10px] font-bold text-black/40 uppercase tracking-wider block mb-0.5 md:mb-1">Шаг 2</span>
                         <p class="font-black text-[10px] md:text-lg text-black m-0 whitespace-nowrap">5 мин</p>
                     </div>
-                    <div class="bg-white border border-grayBase p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-sm flex-1 min-w-0">
+                    <div class="bg-white border border-grayBase p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-sm md:flex-1 min-w-0 w-full">
                         <span class="text-[8px] md:text-[10px] font-bold text-black/40 uppercase tracking-wider block mb-0.5 md:mb-1">Шаг 3</span>
                         <p class="font-black text-[10px] md:text-lg text-black m-0 whitespace-nowrap">5 мин</p>
                     </div>
-                    <div class="bg-black border-2 border-solar p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-2xl flex-1 min-w-0 md:scale-110 relative text-white z-10">
+                    <div class="bg-black border-2 border-solar p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-2xl md:flex-1 min-w-0 w-full md:scale-110 relative text-white z-10 mt-3 md:mt-0">
                         <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-solar px-2 py-0.5 rounded text-[8px] font-bold uppercase whitespace-nowrap" style="color:#111;-webkit-text-fill-color:#111">Узкое место</div>
                         <span class="text-solar font-bold text-[8px] md:text-[10px] uppercase tracking-wider block mb-0.5 md:mb-1">Шаг 4</span>
                         <p class="font-black text-[10px] md:text-lg text-solar m-0 whitespace-nowrap">2 дня</p>
                     </div>
-                    <div class="bg-white border border-grayBase p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-sm flex-1 min-w-0">
+                    <div class="bg-white border border-grayBase p-2 md:p-4 rounded-xl md:rounded-2xl text-center shadow-sm md:flex-1 min-w-0 w-full">
                         <span class="text-[8px] md:text-[10px] font-bold text-black/40 uppercase tracking-wider block mb-0.5 md:mb-1">Шаг 5</span>
                         <p class="font-black text-[10px] md:text-lg text-black m-0 whitespace-nowrap">5 мин</p>
                     </div>
@@ -2881,39 +2898,65 @@ window.__FLOOR = {pc:51.06,mob:23.312};
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-22">
         <div class="content-z w-full max-w-4xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Точки решений и <span class="text-solar">скрытые правила</span></h2>
-            <p class="text-center text-black/60 mb-4 md:mb-8 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">В точках решений процесс выбирает маршрут. Правила выбора записаны не все — часть живёт только в голове эксперта</p>
-
-            <div class="flex flex-col md:flex-row gap-3 md:gap-5 items-stretch justify-center w-full">
-                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[24px] md:rounded-3xl shadow-sm flex-1 text-center flex flex-col">
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-grayBase rounded-full text-black flex items-center justify-center mx-auto mb-2 md:mb-4"><i class="ph-fill ph-list-checks text-2xl md:text-3xl"></i></div>
-                    <h3 class="font-black text-lg md:text-2xl mb-1 md:mb-2">Явные правила</h3>
-                    <p class="text-[11px] md:text-sm text-black/60 mb-2 md:mb-4">Записаны в регламенте или системе</p>
-                    <ul class="space-y-1.5 md:space-y-2 text-[10px] md:text-sm text-black/70 text-left mb-3 md:mb-4">
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-black/40 align-[-2px]"></i> Сумма</span> выше порога — доп. согласование</li>
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-black/40 align-[-2px]"></i> VIP-клиент</span> — персональный менеджер</li>
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-black/40 align-[-2px]"></i> Не</span> хватает данных — вернуть назад</li>
-                    </ul>
-                    <div class="bg-grayBase/30 px-3 py-2 rounded text-[10px] md:text-xs font-bold text-black/70 flex items-center justify-center gap-2 mt-auto"><i class="ph-fill ph-lightning text-solar text-sm md:text-base shrink-0"></i>Легко передать агенту</div>
+            <p class="text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">В точках решений процесс выбирает маршрут. Правила выбора записаны не все — часть живёт только в голове эксперта</p>
+            <!-- Развилка: кейс → точка решения → два маршрута. Ревью-луп №1:
+                 слайды 21/22/24 были одинаковой парой «тёмная vs фиолетовая
+                 карточка» — здесь схема с развилкой, ниже диалог эксперта. -->
+            <div class="w-full max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 mb-3 md:mb-5">
+                <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-3 py-2 md:px-5 md:py-3 text-center shadow-sm">
+                    <i class="ph-fill ph-file-text text-solar text-base md:text-2xl block mb-0.5"></i>
+                    <p class="text-[10px] md:text-sm font-bold m-0 whitespace-nowrap">Кейс в процессе</p>
                 </div>
-
-                <div class="bg-black border-2 border-solar p-4 md:p-6 rounded-[24px] md:rounded-3xl shadow-xl flex-1 text-center text-white relative md:scale-105 z-10 flex flex-col">
-                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-solar px-3 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold uppercase tracking-widest shadow-md whitespace-nowrap" style="color:#111;-webkit-text-fill-color:#111">Здесь спрятан интеллект</div>
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-full text-solar flex items-center justify-center mx-auto mb-2 md:mb-4 border-2 border-solar"><i class="ph-fill ph-detective text-2xl md:text-3xl"></i></div>
-                    <h3 class="font-black text-lg md:text-2xl mb-1 md:mb-2 text-solar">Скрытые правила</h3>
-                    <p class="text-[11px] md:text-sm text-white/70 mb-2 md:mb-4 font-medium">Живут в голове эксперта</p>
-                    <div class="bg-white/10 border border-white/20 p-2 md:p-4 rounded-lg md:rounded-xl w-full text-left mb-2 md:mb-3">
-                        <span class="text-white/60 font-bold text-[8px] md:text-xs uppercase flex items-center gap-1.5 mb-0.5 md:mb-1"><i class="ph-fill ph-question text-solar text-xs md:text-sm shrink-0"></i>Эксперт говорит</span>
-                        <p class="text-[10px] md:text-sm font-medium leading-tight">«Формально всё нормально, но кейс вызывает сомнение»</p>
+                <i class="ph-bold ph-arrow-right text-black/30 text-xl hidden md:block"></i>
+                <i class="ph-bold ph-arrow-down text-black/30 text-base md:hidden"></i>
+                <div class="flex flex-col items-center shrink-0">
+                    <div class="w-14 h-14 md:w-20 md:h-20 bg-black border-2 border-solar rounded-full shadow-xl flex items-center justify-center">
+                        <i class="ph-fill ph-signpost text-solar text-xl md:text-3xl"></i>
                     </div>
-                    <ul class="space-y-1.5 md:space-y-2 text-[10px] md:text-sm text-white/80 text-left mt-auto">
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-solar align-[-2px]"></i> Какой</span> сигнал он увидел?</li>
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-solar align-[-2px]"></i> С</span> чем сравнил?</li>
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-solar align-[-2px]"></i> Какой</span> опыт использовал?</li>
-                    </ul>
+                    <span class="mt-1 text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-solar whitespace-nowrap">Точка решения</span>
+                </div>
+                <i class="ph-bold ph-arrow-right text-black/30 text-xl hidden md:block"></i>
+                <i class="ph-bold ph-arrow-down text-black/30 text-base md:hidden"></i>
+                <div class="flex flex-row md:flex-col gap-1.5 md:gap-2">
+                    <div class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl px-2.5 py-1.5 md:px-4 md:py-2 flex items-center gap-1.5 md:gap-2">
+                        <i class="ph-bold ph-arrow-bend-up-right text-solar text-sm md:text-lg shrink-0"></i>
+                        <p class="text-[9px] md:text-xs font-bold m-0 whitespace-nowrap">Маршрут А · стандарт</p>
+                    </div>
+                    <div class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl px-2.5 py-1.5 md:px-4 md:py-2 flex items-center gap-1.5 md:gap-2">
+                        <i class="ph-bold ph-arrow-bend-down-right text-solar text-sm md:text-lg shrink-0"></i>
+                        <p class="text-[9px] md:text-xs font-bold m-0 whitespace-nowrap">Маршрут Б · проверка</p>
+                    </div>
                 </div>
             </div>
-
-            <div class="w-full mt-4 md:mt-6">
+            <!-- Явные правила: одна светлая полоса с чипами -->
+            <div class="w-full bg-white border border-grayBase rounded-[16px] md:rounded-[20px] p-2.5 md:p-4 mb-2 md:mb-3 flex flex-col md:flex-row items-center gap-1.5 md:gap-3 shadow-sm">
+                <span class="text-[9px] md:text-xs font-bold uppercase tracking-widest text-black/40 shrink-0 flex items-center gap-1.5"><i class="ph-fill ph-list-checks text-solar text-sm md:text-base"></i>Явные правила</span>
+                <div class="flex flex-wrap justify-center gap-1.5 md:gap-2">
+                    <span class="bg-grayBase/40 rounded-md px-2 py-1 text-[8px] md:text-[11px] font-bold text-black/75 whitespace-nowrap">Сумма выше порога → согласование</span>
+                    <span class="bg-grayBase/40 rounded-md px-2 py-1 text-[8px] md:text-[11px] font-bold text-black/75 whitespace-nowrap">VIP → персональный менеджер</span>
+                    <span class="bg-grayBase/40 rounded-md px-2 py-1 text-[8px] md:text-[11px] font-bold text-black/75 whitespace-nowrap">Нет данных → вернуть назад</span>
+                </div>
+                <span class="md:ml-auto bg-solar/20 border border-solar/40 rounded-md px-2 py-1 text-[8px] md:text-[10px] font-bold text-black uppercase tracking-wider whitespace-nowrap shrink-0"><i class="ph-fill ph-lightning text-solar mr-1"></i>Легко передать агенту</span>
+            </div>
+            <!-- Скрытые правила: тёмная полоса-диалог -->
+            <div class="w-full bg-black text-white border-2 border-solar rounded-[16px] md:rounded-[20px] p-3 md:p-5 relative flex flex-col md:flex-row gap-2.5 md:gap-5 items-center mt-3 md:mt-4">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-solar px-3 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold uppercase tracking-widest shadow-md whitespace-nowrap" style="color:#111;-webkit-text-fill-color:#111">Здесь спрятан интеллект</div>
+                <div class="flex-1 bg-white/10 border border-white/20 rounded-xl p-2.5 md:p-4 text-left w-full">
+                    <span class="text-white/60 font-bold text-[8px] md:text-xs uppercase flex items-center gap-1.5 mb-0.5 md:mb-1"><i class="ph-fill ph-question text-solar text-xs md:text-sm shrink-0"></i>Эксперт говорит</span>
+                    <p class="text-[10px] md:text-sm font-medium leading-tight m-0">«Формально всё нормально, но кейс вызывает сомнение»</p>
+                </div>
+                <i class="ph-bold ph-arrow-right text-solar text-xl hidden md:block shrink-0"></i>
+                <i class="ph-bold ph-arrow-down text-solar text-base md:hidden"></i>
+                <div class="flex-1 w-full text-left">
+                    <span class="text-white/60 font-bold text-[8px] md:text-xs uppercase block mb-1 md:mb-1.5">Что спросить, чтобы правило всплыло</span>
+                    <div class="flex flex-col gap-1 md:gap-1.5">
+                        <span class="bg-white/10 border border-white/20 rounded-md px-2 py-1 text-[9px] md:text-xs font-bold"><i class="ph-bold ph-check text-solar mr-1"></i>Какой сигнал он увидел?</span>
+                        <span class="bg-white/10 border border-white/20 rounded-md px-2 py-1 text-[9px] md:text-xs font-bold"><i class="ph-bold ph-check text-solar mr-1"></i>С чем сравнил?</span>
+                        <span class="bg-white/10 border border-white/20 rounded-md px-2 py-1 text-[9px] md:text-xs font-bold"><i class="ph-bold ph-check text-solar mr-1"></i>Какой опыт использовал?</span>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full mt-3 md:mt-5">
                 <div class="w-full bg-grayBase/30 border border-grayBase rounded-2xl p-3 md:p-5">
                     <p class="text-[10px] md:text-base text-black/70 font-medium m-0 flex items-start gap-2"><i class="ph-fill ph-warning text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span>Если скрытую логику не выявить и не формализовать, агент повторит <b>форму</b> работы, но потеряет её <b>интеллект</b></span></p>
                 </div>
@@ -2929,23 +2972,23 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             <div class="flex flex-col gap-6 w-full max-w-4xl mx-auto">
                 <div class="bg-white border border-grayBase p-5 md:p-8 rounded-[20px] shadow-sm flex items-center gap-4 md:gap-8">
                     <div class="w-20 md:w-28 shrink-0 text-center">
-                        <span class="text-[9px] md:text-xs font-bold uppercase tracking-tight md:tracking-wider text-black/40 block mb-1">Ожидание</span>
+                        <span class="text-[9px] md:text-xs font-bold uppercase tracking-tight md:tracking-wider text-black/40 block mb-1 whitespace-nowrap">Ожидание</span>
                         <i class="ph-fill ph-ruler text-2xl md:text-4xl text-black"></i>
                     </div>
-                    <div class="flex-1 flex items-center justify-center gap-2 text-black/40 text-xl md:text-4xl">
-                        <i class="ph-fill ph-circle text-black"></i><i class="ph-bold ph-arrow-right"></i>
-                        <i class="ph-fill ph-circle text-black"></i><i class="ph-bold ph-arrow-right"></i>
-                        <i class="ph-fill ph-circle text-black"></i>
+                    <div class="flex-1 flex items-center justify-center gap-2 md:gap-3 text-black/40 text-xl md:text-4xl">
+                        <div class="flex flex-col items-center gap-0.5"><i class="ph-fill ph-circle text-black"></i><span class="text-[7px] md:text-[10px] font-bold uppercase tracking-wider text-black/40">Шаг 1</span></div><i class="ph-bold ph-arrow-right"></i>
+                        <div class="flex flex-col items-center gap-0.5"><i class="ph-fill ph-circle text-black"></i><span class="text-[7px] md:text-[10px] font-bold uppercase tracking-wider text-black/40">Шаг 2</span></div><i class="ph-bold ph-arrow-right"></i>
+                        <div class="flex flex-col items-center gap-0.5"><i class="ph-fill ph-circle text-black"></i><span class="text-[7px] md:text-[10px] font-bold uppercase tracking-wider text-black/40">Шаг 3</span></div>
                     </div>
                 </div>
 
                 <div class="bg-black border-2 border-solar p-5 md:p-8 rounded-[20px] shadow-xl flex items-center gap-4 md:gap-8 text-white relative">
                     <div class="absolute top-2 right-4 text-[8px] md:text-[10px] text-solar font-bold uppercase tracking-widest">Анализ логов</div>
                     <div class="w-20 md:w-28 shrink-0 text-center">
-                        <span class="text-[9px] md:text-xs font-bold uppercase tracking-tight md:tracking-wider text-solar/60 block mb-1">Реальность</span>
+                        <span class="text-[9px] md:text-xs font-bold uppercase tracking-tight md:tracking-wider text-solar/60 block mb-1 whitespace-nowrap">Реальность</span>
                         <i class="ph-fill ph-chart-line-up text-2xl md:text-4xl text-solar"></i>
                     </div>
-                    <div class="flex-1 relative h-14 md:h-24 flex items-center justify-center">
+                    <div class="flex-1 relative h-20 md:h-24 flex items-center justify-center">
                         <!-- Запутанный фактический маршрут (восстановлен по логам). meet => кружки круглые, ничего не растягивается -->
                         <svg class="w-full h-full" viewBox="0 0 600 90" preserveAspectRatio="xMidYMid meet">
                             <!-- ожидаемый прямой маршрут (фон) -->
@@ -2986,33 +3029,48 @@ window.__FLOOR = {pc:51.06,mob:23.312};
         <div class="content-z w-full max-w-4xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Discovery и <span class="text-solar">Conformance Checking</span></h2>
             <p class="text-center text-black/60 mb-4 md:mb-8 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Два режима Process Mining: сначала увидеть процесс таким, какой он есть, потом сравнить его с регламентом</p>
-
-            <div class="flex flex-col md:flex-row gap-3 md:gap-5 items-stretch justify-center w-full">
-                <div class="bg-white border border-grayBase p-4 md:p-6 rounded-[24px] md:rounded-3xl shadow-sm flex-1 text-center flex flex-col">
-                    <div class="bg-grayBase text-black px-2 md:px-3 py-0.5 md:py-1 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-wider mb-2 md:mb-4 mx-auto">Режим 1</div>
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-grayBase rounded-full text-black flex items-center justify-center mx-auto mb-2 md:mb-4"><i class="ph-fill ph-magnifying-glass text-2xl md:text-3xl"></i></div>
-                    <h3 class="font-black text-lg md:text-2xl mb-1 md:mb-2">Discovery</h3>
-                    <p class="text-[11px] md:text-sm text-black/60 mb-2 md:mb-4">Восстанавливает фактический процесс из журнала событий</p>
-                    <ul class="space-y-1.5 md:space-y-2 text-[10px] md:text-sm text-black/70 text-left mt-auto">
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-black/40 align-[-2px]"></i> Схему</span> заранее не задаём</li>
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-black/40 align-[-2px]"></i> Видны</span> реальные маршруты кейсов</li>
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-black/40 align-[-2px]"></i> Вместо</span> одной схемы — десятки вариантов</li>
-                    </ul>
+            <!-- Схема-развилка «журнал → два режима»: ревью-луп №1 просил уйти
+                 от четвёртой подряд пары «тёмная vs фиолетовая карточка». -->
+            <div class="w-full flex flex-col md:flex-row items-stretch gap-2 md:gap-0">
+                <div class="md:w-[30%] bg-white border border-grayBase rounded-[20px] p-3 md:p-5 text-center shadow-sm flex md:flex-col items-center justify-center gap-2.5 md:gap-2 md:self-center">
+                    <i class="ph-fill ph-hard-drives text-2xl md:text-4xl text-solar shrink-0"></i>
+                    <div>
+                        <h4 class="font-black text-[11px] md:text-base m-0">Журнал событий</h4>
+                        <p class="text-[9px] md:text-xs text-black/55 m-0 mt-0.5">логи CRM, ERP и тикетов</p>
+                    </div>
                 </div>
-
-                <div class="bg-black border-2 border-solar p-4 md:p-6 rounded-[24px] md:rounded-3xl shadow-xl flex-1 text-center text-white relative md:scale-105 z-10 flex flex-col">
-                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-solar px-3 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold uppercase tracking-widest shadow-md whitespace-nowrap" style="color:#111;-webkit-text-fill-color:#111">Режим 2</div>
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-full text-solar flex items-center justify-center mx-auto mb-2 md:mb-4 mt-1 md:mt-2 border-2 border-solar"><i class="ph-fill ph-scales text-2xl md:text-3xl"></i></div>
-                    <h3 class="font-black text-lg md:text-2xl mb-1 md:mb-2 text-solar">Conformance Checking</h3>
-                    <p class="text-[11px] md:text-sm text-white/70 mb-2 md:mb-4 font-medium">Сверяет факт с регламентом и показывает отклонения</p>
-                    <ul class="space-y-1.5 md:space-y-2 text-[10px] md:text-sm text-white/80 text-left mt-auto">
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-solar align-[-2px]"></i> Пропущенные</span> шаги</li>
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-solar align-[-2px]"></i> Обходные</span> маршруты и возвраты</li>
-                        <li><span class="whitespace-nowrap"><i class="ph-bold ph-check text-solar align-[-2px]"></i> Регламент,</span> не совпадающий с жизнью</li>
-                    </ul>
+                <div class="hidden md:flex flex-col justify-center px-3 lg:px-5 gap-12 text-solar">
+                    <i class="ph-bold ph-arrow-bend-up-right text-2xl"></i>
+                    <i class="ph-bold ph-arrow-bend-down-right text-2xl"></i>
+                </div>
+                <i class="ph-bold ph-arrow-down text-solar text-base mx-auto md:hidden"></i>
+                <div class="flex-1 flex flex-col gap-2 md:gap-3 md:justify-center">
+                    <div class="bg-white border border-grayBase rounded-[20px] p-3 md:p-4 flex items-start gap-2.5 md:gap-4 shadow-sm text-left">
+                        <div class="w-9 h-9 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center shrink-0"><i class="ph-fill ph-magnifying-glass text-base md:text-xl text-black"></i></div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5"><h4 class="font-black text-[12px] md:text-lg m-0">Discovery</h4><span class="bg-grayBase text-black px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase tracking-wider whitespace-nowrap">Режим 1</span></div>
+                            <p class="text-[9px] md:text-xs text-black/60 m-0 mb-1 md:mb-1.5">Восстанавливает фактический процесс из журнала событий</p>
+                            <div class="flex flex-wrap gap-1 md:gap-1.5">
+                                <span class="bg-grayBase/40 rounded px-1.5 py-0.5 text-[8px] md:text-[10px] font-bold text-black/70 whitespace-nowrap">Схему заранее не задаём</span>
+                                <span class="bg-grayBase/40 rounded px-1.5 py-0.5 text-[8px] md:text-[10px] font-bold text-black/70 whitespace-nowrap">Видны реальные маршруты</span>
+                                <span class="bg-grayBase/40 rounded px-1.5 py-0.5 text-[8px] md:text-[10px] font-bold text-black/70 whitespace-nowrap">Десятки вариантов, не один</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-black text-white border-2 border-solar rounded-[20px] p-3 md:p-4 flex items-start gap-2.5 md:gap-4 shadow-xl text-left">
+                        <div class="w-9 h-9 md:w-12 md:h-12 bg-white/10 border-2 border-solar rounded-full flex items-center justify-center shrink-0"><i class="ph-fill ph-scales text-base md:text-xl text-solar"></i></div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5"><h4 class="font-black text-[12px] md:text-lg m-0 text-solar">Conformance Checking</h4><span class="bg-solar px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase tracking-wider whitespace-nowrap" style="color:#111;-webkit-text-fill-color:#111">Режим 2</span></div>
+                            <p class="text-[9px] md:text-xs text-white/70 m-0 mb-1 md:mb-1.5">Сверяет факт с регламентом и показывает отклонения</p>
+                            <div class="flex flex-wrap gap-1 md:gap-1.5">
+                                <span class="bg-white/10 border border-white/20 rounded px-1.5 py-0.5 text-[8px] md:text-[10px] font-bold whitespace-nowrap">Пропущенные шаги</span>
+                                <span class="bg-white/10 border border-white/20 rounded px-1.5 py-0.5 text-[8px] md:text-[10px] font-bold whitespace-nowrap">Обходные маршруты</span>
+                                <span class="bg-white/10 border border-white/20 rounded px-1.5 py-0.5 text-[8px] md:text-[10px] font-bold whitespace-nowrap">Регламент ≠ жизнь</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
             <div class="w-full mt-4 md:mt-8">
                 <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center">
                     <p class="text-[11px] md:text-xl text-black font-medium leading-snug">Автоматизируете идеализированный процесс — <strong>все исключения всплывут уже после запуска</strong></p>
@@ -3057,7 +3115,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">AS-IS: <span class="text-solar">честная модель</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">AS-IS — это модель того, как процесс реально работает сейчас. Не в идеале, не по регламенту, а в жизни</p>
 
-            <div class="bg-white border border-grayBase p-6 md:p-10 rounded-[24px] md:rounded-[40px] shadow-sm w-full relative overflow-hidden flex flex-col items-center">
+            <div class="bg-white border border-grayBase px-6 md:px-10 pt-10 pb-12 lg:pt-12 lg:pb-14 rounded-[24px] md:rounded-[40px] shadow-sm w-full relative overflow-hidden flex flex-col items-center">
                 <!-- Абстрактная схема процесса.
                      Крупные размеры включаются с lg, а не с md: на 768 портальный
                      zoom (~1.49) сжимает CSS-ширину колонки до ~450px, и цепочка
@@ -3073,12 +3131,12 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                          в проверку вылезшего текста. Вид не меняется. -->
                     <div class="relative flex items-center">
                         <div class="bg-red-100 border-2 border-red-400 w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-red-500 font-bold lg:text-xl">3</div>
-                        <span class="absolute -top-6 -right-6 lg:-top-8 lg:-right-10 bg-red-500 text-white text-[8px] lg:text-[10px] px-2 py-1 rounded">Задержка</span>
+                        <span class="absolute -top-6 -right-4 lg:-top-8 lg:-right-8 bg-red-500 text-white text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap js-hang-badge">Задержка</span>
                     </div>
                     <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
                     <div class="relative flex items-center">
                         <div class="bg-black text-solar w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl">4</div>
-                        <span class="absolute left-1/2 -translate-x-1/2 -bottom-6 lg:-bottom-9 bg-black text-solar text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap">Возврат</span>
+                        <span class="absolute left-1/2 -translate-x-1/2 -bottom-6 lg:-bottom-9 bg-black text-solar text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap js-hang-badge">Возврат</span>
                     </div>
                 </div>
 
@@ -3143,7 +3201,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Почему нельзя рисовать <span class="text-solar">только идеальный путь</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-10 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Исключения, возвраты и эскалации часто создают основные задержки, ошибки и скрытые затраты</p>
 
-            <div class="bg-white border border-grayBase p-6 md:p-10 rounded-[24px] md:rounded-[40px] shadow-sm flex items-center justify-center relative w-full h-48 md:h-[300px]">
+            <div class="bg-white border border-grayBase p-6 md:p-10 rounded-[24px] md:rounded-[40px] shadow-sm flex items-center justify-center relative w-full h-56 md:h-[300px]">
                 <!-- SVG path representing main vs exceptions -->
                 <svg class="w-full max-w-2xl h-full text-black" viewBox="0 0 600 210" preserveAspectRatio="xMidYMid meet">
                     <!-- Happy Path -->
@@ -3211,17 +3269,17 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 md:gap-6 w-full">
                 <div class="bg-white border border-grayBase p-3 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
                     <i class="ph-fill ph-check-square-offset text-2xl md:text-5xl text-black mb-1.5 md:mb-4"></i>
-                    <h4 class="font-black text-sm md:text-xl mb-1 md:mb-2">Проверка полей</h4>
+                    <h4 class="font-black text-sm md:text-lg mb-1 md:mb-2 whitespace-nowrap">Проверка полей</h4>
                     <p class="text-[10px] md:text-xs text-black/60">Все ли данные заполнены в форме</p>
                 </div>
                 <div class="bg-white border border-grayBase p-3 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
                     <i class="ph-fill ph-arrows-left-right text-2xl md:text-5xl text-black mb-1.5 md:mb-4"></i>
-                    <h4 class="font-black text-sm md:text-xl mb-1 md:mb-2">Смена статуса</h4>
+                    <h4 class="font-black text-sm md:text-lg mb-1 md:mb-2 whitespace-nowrap">Смена статуса</h4>
                     <p class="text-[10px] md:text-xs text-black/60">Перевод лида на следующий этап при оплате</p>
                 </div>
                 <div class="bg-white border border-grayBase p-3 md:p-8 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
                     <i class="ph-fill ph-paper-plane-tilt text-2xl md:text-5xl text-black mb-1.5 md:mb-4"></i>
-                    <h4 class="font-black text-sm md:text-xl mb-1 md:mb-2">Отправка уведомлений</h4>
+                    <h4 class="font-black text-sm md:text-lg mb-1 md:mb-2 whitespace-nowrap">Отправка уведомлений</h4>
                     <p class="text-[10px] md:text-xs text-black/60">Авто-письмо по триггеру в CRM</p>
                 </div>
             </div>
@@ -3258,7 +3316,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                  узкая мера на телефоне держится только на вложенном элементе. Сужение
                  уводит плашку из-под кружка с головой — иначе «цена ошибки» пропадала. -->
             <div class="w-full mt-4 md:mt-6">
-                <div class="w-full max-w-[14rem] mr-auto md:max-w-none bg-grayBase/30 border border-grayBase rounded-2xl p-3 md:p-5">
+                <div class="w-full max-w-[16rem] mr-auto md:max-w-none bg-grayBase/30 border border-grayBase rounded-2xl p-3 md:p-5">
                     <p class="text-[10px] md:text-base text-black/70 font-medium m-0 flex items-start gap-2"><i class="ph-fill ph-shield-check text-solar text-base md:text-xl shrink-0 mt-0.5"></i><span>Вероятностная операция не обязана быть полностью автономной: степень самостоятельности агента задаёт <b>цена ошибки</b> — от «делает сам» до «готовит черновик, решает человек»</span></p>
                 </div>
             </div>
@@ -3316,19 +3374,19 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <tbody class="text-[10px] md:text-sm font-medium text-black/80">
                         <tr class="border-b border-grayBase ">
                             <td class="py-4 px-4 font-bold">Сортировка входящих заявок</td>
-                            <td class="py-4 px-4"><span class="bg-solar/30 text-black px-2 py-1 rounded text-[9px] uppercase tracking-widest">ИИ / Вероятн.</span></td>
+                            <td class="py-4 px-4"><span class="bg-solar/30 text-black px-2 py-1 rounded text-[9px] uppercase tracking-widest whitespace-nowrap">ИИ / Вероятн.</span></td>
                             <td class="py-4 px-4">-2 часа работы менеджера в день</td>
                             <td class="py-4 px-4">Средняя (нужна проработка промптов)</td>
                         </tr>
                         <tr class="border-b border-grayBase ">
                             <td class="py-4 px-4 font-bold">Проверка наличия ИНН</td>
-                            <td class="py-4 px-4"><span class="bg-grayBase text-black px-2 py-1 rounded text-[9px] uppercase tracking-widest">ИТ / Детерм.</span></td>
+                            <td class="py-4 px-4"><span class="bg-grayBase text-black px-2 py-1 rounded text-[9px] uppercase tracking-widest whitespace-nowrap">ИТ / Детерм.</span></td>
                             <td class="py-4 px-4">Исключение пустых заявок в CRM</td>
                             <td class="py-4 px-4">Низкая (скрипт)</td>
                         </tr>
                         <tr class="">
                             <td class="py-4 px-4 font-bold">Составление черновика ответа</td>
-                            <td class="py-4 px-4"><span class="bg-solar text-black font-bold px-2 py-1 rounded text-[9px] uppercase tracking-widest">ИИ-агент</span></td>
+                            <td class="py-4 px-4"><span class="bg-solar text-black font-bold px-2 py-1 rounded text-[9px] uppercase tracking-widest whitespace-nowrap">ИИ-агент</span></td>
                             <td class="py-4 px-4">Ускорение ответа клиенту в 3 раза</td>
                             <td class="py-4 px-4">Высокая (доступ к базе знаний)</td>
                         </tr>
@@ -3380,7 +3438,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
 
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-34">
         <div class="content-z max-w-5xl w-full mx-auto">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Матрица <span class="text-solar">«Ценность — Сложность»</span></h2>
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-6 md:mb-12 text-center text-black">Матрица <span class="text-solar">«Ценность — Сложность»</span></h2>
             <p class="text-center text-black/60 mb-6 md:mb-8 text-[10px] md:text-lg font-medium">Для приоритизации: что брать в работу в первую очередь</p>
 
             <div class="relative w-full max-w-2xl mx-auto shrink-0 h-[330px] sm:h-[380px] md:h-auto md:aspect-video bg-white border-2 border-grayBase rounded-[20px] p-2 md:p-8 flex items-center justify-center">
@@ -3401,7 +3459,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     </div>
                     <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl flex items-center justify-center text-center p-2 min-w-0">
                         <div class="w-full">
-                            <i class="ph-fill ph-strategy text-solar text-base md:text-2xl mb-1 block"></i>
+                            <i class="ph-fill ph-mountains text-solar text-base md:text-2xl mb-1 block"></i>
                             <h4 class="font-bold text-[11px] md:text-lg text-black leading-tight">Стратегические</h4>
                             <p class="text-[8px] md:text-xs text-black/60 leading-tight">Высокая ценность, Высокая сложность</p>
                         </div>
@@ -3611,12 +3669,15 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <p class="text-[10px] md:text-sm text-black/60">Удерживает ответственность, эмпатию и решает сложные нестандартные кейсы</p>
                 </div>
             </div>
+            <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-10">
+                <p class="text-[11px] md:text-xl text-black font-medium leading-snug">Сила гибридной модели — в <strong>разделении труда</strong>: агент даёт скорость и масштаб, человек — смысл, контекст и ответственность</p>
+            </div>
         </div>
     </div>
 
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-41">
-        <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-12 text-center text-black">Новая роль <span class="text-solar">человека в процессе</span></h2>
+        <div class="content-z max-w-4xl w-full">
+        <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-12 text-center text-black">Новая роль <span class="text-solar">человека в процессе</span></h2>
             <p class="text-center text-black/60 mb-4 md:mb-16 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">С появлением автоматизации человек перестаёт быть главным исполнителем каждой операции</p>
 
             <div class="flex flex-col items-center justify-center w-full">
@@ -3627,7 +3688,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
 
                 <i class="ph-bold ph-arrow-down text-xl md:text-3xl text-black/30 mb-2 md:mb-10"></i>
 
-                <div class="grid grid-cols-3 gap-2 md:gap-6 w-full max-w-4xl">
+                <div class="grid grid-cols-3 gap-2 md:gap-5 w-full max-w-3xl">
                     <div class="bg-black text-white p-2 md:p-8 rounded-[14px] md:rounded-3xl shadow-xl flex flex-col items-center text-center border-t-4 border-solar">
                         <i class="ph-fill ph-eyeglasses text-xl md:text-4xl text-solar mb-1 md:mb-3"></i>
                         <h4 class="font-bold text-[11px] md:text-xl text-solar mb-1 md:mb-2">Супервайзер</h4>
@@ -3719,7 +3780,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <span class="whitespace-nowrap"><i class="ph-fill ph-clock text-solar mr-1"></i>Время цикла</span>
                     <span class="whitespace-nowrap"><i class="ph-fill ph-currency-dollar text-solar mr-1"></i>Стоимость кейса</span>
                     <span class="whitespace-nowrap"><i class="ph-fill ph-star text-solar mr-1"></i>Качество</span>
-                    <span class="text-white/60 whitespace-nowrap">— до и после</span>
+                    <span class="text-white/60 whitespace-nowrap"><i class="ph-fill ph-arrows-left-right text-solar mr-1"></i>до и после</span>
                 </div>
             </div>
 
@@ -3740,22 +3801,22 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                 <div class="flex-1 w-full bg-grayBase/30 rounded-t-xl md:rounded-t-2xl p-3 md:p-4 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[46%]">
                     <span class="text-black/40 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 1</span>
                     <h3 class="font-bold text-black text-[11px] md:text-base mt-1 md:mt-2 leading-tight">Советник</h3>
-                    <p class="text-[8px] md:text-xs text-black/50 mt-1 md:mt-2 hidden md:block">ИИ рекомендует, решает человек</p>
+                    <p class="text-[8px] md:text-xs text-black/50 mt-1 md:mt-2">ИИ рекомендует, решает человек</p>
                 </div>
                 <div class="flex-1 w-full bg-grayBase/60 rounded-t-xl md:rounded-t-2xl p-3 md:p-4 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[64%]">
                     <span class="text-black/50 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 2</span>
                     <h3 class="font-bold text-black text-[11px] md:text-base mt-1 md:mt-2 leading-tight">Черновик</h3>
-                    <p class="text-[8px] md:text-xs text-black/60 mt-1 md:mt-2 hidden md:block">Агент готовит, человек подтверждает</p>
+                    <p class="text-[8px] md:text-xs text-black/60 mt-1 md:mt-2">Агент готовит, человек подтверждает</p>
                 </div>
                 <div class="flex-1 w-full bg-grayBase rounded-t-xl md:rounded-t-2xl p-3 md:p-4 flex flex-col justify-start text-center h-full md:h-[82%]">
                     <span class="text-black/60 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 3</span>
                     <h3 class="font-bold text-black text-[11px] md:text-base mt-1 md:mt-2 leading-tight">Автономия с надзором</h3>
-                    <p class="text-[8px] md:text-xs text-black/70 mt-1 md:mt-2 hidden md:block">Человек разбирает исключения</p>
+                    <p class="text-[8px] md:text-xs text-black/70 mt-1 md:mt-2">Человек разбирает исключения</p>
                 </div>
                 <div class="flex-1 w-full bg-black rounded-t-xl md:rounded-t-2xl p-3 md:p-4 flex flex-col justify-start text-center h-full md:h-[100%] shadow-xl z-10 relative">
                     <span class="text-solar font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Ур 4</span>
                     <h3 class="font-black text-solar text-[12px] md:text-lg mt-1 md:mt-2 leading-tight">Полная автономия</h3>
-                    <p class="text-[9px] md:text-sm text-white/80 mt-1 md:mt-2 hidden md:block">Человек следит только за метриками</p>
+                    <p class="text-[9px] md:text-sm text-white/80 mt-1 md:mt-2">Человек следит только за метриками</p>
                 </div>
             </div>
 
@@ -3789,30 +3850,30 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:13%">
                     <span class="rf-num text-black">01</span>
                     <i class="ph-fill ph-sign-in text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Вход<span class="hidden md:inline font-medium text-[11px] leading-tight text-black/55"><br>текст, лог, событие</span></span>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Вход<span class="font-medium text-[8px] md:text-[11px] leading-tight text-black/55"><br>текст, лог, событие</span></span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:87%;--y:50%">
                     <span class="rf-num text-black">02</span>
                     <i class="ph-fill ph-brain text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Логика<span class="hidden md:inline font-medium text-[11px] leading-tight text-black/55"><br>правила и критерии</span></span>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Логика<span class="font-medium text-[8px] md:text-[11px] leading-tight text-black/55"><br>правила и критерии</span></span>
                 </div>
                 <div class="radial-sat bg-white border-2 border-grayBase" style="--x:50%;--y:87%">
                     <span class="rf-num text-black">03</span>
                     <i class="ph-fill ph-sign-out text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Выход<span class="hidden md:inline font-medium text-[11px] leading-tight text-black/55"><br>решение, черновик</span></span>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-black mt-1">Выход<span class="font-medium text-[8px] md:text-[11px] leading-tight text-black/55"><br>решение, черновик</span></span>
                 </div>
                 <div class="radial-sat bg-black border-2 border-solar" style="--x:13%;--y:50%">
                     <span class="rf-num text-white">04</span>
                     <i class="ph-fill ph-chart-line-up text-lg md:text-2xl text-solar"></i>
-                    <span class="rf-label font-black text-[10px] md:text-sm text-solar mt-1">Метрика<span class="hidden md:inline font-medium text-[11px] leading-tight text-black/55"><br>качество работы</span></span>
+                    <span class="rf-label font-black text-[10px] md:text-sm text-solar mt-1">Метрика<span class="font-medium text-[8px] md:text-[11px] leading-tight text-black/55"><br>качество работы</span></span>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-46">
-        <div class="content-z max-w-6xl w-full">
-            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-12 text-center text-black">Граф навыков <span class="text-solar">ИИ-агента</span></h2>
+        <div class="content-z max-w-5xl w-full">
+        <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-12 text-center text-black">Граф навыков <span class="text-solar">ИИ-агента</span></h2>
             <p class="text-center text-black/60 mb-3 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Отдельные функции собираются в граф: каждый навык атомарен, измерим и связан с другими через последовательность, параллельность, условия или обратную связь</p>
 
             <div class="bg-black border-2 border-solar p-3 md:p-5 lg:p-10 rounded-[20px] md:rounded-[40px] shadow-2xl text-white w-full relative">
@@ -3864,23 +3925,23 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <i class="ph-bold ph-caret-right text-solar text-xl shrink-0"></i>
                     <div class="bg-white/10 border border-white/20 p-2 lg:p-4 rounded-xl text-center flex-1">
                         <i class="ph-fill ph-paper-plane-tilt text-3xl mb-2 text-white/70 block"></i>
-                        <p class="text-[11px] lg:text-xs font-bold leading-tight">Черно&shy;вик</p>
+                        <p class="text-[11px] lg:text-xs font-bold leading-tight">Черновик ответа</p>
                     </div>
                 </div>
 
                 <!-- Типы связей -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1.5 md:gap-4 pt-2.5 md:pt-6 border-t border-white/10">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1.5 md:gap-4 pt-2.5 md:pt-6 border-t border-white/10 pr-16 md:pr-0">
                     <div class="flex items-center gap-2 md:gap-3 text-left">
                         <i class="ph-bold ph-arrows-horizontal text-solar text-base md:text-2xl shrink-0"></i>
                         <div class="min-w-0">
-                            <p class="font-bold text-[10px] md:text-sm text-solar">Последовательность</p>
+                            <p class="font-bold text-[10px] md:text-sm text-solar whitespace-nowrap">Последовательность</p>
                             <p class="text-[8px] md:text-xs text-white/60">Выход одного → вход другого</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 md:gap-3 text-left">
                         <i class="ph-bold ph-split-horizontal text-solar text-base md:text-2xl shrink-0"></i>
                         <div class="min-w-0">
-                            <p class="font-bold text-[10px] md:text-sm text-solar">Параллельность</p>
+                            <p class="font-bold text-[10px] md:text-sm text-solar whitespace-nowrap">Параллельность</p>
                             <p class="text-[8px] md:text-xs text-white/60">Несколько навыков одновременно</p>
                         </div>
                     </div>
@@ -4033,7 +4094,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                 </div>
             </div>
 
-            <p class="text-center mt-3 md:mt-6 text-black/50 text-[9px] md:text-sm font-medium">Комплект делает проект прозрачным: бизнес знает, что получит, команда — что строит, руководитель — как измерять эффект</p>
+            <div class="w-full mt-3 md:mt-6"><div class="bg-grayBase/30 border border-grayBase rounded-2xl p-2.5 md:p-4 max-w-3xl mx-auto"><p class="text-center text-black/70 text-[10px] md:text-sm font-medium m-0"><i class="ph-fill ph-files text-solar text-sm md:text-base align-[-2px] mr-1.5"></i>Комплект делает проект прозрачным: <b>бизнес</b> знает, что получит, <b>команда</b> — что строит, <b>руководитель</b> — как измерять эффект</p></div></div>
         </div>
     </div>
 
@@ -4086,28 +4147,28 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             <p class="text-center text-black/60 mb-4 md:mb-12 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Большинство проектов проваливается не из-за слабой модели, а из-за организационной незрелости</p>
 
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 w-full">
-                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
-                    <i class="ph-fill ph-database text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                <div class="bg-white border-l-4 border-[#F97316] border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-database text-xl md:text-3xl mb-1 md:mb-2" style="color:#F97316;-webkit-text-fill-color:#F97316"></i>
                     <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Плохие данные</h4>
                     <p class="text-[8px] md:text-xs text-black/60 leading-tight">Грязные, неполные, недоступные</p>
                 </div>
-                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
-                    <i class="ph-fill ph-waveform text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                <div class="bg-white border-l-4 border-[#F97316] border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-waveform text-xl md:text-3xl mb-1 md:mb-2" style="color:#F97316;-webkit-text-fill-color:#F97316"></i>
                     <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Нестабильный процесс</h4>
                     <p class="text-[8px] md:text-xs text-black/60 leading-tight">Автоматизация хаоса усиливает хаос</p>
                 </div>
-                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
-                    <i class="ph-fill ph-plug text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                <div class="bg-white border-l-4 border-[#F97316] border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-plug text-xl md:text-3xl mb-1 md:mb-2" style="color:#F97316;-webkit-text-fill-color:#F97316"></i>
                     <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Устаревшие системы</h4>
                     <p class="text-[8px] md:text-xs text-black/60 leading-tight">Нет API и возможностей интеграции</p>
                 </div>
-                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
-                    <i class="ph-fill ph-shield-warning text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                <div class="bg-white border-l-4 border-[#F97316] border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
+                    <i class="ph-fill ph-shield-warning text-xl md:text-3xl mb-1 md:mb-2" style="color:#F97316;-webkit-text-fill-color:#F97316"></i>
                     <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Слабое управление</h4>
                     <p class="text-[8px] md:text-xs text-black/60 leading-tight">Нет правил управления, ролей и прав доступа</p>
                 </div>
-                <div class="bg-white border-l-4 border-red-400 border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center col-span-2 md:col-span-1">
-                    <i class="ph-fill ph-users-three text-xl md:text-3xl text-red-400 mb-1 md:mb-2"></i>
+                <div class="bg-white border-l-4 border-[#F97316] border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center col-span-2 md:col-span-1">
+                    <i class="ph-fill ph-users-three text-xl md:text-3xl mb-1 md:mb-2" style="color:#F97316;-webkit-text-fill-color:#F97316"></i>
                     <h4 class="font-black text-[10px] md:text-sm mb-0.5 md:mb-1">Неготовность людей</h4>
                     <p class="text-[8px] md:text-xs text-black/60 leading-tight">Сопротивление и недоверие к агентам</p>
                 </div>
@@ -4123,13 +4184,13 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                 </h2>
                 <p class="text-white/60 font-medium text-[11px] md:text-lg mb-6 md:mb-8">Автоматизация начинается не с инструмента, а с честной картины того, как работа устроена сейчас</p>
 
-                <div class="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 mb-10 w-full mx-auto">
+                <div class="flex flex-col md:flex-row items-stretch justify-center gap-2 md:gap-3 mb-10 w-full mx-auto">
                     <div class="bg-white/10 p-3 md:p-4 rounded-xl flex-1 w-full border border-white/20 flex flex-col items-center justify-center gap-1"><i class="ph-fill ph-magnifying-glass text-solar text-base md:text-2xl shrink-0"></i><span class="text-[10px] md:text-sm font-bold">1. Понять <span class="whitespace-nowrap">AS-IS</span></span><span class="hidden md:block text-xs text-white/50">как есть на самом деле</span></div>
-                    <i class="ph-bold ph-arrow-right text-solar hidden md:block"></i><i class="ph-bold ph-arrow-down text-solar md:hidden"></i>
+                    <i class="ph-bold ph-arrow-right text-solar hidden md:block self-center"></i><i class="ph-bold ph-arrow-down text-solar md:hidden self-center"></i>
                     <div class="bg-white/10 p-3 md:p-4 rounded-xl flex-1 w-full border border-white/20 flex flex-col items-center justify-center gap-1"><i class="ph-fill ph-target text-solar text-base md:text-2xl shrink-0"></i><span class="text-[10px] md:text-sm font-bold">2. Найти точки ИИ</span><span class="hidden md:block text-xs text-white/50">реестр с эффектом и риском</span></div>
-                    <i class="ph-bold ph-arrow-right text-solar hidden md:block"></i><i class="ph-bold ph-arrow-down text-solar md:hidden"></i>
+                    <i class="ph-bold ph-arrow-right text-solar hidden md:block self-center"></i><i class="ph-bold ph-arrow-down text-solar md:hidden self-center"></i>
                     <div class="bg-white/10 p-3 md:p-4 rounded-xl flex-1 w-full border border-white/20 flex flex-col items-center justify-center gap-1"><i class="ph-fill ph-compass-tool text-solar text-base md:text-2xl shrink-0"></i><span class="text-[10px] md:text-sm font-bold">3. <span class="whitespace-nowrap">TO-BE</span> модель</span><span class="hidden md:block text-xs text-white/50">пересборка, а не вставка</span></div>
-                    <i class="ph-bold ph-arrow-right text-solar hidden md:block"></i><i class="ph-bold ph-arrow-down text-solar md:hidden"></i>
+                    <i class="ph-bold ph-arrow-right text-solar hidden md:block self-center"></i><i class="ph-bold ph-arrow-down text-solar md:hidden self-center"></i>
                     <div class="bg-solar p-3 md:p-4 rounded-xl flex-1 w-full shadow-[0_0_15px_#8B5CF6] flex flex-col items-center justify-center gap-1" style="color:#111;-webkit-text-fill-color:#111"><i class="ph-fill ph-robot text-base md:text-2xl shrink-0"></i><span class="text-[10px] md:text-sm font-black uppercase tracking-widest">4. Гибридная система</span><span class="hidden md:block text-xs opacity-70">человек + агент</span></div>
                 </div>
 
