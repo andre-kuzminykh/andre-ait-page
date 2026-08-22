@@ -5236,14 +5236,17 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
   }
   body.notes-open #progress-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
 }
+/* При открытой панели «Текст» голова не закрывает текст (звук продолжает
+   идти). Раньше правило жило только в мобильном медиа-запросе, но на
+   десктопе слайд сдвигается вправо на половину ширины панели и заезжает
+   ПОД кружок — строки читались сквозь видео. Теперь правило общее. */
+body.notes-open #video-bubble{ opacity:0; pointer-events:none; }
 @media (prefers-reduced-motion: reduce){ .content-z{ transition:none; } }
 /* Мобилка: панель на весь экран поверх всего */
 @media (max-width:1023px){
   #notes-panel{ width:100%; border-right:none; }
   /* запас снизу, чтобы стрелки листания не закрывали последнюю строку */
   .notes-body{ padding-bottom:96px; }
-  /* при открытой панели голова не закрывает текст (звук продолжает идти) */
-  body.notes-open #video-bubble{ opacity:0; pointer-events:none; }
 }
 
 /* Теней нет нигде (требование заказчика): гасим и Tailwind-утилиты shadow-*/

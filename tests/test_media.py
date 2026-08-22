@@ -55,7 +55,10 @@ def test_every_referenced_clip_is_in_the_repo():
     miss, checked = [], 0
     for p in _course_pages():
         s = open(p, encoding="utf-8").read()
-        for m in re.findall(r"['\"](/(?:assets/video_sq|automation/[a-z]+)/"
+        # assets/[\w-]+, а не только video_sq: лекция 2 раздаёт ролики из
+        # /assets/video_l2/, и прежний шаблон не проверял ни один из её 40
+        # файлов — сторож «ссылка есть, файла нет» её попросту не видел.
+        for m in re.findall(r"['\"](/(?:assets/[\w-]+|automation/[a-z]+)/"
                             r"[^'\"]+\.mp4)['\"]", s):
             checked += 1
             f = os.path.join(_ROOT, urllib.parse.unquote(m.lstrip("/")))
