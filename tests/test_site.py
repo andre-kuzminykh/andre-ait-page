@@ -555,6 +555,27 @@ def test_desktop_typography_scaled_up():
         "кнопки шести секций должны использовать общий увеличенный кламп"
 
 
+# ── FR-SITE30: русские названия продуктов ────────────────────────────────
+
+def test_ru_product_names():
+    """На русском продукты называются по-русски: заголовки экранов и пункты меню."""
+    html = _html()
+    for key, ru in (("'nav.neuronium'", "Нейроний"), ("'nav.landao'", "Ландао"),
+                    ("'nav.antropolis'", "Антрополис"), ("'nav.dataist'", "Датаист"),
+                    ("'neuronium.h2'", "Нейроний ИИ"), ("'landao.h2'", "Ландао ИИ"),
+                    ("'antropolis.h2'", "Антрополис Сити"), ("'dataist.h2'", "Датаист Медиа")):
+        assert re.search(key + r":\s*'" + ru + r"'", html), \
+            "в RU_TEXT должен быть %s: «%s»" % (key, ru)
+    # ключи привязаны к разметке (меню и заголовкам)
+    for k in ("nav.neuronium", "nav.landao", "nav.antropolis", "nav.dataist",
+              "neuronium.h2", "landao.h2", "antropolis.h2", "dataist.h2"):
+        assert 'data-i18n="%s"' % k in html, "ключ %s должен стоять в разметке" % k
+    # русские названия и в RU-кнопках
+    assert "Познакомиться с Ландао ИИ" in html
+    assert "Войти в Антрополис" in html
+    assert "с Landao AI" not in html and "в Antropolis" not in html
+
+
 # ── FR-SITE28: видео на языке интерфейса + постер-заглушка ───────────────
 
 def test_video_per_language_with_poster():
