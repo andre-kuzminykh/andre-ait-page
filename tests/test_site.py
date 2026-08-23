@@ -643,6 +643,41 @@ def test_short_desktop_fits_and_scroll_fades():
     assert "scrollBox.classList.toggle('can-scroll'" in html
     assert html.count("updateScrollFade();") >= 4, \
         "пересчёт маски: init, ресайз, смена экрана и языка"
+    # FR-SITE37: маска ТОЛЬКО там, где бокс реально прокручивается. На мобилке у
+    # .scroll overflow:visible — контент виден за боксом, и маска резала бы видимое
+    assert "var ov = getComputedStyle(scrollBox).overflowY;" in html
+    assert "(ov === 'auto' || ov === 'scroll')" in html, \
+        "can-scroll не должен включаться при overflow:visible"
+
+
+def test_short_mobile_fits_without_overlap():
+    """FR-SITE37: невысокие телефоны в портрете — контент ужимается, чтобы
+    помещаться в панель; сдвиг героя контакта снят, иначе он наезжал на футер."""
+    html = _html()
+    assert "@media (max-width:1023px) and (orientation: portrait) and (max-height:700px) {" in html
+    assert "@media (max-width:1023px) and (orientation: portrait) and (max-height:600px) {" in html
+    short = html.split("(orientation: portrait) and (max-height:600px) {", 1)[1].split("\n  }")[0]
+    assert ".contact-hero { gap: 0.6rem; top: 0; }" in short, \
+        "на самых низких экранах сдвиг героя контакта снят (наезжал на футер)"
+    # тот же дефект на низких десктоп-окнах
+    low = html.split("(min-width:1024px) and (max-height:820px) {", 1)[1].split("\n  }")[0]
+    assert ".contact-hero { top: 0;" in low
+
+
+def test_landscape_phone_menu_flows():
+    """FR-SITE37: в ландшафте телефона 8 пунктов + бренд + футер не помещаются —
+    меню становится прокручиваемым столбцом (бренд и футер в потоке, крестик fixed),
+    иначе они накладывались на список."""
+    html = _html()
+    key = "@media (max-width:1149px) and (orientation: landscape) and (max-height:520px) {"
+    assert key in html
+    block = html.split(key, 1)[1].split("\n  }")[0]
+    assert ".nav.open .nav-brand { position: static;" in block
+    assert ".nav.open .nav-foot { position: static;" in block
+    assert ".nav.open .nav-close { position: fixed;" in block
+    # блок должен стоять ПОСЛЕ правил .nav-foot, иначе они перебивают position
+    assert html.find(".nav.open .nav-foot { display: flex;") < html.find(key), \
+        "ландшафтный блок должен идти после базовых правил футера меню"
 
 
 # ── FR-SITE28: видео на языке интерфейса + постер-заглушка ───────────────

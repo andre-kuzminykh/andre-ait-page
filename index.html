@@ -337,6 +337,22 @@
   /* FR-SITE26: RU-надписи («Политика конфиденциальности» / «Условия использования»)
      длиннее английских — на русском кегль меньше, чтобы КАЖДАЯ ссылка была в одну
      строку и обе помещались в ряд даже на узкой мобилке */
+  /* FR-SITE37: в ЛАНДШАФТЕ телефона (высота ≤520px) 8 пунктов + бренд + футер
+     физически не помещаются в экран. Тогда меню — обычный прокручиваемый
+     столбец: бренд и футер уходят В ПОТОК (не absolute), поэтому больше не
+     накладываются на список; крестик становится fixed и виден при прокрутке.
+     Блок стоит ПОСЛЕ правил .nav-foot/.nav-brand, иначе те перебивают position. */
+  @media (max-width:1149px) and (orientation: landscape) and (max-height:520px) {
+    .nav.open { justify-content: flex-start; padding: 1.1rem 1.75rem calc(1.4rem + env(safe-area-inset-bottom, 0px)); }
+    .nav.open .nav-close { position: fixed; top: 0.6rem; right: 0.8rem; }
+    .nav.open .nav-brand { position: static; margin: 0 auto 0.75rem; top: auto; left: auto; right: auto; }
+    .nav.open .nav-brand-img { width: 2.1rem; height: 2.1rem; }
+    .nav.open .nav-brand-name { font-size: 13px; }
+    .nav.open .nav-tab { padding-top: 0.5rem; padding-bottom: 0.5rem; font-size: 15px; }
+    .nav.open .nav-ic { font-size: 16px; }
+    .nav.open .nav-foot { position: static; left: auto; right: auto; bottom: auto; margin-top: 1.1rem; gap: 0.6rem; }
+  }
+
   html[lang="ru"] .nav-legal { gap: 0.45rem; }
   html[lang="ru"] .nav-legal-link { font-size: clamp(8px, 2.55vw, 10px); letter-spacing: 0.05em; }
   html[lang="ru"] .nav-legal-sep { font-size: 10px; }
@@ -712,6 +728,44 @@
     .contact-legal { display: flex; }
   }
 
+  /* ===== FR-SITE37: НЕВЫСОКИЕ телефоны в портрете (SE, компактные Android) =====
+     Панель занимает нижние 46dvh, и на экранах ≤700px контент туда не помещался:
+     плитки заезжали под плашку «Andre AI», а кнопка обрезалась низом экрана.
+     Ужимаем по высоте — плитки, кегли, зазоры и нижний отступ панели, — чтобы
+     всё было видно СРАЗУ, без прокрутки. */
+  @media (max-width:1023px) and (orientation: portrait) and (max-height:700px) {
+    .panel { padding-bottom: calc(2.2rem + env(safe-area-inset-bottom, 0px)); }
+    [data-screen="overview"], [data-screen="strategy"], [data-screen="neuronium"], [data-screen="landao"],
+    [data-screen="antropolis"], [data-screen="academy"], [data-screen="dataist"] { transform: translateY(0.6rem); }
+    .float-row { transform: scale(0.56); margin: -1.2rem 0; }
+    .sec, .sec-wide, .group { gap: 0.6rem; }
+    .screen[data-screen="overview"] { gap: 1.05rem !important; }
+    .hero-size { font-size: clamp(1.35rem, 7.6vw, 2rem); }
+    .h2-size { font-size: 1.35rem; }
+    .desc { font-size: 13px; line-height: 1.45; }
+    .about-link, .sec-link { font-size: 11px; }
+    .screen .btn-white { padding-top: 0.72rem !important; padding-bottom: 0.72rem !important; font-size: 10.5px !important; }
+    /* контакт: герой + футер с иконками целиком в экране */
+    .contact-screen { transform: translateY(1.2rem); min-height: 34dvh; }
+    .contact-hero { gap: 0.85rem; top: 0.5rem; }
+    .contact-title { font-size: clamp(1.35rem, 7.6vw, 1.9rem); }
+    .contact-footer { gap: 0.45rem; padding-top: 0.7rem; padding-bottom: 0; }
+    .social { font-size: 18px; }
+  }
+  /* совсем низкие (≤600px: SE 1-го поколения и подобные) — ещё плотнее */
+  @media (max-width:1023px) and (orientation: portrait) and (max-height:600px) {
+    .float-row { transform: scale(0.48); margin: -1.2rem 0; }
+    .sec, .sec-wide, .group { gap: 0.5rem; }
+    .screen[data-screen="overview"] { gap: 0.85rem !important; }
+    .h2-size { font-size: 1.2rem; }
+    .desc { font-size: 12px; }
+    .contact-title { font-size: 1.5rem; }
+    /* сдвиг героя контакта здесь наезжал бы на футер с иконками */
+    .contact-hero { gap: 0.6rem; top: 0; }
+    .contact-footer { padding-top: 0.9rem; }
+    .social { font-size: 16px; }
+  }
+
   /* Scale the whole UI up on large desktop screens so nothing looks tiny
      (zoom lifts fixed-px elements too — cards, nav, badge — unlike vw units). */
   @media (min-width:1600px) { body { zoom: 1.15; } }
@@ -734,6 +788,8 @@
     .screen[data-screen="overview"] { gap: 1.3rem !important; }
     .sec-link { margin-top: -0.1rem; }
     .about-link { margin-top: -0.5rem; }
+    /* «оптический» сдвиг героя контакта в низком окне наезжал бы на футер */
+    .contact-hero { top: 0; gap: clamp(1rem, 1.4vw, 1.6rem); }
   }
   @media (min-width:1024px) and (max-height:660px) {
     .scroll { transform: translateY(0.4rem); max-height: calc(100dvh - 8rem); padding-top: 0.8rem; padding-bottom: 0.8rem; }
@@ -745,6 +801,9 @@
     .screen[data-screen="overview"] { gap: 1.05rem !important; }
     .screen .btn-white { font-size: clamp(10.5px, 0.8vw, 12.5px) !important;
       padding-top: 0.8rem !important; padding-bottom: 0.8rem !important; }
+    .contact-hero { gap: 0.8rem; }
+    .contact-footer { gap: 0.5rem; padding-bottom: 0.8rem; }
+    .social { font-size: clamp(17px, 1.3vw, 22px); }
   }
   @media (min-width:1024px) and (max-height:440px) {
     .scroll { transform: none; max-height: calc(100dvh - 6rem); }
@@ -1601,7 +1660,13 @@
   var scrollBox = document.querySelector('.scroll');
   function updateScrollFade() {
     if (!scrollBox) return;
-    scrollBox.classList.toggle('can-scroll', scrollBox.scrollHeight - scrollBox.clientHeight > 8);
+    /* Маску ставим ТОЛЬКО там, где бокс реально прокручивается. На мобилке у
+       .scroll overflow:visible — контент выходит за бокс, но виден целиком, и
+       маска обрезала бы видимое (FR-SITE37: так «растворялась» кнопка на SE). */
+    var ov = getComputedStyle(scrollBox).overflowY;
+    var scrollable = (ov === 'auto' || ov === 'scroll') &&
+      scrollBox.scrollHeight - scrollBox.clientHeight > 8;
+    scrollBox.classList.toggle('can-scroll', scrollable);
   }
 
   /* ---- desktop video mask ---- */
