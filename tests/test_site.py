@@ -219,12 +219,12 @@ def test_nav_has_eight_sections():
 
 # ── FR-SITE9 ──────────────────────────────────────────────────────────────
 
-def test_nav_label_my_contacts():
+def test_nav_label_contacts():
+    """FR-SITE33: пункт называется просто «Contacts» / «Контакты»."""
     html = _html()
-    assert re.search(r'<span class="nav-label"[^>]*>My contacts</span>', html), \
-        "пункт навигации должен называться «My contacts»"
-    assert not re.search(r'<span class="nav-label"[^>]*>Contacts</span>', html), \
-        "голого пункта «Contacts» быть не должно"
+    assert re.search(r'<span class="nav-label"[^>]*>Contacts</span>', html), \
+        "пункт навигации должен называться «Contacts»"
+    assert "My contacts" not in html and "Мои контакты" not in html
 
 
 # ── FR-SITE10 ─────────────────────────────────────────────────────────────
@@ -452,18 +452,14 @@ def test_hero_sub_always_one_line():
     assert html.count(".desc.hero-sub { font-size: clamp(") >= 4
 
 
-def test_lang_switch_js_centres_between_pill_and_cta():
-    """EN | RU стоит ПО СЕРЕДИНЕ между пилюлей меню и CTA: середина промежутка
-    вычисляется в JS (ширина пилюли зависит от языка), CSS-отступ — фолбэк."""
+def test_lang_switch_sits_next_to_cta():
+    """FR-SITE33: EN | RU стоит РЯДОМ с кнопкой CTA (отступ 2rem от неё),
+    без JS-центрирования по промежутку — как в исходной шапке."""
     html = _html()
-    assert "function placeLangSwitch()" in html
-    assert "var navRight = nav.offsetLeft + nav.offsetWidth / 2;" in html, \
-        "правый край пилюли: offsetLeft + width/2 (offsetLeft не знает про translateX(-50%))"
-    assert "(navRight + headerCta.offsetLeft) / 2" in html, \
-        "середина промежутка = (право пилюли + лево CTA) / 2"
-    # пересчёт: на ресайзе, при смене языка и после загрузки веб-шрифта
-    assert re.search(r"var onResize = function \(\) \{[^}]*placeLangSwitch\(\);", html)
-    assert html.count("placeLangSwitch();") >= 3
+    assert "placeLangSwitch" not in html, \
+        "JS-центрирования переключателя быть не должно — позицию задаёт CSS"
+    assert re.search(r"@media \(min-width:1024px\) \{.*\.lang-switch \{ margin-right: 2rem; \}", html), \
+        "на десктопе переключатель отступает от CTA на 2rem"
 
 
 def test_mobile_menu_brand_and_higher_items():

@@ -293,7 +293,7 @@
      менял высоту) — высота пилюли постоянна (2.85rem) и равна высоте CTA;
      разделители остаются видны. */
   @media (min-width:1024px) and (max-width:1319px) {
-    /* FR-SITE9/10: «My contacts» и переключатель EN|RU добавили ширины справа —
+    /* FR-SITE9/10: пункт контактов и переключатель EN|RU добавили ширины справа —
        пилюля уезжает на 2rem влево (слева у лого запас ~120px) и дожимается
        ТОЛЬКО по горизонтали; шрифт 12px и высота 2.85rem не тронуты (FR-SITE4) */
     .nav { left: calc(50% - 5.5rem); gap: 0.06rem; padding-left: 0.5rem; padding-right: 0.5rem; }
@@ -795,7 +795,7 @@
         <span class="nav-divider" aria-hidden="true">|</span>
         <button class="nav-tab" data-action="tab" data-target="dataist"   style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-newspaper"></i></span><span class="nav-label" data-i18n="nav.dataist">Dataist</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
         <span class="nav-divider" aria-hidden="true">|</span>
-        <button class="nav-tab" data-action="tab" data-target="contact"  style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-address-book"></i></span><span class="nav-label" data-i18n="nav.contact">My contacts</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
+        <button class="nav-tab" data-action="tab" data-target="contact"  style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-address-book"></i></span><span class="nav-label" data-i18n="nav.contact">Contacts</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
         <!-- menu footer (mobile only): socials, legal links, copyright; placeholders (#) -->
         <div class="nav-foot">
           <div class="nav-social">
@@ -1048,33 +1048,7 @@
   var micIcon = document.getElementById('mic-icon');
   var micWave = document.getElementById('mic-wave');
   var menuIcon = document.getElementById('menu-icon');
-  var langSwitch = document.querySelector('.lang-switch');
-  var headerCta = document.querySelector('.btn-white.cta');
   var mqDesktop = window.matchMedia('(min-width: 1024px)');
-
-  /* FR-SITE26: на десктопе переключатель EN | RU стоит ровно ПО СЕРЕДИНЕ между
-     пилюлей меню и кнопкой CTA. Ширина пилюли зависит от языка и ширины окна,
-     поэтому середина промежутка вычисляется, а не задаётся константой.
-     offsetLeft/offsetWidth — лэйаут-пиксели: не зависят от body{zoom}; все три
-     элемента позиционируются от общего предка .header-row (position:relative).
-     Без JS остаётся CSS-фолбэк (margin-right: 2rem). */
-  function placeLangSwitch() {
-    if (!langSwitch || !nav || !headerCta) return;
-    if (!mqDesktop.matches) {
-      langSwitch.style.position = ''; langSwitch.style.left = ''; langSwitch.style.top = '';
-      langSwitch.style.transform = ''; langSwitch.style.margin = '';
-      return;
-    }
-    /* пилюля сдвинута transform:translateX(-50%), а offsetLeft — позиция ДО
-       трансформа: визуальный правый край = offsetLeft + половина ширины */
-    var navRight = nav.offsetLeft + nav.offsetWidth / 2;
-    var mid = (navRight + headerCta.offsetLeft) / 2;
-    langSwitch.style.position = 'absolute';
-    langSwitch.style.left = mid + 'px';
-    langSwitch.style.top = '50%';
-    langSwitch.style.transform = 'translate(-50%, -50%)';
-    langSwitch.style.margin = '0';
-  }
 
   function screenEls() { return document.querySelectorAll('[data-screen]'); }
   function showScreen(id) {
@@ -1351,9 +1325,7 @@
     /* кнопка формы управляется из JS (Sending/Contact me) — синхронизируем и её */
     if (leadSubmit && !leadSubmit.disabled) leadSubmit.textContent = L('Contact me', 'Связаться со мной');
     storeSet(LANG_KEY, lang);
-    /* смена языка меняет ширину пилюли меню — пересчитываем середину для EN|RU */
-    placeLangSwitch();
-    /* и ставит ролик на нужном языке (FR-SITE28) */
+    /* смена языка ставит ролик на нужном языке (FR-SITE28) */
     setVideoLang(lang);
   }
 
@@ -1620,12 +1592,10 @@
 
     setInterval(capTick, 110);
 
-    var onResize = function () { applyVideoMask(); alignRails(); placeLangSwitch(); };
+    var onResize = function () { applyVideoMask(); alignRails(); };
     window.addEventListener('resize', onResize);
     if (mqDesktop.addEventListener) mqDesktop.addEventListener('change', onResize);
     else if (mqDesktop.addListener) mqDesktop.addListener(onResize);
-    /* веб-шрифт грузится позже first paint и меняет ширину пилюли — пересчёт */
-    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { placeLangSwitch(); }); } catch (err) {}
 
     initCookieBanner();
     flushLeadQueue();
