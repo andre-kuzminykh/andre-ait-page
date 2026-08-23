@@ -169,13 +169,11 @@ def test_get_ai_strategy_label():
 
 
 def test_product_buttons_link_out():
-    """FR-SITE24: у каждого экрана своя кнопка-ссылка на свой продукт."""
+    """FR-SITE24/29: запущенные продукты — кнопки-ссылки; незапущенные (Neuronium,
+    Landao, Antropolis) — кнопки Coming soon (попап сбора ранних заявок)."""
     html = _html()
     for label, host in (("Start AI Transformation", "https://maturity.andre.technology/"),
                         ("Get Your AI Strategy", "https://strategy.andre.technology/"),
-                        ("Get Neuronium AI", "https://neuronium.ai/"),
-                        ("Meet Landao AI", "https://landao.ai/"),
-                        ("Enter Antropolis", "https://antropolis.city/"),
                         ("Explore Courses", "https://academy.andre.technology/"),
                         ("Visit Dataist AI", "https://dataist.ai/"),
                         ("Free AI Diagnosis", "https://maturity.andre.technology/")):
@@ -184,8 +182,18 @@ def test_product_buttons_link_out():
         el = html[html.rfind("<", 0, pos):pos]
         assert el.lstrip().startswith("<a "), "«%s» должна быть ссылкой <a>: %s" % (label, el[:80])
         assert host in el, "«%s» должна вести на %s: %s" % (label, host, el[:120])
-    assert 'data-action="lead-open"' not in html, \
-        "попап coming soon больше не открывается ни одной кнопкой"
+    for label, source in (("Get Neuronium AI", "Neuronium AI"),
+                          ("Meet Landao AI", "Landao AI"),
+                          ("Enter Antropolis", "Antropolis")):
+        pos = html.find(label)
+        assert pos > 0, "должна быть кнопка «%s»" % label
+        el = html[html.rfind("<", 0, pos):pos]
+        assert el.lstrip().startswith("<button ") and 'data-action="lead-open"' in el, \
+            "«%s» должна открывать попап Coming soon: %s" % (label, el[:120])
+        assert 'data-source="%s"' % source in el, \
+            "у «%s» должен быть data-source=«%s»" % (label, source)
+    assert html.count('data-action="lead-open"') == 3, \
+        "попап Coming soon открывают ровно три кнопки незапущенных продуктов"
 
 
 def test_sec_links_under_buttons():
@@ -518,7 +526,7 @@ def test_desc_breaks_are_semantic():
                  "for Human Good", "AI Can&rsquo;t Replace", "Insights &amp; Technologies",
                  "into an AI Company?",
                  "вашей ИИ-трансформации", "для вашего бизнеса", "для осознанной жизни",
-                 "во благо человека", "которые ИИ не заменит", "и технологии ИИ",
+                 "во благо человека", "которые ИИ не заменит", "и ИИ-технологии",
                  "в ИИ-компанию?"):
         assert '<span class="nb">%s</span>' % tail in html, \
             "хвост «%s» должен быть неразрывной группой .nb" % tail
