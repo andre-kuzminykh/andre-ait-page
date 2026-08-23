@@ -2,8 +2,11 @@
 """Тесты сайта andre.technology (index.html). Без зависимостей — запускается
 и как `python3 tests/test_site.py`, и через pytest.
 
-FR-SITE1 — «Free AI Diagnostic» ведёт на strategy.andre.technology.
+FR-SITE1/24 — все кнопки диагностики («Free AI Diagnostic/Diagnosis») ведут
+           на maturity.andre.technology (первый шаг воронки).
 FR-SITE2 — роль/подпись «AI Consultant», а не «Chief AI Officer».
+FR-SITE24 — меню из 8 разделов: About Me, AI Strategy, Neuronium, Landao,
+            Antropolis, Academy, Dataist, My contacts.
 """
 import os
 import re
@@ -18,23 +21,21 @@ def _html():
 
 # ── FR-SITE1 ──────────────────────────────────────────────────────────────
 
-def test_free_diagnostic_links_to_strategy():
+def test_diagnostic_buttons_link_to_maturity():
     html = _html()
-    # найдём каждый элемент, содержащий текст «Free AI Diagnostic», и проверим,
-    # что это ссылка <a> на strategy.andre.technology
-    hits = [m.start() for m in re.finditer(r"Free AI Diagnostic", html)]
-    # исключим упоминания в комментариях (<!-- ... -->)
-    assert hits, "на сайте должна быть кнопка «Free AI Diagnostic»"
+    # каждая кнопка диагностики («Free AI Diagnostic» в шапке, «Free AI
+    # Diagnosis» на контактах) — это ссылка <a> на maturity.andre.technology
+    hits = [m.start() for m in re.finditer(r"Free AI Diagnos(?:tic|is)", html)]
+    assert hits, "на сайте должны быть кнопки диагностики"
     for pos in hits:
-        # начало тега элемента слева от текста
         tag_start = html.rfind("<", 0, pos)
         el = html[tag_start:pos]
         if el.strip().startswith("<!--"):
-            continue  # это комментарий, не элемент
+            continue  # комментарий, не элемент
         assert el.lstrip().startswith("<a "), \
-            "«Free AI Diagnostic» должна быть ссылкой <a>, а не кнопкой: " + el[:60]
-        assert "https://strategy.andre.technology/" in el, \
-            "«Free AI Diagnostic» должна вести на strategy.andre.technology: " + el[:80]
+            "кнопка диагностики должна быть ссылкой <a>: " + el[:60]
+        assert "https://maturity.andre.technology/" in el, \
+            "диагностика должна вести на maturity.andre.technology: " + el[:80]
 
 
 def test_no_free_diagnostic_button_with_contact():
@@ -135,9 +136,9 @@ def test_nav_dividers_never_hidden_on_desktop():
 
 # ── FR-SITE7 ──────────────────────────────────────────────────────────────
 
-def test_start_transformation_links_to_strategy():
+def test_start_transformation_links_to_maturity():
     html = _html()
-    # «Start AI Transformation» — ссылка на strategy., НЕ кнопка contact
+    # «Start AI Transformation» — ссылка на maturity. (первый шаг воронки), НЕ кнопка contact
     bad = re.search(r'<button[^>]*data-action="contact"[^>]*>\s*Start AI Transformation', html)
     assert bad is None, "«Start AI Transformation» не должна быть кнопкой contact (coming soon)"
     pos = html.find("Start AI Transformation")
@@ -146,8 +147,8 @@ def test_start_transformation_links_to_strategy():
     el = html[tag_start:pos]
     assert el.lstrip().startswith("<a "), \
         "«Start AI Transformation» должна быть ссылкой <a>: " + el[:60]
-    assert "https://strategy.andre.technology/" in el, \
-        "«Start AI Transformation» должна вести на strategy.andre.technology"
+    assert "https://maturity.andre.technology/" in el, \
+        "«Start AI Transformation» должна вести на maturity.andre.technology"
 
 
 def test_about_me_link():
@@ -163,22 +164,49 @@ def test_about_me_link():
 
 def test_get_ai_strategy_label():
     html = _html()
-    assert "Get AI Strategy" in html, "кнопка стратегии должна называться «Get AI Strategy»"
+    assert "Get Your AI Strategy" in html, "кнопка стратегии должна называться «Get Your AI Strategy»"
     assert "Open AI Strategy" not in html, "старого названия «Open AI Strategy» быть не должно"
 
 
-def test_explore_buttons_open_lead_modal():
+def test_product_buttons_link_out():
+    """FR-SITE24: у каждого экрана своя кнопка-ссылка на свой продукт."""
     html = _html()
-    for label, source in (("Explore Employees", "AI Employees"),
-                          ("Explore Products", "AI Products"),
-                          ("Explore Courses", "AI Education")):
+    for label, host in (("Start AI Transformation", "https://maturity.andre.technology/"),
+                        ("Get Your AI Strategy", "https://strategy.andre.technology/"),
+                        ("Get Neuronium AI", "https://neuronium.ai/"),
+                        ("Meet Landao AI", "https://landao.ai/"),
+                        ("Enter Antropolis", "https://antropolis.city/"),
+                        ("Explore Courses", "https://academy.andre.technology/"),
+                        ("Visit Dataist AI", "https://dataist.ai/"),
+                        ("Free AI Diagnosis", "https://maturity.andre.technology/")):
         pos = html.find(label)
         assert pos > 0, "должна быть кнопка «%s»" % label
         el = html[html.rfind("<", 0, pos):pos]
-        assert 'data-action="lead-open"' in el, \
-            "«%s» должна открывать попап coming soon (lead-open): %s" % (label, el[:80])
-        assert 'data-source="%s"' % source in el, \
-            "«%s» должна передавать источник «%s»" % (label, source)
+        assert el.lstrip().startswith("<a "), "«%s» должна быть ссылкой <a>: %s" % (label, el[:80])
+        assert host in el, "«%s» должна вести на %s: %s" % (label, host, el[:120])
+    assert 'data-action="lead-open"' not in html, \
+        "попап coming soon больше не открывается ни одной кнопкой"
+
+
+def test_sec_links_under_buttons():
+    """FR-SITE24: под кнопкой каждого экрана — серая текстовая ссылка."""
+    html = _html()
+    for label in ("AI Transformation Cases", "Learn More", "Project History",
+                  "Manifesto", "Skill Map", "Top Stories"):
+        m = re.search(r'<a class="sec-link"[^>]*>' + re.escape(label) + r'</a>', html)
+        assert m, "нужна серая ссылка «%s» (class=sec-link)" % label
+    assert re.search(r"\.sec-link\s*\{[^}]*color:\s*rgba\(255,255,255,0\.5\)", html), \
+        "ссылки .sec-link должны быть серыми, как «About me»"
+
+
+def test_nav_has_eight_sections():
+    """FR-SITE24: меню = ровно 8 разделов в заданном порядке."""
+    html = _html()
+    targets = re.findall(r'<button class="nav-tab" data-action="tab" data-target="([a-z]+)"', html)
+    assert targets == ["overview", "strategy", "neuronium", "landao",
+                       "antropolis", "academy", "dataist", "contact"], targets
+    for gone in ("platform", "employees", "products", "education"):
+        assert 'data-screen="%s"' % gone not in html, "экран «%s» должен быть удалён" % gone
 
 
 # ── FR-SITE9 ──────────────────────────────────────────────────────────────
@@ -259,8 +287,8 @@ def test_no_underscore_asset_paths():
 
 # ── FR-SITE12 ─────────────────────────────────────────────────────────────
 
-_MOBILE_SCREENS = ("overview", "roadmap", "strategy", "platform",
-                   "employees", "products", "education")
+_MOBILE_SCREENS = ("overview", "strategy", "neuronium", "landao",
+                   "antropolis", "academy", "dataist")
 
 
 def test_mobile_screens_share_one_offset():
