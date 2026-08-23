@@ -182,8 +182,8 @@ def test_product_buttons_link_out():
         el = html[html.rfind("<", 0, pos):pos]
         assert el.lstrip().startswith("<a "), "«%s» должна быть ссылкой <a>: %s" % (label, el[:80])
         assert host in el, "«%s» должна вести на %s: %s" % (label, host, el[:120])
-    for label, source in (("Get Neuronium AI", "Neuronium AI"),
-                          ("Meet Landao AI", "Landao AI"),
+    for label, source in (("Get Neuronium", "Neuronium AI"),
+                          ("Meet Landao", "Landao AI"),
                           ("Enter Antropolis", "Antropolis")):
         pos = html.find(label)
         assert pos > 0, "должна быть кнопка «%s»" % label
@@ -472,7 +472,11 @@ def test_mobile_menu_brand_and_higher_items():
     m = re.search(r'<div class="nav-brand"[^>]*>\s*<img class="nav-brand-img" src="([^"]+)"', html)
     assert m and m.group(1) == LOGO_URL, "в меню сверху слева — тот же логотип, что на главной"
     assert re.search(r'<span class="nav-brand-name">Andre AI Technologies</span>', html)
-    assert re.search(r"\.nav\.open \.nav-brand \{[^}]*position: absolute; top: 1\.1rem; left: 1\.1rem;", html)
+    # FR-SITE31: бренд по центру (left+right растяжка, justify-content:center),
+    # крупная надпись — строкой ниже крестика
+    assert re.search(r"\.nav\.open \.nav-brand \{[^}]*justify-content: center;[^}]*position: absolute;[^}]*left: 1\.1rem; right: 1\.1rem;", html)
+    assert re.search(r"\.nav\.open \.nav-brand-name \{ font-size: clamp\(14px", html), \
+        "надпись бренда в меню должна быть крупной (от 14px)"
     # пункты подтянуты выше: не центр, а от верха
     assert re.search(r"\.nav\.open \{[^}]*justify-content: flex-start;[^}]*padding: clamp\(", html), \
         "список меню прижат выше (flex-start), а не по центру экрана"
@@ -570,10 +574,12 @@ def test_ru_product_names():
     for k in ("nav.neuronium", "nav.landao", "nav.antropolis", "nav.dataist",
               "neuronium.h2", "landao.h2", "antropolis.h2", "dataist.h2"):
         assert 'data-i18n="%s"' % k in html, "ключ %s должен стоять в разметке" % k
-    # русские названия и в RU-кнопках
-    assert "Познакомиться с Ландао ИИ" in html
+    # русские названия и в RU-кнопках; в кнопках Нейрония и Ландао — без «AI/ИИ»
+    assert "Получить Нейроний <i" in html
+    assert "Познакомиться с Ландао <i" in html
     assert "Войти в Антрополис" in html
     assert "с Landao AI" not in html and "в Antropolis" not in html
+    assert "Get Neuronium AI" not in html and "Meet Landao AI" not in html
 
 
 # ── FR-SITE28: видео на языке интерфейса + постер-заглушка ───────────────
