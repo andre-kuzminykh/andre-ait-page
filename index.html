@@ -498,34 +498,27 @@
      уходит на вторую целиком */
   .nb { white-space: nowrap; }
   @media (min-width:1024px) { .desc { font-size: clamp(15.5px, 1.3vw, 23px); max-width: 34rem; } }
-  /* FR-SITE26: подзаголовок героя «I Help Companies Adapt…» ВСЕГДА в одну строку
-     (и на мобилке, и на вебе). Шрифт моноширинный, поэтому ширина строки — это
-     просто число символов × кегль: EN 44 знака, RU 53 — размер задаётся от vw
-     отдельно на язык, чтобы строка гарантированно влезала в панель. Специфичность
-     .desc.hero-sub перебивает и десктопный, и ландшафтный кламп .desc. */
+  /* FR-SITE26/34: подзаголовок героя ВСЕГДА в одну строку (и на мобилке, и на
+     вебе). Шрифт моноширинный, поэтому ширина строки — просто число символов ×
+     кегль: EN 44 знака, RU 43 — длины сравнялись, кегль ЕДИНЫЙ для обоих языков.
+     Специфичность .desc.hero-sub перебивает и десктопный, и ландшафтный кламп .desc. */
   .desc.hero-sub { white-space: nowrap; max-width: none; font-size: clamp(9px, 3.35vw, 14.5px); }
-  html[lang="ru"] .desc.hero-sub { font-size: clamp(8px, 2.75vw, 14.5px); }
   @media (min-width:1024px) {
     .desc.hero-sub { font-size: clamp(10px, 1.45vw - 2px, 19px); }
-    html[lang="ru"] .desc.hero-sub { font-size: clamp(9px, 1.2vw - 2px, 19px); }
   }
   @media (max-width:1023px) and (orientation: landscape) {
     .desc.hero-sub { font-size: clamp(8px, 1.5vw - 2px, 12px); }
-    html[lang="ru"] .desc.hero-sub { font-size: clamp(7.5px, 1.25vw - 2px, 12px); }
   }
   /* body{zoom} (≥1600) масштабирует vw-кегль, но ширина панели задана в % и
      остаётся прежней в CSS-пикселях — делим кегль на тот же коэффициент */
   @media (min-width:1600px) {
     .desc.hero-sub { font-size: clamp(10px, calc((1.45vw - 2px) / 1.15), 19px); }
-    html[lang="ru"] .desc.hero-sub { font-size: clamp(9px, calc((1.2vw - 2px) / 1.15), 19px); }
   }
   @media (min-width:1900px) {
     .desc.hero-sub { font-size: clamp(10px, calc((1.45vw - 2px) / 1.3), 19px); }
-    html[lang="ru"] .desc.hero-sub { font-size: clamp(9px, calc((1.2vw - 2px) / 1.3), 19px); }
   }
   @media (min-width:2300px) {
     .desc.hero-sub { font-size: clamp(10px, calc((1.45vw - 2px) / 1.5), 19px); }
-    html[lang="ru"] .desc.hero-sub { font-size: clamp(9px, calc((1.2vw - 2px) / 1.5), 19px); }
   }
 
   .swipe-hint { margin: 0; margin-top: 1.3rem; transform: translateY(1.8rem); font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.5); text-align: center; }
@@ -858,7 +851,7 @@
             <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-chess-knight" style="color: #8854F3;"></i></div>
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);" data-i18n="strategy.h2">AI Strategy</h2>
-          <p class="desc" data-i18n="strategy.desc">Your Personalized <span class="nb">AI Transformation Roadmap</span></p>
+          <p class="desc" data-i18n="strategy.desc">AI Transformation Roadmap</p>
           <!-- Кабинет ИИ-стратегии (strategy.) -->
           <a class="btn-white" href="https://strategy.andre.technology/" rel="noopener" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="strategy.cta">Get Your AI Strategy <i class="fa-solid fa-arrow-right"></i></a>
           <a class="sec-link" href="https://strategy.andre.technology/" rel="noopener" data-i18n="strategy.link">AI Transformation Cases</a>
@@ -886,7 +879,7 @@
             <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-mobile-screen" style="color: #8854F3;"></i></div>
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);" data-i18n="landao.h2">Landao AI</h2>
-          <p class="desc" data-i18n="landao.desc">Your Personal AI Assistant <span class="nb">for Mindful Living</span></p>
+          <p class="desc" data-i18n="landao.desc">AI Assistant for Mindful Living</p>
           <!-- продукт ещё не запущен: кнопка открывает попап Coming soon (сбор ранних заявок) -->
           <button class="btn-white" data-action="lead-open" data-source="Landao AI" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="landao.cta">Meet Landao <i class="fa-solid fa-arrow-right"></i></button>
           <a class="sec-link" href="https://landao.ai/" rel="noopener" data-i18n="landao.link">Project History</a>
@@ -1011,32 +1004,75 @@
   var COOKIE_KEY = 'ait_cookie_ok';
   var LEADS_KEY = 'ait_leads';
   var QUEUE_KEY = 'ait_lead_queue';
+  /* FR-SITE34: субтитры под новые ролики — фразы из закадрового текста,
+     тайминги сгруппированы из пословных .srt (Andre_AIT_voice*.srt) */
   var CUES = [
-    { t: 0.0,  text: "Hi I'm Andre AI" },
-    { t: 2.6,  text: "your AI Consultant" },
-    { t: 5.0,  text: "I'll help you" },
-    { t: 7.0,  text: "diagnose your company's AI Maturity" },
-    { t: 9.0,  text: "design your AI Transformation Strategy" },
-    { t: 11.0, text: "and build an AI Operating System" },
-    { t: 14.0, text: "with more than 100 AI employees" },
-    { t: 17.0, text: "Together we'll turn your business" },
-    { t: 19.0, text: "into an AI Company" },
-    { t: 21.0, text: "so you can master the new AI professions" },
-    { t: 24.0, text: "and create products for Human Good" }
+    { t: 0.69,  text: "Hi, I'm Andre AI" },
+    { t: 2.11,  text: "also known as Dataist" },
+    { t: 3.93,  text: "I help companies adapt" },
+    { t: 5.31,  text: "to the new AI economy" },
+    { t: 7.53,  text: "and scale without growing headcount" },
+    { t: 9.71,  text: "I start by assessing" },
+    { t: 10.89, text: "where your business is today" },
+    { t: 12.93, text: "then build a clear" },
+    { t: 14.11, text: "AI transformation strategy" },
+    { t: 15.45, text: "and redesign how your company operates" },
+    { t: 18.05, text: "with AI employees working" },
+    { t: 20.01, text: "alongside your team" },
+    { t: 21.71, text: "Beyond business" },
+    { t: 22.91, text: "I'm building a personal AI assistant" },
+    { t: 24.81, text: "for a more mindful life" },
+    { t: 26.85, text: "And I teach people how to build" },
+    { t: 28.07, text: "AI agents, AI products" },
+    { t: 30.69, text: "and even AI companies" },
+    { t: 31.89, text: "on their own, without a team" },
+    { t: 34.27, text: "Because I believe the new economy" },
+    { t: 36.23, text: "will be built by people" },
+    { t: 37.17, text: "who create real value" },
+    { t: 38.83, text: "and take responsibility" },
+    { t: 39.67, text: "for what they build" },
+    { t: 41.47, text: "Through my media" },
+    { t: 42.77, text: "I share the news, technologies" },
+    { t: 44.41, text: "and insights shaping what comes next" },
+    { t: 46.95, text: "Everything I do" },
+    { t: 47.91, text: "is connected by one mission" },
+    { t: 49.77, text: "AI for Human Good" },
+    { t: 51.77, text: "The new AI economy is coming" },
+    { t: 53.97, text: "Let's build it together" }
   ];
-  /* RU-версия подписей героя (FR-SITE10) */
+  /* RU-версия: тайминги из русского .srt (ролик короче английского) */
   var CUES_RU = [
-    { t: 0.0,  text: "Привет, я Andre AI" },
-    { t: 2.6,  text: "ваш ИИ-консультант" },
-    { t: 5.0,  text: "Я помогу вам" },
-    { t: 7.0,  text: "оценить ИИ-зрелость вашей компании" },
-    { t: 9.0,  text: "разработать стратегию ИИ-трансформации" },
-    { t: 11.0, text: "и построить ИИ-операционную систему" },
-    { t: 14.0, text: "с более чем 100 ИИ-сотрудниками" },
-    { t: 17.0, text: "Вместе мы превратим ваш бизнес" },
-    { t: 19.0, text: "в ИИ-компанию" },
-    { t: 21.0, text: "чтобы вы освоили новые ИИ-профессии" },
-    { t: 24.0, text: "и создавали продукты во благо людей" }
+    { t: 0.49,  text: "Привет, я Андре AI" },
+    { t: 1.65,  text: "также известный как Датаист" },
+    { t: 3.13,  text: "Я помогаю компаниям адаптироваться" },
+    { t: 4.81,  text: "к новой AI-экономике" },
+    { t: 6.15,  text: "и масштабироваться без роста штата" },
+    { t: 8.09,  text: "Сначала я оцениваю" },
+    { t: 9.51,  text: "текущее состояние бизнеса" },
+    { t: 10.79, text: "затем выстраиваю" },
+    { t: 11.61, text: "понятную стратегию AI-трансформации" },
+    { t: 13.81, text: "и перестраиваю работу компании" },
+    { t: 15.49, text: "так, чтобы AI-сотрудники" },
+    { t: 17.29, text: "работали вместе с вашей командой" },
+    { t: 19.23, text: "Помимо бизнеса" },
+    { t: 20.15, text: "я создаю персонального AI-ассистента" },
+    { t: 22.59, text: "для более осознанной жизни" },
+    { t: 24.13, text: "А ещё я учу людей самостоятельно" },
+    { t: 25.87, text: "создавать AI-агентов, AI-продукты" },
+    { t: 28.53, text: "и даже AI-компании — без команды" },
+    { t: 30.85, text: "Я верю, что новую экономику" },
+    { t: 32.59, text: "будут строить люди" },
+    { t: 33.43, text: "которые создают реальную ценность" },
+    { t: 35.11, text: "и берут ответственность" },
+    { t: 36.29, text: "за то, что они делают" },
+    { t: 37.55, text: "В своих медиа я рассказываю" },
+    { t: 39.19, text: "о новостях, технологиях и идеях" },
+    { t: 41.19, text: "которые формируют наше будущее" },
+    { t: 43.01, text: "Всё, что я делаю" },
+    { t: 43.99, text: "объединяет одна миссия" },
+    { t: 45.43, text: "AI во благо людей" },
+    { t: 46.81, text: "Новая AI-экономика уже зарождается" },
+    { t: 49.65, text: "давайте строить её вместе" }
   ];
 
   var state = { tab: 'overview', isMuted: true, menuOpen: false, expanded: {}, leadOpen: false, leadSource: '', leadGen: 0, lang: 'en' };
@@ -1256,11 +1292,11 @@
     'speaker.role': 'ИИ-консультант',
     'hero.l1': '<span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">ИИ</span><span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">-трансформация</span>',
     'hero.l2': 'вашего <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">бизнеса</span>',
-    'hero.sub': 'Помогаю компаниям адаптироваться к новой ИИ-экономике',
+    'hero.sub': 'Помогаю адаптироваться к новой ИИ-экономике',
     'overview.cta': 'Начать ИИ-трансформацию <i class="fa-solid fa-arrow-right"></i>',
     'overview.about': 'Обо мне',
     'strategy.h2': 'ИИ-стратегия',
-    'strategy.desc': 'Персональная дорожная карта <span class="nb">вашей ИИ-трансформации</span>',
+    'strategy.desc': 'Дорожная карта ИИ-трансформации',
     'strategy.cta': 'Получить ИИ-стратегию <i class="fa-solid fa-arrow-right"></i>',
     'strategy.link': 'Кейсы ИИ-трансформации',
     'neuronium.h2': 'Нейроний ИИ',
@@ -1268,7 +1304,7 @@
     'neuronium.cta': 'Получить Нейроний <i class="fa-solid fa-arrow-right"></i>',
     'neuronium.link': 'Узнать подробнее',
     'landao.h2': 'Ландао ИИ',
-    'landao.desc': 'Ваш персональный ИИ-ассистент <span class="nb">для осознанной жизни</span>',
+    'landao.desc': 'ИИ-ассистент <span class="nb">для осознанной жизни</span>',
     'landao.cta': 'Познакомиться с Ландао <i class="fa-solid fa-arrow-right"></i>',
     'landao.link': 'История проекта',
     'antropolis.h2': 'Антрополис Сити',

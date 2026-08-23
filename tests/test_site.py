@@ -56,9 +56,11 @@ def test_role_and_subtitle_are_ai_consultant():
     # бейдж-роль
     assert re.search(r'class="role"[^>]*>\s*AI Consultant\s*<', html), \
         "бейдж-роль должен быть «AI Consultant»"
-    # анимированная подпись героя (CUES)
-    assert re.search(r'text:\s*"your AI Consultant"', html), \
-        "подпись героя должна быть «your AI Consultant»"
+    # FR-SITE34: субтитры под новые ролики — начинаются с представления Dataist
+    assert re.search(r'text:\s*"also known as Dataist"', html), \
+        "субтитры должны представлять Андре как Dataist (новый ролик)"
+    assert re.search(r'text:\s*"также известный как Датаист"', html), \
+        "RU-субтитры должны представлять Андре как Датаиста (новый ролик)"
 
 
 # ── FR-SITE3 ──────────────────────────────────────────────────────────────
@@ -432,22 +434,24 @@ def test_sec_link_gap_matches_hero():
 
 def test_landao_desc_mindful_living():
     html = _html()
-    assert '>Your Personal AI Assistant <span class="nb">for Mindful Living</span><' in html, \
-        "описание Landao: «Your Personal AI Assistant for Mindful Living» (хвост не разрывается)"
-    assert 'Ваш персональный ИИ-ассистент <span class="nb">для осознанной жизни</span>' in html, \
-        "RU-описание Landao должно упоминать осознанную жизнь"
+    # FR-SITE34: подписи короткие — влезают одной строкой без переноса
+    assert ">AI Assistant for Mindful Living<" in html, \
+        "описание Landao: «AI Assistant for Mindful Living»"
+    assert 'ИИ-ассистент <span class="nb">для осознанной жизни</span>' in html, \
+        "RU-описание Landao: «ИИ-ассистент для осознанной жизни» (хвост не рвётся)"
 
 
 def test_hero_sub_always_one_line():
-    """Подзаголовок героя в одну строку на мобилке и вебе: nowrap + кегль от vw,
-    отдельный для EN (44 зн.) и RU (53 зн.)."""
+    """Подзаголовок героя в одну строку на мобилке и вебе: nowrap + кегль от vw.
+    FR-SITE34: длины EN (44) и RU (43) сравнялись — кегль ЕДИНЫЙ для языков."""
     html = _html()
     assert re.search(r'<p class="desc hero-sub" data-i18n="hero\.sub"', html), \
         "подзаголовку героя нужен класс hero-sub"
     assert re.search(r"\.desc\.hero-sub \{ white-space: nowrap; max-width: none;", html), \
         "hero-sub должен запрещать перенос"
-    assert re.search(r'html\[lang="ru"\] \.desc\.hero-sub \{ font-size: clamp\(', html), \
-        "у RU своя (меньшая) лестница кегля — строка длиннее"
+    assert 'html[lang="ru"] .desc.hero-sub' not in html, \
+        "отдельного RU-кегля быть не должно — шрифт совпадает с английским"
+    assert "'hero.sub': 'Помогаю адаптироваться к новой ИИ-экономике'" in html
     # и в десктопном, и в ландшафтном блоке есть свои клампы (перебивают .desc)
     assert html.count(".desc.hero-sub { font-size: clamp(") >= 4
 
@@ -525,16 +529,17 @@ def test_desc_breaks_are_semantic():
     («для вашего бизнеса», «for Mindful Living»…) обёрнута в .nb и не рвётся."""
     html = _html()
     assert re.search(r"\.nb \{ white-space: nowrap; \}", html), "нужен класс .nb (nowrap)"
-    for tail in ("AI Transformation Roadmap", "for Your Business", "for Mindful Living",
-                 "for Human Good", "AI Can&rsquo;t Replace", "Insights &amp; Technologies",
-                 "into an AI Company?",
-                 "вашей ИИ-трансформации", "для вашего бизнеса", "для осознанной жизни",
-                 "во благо человека", "которые ИИ не заменит", "и ИИ-технологии",
-                 "в ИИ-компанию?"):
+    for tail in ("for Your Business", "for Human Good", "AI Can&rsquo;t Replace",
+                 "Insights &amp; Technologies", "into an AI Company?",
+                 "для вашего бизнеса", "во благо человека", "которые ИИ не заменит",
+                 "и ИИ-технологии", "в ИИ-компанию?"):
         assert '<span class="nb">%s</span>' % tail in html, \
             "хвост «%s» должен быть неразрывной группой .nb" % tail
     # подпись контакта: «…бизнес в ИИ-компанию?» вместо «…с помощью ИИ?»
     assert "с помощью ИИ?" not in html
+    # FR-SITE34: короткие подписи стратегии и Ландао — одной строкой, без .nb
+    assert ">AI Transformation Roadmap<" in html
+    assert "'strategy.desc': 'Дорожная карта ИИ-трансформации'" in html
 
 
 def test_desktop_content_optically_centred():
