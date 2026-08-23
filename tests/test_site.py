@@ -407,6 +407,119 @@ def test_mic_pulses_on_mobile():
         "кольцо — фиолетовое (#8854F3) с анимацией soundWave"
 
 
+# ── FR-SITE26: правки по скринам нового меню ─────────────────────────────
+
+def test_sec_link_gap_matches_hero():
+    """Зазор «кнопка → серая ссылка» одинаковый на всех экранах (как у героя):
+    1.1rem = gap секции + margin-top ссылки."""
+    html = _html()
+    # герой: gap 1.75rem − 0.65rem = 1.1rem
+    assert re.search(r"\.about-link \{[^}]*margin-top: -0\.65rem;", html)
+    # секции: моб gap 0.85rem + 0.25rem = 1.1rem; десктоп 1.35rem − 0.25rem = 1.1rem
+    assert re.search(r"\.sec-link \{[^}]*margin-top: 0\.25rem;", html), \
+        "на мобилке .sec-link добирает зазор до 1.1rem (+0.25rem)"
+    assert re.search(r"@media \(min-width:1024px\) \{ \.sec-link \{ margin-top: -0\.25rem;", html), \
+        "на десктопе .sec-link сокращает зазор до 1.1rem (−0.25rem)"
+
+
+def test_landao_desc_mindful_living():
+    html = _html()
+    assert ">Your Personal AI Assistant for Mindful Living<" in html, \
+        "описание Landao: «Your Personal AI Assistant for Mindful Living»"
+    assert "Ваш персональный ИИ-ассистент для осознанной жизни" in html, \
+        "RU-описание Landao должно упоминать осознанную жизнь"
+
+
+def test_hero_sub_always_one_line():
+    """Подзаголовок героя в одну строку на мобилке и вебе: nowrap + кегль от vw,
+    отдельный для EN (44 зн.) и RU (53 зн.)."""
+    html = _html()
+    assert re.search(r'<p class="desc hero-sub" data-i18n="hero\.sub"', html), \
+        "подзаголовку героя нужен класс hero-sub"
+    assert re.search(r"\.desc\.hero-sub \{ white-space: nowrap; max-width: none;", html), \
+        "hero-sub должен запрещать перенос"
+    assert re.search(r'html\[lang="ru"\] \.desc\.hero-sub \{ font-size: clamp\(', html), \
+        "у RU своя (меньшая) лестница кегля — строка длиннее"
+    # и в десктопном, и в ландшафтном блоке есть свои клампы (перебивают .desc)
+    assert html.count(".desc.hero-sub { font-size: clamp(") >= 4
+
+
+def test_lang_switch_js_centres_between_pill_and_cta():
+    """EN | RU стоит ПО СЕРЕДИНЕ между пилюлей меню и CTA: середина промежутка
+    вычисляется в JS (ширина пилюли зависит от языка), CSS-отступ — фолбэк."""
+    html = _html()
+    assert "function placeLangSwitch()" in html
+    assert "var navRight = nav.offsetLeft + nav.offsetWidth / 2;" in html, \
+        "правый край пилюли: offsetLeft + width/2 (offsetLeft не знает про translateX(-50%))"
+    assert "(navRight + headerCta.offsetLeft) / 2" in html, \
+        "середина промежутка = (право пилюли + лево CTA) / 2"
+    # пересчёт: на ресайзе, при смене языка и после загрузки веб-шрифта
+    assert re.search(r"var onResize = function \(\) \{[^}]*placeLangSwitch\(\);", html)
+    assert html.count("placeLangSwitch();") >= 3
+
+
+def test_mobile_menu_brand_and_higher_items():
+    html = _html()
+    # бренд-шапка: тот же значок, что в хедере, + надпись
+    m = re.search(r'<div class="nav-brand"[^>]*>\s*<img class="nav-brand-img" src="([^"]+)"', html)
+    assert m and m.group(1) == LOGO_URL, "в меню сверху слева — тот же логотип, что на главной"
+    assert re.search(r'<span class="nav-brand-name">Andre AI Technologies</span>', html)
+    assert re.search(r"\.nav\.open \.nav-brand \{[^}]*position: absolute; top: 1\.1rem; left: 1\.1rem;", html)
+    # пункты подтянуты выше: не центр, а от верха
+    assert re.search(r"\.nav\.open \{[^}]*justify-content: flex-start;[^}]*padding: clamp\(", html), \
+        "список меню прижат выше (flex-start), а не по центру экрана"
+
+
+def test_strategy_h2_is_short():
+    html = _html()
+    assert re.search(r'data-i18n="strategy\.h2">AI Strategy</h2>', html), \
+        "заголовок экрана стратегии — «AI Strategy» (без Transformation)"
+    assert "AI Transformation Strategy</h2>" not in html
+    assert "'strategy.h2': 'ИИ-стратегия'" in html
+
+
+def test_ru_legal_links_fit_one_line():
+    """«Политика конфиденциальности» и «Условия использования» на RU — каждая в
+    одну строку: nowrap + уменьшенный кегль только для русского."""
+    html = _html()
+    assert re.search(r"\.nav-legal-link \{[^}]*white-space: nowrap;", html)
+    assert re.search(r'html\[lang="ru"\] \.nav-legal-link \{ font-size: clamp\(', html), \
+        "на RU кегль юр-ссылок меню меньше — иначе они не помещаются в строку"
+    assert re.search(r'html\[lang="ru"\] \.legal-link \{ font-size: clamp\(', html), \
+        "на RU кегль юр-ссылок футера контактов тоже уменьшается"
+    assert re.search(r"\.legal-link \{[^}]*white-space: nowrap;", html)
+
+
+def test_mobile_tiles_stay_on_dark():
+    """Плитки-иконки на мобилке меньше — их верх не вылезает из тёмной зоны на видео."""
+    html = _html()
+    m = re.search(r"\.float-row \{[^}]*transform: scale\(([\d.]+)\);", html)
+    assert m, "у .float-row должен быть мобильный масштаб"
+    assert float(m.group(1)) <= 0.66, \
+        "мобильный масштаб плиток должен быть ≤0.66 (при 0.74 верх плиток заезжал на видео)"
+
+
+def test_desktop_content_optically_centred():
+    """Контент тёмной панели на десктопе сдвинут чуть вниз — в зрительную середину
+    (шапка съедает верх). Экран контакта не сдвигается: у него футер у низа."""
+    html = _html()
+    assert re.search(r"@media \(min-width:1024px\) \{ \.scroll \{[^}]*transform: translateY\(1\.4rem\);", html)
+    assert re.search(r"\.scroll:has\(\.contact-screen\.active\) \{[^}]*transform: none;", html)
+    assert re.search(r"\.contact-hero \{[^}]*top: 1\.4rem;[^}]*\} \}", html) or \
+        re.search(r"@media \(min-width:1024px\) \{ \.contact-hero \{[^}]*top: 1\.4rem;", html), \
+        "герой контакта получает тот же сдвиг через top"
+
+
+def test_desktop_typography_scaled_up():
+    """Жалоба «на компе мелко»: клампы контентной колонки подняты и растут с окном."""
+    html = _html()
+    assert ".desc { font-size: clamp(15.5px, 1.3vw, 23px); max-width: 34rem; }" in html
+    assert ".h2-size { font-size: clamp(2.2rem, 2.75vw, 3.7rem); }" in html
+    assert ".hero-size { font-size: clamp(1.7rem, 3.3vw, 3rem); }" in html
+    assert html.count("font-size: clamp(11.5px, 0.95vw, 16px)") == 6, \
+        "кнопки шести секций должны использовать общий увеличенный кламп"
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:
