@@ -424,9 +424,9 @@ def test_sec_link_gap_matches_hero():
 
 def test_landao_desc_mindful_living():
     html = _html()
-    assert ">Your Personal AI Assistant for Mindful Living<" in html, \
-        "описание Landao: «Your Personal AI Assistant for Mindful Living»"
-    assert "Ваш персональный ИИ-ассистент для осознанной жизни" in html, \
+    assert '>Your Personal AI Assistant <span class="nb">for Mindful Living</span><' in html, \
+        "описание Landao: «Your Personal AI Assistant for Mindful Living» (хвост не разрывается)"
+    assert 'Ваш персональный ИИ-ассистент <span class="nb">для осознанной жизни</span>' in html, \
         "RU-описание Landao должно упоминать осознанную жизнь"
 
 
@@ -490,13 +490,40 @@ def test_ru_legal_links_fit_one_line():
     assert re.search(r"\.legal-link \{[^}]*white-space: nowrap;", html)
 
 
-def test_mobile_tiles_stay_on_dark():
-    """Плитки-иконки на мобилке меньше — их верх не вылезает из тёмной зоны на видео."""
+def test_tiles_are_small_squares_without_bars():
+    """FR-SITE27: плитки-иконки — квадратные, меньше и БЕЗ полосок-«подчёркиваний»;
+    на мобилке дополнительно ужаты scale'ом, чтобы не вылезать на видео."""
     html = _html()
+    assert 'class="bar"' not in html and ".tile .bar" not in html, \
+        "цветных полосок под иконками (.bar) быть не должно"
+    m = re.search(r"\.tile\.sm \{ width: ([\d.]+)rem; height: ([\d.]+)rem; \}", html)
+    assert m and m.group(1) == m.group(2), "малая плитка должна быть квадратной"
+    m = re.search(r"\.tile\.lg \{ width: ([\d.]+)rem; height: ([\d.]+)rem;", html)
+    assert m and m.group(1) == m.group(2), "большая плитка должна быть квадратной"
     m = re.search(r"\.float-row \{[^}]*transform: scale\(([\d.]+)\);", html)
-    assert m, "у .float-row должен быть мобильный масштаб"
-    assert float(m.group(1)) <= 0.66, \
-        "мобильный масштаб плиток должен быть ≤0.66 (при 0.74 верх плиток заезжал на видео)"
+    assert m and float(m.group(1)) <= 0.72, \
+        "на мобилке плитки дополнительно ужимаются (scale ≤ 0.72)"
+    # размер иконок задаёт CSS, а не инлайн-стили (инлайн его не перебьёт)
+    assert re.search(r"\.tile\.sm i \{ font-size: \d+px; \}", html)
+    assert re.search(r"\.tile\.lg i \{ font-size: \d+px; \}", html)
+    assert not re.search(r'\.tile[^<]*<i[^>]*style="font-size', html)
+
+
+def test_desc_breaks_are_semantic():
+    """FR-SITE27: двухстрочные подписи переносятся ПО СМЫСЛУ — хвостовая группа
+    («для вашего бизнеса», «for Mindful Living»…) обёрнута в .nb и не рвётся."""
+    html = _html()
+    assert re.search(r"\.nb \{ white-space: nowrap; \}", html), "нужен класс .nb (nowrap)"
+    for tail in ("AI Transformation Roadmap", "for Your Business", "for Mindful Living",
+                 "for Human Good", "AI Can&rsquo;t Replace", "Insights &amp; Technologies",
+                 "into an AI Company?",
+                 "вашей ИИ-трансформации", "для вашего бизнеса", "для осознанной жизни",
+                 "во благо человека", "которые ИИ не заменит", "и технологии ИИ",
+                 "в ИИ-компанию?"):
+        assert '<span class="nb">%s</span>' % tail in html, \
+            "хвост «%s» должен быть неразрывной группой .nb" % tail
+    # подпись контакта: «…бизнес в ИИ-компанию?» вместо «…с помощью ИИ?»
+    assert "с помощью ИИ?" not in html
 
 
 def test_desktop_content_optically_centred():
@@ -518,6 +545,28 @@ def test_desktop_typography_scaled_up():
     assert ".hero-size { font-size: clamp(1.7rem, 3.3vw, 3rem); }" in html
     assert html.count("font-size: clamp(11.5px, 0.95vw, 16px)") == 6, \
         "кнопки шести секций должны использовать общий увеличенный кламп"
+
+
+# ── FR-SITE28: видео на языке интерфейса + постер-заглушка ───────────────
+
+def test_video_per_language_with_poster():
+    html = _html()
+    m = re.search(r'<video id="hero-video" src="([^"]+)" poster="([^"]+)"[^>]*>', html)
+    assert m, "нужен тег видео с src и poster"
+    assert m.group(1) == "/assets/Andre_AIT_video_compressed.mp4", \
+        "по умолчанию (EN) — новый ролик из assets этого репозитория"
+    assert m.group(2) == "/andre_ai.jpg", \
+        "постер-заглушка andre_ai.jpg — чёрного фона не бывает"
+    assert "loop muted autoplay playsinline" in m.group(0)
+    assert "'/assets/Andre_AIT_video_compressed_ru.mp4'" in html, \
+        "у русского языка свой ролик"
+    assert "function setVideoLang(" in html and "setVideoLang(lang);" in html, \
+        "смена языка должна переключать ролик"
+    assert "videoBlobs[lang] = URL.createObjectURL(b);" in html, \
+        "каждый ролик кэшируется в blob (цикл без сети, FR-SITE25)"
+    assert '<link rel="preload" as="image" href="/andre_ai.jpg" fetchpriority="high">' in html, \
+        "постер грузится первым приоритетом"
+    assert "hero-poster.jpg" not in html, "ссылок на старый постер быть не должно"
 
 
 if __name__ == "__main__":

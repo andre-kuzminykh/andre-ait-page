@@ -12,7 +12,7 @@
 <meta name="robots" content="index, follow, max-image-preview:large">
 
 <!-- Постер первого экрана грузим первым приоритетом: он должен появиться раньше видео -->
-<link rel="preload" as="image" href="/assets/hero-poster.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="/andre_ai.jpg" fetchpriority="high">
 
 <!-- Favicons (AIT logo) -->
 <link rel="icon" href="/favicon.ico" sizes="any">
@@ -137,7 +137,7 @@
      Safari/Chrome) иначе получали height:auto → затемнение схлопывалось в ноль
      и переход «видео → чёрное» становился резким (FR-SITE17). */
   #hero-video { position: absolute; top: 0; left: 0; width: 100vw; height: 64vh; height: 64dvh; object-fit: cover; object-position: center; cursor: pointer; transition: opacity 0.4s ease;
-    background-image: url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABMNDhEODBMRDxEVFBMXHTAfHRoaHToqLCMwRT1JR0Q9Q0FMVm1dTFFoUkFDX4JgaHF1e3x7SlyGkIV3j214e3b/2wBDARQVFR0ZHTgfHzh2T0NPdnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnb/wAARCAAYABgDASIAAhEBAxEB/8QAGAABAQADAAAAAAAAAAAAAAAAAAUBAwb/xAAhEAABBAICAgMAAAAAAAAAAAABAAIDEQQSITEFIhMyQf/EABgBAAIDAAAAAAAAAAAAAAAAAAAEAQID/8QAHBEAAgICAwAAAAAAAAAAAAAAAAECAxESIjFB/9oADAMBAAIRAxEAPwDn4oL6Co4vhzNAZHSC6+tdLEcFROdXQtbML4mxySSN9OCPblXtubfFjDjqSpoNSRSKlkQ7t3AoHlExG2MlkHWS352TNTGO0DjVBW8bwc97TPAYBZpESmqMXJvslnLljJaH20fh5REU4QKcl6f/2Q==");
+    background-image: url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABIMDRANCxIQDhAUExIVGywdGxgYGzYnKSAsQDlEQz85Pj1HUGZXR0thTT0+WXlaYWltcnNyRVV9hnxvhWZwcm7/2wBDARMUFBsXGzQdHTRuST5Jbm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm7/wAARCAAYABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDnooMjpWjbaT5sBcyDPpRHABEW9KlsnRY3Z/u9uaurWbfus6XDlMme32kiitO4iDjcBwaK6I1YyVwdMymvp52WNG2gnGBW3baJPs3yvhAM0UVycqOdzb3Mt7uSN2UNlQe9FFFOyH7SS6n/2Q==");
     background-size: cover; background-position: center; background-repeat: no-repeat; }
   /* FR-SITE17: затемнение КОРОЧЕ (начинается с 45%, а не с 6% — борода почти не
      темнится) и ПЛАВНЕЕ (15 стопов S-кривой вместо 8, шаг альфы ≤0.09 — нет
@@ -471,18 +471,23 @@
   @media (min-width:1024px) { .sec-link { margin-top: -0.25rem; font-size: clamp(12px, 0.9vw, 15px); } }
   @media (hover:hover) { .sec-link:hover { color: #ffffff; } }
 
-  /* FR-SITE26: на мобилке плитки МЕНЬШЕ (было 0.74) — иначе их верх вылезал из
-     тёмной зоны на видео; отрицательные поля съедают пустоту от scale */
-  .float-row { display: flex; justify-content: center; align-items: flex-end; gap: 0.85rem; transform: scale(0.64); margin: -1.15rem 0; }
+  /* FR-SITE27: плитки КВАДРАТНЫЕ, меньше и без полосок-«подчёркиваний» — только
+     иконка по центру; на мобилке дополнительно ужимаются scale'ом, чтобы не
+     вылезать из тёмной зоны на видео */
+  .float-row { display: flex; justify-content: center; align-items: flex-end; gap: 0.85rem; transform: scale(0.7); margin: -0.5rem 0; }
   @media (min-width:1024px) { .float-row { transform: none; margin: 0; } }
-  .tile { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #15151b; border-radius: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.25); animation: floatY 4s ease-in-out infinite; }
-  .tile.sm { width: 3.6rem; height: 5.4rem; gap: 0.55rem; }
-  .tile.lg { width: 4.5rem; height: 6.6rem; gap: 0.6rem; border-radius: 1.1rem; }
-  .tile .bar { height: 3px; border-radius: 2px; }
-  .tile.sm .bar { width: 1.6rem; }
-  .tile.lg .bar { width: 2rem; }
+  .tile { flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #15151b; border-radius: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.25); animation: floatY 4s ease-in-out infinite; }
+  .tile.sm { width: 3.3rem; height: 3.3rem; }
+  .tile.lg { width: 4.2rem; height: 4.2rem; border-radius: 1.1rem; }
+  .tile.sm i { font-size: 20px; }
+  .tile.lg i { font-size: 30px; }
 
   .desc { margin: 0; font-size: 14.5px; line-height: 1.6; color: #cbd5e1; max-width: 30rem; }
+  /* FR-SITE27: когда подпись не влезает в одну строку, перенос идёт ПО СМЫСЛУ —
+     хвостовая группа («для вашего бизнеса», «for Mindful Living»…) обёрнута в
+     .nb и не разрывается: влезает строка целиком — одна строка, нет — группа
+     уходит на вторую целиком */
+  .nb { white-space: nowrap; }
   @media (min-width:1024px) { .desc { font-size: clamp(15.5px, 1.3vw, 23px); max-width: 34rem; } }
   /* FR-SITE26: подзаголовок героя «I Help Companies Adapt…» ВСЕГДА в одну строку
      (и на мобилке, и на вебе). Шрифт моноширинный, поэтому ширина строки — это
@@ -649,7 +654,7 @@
     .swipe-hint { display: none; }
 
     /* smaller floating tiles so section blocks fit a short viewport */
-    .float-row { transform: scale(0.6); margin: -1.1rem 0; }
+    .float-row { transform: scale(0.62); margin: -0.5rem 0; }
 
     /* contact: как на десктопе — герой по центру ЭКРАНА, футер (иконки +
        Privacy·Terms + копирайт) прижат к низу. Экран занимает всю высоту;
@@ -727,8 +732,10 @@
 
   <!-- ===== Background video ===== -->
   <div class="scene">
-    <!-- poster = первый кадр видео: показывается мгновенно, пока грузится сам ролик (вместо чёрного фона) -->
-    <video id="hero-video" src="https://github.com/andre-kuzminykh/andre-ait-page/raw/refs/heads/media/andre-ai-web-small.mp4" poster="/assets/hero-poster.jpg" loop muted autoplay playsinline preload="auto"></video>
+    <!-- poster = заглушка (andre_ai.jpg): показывается мгновенно, пока грузится сам
+         ролик — чёрного фона не бывает. Ролики лежат в этом же репозитории:
+         EN — по умолчанию, RU подставляет setVideoLang при смене языка. -->
+    <video id="hero-video" src="/assets/Andre_AIT_video_compressed.mp4" poster="/andre_ai.jpg" loop muted autoplay playsinline preload="auto"></video>
     <div class="video-shadow" aria-hidden="true"></div>
   </div>
 
@@ -837,12 +844,12 @@
         <!-- AI STRATEGY -->
         <section class="screen sec" data-screen="strategy" style="text-align: center;">
           <div class="float-row">
-            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-magnifying-glass-chart" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
-            <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-network-wired" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
-            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-chess-knight" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-magnifying-glass-chart" style="color: #8854F3;"></i></div>
+            <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-network-wired" style="color: #F97316;"></i></div>
+            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-chess-knight" style="color: #8854F3;"></i></div>
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);" data-i18n="strategy.h2">AI Strategy</h2>
-          <p class="desc" data-i18n="strategy.desc">Your Personalized AI Transformation Roadmap</p>
+          <p class="desc" data-i18n="strategy.desc">Your Personalized <span class="nb">AI Transformation Roadmap</span></p>
           <!-- Кабинет ИИ-стратегии (strategy.) -->
           <a class="btn-white" href="https://strategy.andre.technology/" rel="noopener" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="strategy.cta">Get Your AI Strategy <i class="fa-solid fa-arrow-right"></i></a>
           <a class="sec-link" href="https://strategy.andre.technology/" rel="noopener" data-i18n="strategy.link">AI Transformation Cases</a>
@@ -851,12 +858,12 @@
         <!-- NEURONIUM — AI Operating System -->
         <section class="screen sec" data-screen="neuronium" style="text-align: center;">
           <div class="float-row">
-            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-database" style="font-size: 26px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
-            <div class="tile lg" style="border: 1px solid rgba(136,84,243,0.5); box-shadow: 0 10px 30px rgba(136,84,243,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-brain" style="font-size: 38px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
-            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-server" style="font-size: 26px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-database" style="color: #F97316;"></i></div>
+            <div class="tile lg" style="border: 1px solid rgba(136,84,243,0.5); box-shadow: 0 10px 30px rgba(136,84,243,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-brain" style="color: #8854F3;"></i></div>
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-server" style="color: #F97316;"></i></div>
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">Neuronium AI</h2>
-          <p class="desc" data-i18n="neuronium.desc">AI Operating System for Your Business</p>
+          <p class="desc" data-i18n="neuronium.desc">AI Operating System <span class="nb">for Your Business</span></p>
           <a class="btn-white" href="https://neuronium.ai/" rel="noopener" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="neuronium.cta">Get Neuronium AI <i class="fa-solid fa-arrow-right"></i></a>
           <a class="sec-link" href="https://neuronium.ai/" rel="noopener" data-i18n="neuronium.link">Learn More</a>
         </section>
@@ -864,12 +871,12 @@
         <!-- LANDAO — Personal AI Assistant -->
         <section class="screen sec" data-screen="landao" style="text-align: center;">
           <div class="float-row">
-            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-comments" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
-            <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-wand-magic-sparkles" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
-            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-mobile-screen" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-comments" style="color: #8854F3;"></i></div>
+            <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-wand-magic-sparkles" style="color: #F97316;"></i></div>
+            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-mobile-screen" style="color: #8854F3;"></i></div>
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">Landao AI</h2>
-          <p class="desc" data-i18n="landao.desc">Your Personal AI Assistant for Mindful Living</p>
+          <p class="desc" data-i18n="landao.desc">Your Personal AI Assistant <span class="nb">for Mindful Living</span></p>
           <a class="btn-white" href="https://landao.ai/" rel="noopener" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="landao.cta">Meet Landao AI <i class="fa-solid fa-arrow-right"></i></a>
           <a class="sec-link" href="https://landao.ai/" rel="noopener" data-i18n="landao.link">Project History</a>
         </section>
@@ -877,12 +884,12 @@
         <!-- ANTROPOLIS — New AI Economy -->
         <section class="screen sec" data-screen="antropolis" style="text-align: center;">
           <div class="float-row">
-            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-people-group" style="font-size: 26px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
-            <div class="tile lg" style="border: 1px solid rgba(136,84,243,0.5); box-shadow: 0 10px 30px rgba(136,84,243,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-city" style="font-size: 38px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
-            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-earth-americas" style="font-size: 26px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-people-group" style="color: #F97316;"></i></div>
+            <div class="tile lg" style="border: 1px solid rgba(136,84,243,0.5); box-shadow: 0 10px 30px rgba(136,84,243,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-city" style="color: #8854F3;"></i></div>
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-earth-americas" style="color: #F97316;"></i></div>
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">Antropolis</h2>
-          <p class="desc" data-i18n="antropolis.desc">New AI Economy for Human Good</p>
+          <p class="desc" data-i18n="antropolis.desc">New AI Economy <span class="nb">for Human Good</span></p>
           <a class="btn-white" href="https://antropolis.city/" rel="noopener" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="antropolis.cta">Enter Antropolis <i class="fa-solid fa-arrow-right"></i></a>
           <a class="sec-link" href="https://antropolis.city/" rel="noopener" data-i18n="antropolis.link">Manifesto</a>
         </section>
@@ -890,12 +897,12 @@
         <!-- ACADEMY — AI Education -->
         <section class="screen sec" data-screen="academy" style="text-align: center;">
           <div class="float-row">
-            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-user-tie" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
-            <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-graduation-cap" style="font-size: 38px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
-            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-laptop-code" style="font-size: 26px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
+            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-user-tie" style="color: #8854F3;"></i></div>
+            <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-graduation-cap" style="color: #F97316;"></i></div>
+            <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-laptop-code" style="color: #8854F3;"></i></div>
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);" data-i18n="academy.h2">AI Education</h2>
-          <p class="desc" data-i18n="academy.desc">Master the Skills AI Can&rsquo;t Replace</p>
+          <p class="desc" data-i18n="academy.desc">Master the Skills <span class="nb">AI Can&rsquo;t Replace</span></p>
           <a class="btn-white" href="https://academy.andre.technology/" rel="noopener" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="academy.cta">Explore Courses <i class="fa-solid fa-arrow-right"></i></a>
           <a class="sec-link" href="https://academy.andre.technology/" rel="noopener" data-i18n="academy.link">Skill Map</a>
         </section>
@@ -903,12 +910,12 @@
         <!-- DATAIST — Media -->
         <section class="screen sec" data-screen="dataist" style="text-align: center;">
           <div class="float-row">
-            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-rss" style="font-size: 26px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
-            <div class="tile lg" style="border: 1px solid rgba(136,84,243,0.5); box-shadow: 0 10px 30px rgba(136,84,243,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-newspaper" style="font-size: 38px; color: #8854F3;"></i><div class="bar" style="background: rgba(136,84,243,0.5);"></div></div>
-            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-bolt" style="font-size: 26px; color: #F97316;"></i><div class="bar" style="background: rgba(249,115,22,0.5);"></div></div>
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-rss" style="color: #F97316;"></i></div>
+            <div class="tile lg" style="border: 1px solid rgba(136,84,243,0.5); box-shadow: 0 10px 30px rgba(136,84,243,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-newspaper" style="color: #8854F3;"></i></div>
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-bolt" style="color: #F97316;"></i></div>
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">Dataist Media</h2>
-          <p class="desc" data-i18n="dataist.desc">AI News, Insights &amp; Technologies</p>
+          <p class="desc" data-i18n="dataist.desc">AI News, <span class="nb">Insights &amp; Technologies</span></p>
           <a class="btn-white" href="https://dataist.ai/" rel="noopener" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="dataist.cta">Visit Dataist AI <i class="fa-solid fa-arrow-right"></i></a>
           <a class="sec-link" href="https://dataist.ai/" rel="noopener" data-i18n="dataist.link">Top Stories</a>
         </section>
@@ -917,7 +924,7 @@
         <section class="screen contact-screen" data-screen="contact" style="text-align: center;">
           <div class="contact-hero">
             <h2 class="h2-size contact-title" data-i18n="contact.title" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.12; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);"><span style="color: #ffffff;">Start</span><br><span style="white-space: nowrap;"><span style="color: #8854F3;">AI</span> <span style="color: #F97316;">Transformation</span></span></h2>
-            <p class="desc" data-i18n="contact.sub" style="margin: 0;">Ready to Transform Your Business with AI?</p>
+            <p class="desc" data-i18n="contact.sub" style="margin: 0;">Ready to Transform Your Business <span class="nb">into an AI Company?</span></p>
             <!-- Бесплатная диагностика ИИ-зрелости (maturity.) -->
             <a class="btn-white" href="https://maturity.andre.technology/" rel="noopener" data-i18n="contact.cta" style="padding: clamp(1.05rem, 0.9vw, 1.4rem) clamp(2.1rem, 1.8vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(13px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;">Free AI Diagnosis <i class="fa-solid fa-arrow-right"></i></a>
           </div>
@@ -980,6 +987,12 @@
   /* FR-SITE24: 8 экранов = 8 пунктов меню, скролл листает их по порядку */
   var ORDER = ['overview', 'strategy', 'neuronium', 'landao', 'antropolis', 'academy', 'dataist', 'contact'];
   var SCREENS = ORDER;
+  /* FR-SITE28: у каждого языка СВОЙ ролик (лежат в этом же репозитории);
+     постер-заглушка andre_ai.jpg общая — чёрного фона не бывает */
+  var VIDEO_SRC = {
+    en: '/assets/Andre_AIT_video_compressed.mp4',
+    ru: '/assets/Andre_AIT_video_compressed_ru.mp4'
+  };
   /* Leads are e-mailed via FormSubmit; first submission triggers a one-time
      activation e-mail to this address — confirm it once and leads flow in. */
   var LEAD_ENDPOINT = 'https://formsubmit.co/ajax/admin@andre.technology';
@@ -1149,6 +1162,40 @@
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navStep(-1);
   });
 
+  /* ---- видео по языку (FR-SITE28) ----
+     Смена языка ставит соответствующий ролик. Каждый ролик после первой загрузки
+     кэшируется в blob (FR-SITE25: цикл крутится без сети и не замирает на втором
+     круге; повторное переключение языка — мгновенное, без перекачки). */
+  var videoLang = 'en';           /* совпадает с src в разметке */
+  var videoBlobs = {};            /* lang -> blob:URL */
+  function applyVideoSrc(u, restart) {
+    var t = restart ? 0 : (video.currentTime || 0);
+    video.src = u;
+    try { video.currentTime = t; } catch (err) {}
+    video.muted = state.isMuted;
+    var p = video.play && video.play();
+    if (p && p.catch) p.catch(function () {});
+  }
+  function setVideoLang(lang) {
+    var url = VIDEO_SRC[lang] || VIDEO_SRC.en;
+    var switching = lang !== videoLang;
+    videoLang = lang;
+    if (videoBlobs[lang]) {
+      if (video.src !== videoBlobs[lang]) applyVideoSrc(videoBlobs[lang], switching);
+      return;
+    }
+    if (switching) applyVideoSrc(url, true);
+    if (!window.fetch || !window.URL || !URL.createObjectURL) return;
+    fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('video fetch ' + r.status);
+      return r.blob();
+    }).then(function (b) {
+      videoBlobs[lang] = URL.createObjectURL(b);
+      /* пока качали, язык могли сменить ещё раз — не перебиваем чужой ролик */
+      if (videoLang === lang) applyVideoSrc(videoBlobs[lang], false);
+    }).catch(function () {});
+  }
+
   /* ---- mic / audio ---- */
   function setMuted(m) {
     state.isMuted = m;
@@ -1223,27 +1270,27 @@
     'overview.cta': 'Начать ИИ-трансформацию <i class="fa-solid fa-arrow-right"></i>',
     'overview.about': 'Обо мне',
     'strategy.h2': 'ИИ-стратегия',
-    'strategy.desc': 'Персональная дорожная карта вашей ИИ-трансформации',
+    'strategy.desc': 'Персональная дорожная карта <span class="nb">вашей ИИ-трансформации</span>',
     'strategy.cta': 'Получить ИИ-стратегию <i class="fa-solid fa-arrow-right"></i>',
     'strategy.link': 'Кейсы ИИ-трансформации',
-    'neuronium.desc': 'ИИ Операционная система для вашего бизнеса',
+    'neuronium.desc': 'ИИ Операционная система <span class="nb">для вашего бизнеса</span>',
     'neuronium.cta': 'Получить ИИ Бизнес-ОС <i class="fa-solid fa-arrow-right"></i>',
     'neuronium.link': 'Узнать подробнее',
-    'landao.desc': 'Ваш персональный ИИ-ассистент для осознанной жизни',
+    'landao.desc': 'Ваш персональный ИИ-ассистент <span class="nb">для осознанной жизни</span>',
     'landao.cta': 'Познакомиться с Landao AI <i class="fa-solid fa-arrow-right"></i>',
     'landao.link': 'История проекта',
-    'antropolis.desc': 'Новая ИИ-экономика во благо человека',
+    'antropolis.desc': 'Новая ИИ-экономика <span class="nb">во благо человека</span>',
     'antropolis.cta': 'Войти в Antropolis <i class="fa-solid fa-arrow-right"></i>',
     'antropolis.link': 'Манифест',
     'academy.h2': 'ИИ-обучение',
-    'academy.desc': 'Освойте навыки, которые ИИ не заменит',
+    'academy.desc': 'Освойте навыки, <span class="nb">которые ИИ не заменит</span>',
     'academy.cta': 'Смотреть курсы <i class="fa-solid fa-arrow-right"></i>',
     'academy.link': 'Карта навыков',
-    'dataist.desc': 'Новости, инсайты и технологии ИИ',
+    'dataist.desc': 'Новости, инсайты <span class="nb">и технологии ИИ</span>',
     'dataist.cta': 'Перейти на Dataist AI <i class="fa-solid fa-arrow-right"></i>',
     'dataist.link': 'Главные материалы',
     'contact.title': '<span style="color: #ffffff;">Начните</span><br><span style="white-space: nowrap;"><span style="color: #8854F3;">ИИ</span><span style="color: #F97316;">-трансформацию</span></span>',
-    'contact.sub': 'Готовы трансформировать бизнес с помощью ИИ?',
+    'contact.sub': 'Готовы трансформировать бизнес <span class="nb">в ИИ-компанию?</span>',
     'contact.cta': 'Бесплатная ИИ-диагностика <i class="fa-solid fa-arrow-right"></i>',
     'legal.privacy': 'Политика конфиденциальности',
     'legal.terms': 'Условия использования',
@@ -1286,6 +1333,8 @@
     storeSet(LANG_KEY, lang);
     /* смена языка меняет ширину пилюли меню — пересчитываем середину для EN|RU */
     placeLangSwitch();
+    /* и ставит ролик на нужном языке (FR-SITE28) */
+    setVideoLang(lang);
   }
 
   /* ---- cookie consent (shown once per user) ---- */
@@ -1547,28 +1596,7 @@
       var p2 = video.play && video.play();
       if (p2 && p2.catch) p2.catch(function () {});
     });
-    /* FR-SITE25: на втором круге видео иногда замирало стоп-кадром — к моменту
-       перезапуска буфер первого прохода уже вытеснен, а повторная догрузка через
-       redirect с github.com может застрять. Скачиваем ролик ОДИН раз целиком и
-       переключаем src на локальный blob: дальше цикл крутится вообще без сети.
-       Если скачивание не удалось (офлайн, CORS) — молча остаёмся на старой схеме.
-       Работает с любым роликом, который поставят в src. */
-    (function makeLoopLocal() {
-      if (!window.fetch || !window.URL || !URL.createObjectURL) return;
-      var src = video.currentSrc || video.src;
-      if (!src || src.indexOf('blob:') === 0) return;
-      fetch(src).then(function (r) {
-        if (!r.ok) throw new Error('video fetch ' + r.status);
-        return r.blob();
-      }).then(function (b) {
-        var t = video.currentTime || 0;
-        video.src = URL.createObjectURL(b);
-        try { video.currentTime = t; } catch (err) {}
-        video.muted = state.isMuted;
-        var p3 = video.play && video.play();
-        if (p3 && p3.catch) p3.catch(function () {});
-      }).catch(function () {});
-    })();
+    /* ролик нужного языка + blob-кэш (FR-SITE25/28) запускает setLang → setVideoLang */
 
     setInterval(capTick, 110);
 
