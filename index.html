@@ -223,9 +223,10 @@
   /* Center nav (desktop bar / mobile fullscreen menu) */
   .nav { display: none; }
   @media (max-width:1023px) {
-    /* FR-SITE26: список подтянут ВЫШЕ (не по центру экрана — от верха, под
-       бренд-шапкой меню), низ по-прежнему оставляет место футеру с иконками */
-    .nav.open { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 0; padding: clamp(7rem, 16vh, 9.5rem) 1.75rem calc(5rem + env(safe-area-inset-bottom, 0px)); z-index: 50;
+    /* FR-SITE32: список ПО СЕРЕДИНЕ свободной зоны между бренд-шапкой (absolute
+       сверху) и футером с иконками (absolute снизу); паддинги не пускают его
+       на них на коротких экранах */
+    .nav.open { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: clamp(7rem, 16vh, 9.5rem) 1.75rem calc(5rem + env(safe-area-inset-bottom, 0px)); z-index: 50;
       background: #050505; overflow-y: auto; pointer-events: auto; }
   }
   /* FR-SITE26/31: бренд-шапка меню — тот же значок и надпись, что на главной,
@@ -263,7 +264,7 @@
     /* FR-SITE24: пунктов стало 8 — высота строки и иконки масштабируются от
        высоты экрана (vh), чтобы меню целиком помещалось и на небольших телефонах */
     .nav.open .nav-tab { display: flex; align-items: center; gap: 1.15rem; width: 100%; max-width: 23rem; text-align: left;
-      background: transparent; border: 0; border-top: 1px solid rgba(255,255,255,0.14); border-radius: 0; padding: clamp(0.75rem, 2.2vh, 1.4rem) 0.25rem;
+      background: transparent; border: 0; border-top: 1px solid rgba(255,255,255,0.14); border-radius: 0; padding: clamp(0.7rem, 2.2vh, 1.4rem) 0.25rem;
       color: #ffffff; font-size: clamp(16px, 2.3vh, 20px); letter-spacing: 0.1em; box-shadow: none; transition: color 0.25s ease; }
     .nav.open .nav-tab:last-of-type { border-bottom: 1px solid rgba(255,255,255,0.14); }
     .nav.open .nav-ic { display: inline-flex; align-items: center; justify-content: center; width: 2rem; flex-shrink: 0; font-size: clamp(17px, 2.3vh, 21px); color: var(--ic); background: none; }
@@ -273,6 +274,11 @@
   }
   @media (max-width:1023px) and (hover:hover) {
     .nav.open .nav-tab:hover .nav-label, .nav.open .nav-tab:hover .nav-ic, .nav.open .nav-tab:hover .nav-go { color: var(--ic); }
+  }
+  /* FR-SITE32: на КОРОТКИХ экранах (SE и подобные) строки меню плотнее — иначе
+     центрированный список 8 пунктов упирается нижним пунктом в футер с иконками */
+  @media (max-width:1023px) and (max-height:620px) {
+    .nav.open .nav-tab { padding-top: 0.55rem; padding-bottom: 0.55rem; }
   }
   @media (min-width:1024px) {
     /* FR-SITE4: навигация ЧИТАЕМАЯ и НЕ жирная (было 12px/700 → мелко и жирно) */
@@ -1271,7 +1277,7 @@
     'nav.antropolis': 'Антрополис',
     'nav.academy': 'Академия',
     'nav.dataist': 'Датаист',
-    'nav.contact': 'Мои контакты',
+    'nav.contact': 'Контакты',
     'cta.diagnostic': 'ИИ-диагностика <i class="fa-solid fa-arrow-right"></i>',
     'speaker.role': 'ИИ-консультант',
     'hero.l1': '<span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">ИИ</span><span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">-трансформация</span>',

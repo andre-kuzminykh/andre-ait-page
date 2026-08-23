@@ -477,9 +477,12 @@ def test_mobile_menu_brand_and_higher_items():
     assert re.search(r"\.nav\.open \.nav-brand \{[^}]*justify-content: center;[^}]*position: absolute;[^}]*left: 1\.1rem; right: 1\.1rem;", html)
     assert re.search(r"\.nav\.open \.nav-brand-name \{ font-size: clamp\(14px", html), \
         "надпись бренда в меню должна быть крупной (от 14px)"
-    # пункты подтянуты выше: не центр, а от верха
-    assert re.search(r"\.nav\.open \{[^}]*justify-content: flex-start;[^}]*padding: clamp\(", html), \
-        "список меню прижат выше (flex-start), а не по центру экрана"
+    # FR-SITE32: список по середине зоны между брендом и футером
+    assert re.search(r"\.nav\.open \{[^}]*justify-content: center;[^}]*padding: clamp\(", html), \
+        "список меню центрируется в зоне между брендом и футером"
+    # FR-SITE32: на русском пункт называется просто «Контакты»
+    assert "'nav.contact': 'Контакты'" in html
+    assert "Мои контакты" not in html
 
 
 def test_strategy_h2_is_short():
