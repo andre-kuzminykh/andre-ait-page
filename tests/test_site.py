@@ -650,6 +650,18 @@ def test_short_desktop_fits_and_scroll_fades():
         "can-scroll не должен включаться при overflow:visible"
 
 
+def test_speaker_emoji_sits_on_the_text_line():
+    """FR-SITE39: глиф 🤖 рисуется выше строки текста, поэтому при кегле 15px он
+    торчал вверх и свисал вниз. Кегль приведён к высоте строки «Andre AI»
+    (замер: центры совпадают, выступ симметричный ±1.2px)."""
+    html = _html()
+    m = re.search(r"\.speaker-emoji \{ font-size: ([\d.]+)px;[^}]*position: relative; top: (-?[\d.]+)em;", html)
+    assert m, "у эмодзи должен быть кегль по строке и точная доводка top"
+    assert float(m.group(1)) <= 12.5, \
+        "кегль эмодзи (%s px) должен быть соразмерен строке, иначе он свисает" % m.group(1)
+    assert abs(float(m.group(2))) <= 0.1, "доводка top — микросдвиг, а не смещение строки"
+
+
 def test_short_mobile_fits_without_overlap():
     """FR-SITE37: невысокие телефоны в портрете — контент ужимается, чтобы
     помещаться в панель; сдвиг героя контакта снят, иначе он наезжал на футер."""
