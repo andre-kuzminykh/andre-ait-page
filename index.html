@@ -493,11 +493,13 @@
 
   .desc { margin: 0; font-size: 14.5px; line-height: 1.6; color: #cbd5e1; max-width: 30rem; }
   /* FR-SITE27: когда подпись не влезает в одну строку, перенос идёт ПО СМЫСЛУ —
-     хвостовая группа («для вашего бизнеса», «for Mindful Living»…) обёрнута в
+     хвостовая группа («для бизнеса», «во благо человека»…) обёрнута в
      .nb и не разрывается: влезает строка целиком — одна строка, нет — группа
      уходит на вторую целиком */
   .nb { white-space: nowrap; }
-  @media (min-width:1024px) { .desc { font-size: clamp(15.5px, 1.3vw, 23px); max-width: 34rem; } }
+  /* min 15px (не 15.5): на 1024px «Освойте навыки, которые ИИ не заменит» иначе
+     на пару пикселей шире панели и переносится (FR-SITE35) */
+  @media (min-width:1024px) { .desc { font-size: clamp(15px, 1.3vw, 23px); max-width: 34rem; } }
   /* FR-SITE26/34: подзаголовок героя ВСЕГДА в одну строку (и на мобилке, и на
      вебе). Шрифт моноширинный, поэтому ширина строки — просто число символов ×
      кегль: EN 44 знака, RU 43 — длины сравнялись, кегль ЕДИНЫЙ для обоих языков.
@@ -510,15 +512,24 @@
     .desc.hero-sub { font-size: clamp(8px, 1.5vw - 2px, 12px); }
   }
   /* body{zoom} (≥1600) масштабирует vw-кегль, но ширина панели задана в % и
-     остаётся прежней в CSS-пикселях — делим кегль на тот же коэффициент */
+     остаётся прежней в CSS-пикселях — делим vw-часть кегля на тот же коэффициент
+     (FR-SITE35: иначе nowrap-строки — заголовок контакта, подписи — вылезали
+     за панель на больших экранах; rem/px-края клампов согласованы с панелью
+     и не делятся) */
   @media (min-width:1600px) {
     .desc.hero-sub { font-size: clamp(10px, calc((1.45vw - 2px) / 1.15), 19px); }
+    .desc { font-size: clamp(15.5px, calc(1.3vw / 1.15), 23px); }
+    .h2-size { font-size: clamp(2.2rem, calc(2.75vw / 1.15), 3.7rem); }
   }
   @media (min-width:1900px) {
     .desc.hero-sub { font-size: clamp(10px, calc((1.45vw - 2px) / 1.3), 19px); }
+    .desc { font-size: clamp(15.5px, calc(1.3vw / 1.3), 23px); }
+    .h2-size { font-size: clamp(2.2rem, calc(2.75vw / 1.3), 3.7rem); }
   }
   @media (min-width:2300px) {
     .desc.hero-sub { font-size: clamp(10px, calc((1.45vw - 2px) / 1.5), 19px); }
+    .desc { font-size: clamp(15.5px, calc(1.3vw / 1.5), 23px); }
+    .h2-size { font-size: clamp(2.2rem, calc(2.75vw / 1.5), 3.7rem); }
   }
 
   .swipe-hint { margin: 0; margin-top: 1.3rem; transform: translateY(1.8rem); font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.5); text-align: center; }
@@ -591,6 +602,11 @@
      «AI Transformation» иначе шире экрана */
   .contact-title { font-size: clamp(1.4rem, 8.2vw, 2rem); letter-spacing: 0.04em; }
   @media (min-width:1024px) { .contact-title { font-size: clamp(2.1rem, 2.6vw, 3.7rem); } }
+  /* FR-SITE35: зум-корзины (см. комментарий у .desc.hero-sub) — на больших
+     экранах nowrap-строка «AI Transformation» вылезала за панель */
+  @media (min-width:1600px) { .contact-title { font-size: clamp(2.1rem, calc(2.6vw / 1.15), 3.7rem); } }
+  @media (min-width:1900px) { .contact-title { font-size: clamp(2.1rem, calc(2.6vw / 1.3), 3.7rem); } }
+  @media (min-width:2300px) { .contact-title { font-size: clamp(2.1rem, calc(2.6vw / 1.5), 3.7rem); } }
 
   /* Footer: column (icons on top → Privacy·Terms → copyright); legal hidden on mobile (lives in menu) */
   .contact-footer { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.65rem; padding-top: 1.1rem; padding-bottom: 0.4rem; }
@@ -865,7 +881,7 @@
             <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-server" style="color: #F97316;"></i></div>
           </div>
           <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);" data-i18n="neuronium.h2">Neuronium AI</h2>
-          <p class="desc" data-i18n="neuronium.desc">AI Operating System <span class="nb">for Your Business</span></p>
+          <p class="desc" data-i18n="neuronium.desc">AI Business Operating System</p>
           <!-- продукт ещё не запущен: кнопка открывает попап Coming soon (сбор ранних заявок) -->
           <button class="btn-white" data-action="lead-open" data-source="Neuronium AI" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="neuronium.cta">Get Neuronium <i class="fa-solid fa-arrow-right"></i></button>
           <a class="sec-link" href="https://neuronium.ai/" rel="noopener" data-i18n="neuronium.link">Learn More</a>
@@ -929,7 +945,7 @@
         <section class="screen contact-screen" data-screen="contact" style="text-align: center;">
           <div class="contact-hero">
             <h2 class="h2-size contact-title" data-i18n="contact.title" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.12; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);"><span style="color: #ffffff;">Start</span><br><span style="white-space: nowrap;"><span style="color: #8854F3;">AI</span> <span style="color: #F97316;">Transformation</span></span></h2>
-            <p class="desc" data-i18n="contact.sub" style="margin: 0;">Ready to Transform Your Business <span class="nb">into an AI Company?</span></p>
+            <p class="desc" data-i18n="contact.sub" style="margin: 0;">Ready to Manage AI Company?</p>
             <!-- Бесплатная диагностика ИИ-зрелости (maturity.) -->
             <a class="btn-white" href="https://maturity.andre.technology/" rel="noopener" data-i18n="contact.cta" style="padding: clamp(1.05rem, 0.9vw, 1.4rem) clamp(2.1rem, 1.8vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(13px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;">Free AI Diagnosis <i class="fa-solid fa-arrow-right"></i></a>
           </div>
@@ -1300,7 +1316,7 @@
     'strategy.cta': 'Получить ИИ-стратегию <i class="fa-solid fa-arrow-right"></i>',
     'strategy.link': 'Кейсы ИИ-трансформации',
     'neuronium.h2': 'Нейроний ИИ',
-    'neuronium.desc': 'ИИ Операционная система <span class="nb">для вашего бизнеса</span>',
+    'neuronium.desc': 'ИИ Операционная система <span class="nb">для бизнеса</span>',
     'neuronium.cta': 'Получить Нейроний <i class="fa-solid fa-arrow-right"></i>',
     'neuronium.link': 'Узнать подробнее',
     'landao.h2': 'Ландао ИИ',
@@ -1320,7 +1336,7 @@
     'dataist.cta': 'Перейти на Dataist AI <i class="fa-solid fa-arrow-right"></i>',
     'dataist.link': 'Главные материалы',
     'contact.title': '<span style="color: #ffffff;">Начните</span><br><span style="white-space: nowrap;"><span style="color: #8854F3;">ИИ</span><span style="color: #F97316;">-трансформацию</span></span>',
-    'contact.sub': 'Готовы трансформировать бизнес <span class="nb">в ИИ-компанию?</span>',
+    'contact.sub': 'Готовы возглавить ИИ-компанию?',
     'contact.cta': 'Бесплатная ИИ-диагностика <i class="fa-solid fa-arrow-right"></i>',
     'legal.privacy': 'Политика конфиденциальности',
     'legal.terms': 'Условия использования',

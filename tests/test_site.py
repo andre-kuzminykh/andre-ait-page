@@ -529,17 +529,20 @@ def test_desc_breaks_are_semantic():
     («для вашего бизнеса», «for Mindful Living»…) обёрнута в .nb и не рвётся."""
     html = _html()
     assert re.search(r"\.nb \{ white-space: nowrap; \}", html), "нужен класс .nb (nowrap)"
-    for tail in ("for Your Business", "for Human Good", "AI Can&rsquo;t Replace",
-                 "Insights &amp; Technologies", "into an AI Company?",
-                 "для вашего бизнеса", "во благо человека", "которые ИИ не заменит",
-                 "и ИИ-технологии", "в ИИ-компанию?"):
+    for tail in ("for Human Good", "AI Can&rsquo;t Replace", "Insights &amp; Technologies",
+                 "для бизнеса", "во благо человека", "которые ИИ не заменит",
+                 "и ИИ-технологии", "для осознанной жизни"):
         assert '<span class="nb">%s</span>' % tail in html, \
             "хвост «%s» должен быть неразрывной группой .nb" % tail
-    # подпись контакта: «…бизнес в ИИ-компанию?» вместо «…с помощью ИИ?»
-    assert "с помощью ИИ?" not in html
-    # FR-SITE34: короткие подписи стратегии и Ландао — одной строкой, без .nb
+    # FR-SITE34/35: короткие подписи — одной строкой, без .nb
     assert ">AI Transformation Roadmap<" in html
     assert "'strategy.desc': 'Дорожная карта ИИ-трансформации'" in html
+    assert ">AI Business Operating System<" in html, \
+        "подпись Нейрония: «AI Business Operating System» одной строкой"
+    assert ">Ready to Manage AI Company?<" in html, \
+        "подпись контакта: «Ready to Manage AI Company?» одной строкой"
+    assert "'contact.sub': 'Готовы возглавить ИИ-компанию?'" in html
+    assert "с помощью ИИ?" not in html and "для вашего бизнеса" not in html
 
 
 def test_desktop_content_optically_centred():
@@ -553,10 +556,21 @@ def test_desktop_content_optically_centred():
         "герой контакта получает тот же сдвиг через top"
 
 
+def test_zoom_buckets_divide_vw_type():
+    """FR-SITE35: body{zoom} (≥1600) раздувает vw-кегль, а панель (в %) — нет:
+    nowrap-строки вылезали за экран. В зум-корзинах vw-часть кегля делится на
+    коэффициент зума для .desc, .h2-size и .contact-title."""
+    html = _html()
+    for k in ("1.15", "1.3", "1.5"):
+        assert "calc(1.3vw / %s)" % k in html, ".desc должен делить vw на %s" % k
+        assert "calc(2.75vw / %s)" % k in html, ".h2-size должен делить vw на %s" % k
+        assert "calc(2.6vw / %s)" % k in html, ".contact-title должен делить vw на %s" % k
+
+
 def test_desktop_typography_scaled_up():
     """Жалоба «на компе мелко»: клампы контентной колонки подняты и растут с окном."""
     html = _html()
-    assert ".desc { font-size: clamp(15.5px, 1.3vw, 23px); max-width: 34rem; }" in html
+    assert ".desc { font-size: clamp(15px, 1.3vw, 23px); max-width: 34rem; }" in html
     assert ".h2-size { font-size: clamp(2.2rem, 2.75vw, 3.7rem); }" in html
     assert ".hero-size { font-size: clamp(1.7rem, 3.3vw, 3rem); }" in html
     assert html.count("font-size: clamp(11.5px, 0.95vw, 16px)") == 6, \
