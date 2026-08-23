@@ -131,7 +131,7 @@ def test_nav_dividers_never_hidden_on_desktop():
     html = _html()
     # разделители «·» видны на всех десктоп-ширинах: внутри мид-брейкпоинта
     # 1024–1319 НЕТ правила `.nav-divider { display: none }`
-    mid = html.split("@media (min-width:1024px) and (max-width:1319px) {", 1)[1].split("}")[0]
+    mid = html.split("@media (min-width:1150px) and (max-width:1319px) {", 1)[1].split("}")[0]
     assert "display: none" not in mid, \
         "на узком десктопе разделители не должны пропадать (нет display:none)"
 
@@ -598,6 +598,86 @@ def test_ru_product_names():
     assert "Войти в Антрополис" in html
     assert "с Landao AI" not in html and "в Antropolis" not in html
     assert "Get Neuronium AI" not in html and "Meet Landao AI" not in html
+
+
+# ── FR-SITE36: масштабы окон — бургер, vh-ландшафт, маска прокрутки ──────
+
+def test_nav_pill_starts_at_1150_burger_below():
+    """Пилюля из 8 пунктов читаемо помещается с ~1150px; на 1024–1149 вместо
+    «замощения» — бургер с полноэкранным меню."""
+    html = _html()
+    assert re.search(r"@media \(min-width:1150px\) \{[^@]*\.nav \{ display: flex;", html), \
+        "десктоп-пилюля должна включаться с 1150px"
+    assert "@media (min-width:1150px) { .menu-btn { display: none; } }" in html, \
+        "бургер скрывается только с 1150px"
+    assert re.search(r"@media \(max-width:1149px\) \{[^@]*\.nav\.open \{ position: fixed;", html), \
+        "полноэкранное меню должно работать до 1149px включительно"
+    assert ".nav.open .nav-divider { display: none; }" in html, \
+        "в полноэкранном меню десктопные разделители «|» не показываются"
+
+
+def test_landscape_type_scales_with_height():
+    """Ландшафтное окно в пол-экрана — не телефон: кегль растёт с высотой (vh),
+    min() не даёт nowrap-строкам вылезти за узкую панель."""
+    html = _html()
+    block = html.split("@media (max-width:1023px) and (orientation: landscape) {", 1)[1] \
+                .split("/* FR-SITE36: рослый ландшафт")[0]
+    assert "min(clamp(1.2rem, 6vh, 2.6rem)" in block, "hero-кегль ландшафта — от vh"
+    assert "min(clamp(1.25rem, 5.6vh, 2.5rem)" in block, "h2-кегль ландшафта — от vh"
+    assert "min(clamp(11px, 2.1vh, 17px)" in block, "desc-кегль ландшафта — от vh"
+    assert "font-size: clamp(9.5px, 1.7vh, 14px) !important" in block, \
+        "кегль кнопок ландшафта — от vh"
+    assert re.search(r"@media \(max-width:1023px\) and \(orientation: landscape\) and \(min-height:520px\)", html), \
+        "рослый ландшафт возвращает плиткам нормальный масштаб"
+
+
+def test_short_desktop_fits_and_scroll_fades():
+    """Невысокое десктоп-окно: контент ужимается, чтобы влезать без прокрутки;
+    если всё же прокручивается — края растворяются градиентом, а не режутся."""
+    html = _html()
+    assert "@media (min-width:1024px) and (max-height:820px) {" in html
+    assert "@media (min-width:1024px) and (max-height:660px) {" in html
+    assert re.search(r"\.scroll\.can-scroll \{\s*-webkit-mask-image: linear-gradient\(to bottom, transparent 0, #000 2\.2rem", html), \
+        "маска прокрутки: плавный градиент сверху и снизу"
+    assert "function updateScrollFade()" in html
+    assert "scrollBox.classList.toggle('can-scroll'" in html
+    assert html.count("updateScrollFade();") >= 4, \
+        "пересчёт маски: init, ресайз, смена экрана и языка"
+    # FR-SITE37: маска ТОЛЬКО там, где бокс реально прокручивается. На мобилке у
+    # .scroll overflow:visible — контент виден за боксом, и маска резала бы видимое
+    assert "var ov = getComputedStyle(scrollBox).overflowY;" in html
+    assert "(ov === 'auto' || ov === 'scroll')" in html, \
+        "can-scroll не должен включаться при overflow:visible"
+
+
+def test_short_mobile_fits_without_overlap():
+    """FR-SITE37: невысокие телефоны в портрете — контент ужимается, чтобы
+    помещаться в панель; сдвиг героя контакта снят, иначе он наезжал на футер."""
+    html = _html()
+    assert "@media (max-width:1023px) and (orientation: portrait) and (max-height:700px) {" in html
+    assert "@media (max-width:1023px) and (orientation: portrait) and (max-height:600px) {" in html
+    short = html.split("(orientation: portrait) and (max-height:600px) {", 1)[1].split("\n  }")[0]
+    assert ".contact-hero { gap: 0.6rem; top: 0; }" in short, \
+        "на самых низких экранах сдвиг героя контакта снят (наезжал на футер)"
+    # тот же дефект на низких десктоп-окнах
+    low = html.split("(min-width:1024px) and (max-height:820px) {", 1)[1].split("\n  }")[0]
+    assert ".contact-hero { top: 0;" in low
+
+
+def test_landscape_phone_menu_flows():
+    """FR-SITE37: в ландшафте телефона 8 пунктов + бренд + футер не помещаются —
+    меню становится прокручиваемым столбцом (бренд и футер в потоке, крестик fixed),
+    иначе они накладывались на список."""
+    html = _html()
+    key = "@media (max-width:1149px) and (orientation: landscape) and (max-height:520px) {"
+    assert key in html
+    block = html.split(key, 1)[1].split("\n  }")[0]
+    assert ".nav.open .nav-brand { position: static;" in block
+    assert ".nav.open .nav-foot { position: static;" in block
+    assert ".nav.open .nav-close { position: fixed;" in block
+    # блок должен стоять ПОСЛЕ правил .nav-foot, иначе они перебивают position
+    assert html.find(".nav.open .nav-foot { display: flex;") < html.find(key), \
+        "ландшафтный блок должен идти после базовых правил футера меню"
 
 
 # ── FR-SITE28: видео на языке интерфейса + постер-заглушка ───────────────

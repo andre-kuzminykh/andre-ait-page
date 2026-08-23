@@ -221,26 +221,31 @@
   .mic-wave::after { animation-delay: 1s; }
 
   /* Center nav (desktop bar / mobile fullscreen menu) */
+  /* FR-SITE36: пилюля из 8 пунктов ЧИТАЕМО помещается только с ~1150px —
+     ниже (1024–1149) вместо «замощения» показываем бургер с полноэкранным меню,
+     как на мобилке (правила меню действуют до 1149px включительно) */
   .nav { display: none; }
-  @media (max-width:1023px) {
+  @media (max-width:1149px) {
     /* FR-SITE32: список ПО СЕРЕДИНЕ свободной зоны между бренд-шапкой (absolute
        сверху) и футером с иконками (absolute снизу); паддинги не пускают его
        на них на коротких экранах */
     .nav.open { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: clamp(7rem, 16vh, 9.5rem) 1.75rem calc(5rem + env(safe-area-inset-bottom, 0px)); z-index: 50;
       background: #050505; overflow-y: auto; pointer-events: auto; }
+    /* в полноэкранном меню десктопные разделители «|» не показываются */
+    .nav.open .nav-divider { display: none; }
   }
   /* FR-SITE26/31: бренд-шапка меню — тот же значок и надпись, что на главной,
      ПО ЦЕНТРУ и крупно; строкой ниже крестика, чтобы на узких экранах надпись
      не упиралась в него (сам хедер сайта лежит ПОД полноэкранным меню) */
   .nav-brand { display: none; }
-  @media (max-width:1023px) {
+  @media (max-width:1149px) {
     /* top ниже крестика (низ ~63px): крупная центрированная надпись иначе
        доставала бы до него правым краем на узких экранах */
     .nav.open .nav-brand { display: flex; align-items: center; justify-content: center; gap: 0.7rem; position: absolute; top: clamp(4.3rem, 8vh, 5rem); left: 1.1rem; right: 1.1rem; z-index: 1; pointer-events: none; }
     .nav.open .nav-brand-img { width: clamp(2.6rem, 11.5vw, 3.4rem); height: clamp(2.6rem, 11.5vw, 3.4rem); object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); flex-shrink: 0; }
     .nav.open .nav-brand-name { font-size: clamp(14px, 4.6vw, 19px); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #ffffff; white-space: nowrap; }
   }
-  @media (min-width:1024px) {
+  @media (min-width:1150px) {
     /* пилюля смещена левее геометрического центра: справа от неё живут переключатель
        языка и CTA, слева — только лого, поэтому «оптический» центр сдвинут (FR-SITE10) */
     .nav { display: flex; align-items: center; gap: 0.3rem; position: absolute; left: calc(50% - 3.5rem); top: 50%; transform: translate(-50%, -50%);
@@ -249,7 +254,7 @@
       -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 4px 30px rgba(0,0,0,0.3); pointer-events: auto; }
   }
   .nav-close { display: none; }
-  @media (max-width:1023px) {
+  @media (max-width:1149px) {
     .nav.open .nav-close { display: flex; position: absolute; top: 1.35rem; right: 1.35rem; width: 2.6rem; height: 2.6rem; align-items: center; justify-content: center;
       border-radius: 0; background: transparent; border: 0; color: #ffffff; box-shadow: none; cursor: pointer; z-index: 1; }
   }
@@ -259,7 +264,7 @@
   @media (hover:hover) { .nav-tab:hover { color: var(--hover, #8854F3); } }
   /* left icon + right arrow appear only inside the mobile menu */
   .nav-ic, .nav-go { display: none; }
-  @media (max-width:1023px) {
+  @media (max-width:1149px) {
     /* elegant list: no backgrounds, thin hairline between rows, icon left, arrow right */
     /* FR-SITE24: пунктов стало 8 — высота строки и иконки масштабируются от
        высоты экрана (vh), чтобы меню целиком помещалось и на небольших телефонах */
@@ -272,45 +277,46 @@
     .nav.open .nav-go { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; flex-shrink: 0; font-size: 13px; color: rgba(255,255,255,0.45); background: none; transition: color 0.25s ease; }
     .nav.open .nav-tab.active .nav-label, .nav.open .nav-tab.active .nav-go { color: var(--ic); }
   }
-  @media (max-width:1023px) and (hover:hover) {
+  @media (max-width:1149px) and (hover:hover) {
     .nav.open .nav-tab:hover .nav-label, .nav.open .nav-tab:hover .nav-ic, .nav.open .nav-tab:hover .nav-go { color: var(--ic); }
   }
   /* FR-SITE32: на КОРОТКИХ экранах (SE и подобные) строки меню плотнее — иначе
      центрированный список 8 пунктов упирается нижним пунктом в футер с иконками */
-  @media (max-width:1023px) and (max-height:620px) {
+  @media (max-width:1149px) and (max-height:620px) {
     .nav.open .nav-tab { padding-top: 0.55rem; padding-bottom: 0.55rem; }
   }
-  @media (min-width:1024px) {
+  @media (min-width:1150px) {
     /* FR-SITE4: навигация ЧИТАЕМАЯ и НЕ жирная (было 12px/700 → мелко и жирно) */
     .nav-tab { font-size: 14px; font-weight: 500; letter-spacing: 0.015em; padding: 0.3rem 0.45rem; color: #94a3b8; position: relative; }
     .nav-tab.active { background: linear-gradient(var(--ul), var(--ul)) no-repeat bottom center / 70% 2px; }
   }
   .nav-divider { display: none; }
   /* FR-SITE4: вертикальные разделители «·» видны на ВСЕХ десктоп-ширинах (не пропадают при сжатии) */
-  @media (min-width:1024px) { .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12px; padding: 0 0.06rem; user-select: none; pointer-events: none; } }
-  /* FR-SITE4·h: на средних десктоп-ширинах пилюля из 6 пунктов уплотняется по
-     ГОРИЗОНТАЛИ (меньше шрифт/трекинг/зазор), но НЕ масштабируется (transform:scale
-     менял высоту) — высота пилюли постоянна (2.85rem) и равна высоте CTA;
-     разделители остаются видны. */
-  @media (min-width:1024px) and (max-width:1319px) {
-    /* FR-SITE9/10: пункт контактов и переключатель EN|RU добавили ширины справа —
-       пилюля уезжает на 2rem влево (слева у лого запас ~120px) и дожимается
-       ТОЛЬКО по горизонтали; шрифт 12px и высота 2.85rem не тронуты (FR-SITE4) */
-    .nav { left: calc(50% - 5.5rem); gap: 0.06rem; padding-left: 0.5rem; padding-right: 0.5rem; }
-    /* FR-SITE24: шрифт узкого десктопа «резиновый» — растёт вместе с окном,
-       а не сидит на минимуме весь диапазон (жалоба «на моём компе мелко») */
-    .nav-tab { font-size: clamp(12px, 1.05vw, 13.5px); letter-spacing: 0; padding-left: 0.16rem; padding-right: 0.16rem; }
+  @media (min-width:1150px) { .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12px; padding: 0 0.06rem; user-select: none; pointer-events: none; } }
+  /* FR-SITE4·h/36: на средних десктоп-ширинах пилюля уплотняется по ГОРИЗОНТАЛИ
+     (меньше шрифт/трекинг/зазор), но НЕ масштабируется (transform:scale менял
+     высоту) — высота пилюли постоянна (2.85rem) и равна высоте CTA; разделители
+     остаются видны. Ниже 1150px пилюли нет вообще — там бургер (FR-SITE36),
+     поэтому «замощения» с крошечными зазорами больше не бывает. */
+  @media (min-width:1150px) and (max-width:1319px) {
+    .nav { left: calc(50% - 5rem); gap: 0.12rem; padding-left: 0.7rem; padding-right: 0.7rem; }
+    /* шрифт «резиновый» — растёт вместе с окном, а не сидит на минимуме */
+    .nav-tab { font-size: clamp(12.5px, 1.15vw, 14px); letter-spacing: 0; padding-left: 0.3rem; padding-right: 0.3rem; }
     .nav-divider { padding: 0; }
   }
   @media (min-width:1320px) and (max-width:1479px) {
     .nav { left: calc(50% - 5rem); gap: 0.22rem; }
     .nav-tab { font-size: clamp(13px, 1vw, 14px); padding-left: 0.4rem; padding-right: 0.4rem; }
   }
-  /* body{zoom} (≥1600) сжимает вьюпорт вёрстки на 15–30%, а типографика тут полная —
-     без дожима пилюля упирается в EN|RU+CTA; логика та же: сдвиг влево + горизонтальное сжатие */
-  @media (min-width:1600px) and (max-width:1899px) {
-    .nav { left: calc(50% - 4.5rem); gap: 0.22rem; }
-    .nav-tab { font-size: 13px; padding-left: 0.4rem; padding-right: 0.4rem; }
+  /* body{zoom} (≥1600) сжимает вьюпорт вёрстки на 15%, а типографика тут полная —
+     без дожима пилюля упирается в EN|RU+CTA; с ~1700px эффективной ширины уже
+     хватает и пилюля живёт в полном размере (FR-SITE36: без «замощения») */
+  @media (min-width:1600px) and (max-width:1699px) {
+    .nav { left: calc(50% - 4.5rem); gap: 0.15rem; }
+    .nav-tab { font-size: 13.5px; padding-left: 0.3rem; padding-right: 0.3rem; }
+  }
+  @media (min-width:1700px) and (max-width:1899px) {
+    .nav { left: calc(50% - 4.5rem); }
   }
   @media (min-width:1900px) and (max-width:2299px) {
     .nav { left: calc(50% - 4.5rem); }
@@ -318,7 +324,7 @@
 
   /* Menu footer: socials → Privacy·Terms → copyright, pinned to the bottom (mobile only) */
   .nav-foot { display: none; }
-  @media (max-width:1023px) {
+  @media (max-width:1149px) {
     .nav.open .nav-foot { display: flex; flex-direction: column; align-items: center; gap: 0.8rem;
       position: absolute; left: 1.5rem; right: 1.5rem; bottom: calc(1.3rem + env(safe-area-inset-bottom, 0px)); }
   }
@@ -331,6 +337,22 @@
   /* FR-SITE26: RU-надписи («Политика конфиденциальности» / «Условия использования»)
      длиннее английских — на русском кегль меньше, чтобы КАЖДАЯ ссылка была в одну
      строку и обе помещались в ряд даже на узкой мобилке */
+  /* FR-SITE37: в ЛАНДШАФТЕ телефона (высота ≤520px) 8 пунктов + бренд + футер
+     физически не помещаются в экран. Тогда меню — обычный прокручиваемый
+     столбец: бренд и футер уходят В ПОТОК (не absolute), поэтому больше не
+     накладываются на список; крестик становится fixed и виден при прокрутке.
+     Блок стоит ПОСЛЕ правил .nav-foot/.nav-brand, иначе те перебивают position. */
+  @media (max-width:1149px) and (orientation: landscape) and (max-height:520px) {
+    .nav.open { justify-content: flex-start; padding: 1.1rem 1.75rem calc(1.4rem + env(safe-area-inset-bottom, 0px)); }
+    .nav.open .nav-close { position: fixed; top: 0.6rem; right: 0.8rem; }
+    .nav.open .nav-brand { position: static; margin: 0 auto 0.75rem; top: auto; left: auto; right: auto; }
+    .nav.open .nav-brand-img { width: 2.1rem; height: 2.1rem; }
+    .nav.open .nav-brand-name { font-size: 13px; }
+    .nav.open .nav-tab { padding-top: 0.5rem; padding-bottom: 0.5rem; font-size: 15px; }
+    .nav.open .nav-ic { font-size: 16px; }
+    .nav.open .nav-foot { position: static; left: auto; right: auto; bottom: auto; margin-top: 1.1rem; gap: 0.6rem; }
+  }
+
   html[lang="ru"] .nav-legal { gap: 0.45rem; }
   html[lang="ru"] .nav-legal-link { font-size: clamp(8px, 2.55vw, 10px); letter-spacing: 0.05em; }
   html[lang="ru"] .nav-legal-sep { font-size: 10px; }
@@ -339,7 +361,9 @@
   .menu-btn { display: flex; align-items: center; justify-content: center; width: clamp(2.5rem, 11vw, 3.3rem); height: clamp(2.5rem, 11vw, 3.3rem); border-radius: 999px;
     background: rgba(10,10,16,0.55); border: 1px solid rgba(255,255,255,0.10); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
     color: #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.35); cursor: pointer; flex-shrink: 0; }
-  @media (min-width:1024px) { .menu-btn { display: none; } }
+  /* FR-SITE36: бургер живёт до 1149px — на 1024–1149 он заменяет пилюлю */
+  @media (min-width:1024px) { .menu-btn { width: 2.85rem; height: 2.85rem; } }
+  @media (min-width:1150px) { .menu-btn { display: none; } }
 
   /* FR-SITE10: компактный ТЕКСТОВЫЙ переключатель языка EN | RU между меню и CTA
      (не кнопки — просто текст; активный язык белый, второй серый) */
@@ -438,6 +462,12 @@
     body.list-open .scroll > .screen.active { margin-top: auto; margin-bottom: auto; }
   }
   .scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  /* FR-SITE36: когда контент выше зоны прокрутки (класс can-scroll ставит JS),
+     верх и низ растворяются ПЛАВНЫМ градиентом — никаких резких обрезов в чёрное */
+  .scroll.can-scroll {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 2.2rem, #000 calc(100% - 2.2rem), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 2.2rem, #000 calc(100% - 2.2rem), transparent 100%);
+  }
 
   /* ===== Screens ===== */
   .screen { display: none; flex-direction: column; align-items: center; width: 100%; }
@@ -508,9 +538,7 @@
   @media (min-width:1024px) {
     .desc.hero-sub { font-size: clamp(10px, 1.45vw - 2px, 19px); }
   }
-  @media (max-width:1023px) and (orientation: landscape) {
-    .desc.hero-sub { font-size: clamp(8px, 1.5vw - 2px, 12px); }
-  }
+  /* (кегль hero-sub для мобильного ландшафта задаётся в его лэйаут-блоке ниже) */
   /* body{zoom} (≥1600) масштабирует vw-кегль, но ширина панели задана в % и
      остаётся прежней в CSS-пикселях — делим vw-часть кегля на тот же коэффициент
      (FR-SITE35: иначе nowrap-строки — заголовок контакта, подписи — вылезали
@@ -648,21 +676,27 @@
     [data-screen="overview"], [data-screen="strategy"], [data-screen="neuronium"], [data-screen="landao"],
     [data-screen="antropolis"], [data-screen="academy"], [data-screen="dataist"] { transform: none; }
 
-    /* fit type to the shorter, narrower column */
-    .hero-size { font-size: clamp(1.2rem, 3vw, 1.95rem); }
-    .h2-size  { font-size: clamp(1.25rem, 2.9vw, 1.9rem); }
+    /* FR-SITE36: кегль растёт с ВЫСОТОЙ окна (vh) — раньше он был телефонный
+       (фикс ~12px) и в ландшафтном окне в пол-экрана выглядел крошечным;
+       min() дополнительно не даёт nowrap-строкам вылезти за узкую (44%) панель */
+    .hero-size { font-size: min(clamp(1.2rem, 6vh, 2.6rem), calc((44vw - 45px) / 9.9)); }
+    .h2-size  { font-size: min(clamp(1.25rem, 5.6vh, 2.5rem), calc((44vw - 45px) / 8.4)); }
     .rm-title { font-size: clamp(1.25rem, 2.5vw, 1.8rem); }
-    .contact-title { font-size: clamp(1.3rem, 3vw, 1.9rem); }
-    .desc { font-size: 12px; line-height: 1.4; }
+    .contact-title { font-size: min(clamp(1.3rem, 5.6vh, 2.5rem), calc((44vw - 45px) / 10.9)); }
+    .desc { font-size: min(clamp(11px, 2.1vh, 17px), calc((44vw - 45px) / 22.2)); line-height: 1.4; }
+    .desc.hero-sub { font-size: clamp(8px, calc((44vw - 48px) / 26.5), 14.5px); }
 
     /* кнопки экранов НИКОГДА не шире узкой (44%) панели: как FR-SITE4 для
        верхней CTA — ужимаем ТОЛЬКО по горизонтали (padding/шрифт/трекинг).
        !important перекрывает инлайн-стили самих кнопок. */
     .screen .btn-white { max-width: 100%; box-sizing: border-box;
-      padding-left: clamp(0.9rem, 1.7vw, 2.1rem) !important;
-      padding-right: clamp(0.9rem, 1.7vw, 2.1rem) !important;
-      font-size: clamp(9.5px, 1.3vw, 12px) !important;
+      padding-top: clamp(0.55rem, 1.9vh, 1.1rem) !important;
+      padding-bottom: clamp(0.55rem, 1.9vh, 1.1rem) !important;
+      padding-left: clamp(0.9rem, 2.6vh, 2rem) !important;
+      padding-right: clamp(0.9rem, 2.6vh, 2rem) !important;
+      font-size: clamp(9.5px, 1.7vh, 14px) !important;
       letter-spacing: clamp(0.05em, 0.28vw, 0.15em) !important; }
+    .about-link, .sec-link { font-size: clamp(10px, 1.5vh, 13px); }
 
     /* cards stack vertically inside the panel (no full-bleed horizontal rail) */
     .rail { flex-direction: column; align-items: stretch; gap: 0.5rem; width: 100%; max-width: 100%;
@@ -673,7 +707,15 @@
 
     /* smaller floating tiles so section blocks fit a short viewport */
     .float-row { transform: scale(0.62); margin: -0.5rem 0; }
-
+  }
+  /* FR-SITE36: рослый ландшафт (планшет, окно в пол-экрана) — это не телефон:
+     плитки и вертикальные зазоры возвращаются к нормальному масштабу */
+  @media (max-width:1023px) and (orientation: landscape) and (min-height:520px) {
+    .float-row { transform: scale(0.84); margin: -0.25rem 0; }
+    .sec { gap: clamp(0.85rem, 2.2vh, 1.5rem); }
+    .scroll { padding-top: clamp(3.25rem, 8vh, 5rem); }
+  }
+  @media (max-width:1023px) and (orientation: landscape) {
     /* contact: как на десктопе — герой по центру ЭКРАНА, футер (иконки +
        Privacy·Terms + копирайт) прижат к низу. Экран занимает всю высоту;
        герой центрируется auto-полями, футер уходит в самый низ; на очень
@@ -686,11 +728,86 @@
     .contact-legal { display: flex; }
   }
 
+  /* ===== FR-SITE37: НЕВЫСОКИЕ телефоны в портрете (SE, компактные Android) =====
+     Панель занимает нижние 46dvh, и на экранах ≤700px контент туда не помещался:
+     плитки заезжали под плашку «Andre AI», а кнопка обрезалась низом экрана.
+     Ужимаем по высоте — плитки, кегли, зазоры и нижний отступ панели, — чтобы
+     всё было видно СРАЗУ, без прокрутки. */
+  @media (max-width:1023px) and (orientation: portrait) and (max-height:700px) {
+    .panel { padding-bottom: calc(2.2rem + env(safe-area-inset-bottom, 0px)); }
+    [data-screen="overview"], [data-screen="strategy"], [data-screen="neuronium"], [data-screen="landao"],
+    [data-screen="antropolis"], [data-screen="academy"], [data-screen="dataist"] { transform: translateY(0.6rem); }
+    .float-row { transform: scale(0.56); margin: -1.2rem 0; }
+    .sec, .sec-wide, .group { gap: 0.6rem; }
+    .screen[data-screen="overview"] { gap: 1.05rem !important; }
+    .hero-size { font-size: clamp(1.35rem, 7.6vw, 2rem); }
+    .h2-size { font-size: 1.35rem; }
+    .desc { font-size: 13px; line-height: 1.45; }
+    .about-link, .sec-link { font-size: 11px; }
+    .screen .btn-white { padding-top: 0.72rem !important; padding-bottom: 0.72rem !important; font-size: 10.5px !important; }
+    /* контакт: герой + футер с иконками целиком в экране */
+    .contact-screen { transform: translateY(1.2rem); min-height: 34dvh; }
+    .contact-hero { gap: 0.85rem; top: 0.5rem; }
+    .contact-title { font-size: clamp(1.35rem, 7.6vw, 1.9rem); }
+    .contact-footer { gap: 0.45rem; padding-top: 0.7rem; padding-bottom: 0; }
+    .social { font-size: 18px; }
+  }
+  /* совсем низкие (≤600px: SE 1-го поколения и подобные) — ещё плотнее */
+  @media (max-width:1023px) and (orientation: portrait) and (max-height:600px) {
+    .float-row { transform: scale(0.48); margin: -1.2rem 0; }
+    .sec, .sec-wide, .group { gap: 0.5rem; }
+    .screen[data-screen="overview"] { gap: 0.85rem !important; }
+    .h2-size { font-size: 1.2rem; }
+    .desc { font-size: 12px; }
+    .contact-title { font-size: 1.5rem; }
+    /* сдвиг героя контакта здесь наезжал бы на футер с иконками */
+    .contact-hero { gap: 0.6rem; top: 0; }
+    .contact-footer { padding-top: 0.9rem; }
+    .social { font-size: 16px; }
+  }
+
   /* Scale the whole UI up on large desktop screens so nothing looks tiny
      (zoom lifts fixed-px elements too — cards, nav, badge — unlike vw units). */
   @media (min-width:1600px) { body { zoom: 1.15; } }
   @media (min-width:1900px) { body { zoom: 1.3; } }
   @media (min-width:2300px) { body { zoom: 1.5; } }
+
+  /* ===== FR-SITE36: невысокие десктоп-окна =====
+     Цель — чтобы текст и кнопки были видны СРАЗУ, без прокрутки: типографика и
+     зазоры ужимаются по высоте. Если контент всё же выше окна (экстремально
+     низкое окно) — прокрутка остаётся, но края растворяются градиентом
+     (.scroll.can-scroll ниже), без резкого обреза в чёрное. */
+  @media (min-width:1024px) and (max-height:820px) {
+    .scroll { transform: translateY(0.8rem); }
+    .hero-size { font-size: clamp(1.5rem, 2.9vw, 2.3rem); }
+    .h2-size { font-size: clamp(1.7rem, 2.3vw, 2.6rem); }
+    .contact-title { font-size: clamp(1.7rem, 2.2vw, 2.6rem); }
+    .desc { font-size: clamp(13.5px, 1.1vw, 18px); }
+    .sec { gap: 1rem; }
+    .float-row { transform: scale(0.82); margin: -0.5rem 0; }
+    .screen[data-screen="overview"] { gap: 1.3rem !important; }
+    .sec-link { margin-top: -0.1rem; }
+    .about-link { margin-top: -0.5rem; }
+    /* «оптический» сдвиг героя контакта в низком окне наезжал бы на футер */
+    .contact-hero { top: 0; gap: clamp(1rem, 1.4vw, 1.6rem); }
+  }
+  @media (min-width:1024px) and (max-height:660px) {
+    .scroll { transform: translateY(0.4rem); max-height: calc(100dvh - 8rem); padding-top: 0.8rem; padding-bottom: 0.8rem; }
+    .hero-size { font-size: clamp(1.3rem, 2.5vw, 1.9rem); }
+    .h2-size { font-size: clamp(1.5rem, 2vw, 2.1rem); }
+    .contact-title { font-size: clamp(1.5rem, 2vw, 2.1rem); }
+    .desc { font-size: clamp(12.5px, 1vw, 16px); }
+    .float-row { transform: scale(0.68); margin: -0.9rem 0; }
+    .screen[data-screen="overview"] { gap: 1.05rem !important; }
+    .screen .btn-white { font-size: clamp(10.5px, 0.8vw, 12.5px) !important;
+      padding-top: 0.8rem !important; padding-bottom: 0.8rem !important; }
+    .contact-hero { gap: 0.8rem; }
+    .contact-footer { gap: 0.5rem; padding-bottom: 0.8rem; }
+    .social { font-size: clamp(17px, 1.3vw, 22px); }
+  }
+  @media (min-width:1024px) and (max-height:440px) {
+    .scroll { transform: none; max-height: calc(100dvh - 6rem); }
+  }
 
   /* ===== Cookie consent banner ===== */
   @keyframes bannerIn { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
@@ -1127,6 +1244,7 @@
       panel.classList.remove('leaving');
       panel.classList.add('entering');
       enterT = setTimeout(function () { panel.classList.remove('entering'); }, 560);
+      updateScrollFade();
       setTimeout(alignRails, 80);
       setTimeout(alignRails, 600);
     }, 240);
@@ -1379,6 +1497,8 @@
     storeSet(LANG_KEY, lang);
     /* смена языка ставит ролик на нужном языке (FR-SITE28) */
     setVideoLang(lang);
+    /* и меняет высоту текстов — пересчёт маски прокрутки (FR-SITE36) */
+    updateScrollFade();
   }
 
   /* ---- cookie consent (shown once per user) ---- */
@@ -1535,6 +1655,20 @@
     document.querySelectorAll('[data-rail]').forEach(function (r) { r.style.transform = 'none'; });
   }
 
+  /* ---- FR-SITE36: если контент выше зоны прокрутки, края растворяются
+     градиентом (класс can-scroll включает CSS-маску) ---- */
+  var scrollBox = document.querySelector('.scroll');
+  function updateScrollFade() {
+    if (!scrollBox) return;
+    /* Маску ставим ТОЛЬКО там, где бокс реально прокручивается. На мобилке у
+       .scroll overflow:visible — контент выходит за бокс, но виден целиком, и
+       маска обрезала бы видимое (FR-SITE37: так «растворялась» кнопка на SE). */
+    var ov = getComputedStyle(scrollBox).overflowY;
+    var scrollable = (ov === 'auto' || ov === 'scroll') &&
+      scrollBox.scrollHeight - scrollBox.clientHeight > 8;
+    scrollBox.classList.toggle('can-scroll', scrollable);
+  }
+
   /* ---- desktop video mask ---- */
   function applyVideoMask() {
     /* на мобилке снимаем ИНЛАЙН-маску (пустая строка), а не ставим 'none':
@@ -1629,6 +1763,7 @@
     setMuted(true);
     applyVideoMask();
     alignRails();
+    updateScrollFade();
 
     video.loop = true;
     video.muted = true;
@@ -1644,7 +1779,7 @@
 
     setInterval(capTick, 110);
 
-    var onResize = function () { applyVideoMask(); alignRails(); };
+    var onResize = function () { applyVideoMask(); alignRails(); updateScrollFade(); };
     window.addEventListener('resize', onResize);
     if (mqDesktop.addEventListener) mqDesktop.addEventListener('change', onResize);
     else if (mqDesktop.addListener) mqDesktop.addListener(onResize);
