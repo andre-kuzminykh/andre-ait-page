@@ -26,6 +26,7 @@ _EN_PAGE = "automation/index.html"
 _RU_PAGE = "automation_ru/index.html"
 _ENTRIES = (_EN_PAGE, _RU_PAGE)
 _LECTURE1 = os.path.join(_ROOT, "automation/1/index.html")
+_LECTURE2 = os.path.join(_ROOT, "automation/2/index.html")
 _MAIN_SITE = os.path.join(_ROOT, "index.html")
 
 _COURSE_PAGES = (
@@ -289,15 +290,27 @@ def test_lecture1_preview_description():
 
 # ── Лекция: при открытом тексте автоперехода нет ───────────────────────────
 
-def test_open_notes_panel_blocks_autoadvance():
-    html = _read(_LECTURE1)
-    m = re.search(r"p\.on\('ended', \(\) => \{(.*?)\}\);", html, re.S)
-    assert m, "не найден обработчик окончания видео"
-    body = m.group(1)
-    gate = body.index("notes-open")
-    advance = body.index("nextSlide()")
-    assert gate < advance, "проверка открытой панели должна стоять ДО перехода к слайду"
-    assert "return" in body[gate:advance], "при открытой панели обработчик должен выходить"
+def test_video_end_never_advances_the_slide():
+    """Ролик доиграл — слайд НЕ листается сам (правка владельца).
+
+    Кружок возвращается в состояние «нажми, чтобы посмотреть снова», а слайды
+    листает человек: стрелками, свайпом или клавишами.
+    """
+    for rel in (_LECTURE1, _LECTURE2):
+        html = _read(rel)
+        m = re.search(r"p\.on\('ended', \(\) => \{(.*?)\n            \}\);", html, re.S)
+        assert m, rel + ": не найден обработчик окончания видео"
+        body = m.group(1)
+        assert "nextSlide" not in body, rel + ": окончание видео не должно листать слайд"
+        assert "setPlayingUI(false)" in body, rel + ": кружок должен вернуться к значку play"
+
+
+def test_notes_panel_keeps_video_bubble_visible():
+    """Панель «Текст» кружок с говорящей головой не прячет (правка владельца)."""
+    for rel in (_LECTURE1, _LECTURE2):
+        html = _read(rel)
+        assert "body.notes-open #video-bubble{ opacity:1; pointer-events:auto; }" in html, \
+            rel + ": панель «Текст» не должна гасить кружок"
 
 
 def test_notes_open_class_is_the_real_panel_state():
