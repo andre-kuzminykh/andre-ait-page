@@ -674,11 +674,11 @@ def test_process_practice_page():
 
     # шесть отраслей + «свой процесс» — одним окном
     keys = re.findall(r'<button class="v-tab[^"]*" role="tab" data-key="([a-z]+)"', html)
-    assert keys == ["consult", "hr", "marketing", "callcenter", "design", "software", "own"], keys
-    for k in keys[:-1]:
+    assert keys == ["consult", "hr", "marketing", "callcenter", "design", "software"], keys
+    assert "v-own" not in html, rel + ": отдельной вкладки «свой процесс» быть не должно"
+    for k in keys:
         assert '<pre class="mmd-src" id="src-%s">' % k in html, rel + ": нет исходника схемы " + k
         assert '<div class="case-info" id="info-%s"' % k in html, rel + ": нет описания " + k
-    assert '<div class="case-info" id="info-own"' in html, rel + ": нет подсказки для своей схемы"
     # схемы горизонтальные — окно тоже горизонтальное
     assert len(re.findall(r"flowchart LR", html)) >= 6, rel + ": схемы примеров разворачиваются вширь"
     # узкие места отмечены на КАЖДОЙ схеме (считаем только внутри исходников:
@@ -724,14 +724,19 @@ def test_process_practice_viewer():
         rel + ": захват указателя не должен съедать клики по кнопкам окна"
     assert "function startView(){" in html and "Math.min(1, (box.height * 0.9) / natH)" in html, \
         rel + ": схема открывается в натуральную величину с начала процесса"
-    # атрибут hidden не должен проигрывать display в CSS
-    assert ".v-btn[hidden]{ display:none !important; }" in html
-    assert ".v-code textarea[hidden], .v-code pre.code[hidden]{ display:none !important; }" in html
+    # схему нельзя увести за край: влезает — центрируем, не влезает — упор
+    assert "function clampView(){" in html, rel + ": панорама должна быть ограничена"
+    assert "tx = (w <= box.width  - M) ? (box.width  - w) / 2 :" in html, \
+        rel + ": влезающая схема центрируется, а не остаётся обрезанной"
 
-    # своя схема: поле, отрисовка, сохранение между заходами
-    for el in ('id="v-input"', 'id="v-draw"', 'id="v-example"', 'id="v-copy"'):
-        assert el in html, rel + ": для своей схемы нет " + el
-    assert "const OWN_KEY = 'ait-own-mermaid';" in html, rel + ": своя схема переживает перезагрузку"
+    # поле кода одно и всегда редактируемое, кнопки «показать схему» нет
+    for el in ('id="v-input"', 'id="v-copy"'):
+        assert el in html, rel + ": в панели кода нет " + el
+    for gone in ('id="v-draw"', 'id="v-example"', 'id="v-src"'):
+        assert gone not in html, rel + ": лишний элемент " + gone + " — код рисуется сам"
+    assert "input.addEventListener('input'" in html and "window.renderDiagrams(true); }, 500);" in html, \
+        rel + ": правка кода перерисовывает схему сама, без кнопки"
+    assert "const SAVE_KEY = 'ait-mermaid-draft';" in html, rel + ": черновик переживает перезагрузку"
     assert "await mermaid.parse(code);" in html, rel + ": код проверяется до отрисовки"
 
     # ошибка показывается и превращается в промт на исправление

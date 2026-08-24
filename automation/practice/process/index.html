@@ -305,10 +305,6 @@
   .v-tab:hover{ border-color:#8B5CF6; }
   .v-tab[aria-selected="true"]{ background:#8B5CF6; border-color:#8B5CF6; color:#fff; }
   .v-tab[aria-selected="true"] .ic{ color:#fff; }
-  /* «Свой процесс» отделён от примеров и подписан оранжевым — это своя схема */
-  .v-tab.v-own{ margin-left:auto; border-style:dashed; }
-  .v-tab.v-own .ic{ color:#F97316; }
-  .v-tab.v-own[aria-selected="true"]{ background:#F97316; border-color:#F97316; border-style:solid; }
 
   /* Поле просмотра: горизонтальное, схема двигается и масштабируется */
   .v-stage{
@@ -367,6 +363,11 @@
     font-size:clamp(11.5px,2.5vw,13px); line-height:1.65;
   }
   .v-code textarea:focus{ outline:2px solid #8B5CF6; outline-offset:2px; }
+  .v-note{
+    display:flex; align-items:center; gap:.55rem; margin-top:.7rem;
+    color:var(--muted); font-weight:600; font-size:clamp(.78rem,2.5vw,.88rem); line-height:1.5;
+  }
+  .v-note .ic{ color:#8B5CF6; font-size:1.15rem; }
   /* display:block выше перебивает атрибут hidden — поле ввода оставалось
      видимым на вкладках-примерах пустой рамкой. */
   .v-code textarea[hidden], .v-code pre.code[hidden]{ display:none !important; }
@@ -898,7 +899,6 @@
         <button class="v-tab" role="tab" data-key="callcenter" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-headset" xlink:href="#i-headset"></use></svg> Колл-центр</button>
         <button class="v-tab" role="tab" data-key="design" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-palette" xlink:href="#i-palette"></use></svg> Дизайн</button>
         <button class="v-tab" role="tab" data-key="software" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Разработка ПО</button>
-          <button class="v-tab v-own" role="tab" data-key="own" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-pencil-simple" xlink:href="#i-pencil-simple"></use></svg> Свой процесс</button>
         </div>
 
         <div class="v-stage" id="v-stage">
@@ -919,13 +919,11 @@
           <div class="v-code-head">
             <span class="v-code-title"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid</span>
             <div class="v-code-act">
-              <button class="v-btn v-wide" type="button" id="v-draw" hidden><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> Показать схему</button>
-              <button class="v-btn v-wide" type="button" id="v-example" hidden><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> Взять пример</button>
               <button class="copy v-inline" type="button" id="v-copy"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
             </div>
           </div>
-          <pre class="code" id="v-src"></pre>
-          <textarea id="v-input" spellcheck="false" autocomplete="off" hidden aria-label="Ваш код mermaid"></textarea>
+          <textarea id="v-input" spellcheck="false" autocomplete="off" aria-label="Код схемы"></textarea>
+          <p class="v-note"><svg class="ic" aria-hidden="true"><use href="#i-pencil-simple" xlink:href="#i-pencil-simple"></use></svg> Правьте код или вставьте свой — схема перерисуется сама. Как получить код из интервью — в блоке ниже.</p>
 
           <div class="err" id="v-err" hidden role="alert">
             <div class="err-h"><svg class="ic" aria-hidden="true"><use href="#i-x-circle" xlink:href="#i-x-circle"></use></svg> В коде схемы ошибка</div>
@@ -1075,13 +1073,6 @@
           <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> архитектурные решения и финальное «выкатываем»</li>
         </ul>
       </div>
-      <div class="case-info" id="info-own" hidden>
-        <h3>Ваш процесс</h3>
-        <div class="goal">
-          <span><b>Как получить код:</b> проведите интервью, расшифруйте его и отправьте модели вместе с промтом из блока ниже.</span>
-          <span><b>Что дальше:</b> вставьте полученный код в поле выше и нажмите «Показать схему» — её можно сохранить в SVG или PNG.</span>
-          <span><b>Если код с ошибкой:</b> страница покажет строку с ошибкой и соберёт промт на исправление.</span>
-        </div>
       </div>
     </section>
 
@@ -1235,19 +1226,14 @@ document.querySelectorAll('#mmd-sources .mmd-src').forEach(el => {
 const stage  = document.getElementById('v-stage');
 const layer  = document.getElementById('v-layer');
 const tabs   = [...document.querySelectorAll('.v-tab')];
-const codeEl = document.getElementById('v-src');
 const input  = document.getElementById('v-input');
 const errBox = document.getElementById('v-err');
 const errTxt = document.getElementById('v-err-text');
 const levelEl= document.getElementById('v-level');
-const drawBtn= document.getElementById('v-draw');
-const exBtn  = document.getElementById('v-example');
 const copyBtn= document.getElementById('v-copy');
 
-const OWN_KEY = 'ait-own-mermaid';        // своя схема переживает перезагрузку
-let current = 'consult', lastError = '', ownCode = '';
-try { ownCode = localStorage.getItem(OWN_KEY) || ''; } catch (e) {}
-if (!ownCode) ownCode = SRC.get('consult') || '';
+const SAVE_KEY = 'ait-mermaid-draft';     // код в поле переживает перезагрузку
+let current = 'consult', lastError = '';
 
 /* ── Копирование в буфер ────────────────────────────────────────────────── */
 async function copyText(text, btn){
@@ -1272,12 +1258,23 @@ document.querySelectorAll('.copy[data-copy]').forEach(btn => {
     if (src) copyText(src.textContent, btn);
   });
 });
-copyBtn.addEventListener('click', () => copyText(activeCode(), copyBtn));
+copyBtn.addEventListener('click', () => copyText(input.value, copyBtn));
 
 /* ── Масштаб и перетаскивание ───────────────────────────────────────────── */
 let scale = 1, tx = 0, ty = 0, natW = 0, natH = 0;
 const MIN = 0.15, MAX = 4;
+function clampView(){
+  // Без ограничения при уменьшении схему уводило за край: масштаб считается от
+  // центра окна, и часть схемы оставалась «отрезанной», хотя целиком она уже
+  // влезала. Влезает — центрируем; не влезает — не пускаем дальше краёв.
+  const box = stage.getBoundingClientRect();
+  const w = natW * scale, h = natH * scale, M = 24;
+  if(!natW || !natH) return;
+  tx = (w <= box.width  - M) ? (box.width  - w) / 2 : Math.min(M, Math.max(box.width  - w - M, tx));
+  ty = (h <= box.height - M) ? (box.height - h) / 2 : Math.min(M, Math.max(box.height - h - M, ty));
+}
 function apply(){
+  clampView();
   layer.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
   levelEl.textContent = Math.round(scale * 100) + '%';
 }
@@ -1369,7 +1366,7 @@ window.addEventListener('resize', () => {
 });
 
 /* ── Отрисовка ──────────────────────────────────────────────────────────── */
-function activeCode(){ return current === 'own' ? (input.value || '') : (SRC.get(current) || ''); }
+function activeCode(){ return input.value || ''; }
 function showError(msg){
   lastError = msg;
   errTxt.textContent = msg;
@@ -1430,29 +1427,26 @@ try {
     }
   };
 
-  /* ── Плашки ──────────────────────────────────────────────────────────── */
+  /* ── Плашки: подставляют пример в поле ───────────────────────────────── */
   function select(key){
     current = key;
     tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.key === key ? 'true' : 'false'));
     document.querySelectorAll('.case-info').forEach(b => { b.hidden = b.id !== ('info-' + key); });
-    const own = key === 'own';
-    input.hidden = !own; codeEl.hidden = own;
-    drawBtn.hidden = !own; exBtn.hidden = !own;
-    if(own){ input.value = ownCode; } else { codeEl.textContent = SRC.get(key) || ''; }
+    input.value = SRC.get(key) || '';
+    save();
     errBox.hidden = true;
-    window.renderDiagrams();
+    window.renderDiagrams();           // новая схема — новый вид, с начала
   }
   tabs.forEach(t => t.addEventListener('click', () => select(t.dataset.key)));
 
-  drawBtn.addEventListener('click', () => {
-    ownCode = input.value;
-    try { localStorage.setItem(OWN_KEY, ownCode); } catch (e) {}
-    window.renderDiagrams();
-  });
-  exBtn.addEventListener('click', () => {
-    input.value = SRC.get('consult') || '';
-    ownCode = input.value;
-    window.renderDiagrams();
+  /* ── Правка кода: рисуем сами, без кнопки ────────────────────────────── */
+  function save(){ try { localStorage.setItem(SAVE_KEY, input.value); } catch (e) {} }
+  let typing;
+  input.addEventListener('input', () => {
+    clearTimeout(typing);
+    // Полсекунды тишины — и перерисовываем. Вид (масштаб и сдвиг) сохраняем:
+    // иначе схема прыгала бы к началу на каждом нажатии клавиши.
+    typing = setTimeout(() => { save(); window.renderDiagrams(true); }, 500);
   });
   document.getElementById('v-fixprompt').addEventListener('click', ev => {
     copyText('Схема mermaid не разобралась. Ниже код и текст ошибки. '
@@ -1506,10 +1500,21 @@ try {
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cur.markup);
   });
 
-  select('consult');
+  // Черновик из прошлого захода поднимаем, только если это НЕ один из примеров:
+  // значит, человек работал со своей схемой и не должен её потерять.
+  let draft = '';
+  try { draft = localStorage.getItem(SAVE_KEY) || ''; } catch (e) {}
+  const known = [...SRC.values()].some(v => v.trim() === draft.trim());
+  if(draft && !known){
+    input.value = draft;
+    tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+    document.querySelectorAll('.case-info').forEach(b => { b.hidden = true; });
+    await window.renderDiagrams();
+  } else {
+    select('consult');
+  }
 } catch (e) {
   showError('Библиотека mermaid не загрузилась — проверьте соединение и обновите страницу. Код схемы можно скопировать и открыть на mermaid.live');
-  codeEl.textContent = SRC.get('consult') || '';
 }
 </script>
 </body>
