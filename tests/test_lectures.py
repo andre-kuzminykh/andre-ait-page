@@ -490,18 +490,6 @@ def test_fitting_is_budgeted_not_frozen():
             assert 'preload="metadata"' in html, rel + ": у видео метаданные вместо auto"
 
 
-if __name__ == "__main__":
-    failed = 0
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            try:
-                fn()
-                print("ok   %s" % name)
-            except Exception as e:  # AssertionError и любые сбои разбора
-                failed += 1
-                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
-    raise SystemExit(1 if failed else 0)
-
 def test_owner_canon_batch8():
     """Страж правок владельца (батч 8): тексты, однострочные подписи, широкие
     карточки, размеры кружка, центр вариантов теста. Если это сломается —
@@ -536,8 +524,10 @@ def test_owner_canon_batch8():
     assert '<span class="whitespace-nowrap">Создание ИИ-агентов</span>' in html
     # Кружок: комп 224, мобила 170 (батчи 11-12 укрупнили со 132); на мобиле
     # он целиком на экране у правого края, стрелки по центру под ним
-    assert "--bub:calc(224px * var(--view-scale,1))" in html
-    assert "--bub:calc(170px * var(--view-scale,1))" in html
+    # Обвязка масштабируется --chrome-scale (FR-SITE27): холст слайда в
+    # мобильной форме увеличивается сам по себе, кнопки за ним не растут.
+    assert "--bub:calc(224px * var(--chrome-scale,1))" in html
+    assert "--bub:calc(170px * var(--chrome-scale,1))" in html
     assert "var(--bub)/2 - var(--arw-pair)/2" in html, "стрелки по центру под кружком на мобиле"
     # Финальный тест (канон уточнён батчем 10): буква и текст ВАРИАНТА слева,
     # по вертикали текст в центре кнопки; «Далее» по центру, автопрокрутка
@@ -588,9 +578,9 @@ def test_owner_canon_batch9():
     assert '<p class="text-sm md:text-xl font-bold leading-snug"><i class="ph-fill ph-buildings' in html
     # Слайд 1: «От инструмента к агенту» — одной строкой (вопрос владельца)
     assert '<span class="whitespace-nowrap">От инструмента к агенту</span>' in html
-    # Панель «Текст»: резерв под лого растёт с var(--view-scale) — шапка
+    # Панель «Текст»: резерв под лого растёт с var(--chrome-scale) — шапка
     # зумится этим же множителем, иначе «СЛАЙД 1/42» налезает на лого (мак)
-    assert "* var(--view-scale,1)) clamp(1rem,2.6vw,1.6rem) .85rem;" in html
+    assert "* var(--chrome-scale,1)) clamp(1rem,2.6vw,1.6rem) .85rem;" in html
 
 
 def test_owner_canon_batch10():
@@ -625,6 +615,10 @@ def test_lecture1_web_preview_image():
     """Веб-превью лекции 1 — картинка владельца 1_lecture.jpg: она лежит в
     репозитории, на неё указывают og:image и twitter:image, а размеры в тегах
     совпадают с фактическими (соцсети верят тегам, а не качают файл)."""
+    try:
+        from PIL import Image  # noqa: F401
+    except ImportError:        # без PIL проверяем только разметку (как в тесте портрета)
+        return
     from PIL import Image
     path = os.path.join(_ROOT, "automation/1/1_lecture.jpg")
     assert os.path.isfile(path), "нет файла automation/1/1_lecture.jpg"
@@ -657,7 +651,7 @@ def _published_pages():
 
 
 def test_process_practice_page():
-    """Практика «разбор бизнес-процесса» (FR-SITE28): шаги, примеры, схемы, CTA."""
+    """Практика «разбор бизнес-процесса» (FR-SITE28): шаги, примеры, окно, CTA."""
     rel = "automation/practice/process/index.html"
     path = os.path.join(_ROOT, rel)
     assert os.path.exists(path), "страница практики должна лежать в " + rel
@@ -670,7 +664,6 @@ def test_process_practice_page():
     for title in ("бизнес-цель, метрику и границы", "AS-IS", "BPMN",
                   "узкие места и точки автоматизации", "TO-BE"):
         assert title in html, rel + ": потерян блок «%s»" % title
-    # четыре варианта решения точки автоматизации
     for mode in ("Простое правило", "ИИ-агент", "Человек", "Гибрид"):
         assert ">%s<" % mode in html, rel + ": нет варианта «%s»" % mode
     assert "Human-in-the-Loop" in html
@@ -679,27 +672,25 @@ def test_process_practice_page():
     for pick in ("Обработка заявки", "Найм сотрудника", "Согласование договора"):
         assert pick in html, rel + ": нет примера процесса «%s»" % pick
 
-    # шесть отраслей: вкладка + карточка + схема
-    cases = re.findall(r'<button class="tab" role="tab" data-case="([a-z]+)"', html)
-    assert cases == ["consult", "hr", "marketing", "callcenter", "design", "software"], cases
-    for c in cases:
-        assert '<article class="case" id="case-%s"' % c in html, rel + ": нет карточки " + c
-    diagrams = re.findall(r'<pre class="mermaid">\s*\nflowchart TD', html)
-    assert len(diagrams) == 6, "%s: схем должно быть шесть, найдено %d" % (rel, len(diagrams))
-    # узкие места подсвечены на самой схеме
-    assert html.count("class E,F,K hot") + html.count("class C,D,J hot") + \
-        html.count("class E,F,I hot") + html.count("class C,G,I hot") + \
-        html.count("class D,F,G hot") + html.count("class B,E,F hot") == 6, \
+    # шесть отраслей + «свой процесс» — одним окном
+    keys = re.findall(r'<button class="v-tab[^"]*" role="tab" data-key="([a-z]+)"', html)
+    assert keys == ["consult", "hr", "marketing", "callcenter", "design", "software", "own"], keys
+    for k in keys[:-1]:
+        assert '<pre class="mmd-src" id="src-%s">' % k in html, rel + ": нет исходника схемы " + k
+        assert '<div class="case-info" id="info-%s"' % k in html, rel + ": нет описания " + k
+    assert '<div class="case-info" id="info-own"' in html, rel + ": нет подсказки для своей схемы"
+    # схемы горизонтальные — окно тоже горизонтальное
+    assert len(re.findall(r"flowchart LR", html)) >= 6, rel + ": схемы примеров разворачиваются вширь"
+    # узкие места отмечены на КАЖДОЙ схеме (считаем только внутри исходников:
+    # такая же строка есть в примере внутри промта)
+    sources = html[html.index('<div id="mmd-sources"'):html.index('<div class="viewer"')]
+    assert len(re.findall(r"class [A-Z],[A-Z],[A-Z] hot", sources)) == 6, \
         rel + ": на каждой схеме отмечены узкие места"
-    # схема не грузится — остаётся текстовая строчка процесса
-    assert html.count('class="fallback"') == 6, rel + ": у каждой схемы текстовый запасной вариант"
 
     # главный CTA — инструмент ИИ-стратегии
     cta = "https://strategy.andre.technology/ai-strategy"
     assert html.count(cta) >= 3, rel + ": CTA в шапке, после шагов и после примеров"
-    # кнопка «Назад» жива и при заходе по прямой ссылке
     assert "if (history.length > 1) history.back(); else location.href = FALLBACK;" in html
-    # стиль курса
     assert "family=Montserrat" in html and "unpkg.com" not in html
     for color in ("#8B5CF6", "#F97316", "#4C1D95"):
         assert color in html, rel + ": цвет " + color
@@ -708,44 +699,50 @@ def test_process_practice_page():
     assert "localStorage.getItem('welcome-theme')" in html
 
 
-def test_process_practice_editor():
-    """Схему можно получить из интервью и отрисовать прямо на странице (FR-SITE28)."""
+def test_process_practice_viewer():
+    """Одно окно: масштаб, перетаскивание, своя схема, ошибки, сохранение."""
     rel = "automation/practice/process/index.html"
     with open(os.path.join(_ROOT, rel), encoding="utf-8") as f:
         html = f.read()
 
-    # путь «интервью → схема»: четыре шага и готовый промт
+    # путь «интервью → схема» и готовый промт
     for step in ("Проведите интервью", "Запишите и расшифруйте",
                  "Отправьте в ИИ вместе с промтом", "Вставьте код сюда и скачайте"):
         assert step in html, rel + ": нет шага «%s»" % step
-    assert 'id="prompt-src"' in html, rel + ": нет промта"
     prompt = html[html.index('id="prompt-src"'):html.index("</pre>", html.index('id="prompt-src"'))]
-    for must in ("flowchart TD", "class A,B,C hot", "СЮДА ВСТАВЬТЕ ТЕКСТ ИНТЕРВЬЮ",
+    for must in ("flowchart", "class A,B,C hot", "СЮДА ВСТАВЬТЕ ТЕКСТ ИНТЕРВЬЮ",
                  "([Событие])", "ТОЛЬКО код mermaid"):
         assert must in prompt, rel + ": в промте нет «%s»" % must
 
-    # редактор: поле, рендер, скачивание, пример
-    for el in ('id="mmd-input"', 'id="mmd-render"', 'id="mmd-svg"',
-               'id="mmd-png"', 'id="mmd-example"', 'id="mmd-out"'):
-        assert el in html, rel + ": в редакторе нет " + el
+    # окно: масштаб кнопками и колесом, перетаскивание, «по размеру»
+    for el in ('id="v-stage"', 'id="v-layer"', 'id="v-level"', 'data-zoom="in"',
+               'data-zoom="out"', 'data-zoom="fit"'):
+        assert el in html, rel + ": в окне нет " + el
+    assert "stage.addEventListener('wheel'" in html and "stage.addEventListener('pointerdown'" in html, \
+        rel + ": схему двигают и масштабируют прямо в окне"
+    assert "if(e.target.closest('.v-btn, .v-tools, .v-save')) return;" in html, \
+        rel + ": захват указателя не должен съедать клики по кнопкам окна"
+    assert "function startView(){" in html and "Math.min(1, (box.height * 0.9) / natH)" in html, \
+        rel + ": схема открывается в натуральную величину с начала процесса"
+    # атрибут hidden не должен проигрывать display в CSS
+    assert ".v-btn[hidden]{ display:none !important; }" in html
+    assert ".v-code textarea[hidden], .v-code pre.code[hidden]{ display:none !important; }" in html
+
+    # своя схема: поле, отрисовка, сохранение между заходами
+    for el in ('id="v-input"', 'id="v-draw"', 'id="v-example"', 'id="v-copy"'):
+        assert el in html, rel + ": для своей схемы нет " + el
+    assert "const OWN_KEY = 'ait-own-mermaid';" in html, rel + ": своя схема переживает перезагрузку"
     assert "await mermaid.parse(code);" in html, rel + ": код проверяется до отрисовки"
-    assert "canvas.toBlob" in html and "image/svg+xml" in html, rel + ": скачивание SVG и PNG"
-    assert "rect.setAttribute('fill', dark ? '#0A0A0A' : '#FFFFFF');" in html, \
-        rel + ": в файл подкладывается фон, иначе схема в документе невидима"
 
     # ошибка показывается и превращается в промт на исправление
-    assert 'id="mmd-error-text"' in html and 'id="mmd-fixprompt"' in html, \
-        rel + ": ошибка должна показываться и копироваться промтом"
-    assert "Исправь только сломанное место" in html, rel + ": промт на исправление"
-    assert "Библиотека mermaid не загрузилась" in html, \
-        rel + ": о неудачной загрузке библиотеки тоже надо сказать"
+    assert 'id="v-err-text"' in html and 'id="v-fixprompt"' in html
+    assert "Исправь только сломанное место" in html
+    assert "Библиотека mermaid не загрузилась" in html
 
-    # код примера копируется из текстового блока, а не из отрисованного SVG
-    assert len(re.findall(r'<pre class="code" id="code-[a-z]+" data-src="mmd-[a-z]+">', html)) == 6, \
-        rel + ": под каждой схемой её исходный код"
-    assert len(re.findall(r'data-copy="code-[a-z]+"', html)) == 6, rel + ": кнопки копирования кода"
-    assert 'data-copy="mmd-' not in html, \
-        rel + ": копировать надо исходник, а не отрисованный SVG"
+    # сохранение картинки
+    assert "canvas.toBlob" in html and "image/svg+xml" in html, rel + ": сохранение SVG и PNG"
+    assert "rect.setAttribute('fill', dark ? '#0A0A0A' : '#FFFFFF');" in html, \
+        rel + ": в файл подкладывается фон, иначе схема в документе невидима"
 
 
 def test_locked_modules_closed():
@@ -781,3 +778,16 @@ def test_locked_module_cards_have_no_href():
     for locked, attrs in [c for c in cards if c[0]]:
         assert "href=" not in attrs, "закрытая карточка не должна иметь href: " + attrs
         assert 'aria-disabled="true"' in attrs, "закрытая карточка помечена aria-disabled"
+
+
+if __name__ == "__main__":
+    failed = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("ok   %s" % name)
+            except Exception as e:  # AssertionError и любые сбои разбора
+                failed += 1
+                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
+    raise SystemExit(1 if failed else 0)

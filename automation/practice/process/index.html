@@ -284,57 +284,107 @@
   .link .bar{ width:2px; height:clamp(1.1rem,3vh,1.6rem); background:var(--line); }
   .link .ic{ color:var(--line); font-size:1.25rem; margin-top:-.35rem; }
 
-  /* ===== Примеры по отраслям ===== */
-  .tabs{
-    display:flex; flex-wrap:wrap; justify-content:center; gap:.45rem;
-    margin-bottom:clamp(1.1rem,3vw,1.5rem);
+  /* ===== Одно окно со схемами: плашки сверху, поле, код снизу ===== */
+  .viewer{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:clamp(20px,4vw,28px); overflow:hidden;
   }
-  .tab{
-    display:inline-flex; align-items:center; gap:.5rem;
+  .v-tabs{
+    display:flex; gap:.4rem; padding:clamp(.7rem,2.2vw,.9rem);
+    overflow-x:auto; scrollbar-width:none; border-bottom:1px solid var(--card-border);
+  }
+  .v-tabs::-webkit-scrollbar{ display:none; }
+  .v-tab{
+    display:inline-flex; align-items:center; gap:.5rem; flex-shrink:0;
     border-radius:999px; padding:.6rem 1rem; border:1px solid var(--ctrl-border);
     background:var(--ctrl-bg); color:var(--fg);
     font-weight:700; font-size:clamp(11px,2.6vw,12.5px); line-height:1; white-space:nowrap;
     transition:background .2s ease,border-color .2s ease,color .2s ease;
   }
-  .tab .ic{ font-size:1.2em; color:#8B5CF6; }
-  .tab:hover{ border-color:#8B5CF6; }
-  .tab[aria-selected="true"]{ background:#8B5CF6; border-color:#8B5CF6; color:#fff; }
-  .tab[aria-selected="true"] .ic{ color:#fff; }
+  .v-tab .ic{ font-size:1.2em; color:#8B5CF6; }
+  .v-tab:hover{ border-color:#8B5CF6; }
+  .v-tab[aria-selected="true"]{ background:#8B5CF6; border-color:#8B5CF6; color:#fff; }
+  .v-tab[aria-selected="true"] .ic{ color:#fff; }
+  /* «Свой процесс» отделён от примеров и подписан оранжевым — это своя схема */
+  .v-tab.v-own{ margin-left:auto; border-style:dashed; }
+  .v-tab.v-own .ic{ color:#F97316; }
+  .v-tab.v-own[aria-selected="true"]{ background:#F97316; border-color:#F97316; border-style:solid; }
 
-  .case{
-    background:var(--card); border:1px solid var(--card-border);
-    border-radius:clamp(20px,4vw,28px); padding:clamp(1.2rem,4vw,2rem);
+  /* Поле просмотра: горизонтальное, схема двигается и масштабируется */
+  .v-stage{
+    position:relative; overflow:hidden; touch-action:none; cursor:grab;
+    height:clamp(20rem,56vh,34rem); background:var(--diagram-bg);
+    border-bottom:1px solid var(--card-border);
   }
-  .case[hidden]{ display:none; }
-  .case h3{ font-weight:900; letter-spacing:-.01em; font-size:clamp(1.05rem,3.8vw,1.45rem); line-height:1.25; }
-  .case .goal{
+  .v-stage.dragging{ cursor:grabbing; }
+  .v-layer{ position:absolute; top:0; left:0; transform-origin:0 0; will-change:transform; }
+  .v-layer svg{ display:block; max-width:none !important; height:auto; }
+  .v-tools, .v-save{
+    position:absolute; display:flex; gap:.35rem; z-index:2;
+    background:var(--card); border:1px solid var(--card-border); border-radius:999px; padding:.3rem;
+  }
+  .v-tools{ left:clamp(.6rem,2vw,1rem); bottom:clamp(.6rem,2vw,1rem); }
+  .v-save{ right:clamp(.6rem,2vw,1rem); bottom:clamp(.6rem,2vw,1rem); }
+  .v-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.35rem;
+    height:2.2rem; min-width:2.2rem; padding:0 .55rem; border-radius:999px;
+    border:0; background:transparent; color:var(--fg);
+    font-weight:800; font-size:11px; letter-spacing:.04em; white-space:nowrap;
+    transition:background .2s ease,color .2s ease;
+  }
+  .v-btn:hover{ background:var(--soft); color:#8B5CF6; }
+  .v-btn .ic{ font-size:1.15em; }
+  /* display:inline-flex перебивает атрибут hidden — кнопки «своей» схемы
+     оставались видимыми на вкладках-примерах. */
+  .v-btn[hidden]{ display:none !important; }
+  .v-sign{ font-size:1.2rem; line-height:1; font-weight:800; }
+  .v-level{ min-width:3.6rem; font-variant-numeric:tabular-nums; }
+  .v-hint{
+    position:absolute; top:clamp(.6rem,2vw,1rem); left:0; right:0; text-align:center;
+    color:var(--muted); font-weight:600; font-size:clamp(10px,2.4vw,11.5px);
+    pointer-events:none; padding:0 1rem;
+  }
+  @media (max-width:640px){ .v-hint{ display:none; } }
+
+  /* Код снизу: у примеров — только чтение, у своей схемы — редактируемое поле */
+  .v-code{ padding:clamp(.9rem,2.6vw,1.2rem); }
+  .v-code-head{ display:flex; align-items:center; justify-content:space-between; gap:.6rem; flex-wrap:wrap; }
+  .v-code-title{
+    display:inline-flex; align-items:center; gap:.5rem;
+    font-weight:800; text-transform:uppercase; letter-spacing:.1em; font-size:11px; color:var(--muted);
+  }
+  .v-code-title .ic{ color:#8B5CF6; font-size:1.3em; }
+  .v-code-act{ display:flex; gap:.35rem; flex-wrap:wrap; }
+  .v-code-act .v-btn{ border:1px solid var(--ctrl-border); }
+  .copy.v-inline{ position:static; }
+  .v-code pre.code, .v-code textarea{ margin-top:.7rem; max-height:22rem; }
+  .v-code pre.code{ padding-right:1.15rem; overflow:auto; }
+  .v-code textarea{
+    width:100%; min-height:12rem; resize:vertical; display:block;
+    background:var(--soft); border:1px solid var(--soft-border); border-radius:16px;
+    padding:clamp(.9rem,2.6vw,1.15rem); color:var(--fg);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(11.5px,2.5vw,13px); line-height:1.65;
+  }
+  .v-code textarea:focus{ outline:2px solid #8B5CF6; outline-offset:2px; }
+  /* display:block выше перебивает атрибут hidden — поле ввода оставалось
+     видимым на вкладках-примерах пустой рамкой. */
+  .v-code textarea[hidden], .v-code pre.code[hidden]{ display:none !important; }
+
+  /* Описание отрасли под окном — меняется вместе с плашкой */
+  .case-info{ margin-top:clamp(1.1rem,3vw,1.6rem); }
+  .case-info[hidden]{ display:none; }
+  .case-info h3{ font-weight:900; letter-spacing:-.01em; font-size:clamp(1.05rem,3.8vw,1.45rem); line-height:1.25; }
+  .case-info .goal{
     margin-top:.7rem; display:grid; gap:.4rem;
     color:var(--muted); font-weight:600; font-size:clamp(.82rem,2.6vw,.95rem); line-height:1.55;
   }
-  .case .goal b{ color:var(--fg); font-weight:800; }
-
-  /* Диаграмма процесса: горизонтальная прокрутка только внутри рамки */
-  .diagram{
-    margin-top:clamp(1rem,3vw,1.4rem);
-    background:var(--diagram-bg); border:1px solid var(--soft-border);
-    border-radius:18px; padding:clamp(.8rem,2.5vw,1.2rem);
-    overflow-x:auto; overflow-y:hidden;
-  }
-  .diagram .mermaid{ display:flex; justify-content:center; min-width:min-content; }
-  .diagram svg{ max-width:100%; height:auto; }
-  /* Пока mermaid не отрисовал — не показываем исходник диаграммы */
-  .mermaid:not([data-processed]){ visibility:hidden; height:0; overflow:hidden; }
-  .diagram .fallback{
-    display:none; color:var(--muted); font-weight:600;
-    font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.6; text-align:center;
-  }
-  .diagram.failed .fallback{ display:block; }
-
-  .case h4{
+  .case-info .goal b{ color:var(--fg); font-weight:800; }
+  .case-info h4{
     margin-top:clamp(1.1rem,3vw,1.5rem); font-weight:800;
     font-size:clamp(.92rem,3vw,1.05rem); letter-spacing:-.01em;
   }
-  .case h4 .ic{ color:#F97316; margin-right:.4rem; }
+  .case-info h4 .ic{ color:#F97316; margin-right:.4rem; }
   .bnecks{ list-style:none; margin-top:.7rem; display:grid; gap:.5rem; }
   @media (min-width:768px){ .bnecks{ grid-template-columns:1fr 1fr; gap:.6rem; } }
   .bnecks li{
@@ -736,34 +786,22 @@
       </div>
     </section>
 
-    <!-- ===== ПРИМЕРЫ ПО ОТРАСЛЯМ ===== -->
+    <!-- ===== ОДНО ОКНО СО СХЕМАМИ ===== -->
+    <!-- Шесть отраслей и своя схема живут в ОДНОМ горизонтальном окне: плашки
+         сверху, поле просмотра со свободным масштабом и перетаскиванием,
+         код — снизу. Раньше каждая отрасль была отдельной карточкой со своей
+         схемой во всю высоту: страница превращалась в простыню, а крупную
+         схему нельзя было рассмотреть. -->
     <section class="sec rise d2">
       <div class="sec-head">
         <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span>
-        <h2>Примеры AS-IS <span class="accent">по отраслям</span></h2>
-        <p>Шесть типовых процессов: схема «как есть», узкие места и решение для каждой точки. Выберите отрасль, ближайшую к вашей, и стройте свою схему по образцу.</p>
+        <h2>Схемы процессов <span class="accent">AS-IS</span></h2>
+        <p>Шесть примеров по отраслям и ваша собственная схема — в одном окне. Тащите схему мышью или пальцем, масштаб — колесом и кнопками.</p>
       </div>
 
-      <div class="tabs" role="tablist" aria-label="Отрасли">
-        <button class="tab" role="tab" data-case="consult" aria-selected="true"><svg class="ic" aria-hidden="true"><use href="#i-briefcase" xlink:href="#i-briefcase"></use></svg> Консалтинг</button>
-        <button class="tab" role="tab" data-case="hr" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-user-focus" xlink:href="#i-user-focus"></use></svg> Рекрутинг</button>
-        <button class="tab" role="tab" data-case="marketing" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-megaphone" xlink:href="#i-megaphone"></use></svg> Маркетинг</button>
-        <button class="tab" role="tab" data-case="callcenter" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-headset" xlink:href="#i-headset"></use></svg> Колл-центр</button>
-        <button class="tab" role="tab" data-case="design" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-palette" xlink:href="#i-palette"></use></svg> Дизайн</button>
-        <button class="tab" role="tab" data-case="software" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Разработка ПО</button>
-      </div>
-
-      <!-- КОНСАЛТИНГ -->
-      <article class="case" id="case-consult">
-        <h3>Консалтинг — подготовка коммерческого предложения</h3>
-        <div class="goal">
-          <span><b>Цель:</b> превращать входящий запрос в подписанный договор.</span>
-          <span><b>Метрика:</b> срок от запроса до КП и доля выигранных КП.</span>
-          <span><b>Границы:</b> от обращения клиента до подписания договора.</span>
-        </div>
-        <div class="diagram">
-          <pre class="mermaid" id="mmd-consult">
-flowchart TD
+      <!-- Исходники схем: правятся как обычный текст, отсюда их берёт окно -->
+      <div id="mmd-sources" hidden>
+      <pre class="mmd-src" id="src-consult">flowchart LR
   A([Запрос клиента]) --> B[Квалификация запроса]
   B --> C{Берём проект?}
   C -- нет --> X([Отказ])
@@ -778,44 +816,8 @@ flowchart TD
   J -- молчит --> K[Ручной follow-up]
   K --> J
   J -- да --> L([Договор])
-  class E,F,K hot
-          </pre>
-          <p class="fallback">Схема: запрос → квалификация → сбор требований → поиск кейсов → оценка → сборка КП → ревью партнёра (с возвратом на оценку) → отправка → follow-up → договор.</p>
-        </div>
-        <details class="src">
-          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
-          <div class="code-wrap">
-            <pre class="code" id="code-consult" data-src="mmd-consult"></pre>
-            <button class="copy" type="button" data-copy="code-consult"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
-          </div>
-        </details>
-        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
-        <ul class="bnecks">
-          <li><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg> Поиск кейсов: знания лежат в головах и папках, находит только тот, кто «помнит».</li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Оценка трудозатрат: делается вручную и по-разному у разных консультантов.</li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Возврат после ревью партнёра: КП переписывается по второму кругу.</li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Follow-up: про часть клиентов просто забывают.</li>
-        </ul>
-        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
-        <ul class="fix">
-          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> квалификация по бюджету и сроку — отсев по формальным критериям</li>
-          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> подбор релевантных кейсов и сборка черновика КП по шаблону</li>
-          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оценка трудозатрат: агент считает по аналогам, партнёр подтверждает</li>
-          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> переговоры о цене и финальные обязательства перед клиентом</li>
-        </ul>
-      </article>
-
-      <!-- РЕКРУТИНГ -->
-      <article class="case" id="case-hr" hidden>
-        <h3>Рекрутинговое агентство — подбор кандидата под вакансию</h3>
-        <div class="goal">
-          <span><b>Цель:</b> закрывать вакансию клиента подходящим кандидатом.</span>
-          <span><b>Метрика:</b> срок закрытия вакансии и доля кандидатов, дошедших до интервью.</span>
-          <span><b>Границы:</b> от заявки клиента до выхода кандидата на работу.</span>
-        </div>
-        <div class="diagram">
-          <pre class="mermaid" id="mmd-hr">
-flowchart TD
+  class E,F,K hot</pre>
+      <pre class="mmd-src" id="src-hr">flowchart LR
   A([Заявка на вакансию]) --> B[Профиль должности]
   B --> C[Поиск резюме]
   C --> D[Скрининг резюме]
@@ -830,17 +832,141 @@ flowchart TD
   J --> K{Оффер принят?}
   K -- нет --> C
   K -- да --> L([Выход на работу])
-  class C,D,J hot
-          </pre>
-          <p class="fallback">Схема: заявка → профиль → поиск резюме → скрининг → интервью → карточка кандидата → решение клиента → согласование слотов → оффер → выход.</p>
+  class C,D,J hot</pre>
+      <pre class="mmd-src" id="src-marketing">flowchart LR
+  A([Бриф клиента]) --> B[Анализ ниши]
+  B --> C[Медиаплан и бюджет]
+  C --> D{Согласование плана}
+  D -- правки --> C
+  D -- ок --> E[Креативы и тексты]
+  E --> F{Согласование креативов}
+  F -- правки --> E
+  F -- ок --> G[Настройка кампаний]
+  G --> H([Запуск])
+  H --> I[Сбор статистики]
+  I --> J[Отчёт клиенту]
+  J --> K{Нужна оптимизация?}
+  K -- да --> G
+  K -- нет --> L([Плановое ведение])
+  class E,F,I hot</pre>
+      <pre class="mmd-src" id="src-callcenter">flowchart LR
+  A([Звонок или чат]) --> B[Идентификация клиента]
+  B --> C[История обращений]
+  C --> D{Типовой вопрос?}
+  D -- да --> E[Ответ по скрипту]
+  D -- нет --> F[Эскалация на 2-ю линию]
+  F --> G[Ожидание эксперта]
+  G --> H[Ответ клиенту]
+  E --> I[Карточка обращения]
+  H --> I
+  I --> J{Вопрос решён?}
+  J -- нет --> F
+  J -- да --> K([Закрытие тикета])
+  class C,G,I hot</pre>
+      <pre class="mmd-src" id="src-design">flowchart LR
+  A([Бриф и референсы]) --> B[Оценка объёма]
+  B --> C[Договор и предоплата]
+  C --> D[Концепция: 2-3 варианта]
+  D --> E{Выбор клиента}
+  E -- правки --> D
+  E -- ок --> F[Отрисовка макетов]
+  F --> G{Приёмка клиентом}
+  G -- правки --> F
+  G -- ок --> H[Исходники и гайд]
+  H --> I([Передача и закрывающие])
+  class D,F,G hot</pre>
+      <pre class="mmd-src" id="src-software">flowchart LR
+  A([Запрос клиента или бизнеса]) --> B[Уточнение требований]
+  B --> C[Оценка и план спринта]
+  C --> D[Разработка]
+  D --> E{Код-ревью}
+  E -- правки --> D
+  E -- ок --> F{Тестирование}
+  F -- баги --> D
+  F -- ок --> G{Приёмка заказчиком}
+  G -- не то --> B
+  G -- ок --> H([Релиз])
+  H --> I[Поддержка и инциденты]
+  class B,E,F hot</pre>
+      </div>
+
+      <div class="viewer" id="viewer">
+        <div class="v-tabs" role="tablist" aria-label="Схемы процессов">
+        <button class="v-tab" role="tab" data-key="consult" aria-selected="true"><svg class="ic" aria-hidden="true"><use href="#i-briefcase" xlink:href="#i-briefcase"></use></svg> Консалтинг</button>
+        <button class="v-tab" role="tab" data-key="hr" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-user-focus" xlink:href="#i-user-focus"></use></svg> Рекрутинг</button>
+        <button class="v-tab" role="tab" data-key="marketing" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-megaphone" xlink:href="#i-megaphone"></use></svg> Маркетинг</button>
+        <button class="v-tab" role="tab" data-key="callcenter" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-headset" xlink:href="#i-headset"></use></svg> Колл-центр</button>
+        <button class="v-tab" role="tab" data-key="design" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-palette" xlink:href="#i-palette"></use></svg> Дизайн</button>
+        <button class="v-tab" role="tab" data-key="software" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Разработка ПО</button>
+          <button class="v-tab v-own" role="tab" data-key="own" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-pencil-simple" xlink:href="#i-pencil-simple"></use></svg> Свой процесс</button>
         </div>
-        <details class="src">
-          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
-          <div class="code-wrap">
-            <pre class="code" id="code-hr" data-src="mmd-hr"></pre>
-            <button class="copy" type="button" data-copy="code-hr"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+
+        <div class="v-stage" id="v-stage">
+          <div class="v-layer" id="v-layer"></div>
+          <div class="v-tools">
+            <button class="v-btn" type="button" data-zoom="out" aria-label="Мельче"><span class="v-sign" aria-hidden="true">−</span></button>
+            <button class="v-btn v-level" type="button" data-zoom="fit" title="По размеру окна"><span id="v-level">100%</span></button>
+            <button class="v-btn" type="button" data-zoom="in" aria-label="Крупнее"><span class="v-sign" aria-hidden="true">+</span></button>
           </div>
-        </details>
+          <div class="v-save">
+            <button class="v-btn v-wide" type="button" id="v-svg"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> SVG</button>
+            <button class="v-btn v-wide" type="button" id="v-png"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> PNG</button>
+          </div>
+          <p class="v-hint">Тащите схему · колесо или кнопки — масштаб · двойной клик — по размеру</p>
+        </div>
+
+        <div class="v-code">
+          <div class="v-code-head">
+            <span class="v-code-title"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid</span>
+            <div class="v-code-act">
+              <button class="v-btn v-wide" type="button" id="v-draw" hidden><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> Показать схему</button>
+              <button class="v-btn v-wide" type="button" id="v-example" hidden><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> Взять пример</button>
+              <button class="copy v-inline" type="button" id="v-copy"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+            </div>
+          </div>
+          <pre class="code" id="v-src"></pre>
+          <textarea id="v-input" spellcheck="false" autocomplete="off" hidden aria-label="Ваш код mermaid"></textarea>
+
+          <div class="err" id="v-err" hidden role="alert">
+            <div class="err-h"><svg class="ic" aria-hidden="true"><use href="#i-x-circle" xlink:href="#i-x-circle"></use></svg> В коде схемы ошибка</div>
+            <pre id="v-err-text"></pre>
+            <p class="err-hint">Скопируйте промт ниже вместе с кодом и текстом ошибки и попросите модель перегенерировать схему — она исправит только сломанное место.</p>
+            <div class="err-actions">
+              <button class="btn btn-ghost" id="v-fixprompt" type="button"><svg class="ic" aria-hidden="true"><use href="#i-arrows-clockwise" xlink:href="#i-arrows-clockwise"></use></svg> Копировать промт на исправление</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-info" id="info-consult">
+        <h3>Консалтинг — подготовка коммерческого предложения</h3>
+        <div class="goal">
+          <span><b>Цель:</b> превращать входящий запрос в подписанный договор.</span>
+          <span><b>Метрика:</b> срок от запроса до КП и доля выигранных КП.</span>
+          <span><b>Границы:</b> от обращения клиента до подписания договора.</span>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg> Поиск кейсов: знания лежат в головах и папках, находит только тот, кто «помнит».</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Оценка трудозатрат: делается вручную и по-разному у разных консультантов.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Возврат после ревью партнёра: КП переписывается по второму кругу.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Follow-up: про часть клиентов просто забывают.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> квалификация по бюджету и сроку — отсев по формальным критериям</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> подбор релевантных кейсов и сборка черновика КП по шаблону</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оценка трудозатрат: агент считает по аналогам, партнёр подтверждает</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> переговоры о цене и финальные обязательства перед клиентом</li>
+        </ul>
+      </div>
+      <div class="case-info" id="info-hr" hidden>
+        <h3>Рекрутинговое агентство — подбор кандидата под вакансию</h3>
+        <div class="goal">
+          <span><b>Цель:</b> закрывать вакансию клиента подходящим кандидатом.</span>
+          <span><b>Метрика:</b> срок закрытия вакансии и доля кандидатов, дошедших до интервью.</span>
+          <span><b>Границы:</b> от заявки клиента до выхода кандидата на работу.</span>
+        </div>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Скрининг резюме: сотни документов читаются глазами.</li>
@@ -856,44 +982,14 @@ flowchart TD
           <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> согласование слотов: агент предлагает время, рекрутер подтверждает</li>
           <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> оценка мотивации и «впишется ли в команду»</li>
         </ul>
-      </article>
-
-      <!-- МАРКЕТИНГ -->
-      <article class="case" id="case-marketing" hidden>
+      </div>
+      <div class="case-info" id="info-marketing" hidden>
         <h3>Маркетинговое агентство — запуск рекламной кампании</h3>
         <div class="goal">
           <span><b>Цель:</b> запускать кампании клиента и приводить заявки в срок.</span>
           <span><b>Метрика:</b> срок от брифа до запуска и стоимость заявки.</span>
           <span><b>Границы:</b> от брифа клиента до отчёта по первой волне.</span>
         </div>
-        <div class="diagram">
-          <pre class="mermaid" id="mmd-marketing">
-flowchart TD
-  A([Бриф клиента]) --> B[Анализ ниши]
-  B --> C[Медиаплан и бюджет]
-  C --> D{Согласование плана}
-  D -- правки --> C
-  D -- ок --> E[Креативы и тексты]
-  E --> F{Согласование креативов}
-  F -- правки --> E
-  F -- ок --> G[Настройка кампаний]
-  G --> H([Запуск])
-  H --> I[Сбор статистики]
-  I --> J[Отчёт клиенту]
-  J --> K{Нужна оптимизация?}
-  K -- да --> G
-  K -- нет --> L([Плановое ведение])
-  class E,F,I hot
-          </pre>
-          <p class="fallback">Схема: бриф → анализ ниши → медиаплан → согласование → креативы → согласование → настройка → запуск → статистика → отчёт → оптимизация.</p>
-        </div>
-        <details class="src">
-          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
-          <div class="code-wrap">
-            <pre class="code" id="code-marketing" data-src="mmd-marketing"></pre>
-            <button class="copy" type="button" data-copy="code-marketing"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
-          </div>
-        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Круги правок по креативам — самая долгая часть запуска.</li>
@@ -909,42 +1005,14 @@ flowchart TD
           <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оптимизация ставок: агент предлагает, специалист применяет</li>
           <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> стратегия кампании и защита идеи перед клиентом</li>
         </ul>
-      </article>
-
-      <!-- КОЛЛ-ЦЕНТР -->
-      <article class="case" id="case-callcenter" hidden>
+      </div>
+      <div class="case-info" id="info-callcenter" hidden>
         <h3>Колл-центр — обработка входящего обращения</h3>
         <div class="goal">
           <span><b>Цель:</b> решать вопрос клиента с первого обращения.</span>
           <span><b>Метрика:</b> время обработки и доля вопросов, решённых на первой линии.</span>
           <span><b>Границы:</b> от звонка или сообщения до закрытия тикета.</span>
         </div>
-        <div class="diagram">
-          <pre class="mermaid" id="mmd-callcenter">
-flowchart TD
-  A([Звонок или чат]) --> B[Идентификация клиента]
-  B --> C[История обращений]
-  C --> D{Типовой вопрос?}
-  D -- да --> E[Ответ по скрипту]
-  D -- нет --> F[Эскалация на 2-ю линию]
-  F --> G[Ожидание эксперта]
-  G --> H[Ответ клиенту]
-  E --> I[Карточка обращения]
-  H --> I
-  I --> J{Вопрос решён?}
-  J -- нет --> F
-  J -- да --> K([Закрытие тикета])
-  class C,G,I hot
-          </pre>
-          <p class="fallback">Схема: обращение → идентификация → история → типовой вопрос? → скрипт или эскалация → ожидание эксперта → ответ → карточка обращения → закрытие.</p>
-        </div>
-        <details class="src">
-          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
-          <div class="code-wrap">
-            <pre class="code" id="code-callcenter" data-src="mmd-callcenter"></pre>
-            <button class="copy" type="button" data-copy="code-callcenter"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
-          </div>
-        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Поиск истории по нескольким системам, пока клиент ждёт на линии.</li>
@@ -960,40 +1028,14 @@ flowchart TD
           <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> подсказка оператору в реальном времени, отвечает человек</li>
           <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> конфликтные обращения, возвраты денег, нестандартные случаи</li>
         </ul>
-      </article>
-
-      <!-- ДИЗАЙН -->
-      <article class="case" id="case-design" hidden>
+      </div>
+      <div class="case-info" id="info-design" hidden>
         <h3>Дизайн-агентство — проект от брифа до сдачи</h3>
         <div class="goal">
           <span><b>Цель:</b> сдавать проект в срок и без бесконечных правок.</span>
           <span><b>Метрика:</b> число кругов правок и срок от брифа до приёмки.</span>
           <span><b>Границы:</b> от брифа клиента до передачи исходников.</span>
         </div>
-        <div class="diagram">
-          <pre class="mermaid" id="mmd-design">
-flowchart TD
-  A([Бриф и референсы]) --> B[Оценка объёма]
-  B --> C[Договор и предоплата]
-  C --> D[Концепция: 2-3 варианта]
-  D --> E{Выбор клиента}
-  E -- правки --> D
-  E -- ок --> F[Отрисовка макетов]
-  F --> G{Приёмка клиентом}
-  G -- правки --> F
-  G -- ок --> H[Исходники и гайд]
-  H --> I([Передача и закрывающие])
-  class D,F,G hot
-          </pre>
-          <p class="fallback">Схема: бриф → оценка → договор → концепция → выбор клиента → макеты → приёмка (круги правок) → исходники и гайд → передача.</p>
-        </div>
-        <details class="src">
-          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
-          <div class="code-wrap">
-            <pre class="code" id="code-design" data-src="mmd-design"></pre>
-            <button class="copy" type="button" data-copy="code-design"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
-          </div>
-        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Круги правок: критерии приёмки нигде не зафиксированы.</li>
@@ -1009,41 +1051,14 @@ flowchart TD
           <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оценка объёма: агент считает по прошлым проектам, арт-директор утверждает</li>
           <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> сама концепция и защита решения перед клиентом</li>
         </ul>
-      </article>
-
-      <!-- РАЗРАБОТКА ПО -->
-      <article class="case" id="case-software" hidden>
+      </div>
+      <div class="case-info" id="info-software" hidden>
         <h3>Разработка ПО — от заявки клиента до релиза</h3>
         <div class="goal">
           <span><b>Цель:</b> доводить запросы до работающего релиза предсказуемо.</span>
           <span><b>Метрика:</b> время от заявки до релиза и доля возвратов из тестирования.</span>
           <span><b>Границы:</b> от запроса клиента или бизнеса до выката в прод.</span>
         </div>
-        <div class="diagram">
-          <pre class="mermaid" id="mmd-software">
-flowchart TD
-  A([Запрос клиента или бизнеса]) --> B[Уточнение требований]
-  B --> C[Оценка и план спринта]
-  C --> D[Разработка]
-  D --> E{Код-ревью}
-  E -- правки --> D
-  E -- ок --> F{Тестирование}
-  F -- баги --> D
-  F -- ок --> G{Приёмка заказчиком}
-  G -- не то --> B
-  G -- ок --> H([Релиз])
-  H --> I[Поддержка и инциденты]
-  class B,E,F hot
-          </pre>
-          <p class="fallback">Схема: запрос → уточнение требований → оценка → разработка → код-ревью → тестирование → приёмка (возврат к требованиям) → релиз → поддержка.</p>
-        </div>
-        <details class="src">
-          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
-          <div class="code-wrap">
-            <pre class="code" id="code-software" data-src="mmd-software"></pre>
-            <button class="copy" type="button" data-copy="code-software"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
-          </div>
-        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Требования неполные — брак вскрывается на приёмке, а не в начале.</li>
@@ -1059,9 +1074,16 @@ flowchart TD
           <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сводка инцидента: логи, история изменений, похожие случаи</li>
           <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> архитектурные решения и финальное «выкатываем»</li>
         </ul>
-      </article>
+      </div>
+      <div class="case-info" id="info-own" hidden>
+        <h3>Ваш процесс</h3>
+        <div class="goal">
+          <span><b>Как получить код:</b> проведите интервью, расшифруйте его и отправьте модели вместе с промтом из блока ниже.</span>
+          <span><b>Что дальше:</b> вставьте полученный код в поле выше и нажмите «Показать схему» — её можно сохранить в SVG или PNG.</span>
+          <span><b>Если код с ошибкой:</b> страница покажет строку с ошибкой и соберёт промт на исправление.</span>
+        </div>
+      </div>
     </section>
-
 
     <!-- ===== ИНТЕРВЬЮ → СХЕМА ===== -->
     <section class="sec rise d2">
@@ -1085,7 +1107,7 @@ flowchart TD
         </li>
         <li>
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-pencil-simple" xlink:href="#i-pencil-simple"></use></svg></span>
-          <div><b>4. Вставьте код сюда и скачайте</b><span>Полученный код вставьте в редактор ниже: схема отрисуется на этой странице, а её можно сохранить в SVG или PNG. Если в коде ошибка — страница покажет её и подскажет, что попросить у модели.</span></div>
+          <div><b>4. Вставьте код сюда и скачайте</b><span>Полученный код вставьте во вкладку «Свой процесс» в окне выше: схема отрисуется на этой странице, а её можно сохранить в SVG или PNG. Если в коде ошибка — страница покажет её и подскажет, что попросить у модели.</span></div>
         </li>
       </ol>
 
@@ -1134,47 +1156,6 @@ flowchart TD
       </details>
     </section>
 
-    <!-- ===== РЕДАКТОР СХЕМЫ ===== -->
-    <section class="sec rise d2">
-      <div class="sec-head">
-        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span>
-        <h2>Ваша схема: <span class="accent">вставьте и посмотрите</span></h2>
-        <p>Вставьте код mermaid — схема отрисуется прямо здесь. Ничего никуда не отправляется: всё рисуется в вашем браузере.</p>
-      </div>
-      <div class="editor" id="editor">
-        <label for="mmd-input">Код mermaid</label>
-        <textarea id="mmd-input" spellcheck="false" autocomplete="off" aria-describedby="mmd-error">flowchart TD
-  A([Заявка от клиента]) --> B[Регистрация обращения]
-  B --> C{Всё ли понятно?}
-  C -- нет --> D[Уточнение у клиента]
-  D --> C
-  C -- да --> E[Ручной подбор решения]
-  E --> F[Согласование со старшим]
-  F --> G{Согласовано?}
-  G -- нет --> E
-  G -- да --> H[Ответ клиенту]
-  H --> I([Заявка закрыта])
-  class D,E,F hot</textarea>
-        <div class="ed-actions">
-          <button class="btn btn-primary" id="mmd-render" type="button"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> Показать схему</button>
-          <button class="btn btn-ghost" id="mmd-svg" type="button"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> Скачать SVG</button>
-          <button class="btn btn-ghost" id="mmd-png" type="button"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> Скачать PNG</button>
-          <button class="btn btn-ghost" id="mmd-example" type="button"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> Взять пример отрасли</button>
-        </div>
-        <span class="ok-line"><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> Схема разобрана без ошибок</span>
-
-        <div class="err" id="mmd-error" hidden role="alert">
-          <div class="err-h"><svg class="ic" aria-hidden="true"><use href="#i-x-circle" xlink:href="#i-x-circle"></use></svg> В коде схемы ошибка</div>
-          <pre id="mmd-error-text"></pre>
-          <p class="err-hint">Скопируйте промт ниже вместе с кодом и текстом ошибки и попросите модель перегенерировать схему — она исправит только сломанное место.</p>
-          <div class="err-actions">
-            <button class="btn btn-ghost" id="mmd-fixprompt" type="button"><svg class="ic" aria-hidden="true"><use href="#i-arrows-clockwise" xlink:href="#i-arrows-clockwise"></use></svg> Копировать промт на исправление</button>
-          </div>
-        </div>
-
-        <div class="diagram" id="mmd-out" aria-live="polite"></div>
-      </div>
-    </section>
     <section class="sec rise d2">
       <div class="cta">
         <span class="cta-ico"><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg></span>
@@ -1237,28 +1218,41 @@ flowchart TD
 </script>
 
 <script type="module">
-/* Схемы процессов — mermaid. Исходники лежат прямо в разметке (<pre class="mermaid">),
-   поэтому их правят как текст, без картинок и без экспорта.
-   Если библиотека не загрузилась (нет сети, закрыт CDN) — вместо схемы
-   остаётся текстовая строчка процесса, и страница не ломается. */
+/* ============================================================
+   Одно окно со схемами.
+   · плашки сверху переключают отрасль и вкладку «Свой процесс»;
+   · схема рисуется mermaid'ом в браузере — никуда не отправляется;
+   · её можно двигать и масштабировать (колесо, кнопки, щипок);
+   · код снизу: у примеров только чтение, у своей схемы — поле ввода;
+   · ошибка разбора показывается текстом и собирается в промт на исправление.
+   Если библиотека не загрузилась, окно честно об этом говорит.
+   ============================================================ */
 const SRC = new Map();
-document.querySelectorAll('pre.mermaid').forEach((el, i) => {
-  el.id = el.id || ('mmd-' + i);
-  SRC.set(el.id, el.textContent.replace(/^\n+|\s+$/g, ''));
-});
-// Код примера показываем текстом под схемой — его копируют и правят.
-// Заполняем ДО импорта mermaid: даже если библиотека не дойдёт, код на месте.
-document.querySelectorAll('pre.code[data-src]').forEach(el => {
-  const code = SRC.get(el.dataset.src);
-  if (code) el.textContent = code;
+document.querySelectorAll('#mmd-sources .mmd-src').forEach(el => {
+  SRC.set(el.id.replace('src-', ''), el.textContent.replace(/^\n+|\s+$/g, ''));
 });
 
-/* ── Копирование в буфер: код схемы, промт, промт на исправление ────────── */
+const stage  = document.getElementById('v-stage');
+const layer  = document.getElementById('v-layer');
+const tabs   = [...document.querySelectorAll('.v-tab')];
+const codeEl = document.getElementById('v-src');
+const input  = document.getElementById('v-input');
+const errBox = document.getElementById('v-err');
+const errTxt = document.getElementById('v-err-text');
+const levelEl= document.getElementById('v-level');
+const drawBtn= document.getElementById('v-draw');
+const exBtn  = document.getElementById('v-example');
+const copyBtn= document.getElementById('v-copy');
+
+const OWN_KEY = 'ait-own-mermaid';        // своя схема переживает перезагрузку
+let current = 'consult', lastError = '', ownCode = '';
+try { ownCode = localStorage.getItem(OWN_KEY) || ''; } catch (e) {}
+if (!ownCode) ownCode = SRC.get('consult') || '';
+
+/* ── Копирование в буфер ────────────────────────────────────────────────── */
 async function copyText(text, btn){
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch (e) {
-    // Firefox без разрешения и http:// — запасной путь через скрытое поле
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) {
     const ta = document.createElement('textarea');
     ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select();
@@ -1278,7 +1272,111 @@ document.querySelectorAll('.copy[data-copy]').forEach(btn => {
     if (src) copyText(src.textContent, btn);
   });
 });
+copyBtn.addEventListener('click', () => copyText(activeCode(), copyBtn));
 
+/* ── Масштаб и перетаскивание ───────────────────────────────────────────── */
+let scale = 1, tx = 0, ty = 0, natW = 0, natH = 0;
+const MIN = 0.15, MAX = 4;
+function apply(){
+  layer.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
+  levelEl.textContent = Math.round(scale * 100) + '%';
+}
+function fit(){                       // «по размеру» — вся схема целиком, обзорно
+  const box = stage.getBoundingClientRect();
+  if(!natW || !natH){ scale = 1; tx = ty = 0; apply(); return; }
+  scale = Math.min(box.width / natW, box.height / natH) * 0.94;
+  scale = Math.max(MIN, Math.min(MAX, scale));
+  tx = (box.width  - natW * scale) / 2;
+  ty = (box.height - natH * scale) / 2;
+  apply();
+}
+function startView(){
+  // Схемы горизонтальные: длинные и невысокие. «Целиком» они сжимаются до
+  // трети — подписи не прочитать. Поэтому открываем в натуральную величину
+  // (или по высоте окна, если схема выше) и прижимаем к началу процесса —
+  // дальше зритель тянет её влево, как читает строку.
+  const box = stage.getBoundingClientRect();
+  if(!natW || !natH){ scale = 1; tx = ty = 0; apply(); return; }
+  scale = Math.max(MIN, Math.min(1, (box.height * 0.9) / natH));
+  tx = Math.min(24, Math.max(0, (box.width - natW * scale) / 2));
+  ty = (box.height - natH * scale) / 2;
+  apply();
+}
+function zoomAt(factor, cx, cy){
+  const box = stage.getBoundingClientRect();
+  const px = (cx === undefined ? box.width  / 2 : cx - box.left);
+  const py = (cy === undefined ? box.height / 2 : cy - box.top);
+  const next = Math.max(MIN, Math.min(MAX, scale * factor));
+  // точка под курсором остаётся на месте
+  tx = px - (px - tx) * (next / scale);
+  ty = py - (py - ty) * (next / scale);
+  scale = next; apply();
+}
+stage.addEventListener('wheel', e => {
+  if(!natW) return;
+  e.preventDefault();
+  zoomAt(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX, e.clientY);
+}, { passive: false });
+document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.zoom;
+  if(k === 'fit') fit(); else zoomAt(k === 'in' ? 1.25 : 1 / 1.25);
+}));
+stage.addEventListener('dblclick', fit);
+
+const pointers = new Map();
+let dragFrom = null, pinchFrom = null;
+stage.addEventListener('pointerdown', e => {
+  if(!natW) return;
+  // Кнопки лежат ВНУТРИ окна. Если начать на них перетаскивание, захват
+  // указателя уводит все последующие события на само окно — кнопка не получает
+  // pointerup, и клик не срабатывает вообще (масштаб и сохранение были мертвы).
+  if(e.target.closest('.v-btn, .v-tools, .v-save')) return;
+  stage.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if(pointers.size === 1){ dragFrom = { x: e.clientX - tx, y: e.clientY - ty }; stage.classList.add('dragging'); }
+  else if(pointers.size === 2){ dragFrom = null; pinchFrom = pinchState(); }
+});
+function pinchState(){
+  const [a, b] = [...pointers.values()];
+  return { d: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, s: scale };
+}
+stage.addEventListener('pointermove', e => {
+  if(!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if(pointers.size === 1 && dragFrom){
+    tx = e.clientX - dragFrom.x; ty = e.clientY - dragFrom.y; apply();
+  } else if(pointers.size === 2 && pinchFrom){
+    const now = pinchState();
+    if(pinchFrom.d > 0){
+      const target = Math.max(MIN, Math.min(MAX, pinchFrom.s * (now.d / pinchFrom.d)));
+      zoomAt(target / scale, now.cx, now.cy);
+    }
+  }
+});
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if(pointers.size < 2) pinchFrom = null;
+  if(pointers.size === 0){ dragFrom = null; stage.classList.remove('dragging'); }
+}
+stage.addEventListener('pointerup', endPointer);
+stage.addEventListener('pointercancel', endPointer);
+// Смена размера окна возвращает вид к началу схемы: «по размеру» после
+// поворота телефона показывало бы схему обзорно-мелко, а читают её с начала.
+let rsz;
+window.addEventListener('resize', () => {
+  if(!natW) return;
+  clearTimeout(rsz); rsz = setTimeout(startView, 120);
+});
+
+/* ── Отрисовка ──────────────────────────────────────────────────────────── */
+function activeCode(){ return current === 'own' ? (input.value || '') : (SRC.get(current) || ''); }
+function showError(msg){
+  lastError = msg;
+  errTxt.textContent = msg;
+  errBox.hidden = false;
+  layer.innerHTML = ''; natW = natH = 0;
+  levelEl.textContent = '—';
+}
 function themeVars(){
   const dark = document.documentElement.classList.contains('dark');
   return {
@@ -1295,7 +1393,8 @@ function themeVars(){
 
 try {
   const mermaid = (await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs')).default;
-  window.renderDiagrams = async function(){
+
+  function init(){
     mermaid.initialize({
       startOnLoad: false, securityLevel: 'strict', theme: 'base',
       themeVariables: themeVars(),
@@ -1305,81 +1404,73 @@ try {
         .hot .nodeLabel, .hot span, .hot p { color: #fff !important; fill: #fff !important; }
         .edgeLabel { font-size: 12px; }
       `,
-      flowchart: { curve: 'basis', nodeSpacing: 26, rankSpacing: 28, useMaxWidth: true },
+      flowchart: { curve: 'basis', nodeSpacing: 26, rankSpacing: 34, useMaxWidth: false },
     });
-    for (const [id, code] of SRC) {
-      const host = document.getElementById(id);
-      if (!host) continue;
-      try {
-        const { svg } = await mermaid.render(id + '-svg-' + Date.now(), code);
-        host.innerHTML = svg;
-        host.setAttribute('data-processed', 'true');
-      } catch (e) {
-        host.closest('.diagram').classList.add('failed');
-      }
-    }
-  };
-  await window.renderDiagrams();
-
-  /* ── Редактор: чужой код mermaid рисуем прямо на странице ─────────────── */
-  const input   = document.getElementById('mmd-input');
-  const out     = document.getElementById('mmd-out');
-  const errBox  = document.getElementById('mmd-error');
-  const errText = document.getElementById('mmd-error-text');
-  const editor  = document.getElementById('editor');
-  let lastError = '';
-
-  function showError(msg){
-    lastError = msg;
-    errText.textContent = msg;
-    errBox.hidden = false;
-    editor.classList.remove('is-ok');
-    out.innerHTML = '';
   }
-  async function draw(){
-    const code = (input.value || '').trim();
-    if(!code){ showError('Пусто: вставьте код схемы, он начинается со строки flowchart TD'); return; }
+  init();
+
+  window.renderDiagrams = async function(keepView){
+    const code = (activeCode() || '').trim();
+    if(!code){ showError('Пусто: вставьте код схемы — он начинается со строки flowchart LR'); return; }
+    init();                                   // тема могла смениться
     try {
-      // parse() бросает исключение с текстом ошибки и номером строки —
-      // именно его показываем автору схемы, чтобы было что отдать модели.
+      // parse() бросает исключение с текстом и номером строки — его и показываем
       await mermaid.parse(code);
-      const { svg } = await mermaid.render('mmd-user-' + Date.now(), code);
-      out.innerHTML = svg;
+      const { svg } = await mermaid.render('v-svg-' + Date.now(), code);
+      layer.innerHTML = svg;
+      const el = layer.querySelector('svg');
+      const vb = el.viewBox && el.viewBox.baseVal;
+      natW = (vb && vb.width)  || el.getBoundingClientRect().width  || 1;
+      natH = (vb && vb.height) || el.getBoundingClientRect().height || 1;
+      el.setAttribute('width', natW); el.setAttribute('height', natH);
       errBox.hidden = true;
-      editor.classList.add('is-ok');
+      if(!keepView) startView(); else apply();
     } catch (e) {
       showError((e && (e.str || e.message)) ? String(e.str || e.message) : 'Схема не разобралась');
     }
+  };
+
+  /* ── Плашки ──────────────────────────────────────────────────────────── */
+  function select(key){
+    current = key;
+    tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.key === key ? 'true' : 'false'));
+    document.querySelectorAll('.case-info').forEach(b => { b.hidden = b.id !== ('info-' + key); });
+    const own = key === 'own';
+    input.hidden = !own; codeEl.hidden = own;
+    drawBtn.hidden = !own; exBtn.hidden = !own;
+    if(own){ input.value = ownCode; } else { codeEl.textContent = SRC.get(key) || ''; }
+    errBox.hidden = true;
+    window.renderDiagrams();
   }
-  document.getElementById('mmd-render').addEventListener('click', draw);
+  tabs.forEach(t => t.addEventListener('click', () => select(t.dataset.key)));
 
-  // Промт на исправление: код + текст ошибки, чтобы модель починила именно её
-  document.getElementById('mmd-fixprompt').addEventListener('click', (ev) => {
-    const txt = 'Схема mermaid не разобралась. Ниже код и текст ошибки. '
+  drawBtn.addEventListener('click', () => {
+    ownCode = input.value;
+    try { localStorage.setItem(OWN_KEY, ownCode); } catch (e) {}
+    window.renderDiagrams();
+  });
+  exBtn.addEventListener('click', () => {
+    input.value = SRC.get('consult') || '';
+    ownCode = input.value;
+    window.renderDiagrams();
+  });
+  document.getElementById('v-fixprompt').addEventListener('click', ev => {
+    copyText('Схема mermaid не разобралась. Ниже код и текст ошибки. '
       + 'Исправь только сломанное место, сохрани смысл процесса и верни ВЕСЬ код целиком, '
-      + 'без пояснений и без markdown-обрамления.\n\nКод:\n' + (input.value || '').trim()
-      + '\n\nОшибка:\n' + lastError;
-    copyText(txt, ev.currentTarget);
+      + 'без пояснений и без markdown-обрамления.\n\nКод:\n' + activeCode().trim()
+      + '\n\nОшибка:\n' + lastError, ev.currentTarget);
   });
 
-  // Взять код открытой отрасли — быстрый старт без копирования руками
-  document.getElementById('mmd-example').addEventListener('click', () => {
-    const open = [...document.querySelectorAll('.case')].find(c => !c.hidden);
-    const code = open ? SRC.get(open.querySelector('pre.mermaid').id) : null;
-    if(code){ input.value = code; draw(); input.scrollIntoView({block:'center', behavior:'smooth'}); }
-  });
-
-  /* ── Скачивание: SVG как есть и PNG через canvas ──────────────────────── */
+  /* ── Сохранение картинки ─────────────────────────────────────────────── */
   function currentSvg(){
-    const svg = out.querySelector('svg');
-    if(!svg){ showError('Сначала нажмите «Показать схему» — скачивать пока нечего'); return null; }
+    const svg = layer.querySelector('svg');
+    if(!svg){ showError('Сначала покажите схему — сохранять пока нечего'); return null; }
     const clone = svg.cloneNode(true);
-    const box = svg.getBoundingClientRect();
-    const w = Math.max(1, Math.round(box.width)), h = Math.max(1, Math.round(box.height));
+    const w = Math.max(1, Math.round(natW)), h = Math.max(1, Math.round(natH));
     clone.setAttribute('width', w); clone.setAttribute('height', h);
     clone.removeAttribute('style');
-    // Фон白 не наследуется из страницы — подкладываем свой, иначе тёмная тема
-    // даёт «прозрачную» схему с белым текстом, невидимую в документе.
+    // Фон не наследуется из страницы: без него тёмная схема в документе
+    // выглядит как белый текст на прозрачном — то есть никак.
     const dark = document.documentElement.classList.contains('dark');
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     rect.setAttribute('x', 0); rect.setAttribute('y', 0);
@@ -1395,38 +1486,30 @@ try {
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  document.getElementById('mmd-svg').addEventListener('click', () => {
+  function fileName(ext){ return 'process-' + current + '.' + ext; }
+  document.getElementById('v-svg').addEventListener('click', () => {
     const cur = currentSvg(); if(!cur) return;
-    saveBlob(new Blob([cur.markup], {type:'image/svg+xml;charset=utf-8'}), 'process-as-is.svg');
+    saveBlob(new Blob([cur.markup], {type:'image/svg+xml;charset=utf-8'}), fileName('svg'));
   });
-  document.getElementById('mmd-png').addEventListener('click', () => {
+  document.getElementById('v-png').addEventListener('click', () => {
     const cur = currentSvg(); if(!cur) return;
-    const scale = 2;                                  // ретина: схему вставляют в документы
+    const k = 2;                                   // ретина: схему вставляют в документы
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      canvas.width = cur.w * scale; canvas.height = cur.h * scale;
+      canvas.width = cur.w * k; canvas.height = cur.h * k;
       const ctx = canvas.getContext('2d');
-      ctx.scale(scale, scale);
-      ctx.drawImage(img, 0, 0);
-      canvas.toBlob(b => { if(b) saveBlob(b, 'process-as-is.png'); }, 'image/png');
+      ctx.scale(k, k); ctx.drawImage(img, 0, 0);
+      canvas.toBlob(b => { if(b) saveBlob(b, fileName('png')); }, 'image/png');
     };
-    img.onerror = () => showError('PNG не собрался в этом браузере — скачайте SVG, он открывается везде');
+    img.onerror = () => showError('PNG не собрался в этом браузере — сохраните SVG, он открывается везде');
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cur.markup);
   });
 
-  await draw();          // пример в поле рисуем сразу, чтобы блок не был пустым
+  select('consult');
 } catch (e) {
-  document.querySelectorAll('.diagram').forEach(d => d.classList.add('failed'));
-  const ed = document.getElementById('editor');
-  if(ed){
-    const err = document.getElementById('mmd-error');
-    const txt = document.getElementById('mmd-error-text');
-    if(err && txt){
-      txt.textContent = 'Библиотека mermaid не загрузилась — проверьте соединение и обновите страницу. Код схемы можно скопировать и открыть на mermaid.live';
-      err.hidden = false;
-    }
-  }
+  showError('Библиотека mermaid не загрузилась — проверьте соединение и обновите страницу. Код схемы можно скопировать и открыть на mermaid.live');
+  codeEl.textContent = SRC.get('consult') || '';
 }
 </script>
 </body>
