@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Практическое задание — разбор бизнес-процесса | Andre AI Technology</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+<meta name="description" content="Практическое задание: возьмите один реальный бизнес-процесс, восстановите AS-IS, найдите узкие места и точки автоматизации и спроектируйте TO-BE — готовый проект ИИ-трансформации процесса.">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Практическое задание: разбор реального бизнес-процесса.
+     Стиль лекции и первого задания: Montserrat, иконки Phosphor
+     вшиты SVG-спрайтом (с CDN они пропадают при плохой сети),
+     фиолетовый #8B5CF6 + оранжевый #F97316, карточки со скруглением,
+     emphasis-блок #4C1D95, теней нет нигде.
+     ============================================================ */
+  :root{
+    --bg:#FFFFFF; --fg:#0A0A0A; --muted:rgba(0,0,0,.60);
+    --card:#FFFFFF; --card-border:#E9E9E9;
+    --soft:rgba(0,0,0,.04); --soft-border:rgba(0,0,0,.08);
+    --ctrl-bg:#FFFFFF; --ctrl-fg:#111111; --ctrl-border:rgba(0,0,0,.12);
+    --ctrl-hover:#F1F1F1;
+    --line:#E9E9E9;
+    --diagram-bg:#FFFFFF;
+  }
+  html.dark{
+    --bg:#0A0A0A; --fg:#FAFAFA; --muted:rgba(250,250,250,.62);
+    --card:#141414; --card-border:rgba(255,255,255,.12);
+    --soft:rgba(255,255,255,.06); --soft-border:rgba(255,255,255,.10);
+    --ctrl-bg:#141414; --ctrl-fg:#FAFAFA; --ctrl-border:rgba(255,255,255,.18);
+    --ctrl-hover:#1F1F1F;
+    --line:rgba(255,255,255,.14);
+    --diagram-bg:#101010;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  /* Теней нет нигде — общее требование заказчика по всем страницам курса */
+  *, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
+
+  html{ -webkit-tap-highlight-color:transparent; background:var(--bg); }
+  body{
+    font-family:'Montserrat',sans-serif; background:var(--bg); color:var(--fg);
+    min-height:100dvh; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    transition:background .3s ease,color .3s ease;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  ::selection{background:#8B5CF6;color:#fff}
+  *:focus-visible{outline:2px solid #8B5CF6;outline-offset:3px;border-radius:4px}
+  p,li,h1,h2,h3,h4{overflow-wrap:break-word}
+  /* Иконка — вшитый SVG: размер задаётся font-size родителя, цвет — currentColor */
+  .ic{ width:1em; height:1em; fill:currentColor; flex-shrink:0; vertical-align:-.125em; }
+
+  /* Большие мониторы масштабируются целиком — как дорожная карта и главная */
+  @media (min-width:1600px){ body{zoom:1.15} }
+  @media (min-width:1900px){ body{zoom:1.3} }
+  @media (min-width:2300px){ body{zoom:1.5} }
+
+  /* ===== Шапка: геометрия один в один с шапкой лекции ===== */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+    padding:1.1rem; pointer-events:none;
+    background:linear-gradient(to bottom,var(--bg) 45%,transparent);
+  }
+  @media (min-width:1024px){ header{ padding:2rem; } }
+  header > *{ pointer-events:auto; }
+  .lec-logo{display:inline-flex;align-items:center;flex-shrink:0}
+  .lec-logo img{ width:2.9rem; height:2.9rem; object-fit:contain; display:block; }
+  @media (min-width:768px){ .lec-logo img{ width:3.6rem; height:3.6rem; } }
+  /* Картинка лого не дошла — текстовый знак вместо «битой картинки» */
+  .lec-logo .logo-fb{
+    display:none; align-items:center; font-weight:900; letter-spacing:-.04em;
+    font-size:1.6rem; color:#F97316;
+  }
+  .lec-right{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+  .lec-ctrl{
+    display:inline-flex;align-items:center;justify-content:center;
+    height:2.7rem; width:2.7rem; border-radius:999px;
+    border:1px solid var(--ctrl-border); background:var(--ctrl-bg); color:var(--ctrl-fg);
+    font-size:1.05rem; line-height:1; transition:background .2s ease,color .2s ease;
+  }
+  @media (min-width:768px){ .lec-ctrl{ height:2.85rem; width:2.85rem; font-size:1.3rem; } }
+  .lec-ctrl:hover{ background:var(--ctrl-hover); }
+  .lec-lbl{
+    width:auto; padding:0 1.15rem; gap:.45rem;
+    font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:12px;
+  }
+  .lec-lbl .ic{ font-size:1.2rem; }
+  @media (max-width:767px){
+    .lec-lbl{ width:2.7rem; padding:0; }
+    .lec-lbl span{ display:none; }
+    .lec-lbl .ic{ font-size:1.05rem; }
+  }
+  .lec-consult{
+    display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+    padding:.62rem .85rem; border-radius:999px; background:#8B5CF6; color:#fff;
+    font-weight:800; text-transform:uppercase; letter-spacing:.06em;
+    font-size:10.5px; white-space:nowrap; transition:transform .2s ease,background .2s ease;
+  }
+  @media (min-width:768px){
+    .lec-consult{ height:2.85rem; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em; gap:.55rem; }
+  }
+  .lec-consult:hover{ transform:translateY(-1px); background:#7C3AED; }
+
+  /* ===== Полотно ===== */
+  main{
+    max-width:58rem; margin:0 auto;
+    padding:clamp(6.5rem,17vh,9rem) clamp(1rem,4vw,2rem) clamp(3rem,8vh,5rem);
+  }
+  @keyframes rise{ from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+  .rise{ animation:rise .55s cubic-bezier(.22,1,.36,1) both; }
+  .rise.d1{ animation-delay:.07s } .rise.d2{ animation-delay:.14s }
+  @media (prefers-reduced-motion:reduce){ .rise{ animation:none } }
+
+  /* ===== Первый экран ===== */
+  .hero{ text-align:center; }
+  .badge{
+    display:inline-flex; align-items:center; gap:.5rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:999px; padding:.45rem 1rem;
+    font-size:clamp(9px,2.4vw,11px); font-weight:800;
+    letter-spacing:.16em; text-transform:uppercase; color:#8B5CF6;
+    margin-bottom:clamp(.9rem,2.5vh,1.3rem);
+  }
+  .badge .ic{ font-size:1.25em; }
+  h1{
+    font-weight:900; font-size:clamp(1.7rem,6.2vw,3rem);
+    line-height:1.12; letter-spacing:-.02em; text-wrap:balance;
+  }
+  .accent{
+    background-image:linear-gradient(90deg,#8B5CF6 0%,#F97316 100%);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+  }
+  .hero p{
+    margin:clamp(.9rem,2.4vh,1.2rem) auto 0; max-width:40rem;
+    color:var(--muted); font-weight:500;
+    font-size:clamp(.9rem,2.9vw,1.1rem); line-height:1.65;
+  }
+
+  /* ===== Кнопки ===== */
+  .actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:.6rem; margin-top:clamp(1.2rem,3.5vh,1.8rem); }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.55rem;
+    border-radius:999px; padding:1rem 1.9rem; border:1px solid transparent;
+    font-weight:800; text-transform:uppercase; letter-spacing:.09em;
+    font-size:clamp(10px,2.7vw,12.5px); line-height:1; white-space:nowrap;
+    transition:transform .2s ease,background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .btn .ic{ font-size:1.25em; }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-primary{ background:#8B5CF6; color:#fff; }
+  .btn-primary:hover{ background:#7C3AED; }
+  .btn-ghost{ background:transparent; color:var(--fg); border-color:var(--ctrl-border); }
+  .btn-ghost:hover{ border-color:#8B5CF6; color:#8B5CF6; }
+  .btn-light{ background:#FAFAFA; color:#0A0A0A; }
+  .btn-light:hover{ background:#fff; }
+  @media (max-width:420px){ .btn{ width:100%; } }
+
+  /* ===== Заголовок раздела ===== */
+  .sec{ margin-top:clamp(2.6rem,8vh,4.5rem); }
+  .sec-head{
+    display:flex; flex-direction:column; align-items:center; gap:.75rem;
+    text-align:center; margin-bottom:clamp(1.4rem,4vh,2.2rem);
+  }
+  .sec-ico{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,10vw,3.4rem); height:clamp(2.8rem,10vw,3.4rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-size:clamp(1.3rem,4.6vw,1.65rem);
+  }
+  .sec-head h2{
+    font-weight:900; letter-spacing:-.02em; text-wrap:balance;
+    font-size:clamp(1.35rem,5vw,2.1rem); line-height:1.2;
+  }
+  .sec-head p{
+    color:var(--muted); font-weight:600; max-width:36rem;
+    font-size:clamp(.85rem,2.7vw,1rem); line-height:1.6;
+  }
+
+  /* ===== С чего начать: три процесса-кандидата ===== */
+  .picks{ list-style:none; display:grid; grid-template-columns:1fr; gap:.6rem; }
+  @media (min-width:768px){ .picks{ grid-template-columns:repeat(3,1fr); gap:.75rem; } }
+  .picks li{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:18px; padding:clamp(1rem,3vw,1.3rem);
+    display:flex; flex-direction:column; gap:.55rem;
+  }
+  .picks .pi{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:2.6rem; height:2.6rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-size:1.25rem;
+  }
+  .picks h3{ font-weight:800; font-size:clamp(.95rem,3vw,1.1rem); line-height:1.25; }
+  .picks p{ color:var(--muted); font-weight:500; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.55; }
+
+  /* ===== Шаг ===== */
+  .step{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:clamp(20px,4vw,28px); padding:clamp(1.2rem,4.5vw,2.2rem);
+  }
+  .step + .link + .step{ margin-top:0; }
+  .step-head{ display:flex; align-items:flex-start; gap:clamp(.85rem,3vw,1.25rem); }
+  .step-ico{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,11vw,3.6rem); height:clamp(2.8rem,11vw,3.6rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-size:clamp(1.35rem,5vw,1.8rem);
+  }
+  .step-body{ min-width:0; flex:1; }
+  .kicker{
+    display:block; color:#F97316; font-weight:800; text-transform:uppercase;
+    letter-spacing:.16em; font-size:clamp(10px,2.6vw,12px);
+  }
+  .step h2{
+    margin-top:.3rem; font-weight:900; letter-spacing:-.01em;
+    font-size:clamp(1.05rem,4.2vw,1.65rem); line-height:1.25;
+  }
+  .step p.desc{
+    margin-top:clamp(.8rem,2.4vw,1.1rem); color:var(--muted);
+    font-weight:500; font-size:clamp(.88rem,2.9vw,1.05rem); line-height:1.65;
+  }
+
+  /* Списки внутри шага */
+  .checks{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; grid-template-columns:1fr; gap:.6rem; }
+  @media (min-width:768px){ .checks{ grid-template-columns:1fr 1fr; gap:.75rem; } }
+  .checks li{
+    display:flex; align-items:center; gap:.8rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:16px; padding:.85rem 1rem;
+    font-weight:600; font-size:clamp(.82rem,2.7vw,.98rem); line-height:1.45;
+  }
+  /* Плашка сплошная, иконка белая: иконка не должна совпадать по цвету
+     со своей подложкой (то же правило, что и в slide-polish лекции). */
+  .checks .ci{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-size:1.15rem;
+  }
+  .checks li.wide{ grid-column:1 / -1; }
+
+  /* Четыре варианта решения: правило / агент / человек / гибрид */
+  .modes{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; grid-template-columns:1fr; gap:.6rem; }
+  @media (min-width:640px){ .modes{ grid-template-columns:1fr 1fr; gap:.7rem; } }
+  .modes li{
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:16px; padding:.9rem 1rem; display:flex; gap:.8rem; align-items:flex-start;
+  }
+  .modes .mi{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px; color:#fff; font-size:1.15rem;
+  }
+  .modes .m-rule{ background:#64748B; } .modes .m-ai{ background:#8B5CF6; }
+  .modes .m-human{ background:#0EA5E9; } .modes .m-mix{ background:#F97316; }
+  .modes b{ display:block; font-weight:800; font-size:clamp(.85rem,2.7vw,.98rem); }
+  .modes span{ display:block; margin-top:.2rem; color:var(--muted); font-weight:500; font-size:clamp(.78rem,2.5vw,.9rem); line-height:1.5; }
+
+  /* Врезка-итог */
+  .note{
+    display:flex; align-items:center; gap:.75rem;
+    margin-top:clamp(1rem,3vw,1.4rem);
+    background:rgba(139,92,246,.14); border-left:4px solid #F97316;
+    border-radius:0 16px 16px 0; padding:.95rem 1.1rem;
+    font-weight:700; font-size:clamp(.85rem,2.8vw,1rem); line-height:1.5;
+  }
+  .note .ic{ color:#F97316; font-size:1.3rem; flex-shrink:0; }
+
+  /* Связка между шагами — как стрелки-связи на слайдах лекции */
+  .link{ display:flex; flex-direction:column; align-items:center; padding:clamp(.6rem,2vh,1rem) 0; }
+  .link .bar{ width:2px; height:clamp(1.1rem,3vh,1.6rem); background:var(--line); }
+  .link .ic{ color:var(--line); font-size:1.25rem; margin-top:-.35rem; }
+
+  /* ===== Примеры по отраслям ===== */
+  .tabs{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:.45rem;
+    margin-bottom:clamp(1.1rem,3vw,1.5rem);
+  }
+  .tab{
+    display:inline-flex; align-items:center; gap:.5rem;
+    border-radius:999px; padding:.6rem 1rem; border:1px solid var(--ctrl-border);
+    background:var(--ctrl-bg); color:var(--fg);
+    font-weight:700; font-size:clamp(11px,2.6vw,12.5px); line-height:1; white-space:nowrap;
+    transition:background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .tab .ic{ font-size:1.2em; color:#8B5CF6; }
+  .tab:hover{ border-color:#8B5CF6; }
+  .tab[aria-selected="true"]{ background:#8B5CF6; border-color:#8B5CF6; color:#fff; }
+  .tab[aria-selected="true"] .ic{ color:#fff; }
+
+  .case{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:clamp(20px,4vw,28px); padding:clamp(1.2rem,4vw,2rem);
+  }
+  .case[hidden]{ display:none; }
+  .case h3{ font-weight:900; letter-spacing:-.01em; font-size:clamp(1.05rem,3.8vw,1.45rem); line-height:1.25; }
+  .case .goal{
+    margin-top:.7rem; display:grid; gap:.4rem;
+    color:var(--muted); font-weight:600; font-size:clamp(.82rem,2.6vw,.95rem); line-height:1.55;
+  }
+  .case .goal b{ color:var(--fg); font-weight:800; }
+
+  /* Диаграмма процесса: горизонтальная прокрутка только внутри рамки */
+  .diagram{
+    margin-top:clamp(1rem,3vw,1.4rem);
+    background:var(--diagram-bg); border:1px solid var(--soft-border);
+    border-radius:18px; padding:clamp(.8rem,2.5vw,1.2rem);
+    overflow-x:auto; overflow-y:hidden;
+  }
+  .diagram .mermaid{ display:flex; justify-content:center; min-width:min-content; }
+  .diagram svg{ max-width:100%; height:auto; }
+  /* Пока mermaid не отрисовал — не показываем исходник диаграммы */
+  .mermaid:not([data-processed]){ visibility:hidden; height:0; overflow:hidden; }
+  .diagram .fallback{
+    display:none; color:var(--muted); font-weight:600;
+    font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.6; text-align:center;
+  }
+  .diagram.failed .fallback{ display:block; }
+
+  .case h4{
+    margin-top:clamp(1.1rem,3vw,1.5rem); font-weight:800;
+    font-size:clamp(.92rem,3vw,1.05rem); letter-spacing:-.01em;
+  }
+  .case h4 .ic{ color:#F97316; margin-right:.4rem; }
+  .bnecks{ list-style:none; margin-top:.7rem; display:grid; gap:.5rem; }
+  @media (min-width:768px){ .bnecks{ grid-template-columns:1fr 1fr; gap:.6rem; } }
+  .bnecks li{
+    display:flex; gap:.65rem; align-items:flex-start;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:14px; padding:.75rem .9rem;
+    font-weight:600; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.5;
+  }
+  .bnecks .ic{ color:#F97316; font-size:1.1rem; margin-top:.1rem; }
+  .fix{ list-style:none; margin-top:.7rem; display:grid; gap:.5rem; }
+  .fix li{
+    display:flex; gap:.65rem; align-items:center; flex-wrap:wrap;
+    font-weight:600; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.5;
+  }
+  .tag{
+    display:inline-flex; align-items:center; gap:.35rem; flex-shrink:0;
+    border-radius:999px; padding:.3rem .7rem; color:#fff;
+    font-weight:800; text-transform:uppercase; letter-spacing:.08em; font-size:9.5px;
+  }
+  .tag .ic{ font-size:1.15em; }
+  .t-rule{ background:#64748B; } .t-ai{ background:#8B5CF6; }
+  .t-human{ background:#0EA5E9; } .t-mix{ background:#F97316; }
+
+  /* ===== Главный призыв: инструмент ИИ-стратегии ===== */
+  .cta{
+    background:#4C1D95; color:#fff; border:1px solid rgba(167,139,250,.55);
+    border-radius:clamp(20px,4vw,28px); padding:clamp(1.5rem,5vw,2.6rem); text-align:center;
+  }
+  .cta .cta-ico{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,11vw,3.6rem); height:clamp(2.8rem,11vw,3.6rem);
+    border-radius:999px; background:rgba(255,255,255,.10); color:#F97316;
+    font-size:clamp(1.35rem,5vw,1.8rem); margin-bottom:clamp(.8rem,2.5vw,1.1rem);
+  }
+  .cta h2{
+    font-weight:900; letter-spacing:-.01em; text-wrap:balance;
+    font-size:clamp(1.1rem,4.2vw,1.75rem); line-height:1.25;
+  }
+  .cta > p{
+    margin:clamp(.8rem,2.4vw,1.1rem) auto 0; max-width:36rem;
+    color:rgba(255,255,255,.78); font-weight:500;
+    font-size:clamp(.85rem,2.7vw,1rem); line-height:1.6;
+  }
+  .cta ul{ list-style:none; margin:clamp(1.1rem,3vw,1.5rem) auto 0; max-width:34rem; display:grid; gap:.5rem; }
+  @media (min-width:768px){ .cta ul{ grid-template-columns:1fr 1fr; gap:.6rem; } }
+  .cta li{
+    display:flex; align-items:center; gap:.7rem; text-align:left;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.10);
+    border-radius:14px; padding:.8rem .95rem;
+    font-weight:600; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.45;
+  }
+  .cta li .ic{ color:#F97316; font-size:1.15rem; }
+  .cta li:last-child:nth-child(odd){ grid-column:1 / -1; }
+  .cta .hand{
+    margin-top:clamp(.9rem,2.6vw,1.2rem);
+    color:rgba(255,255,255,.62); font-weight:600; font-size:clamp(.78rem,2.5vw,.88rem);
+  }
+
+  /* ===== Возврат ===== */
+  .back{ display:flex; justify-content:center; margin-top:clamp(1.6rem,4.5vh,2.4rem); }
+  .back button{
+    display:inline-flex; align-items:center; gap:.5rem; background:none; border:0;
+    color:var(--muted); font-weight:700; font-size:clamp(.8rem,2.6vw,.9rem);
+    transition:color .2s ease;
+  }
+  .back button:hover{ color:#8B5CF6; }
+
+  /* Печать / сохранение в PDF */
+  @media print{
+    header, .actions, .back, .tabs{ display:none !important; }
+    body{ background:#fff !important; color:#000 !important; }
+    main{ padding:0; max-width:none; }
+    .step, .case, .picks li, .checks li, .modes li{ background:#fff; border-color:#D9D9D9; break-inside:avoid; }
+    .cta{ background:#fff !important; color:#000 !important; border-color:#D9D9D9; }
+    .cta li{ background:#fff; border-color:#D9D9D9; color:#000; }
+    .case[hidden]{ display:block !important; }   /* в печать идут все отрасли */
+    .rise{ animation:none; }
+    *{ print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  }
+</style>
+<script>
+/* Тема (фон) общая для всего клиентского пути (ключ 'welcome-theme', как в лекции):
+   по умолчанию тёмная, ?theme=light|dark перебивает сохранённую. */
+(function(){
+  var t=null; try{ t=new URLSearchParams(location.search).get('theme'); }catch(e){}
+  if(t!=='dark' && t!=='light'){ try{ t=localStorage.getItem('welcome-theme'); }catch(e){} }
+  document.documentElement.classList.toggle('dark', t!=='light');
+})();
+</script>
+</head>
+<body>
+
+  <!-- Иконки Phosphor (MIT) вшиты в страницу: с CDN они пропадают, если сеть
+       медленная или он недоступен. Здесь рисуются всегда, даже офлайн. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+    <symbol id="i-chart-line-up" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM200,192H56a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v76.69l34.34-34.35a8,8,0,0,1,11.32,0L128,132.69,172.69,88H144a8,8,0,0,1,0-16h48a8,8,0,0,1,8,8v48a8,8,0,0,1-16,0V99.31l-50.34,50.35a8,8,0,0,1-11.32,0L104,131.31l-40,40V176H200a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-clipboard-text" viewBox="0 0 256 256"><path d="M200,32H163.74a47.92,47.92,0,0,0-71.48,0H56A16,16,0,0,0,40,48V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm-72,0a32,32,0,0,1,32,32H96A32,32,0,0,1,128,32Zm32,128H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-target" viewBox="0 0 256 256"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></symbol>
+    <symbol id="i-flow-arrow" viewBox="0 0 256 256"><path d="M245.66,85.66l-32,32a8,8,0,0,1-11.32-11.32L220.69,88H208c-38.67,0-46.59,19-56.62,43.08C141.05,155.88,129.33,184,80,184H79a32,32,0,1,1,0-16h1c38.67,0,46.59-19,56.62-43.08C147,100.12,158.67,72,208,72h12.69L202.34,53.66a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,245.66,85.66Z"/></symbol>
+    <symbol id="i-magnifying-glass" viewBox="0 0 256 256"><path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"/></symbol>
+    <symbol id="i-compass-tool" viewBox="0 0 256 256"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></symbol>
+    <symbol id="i-gear-six" viewBox="0 0 256 256"><path d="M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></symbol>
+    <symbol id="i-robot" viewBox="0 0 256 256"><path d="M200,48H136V16a8,8,0,0,0-16,0V48H56A32,32,0,0,0,24,80V192a32,32,0,0,0,32,32H200a32,32,0,0,0,32-32V80A32,32,0,0,0,200,48ZM172,96a12,12,0,1,1-12,12A12,12,0,0,1,172,96ZM96,184H80a16,16,0,0,1,0-32H96ZM84,120a12,12,0,1,1,12-12A12,12,0,0,1,84,120Zm60,64H112V152h32Zm32,0H160V152h16a16,16,0,0,1,0,32Z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 256 256"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"/></symbol>
+    <symbol id="i-users-three" viewBox="0 0 256 256"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"/></symbol>
+    <symbol id="i-briefcase" viewBox="0 0 256 256"><path d="M152,112a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h32A8,8,0,0,1,152,112Zm80-40V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V72A16,16,0,0,1,40,56H80V48a24,24,0,0,1,24-24h48a24,24,0,0,1,24,24v8h40A16,16,0,0,1,232,72ZM96,56h64V48a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8Zm120,57.61V72H40v41.61A184,184,0,0,0,128,136,184,184,0,0,0,216,113.61Z"/></symbol>
+    <symbol id="i-user-focus" viewBox="0 0 256 256"><path d="M224,40V76a8,8,0,0,1-16,0V48H180a8,8,0,0,1,0-16h36A8,8,0,0,1,224,40Zm-8,132a8,8,0,0,0-8,8v28H180a8,8,0,0,0,0,16h36a8,8,0,0,0,8-8V180A8,8,0,0,0,216,172ZM76,208H48V180a8,8,0,0,0-16,0v36a8,8,0,0,0,8,8H76a8,8,0,0,0,0-16ZM40,84a8,8,0,0,0,8-8V48H76a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8V76A8,8,0,0,0,40,84Zm61,57.51A67.94,67.94,0,0,0,73.6,163.19,8,8,0,0,0,80,176h96a8,8,0,0,0,6.4-12.81A67.94,67.94,0,0,0,155,141.51a40,40,0,1,0-53.94,0Z"/></symbol>
+    <symbol id="i-megaphone" viewBox="0 0 256 256"><path d="M200,72H160.2c-2.91-.17-53.62-3.74-101.91-44.24A16,16,0,0,0,32,40V200a16,16,0,0,0,26.29,12.25c37.77-31.68,77-40.76,93.71-43.3v31.72A16,16,0,0,0,159.12,214l11,7.33A16,16,0,0,0,194.5,212l11.77-44.36A48,48,0,0,0,200,72ZM179,207.89l0,.11-11-7.33V168h21.6ZM200,152H168V88h32a32,32,0,1,1,0,64Z"/></symbol>
+    <symbol id="i-headset" viewBox="0 0 256 256"><path d="M232,128v80a40,40,0,0,1-40,40H136a8,8,0,0,1,0-16h56a24,24,0,0,0,24-24H192a24,24,0,0,1-24-24V144a24,24,0,0,1,24-24h23.65A88,88,0,0,0,66,65.54,87.29,87.29,0,0,0,40.36,120H64a24,24,0,0,1,24,24v40a24,24,0,0,1-24,24H48a24,24,0,0,1-24-24V128A104.11,104.11,0,0,1,201.89,54.66,103.41,103.41,0,0,1,232,128Z"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 256 256"><path d="M200.77,53.89A103.27,103.27,0,0,0,128,24h-1.07A104,104,0,0,0,24,128c0,43,26.58,79.06,69.36,94.17A32,32,0,0,0,136,192a16,16,0,0,1,16-16h46.21a31.81,31.81,0,0,0,31.2-24.88,104.43,104.43,0,0,0,2.59-24A103.28,103.28,0,0,0,200.77,53.89ZM84,168a12,12,0,1,1,12-12A12,12,0,0,1,84,168Zm0-56a12,12,0,1,1,12-12A12,12,0,0,1,84,112Zm44-24a12,12,0,1,1,12-12A12,12,0,0,1,128,88Zm44,24a12,12,0,1,1,12-12A12,12,0,0,1,172,112Z"/></symbol>
+    <symbol id="i-code" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></symbol>
+    <symbol id="i-list-checks" viewBox="0 0 256 256"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM117.66,149.66l-32,32a8,8,0,0,1-11.32,0l-16-16a8,8,0,0,1,11.32-11.32L80,164.69l26.34-26.35a8,8,0,0,1,11.32,11.32Zm0-64-32,32a8,8,0,0,1-11.32,0l-16-16A8,8,0,0,1,69.66,90.34L80,100.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM192,168H144a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Zm0-64H144a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm56,112H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-arrow-u-up-left" viewBox="0 0 256 256"><path d="M232,144a64.07,64.07,0,0,1-64,64H80a8,8,0,0,1,0-16h88a48,48,0,0,0,0-96H88v40a8,8,0,0,1-13.66,5.66l-48-48a8,8,0,0,1,0-11.32l48-48A8,8,0,0,1,88,40V80h80A64.07,64.07,0,0,1,232,144Z"/></symbol>
+    <symbol id="i-warning" viewBox="0 0 256 256"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 256 256"><path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z"/></symbol>
+    <symbol id="i-seal-check" viewBox="0 0 256 256"><path d="M225.86,102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28,23.51,138.44,16,128,16s-18.27,7.51-25.18,14.14c-3.94,3.77-8,7.67-11.57,9.14C88,40.64,82.56,40.72,77.31,40.8c-9.76.15-20.82.31-28.51,8S41,67.55,40.8,77.31c-.08,5.25-.16,10.67-1.52,13.94-1.47,3.56-5.37,7.63-9.14,11.57C23.51,109.72,16,117.56,16,128s7.51,18.27,14.14,25.18c3.77,3.94,7.67,8,9.14,11.57,1.36,3.27,1.44,8.69,1.52,13.94.15,9.76.31,20.82,8,28.51s18.75,7.85,28.51,8c5.25.08,10.67.16,13.94,1.52,3.56,1.47,7.63,5.37,11.57,9.14C109.72,232.49,117.56,240,128,240s18.27-7.51,25.18-14.14c3.94-3.77,8-7.67,11.57-9.14,3.27-1.36,8.69-1.44,13.94-1.52,9.76-.15,20.82-.31,28.51-8s7.85-18.75,8-28.51c.08-5.25.16-10.67,1.52-13.94,1.47-3.56,5.37-7.63,9.14-11.57C232.49,146.28,240,138.44,240,128S232.49,109.73,225.86,102.82Zm-52.2,6.84-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+    <symbol id="i-tray" viewBox="0 0 256 256"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V168H76.69L96,187.32A15.89,15.89,0,0,0,107.31,192h41.38A15.86,15.86,0,0,0,160,187.31L179.31,168H208v40Z"/></symbol>
+    <symbol id="i-user-plus" viewBox="0 0 256 256"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136ZM144,157.68a68,68,0,1,0-71.9,0c-20.65,6.76-39.23,19.39-54.17,37.17A8,8,0,0,0,24,208H192a8,8,0,0,0,6.13-13.15C183.18,177.07,164.6,164.44,144,157.68Z"/></symbol>
+    <symbol id="i-file-text" viewBox="0 0 256 256"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,176H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm-8-56V44l44,44Z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 256 256"><path d="M235.54,150.21a104.84,104.84,0,0,1-37,52.91A104,104,0,0,1,32,120,103.09,103.09,0,0,1,52.88,57.48a104.84,104.84,0,0,1,52.91-37,8,8,0,0,1,10,10,88.08,88.08,0,0,0,109.8,109.8,8,8,0,0,1,10,10Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 256 256"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm8,24a64,64,0,1,0,64,64A64.07,64.07,0,0,0,128,64ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></symbol>
+    <symbol id="i-path" viewBox="0 0 256 256"><path d="M228,200a28,28,0,0,1-54.83,8H72a48,48,0,0,1,0-96h96a24,24,0,0,0,0-48H72a8,8,0,0,1,0-16h96a40,40,0,0,1,0,80H72a32,32,0,0,0,0,64H173.17A28,28,0,0,1,228,200Z"/></symbol>
+    <symbol id="i-database" viewBox="0 0 256 256"><path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64Zm-21.61,74.92C170.93,211.35,150.19,216,128,216s-42.93-4.65-58.39-13.08C55.88,195.43,48,185.62,48,176V159.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64V176C208,185.62,200.12,195.43,186.39,202.92Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 256 256"><path d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 256 256"><path d="M228,128a12,12,0,0,1-12,12H69l51.52,51.51a12,12,0,0,1-17,17l-72-72a12,12,0,0,1,0-17l72-72a12,12,0,0,1,17,17L69,116H216A12,12,0,0,1,228,128Z"/></symbol>
+    <symbol id="i-caret-down" viewBox="0 0 256 256"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></symbol>
+  </defs></svg>
+
+  <header>
+    <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
+      <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
+      <span class="logo-fb" aria-hidden="true">AIT</span>
+    </a>
+    <div class="lec-right">
+      <button class="lec-ctrl lec-lbl js-back" type="button" aria-label="Вернуться назад" title="Вернуться назад"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg><span>Назад</span></button>
+      <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить фон (тёмный/светлый)"><svg class="ic" aria-hidden="true"><use href="#i-moon" xlink:href="#i-moon"></use></svg></button>
+      <a class="lec-consult" href="https://strategy.andre.technology/ai-strategy" target="_blank" rel="noopener">ИИ-стратегия <svg class="ic" aria-hidden="true"><use href="#i-arrow-right" xlink:href="#i-arrow-right"></use></svg></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero rise">
+      <span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Практика · Моделирование процессов</span>
+      <h1>Разберите один реальный <span class="accent">бизнес-процесс</span></h1>
+      <p>Возьмите один процесс из своей компании и проведите его полный разбор: от бизнес-цели и модели AS-IS до узких мест, точек автоматизации и спроектированного процесса TO-BE.</p>
+      <p>На выходе — не список идей «куда внедрить ИИ», а готовый проект трансформации конкретного процесса.</p>
+    </section>
+
+    <!-- ===== С ЧЕГО НАЧАТЬ ===== -->
+    <section class="sec rise d1">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span>
+        <h2>Какой процесс <span class="accent">взять</span></h2>
+        <p>Если сомневаетесь — берите один из этих трёх. Они есть почти в любой компании, у них понятные границы и измеримый результат.</p>
+      </div>
+      <ul class="picks">
+        <li>
+          <span class="pi"><svg class="ic" aria-hidden="true"><use href="#i-tray" xlink:href="#i-tray"></use></svg></span>
+          <h3>Обработка заявки</h3>
+          <p>От входящего обращения до передачи в работу: квалификация, уточнение, ответ клиенту.</p>
+        </li>
+        <li>
+          <span class="pi"><svg class="ic" aria-hidden="true"><use href="#i-user-plus" xlink:href="#i-user-plus"></use></svg></span>
+          <h3>Найм сотрудника</h3>
+          <p>От заявки на подбор до выхода человека: профиль, поиск, скрининг, интервью, оффер.</p>
+        </li>
+        <li>
+          <span class="pi"><svg class="ic" aria-hidden="true"><use href="#i-file-text" xlink:href="#i-file-text"></use></svg></span>
+          <h3>Согласование договора</h3>
+          <p>От запроса на договор до подписи: шаблон, правки, юрист, финансы, подписант.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== ШАГИ ===== -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-list-checks" xlink:href="#i-list-checks"></use></svg></span>
+        <h2>Что нужно <span class="accent">сделать</span></h2>
+        <p>Четыре шага. Каждый следующий опирается на результат предыдущего.</p>
+      </div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span>
+          <div class="step-body">
+            <span class="kicker">Шаг 1</span>
+            <h2>Определите бизнес-цель, метрику и границы процесса</h2>
+          </div>
+        </div>
+        <p class="desc">Зачем этот процесс существует, по какому числу вы поймёте, что он стал лучше, и где он начинается и заканчивается. Без этого разбор превращается в описание ради описания.</p>
+        <ul class="checks">
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span> бизнес-цель процесса</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chart-line-up" xlink:href="#i-chart-line-up"></use></svg></span> метрика: скорость, стоимость, качество или конверсия</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span> событие-старт и событие-финиш</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> кто владелец процесса и кто в нём участвует</li>
+        </ul>
+      </article>
+
+      <div class="link" aria-hidden="true">
+        <span class="bar"></span>
+        <svg class="ic" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg>
+      </div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span>
+          <div class="step-body">
+            <span class="kicker">Шаг 2</span>
+            <h2>Восстановите AS-IS и соберите BPMN-модель</h2>
+          </div>
+        </div>
+        <p class="desc">Опишите, как процесс работает сейчас — честно, а не так, как записано в регламенте. Затем перенесите это в BPMN-модель: она вскрывает разрывы, которые в тексте не видны.</p>
+        <ul class="checks">
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> кто участвует и что именно делает</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg></span> какие данные передаются и в каком виде</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-path" xlink:href="#i-path"></use></svg></span> где принимаются решения и по каким правилам</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg></span> где возникают задержки и ожидания</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg></span> где случаются возвраты на предыдущий шаг</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg></span> какие бывают исключения и как их разруливают</li>
+        </ul>
+        <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> Ниже — шесть готовых примеров AS-IS по отраслям: возьмите ближайший как образец схемы</p>
+      </article>
+
+      <div class="link" aria-hidden="true">
+        <span class="bar"></span>
+        <svg class="ic" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg>
+      </div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg></span>
+          <div class="step-body">
+            <span class="kicker">Шаг 3</span>
+            <h2>Найдите узкие места и точки автоматизации</h2>
+          </div>
+        </div>
+        <p class="desc">Пройдите по модели и отметьте шаги, которые тормозят процесс, съедают время людей или чаще всего дают ошибки. Для каждой такой точки решите, чем её закрывать:</p>
+        <ul class="modes">
+          <li>
+            <span class="mi m-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg></span>
+            <div><b>Простое правило</b><span>Условие однозначное и записывается словами «если — то». ИИ здесь лишний.</span></div>
+          </li>
+          <li>
+            <span class="mi m-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span>
+            <div><b>ИИ-агент</b><span>Нужны понимание текста, поиск по контексту, черновик документа, разбор неструктурированных данных.</span></div>
+          </li>
+          <li>
+            <span class="mi m-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg></span>
+            <div><b>Человек</b><span>Цена ошибки высокая, нужна ответственность, переговоры или суждение о людях.</span></div>
+          </li>
+          <li>
+            <span class="mi m-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span>
+            <div><b>Гибрид</b><span>Агент готовит решение, человек проверяет и подтверждает — Human-in-the-Loop.</span></div>
+          </li>
+        </ul>
+        <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-list-checks" xlink:href="#i-list-checks"></use></svg> Расставьте приоритеты: эффект на метрику — против сложности внедрения</p>
+      </article>
+
+      <div class="link" aria-hidden="true">
+        <span class="bar"></span>
+        <svg class="ic" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg>
+      </div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg></span>
+          <div class="step-body">
+            <span class="kicker">Шаг 4</span>
+            <h2>Спроектируйте процесс TO-BE</h2>
+          </div>
+        </div>
+        <p class="desc">Соберите новую версию процесса — ту, в которой часть шагов уже выполняют агенты. Это и есть ваша стратегия ИИ-автоматизации процесса.</p>
+        <ul class="checks">
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg></span> новая роль человека в процессе</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> точки Human-in-the-Loop: где человек подтверждает</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg></span> необходимые интеграции и источники данных</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span> навыки будущего агента: что он должен уметь</li>
+          <li class="wide"><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chart-line-up" xlink:href="#i-chart-line-up"></use></svg></span> как изменится метрика из шага 1 и за счёт чего</li>
+        </ul>
+        <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Готово: у вас на руках проект трансформации одного конкретного процесса</p>
+      </article>
+    </section>
+
+    <!-- ===== ГЛАВНЫЙ ПРИЗЫВ: ИНСТРУМЕНТ ===== -->
+    <section class="sec rise d2">
+      <div class="cta">
+        <span class="cta-ico"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg></span>
+        <h2>Соберите стратегию в инструменте ИИ-трансформации</h2>
+        <p>Не обязательно проходить все четыре шага вручную. Инструмент проведёт вас по процессу интервью, соберёт информацию, построит модели и сформирует стратегию.</p>
+        <ul>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> интервью по вашему процессу</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> модели AS-IS и TO-BE</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg> узкие места и точки автоматизации</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg> готовая стратегия и приоритеты</li>
+        </ul>
+        <div class="actions">
+          <a class="btn btn-light" href="https://strategy.andre.technology/ai-strategy" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg> Собрать стратегию ИИ-трансформации</a>
+        </div>
+        <p class="hand">Или пройдите все шаги вручную по методологии — результат должен быть тем же.</p>
+      </div>
+    </section>
+
+    <!-- ===== ПРИМЕРЫ ПО ОТРАСЛЯМ ===== -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span>
+        <h2>Примеры AS-IS <span class="accent">по отраслям</span></h2>
+        <p>Шесть типовых процессов: схема «как есть», узкие места и решение для каждой точки. Выберите отрасль, ближайшую к вашей, и стройте свою схему по образцу.</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Отрасли">
+        <button class="tab" role="tab" data-case="consult" aria-selected="true"><svg class="ic" aria-hidden="true"><use href="#i-briefcase" xlink:href="#i-briefcase"></use></svg> Консалтинг</button>
+        <button class="tab" role="tab" data-case="hr" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-user-focus" xlink:href="#i-user-focus"></use></svg> Рекрутинг</button>
+        <button class="tab" role="tab" data-case="marketing" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-megaphone" xlink:href="#i-megaphone"></use></svg> Маркетинг</button>
+        <button class="tab" role="tab" data-case="callcenter" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-headset" xlink:href="#i-headset"></use></svg> Колл-центр</button>
+        <button class="tab" role="tab" data-case="design" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-palette" xlink:href="#i-palette"></use></svg> Дизайн</button>
+        <button class="tab" role="tab" data-case="software" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Разработка ПО</button>
+      </div>
+
+      <!-- КОНСАЛТИНГ -->
+      <article class="case" id="case-consult">
+        <h3>Консалтинг — подготовка коммерческого предложения</h3>
+        <div class="goal">
+          <span><b>Цель:</b> превращать входящий запрос в подписанный договор.</span>
+          <span><b>Метрика:</b> срок от запроса до КП и доля выигранных КП.</span>
+          <span><b>Границы:</b> от обращения клиента до подписания договора.</span>
+        </div>
+        <div class="diagram">
+          <pre class="mermaid">
+flowchart TD
+  A([Запрос клиента]) --> B[Квалификация запроса]
+  B --> C{Берём проект?}
+  C -- нет --> X([Отказ])
+  C -- да --> D[Сбор требований]
+  D --> E[Поиск похожих кейсов]
+  E --> F[Оценка трудозатрат]
+  F --> G[Сборка КП]
+  G --> H{Ревью партнёра}
+  H -- правки --> F
+  H -- ок --> I[Отправка клиенту]
+  I --> J{Ответ клиента}
+  J -- молчит --> K[Ручной follow-up]
+  K --> J
+  J -- да --> L([Договор])
+  class E,F,K hot
+          </pre>
+          <p class="fallback">Схема: запрос → квалификация → сбор требований → поиск кейсов → оценка → сборка КП → ревью партнёра (с возвратом на оценку) → отправка → follow-up → договор.</p>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg> Поиск кейсов: знания лежат в головах и папках, находит только тот, кто «помнит».</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Оценка трудозатрат: делается вручную и по-разному у разных консультантов.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Возврат после ревью партнёра: КП переписывается по второму кругу.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Follow-up: про часть клиентов просто забывают.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> квалификация по бюджету и сроку — отсев по формальным критериям</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> подбор релевантных кейсов и сборка черновика КП по шаблону</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оценка трудозатрат: агент считает по аналогам, партнёр подтверждает</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> переговоры о цене и финальные обязательства перед клиентом</li>
+        </ul>
+      </article>
+
+      <!-- РЕКРУТИНГ -->
+      <article class="case" id="case-hr" hidden>
+        <h3>Рекрутинговое агентство — подбор кандидата под вакансию</h3>
+        <div class="goal">
+          <span><b>Цель:</b> закрывать вакансию клиента подходящим кандидатом.</span>
+          <span><b>Метрика:</b> срок закрытия вакансии и доля кандидатов, дошедших до интервью.</span>
+          <span><b>Границы:</b> от заявки клиента до выхода кандидата на работу.</span>
+        </div>
+        <div class="diagram">
+          <pre class="mermaid">
+flowchart TD
+  A([Заявка на вакансию]) --> B[Профиль должности]
+  B --> C[Поиск резюме]
+  C --> D[Скрининг резюме]
+  D --> E{Подходит?}
+  E -- нет --> C
+  E -- да --> F[Телефонное интервью]
+  F --> G[Карточка кандидата]
+  G --> H[Отправка клиенту]
+  H --> I{Решение клиента}
+  I -- отказ --> C
+  I -- интервью --> J[Согласование слотов]
+  J --> K{Оффер принят?}
+  K -- нет --> C
+  K -- да --> L([Выход на работу])
+  class C,D,J hot
+          </pre>
+          <p class="fallback">Схема: заявка → профиль → поиск резюме → скрининг → интервью → карточка кандидата → решение клиента → согласование слотов → оффер → выход.</p>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Скрининг резюме: сотни документов читаются глазами.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Каждый отказ клиента отбрасывает процесс к поиску.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Согласование слотов: переписка на три стороны.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Профиль снят неточно — брак вскрывается только после интервью у клиента.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> первичный скрининг резюме и ранжирование по профилю</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сборка карточки кандидата из резюме и заметок после звонка</li>
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> отсев по стоп-факторам: локация, право на работу, вилка</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> согласование слотов: агент предлагает время, рекрутер подтверждает</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> оценка мотивации и «впишется ли в команду»</li>
+        </ul>
+      </article>
+
+      <!-- МАРКЕТИНГ -->
+      <article class="case" id="case-marketing" hidden>
+        <h3>Маркетинговое агентство — запуск рекламной кампании</h3>
+        <div class="goal">
+          <span><b>Цель:</b> запускать кампании клиента и приводить заявки в срок.</span>
+          <span><b>Метрика:</b> срок от брифа до запуска и стоимость заявки.</span>
+          <span><b>Границы:</b> от брифа клиента до отчёта по первой волне.</span>
+        </div>
+        <div class="diagram">
+          <pre class="mermaid">
+flowchart TD
+  A([Бриф клиента]) --> B[Анализ ниши]
+  B --> C[Медиаплан и бюджет]
+  C --> D{Согласование плана}
+  D -- правки --> C
+  D -- ок --> E[Креативы и тексты]
+  E --> F{Согласование креативов}
+  F -- правки --> E
+  F -- ок --> G[Настройка кампаний]
+  G --> H([Запуск])
+  H --> I[Сбор статистики]
+  I --> J[Отчёт клиенту]
+  J --> K{Нужна оптимизация?}
+  K -- да --> G
+  K -- нет --> L([Плановое ведение])
+  class E,F,I hot
+          </pre>
+          <p class="fallback">Схема: бриф → анализ ниши → медиаплан → согласование → креативы → согласование → настройка → запуск → статистика → отчёт → оптимизация.</p>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Круги правок по креативам — самая долгая часть запуска.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Ежедневный сбор статистики из нескольких кабинетов руками.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Отчёты собираются в таблицах и презентациях под каждого клиента.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Анализ конкурентов делается по-разному и зависит от исполнителя.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> черновики креативов и текстов по брифу и tone of voice</li>
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> выгрузка статистики из кабинетов по расписанию</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сборка отчёта с выводами и гипотезами на следующую неделю</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оптимизация ставок: агент предлагает, специалист применяет</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> стратегия кампании и защита идеи перед клиентом</li>
+        </ul>
+      </article>
+
+      <!-- КОЛЛ-ЦЕНТР -->
+      <article class="case" id="case-callcenter" hidden>
+        <h3>Колл-центр — обработка входящего обращения</h3>
+        <div class="goal">
+          <span><b>Цель:</b> решать вопрос клиента с первого обращения.</span>
+          <span><b>Метрика:</b> время обработки и доля вопросов, решённых на первой линии.</span>
+          <span><b>Границы:</b> от звонка или сообщения до закрытия тикета.</span>
+        </div>
+        <div class="diagram">
+          <pre class="mermaid">
+flowchart TD
+  A([Звонок или чат]) --> B[Идентификация клиента]
+  B --> C[История обращений]
+  C --> D{Типовой вопрос?}
+  D -- да --> E[Ответ по скрипту]
+  D -- нет --> F[Эскалация на 2-ю линию]
+  F --> G[Ожидание эксперта]
+  G --> H[Ответ клиенту]
+  E --> I[Карточка обращения]
+  H --> I
+  I --> J{Вопрос решён?}
+  J -- нет --> F
+  J -- да --> K([Закрытие тикета])
+  class C,G,I hot
+          </pre>
+          <p class="fallback">Схема: обращение → идентификация → история → типовой вопрос? → скрипт или эскалация → ожидание эксперта → ответ → карточка обращения → закрытие.</p>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Поиск истории по нескольким системам, пока клиент ждёт на линии.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Ожидание второй линии — клиент висит или ему перезванивают.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Повторная эскалация, если ответ не решил вопрос.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Заполнение карточки после каждого контакта.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> идентификация клиента и подтяжка карточки из CRM</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сводка истории обращений одним абзацем перед ответом</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> ответы на типовые вопросы и автозаполнение карточки обращения</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> подсказка оператору в реальном времени, отвечает человек</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> конфликтные обращения, возвраты денег, нестандартные случаи</li>
+        </ul>
+      </article>
+
+      <!-- ДИЗАЙН -->
+      <article class="case" id="case-design" hidden>
+        <h3>Дизайн-агентство — проект от брифа до сдачи</h3>
+        <div class="goal">
+          <span><b>Цель:</b> сдавать проект в срок и без бесконечных правок.</span>
+          <span><b>Метрика:</b> число кругов правок и срок от брифа до приёмки.</span>
+          <span><b>Границы:</b> от брифа клиента до передачи исходников.</span>
+        </div>
+        <div class="diagram">
+          <pre class="mermaid">
+flowchart TD
+  A([Бриф и референсы]) --> B[Оценка объёма]
+  B --> C[Договор и предоплата]
+  C --> D[Концепция: 2-3 варианта]
+  D --> E{Выбор клиента}
+  E -- правки --> D
+  E -- ок --> F[Отрисовка макетов]
+  F --> G{Приёмка клиентом}
+  G -- правки --> F
+  G -- ок --> H[Исходники и гайд]
+  H --> I([Передача и закрывающие])
+  class D,F,G hot
+          </pre>
+          <p class="fallback">Схема: бриф → оценка → договор → концепция → выбор клиента → макеты → приёмка (круги правок) → исходники и гайд → передача.</p>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Круги правок: критерии приёмки нигде не зафиксированы.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Бриф снят поверхностно — концепция уходит не туда.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Оценка объёма делается «на глаз» и часто не сходится с фактом.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Сборка исходников и гайда — ручная рутина в конце проекта.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> структурированный бриф из переписки и созвона с клиентом</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сведение правок клиента в один список задач без потерь</li>
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> лимит кругов правок и чек-лист приёмки в договоре</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оценка объёма: агент считает по прошлым проектам, арт-директор утверждает</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> сама концепция и защита решения перед клиентом</li>
+        </ul>
+      </article>
+
+      <!-- РАЗРАБОТКА ПО -->
+      <article class="case" id="case-software" hidden>
+        <h3>Разработка ПО — от заявки клиента до релиза</h3>
+        <div class="goal">
+          <span><b>Цель:</b> доводить запросы до работающего релиза предсказуемо.</span>
+          <span><b>Метрика:</b> время от заявки до релиза и доля возвратов из тестирования.</span>
+          <span><b>Границы:</b> от запроса клиента или бизнеса до выката в прод.</span>
+        </div>
+        <div class="diagram">
+          <pre class="mermaid">
+flowchart TD
+  A([Запрос клиента или бизнеса]) --> B[Уточнение требований]
+  B --> C[Оценка и план спринта]
+  C --> D[Разработка]
+  D --> E{Код-ревью}
+  E -- правки --> D
+  E -- ок --> F{Тестирование}
+  F -- баги --> D
+  F -- ок --> G{Приёмка заказчиком}
+  G -- не то --> B
+  G -- ок --> H([Релиз])
+  H --> I[Поддержка и инциденты]
+  class B,E,F hot
+          </pre>
+          <p class="fallback">Схема: запрос → уточнение требований → оценка → разработка → код-ревью → тестирование → приёмка (возврат к требованиям) → релиз → поддержка.</p>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Требования неполные — брак вскрывается на приёмке, а не в начале.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Код-ревью ждёт свободного старшего разработчика.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Возвраты из тестирования съедают спринт.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Разбор инцидентов начинается со сбора контекста по чатам.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> черновик требований и критериев приёмки из запроса клиента</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> первый проход код-ревью и генерация тест-кейсов</li>
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> автотесты и линтеры на каждый коммит — до ревью человеком</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сводка инцидента: логи, история изменений, похожие случаи</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> архитектурные решения и финальное «выкатываем»</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="sec rise d2">
+      <div class="cta">
+        <span class="cta-ico"><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg></span>
+        <h2>Разобрали пример — сделайте это со своим процессом</h2>
+        <p>Инструмент проведёт интервью, соберёт AS-IS, покажет узкие места и соберёт стратегию ИИ-трансформации вашего процесса.</p>
+        <div class="actions">
+          <a class="btn btn-light" href="https://strategy.andre.technology/ai-strategy" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg> Собрать стратегию ИИ-трансформации</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="back rise d2">
+      <button class="js-back" type="button"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg> Вернуться назад</button>
+    </div>
+  </main>
+
+<script>
+(function(){
+  /* Кнопка «Назад»: возвращает на страницу, с которой пришли. Если истории нет
+     (открыли по прямой ссылке), уводим на дорожную карту курса — иначе кнопка
+     была бы мёртвой. */
+  var FALLBACK = 'https://andre.technology/automation/main/';
+  Array.prototype.forEach.call(document.querySelectorAll('.js-back'), function(b){
+    b.addEventListener('click', function(){
+      if (history.length > 1) history.back(); else location.href = FALLBACK;
+    });
+  });
+
+  /* Отрасли переключаются вкладками: шесть схем подряд — это простыня. */
+  var tabs = document.querySelectorAll('.tab');
+  Array.prototype.forEach.call(tabs, function(t){
+    t.addEventListener('click', function(){
+      Array.prototype.forEach.call(tabs, function(o){
+        var on = o === t;
+        o.setAttribute('aria-selected', on ? 'true' : 'false');
+        var box = document.getElementById('case-' + o.dataset.case);
+        if (box) box.hidden = !on;
+      });
+    });
+  });
+
+  /* Смена фона: тёмный ⇄ светлый, выбор запоминается на весь путь */
+  var btn = document.getElementById('lec-theme');
+  function syncTheme(){
+    var dark = document.documentElement.classList.contains('dark');
+    btn.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-'+(dark?'sun':'moon')+'" xlink:href="#i-'+(dark?'sun':'moon')+'"></use></svg>';
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if(tc) tc.setAttribute('content', dark ? '#0A0A0A' : '#FFFFFF');
+  }
+  if(btn){
+    btn.addEventListener('click', function(){
+      var dark = document.documentElement.classList.toggle('dark');
+      try{ localStorage.setItem('welcome-theme', dark ? 'dark' : 'light'); }catch(e){}
+      syncTheme();
+      if (window.renderDiagrams) window.renderDiagrams();   // схемы перерисовываем под новый фон
+    });
+    syncTheme();
+  }
+})();
+</script>
+
+<script type="module">
+/* Схемы процессов — mermaid. Исходники лежат прямо в разметке (<pre class="mermaid">),
+   поэтому их правят как текст, без картинок и без экспорта.
+   Если библиотека не загрузилась (нет сети, закрыт CDN) — вместо схемы
+   остаётся текстовая строчка процесса, и страница не ломается. */
+const SRC = new Map();
+document.querySelectorAll('pre.mermaid').forEach((el, i) => {
+  el.id = el.id || ('mmd-' + i);
+  SRC.set(el.id, el.textContent);
+});
+
+function themeVars(){
+  const dark = document.documentElement.classList.contains('dark');
+  return {
+    fontFamily: 'Montserrat, sans-serif',
+    primaryColor: dark ? '#1B1B1B' : '#FFFFFF',
+    primaryTextColor: dark ? '#FAFAFA' : '#0A0A0A',
+    primaryBorderColor: dark ? 'rgba(255,255,255,.22)' : '#D8D8D8',
+    lineColor: dark ? 'rgba(255,255,255,.45)' : '#9A9A9A',
+    secondaryColor: '#8B5CF6',
+    tertiaryColor: dark ? '#1B1B1B' : '#F6F4FF',
+    edgeLabelBackground: dark ? '#101010' : '#FFFFFF',
+  };
+}
+
+try {
+  const mermaid = (await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs')).default;
+  window.renderDiagrams = async function(){
+    mermaid.initialize({
+      startOnLoad: false, securityLevel: 'strict', theme: 'base',
+      themeVariables: themeVars(),
+      themeCSS: `
+        .node rect, .node polygon, .node circle, .node path { stroke-width: 1.5px; }
+        .hot rect, .hot polygon { fill: #F97316 !important; stroke: #F97316 !important; }
+        .hot .nodeLabel, .hot span, .hot p { color: #fff !important; fill: #fff !important; }
+        .edgeLabel { font-size: 12px; }
+      `,
+      flowchart: { curve: 'basis', nodeSpacing: 26, rankSpacing: 28, useMaxWidth: true },
+    });
+    for (const [id, code] of SRC) {
+      const host = document.getElementById(id);
+      if (!host) continue;
+      try {
+        const { svg } = await mermaid.render(id + '-svg-' + Date.now(), code);
+        host.innerHTML = svg;
+        host.setAttribute('data-processed', 'true');
+      } catch (e) {
+        host.closest('.diagram').classList.add('failed');
+      }
+    }
+  };
+  await window.renderDiagrams();
+} catch (e) {
+  document.querySelectorAll('.diagram').forEach(d => d.classList.add('failed'));
+}
+</script>
+</body>
+</html>

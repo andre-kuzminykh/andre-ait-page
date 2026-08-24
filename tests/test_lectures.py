@@ -656,6 +656,58 @@ def _published_pages():
                     yield os.path.relpath(path, _ROOT), f.read()
 
 
+def test_process_practice_page():
+    """Практика «разбор бизнес-процесса» (FR-SITE28): шаги, примеры, схемы, CTA."""
+    rel = "automation/practice/process/index.html"
+    path = os.path.join(_ROOT, rel)
+    assert os.path.exists(path), "страница практики должна лежать в " + rel
+    with open(path, encoding="utf-8") as f:
+        html = f.read()
+
+    # четыре шага задания
+    for n in range(1, 5):
+        assert "Шаг %d" % n in html, rel + ": нет шага %d" % n
+    for title in ("бизнес-цель, метрику и границы", "AS-IS", "BPMN",
+                  "узкие места и точки автоматизации", "TO-BE"):
+        assert title in html, rel + ": потерян блок «%s»" % title
+    # четыре варианта решения точки автоматизации
+    for mode in ("Простое правило", "ИИ-агент", "Человек", "Гибрид"):
+        assert ">%s<" % mode in html, rel + ": нет варианта «%s»" % mode
+    assert "Human-in-the-Loop" in html
+
+    # какой процесс взять — три кандидата
+    for pick in ("Обработка заявки", "Найм сотрудника", "Согласование договора"):
+        assert pick in html, rel + ": нет примера процесса «%s»" % pick
+
+    # шесть отраслей: вкладка + карточка + схема
+    cases = re.findall(r'<button class="tab" role="tab" data-case="([a-z]+)"', html)
+    assert cases == ["consult", "hr", "marketing", "callcenter", "design", "software"], cases
+    for c in cases:
+        assert '<article class="case" id="case-%s"' % c in html, rel + ": нет карточки " + c
+    diagrams = re.findall(r'<pre class="mermaid">\s*\nflowchart TD', html)
+    assert len(diagrams) == 6, "%s: схем должно быть шесть, найдено %d" % (rel, len(diagrams))
+    # узкие места подсвечены на самой схеме
+    assert html.count("class E,F,K hot") + html.count("class C,D,J hot") + \
+        html.count("class E,F,I hot") + html.count("class C,G,I hot") + \
+        html.count("class D,F,G hot") + html.count("class B,E,F hot") == 6, \
+        rel + ": на каждой схеме отмечены узкие места"
+    # схема не грузится — остаётся текстовая строчка процесса
+    assert html.count('class="fallback"') == 6, rel + ": у каждой схемы текстовый запасной вариант"
+
+    # главный CTA — инструмент ИИ-стратегии
+    cta = "https://strategy.andre.technology/ai-strategy"
+    assert html.count(cta) >= 3, rel + ": CTA в шапке, после шагов и после примеров"
+    # кнопка «Назад» жива и при заходе по прямой ссылке
+    assert "if (history.length > 1) history.back(); else location.href = FALLBACK;" in html
+    # стиль курса
+    assert "family=Montserrat" in html and "unpkg.com" not in html
+    for color in ("#8B5CF6", "#F97316", "#4C1D95"):
+        assert color in html, rel + ": цвет " + color
+    assert re.search(r"\*, \*::before, \*::after\{ box-shadow:none !important", html), \
+        rel + ": теней быть не должно"
+    assert "localStorage.getItem('welcome-theme')" in html
+
+
 def test_locked_modules_closed():
     """Открыт только модуль 1. Лекций 2-8 нет в репозитории — значит их нет и в
     артефакте Pages: по адресу /automation/2/ отдаётся 404, контент недоступен
