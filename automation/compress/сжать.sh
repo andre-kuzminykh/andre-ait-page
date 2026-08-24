@@ -11,6 +11,9 @@
 #   sh сжать.sh                 — 720p, файлы легче МИНИМУМ в 10 раз (по умолчанию)
 #   sh сжать.sh сильнее         — 540p, примерно в 20 раз
 #   sh сжать.sh качество        — 1080p, в 6-8 раз, разрешение не тронуто
+#   sh сжать.sh архив           — MOV → MP4 без заметной потери качества:
+#                                 разрешение и частота кадров как были, звук
+#                                 копируется как есть, если он уже aac
 set -e
 command -v ffmpeg  >/dev/null || { echo "Нет ffmpeg. macOS: brew install ffmpeg"; exit 1; }
 command -v ffprobe >/dev/null || { echo "Нет ffprobe — он ставится вместе с ffmpeg"; exit 1; }
@@ -26,33 +29,48 @@ command -v ffprobe >/dev/null || { echo "Нет ffprobe — он ставитс�
 # битрейта = битрейт исходника, делённый на RATIO. CRF при этом остаётся полом
 # качества — на лёгком материале файл выйдет ещё меньше потолка.
 SHORT=720; CRF=26; RATIO=12; MINK=700; MAXCAP=4000
+ARCHIVE=0
+SKIPK=1200      # ниже этого битрейта файл уже лёгкий, трогать его незачем
 case "${1:-}" in
     сильнее|540)   SHORT=540;  CRF=28; RATIO=22; MINK=500; MAXCAP=2500; shift ;;
     качество|1080) SHORT=1080; CRF=26; RATIO=7;  MINK=1200; MAXCAP=8000; shift ;;
     обычно|720)    shift ;;
+    # Архив: задача не «сделать лёгким для веба», а «переложить MOV в MP4,
+    # чтобы глазом было не отличить». Поэтому кадр не уменьшается, потолка
+    # битрейта нет вовсе (размер определяет только CRF 18 — это порог, где
+    # разницу с оригиналом на глаз уже не видно), а лёгкие файлы не
+    # пропускаются: их всё равно надо переложить в mp4.
+    архив|mov|исходник)
+        ARCHIVE=1; SHORT=100000; CRF=18; SKIPK=0; shift ;;
 esac
-
-SKIPK=1200      # ниже этого битрейта файл уже лёгкий, трогать его незачем
 OUTDIR="сжатые"
 mkdir -p "$OUTDIR"
 
-if [ $# -gt 0 ]; then
-    FILES="$*"
-else
-    FILES=$(ls *.mp4 *.MP4 *.mov *.MOV *.m4v *.M4V 2>/dev/null || true)
+# Имена берём БЕЗ склейки в одну строку: «клип один.mov» разваливался по
+# пробелу на «клип» и «один.mov», и такой файл молча пропускался. Список
+# держим в аргументах — единственный способ в POSIX sh сохранить пробелы.
+if [ $# -eq 0 ]; then
+    set -- *.mp4 *.MP4 *.mov *.MOV *.m4v *.M4V *.mkv *.MKV *.avi *.AVI
 fi
-[ -n "$FILES" ] || { echo "Рядом нет ни одного mp4/mov."; exit 1; }
+# Имя переменной латиницей: dash кириллические не принимает («not found»).
+FOUND=0
+for f in "$@"; do [ -f "$f" ] && FOUND=$((FOUND+1)); done
+[ "$FOUND" -gt 0 ] || { echo "Рядом нет ни одного видеофайла (mp4, mov, m4v, mkv, avi)."; exit 1; }
 
 # Тонемап нужен для съёмки с айфона в HDR: без него на обычном экране картинка
 # выцветает. Фильтр есть не в каждой сборке, поэтому проверяем заранее.
 HAVE_ZSCALE=$(ffmpeg -hide_banner -filters 2>/dev/null | grep -c " zscale " || true)
 
-echo "Режим: короткая сторона $SHORT, цель — в $RATIO раз легче (crf $CRF как пол качества)"
+if [ "$ARCHIVE" = 1 ]; then
+    echo "Режим: архив — разрешение и частота кадров как в исходнике, качество crf $CRF"
+else
+    echo "Режим: короткая сторона $SHORT, цель — в $RATIO раз легче (crf $CRF как пол качества)"
+fi
 echo
 
 TOTAL_IN=0; TOTAL_OUT=0; DONE=0; SKIP=0
 
-for f in $FILES; do
+for f in "$@"; do
     [ -f "$f" ] || continue
     case "$f" in "$OUTDIR"/*) continue ;; esac
 
@@ -75,8 +93,10 @@ for f in $FILES; do
     DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$f" 2>/dev/null || echo 0)
     IN_KBPS=$(awk -v s="$IN_SZ" -v d="${DUR:-0}" 'BEGIN{ printf "%d", (d>0) ? s*8/d/1000 : 0 }')
 
-    # Уже лёгкий файл жать бессмысленно: легче он почти не станет, а качество упадёт.
-    if [ "$IN_KBPS" -gt 0 ] && [ "$IN_KBPS" -lt "$SKIPK" ]; then
+    # Уже лёгкий файл жать бессмысленно: легче он почти не станет, а качество
+    # упадёт. В режиме «архив» это правило выключено — там цель переложить
+    # в mp4, а не выиграть мегабайты.
+    if [ "$SKIPK" -gt 0 ] && [ "$IN_KBPS" -gt 0 ] && [ "$IN_KBPS" -lt "$SKIPK" ]; then
         printf "  = %s: уже лёгкий (%s кбит/с) — не трогаю\n" "$NAME" "$IN_KBPS"
         SKIP=$((SKIP+1))
         continue
@@ -112,6 +132,10 @@ for f in $FILES; do
 
     if [ -z "$ACODEC" ]; then
         AOPT="-an"
+    elif [ "$ARCHIVE" = 1 ]; then
+        # Звук в архиве не трогаем: если он уже aac, кладём дорожку как есть
+        # (бит-в-бит), иначе один раз пережимаем с запасом.
+        if [ "$ACODEC" = "aac" ]; then AOPT="-c:a copy"; else AOPT="-c:a aac -b:a 256k"; fi
     elif [ "${CH:-2}" = "1" ]; then
         AOPT="-c:a aac -b:a 80k -ac 1"      # речь под микрофон по сути моно
     else
@@ -122,6 +146,10 @@ for f in $FILES; do
     # исходнике не опускаемся в кашу, на лёгком — не раздуваем зря.
     MAXK=$(awk -v b="$IN_KBPS" -v r="$RATIO" -v lo="$MINK" -v hi="$MAXCAP" \
         'BEGIN{ v=b/r; if(v<lo) v=lo; if(v>hi) v=hi; printf "%d", v }')
+    # В архиве потолка нет: качество держит только CRF, иначе на сложных
+    # кадрах (движение, зерно) появилась бы та самая «заметная потеря».
+    CAP="-maxrate ${MAXK}k -bufsize $((MAXK*2))k"
+    [ "$ARCHIVE" = 1 ] && CAP=""
 
     printf "  → %s (%s МБ, %s кбит/с)… " "$NAME" \
         "$(awk -v s="$IN_SZ" 'BEGIN{printf "%.1f", s/1048576}')" "$IN_KBPS"
@@ -129,12 +157,14 @@ for f in $FILES; do
     # -g 60 — ключевой кадр раз в 2 секунды: реже тормозит перемотка, чаще
     # файл толстеет ни за что. +faststart переносит оглавление в начало:
     # без него браузер ждёт закачки целиком, прежде чем показать первый кадр.
+    # -map_metadata 0 сохраняет дату съёмки: без неё «Фото» и Finder ставят
+    # файлам сегодняшний день и порядок в папке рассыпается.
     ffmpeg -y -loglevel error -nostdin -i "$f" \
         -vf "$VF" \
         -c:v libx264 -preset slow -crf "$CRF" \
-        -maxrate "${MAXK}k" -bufsize "$((MAXK*2))k" \
+        $CAP \
         -profile:v high -level 4.0 -g 60 -keyint_min 30 \
-        $AOPT -movflags +faststart "$OUT"
+        $AOPT -map_metadata 0 -movflags +faststart "$OUT"
 
     ERR=$(ffmpeg -v error -i "$OUT" -f null - 2>&1 || true)
     if [ -n "$ERR" ]; then
