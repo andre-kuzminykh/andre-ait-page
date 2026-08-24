@@ -708,6 +708,46 @@ def test_process_practice_page():
     assert "localStorage.getItem('welcome-theme')" in html
 
 
+def test_process_practice_editor():
+    """Схему можно получить из интервью и отрисовать прямо на странице (FR-SITE28)."""
+    rel = "automation/practice/process/index.html"
+    with open(os.path.join(_ROOT, rel), encoding="utf-8") as f:
+        html = f.read()
+
+    # путь «интервью → схема»: четыре шага и готовый промт
+    for step in ("Проведите интервью", "Запишите и расшифруйте",
+                 "Отправьте в ИИ вместе с промтом", "Вставьте код сюда и скачайте"):
+        assert step in html, rel + ": нет шага «%s»" % step
+    assert 'id="prompt-src"' in html, rel + ": нет промта"
+    prompt = html[html.index('id="prompt-src"'):html.index("</pre>", html.index('id="prompt-src"'))]
+    for must in ("flowchart TD", "class A,B,C hot", "СЮДА ВСТАВЬТЕ ТЕКСТ ИНТЕРВЬЮ",
+                 "([Событие])", "ТОЛЬКО код mermaid"):
+        assert must in prompt, rel + ": в промте нет «%s»" % must
+
+    # редактор: поле, рендер, скачивание, пример
+    for el in ('id="mmd-input"', 'id="mmd-render"', 'id="mmd-svg"',
+               'id="mmd-png"', 'id="mmd-example"', 'id="mmd-out"'):
+        assert el in html, rel + ": в редакторе нет " + el
+    assert "await mermaid.parse(code);" in html, rel + ": код проверяется до отрисовки"
+    assert "canvas.toBlob" in html and "image/svg+xml" in html, rel + ": скачивание SVG и PNG"
+    assert "rect.setAttribute('fill', dark ? '#0A0A0A' : '#FFFFFF');" in html, \
+        rel + ": в файл подкладывается фон, иначе схема в документе невидима"
+
+    # ошибка показывается и превращается в промт на исправление
+    assert 'id="mmd-error-text"' in html and 'id="mmd-fixprompt"' in html, \
+        rel + ": ошибка должна показываться и копироваться промтом"
+    assert "Исправь только сломанное место" in html, rel + ": промт на исправление"
+    assert "Библиотека mermaid не загрузилась" in html, \
+        rel + ": о неудачной загрузке библиотеки тоже надо сказать"
+
+    # код примера копируется из текстового блока, а не из отрисованного SVG
+    assert len(re.findall(r'<pre class="code" id="code-[a-z]+" data-src="mmd-[a-z]+">', html)) == 6, \
+        rel + ": под каждой схемой её исходный код"
+    assert len(re.findall(r'data-copy="code-[a-z]+"', html)) == 6, rel + ": кнопки копирования кода"
+    assert 'data-copy="mmd-' not in html, \
+        rel + ": копировать надо исходник, а не отрисованный SVG"
+
+
 def test_locked_modules_closed():
     """Открыт только модуль 1. Лекций 2-8 нет в репозитории — значит их нет и в
     артефакте Pages: по адресу /automation/2/ отдаётся 404, контент недоступен

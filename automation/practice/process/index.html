@@ -358,6 +358,94 @@
   .t-rule{ background:#64748B; } .t-ai{ background:#8B5CF6; }
   .t-human{ background:#0EA5E9; } .t-mix{ background:#F97316; }
 
+  /* ===== Код mermaid: под схемой примера и в редакторе ===== */
+  .src{ margin-top:clamp(.9rem,2.6vw,1.2rem); }
+  .src summary{
+    display:inline-flex; align-items:center; gap:.5rem; cursor:pointer; list-style:none;
+    border-radius:999px; padding:.55rem 1rem; border:1px solid var(--ctrl-border);
+    background:var(--ctrl-bg); color:var(--fg);
+    font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:11px;
+  }
+  .src summary::-webkit-details-marker{ display:none; }
+  .src summary:hover{ border-color:#8B5CF6; }
+  .src summary .ic{ color:#8B5CF6; font-size:1.2em; }
+  .src[open] summary .caret{ transform:rotate(0deg); }
+  .src summary .caret{ transform:rotate(-90deg); transition:transform .2s ease; }
+  .code-wrap{ position:relative; margin-top:.7rem; }
+  pre.code{
+    background:var(--soft); border:1px solid var(--soft-border); border-radius:16px;
+    padding:clamp(.9rem,2.6vw,1.15rem); padding-right:7.5rem;
+    overflow-x:auto; white-space:pre;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(11px,2.5vw,12.5px); line-height:1.65; color:var(--fg);
+  }
+  .copy{
+    position:absolute; top:.6rem; right:.6rem;
+    display:inline-flex; align-items:center; gap:.4rem;
+    border-radius:999px; padding:.5rem .85rem; border:1px solid var(--ctrl-border);
+    background:var(--ctrl-bg); color:var(--fg);
+    font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:10px;
+    transition:background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .copy:hover{ border-color:#8B5CF6; color:#8B5CF6; }
+  .copy.done{ background:#8B5CF6; border-color:#8B5CF6; color:#fff; }
+  .copy .ic{ font-size:1.2em; }
+
+  /* ===== Как превратить интервью в схему ===== */
+  .flow{ list-style:none; display:grid; grid-template-columns:1fr; gap:.6rem; counter-reset:fl; }
+  @media (min-width:768px){ .flow{ grid-template-columns:1fr 1fr; gap:.75rem; } }
+  .flow li{
+    background:var(--card); border:1px solid var(--card-border); border-radius:18px;
+    padding:clamp(1rem,3vw,1.25rem); display:flex; gap:.85rem; align-items:flex-start;
+  }
+  .flow .fi{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.5rem; height:2.5rem; border-radius:999px; background:#8B5CF6; color:#fff; font-size:1.2rem;
+  }
+  .flow b{ display:block; font-weight:800; font-size:clamp(.9rem,2.9vw,1.02rem); line-height:1.3; }
+  .flow span{ display:block; margin-top:.3rem; color:var(--muted); font-weight:500; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.55; }
+
+  /* ===== Редактор схемы ===== */
+  .editor{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:clamp(20px,4vw,28px); padding:clamp(1.2rem,4vw,2rem);
+  }
+  .editor label{
+    display:block; font-weight:800; text-transform:uppercase; letter-spacing:.1em;
+    font-size:11px; color:var(--muted); margin-bottom:.6rem;
+  }
+  .editor textarea{
+    width:100%; min-height:18rem; resize:vertical;
+    background:var(--soft); border:1px solid var(--soft-border); border-radius:16px;
+    padding:clamp(.9rem,2.6vw,1.15rem); color:var(--fg);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(11.5px,2.5vw,13px); line-height:1.65;
+  }
+  .editor textarea:focus{ outline:2px solid #8B5CF6; outline-offset:2px; }
+  .ed-actions{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.9rem; }
+  .ed-actions .btn{ padding:.8rem 1.3rem; }
+  /* Ошибка разбора: показываем текст от mermaid и предлагаем перегенерировать */
+  .err{
+    margin-top:.9rem; border-radius:16px; padding:clamp(.9rem,2.6vw,1.1rem);
+    background:rgba(249,115,22,.12); border:1px solid rgba(249,115,22,.45);
+  }
+  .err[hidden]{ display:none; }
+  .err .err-h{ display:flex; align-items:center; gap:.55rem; font-weight:800; font-size:clamp(.88rem,2.8vw,1rem); }
+  .err .err-h .ic{ color:#F97316; font-size:1.25rem; }
+  .err pre{
+    margin-top:.6rem; white-space:pre-wrap; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(11px,2.4vw,12px); line-height:1.6; color:var(--fg);
+  }
+  .err .err-hint{ margin-top:.7rem; color:var(--muted); font-weight:600; font-size:clamp(.8rem,2.6vw,.9rem); line-height:1.55; }
+  .err .err-actions{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.8rem; }
+  .ok-line{
+    display:none; align-items:center; gap:.55rem; margin-top:.9rem;
+    color:#8B5CF6; font-weight:800; font-size:clamp(.82rem,2.6vw,.92rem);
+  }
+  .ok-line .ic{ font-size:1.2rem; }
+  .editor.is-ok .ok-line{ display:inline-flex; }
+
   /* ===== Главный призыв: инструмент ИИ-стратегии ===== */
   .cta{
     background:#4C1D95; color:#fff; border:1px solid rgba(167,139,250,.55);
@@ -431,6 +519,14 @@
        медленная или он недоступен. Здесь рисуются всегда, даже офлайн. -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
     <symbol id="i-chart-line-up" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM200,192H56a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v76.69l34.34-34.35a8,8,0,0,1,11.32,0L128,132.69,172.69,88H144a8,8,0,0,1,0-16h48a8,8,0,0,1,8,8v48a8,8,0,0,1-16,0V99.31l-50.34,50.35a8,8,0,0,1-11.32,0L104,131.31l-40,40V176H200a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 256 256"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32Zm-8,128H176V88a8,8,0,0,0-8-8H96V48H208Z"/></symbol>
+    <symbol id="i-download-simple" viewBox="0 0 256 256"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40A8,8,0,0,0,168,96H136V32a8,8,0,0,0-16,0V96H88a8,8,0,0,0-5.66,13.66Z"/></symbol>
+    <symbol id="i-microphone" viewBox="0 0 256 256"><path d="M80,128V64a48,48,0,0,1,96,0v64a48,48,0,0,1-96,0Zm128,0a8,8,0,0,0-16,0,64,64,0,0,1-128,0,8,8,0,0,0-16,0,80.11,80.11,0,0,0,72,79.6V240a8,8,0,0,0,16,0V207.6A80.11,80.11,0,0,0,208,128Z"/></symbol>
+    <symbol id="i-chats-circle" viewBox="0 0 256 256"><path d="M232.07,186.76a80,80,0,0,0-62.5-114.17A80,80,0,1,0,23.93,138.76l-7.27,24.71a16,16,0,0,0,19.87,19.87l24.71-7.27a80.39,80.39,0,0,0,25.18,7.35,80,80,0,0,0,108.34,40.65l24.71,7.27a16,16,0,0,0,19.87-19.86Zm-16.25,1.47L224,216l-27.76-8.17a8,8,0,0,0-6,.63,64.05,64.05,0,0,1-85.87-24.88A79.93,79.93,0,0,0,174.7,89.71a64,64,0,0,1,41.75,92.48A8,8,0,0,0,215.82,188.23Z"/></symbol>
+    <symbol id="i-arrows-clockwise" viewBox="0 0 256 256"><path d="M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1-5.66-13.66L180.65,72a79.48,79.48,0,0,0-54.72-22.09h-.45A79.52,79.52,0,0,0,69.59,72.71,8,8,0,0,1,58.41,61.27,96,96,0,0,1,192,60.7l18.36-18.36A8,8,0,0,1,224,48ZM186.41,183.29A80,80,0,0,1,75.35,184l18.31-18.31A8,8,0,0,0,88,152H40a8,8,0,0,0-8,8v48a8,8,0,0,0,13.66,5.66L64,195.3a95.42,95.42,0,0,0,66,26.76h.53a95.36,95.36,0,0,0,67.07-27.33,8,8,0,0,0-11.18-11.44Z"/></symbol>
+    <symbol id="i-pencil-simple" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM192,108.68,147.31,64l24-24L216,84.68Z"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+    <symbol id="i-x-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol>
     <symbol id="i-clipboard-text" viewBox="0 0 256 256"><path d="M200,32H163.74a47.92,47.92,0,0,0-71.48,0H56A16,16,0,0,0,40,48V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm-72,0a32,32,0,0,1,32,32H96A32,32,0,0,1,128,32Zm32,128H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z"/></symbol>
     <symbol id="i-target" viewBox="0 0 256 256"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></symbol>
     <symbol id="i-flow-arrow" viewBox="0 0 256 256"><path d="M245.66,85.66l-32,32a8,8,0,0,1-11.32-11.32L220.69,88H208c-38.67,0-46.59,19-56.62,43.08C141.05,155.88,129.33,184,80,184H79a32,32,0,1,1,0-16h1c38.67,0,46.59-19,56.62-43.08C147,100.12,158.67,72,208,72h12.69L202.34,53.66a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,245.66,85.66Z"/></symbol>
@@ -666,7 +762,7 @@
           <span><b>Границы:</b> от обращения клиента до подписания договора.</span>
         </div>
         <div class="diagram">
-          <pre class="mermaid">
+          <pre class="mermaid" id="mmd-consult">
 flowchart TD
   A([Запрос клиента]) --> B[Квалификация запроса]
   B --> C{Берём проект?}
@@ -686,6 +782,13 @@ flowchart TD
           </pre>
           <p class="fallback">Схема: запрос → квалификация → сбор требований → поиск кейсов → оценка → сборка КП → ревью партнёра (с возвратом на оценку) → отправка → follow-up → договор.</p>
         </div>
+        <details class="src">
+          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
+          <div class="code-wrap">
+            <pre class="code" id="code-consult" data-src="mmd-consult"></pre>
+            <button class="copy" type="button" data-copy="code-consult"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+          </div>
+        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg> Поиск кейсов: знания лежат в головах и папках, находит только тот, кто «помнит».</li>
@@ -711,7 +814,7 @@ flowchart TD
           <span><b>Границы:</b> от заявки клиента до выхода кандидата на работу.</span>
         </div>
         <div class="diagram">
-          <pre class="mermaid">
+          <pre class="mermaid" id="mmd-hr">
 flowchart TD
   A([Заявка на вакансию]) --> B[Профиль должности]
   B --> C[Поиск резюме]
@@ -731,6 +834,13 @@ flowchart TD
           </pre>
           <p class="fallback">Схема: заявка → профиль → поиск резюме → скрининг → интервью → карточка кандидата → решение клиента → согласование слотов → оффер → выход.</p>
         </div>
+        <details class="src">
+          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
+          <div class="code-wrap">
+            <pre class="code" id="code-hr" data-src="mmd-hr"></pre>
+            <button class="copy" type="button" data-copy="code-hr"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+          </div>
+        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Скрининг резюме: сотни документов читаются глазами.</li>
@@ -757,7 +867,7 @@ flowchart TD
           <span><b>Границы:</b> от брифа клиента до отчёта по первой волне.</span>
         </div>
         <div class="diagram">
-          <pre class="mermaid">
+          <pre class="mermaid" id="mmd-marketing">
 flowchart TD
   A([Бриф клиента]) --> B[Анализ ниши]
   B --> C[Медиаплан и бюджет]
@@ -777,6 +887,13 @@ flowchart TD
           </pre>
           <p class="fallback">Схема: бриф → анализ ниши → медиаплан → согласование → креативы → согласование → настройка → запуск → статистика → отчёт → оптимизация.</p>
         </div>
+        <details class="src">
+          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
+          <div class="code-wrap">
+            <pre class="code" id="code-marketing" data-src="mmd-marketing"></pre>
+            <button class="copy" type="button" data-copy="code-marketing"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+          </div>
+        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Круги правок по креативам — самая долгая часть запуска.</li>
@@ -803,7 +920,7 @@ flowchart TD
           <span><b>Границы:</b> от звонка или сообщения до закрытия тикета.</span>
         </div>
         <div class="diagram">
-          <pre class="mermaid">
+          <pre class="mermaid" id="mmd-callcenter">
 flowchart TD
   A([Звонок или чат]) --> B[Идентификация клиента]
   B --> C[История обращений]
@@ -821,6 +938,13 @@ flowchart TD
           </pre>
           <p class="fallback">Схема: обращение → идентификация → история → типовой вопрос? → скрипт или эскалация → ожидание эксперта → ответ → карточка обращения → закрытие.</p>
         </div>
+        <details class="src">
+          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
+          <div class="code-wrap">
+            <pre class="code" id="code-callcenter" data-src="mmd-callcenter"></pre>
+            <button class="copy" type="button" data-copy="code-callcenter"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+          </div>
+        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Поиск истории по нескольким системам, пока клиент ждёт на линии.</li>
@@ -847,7 +971,7 @@ flowchart TD
           <span><b>Границы:</b> от брифа клиента до передачи исходников.</span>
         </div>
         <div class="diagram">
-          <pre class="mermaid">
+          <pre class="mermaid" id="mmd-design">
 flowchart TD
   A([Бриф и референсы]) --> B[Оценка объёма]
   B --> C[Договор и предоплата]
@@ -863,6 +987,13 @@ flowchart TD
           </pre>
           <p class="fallback">Схема: бриф → оценка → договор → концепция → выбор клиента → макеты → приёмка (круги правок) → исходники и гайд → передача.</p>
         </div>
+        <details class="src">
+          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
+          <div class="code-wrap">
+            <pre class="code" id="code-design" data-src="mmd-design"></pre>
+            <button class="copy" type="button" data-copy="code-design"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+          </div>
+        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Круги правок: критерии приёмки нигде не зафиксированы.</li>
@@ -889,7 +1020,7 @@ flowchart TD
           <span><b>Границы:</b> от запроса клиента или бизнеса до выката в прод.</span>
         </div>
         <div class="diagram">
-          <pre class="mermaid">
+          <pre class="mermaid" id="mmd-software">
 flowchart TD
   A([Запрос клиента или бизнеса]) --> B[Уточнение требований]
   B --> C[Оценка и план спринта]
@@ -906,6 +1037,13 @@ flowchart TD
           </pre>
           <p class="fallback">Схема: запрос → уточнение требований → оценка → разработка → код-ревью → тестирование → приёмка (возврат к требованиям) → релиз → поддержка.</p>
         </div>
+        <details class="src">
+          <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid этой схемы</summary>
+          <div class="code-wrap">
+            <pre class="code" id="code-software" data-src="mmd-software"></pre>
+            <button class="copy" type="button" data-copy="code-software"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+          </div>
+        </details>
         <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
         <ul class="bnecks">
           <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Требования неполные — брак вскрывается на приёмке, а не в начале.</li>
@@ -924,6 +1062,119 @@ flowchart TD
       </article>
     </section>
 
+
+    <!-- ===== ИНТЕРВЬЮ → СХЕМА ===== -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-microphone" xlink:href="#i-microphone"></use></svg></span>
+        <h2>Как превратить интервью <span class="accent">в схему</span></h2>
+        <p>Рисовать схему руками не обязательно. Поговорите с владельцем процесса, отдайте расшифровку модели — и получите готовый код mermaid, который тут же можно показать и скачать.</p>
+      </div>
+      <ol class="flow">
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-chats-circle" xlink:href="#i-chats-circle"></use></svg></span>
+          <div><b>1. Проведите интервью</b><span>Спросите владельца процесса: с чего всё начинается, кто что делает дальше, где ждут, где возвращают на предыдущий шаг, что считается исключением и чем всё заканчивается.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-microphone" xlink:href="#i-microphone"></use></svg></span>
+          <div><b>2. Запишите и расшифруйте</b><span>Диктофон в телефоне или запись созвона, затем любая транскрибация. Расшифровка — это и есть сырьё для схемы.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg></span>
+          <div><b>3. Отправьте в ИИ вместе с промтом</b><span>Скопируйте промт ниже, вставьте в него расшифровку и отправьте любой модели. В промте уже лежит пример схемы — так модель точнее попадает в формат.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-pencil-simple" xlink:href="#i-pencil-simple"></use></svg></span>
+          <div><b>4. Вставьте код сюда и скачайте</b><span>Полученный код вставьте в редактор ниже: схема отрисуется на этой странице, а её можно сохранить в SVG или PNG. Если в коде ошибка — страница покажет её и подскажет, что попросить у модели.</span></div>
+        </li>
+      </ol>
+
+      <details class="src" open>
+        <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Промт: интервью → схема mermaid</summary>
+        <div class="code-wrap">
+          <pre class="code" id="prompt-src">Ты — бизнес-аналитик. Ниже расшифровка интервью о бизнес-процессе.
+Построй по ней схему процесса «как есть» (AS-IS) в формате mermaid.
+
+Правила:
+1. flowchart TD — направление сверху вниз.
+2. Начало и конец процесса — узлы вида ([Событие]).
+3. Шаги — прямоугольники [Название]. Название не длиннее 25 символов.
+4. Решения — ромбы {Вопрос?}. У стрелок из ромба подписи: -- да --> и -- нет -->.
+5. Возвраты и доработки рисуй стрелкой назад к тому шагу, на который реально возвращаются.
+6. Найди 3 узких места (ручная рутина, ожидание, повторные круги) и последней строкой добавь:
+   class A,B,C hot — где A,B,C идентификаторы этих узлов.
+7. Не используй subgraph, style, click, HTML-теги и кавычки внутри подписей.
+8. В ответе верни ТОЛЬКО код mermaid, без пояснений и без markdown-обрамления.
+
+Пример нужного формата:
+
+flowchart TD
+  A([Запрос клиента]) --> B[Квалификация запроса]
+  B --> C{Берём проект?}
+  C -- нет --> X([Отказ])
+  C -- да --> D[Сбор требований]
+  D --> E[Поиск похожих кейсов]
+  E --> F[Оценка трудозатрат]
+  F --> G[Сборка КП]
+  G --> H{Ревью партнёра}
+  H -- правки --> F
+  H -- ок --> I[Отправка клиенту]
+  I --> J{Ответ клиента}
+  J -- молчит --> K[Ручной follow-up]
+  K --> J
+  J -- да --> L([Договор])
+  class E,F,K hot
+
+Расшифровка интервью:
+"""
+СЮДА ВСТАВЬТЕ ТЕКСТ ИНТЕРВЬЮ
+"""</pre>
+          <button class="copy" type="button" data-copy="prompt-src"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== РЕДАКТОР СХЕМЫ ===== -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span>
+        <h2>Ваша схема: <span class="accent">вставьте и посмотрите</span></h2>
+        <p>Вставьте код mermaid — схема отрисуется прямо здесь. Ничего никуда не отправляется: всё рисуется в вашем браузере.</p>
+      </div>
+      <div class="editor" id="editor">
+        <label for="mmd-input">Код mermaid</label>
+        <textarea id="mmd-input" spellcheck="false" autocomplete="off" aria-describedby="mmd-error">flowchart TD
+  A([Заявка от клиента]) --> B[Регистрация обращения]
+  B --> C{Всё ли понятно?}
+  C -- нет --> D[Уточнение у клиента]
+  D --> C
+  C -- да --> E[Ручной подбор решения]
+  E --> F[Согласование со старшим]
+  F --> G{Согласовано?}
+  G -- нет --> E
+  G -- да --> H[Ответ клиенту]
+  H --> I([Заявка закрыта])
+  class D,E,F hot</textarea>
+        <div class="ed-actions">
+          <button class="btn btn-primary" id="mmd-render" type="button"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> Показать схему</button>
+          <button class="btn btn-ghost" id="mmd-svg" type="button"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> Скачать SVG</button>
+          <button class="btn btn-ghost" id="mmd-png" type="button"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> Скачать PNG</button>
+          <button class="btn btn-ghost" id="mmd-example" type="button"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> Взять пример отрасли</button>
+        </div>
+        <span class="ok-line"><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> Схема разобрана без ошибок</span>
+
+        <div class="err" id="mmd-error" hidden role="alert">
+          <div class="err-h"><svg class="ic" aria-hidden="true"><use href="#i-x-circle" xlink:href="#i-x-circle"></use></svg> В коде схемы ошибка</div>
+          <pre id="mmd-error-text"></pre>
+          <p class="err-hint">Скопируйте промт ниже вместе с кодом и текстом ошибки и попросите модель перегенерировать схему — она исправит только сломанное место.</p>
+          <div class="err-actions">
+            <button class="btn btn-ghost" id="mmd-fixprompt" type="button"><svg class="ic" aria-hidden="true"><use href="#i-arrows-clockwise" xlink:href="#i-arrows-clockwise"></use></svg> Копировать промт на исправление</button>
+          </div>
+        </div>
+
+        <div class="diagram" id="mmd-out" aria-live="polite"></div>
+      </div>
+    </section>
     <section class="sec rise d2">
       <div class="cta">
         <span class="cta-ico"><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg></span>
@@ -993,7 +1244,39 @@ flowchart TD
 const SRC = new Map();
 document.querySelectorAll('pre.mermaid').forEach((el, i) => {
   el.id = el.id || ('mmd-' + i);
-  SRC.set(el.id, el.textContent);
+  SRC.set(el.id, el.textContent.replace(/^\n+|\s+$/g, ''));
+});
+// Код примера показываем текстом под схемой — его копируют и правят.
+// Заполняем ДО импорта mermaid: даже если библиотека не дойдёт, код на месте.
+document.querySelectorAll('pre.code[data-src]').forEach(el => {
+  const code = SRC.get(el.dataset.src);
+  if (code) el.textContent = code;
+});
+
+/* ── Копирование в буфер: код схемы, промт, промт на исправление ────────── */
+async function copyText(text, btn){
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    // Firefox без разрешения и http:// — запасной путь через скрытое поле
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e2) {}
+    ta.remove();
+  }
+  if (btn){
+    const was = btn.innerHTML;
+    btn.classList.add('done');
+    btn.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> скопировано';
+    setTimeout(() => { btn.classList.remove('done'); btn.innerHTML = was; }, 1600);
+  }
+}
+document.querySelectorAll('.copy[data-copy]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const src = document.getElementById(btn.dataset.copy);
+    if (src) copyText(src.textContent, btn);
+  });
 });
 
 function themeVars(){
@@ -1037,8 +1320,113 @@ try {
     }
   };
   await window.renderDiagrams();
+
+  /* ── Редактор: чужой код mermaid рисуем прямо на странице ─────────────── */
+  const input   = document.getElementById('mmd-input');
+  const out     = document.getElementById('mmd-out');
+  const errBox  = document.getElementById('mmd-error');
+  const errText = document.getElementById('mmd-error-text');
+  const editor  = document.getElementById('editor');
+  let lastError = '';
+
+  function showError(msg){
+    lastError = msg;
+    errText.textContent = msg;
+    errBox.hidden = false;
+    editor.classList.remove('is-ok');
+    out.innerHTML = '';
+  }
+  async function draw(){
+    const code = (input.value || '').trim();
+    if(!code){ showError('Пусто: вставьте код схемы, он начинается со строки flowchart TD'); return; }
+    try {
+      // parse() бросает исключение с текстом ошибки и номером строки —
+      // именно его показываем автору схемы, чтобы было что отдать модели.
+      await mermaid.parse(code);
+      const { svg } = await mermaid.render('mmd-user-' + Date.now(), code);
+      out.innerHTML = svg;
+      errBox.hidden = true;
+      editor.classList.add('is-ok');
+    } catch (e) {
+      showError((e && (e.str || e.message)) ? String(e.str || e.message) : 'Схема не разобралась');
+    }
+  }
+  document.getElementById('mmd-render').addEventListener('click', draw);
+
+  // Промт на исправление: код + текст ошибки, чтобы модель починила именно её
+  document.getElementById('mmd-fixprompt').addEventListener('click', (ev) => {
+    const txt = 'Схема mermaid не разобралась. Ниже код и текст ошибки. '
+      + 'Исправь только сломанное место, сохрани смысл процесса и верни ВЕСЬ код целиком, '
+      + 'без пояснений и без markdown-обрамления.\n\nКод:\n' + (input.value || '').trim()
+      + '\n\nОшибка:\n' + lastError;
+    copyText(txt, ev.currentTarget);
+  });
+
+  // Взять код открытой отрасли — быстрый старт без копирования руками
+  document.getElementById('mmd-example').addEventListener('click', () => {
+    const open = [...document.querySelectorAll('.case')].find(c => !c.hidden);
+    const code = open ? SRC.get(open.querySelector('pre.mermaid').id) : null;
+    if(code){ input.value = code; draw(); input.scrollIntoView({block:'center', behavior:'smooth'}); }
+  });
+
+  /* ── Скачивание: SVG как есть и PNG через canvas ──────────────────────── */
+  function currentSvg(){
+    const svg = out.querySelector('svg');
+    if(!svg){ showError('Сначала нажмите «Показать схему» — скачивать пока нечего'); return null; }
+    const clone = svg.cloneNode(true);
+    const box = svg.getBoundingClientRect();
+    const w = Math.max(1, Math.round(box.width)), h = Math.max(1, Math.round(box.height));
+    clone.setAttribute('width', w); clone.setAttribute('height', h);
+    clone.removeAttribute('style');
+    // Фон白 не наследуется из страницы — подкладываем свой, иначе тёмная тема
+    // даёт «прозрачную» схему с белым текстом, невидимую в документе.
+    const dark = document.documentElement.classList.contains('dark');
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', 0); rect.setAttribute('y', 0);
+    rect.setAttribute('width', '100%'); rect.setAttribute('height', '100%');
+    rect.setAttribute('fill', dark ? '#0A0A0A' : '#FFFFFF');
+    clone.insertBefore(rect, clone.firstChild);
+    return { markup: new XMLSerializer().serializeToString(clone), w, h };
+  }
+  function saveBlob(blob, name){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  document.getElementById('mmd-svg').addEventListener('click', () => {
+    const cur = currentSvg(); if(!cur) return;
+    saveBlob(new Blob([cur.markup], {type:'image/svg+xml;charset=utf-8'}), 'process-as-is.svg');
+  });
+  document.getElementById('mmd-png').addEventListener('click', () => {
+    const cur = currentSvg(); if(!cur) return;
+    const scale = 2;                                  // ретина: схему вставляют в документы
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = cur.w * scale; canvas.height = cur.h * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(scale, scale);
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(b => { if(b) saveBlob(b, 'process-as-is.png'); }, 'image/png');
+    };
+    img.onerror = () => showError('PNG не собрался в этом браузере — скачайте SVG, он открывается везде');
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cur.markup);
+  });
+
+  await draw();          // пример в поле рисуем сразу, чтобы блок не был пустым
 } catch (e) {
   document.querySelectorAll('.diagram').forEach(d => d.classList.add('failed'));
+  const ed = document.getElementById('editor');
+  if(ed){
+    const err = document.getElementById('mmd-error');
+    const txt = document.getElementById('mmd-error-text');
+    if(err && txt){
+      txt.textContent = 'Библиотека mermaid не загрузилась — проверьте соединение и обновите страницу. Код схемы можно скопировать и открыть на mermaid.live';
+      err.hidden = false;
+    }
+  }
 }
 </script>
 </body>
