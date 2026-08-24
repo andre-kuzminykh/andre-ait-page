@@ -1973,7 +1973,7 @@ window.__FLOOR = {pc:49.8533,mob:22.4659};
     <div id="start-overlay" class="fixed inset-0 z-[10000] bg-black text-white flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500">
         <i class="ph-fill ph-play-circle text-[80px] md:text-[100px] text-solar mb-6 animate-pulse-slow"></i>
         <h2 class="text-2xl md:text-4xl font-black text-center px-4">Нажмите, чтобы начать</h2>
-        <p class="text-sm md:text-base text-white/60 mt-4 font-medium">Включите звук. Видео будет переключать слайды.</p>
+        <p class="text-sm md:text-base text-white/60 mt-4 font-medium">Включите звук. Слайды листаются стрелками, свайпом или клавишами.</p>
     </div>
 
     <!-- Плавающий кружок с двумя плеерами для плавного переключения -->
@@ -3828,11 +3828,12 @@ window.__FLOOR = {pc:49.8533,mob:22.4659};
 
         function setupPlayerEvents(p) {
             p.on('ended', () => {
+                // Ролик доиграл — слайд НЕ переключается сам (правка владельца).
+                // Кружок возвращается в состояние «нажми, чтобы посмотреть
+                // снова»: значок play, кадр с начала, размытие до запуска.
                 setPlayingUI(false);
-                // Открыт текст к слайду — читатель ещё читает: видео просто
-                // доигрывает, слайд НЕ переключается (FR-LECTURE-32).
-                if (document.body.classList.contains('notes-open')) return;
-                if (currentSlide < totalSlides - 1) nextSlide();
+                const v = document.getElementById('head-video');
+                if (v) { try { v.currentTime = 0; } catch (e) {} }
             });
             p.on('play', () => {
                 setPlayingUI(true);
@@ -5236,11 +5237,10 @@ html.dark .notes-body::-webkit-scrollbar-track{ background:rgba(255,255,255,.08)
   }
   body.notes-open #progress-container{ left:var(--notes-w); width:calc(100% - var(--notes-w)); }
 }
-/* При открытой панели «Текст» голова не закрывает текст (звук продолжает
-   идти). Раньше правило жило только в мобильном медиа-запросе, но на
-   десктопе слайд сдвигается вправо на половину ширины панели и заезжает
-   ПОД кружок — строки читались сквозь видео. Теперь правило общее. */
-body.notes-open #video-bubble{ opacity:0; pointer-events:none; }
+/* Панель «Текст» кружок НЕ прячет (правка владельца): голова продолжает
+   говорить и её видно, а если она мешает читать — кружок перетаскивается.
+   Раньше здесь стояло opacity:0 — владелец попросил убрать. */
+body.notes-open #video-bubble{ opacity:1; pointer-events:auto; }
 @media (prefers-reduced-motion: reduce){ .content-z{ transition:none; } }
 /* Мобилка: панель на весь экран поверх всего */
 @media (max-width:1023px){
