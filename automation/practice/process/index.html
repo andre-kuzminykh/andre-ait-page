@@ -306,21 +306,42 @@
   .v-tab[aria-selected="true"]{ background:#8B5CF6; border-color:#8B5CF6; color:#fff; }
   .v-tab[aria-selected="true"] .ic{ color:#fff; }
 
-  /* Поле просмотра: горизонтальное, схема двигается и масштабируется */
+  /* Поле просмотра: горизонтальное, схема листается вбок как обычная лента.
+     Раньше это был холст с transform-панорамой: полокна пустовало, узлы
+     резались краем, а листать приходилось перетаскиванием — «выглядит ужасно
+     и плохо листается» (жалоба заказчика). Теперь обычная прокрутка: работает
+     колесо, тачпад, палец, полоса прокрутки и клавиши. */
+  .v-shell{ position:relative; border-bottom:1px solid var(--card-border); }
   .v-stage{
-    position:relative; overflow:hidden; touch-action:none; cursor:grab;
-    height:clamp(20rem,56vh,34rem); background:var(--diagram-bg);
-    border-bottom:1px solid var(--card-border);
+    overflow-x:auto; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    height:clamp(15rem,40vh,24rem); background:var(--diagram-bg);   /* стартовая: дальше её ставит startView под схему */
+    scrollbar-width:thin; cursor:grab; overscroll-behavior-x:contain;
   }
   .v-stage.dragging{ cursor:grabbing; }
-  .v-layer{ position:absolute; top:0; left:0; transform-origin:0 0; will-change:transform; }
-  .v-layer svg{ display:block; max-width:none !important; height:auto; }
+  .v-stage::-webkit-scrollbar{ height:10px; }
+  .v-stage::-webkit-scrollbar-thumb{ background:var(--soft-border); border-radius:999px; }
+  .v-layer{
+    display:inline-block; padding:1.1rem clamp(1.5rem,5vw,3.5rem) 2.6rem;
+    min-width:100%;
+  }
+  @media (max-width:759px){ .v-layer{ padding:1.1rem .6rem 4.4rem; } }
+  .v-layer svg{ display:block; max-width:none !important; }
+  /* Узел, попавший на край, не срезается ножом, а растворяется — и сразу
+     видно, что лента продолжается. */
+  .v-fade{
+    position:absolute; top:0; bottom:0; width:clamp(1.5rem,4vw,3rem);
+    pointer-events:none; z-index:1; opacity:0; transition:opacity .2s ease;
+  }
+  .v-fade-l{ left:0; background:linear-gradient(to right,var(--diagram-bg),transparent); }
+  .v-fade-r{ right:0; background:linear-gradient(to left,var(--diagram-bg),transparent); }
+  .v-shell.has-left  .v-fade-l{ opacity:1; }
+  .v-shell.has-right .v-fade-r{ opacity:1; }
   .v-tools, .v-save{
     position:absolute; display:flex; gap:.35rem; z-index:2;
     background:var(--card); border:1px solid var(--card-border); border-radius:999px; padding:.3rem;
   }
-  .v-tools{ left:clamp(.6rem,2vw,1rem); bottom:clamp(.6rem,2vw,1rem); }
-  .v-save{ right:clamp(.6rem,2vw,1rem); bottom:clamp(.6rem,2vw,1rem); }
+  .v-tools{ left:clamp(.6rem,2vw,1rem); bottom:clamp(.9rem,2.4vw,1.2rem); }
+  .v-save{ right:clamp(.6rem,2vw,1rem); bottom:clamp(.9rem,2.4vw,1.2rem); }
   .v-btn{
     display:inline-flex; align-items:center; justify-content:center; gap:.35rem;
     height:2.2rem; min-width:2.2rem; padding:0 .55rem; border-radius:999px;
@@ -330,17 +351,14 @@
   }
   .v-btn:hover{ background:var(--soft); color:#8B5CF6; }
   .v-btn .ic{ font-size:1.15em; }
-  /* display:inline-flex перебивает атрибут hidden — кнопки «своей» схемы
-     оставались видимыми на вкладках-примерах. */
   .v-btn[hidden]{ display:none !important; }
   .v-sign{ font-size:1.2rem; line-height:1; font-weight:800; }
   .v-level{ min-width:3.6rem; font-variant-numeric:tabular-nums; }
   .v-hint{
-    position:absolute; top:clamp(.6rem,2vw,1rem); left:0; right:0; text-align:center;
+    position:absolute; top:clamp(.5rem,1.8vw,.8rem); left:0; right:0; text-align:center;
     color:var(--muted); font-weight:600; font-size:clamp(10px,2.4vw,11.5px);
-    pointer-events:none; padding:0 1rem;
+    pointer-events:none; padding:0 1rem; z-index:1;
   }
-  @media (max-width:640px){ .v-hint{ display:none; } }
 
   /* Код снизу: у примеров — только чтение, у своей схемы — редактируемое поле */
   .v-code{ padding:clamp(.9rem,2.6vw,1.2rem); }
@@ -901,18 +919,24 @@
         <button class="v-tab" role="tab" data-key="software" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Разработка ПО</button>
         </div>
 
-        <div class="v-stage" id="v-stage">
-          <div class="v-layer" id="v-layer"></div>
+        <!-- Оболочка неподвижна: в ней прокручивается только полотно со схемой,
+             поэтому кнопки и растушёвка краёв остаются на месте. -->
+        <div class="v-shell">
+          <div class="v-stage" id="v-stage">
+            <div class="v-layer" id="v-layer"></div>
+          </div>
+          <span class="v-fade v-fade-l" aria-hidden="true"></span>
+          <span class="v-fade v-fade-r" aria-hidden="true"></span>
           <div class="v-tools">
             <button class="v-btn" type="button" data-zoom="out" aria-label="Мельче"><span class="v-sign" aria-hidden="true">−</span></button>
-            <button class="v-btn v-level" type="button" data-zoom="fit" title="По размеру окна"><span id="v-level">100%</span></button>
+            <button class="v-btn v-level" type="button" data-zoom="fit" title="Показать схему целиком"><span id="v-level">100%</span></button>
             <button class="v-btn" type="button" data-zoom="in" aria-label="Крупнее"><span class="v-sign" aria-hidden="true">+</span></button>
           </div>
           <div class="v-save">
             <button class="v-btn v-wide" type="button" id="v-svg"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> SVG</button>
             <button class="v-btn v-wide" type="button" id="v-png"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> PNG</button>
           </div>
-          <p class="v-hint">Тащите схему · колесо или кнопки — масштаб · двойной клик — по размеру</p>
+          <p class="v-hint" id="v-hint">Листайте вбок колесом или пальцем · кнопки — масштаб</p>
         </div>
 
         <div class="v-code">
@@ -1260,119 +1284,143 @@ document.querySelectorAll('.copy[data-copy]').forEach(btn => {
 });
 copyBtn.addEventListener('click', () => copyText(input.value, copyBtn));
 
-/* ── Масштаб и перетаскивание ───────────────────────────────────────────── */
-let scale = 1, tx = 0, ty = 0, natW = 0, natH = 0;
-const MIN = 0.15, MAX = 4;
-function clampView(){
-  // Без ограничения при уменьшении схему уводило за край: масштаб считается от
-  // центра окна, и часть схемы оставалась «отрезанной», хотя целиком она уже
-  // влезала. Влезает — центрируем; не влезает — не пускаем дальше краёв.
-  const box = stage.getBoundingClientRect();
-  const w = natW * scale, h = natH * scale, M = 24;
-  if(!natW || !natH) return;
-  tx = (w <= box.width  - M) ? (box.width  - w) / 2 : Math.min(M, Math.max(box.width  - w - M, tx));
-  ty = (h <= box.height - M) ? (box.height - h) / 2 : Math.min(M, Math.max(box.height - h - M, ty));
+/* ── Масштаб и прокрутка ────────────────────────────────────────────────
+   Схема — обычная лента внутри прокручиваемого поля: колесо, тачпад, палец,
+   полоса прокрутки и клавиши работают сами. Масштаб — это реальный размер
+   SVG, а не transform: при увеличении текст остаётся резким. */
+const shell  = stage.parentElement;
+let k = 1, natW = 0, natH = 0;
+const K_MIN = 0.25, K_MAX = 3;
+
+function svgEl(){ return layer.querySelector('svg'); }
+function sizeTo(next, anchor){
+  const el = svgEl(); if(!el || !natW) return;
+  const before = stage.scrollLeft + (anchor === undefined ? stage.clientWidth / 2 : anchor);
+  const ratio  = before / Math.max(1, layer.scrollWidth);
+  k = Math.max(K_MIN, Math.min(K_MAX, next));
+  el.style.width  = Math.round(natW * k) + 'px';
+  el.style.height = Math.round(natH * k) + 'px';
+  levelEl.textContent = Math.round(k * 100) + '%';
+  // держим ту же точку схемы под тем же местом окна
+  stage.scrollLeft = ratio * layer.scrollWidth - (anchor === undefined ? stage.clientWidth / 2 : anchor);
+  edges();
 }
-function apply(){
-  clampView();
-  layer.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
-  levelEl.textContent = Math.round(scale * 100) + '%';
-}
-function fit(){                       // «по размеру» — вся схема целиком, обзорно
-  const box = stage.getBoundingClientRect();
-  if(!natW || !natH){ scale = 1; tx = ty = 0; apply(); return; }
-  scale = Math.min(box.width / natW, box.height / natH) * 0.94;
-  scale = Math.max(MIN, Math.min(MAX, scale));
-  tx = (box.width  - natW * scale) / 2;
-  ty = (box.height - natH * scale) / 2;
-  apply();
+function fitAll(){                      // «целиком»: вся схема в окне
+  if(!natW) return;
+  const pad = 2 * parseFloat(getComputedStyle(layer).paddingLeft || 0);
+  sizeTo(Math.min((stage.clientWidth - pad) / natW, (stage.clientHeight - 70) / natH));
+  stage.scrollLeft = 0;
 }
 function startView(){
-  // Схемы горизонтальные: длинные и невысокие. «Целиком» они сжимаются до
-  // трети — подписи не прочитать. Поэтому открываем в натуральную величину
-  // (или по высоте окна, если схема выше) и прижимаем к началу процесса —
-  // дальше зритель тянет её влево, как читает строку.
-  const box = stage.getBoundingClientRect();
-  if(!natW || !natH){ scale = 1; tx = ty = 0; apply(); return; }
-  scale = Math.max(MIN, Math.min(1, (box.height * 0.9) / natH));
-  tx = Math.min(24, Math.max(0, (box.width - natW * scale) / 2));
-  ty = (box.height - natH * scale) / 2;
-  apply();
+  // Не окно диктует размер схеме, а схема — окну. Схема рисуется в натуральную
+  // величину (подписи ровно того кегля, на который их рассчитывал mermaid), а
+  // высота окна подгоняется под неё. Раньше было наоборот: в высокой коробке
+  // лежала узкая лента, полокна пустовало, и всё выглядело неопрятно.
+  if(!natW) return;
+  syncHint();
+  const CHROME = 116;                                  // место под подсказку и кнопки
+  const MAXH = Math.round(window.innerHeight * 0.62), MINH = 240;
+  if(isNarrow()){
+    // Вертикальная схема: вписываем по ШИРИНЕ, листается вниз внутри окна
+    stage.style.height = MAXH + 'px';
+    const cs = getComputedStyle(layer);
+    const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+    sizeTo(Math.max(0.35, Math.min(1.2, (stage.clientWidth - pad - 4) / natW)));
+    stage.scrollLeft = 0; stage.scrollTop = 0; edges();
+    return;
+  }
+  // Совсем невысокую схему (три узла) чуть увеличиваем, чтобы не терялась
+  let kk = natH < 170 ? Math.min(2.2, 170 / natH) : 1;
+  const h = Math.max(MINH, Math.min(MAXH, Math.round(natH * kk) + CHROME));
+  stage.style.height = h + 'px';
+  // Если схема всё же выше окна (вертикальная), ужимаем её по высоте
+  const room = h - CHROME;
+  if(natH * kk > room) kk = room / natH;
+  sizeTo(Math.max(0.35, kk));
+  stage.scrollLeft = 0;
+  edges();
 }
-function zoomAt(factor, cx, cy){
-  const box = stage.getBoundingClientRect();
-  const px = (cx === undefined ? box.width  / 2 : cx - box.left);
-  const py = (cy === undefined ? box.height / 2 : cy - box.top);
-  const next = Math.max(MIN, Math.min(MAX, scale * factor));
-  // точка под курсором остаётся на месте
-  tx = px - (px - tx) * (next / scale);
-  ty = py - (py - ty) * (next / scale);
-  scale = next; apply();
+function syncHint(){
+  const h = document.getElementById('v-hint');
+  if(h) h.textContent = isNarrow()
+    ? 'Листайте схему пальцем · кнопки — масштаб'
+    : 'Листайте вбок колесом или пальцем · кнопки — масштаб';
 }
+function edges(){                       // растушёвка там, где лента продолжается
+  const max = stage.scrollWidth - stage.clientWidth;
+  shell.classList.toggle('has-left',  stage.scrollLeft > 4);
+  shell.classList.toggle('has-right', stage.scrollLeft < max - 4);
+}
+stage.addEventListener('scroll', edges, { passive: true });
+
+document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
+  const key = b.dataset.zoom;
+  if(key === 'fit') fitAll(); else sizeTo(k * (key === 'in' ? 1.25 : 1 / 1.25));
+}));
+
+// Колесо и тачпад листают вбок; Ctrl/⌘ + колесо — масштаб (привычка браузера)
 stage.addEventListener('wheel', e => {
   if(!natW) return;
-  e.preventDefault();
-  zoomAt(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX, e.clientY);
-}, { passive: false });
-document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
-  const k = b.dataset.zoom;
-  if(k === 'fit') fit(); else zoomAt(k === 'in' ? 1.25 : 1 / 1.25);
-}));
-stage.addEventListener('dblclick', fit);
-
-const pointers = new Map();
-let dragFrom = null, pinchFrom = null;
-stage.addEventListener('pointerdown', e => {
-  if(!natW) return;
-  // Кнопки лежат ВНУТРИ окна. Если начать на них перетаскивание, захват
-  // указателя уводит все последующие события на само окно — кнопка не получает
-  // pointerup, и клик не срабатывает вообще (масштаб и сохранение были мертвы).
-  if(e.target.closest('.v-btn, .v-tools, .v-save')) return;
-  stage.setPointerCapture(e.pointerId);
-  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if(pointers.size === 1){ dragFrom = { x: e.clientX - tx, y: e.clientY - ty }; stage.classList.add('dragging'); }
-  else if(pointers.size === 2){ dragFrom = null; pinchFrom = pinchState(); }
-});
-function pinchState(){
-  const [a, b] = [...pointers.values()];
-  return { d: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, s: scale };
-}
-stage.addEventListener('pointermove', e => {
-  if(!pointers.has(e.pointerId)) return;
-  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if(pointers.size === 1 && dragFrom){
-    tx = e.clientX - dragFrom.x; ty = e.clientY - dragFrom.y; apply();
-  } else if(pointers.size === 2 && pinchFrom){
-    const now = pinchState();
-    if(pinchFrom.d > 0){
-      const target = Math.max(MIN, Math.min(MAX, pinchFrom.s * (now.d / pinchFrom.d)));
-      zoomAt(target / scale, now.cx, now.cy);
-    }
+  if(e.ctrlKey || e.metaKey){
+    e.preventDefault();
+    sizeTo(k * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX - stage.getBoundingClientRect().left);
+    return;
   }
+  // вертикальное колесо мыши превращаем в горизонтальную прокрутку, а
+  // горизонтальный жест тачпада браузер отработает сам
+  if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+    const max = stage.scrollWidth - stage.clientWidth;
+    const next = stage.scrollLeft + e.deltaY;
+    if(next > 0 && next < max) e.preventDefault();   // на краях отдаём прокрутку странице
+    stage.scrollLeft = next;
+  }
+}, { passive: false });
+
+// Перетаскивание мышью — как «рука» в просмотрщиках; на тачскрине работает
+// обычная прокрутка пальцем, поэтому мышь только.
+let grab = null;
+stage.addEventListener('pointerdown', e => {
+  if(e.pointerType === 'touch' || !natW) return;
+  if(e.target.closest('.v-btn, .v-tools, .v-save')) return;
+  grab = { x: e.clientX, left: stage.scrollLeft };
+  stage.classList.add('dragging');
 });
-function endPointer(e){
-  pointers.delete(e.pointerId);
-  if(pointers.size < 2) pinchFrom = null;
-  if(pointers.size === 0){ dragFrom = null; stage.classList.remove('dragging'); }
-}
-stage.addEventListener('pointerup', endPointer);
-stage.addEventListener('pointercancel', endPointer);
-// Смена размера окна возвращает вид к началу схемы: «по размеру» после
-// поворота телефона показывало бы схему обзорно-мелко, а читают её с начала.
-let rsz;
+window.addEventListener('pointermove', e => {
+  if(!grab) return;
+  stage.scrollLeft = grab.left - (e.clientX - grab.x);
+});
+window.addEventListener('pointerup', () => { grab = null; stage.classList.remove('dragging'); });
+stage.addEventListener('dblclick', fitAll);
+
+let rsz, lastNarrow = isNarrow();
 window.addEventListener('resize', () => {
   if(!natW) return;
-  clearTimeout(rsz); rsz = setTimeout(startView, 120);
+  clearTimeout(rsz);
+  rsz = setTimeout(() => {
+    if(isNarrow() !== lastNarrow){        // окно пересекло границу форм
+      lastNarrow = isNarrow();
+      if(window.renderDiagrams) window.renderDiagrams();
+    } else startView();
+  }, 150);
 });
 
 /* ── Отрисовка ──────────────────────────────────────────────────────────── */
 function activeCode(){ return input.value || ''; }
+// Узкий экран — схему разворачиваем ВНИЗ: горизонтальная лента на телефоне
+// показывает полтора узла и листается вбок, а вертикальная ложится в экран.
+// Исходник при этом не трогаем — меняется только то, что рисуется.
+function isNarrow(){ return window.innerWidth < 760; }
+function forView(code){
+  return code.replace(/^([ \t]*flowchart[ \t]+)(LR|RL|TD|TB|BT)\b/m,
+                      (m, head) => head + (isNarrow() ? 'TD' : 'LR'));
+}
 function showError(msg){
   lastError = msg;
   errTxt.textContent = msg;
   errBox.hidden = false;
   layer.innerHTML = ''; natW = natH = 0;
   levelEl.textContent = '—';
+  shell.classList.remove('has-left', 'has-right');
 }
 function themeVars(){
   const dark = document.documentElement.classList.contains('dark');
@@ -1412,16 +1460,23 @@ try {
     init();                                   // тема могла смениться
     try {
       // parse() бросает исключение с текстом и номером строки — его и показываем
-      await mermaid.parse(code);
-      const { svg } = await mermaid.render('v-svg-' + Date.now(), code);
+      const shown = forView(code);
+      await mermaid.parse(shown);
+      const { svg } = await mermaid.render('v-svg-' + Date.now(), shown);
+      const keepLeft = stage.scrollLeft, keepK = k, prevW = natW, prevH = natH;
       layer.innerHTML = svg;
       const el = layer.querySelector('svg');
       const vb = el.viewBox && el.viewBox.baseVal;
       natW = (vb && vb.width)  || el.getBoundingClientRect().width  || 1;
       natH = (vb && vb.height) || el.getBoundingClientRect().height || 1;
-      el.setAttribute('width', natW); el.setAttribute('height', natH);
       errBox.hidden = true;
-      if(!keepView) startView(); else apply();
+      // Мелкая правка кода — вид сохраняем (иначе схема прыгает на каждой
+      // букве). Вставили совсем другую схему — подгоняем заново, иначе она
+      // осталась бы крошечной в углу.
+      const same = prevW && Math.abs(natW - prevW) / prevW < 0.25
+                        && Math.abs(natH - prevH) / Math.max(1, prevH) < 0.25;
+      if(keepView && same){ sizeTo(keepK); stage.scrollLeft = keepLeft; }
+      else startView();
     } catch (e) {
       showError((e && (e.str || e.message)) ? String(e.str || e.message) : 'Схема не разобралась');
     }

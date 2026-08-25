@@ -718,16 +718,31 @@ def test_process_practice_viewer():
     for el in ('id="v-stage"', 'id="v-layer"', 'id="v-level"', 'data-zoom="in"',
                'data-zoom="out"', 'data-zoom="fit"'):
         assert el in html, rel + ": в окне нет " + el
-    assert "stage.addEventListener('wheel'" in html and "stage.addEventListener('pointerdown'" in html, \
-        rel + ": схему двигают и масштабируют прямо в окне"
+    # листается обычной прокруткой: колесо, тачпад, палец, полоса, клавиши
+    assert re.search(r"\.v-stage\{[^}]*overflow-x:auto", html), rel + ": лента прокручивается сама"
+    assert "stage.addEventListener('wheel'" in html and "stage.scrollLeft = next;" in html, \
+        rel + ": вертикальное колесо мыши листает ленту вбок"
+    assert "if(e.ctrlKey || e.metaKey){" in html, rel + ": Ctrl+колесо — масштаб, как в браузере"
     assert "if(e.target.closest('.v-btn, .v-tools, .v-save')) return;" in html, \
-        rel + ": захват указателя не должен съедать клики по кнопкам окна"
-    assert "function startView(){" in html and "Math.min(1, (box.height * 0.9) / natH)" in html, \
-        rel + ": схема открывается в натуральную величину с начала процесса"
-    # схему нельзя увести за край: влезает — центрируем, не влезает — упор
-    assert "function clampView(){" in html, rel + ": панорама должна быть ограничена"
-    assert "tx = (w <= box.width  - M) ? (box.width  - w) / 2 :" in html, \
-        rel + ": влезающая схема центрируется, а не остаётся обрезанной"
+        rel + ": перетаскивание не должно начинаться на кнопках"
+    # окно подгоняется под схему, а не наоборот
+    assert "function startView(){" in html and "stage.style.height = h + 'px';" in html, \
+        rel + ": высота окна подгоняется под схему — без пустых полей"
+    assert "el.style.width  = Math.round(natW * k) + 'px';" in html, \
+        rel + ": масштаб — реальный размер SVG, текст остаётся резким"
+    # узлы на краю растворяются, а не срезаются ножом
+    assert ".v-fade-l{ left:0; background:linear-gradient(to right,var(--diagram-bg),transparent); }" in html
+    assert "shell.classList.toggle('has-left'" in html, rel + ": растушёвка появляется там, где лента продолжается"
+    # на узком экране схема разворачивается вниз
+    assert "function isNarrow(){ return window.innerWidth < 760; }" in html
+    assert "(isNarrow() ? 'TD' : 'LR')" in html, \
+        rel + ": на телефоне схема вертикальная, на компьютере горизонтальная"
+    # «целиком» показывает всю схему; за край её не увести — прокрутка сама
+    # держится в границах ленты
+    assert "function fitAll(){" in html and 'data-zoom="fit"' in html, \
+        rel + ": кнопка «целиком» показывает схему полностью"
+    assert "clampView" not in html, \
+        rel + ": ручной панорамы с упорами больше нет — листает обычная прокрутка"
 
     # поле кода одно и всегда редактируемое, кнопки «показать схему» нет
     for el in ('id="v-input"', 'id="v-copy"'):
@@ -737,7 +752,7 @@ def test_process_practice_viewer():
     assert "input.addEventListener('input'" in html and "window.renderDiagrams(true); }, 500);" in html, \
         rel + ": правка кода перерисовывает схему сама, без кнопки"
     assert "const SAVE_KEY = 'ait-mermaid-draft';" in html, rel + ": черновик переживает перезагрузку"
-    assert "await mermaid.parse(code);" in html, rel + ": код проверяется до отрисовки"
+    assert "await mermaid.parse(shown);" in html, rel + ": код проверяется до отрисовки"
 
     # ошибка показывается и превращается в промт на исправление
     assert 'id="v-err-text"' in html and 'id="v-fixprompt"' in html
