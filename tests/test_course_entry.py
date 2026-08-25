@@ -36,6 +36,7 @@ _COURSE_PAGES = (
     "automation/roles/index.html",
     "automation/skills/index.html",
     "automation/1/practice/index.html",
+    "automation/2/practice/index.html",
 ) + tuple("automation/%d/index.html" % n for n in range(1, 9))
 # Открыт только модуль 1: лекции 2-8 закрыты и не опубликованы (см.
 # tests/test_lectures.py::test_locked_modules_closed). Проверяем то, что
@@ -465,6 +466,85 @@ def test_practice_terms_do_not_break_on_hyphen():
     body = html.split("<body>", 1)[1]
     plain = re.sub(r"<[^>]*>", " ", body)
     for bad in ("ИИ-агент", "ИИ-модел", "ИИ-трансформац"):
+        assert bad not in plain, "%s: дефис в термине должен быть неразрывным (U+2011)" % bad
+
+
+
+# ── Практическое задание к лекции 2 ────────────────────────────────────────
+
+_PRACTICE2 = "automation/2/practice/index.html"
+_PRACTICE2_CLIP = "assets/video_l2/40.mp4"
+_PRACTICE2_COVER = "assets/video_sq/poster_practice_2.jpg"
+
+
+def _prose(html):
+    """Видимый текст страницы: без разметки и без копируемых блоков кода.
+
+    Промты в <pre class="code"> человек копирует в чат целиком — типографику
+    туда тащить нельзя, поэтому проверки текста их не касаются.
+    """
+    body = html.split("<body>", 1)[1]
+    body = re.sub(r"<(script|style|textarea|pre|code)\b.*?</\1>", " ", body, flags=re.S | re.I)
+    return re.sub(r"<[^>]*>", " ", body)
+
+
+def test_practice2_page_is_self_sufficient():
+    """Иконки задания вшиты в страницу — как и в задании первой лекции."""
+    html = _read(_PRACTICE2)
+    assert "unpkg.com" not in html and "cdnjs" not in html, \
+        "иконки задания не должны грузиться со стороннего CDN"
+    assert html.count('<symbol id="i-') >= 15, "нужен полный набор вшитых иконок"
+    for name in ("i-arrow-left", "i-arrow-right", "i-target"):
+        assert 'id="%s"' % name in html and 'href="#%s"' % name in html, \
+            "иконка %s должна быть и объявлена, и использована" % name
+
+
+def test_practice2_talking_head_matches_lecture_one():
+    """Кружок с головой — та же механика, что в задании первой лекции.
+
+    Отличаться имеют право только адреса ролика и обложки: всё остальное
+    (перетаскивание, звук по клику, размытый кадр под кнопкой ▶, память
+    звука на весь путь) — общий код. Сверяем побайтово, нормализовав пути,
+    иначе одна страница незаметно уедет от другой при следующей правке.
+    """
+    def block(rel):
+        h = _read(rel)
+        i = h.index('<div class="bubble')
+        j = h.rindex("</script>", 0, h.index("</body>")) + len("</script>")
+        b = h[i:j]
+        b = re.sub(r'src="/assets/[^"]*\.mp4"', 'src="CLIP"', b)
+        b = re.sub(r'poster="/assets/[^"]*\.jpg"', 'poster="COVER"', b)
+        b = re.sub(r'url\(/assets/[^)]*\.jpg\)', 'url(COVER)', b)
+        return b
+
+    assert block(_PRACTICE2) == block(_PRACTICE), \
+        "кружок задания второй лекции разъехался с эталоном первой"
+
+
+def test_practice2_clip_is_the_fortieth_and_local():
+    """Ролик 40 — тот самый, про практику, и лежит на своём домене."""
+    html = _read(_PRACTICE2)
+    assert 'src="/%s"' % _PRACTICE2_CLIP in html, "кружок должен играть ролик 40 лекции 2"
+    assert 'poster="/%s"' % _PRACTICE2_COVER in html, "обложка — первый кадр этого же ролика"
+    assert 'preload="auto"' in html.split('id="bubble-video"', 1)[1][:400], \
+        "ролик задания подгружается заранее — он открывается по клику сразу"
+    for rel in (_PRACTICE2_CLIP, _PRACTICE2_COVER):
+        assert os.path.isfile(os.path.join(_ROOT, rel)), "нет файла " + rel
+    # moov в начале файла: иначе браузер ждёт весь ролик, прежде чем начать
+    with open(os.path.join(_ROOT, _PRACTICE2_CLIP), "rb") as f:
+        assert b"moov" in f.read(8192), \
+            "ролик должен быть перемотан в faststart, иначе воспроизведение ждёт всю загрузку"
+
+
+def test_practice2_is_linked_from_the_lecture():
+    assert "/automation/2/practice/" in _read(_LECTURE2), \
+        "кнопка «Задание» во второй лекции должна вести на её страницу практики"
+
+
+def test_practice2_terms_do_not_break_on_hyphen():
+    """«ИИ‑агентов» в видимом тексте не распадается по дефису."""
+    plain = _prose(_read(_PRACTICE2))
+    for bad in ("ИИ-агент", "ИИ-модел", "ИИ-трансформац", "ИИ-стратег"):
         assert bad not in plain, "%s: дефис в термине должен быть неразрывным (U+2011)" % bad
 
 

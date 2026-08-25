@@ -1,0 +1,2734 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Практическое задание — разбор бизнес-процесса | Andre AI Technology</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+<meta name="description" content="Практическое задание: возьмите один реальный бизнес-процесс, восстановите AS-IS, найдите узкие места и точки автоматизации и спроектируйте TO-BE — готовый проект ИИ-трансформации процесса.">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Практическое задание: разбор реального бизнес-процесса.
+     Стиль лекции и первого задания: Montserrat, иконки Phosphor
+     вшиты SVG-спрайтом (с CDN они пропадают при плохой сети),
+     фиолетовый #8B5CF6 + оранжевый #F97316, карточки со скруглением,
+     emphasis-блок #4C1D95, теней нет нигде.
+     ============================================================ */
+  :root{
+    --bg:#FFFFFF; --fg:#0A0A0A; --muted:rgba(0,0,0,.60);
+    --card:#FFFFFF; --card-border:#E9E9E9;
+    --soft:rgba(0,0,0,.04); --soft-border:rgba(0,0,0,.08);
+    --ctrl-bg:#FFFFFF; --ctrl-fg:#111111; --ctrl-border:rgba(0,0,0,.12);
+    --ctrl-hover:#F1F1F1;
+    --line:#E9E9E9;
+    --diagram-bg:#FFFFFF;
+  }
+  html.dark{
+    --bg:#0A0A0A; --fg:#FAFAFA; --muted:rgba(250,250,250,.62);
+    --card:#141414; --card-border:rgba(255,255,255,.12);
+    --soft:rgba(255,255,255,.06); --soft-border:rgba(255,255,255,.10);
+    --ctrl-bg:#141414; --ctrl-fg:#FAFAFA; --ctrl-border:rgba(255,255,255,.18);
+    --ctrl-hover:#1F1F1F;
+    --line:rgba(255,255,255,.14);
+    --diagram-bg:#101010;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  /* Теней нет нигде — общее требование заказчика по всем страницам курса */
+  *, *::before, *::after{ box-shadow:none !important; text-shadow:none !important; }
+
+  html{ -webkit-tap-highlight-color:transparent; background:var(--bg); }
+  body{
+    font-family:'Montserrat',sans-serif; background:var(--bg); color:var(--fg);
+    min-height:100dvh; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    transition:background .3s ease,color .3s ease;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  ::selection{background:#8B5CF6;color:#fff}
+  *:focus-visible{outline:2px solid #8B5CF6;outline-offset:3px;border-radius:4px}
+  p,li,h1,h2,h3,h4{overflow-wrap:break-word}
+  /* Иконка — вшитый SVG: размер задаётся font-size родителя, цвет — currentColor */
+  .ic{ width:1em; height:1em; fill:currentColor; flex-shrink:0; vertical-align:-.125em; }
+
+  /* Большие мониторы масштабируются целиком — как дорожная карта и главная */
+  @media (min-width:1600px){ body{zoom:1.15} }
+  @media (min-width:1900px){ body{zoom:1.3} }
+  @media (min-width:2300px){ body{zoom:1.5} }
+
+  /* ===== Шапка: геометрия один в один с шапкой лекции ===== */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+    padding:1.1rem; pointer-events:none;
+    background:linear-gradient(to bottom,var(--bg) 45%,transparent);
+  }
+  @media (min-width:1024px){ header{ padding:2rem; } }
+  header > *{ pointer-events:auto; }
+  .lec-logo{display:inline-flex;align-items:center;flex-shrink:0}
+  .lec-logo img{ width:2.9rem; height:2.9rem; object-fit:contain; display:block; }
+  @media (min-width:768px){ .lec-logo img{ width:3.6rem; height:3.6rem; } }
+  /* Картинка лого не дошла — текстовый знак вместо «битой картинки» */
+  .lec-logo .logo-fb{
+    display:none; align-items:center; font-weight:900; letter-spacing:-.04em;
+    font-size:1.6rem; color:#F97316;
+  }
+  .lec-right{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+  .lec-ctrl{
+    display:inline-flex;align-items:center;justify-content:center;
+    height:2.7rem; width:2.7rem; border-radius:999px;
+    border:1px solid var(--ctrl-border); background:var(--ctrl-bg); color:var(--ctrl-fg);
+    font-size:1.05rem; line-height:1; transition:background .2s ease,color .2s ease;
+  }
+  @media (min-width:768px){ .lec-ctrl{ height:2.85rem; width:2.85rem; font-size:1.3rem; } }
+  .lec-ctrl:hover{ background:var(--ctrl-hover); }
+  .lec-lbl{
+    width:auto; padding:0 1.15rem; gap:.45rem;
+    font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:12px;
+  }
+  .lec-lbl .ic{ font-size:1.2rem; }
+  @media (max-width:767px){
+    .lec-lbl{ width:2.7rem; padding:0; }
+    .lec-lbl span{ display:none; }
+    .lec-lbl .ic{ font-size:1.05rem; }
+  }
+  .lec-consult{
+    display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+    padding:.62rem .85rem; border-radius:999px; background:#8B5CF6; color:#fff;
+    font-weight:800; text-transform:uppercase; letter-spacing:.06em;
+    font-size:10.5px; white-space:nowrap; transition:transform .2s ease,background .2s ease;
+  }
+  @media (min-width:768px){
+    .lec-consult{ height:2.85rem; padding:0 1.4rem; font-size:11.5px; letter-spacing:.15em; gap:.55rem; }
+  }
+  .lec-consult:hover{ transform:translateY(-1px); background:#7C3AED; }
+
+  /* ===== Полотно ===== */
+  main{
+    max-width:58rem; margin:0 auto;
+    padding:clamp(6.5rem,17vh,9rem) clamp(1rem,4vw,2rem) clamp(3rem,8vh,5rem);
+  }
+  @keyframes rise{ from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+  .rise{ animation:rise .55s cubic-bezier(.22,1,.36,1) both; }
+  .rise.d1{ animation-delay:.07s } .rise.d2{ animation-delay:.14s }
+  @media (prefers-reduced-motion:reduce){ .rise{ animation:none } }
+
+  /* ===== Первый экран ===== */
+  .hero{ text-align:center; }
+  .badge{
+    display:inline-flex; align-items:center; gap:.5rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:999px; padding:.45rem 1rem;
+    font-size:clamp(9px,2.4vw,11px); font-weight:800;
+    letter-spacing:.16em; text-transform:uppercase; color:#8B5CF6;
+    margin-bottom:clamp(.9rem,2.5vh,1.3rem);
+  }
+  .badge .ic{ font-size:1.25em; }
+  h1{
+    font-weight:900; font-size:clamp(1.7rem,6.2vw,3rem);
+    line-height:1.12; letter-spacing:-.02em; text-wrap:balance;
+  }
+  .accent{
+    background-image:linear-gradient(90deg,#8B5CF6 0%,#F97316 100%);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+  }
+  .hero p{
+    margin:clamp(.9rem,2.4vh,1.2rem) auto 0; max-width:40rem;
+    color:var(--muted); font-weight:500;
+    font-size:clamp(.9rem,2.9vw,1.1rem); line-height:1.65;
+  }
+  /* Перечень результата разбит на три строки вручную: общий предел в 40rem
+     ломал каждую из них надвое. */
+  .hero p.wide{ max-width:48rem; }
+
+  /* ===== Кнопки ===== */
+  .actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:.6rem; margin-top:clamp(1.2rem,3.5vh,1.8rem); }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.55rem;
+    border-radius:999px; padding:1rem 1.9rem; border:1px solid transparent;
+    font-weight:800; text-transform:uppercase; letter-spacing:.09em;
+    font-size:clamp(10px,2.7vw,12.5px); line-height:1; white-space:nowrap;
+    transition:transform .2s ease,background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .btn .ic{ font-size:1.25em; }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-ghost{ background:transparent; color:var(--fg); border-color:var(--ctrl-border); }
+  .btn-ghost:hover{ border-color:#8B5CF6; color:#8B5CF6; }
+  .btn-light{ background:#FAFAFA; color:#0A0A0A; }
+  .btn-light:hover{ background:#fff; }
+  @media (max-width:420px){ .btn{ width:100%; } }
+
+  /* ===== Заголовок раздела ===== */
+  .sec{ margin-top:clamp(2.6rem,8vh,4.5rem); }
+  .sec-head{
+    display:flex; flex-direction:column; align-items:center; gap:.75rem;
+    text-align:center; margin-bottom:clamp(1.4rem,4vh,2.2rem);
+  }
+  .sec-ico{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,10vw,3.4rem); height:clamp(2.8rem,10vw,3.4rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-size:clamp(1.3rem,4.6vw,1.65rem);
+  }
+  .sec-head h2{
+    font-weight:900; letter-spacing:-.02em; text-wrap:balance;
+    font-size:clamp(1.35rem,5vw,2.1rem); line-height:1.2;
+  }
+  .sec-head p{
+    color:var(--muted); font-weight:600; max-width:36rem;
+    font-size:clamp(.85rem,2.7vw,1rem); line-height:1.6;
+  }
+  /* Короткая подводка идёт одной строкой: общий предел в 36rem резал её надвое */
+  .sec-head p.wide{ max-width:none; }
+
+  /* ===== С чего начать: критерии «низковисящего фрукта» =====
+     Те же плашки, что и в первом задании (automation/1/practice): критерий —
+     это строка со значком, а не карточка с заголовком. */
+  .criteria{ list-style:none; display:grid; grid-template-columns:1fr; gap:.6rem; }
+  @media (min-width:768px){
+    .criteria{ grid-template-columns:1fr 1fr; gap:.75rem; }
+    /* пятый критерий занимает всю строку — ряд не остаётся полупустым */
+    .criteria li:last-child{ grid-column:1 / -1; }
+  }
+  .criteria li{
+    display:flex; align-items:center; gap:.8rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:16px; padding:.85rem 1rem;
+    font-weight:600; font-size:clamp(.82rem,2.7vw,.98rem); line-height:1.45;
+  }
+  /* Плашка сплошная, иконка белая: фиолетовая иконка на фиолетовом тинте
+     растворялась бы в подложке. */
+  .criteria .ci{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-size:1.15rem;
+  }
+
+  /* ===== Шаг ===== */
+  .step{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:clamp(20px,4vw,28px); padding:clamp(1.2rem,4.5vw,2.2rem);
+  }
+  .step + .link + .step{ margin-top:0; }
+  .step-head{ display:flex; align-items:flex-start; gap:clamp(.85rem,3vw,1.25rem); }
+  .step-ico{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,11vw,3.6rem); height:clamp(2.8rem,11vw,3.6rem);
+    border-radius:999px; background:#8B5CF6; color:#fff;
+    font-size:clamp(1.35rem,5vw,1.8rem);
+  }
+  .step-body{ min-width:0; flex:1; }
+  .kicker{
+    display:block; color:#F97316; font-weight:800; text-transform:uppercase;
+    letter-spacing:.16em; font-size:clamp(10px,2.6vw,12px);
+  }
+  .step h2{
+    margin-top:.3rem; font-weight:900; letter-spacing:-.01em;
+    font-size:clamp(1.05rem,4.2vw,1.65rem); line-height:1.25;
+  }
+  .step p.desc{
+    margin-top:clamp(.8rem,2.4vw,1.1rem); color:var(--muted);
+    font-weight:500; font-size:clamp(.88rem,2.9vw,1.05rem); line-height:1.65;
+  }
+
+  /* Списки внутри шага */
+  .checks{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; grid-template-columns:1fr; gap:.6rem; }
+  @media (min-width:768px){ .checks{ grid-template-columns:1fr 1fr; gap:.75rem; } }
+  .checks li{
+    display:flex; align-items:center; gap:.8rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:16px; padding:.85rem 1rem;
+    font-weight:600; font-size:clamp(.82rem,2.7vw,.98rem); line-height:1.45;
+  }
+  /* Плашка сплошная, иконка белая: иконка не должна совпадать по цвету
+     со своей подложкой (то же правило, что и в slide-polish лекции). */
+  .checks .ci{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-size:1.15rem;
+  }
+  .checks li.wide{ grid-column:1 / -1; }
+
+  /* Четыре варианта решения: правило / агент / человек / гибрид */
+  .modes{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; grid-template-columns:1fr; gap:.6rem; }
+  @media (min-width:640px){ .modes{ grid-template-columns:1fr 1fr; gap:.7rem; } }
+  .modes li{
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:16px; padding:.9rem 1rem; display:flex; gap:.8rem; align-items:flex-start;
+  }
+  .modes .mi{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px; color:#fff; font-size:1.15rem;
+  }
+  .modes .m-rule{ background:#64748B; } .modes .m-ai{ background:#8B5CF6; }
+  .modes .m-human{ background:#0EA5E9; } .modes .m-mix{ background:#F97316; }
+  .modes b{ display:block; font-weight:800; font-size:clamp(.85rem,2.7vw,.98rem); }
+  .modes span{ display:block; margin-top:.2rem; color:var(--muted); font-weight:500; font-size:clamp(.78rem,2.5vw,.9rem); line-height:1.5; }
+
+  /* Врезка-итог */
+  .note{
+    display:flex; align-items:center; gap:.75rem;
+    margin-top:clamp(1rem,3vw,1.4rem);
+    background:rgba(139,92,246,.14); border-left:4px solid #F97316;
+    border-radius:0 16px 16px 0; padding:.95rem 1.1rem;
+    font-weight:700; font-size:clamp(.85rem,2.8vw,1rem); line-height:1.5;
+  }
+  .note .ic{ color:#F97316; font-size:1.3rem; flex-shrink:0; }
+
+  /* Связка между шагами — как стрелки-связи на слайдах лекции */
+  .link{ display:flex; flex-direction:column; align-items:center; padding:clamp(.6rem,2vh,1rem) 0; }
+  .link .bar{ width:2px; height:clamp(1.1rem,3vh,1.6rem); background:var(--line); }
+  .link .ic{ color:var(--line); font-size:1.25rem; margin-top:-.35rem; }
+
+  /* ===== Одно окно со схемами: плашки сверху, поле, код снизу ===== */
+  .viewer{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:clamp(20px,4vw,28px); overflow:hidden;
+  }
+  /* Окно со схемой живёт в общей колонке — ровно той же ширины, что блок
+     «Собрать стратегию ИИ-трансформации» выше. Раньше оно выходило за
+     колонку, и страница из-за этого разъезжалась по ширине. Схема шире окна
+     листается вбок — это привычнее, чем окно шире всей остальной страницы. */
+  .v-tabs{
+    display:flex; gap:.32rem; padding:clamp(.7rem,2.2vw,.9rem);
+    /* safe: когда плашки не влезают в ряд, центрирование увело бы первую из
+       них за левый край, докуда прокрутка не достаёт */
+    justify-content:center; justify-content:safe center;
+    overflow-x:auto; scrollbar-width:none; border-bottom:1px solid var(--card-border);
+  }
+  .v-tabs::-webkit-scrollbar{ display:none; }
+  .v-tab{
+    display:inline-flex; align-items:center; gap:.42rem; flex-shrink:0;
+    border-radius:999px; padding:.6rem .8rem; border:1px solid var(--ctrl-border);
+    background:var(--ctrl-bg); color:var(--fg);
+    font-weight:700; font-size:clamp(11px,2.6vw,12.5px); line-height:1; white-space:nowrap;
+    transition:background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .v-tab .ic{ font-size:1.2em; color:#8B5CF6; }
+  .v-tab:hover{ border-color:#8B5CF6; }
+  .v-tab[aria-selected="true"]{ background:#8B5CF6; border-color:#8B5CF6; color:#fff; }
+  .v-tab[aria-selected="true"] .ic{ color:#fff; }
+
+  /* Поле просмотра: горизонтальное, схема листается вбок как обычная лента.
+     Раньше это был холст с transform-панорамой: полокна пустовало, узлы
+     резались краем, а листать приходилось перетаскиванием — «выглядит ужасно
+     и плохо листается» (жалоба заказчика). Теперь обычная прокрутка: работает
+     колесо, тачпад, палец, полоса прокрутки и клавиши. */
+  .v-shell{ position:relative; border-bottom:1px solid var(--card-border); }
+  .v-stage{
+    /* Схема мельче окна — стоит по центру; крупнее — прижата к началу.
+       Ключевое слово safe: без него центрирование переполнившей схемы уводит
+       её верх в отрицательные координаты, докуда прокрутка не достаёт, и
+       первый шаг процесса оказывается срезан. */
+    display:grid;
+    justify-content:center; justify-content:safe center;
+    align-content:center;   align-content:safe center;
+    overflow:auto; -webkit-overflow-scrolling:touch;
+    height:clamp(18rem,52vh,30rem); background:var(--diagram-bg);
+    scrollbar-width:thin; cursor:grab; overscroll-behavior:contain;
+  }
+  .v-stage.dragging{ cursor:grabbing; }
+  .v-stage::-webkit-scrollbar{ width:10px; height:10px; }
+  .v-stage::-webkit-scrollbar-thumb{ background:var(--soft-border); border-radius:999px; }
+  /* Нижний отступ больше верхнего ровно на высоту плашки с кнопками: она висит
+     над сценой, и без запаса последний узел прятался бы под ней. */
+  /* Снизу — запас под плашки с кнопками: они висят над сценой, и без него
+     последний участник прятался бы под ними. Подсказка вынесена из сцены. */
+  .v-layer{
+    padding:1.4rem clamp(1rem,4vw,2.6rem) 4.2rem;
+  }
+  @media (max-width:759px){ .v-layer{ padding:1.2rem .5rem 4.4rem; } }
+  .v-layer svg{ display:block; max-width:none !important; }
+  /* Узел, попавший на край, не срезается ножом, а растворяется — и сразу
+     видно, что лента продолжается. */
+  .v-fade{
+    position:absolute; top:0; bottom:0; width:clamp(1.5rem,4vw,3rem);
+    pointer-events:none; z-index:1; opacity:0; transition:opacity .2s ease;
+  }
+  .v-fade-l{ left:0; background:linear-gradient(to right,var(--diagram-bg),transparent); }
+  .v-fade-r{ right:0; background:linear-gradient(to left,var(--diagram-bg),transparent); }
+  .v-shell.has-left  .v-fade-l{ opacity:1; }
+  .v-shell.has-right .v-fade-r{ opacity:1; }
+  /* Схема продолжается вверх или вниз — показываем это растушёвкой у кромки */
+  .v-fade-t, .v-fade-b{
+    position:absolute; left:0; right:0; height:2.2rem; z-index:1;
+    pointer-events:none; opacity:0; transition:opacity .2s ease;
+  }
+  .v-fade-t{ top:0;    background:linear-gradient(to bottom,var(--diagram-bg),transparent); }
+  .v-fade-b{ bottom:0; background:linear-gradient(to top,var(--diagram-bg),transparent); }
+  .v-shell.has-up   .v-fade-t{ opacity:1; }
+  .v-shell.has-down .v-fade-b{ opacity:1; }
+  .v-tools, .v-save{
+    position:absolute; display:flex; gap:.35rem; z-index:2;
+    background:var(--card); border:1px solid var(--card-border); border-radius:999px; padding:.3rem;
+  }
+  .v-tools{ left:clamp(.6rem,2vw,1rem); bottom:clamp(.9rem,2.4vw,1.2rem); }
+  .v-save{ right:clamp(.6rem,2vw,1rem); bottom:clamp(.9rem,2.4vw,1.2rem); }
+  .v-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.35rem;
+    height:2.2rem; min-width:2.2rem; padding:0 .55rem; border-radius:999px;
+    border:0; background:transparent; color:var(--fg);
+    font-weight:800; font-size:11px; letter-spacing:.04em; white-space:nowrap;
+    transition:background .2s ease,color .2s ease;
+  }
+  .v-btn:hover{ background:var(--soft); color:#8B5CF6; }
+  .v-btn .ic{ font-size:1.15em; }
+  .v-btn[hidden]{ display:none !important; }
+  .v-sign{ font-size:1.2rem; line-height:1; font-weight:800; }
+  .v-level{ min-width:3.6rem; font-variant-numeric:tabular-nums; }
+  /* Подсказка живёт ПОД сценой: над схемой она перекрывала верхний ряд
+     участников, и обе строки становились нечитаемыми. */
+  .v-hint{
+    margin:0; padding:.45rem 1rem; text-align:center;
+    border-bottom:1px solid var(--card-border);
+    color:var(--muted); font-weight:600; font-size:clamp(10px,2.4vw,11.5px); line-height:1.35;
+  }
+
+  /* Код снизу: у примеров — только чтение, у своей схемы — редактируемое поле */
+  .v-code{ padding:clamp(.9rem,2.6vw,1.2rem); }
+  .v-code-head{ display:flex; align-items:center; justify-content:space-between; gap:.6rem; flex-wrap:wrap; }
+  .v-code-title{
+    display:inline-flex; align-items:center; gap:.5rem;
+    font-weight:800; text-transform:uppercase; letter-spacing:.1em; font-size:11px; color:var(--muted);
+  }
+  .v-code-title .ic{ color:#8B5CF6; font-size:1.3em; }
+  .v-code-act{ display:flex; gap:.35rem; flex-wrap:wrap; }
+  .v-code-act .v-btn{ border:1px solid var(--ctrl-border); }
+  .copy.v-inline{ position:static; }
+  .v-code pre.code, .v-code textarea{ margin-top:.7rem; max-height:22rem; }
+  .v-code pre.code{ padding-right:1.15rem; overflow:auto; }
+  .v-code textarea{
+    width:100%; min-height:12rem; resize:vertical; display:block;
+    background:var(--soft); border:1px solid var(--soft-border); border-radius:16px;
+    padding:clamp(.9rem,2.6vw,1.15rem); color:var(--fg);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(11.5px,2.5vw,13px); line-height:1.65;
+  }
+  .v-code textarea:focus{ outline:2px solid #8B5CF6; outline-offset:2px; }
+  .v-note{
+    display:flex; align-items:center; gap:.55rem; margin-top:.7rem;
+    color:var(--muted); font-weight:600; font-size:clamp(.78rem,2.5vw,.88rem); line-height:1.5;
+  }
+  .v-note .ic{ color:#8B5CF6; font-size:1.15rem; }
+  /* display:block выше перебивает атрибут hidden — поле ввода оставалось
+     видимым на вкладках-примерах пустой рамкой. */
+  .v-code textarea[hidden], .v-code pre.code[hidden]{ display:none !important; }
+
+  /* Описание отрасли под окном — меняется вместе с плашкой */
+  .case-info{ margin-top:clamp(1.1rem,3vw,1.6rem); }
+  .case-info[hidden]{ display:none; }
+  .case-info h3{ font-weight:900; letter-spacing:-.01em; font-size:clamp(1.05rem,3.8vw,1.45rem); line-height:1.25; }
+  .case-info .goal{
+    margin-top:.7rem; display:grid; gap:.4rem;
+    color:var(--muted); font-weight:600; font-size:clamp(.82rem,2.6vw,.95rem); line-height:1.55;
+  }
+  .case-info .goal b{ color:var(--fg); font-weight:800; }
+  .case-info h4{
+    margin-top:clamp(1.1rem,3vw,1.5rem); font-weight:800;
+    font-size:clamp(.92rem,3vw,1.05rem); letter-spacing:-.01em;
+  }
+  .case-info h4 .ic{ color:#F97316; margin-right:.4rem; }
+  .bnecks{ list-style:none; margin-top:.7rem; display:grid; gap:.5rem; }
+  @media (min-width:768px){ .bnecks{ grid-template-columns:1fr 1fr; gap:.6rem; } }
+  .bnecks li{
+    display:flex; gap:.65rem; align-items:flex-start;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:14px; padding:.75rem .9rem;
+    font-weight:600; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.5;
+  }
+  .bnecks .ic{ color:#F97316; font-size:1.1rem; margin-top:.1rem; }
+  .fix{ list-style:none; margin-top:.7rem; display:grid; gap:.5rem; }
+  .fix li{
+    display:flex; gap:.65rem; align-items:center; flex-wrap:wrap;
+    font-weight:600; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.5;
+  }
+  .tag{
+    display:inline-flex; align-items:center; gap:.35rem; flex-shrink:0;
+    border-radius:999px; padding:.3rem .7rem; color:#fff;
+    font-weight:800; text-transform:uppercase; letter-spacing:.08em; font-size:9.5px;
+  }
+  .tag .ic{ font-size:1.15em; }
+  .t-rule{ background:#64748B; } .t-ai{ background:#8B5CF6; }
+  .t-human{ background:#0EA5E9; } .t-mix{ background:#F97316; }
+
+  /* ===== Код mermaid: под схемой примера и в редакторе ===== */
+  .src{ margin-top:clamp(.9rem,2.6vw,1.2rem); }
+  .src summary{
+    display:inline-flex; align-items:center; gap:.5rem; cursor:pointer; list-style:none;
+    border-radius:999px; padding:.55rem 1rem; border:1px solid var(--ctrl-border);
+    background:var(--ctrl-bg); color:var(--fg);
+    font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:11px;
+  }
+  .src summary::-webkit-details-marker{ display:none; }
+  .src summary:hover{ border-color:#8B5CF6; }
+  .src summary .ic{ color:#8B5CF6; font-size:1.2em; }
+  .src[open] summary .caret{ transform:rotate(0deg); }
+  .src summary .caret{ transform:rotate(-90deg); transition:transform .2s ease; }
+  .code-wrap{ position:relative; margin-top:.7rem; }
+  pre.code{
+    background:var(--soft); border:1px solid var(--soft-border); border-radius:16px;
+    padding:clamp(.9rem,2.6vw,1.15rem); padding-top:3.4rem;
+    overflow-x:auto; white-space:pre;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(11px,2.5vw,12.5px); line-height:1.65; color:var(--fg);
+  }
+  /* Кнопки копирования висят над кодом в один ряд; у промтов их две —
+     чистый текст и текст со схемой из окна. */
+  .code-act{ position:absolute; top:.6rem; right:.6rem; display:flex; flex-wrap:wrap; gap:.4rem; justify-content:flex-end; max-width:calc(100% - 1.2rem); }
+  .code-act .copy{ position:static; }
+  .copy{
+    position:absolute; top:.6rem; right:.6rem;
+    display:inline-flex; align-items:center; gap:.4rem;
+    border-radius:999px; padding:.5rem .85rem; border:1px solid var(--ctrl-border);
+    background:var(--ctrl-bg); color:var(--fg);
+    font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:10px;
+    transition:background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .copy:hover{ border-color:#8B5CF6; color:#8B5CF6; }
+  .copy.done{ background:#8B5CF6; border-color:#8B5CF6; color:#fff; }
+  .copy .ic{ font-size:1.2em; }
+
+  /* ===== Как превратить интервью в схему ===== */
+  .flow{ list-style:none; display:grid; grid-template-columns:1fr; gap:.6rem; counter-reset:fl; }
+  @media (min-width:768px){ .flow{ grid-template-columns:1fr 1fr; gap:.75rem; } }
+  .flow li{
+    background:var(--card); border:1px solid var(--card-border); border-radius:18px;
+    padding:clamp(1rem,3vw,1.25rem); display:flex; gap:.85rem; align-items:flex-start;
+  }
+  .flow .fi{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.5rem; height:2.5rem; border-radius:999px; background:#8B5CF6; color:#fff; font-size:1.2rem;
+  }
+  .flow b{ display:block; font-weight:800; font-size:clamp(.9rem,2.9vw,1.02rem); line-height:1.3; }
+  .flow span{ display:block; margin-top:.3rem; color:var(--muted); font-weight:500; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.55; }
+
+  /* Ошибка разбора: показываем текст от mermaid и предлагаем перегенерировать */
+  .err{
+    margin-top:.9rem; border-radius:16px; padding:clamp(.9rem,2.6vw,1.1rem);
+    background:rgba(249,115,22,.12); border:1px solid rgba(249,115,22,.45);
+  }
+  .err[hidden]{ display:none; }
+  .err .err-h{ display:flex; align-items:center; gap:.55rem; font-weight:800; font-size:clamp(.88rem,2.8vw,1rem); }
+  .err .err-h .ic{ color:#F97316; font-size:1.25rem; }
+  .err pre{
+    margin-top:.6rem; white-space:pre-wrap; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(11px,2.4vw,12px); line-height:1.6; color:var(--fg);
+  }
+  .err .err-hint{ margin-top:.7rem; color:var(--muted); font-weight:600; font-size:clamp(.8rem,2.6vw,.9rem); line-height:1.55; }
+  .err .err-actions{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.8rem; }
+
+  /* ===== Главный призыв: инструмент ИИ-стратегии ===== */
+  .cta{
+    background:#4C1D95; color:#fff; border:1px solid rgba(167,139,250,.55);
+    border-radius:clamp(20px,4vw,28px); padding:clamp(1.5rem,5vw,2.6rem); text-align:center;
+  }
+  .cta .cta-ico{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,11vw,3.6rem); height:clamp(2.8rem,11vw,3.6rem);
+    border-radius:999px; background:rgba(255,255,255,.10); color:#F97316;
+    font-size:clamp(1.35rem,5vw,1.8rem); margin-bottom:clamp(.8rem,2.5vw,1.1rem);
+  }
+  .cta h2{
+    font-weight:900; letter-spacing:-.01em; text-wrap:balance;
+    font-size:clamp(1.1rem,4.2vw,1.75rem); line-height:1.25;
+  }
+  .cta > p{
+    margin:clamp(.8rem,2.4vw,1.1rem) auto 0; max-width:36rem;
+    color:rgba(255,255,255,.78); font-weight:500;
+    font-size:clamp(.85rem,2.7vw,1rem); line-height:1.6;
+  }
+  .cta ul{ list-style:none; margin:clamp(1.1rem,3vw,1.5rem) auto 0; max-width:34rem; display:grid; gap:.5rem; }
+  @media (min-width:768px){ .cta ul{ grid-template-columns:1fr 1fr; gap:.6rem; } }
+  .cta li{
+    display:flex; align-items:center; gap:.7rem; text-align:left;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.10);
+    border-radius:14px; padding:.8rem .95rem;
+    font-weight:600; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.45;
+  }
+  .cta li .ic{ color:#F97316; font-size:1.15rem; }
+  .cta li:last-child:nth-child(odd){ grid-column:1 / -1; }
+
+  /* ===== Возврат ===== */
+  .back{ display:flex; justify-content:center; margin-top:clamp(1.6rem,4.5vh,2.4rem); }
+  .back button{
+    display:inline-flex; align-items:center; gap:.5rem; background:none; border:0;
+    color:var(--muted); font-weight:700; font-size:clamp(.8rem,2.6vw,.9rem);
+    transition:color .2s ease;
+  }
+  .back button:hover{ color:#8B5CF6; }
+
+  /* Печать / сохранение в PDF */
+  @media print{
+    header, .actions, .back, .tabs{ display:none !important; }
+    body{ background:#fff !important; color:#000 !important; }
+    main{ padding:0; max-width:none; }
+    .step, .case, .criteria li, .checks li, .modes li{ background:#fff; border-color:#D9D9D9; break-inside:avoid; }
+    .cta{ background:#fff !important; color:#000 !important; border-color:#D9D9D9; }
+    .cta li{ background:#fff; border-color:#D9D9D9; color:#000; }
+    .case[hidden]{ display:block !important; }   /* в печать идут все отрасли */
+    .rise{ animation:none; }
+    *{ print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  }
+</style>
+<script>
+/* Тема (фон) общая для всего клиентского пути (ключ 'welcome-theme', как в лекции):
+   по умолчанию тёмная, ?theme=light|dark перебивает сохранённую. */
+(function(){
+  var t=null; try{ t=new URLSearchParams(location.search).get('theme'); }catch(e){}
+  if(t!=='dark' && t!=='light'){ try{ t=localStorage.getItem('welcome-theme'); }catch(e){} }
+  document.documentElement.classList.toggle('dark', t!=='light');
+})();
+</script>
+</head>
+<body>
+
+  <!-- Иконки Phosphor (MIT) вшиты в страницу: с CDN они пропадают, если сеть
+       медленная или он недоступен. Здесь рисуются всегда, даже офлайн. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+    <symbol id="i-chart-line-up" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM200,192H56a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v76.69l34.34-34.35a8,8,0,0,1,11.32,0L128,132.69,172.69,88H144a8,8,0,0,1,0-16h48a8,8,0,0,1,8,8v48a8,8,0,0,1-16,0V99.31l-50.34,50.35a8,8,0,0,1-11.32,0L104,131.31l-40,40V176H200a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 256 256"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32Zm-8,128H176V88a8,8,0,0,0-8-8H96V48H208Z"/></symbol>
+    <symbol id="i-download-simple" viewBox="0 0 256 256"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40A8,8,0,0,0,168,96H136V32a8,8,0,0,0-16,0V96H88a8,8,0,0,0-5.66,13.66Z"/></symbol>
+    <symbol id="i-microphone" viewBox="0 0 256 256"><path d="M80,128V64a48,48,0,0,1,96,0v64a48,48,0,0,1-96,0Zm128,0a8,8,0,0,0-16,0,64,64,0,0,1-128,0,8,8,0,0,0-16,0,80.11,80.11,0,0,0,72,79.6V240a8,8,0,0,0,16,0V207.6A80.11,80.11,0,0,0,208,128Z"/></symbol>
+    <symbol id="i-chats-circle" viewBox="0 0 256 256"><path d="M232.07,186.76a80,80,0,0,0-62.5-114.17A80,80,0,1,0,23.93,138.76l-7.27,24.71a16,16,0,0,0,19.87,19.87l24.71-7.27a80.39,80.39,0,0,0,25.18,7.35,80,80,0,0,0,108.34,40.65l24.71,7.27a16,16,0,0,0,19.87-19.86Zm-16.25,1.47L224,216l-27.76-8.17a8,8,0,0,0-6,.63,64.05,64.05,0,0,1-85.87-24.88A79.93,79.93,0,0,0,174.7,89.71a64,64,0,0,1,41.75,92.48A8,8,0,0,0,215.82,188.23Z"/></symbol>
+    <symbol id="i-arrows-clockwise" viewBox="0 0 256 256"><path d="M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1-5.66-13.66L180.65,72a79.48,79.48,0,0,0-54.72-22.09h-.45A79.52,79.52,0,0,0,69.59,72.71,8,8,0,0,1,58.41,61.27,96,96,0,0,1,192,60.7l18.36-18.36A8,8,0,0,1,224,48ZM186.41,183.29A80,80,0,0,1,75.35,184l18.31-18.31A8,8,0,0,0,88,152H40a8,8,0,0,0-8,8v48a8,8,0,0,0,13.66,5.66L64,195.3a95.42,95.42,0,0,0,66,26.76h.53a95.36,95.36,0,0,0,67.07-27.33,8,8,0,0,0-11.18-11.44Z"/></symbol>
+    <symbol id="i-pencil-simple" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM192,108.68,147.31,64l24-24L216,84.68Z"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+    <symbol id="i-x-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol>
+    <symbol id="i-corners-out" viewBox="0 0 256 256"><path d="M220,48V88a12,12,0,0,1-24,0V60H168a12,12,0,0,1,0-24h40A12,12,0,0,1,220,48ZM88,196H60V168a12,12,0,0,0-24,0v40a12,12,0,0,0,12,12H88a12,12,0,0,0,0-24Zm120-40a12,12,0,0,0-12,12v28H168a12,12,0,0,0,0,24h40a12,12,0,0,0,12-12V168A12,12,0,0,0,208,156ZM88,36H48A12,12,0,0,0,36,48V88a12,12,0,0,0,24,0V60H88a12,12,0,0,0,0-24Z"/></symbol>
+    <symbol id="i-plugs" viewBox="0 0 256 256"><path d="M137,168l11.52-11.51a12,12,0,0,0-17-17L120,151l-15-15,11.52-11.51a12,12,0,0,0-17-17L88,119,72.49,103.51a12,12,0,0,0-17,17L59,124,38.54,144.49a36,36,0,0,0,0,50.91l2.55,2.54L15.51,223.51a12,12,0,0,0,17,17l25.57-25.58,2.54,2.55a36.06,36.06,0,0,0,50.91,0L132,197l3.51,3.52a12,12,0,0,0,17-17ZM94.54,200.49a12,12,0,0,1-17,0L55.51,178.43a12,12,0,0,1,0-17L76,141l39,39Zm146-185a12,12,0,0,0-17,0L197.94,41.09l-2.54-2.55a36.05,36.05,0,0,0-50.91,0L124,59l-3.51-3.52a12,12,0,0,0-17,17l80,80a12,12,0,0,0,17-17L197,132l20.49-20.49a36,36,0,0,0,0-50.91l-2.55-2.54,25.58-25.57A12,12,0,0,0,240.49,15.51Zm-40,79L180,115,141,76l20.49-20.49a12,12,0,0,1,17,0l22.06,22.06a12,12,0,0,1,0,17Z"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 256 256"><path d="M252,124a60.14,60.14,0,0,0-32-53.08,52,52,0,0,0-92-32.11A52,52,0,0,0,36,70.92a60,60,0,0,0,0,106.14,52,52,0,0,0,92,32.13,52,52,0,0,0,92-32.13A60.05,60.05,0,0,0,252,124ZM88,204a28,28,0,0,1-26.85-20.07c1,0,1.89.07,2.85.07h8a12,12,0,0,0,0-24H64A36,36,0,0,1,52,90.05a12,12,0,0,0,8-11.32V72a28,28,0,0,1,56,0v60.18a51.61,51.61,0,0,0-7.2-3.85,12,12,0,1,0-9.6,22A28,28,0,0,1,88,204Zm104-44h-8a12,12,0,0,0,0,24h8c1,0,1.9,0,2.85-.07a28,28,0,1,1-38-33.61,12,12,0,1,0-9.6-22,51.61,51.61,0,0,0-7.2,3.85V72a28,28,0,0,1,56,0v6.73a12,12,0,0,0,8,11.32,36,36,0,0,1-12,70Zm16-44a12,12,0,0,1-12,12,40,40,0,0,1-40-40V84a12,12,0,0,1,24,0v4a16,16,0,0,0,16,16A12,12,0,0,1,208,116ZM100,88a40,40,0,0,1-40,40,12,12,0,0,1,0-24A16,16,0,0,0,76,88V84a12,12,0,0,1,24,0Z"/></symbol>
+    <symbol id="i-clipboard-text" viewBox="0 0 256 256"><path d="M200,32H163.74a47.92,47.92,0,0,0-71.48,0H56A16,16,0,0,0,40,48V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm-72,0a32,32,0,0,1,32,32H96A32,32,0,0,1,128,32Zm32,128H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-target" viewBox="0 0 256 256"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></symbol>
+    <symbol id="i-flow-arrow" viewBox="0 0 256 256"><path d="M245.66,85.66l-32,32a8,8,0,0,1-11.32-11.32L220.69,88H208c-38.67,0-46.59,19-56.62,43.08C141.05,155.88,129.33,184,80,184H79a32,32,0,1,1,0-16h1c38.67,0,46.59-19,56.62-43.08C147,100.12,158.67,72,208,72h12.69L202.34,53.66a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,245.66,85.66Z"/></symbol>
+    <symbol id="i-magnifying-glass" viewBox="0 0 256 256"><path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"/></symbol>
+    <symbol id="i-compass-tool" viewBox="0 0 256 256"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></symbol>
+    <symbol id="i-gear-six" viewBox="0 0 256 256"><path d="M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></symbol>
+    <symbol id="i-robot" viewBox="0 0 256 256"><path d="M200,48H136V16a8,8,0,0,0-16,0V48H56A32,32,0,0,0,24,80V192a32,32,0,0,0,32,32H200a32,32,0,0,0,32-32V80A32,32,0,0,0,200,48ZM172,96a12,12,0,1,1-12,12A12,12,0,0,1,172,96ZM96,184H80a16,16,0,0,1,0-32H96ZM84,120a12,12,0,1,1,12-12A12,12,0,0,1,84,120Zm60,64H112V152h32Zm32,0H160V152h16a16,16,0,0,1,0,32Z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 256 256"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"/></symbol>
+    <symbol id="i-users-three" viewBox="0 0 256 256"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"/></symbol>
+    <symbol id="i-briefcase" viewBox="0 0 256 256"><path d="M152,112a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h32A8,8,0,0,1,152,112Zm80-40V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V72A16,16,0,0,1,40,56H80V48a24,24,0,0,1,24-24h48a24,24,0,0,1,24,24v8h40A16,16,0,0,1,232,72ZM96,56h64V48a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8Zm120,57.61V72H40v41.61A184,184,0,0,0,128,136,184,184,0,0,0,216,113.61Z"/></symbol>
+    <symbol id="i-user-focus" viewBox="0 0 256 256"><path d="M224,40V76a8,8,0,0,1-16,0V48H180a8,8,0,0,1,0-16h36A8,8,0,0,1,224,40Zm-8,132a8,8,0,0,0-8,8v28H180a8,8,0,0,0,0,16h36a8,8,0,0,0,8-8V180A8,8,0,0,0,216,172ZM76,208H48V180a8,8,0,0,0-16,0v36a8,8,0,0,0,8,8H76a8,8,0,0,0,0-16ZM40,84a8,8,0,0,0,8-8V48H76a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8V76A8,8,0,0,0,40,84Zm61,57.51A67.94,67.94,0,0,0,73.6,163.19,8,8,0,0,0,80,176h96a8,8,0,0,0,6.4-12.81A67.94,67.94,0,0,0,155,141.51a40,40,0,1,0-53.94,0Z"/></symbol>
+    <symbol id="i-megaphone" viewBox="0 0 256 256"><path d="M200,72H160.2c-2.91-.17-53.62-3.74-101.91-44.24A16,16,0,0,0,32,40V200a16,16,0,0,0,26.29,12.25c37.77-31.68,77-40.76,93.71-43.3v31.72A16,16,0,0,0,159.12,214l11,7.33A16,16,0,0,0,194.5,212l11.77-44.36A48,48,0,0,0,200,72ZM179,207.89l0,.11-11-7.33V168h21.6ZM200,152H168V88h32a32,32,0,1,1,0,64Z"/></symbol>
+    <symbol id="i-headset" viewBox="0 0 256 256"><path d="M232,128v80a40,40,0,0,1-40,40H136a8,8,0,0,1,0-16h56a24,24,0,0,0,24-24H192a24,24,0,0,1-24-24V144a24,24,0,0,1,24-24h23.65A88,88,0,0,0,66,65.54,87.29,87.29,0,0,0,40.36,120H64a24,24,0,0,1,24,24v40a24,24,0,0,1-24,24H48a24,24,0,0,1-24-24V128A104.11,104.11,0,0,1,201.89,54.66,103.41,103.41,0,0,1,232,128Z"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 256 256"><path d="M200.77,53.89A103.27,103.27,0,0,0,128,24h-1.07A104,104,0,0,0,24,128c0,43,26.58,79.06,69.36,94.17A32,32,0,0,0,136,192a16,16,0,0,1,16-16h46.21a31.81,31.81,0,0,0,31.2-24.88,104.43,104.43,0,0,0,2.59-24A103.28,103.28,0,0,0,200.77,53.89ZM84,168a12,12,0,1,1,12-12A12,12,0,0,1,84,168Zm0-56a12,12,0,1,1,12-12A12,12,0,0,1,84,112Zm44-24a12,12,0,1,1,12-12A12,12,0,0,1,128,88Zm44,24a12,12,0,1,1,12-12A12,12,0,0,1,172,112Z"/></symbol>
+    <symbol id="i-code" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></symbol>
+    <symbol id="i-list-checks" viewBox="0 0 256 256"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM117.66,149.66l-32,32a8,8,0,0,1-11.32,0l-16-16a8,8,0,0,1,11.32-11.32L80,164.69l26.34-26.35a8,8,0,0,1,11.32,11.32Zm0-64-32,32a8,8,0,0,1-11.32,0l-16-16A8,8,0,0,1,69.66,90.34L80,100.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM192,168H144a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Zm0-64H144a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm56,112H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z"/></symbol>
+    <symbol id="i-arrow-u-up-left" viewBox="0 0 256 256"><path d="M232,144a64.07,64.07,0,0,1-64,64H80a8,8,0,0,1,0-16h88a48,48,0,0,0,0-96H88v40a8,8,0,0,1-13.66,5.66l-48-48a8,8,0,0,1,0-11.32l48-48A8,8,0,0,1,88,40V80h80A64.07,64.07,0,0,1,232,144Z"/></symbol>
+    <symbol id="i-warning" viewBox="0 0 256 256"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 256 256"><path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z"/></symbol>
+    <symbol id="i-seal-check" viewBox="0 0 256 256"><path d="M225.86,102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28,23.51,138.44,16,128,16s-18.27,7.51-25.18,14.14c-3.94,3.77-8,7.67-11.57,9.14C88,40.64,82.56,40.72,77.31,40.8c-9.76.15-20.82.31-28.51,8S41,67.55,40.8,77.31c-.08,5.25-.16,10.67-1.52,13.94-1.47,3.56-5.37,7.63-9.14,11.57C23.51,109.72,16,117.56,16,128s7.51,18.27,14.14,25.18c3.77,3.94,7.67,8,9.14,11.57,1.36,3.27,1.44,8.69,1.52,13.94.15,9.76.31,20.82,8,28.51s18.75,7.85,28.51,8c5.25.08,10.67.16,13.94,1.52,3.56,1.47,7.63,5.37,11.57,9.14C109.72,232.49,117.56,240,128,240s18.27-7.51,25.18-14.14c3.94-3.77,8-7.67,11.57-9.14,3.27-1.36,8.69-1.44,13.94-1.52,9.76-.15,20.82-.31,28.51-8s7.85-18.75,8-28.51c.08-5.25.16-10.67,1.52-13.94,1.47-3.56,5.37-7.63,9.14-11.57C232.49,146.28,240,138.44,240,128S232.49,109.73,225.86,102.82Zm-52.2,6.84-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 256 256"><path d="M235.54,150.21a104.84,104.84,0,0,1-37,52.91A104,104,0,0,1,32,120,103.09,103.09,0,0,1,52.88,57.48a104.84,104.84,0,0,1,52.91-37,8,8,0,0,1,10,10,88.08,88.08,0,0,0,109.8,109.8,8,8,0,0,1,10,10Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 256 256"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm8,24a64,64,0,1,0,64,64A64.07,64.07,0,0,0,128,64ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></symbol>
+    <symbol id="i-path" viewBox="0 0 256 256"><path d="M228,200a28,28,0,0,1-54.83,8H72a48,48,0,0,1,0-96h96a24,24,0,0,0,0-48H72a8,8,0,0,1,0-16h96a40,40,0,0,1,0,80H72a32,32,0,0,0,0,64H173.17A28,28,0,0,1,228,200Z"/></symbol>
+    <symbol id="i-database" viewBox="0 0 256 256"><path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64Zm-21.61,74.92C170.93,211.35,150.19,216,128,216s-42.93-4.65-58.39-13.08C55.88,195.43,48,185.62,48,176V159.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64V176C208,185.62,200.12,195.43,186.39,202.92Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 256 256"><path d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 256 256"><path d="M228,128a12,12,0,0,1-12,12H69l51.52,51.51a12,12,0,0,1-17,17l-72-72a12,12,0,0,1,0-17l72-72a12,12,0,0,1,17,17L69,116H216A12,12,0,0,1,228,128Z"/></symbol>
+    <symbol id="i-caret-down" viewBox="0 0 256 256"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></symbol>
+  </defs></svg>
+
+  <header>
+    <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
+      <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
+      <span class="logo-fb" aria-hidden="true">AIT</span>
+    </a>
+    <div class="lec-right">
+      <button class="lec-ctrl lec-lbl js-back" type="button" aria-label="Вернуться назад" title="Вернуться назад"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg><span>Назад</span></button>
+      <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить фон (тёмный/светлый)"><svg class="ic" aria-hidden="true"><use href="#i-moon" xlink:href="#i-moon"></use></svg></button>
+      <a class="lec-consult" href="https://strategy.andre.technology/ai-strategy" target="_blank" rel="noopener">ИИ‑стратегия <svg class="ic" aria-hidden="true"><use href="#i-arrow-right" xlink:href="#i-arrow-right"></use></svg></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero rise">
+      <span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Практика · Моделирование процессов</span>
+      <h1>Разберите один реальный <span class="accent">бизнес-процесс</span></h1>
+      <p class="wide">Возьмите один процесс из своей компании и проведите его полный разбор:<br>от бизнес-цели и модели AS-IS до узких мест и точек автоматизации,<br>графа навыков агента и спроектированного процесса TO-BE.</p>
+    </section>
+
+    <!-- ===== С ЧЕГО НАЧАТЬ ===== -->
+    <section class="sec rise d1">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span>
+        <h2>Какой процесс <span class="accent">взять</span></h2>
+        <p>Первым берут «низковисящий фрукт» — процесс, который отвечает всем пяти критериям сразу. Чем больше критериев не выполняется, тем дальше процесс отодвигается в очереди.</p>
+      </div>
+      <ul class="criteria">
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chart-line-up" xlink:href="#i-chart-line-up"></use></svg></span> заметно влияет на бизнес-результат</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg></span> не требует большого количества интеграций</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> зависит от минимального числа сотрудников</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg></span> использует доступные и структурированные данные</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-brain" xlink:href="#i-brain"></use></svg></span> может быть реализован с помощью готовых ИИ‑моделей</li>
+      </ul>
+    </section>
+
+    <!-- ===== ШАГИ ===== -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-list-checks" xlink:href="#i-list-checks"></use></svg></span>
+        <h2>Что нужно <span class="accent">сделать</span></h2>
+        <p class="wide">Четыре шага. Каждый следующий опирается на результат предыдущего.</p>
+      </div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span>
+          <div class="step-body">
+            <span class="kicker">Шаг 1</span>
+            <h2>Определите бизнес-цель, метрику и границы</h2>
+          </div>
+        </div>
+        <p class="desc">Зачем этот процесс существует, по какому числу вы поймёте, что он стал лучше, и где он начинается и заканчивается.</p>
+        <ul class="checks">
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span> бизнес-цель процесса</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chart-line-up" xlink:href="#i-chart-line-up"></use></svg></span> метрика: скорость, стоимость, качество или конверсия</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span> событие-старт и событие-финиш</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> <span>кто владелец процесса<br>и кто в нём участвует</span></li>
+        </ul>
+      </article>
+
+      <div class="link" aria-hidden="true">
+        <span class="bar"></span>
+        <svg class="ic" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg>
+      </div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span>
+          <div class="step-body">
+            <span class="kicker">Шаг 2</span>
+            <h2>Восстановите AS-IS и соберите BPMN-модель</h2>
+          </div>
+        </div>
+        <p class="desc">Опишите, как процесс работает сейчас — честно, а не так, как записано в регламенте. Затем перенесите это в BPMN-модель.</p>
+        <ul class="checks">
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> кто участвует и что именно делает</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg></span> какие данные передаются и в каком виде</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-path" xlink:href="#i-path"></use></svg></span> где принимаются решения и по каким правилам</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg></span> где возникают задержки и ожидания</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg></span> где случаются возвраты на предыдущий шаг</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg></span> какие бывают исключения и как их разруливают</li>
+        </ul>
+        <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> Ниже — шесть готовых примеров AS-IS по отраслям</p>
+      </article>
+
+      <div class="link" aria-hidden="true">
+        <span class="bar"></span>
+        <svg class="ic" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg>
+      </div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg></span>
+          <div class="step-body">
+            <span class="kicker">Шаг 3</span>
+            <h2>Найдите узкие места и точки автоматизации</h2>
+          </div>
+        </div>
+        <p class="desc">Пройдите по модели и отметьте шаги, которые тормозят процесс, съедают время людей или чаще всего дают ошибки. Для каждой такой точки решите, чем её закрывать:</p>
+        <ul class="modes">
+          <li>
+            <span class="mi m-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg></span>
+            <div><b>Простое правило</b><span>Условие однозначное и записывается словами «если — то». ИИ здесь лишний.</span></div>
+          </li>
+          <li>
+            <span class="mi m-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span>
+            <div><b>ИИ‑агент</b><span>Нужны понимание текста или разбор неструктурированных данных.</span></div>
+          </li>
+          <li>
+            <span class="mi m-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg></span>
+            <div><b>Человек</b><span>Цена ошибки высокая, нужна ответственность.</span></div>
+          </li>
+          <li>
+            <span class="mi m-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span>
+            <div><b>Гибрид</b><span>Агент готовит решение, человек проверяет и подтверждает.</span></div>
+          </li>
+        </ul>
+        <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-list-checks" xlink:href="#i-list-checks"></use></svg> Расставьте приоритеты: эффект на метрику — против сложности внедрения</p>
+      </article>
+
+      <div class="link" aria-hidden="true">
+        <span class="bar"></span>
+        <svg class="ic" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg>
+      </div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg></span>
+          <div class="step-body">
+            <span class="kicker">Шаг 4</span>
+            <h2>Спроектируйте процесс TO-BE</h2>
+          </div>
+        </div>
+        <p class="desc">Соберите новую версию процесса — ту, в которой часть шагов уже выполняют агенты. Портфель таких инициатив и есть ваша стратегия ИИ-автоматизации.</p>
+        <ul class="checks">
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg></span> новая роль человека в процессе</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> точки Human-in-the-Loop: где человек подтверждает</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg></span> необходимые интеграции и источники данных</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span> навыки будущего агента: что он должен уметь</li>
+          <li class="wide"><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chart-line-up" xlink:href="#i-chart-line-up"></use></svg></span> как изменится метрика из шага 1 и за счёт чего</li>
+        </ul>
+        <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Готово: у вас на руках проект трансформации одного конкретного процесса</p>
+      </article>
+    </section>
+
+    <!-- ===== ГЛАВНЫЙ ПРИЗЫВ: ИНСТРУМЕНТ ===== -->
+    <section class="sec rise d2">
+      <div class="cta">
+        <span class="cta-ico"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg></span>
+        <h2>Соберите стратегию в инструменте ИИ‑трансформации</h2>
+        <p>Не обязательно проходить все это вручную.<br>Инструмент проведёт с вами интервью и сформирует стратегию.</p>
+        <ul>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> интервью по вашему процессу</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> модели AS-IS и TO-BE</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg> узкие места и точки автоматизации</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg> готовая стратегия и приоритеты</li>
+        </ul>
+        <div class="actions">
+          <a class="btn btn-light" href="https://strategy.andre.technology/ai-strategy" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg> Собрать стратегию ИИ‑трансформации</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ОДНО ОКНО СО СХЕМАМИ ===== -->
+    <!-- Шесть отраслей и своя схема живут в ОДНОМ горизонтальном окне: плашки
+         сверху, поле просмотра со свободным масштабом и перетаскиванием,
+         код — снизу. Раньше каждая отрасль была отдельной карточкой со своей
+         схемой во всю высоту: страница превращалась в простыню, а крупную
+         схему нельзя было рассмотреть. -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span>
+        <h2>Схемы процессов <span class="accent">AS-IS</span></h2>
+        <p>Шесть примеров по отраслям и ваша собственная схема — в одном окне. Схема листается колесом и перетаскиванием, масштаб — кнопками или Ctrl+колесо.</p>
+      </div>
+
+      <!-- Исходники схем: правятся как обычный текст, отсюда их берёт окно -->
+      <div id="mmd-sources" hidden>
+      <pre class="mmd-src" id="src-consult">sequenceDiagram
+autonumber
+
+box rgb(240, 240, 240) External
+participant CL as Клиент
+end
+
+box rgb(245, 245, 245) Systems
+participant CRM as CRM
+participant KB as Архив кейсов и КП
+participant MAIL as Почта
+end
+
+box rgb(230, 245, 255) Internal
+participant AM as Аккаунт-менеджер
+participant PT as Партнёр
+participant EX as Консультант-эксперт
+end
+
+rect rgb(255, 250, 240)
+Note over CL,EX: Прием и квалификация запроса&lt;br/&gt;Вход: запрос клиента, задача, срок, бюджет&lt;br/&gt;Выход: карточка сделки, решение о запуске&lt;br/&gt;Артефакты: запрос, карточка сделки&lt;br/&gt;Системы: CRM, MAIL&lt;br/&gt;Метрики: срок первого ответа, доля отсева на входе&lt;br/&gt;Логика: AM проверяет профиль и бюджет и принимает решение о работе
+CL-&gt;&gt;AM: Передача запроса [Задача, срок, бюджет]
+par Регистрация обращения
+    AM-&gt;&gt;CRM: Регистрация сделки [Карточка сделки]
+and Квалификация запроса
+    AM-&gt;&gt;AM: Проверка профиля и бюджета
+end
+alt Не наш профиль
+    AM--&gt;&gt;CL: Отказ с объяснением [Причина отказа]
+else Берем в работу
+    AM-&gt;&gt;PT: Передача на оценку [Карточка сделки]
+end
+end
+
+rect rgb(240, 248, 255)
+Note over CL,EX: Сбор требований&lt;br/&gt;Вход: карточка сделки, контакты стейкхолдеров&lt;br/&gt;Выход: зафиксированные требования и ограничения&lt;br/&gt;Артефакты: протокол встречи, требования, риски&lt;br/&gt;Системы: CRM&lt;br/&gt;Метрики: число уточняющих кругов, полнота вводных&lt;br/&gt;Логика: PT снимает цели и ограничения и фиксирует объем работ
+PT-&gt;&gt;CL: Установочная встреча [Повестка]
+CL--&gt;&gt;PT: Передача вводных [Материалы, ограничения]
+PT-&gt;&gt;CRM: Фиксация требований [Требования, риски]
+end
+
+rect rgb(255, 240, 240)
+Note over CL,EX: Подготовка коммерческого предложения&lt;br/&gt;Вход: требования, ограничения, бюджет&lt;br/&gt;Выход: черновик КП&lt;br/&gt;Артефакты: подборка кейсов, оценка трудозатрат, черновик КП&lt;br/&gt;Системы: KB, CRM&lt;br/&gt;Метрики: срок от запроса до КП, разброс оценок&lt;br/&gt;Логика: EX ищет аналоги вручную и сам оценивает объем работ
+Note over EX,KB: Узкое место: поиск похожих кейсов | знания в головах и папках
+EX-&gt;&gt;KB: Поиск похожих проектов [Тема, отрасль]
+KB--&gt;&gt;EX: Передача найденного [Кейсы, прошлые КП]
+Note over EX,KB: Узкое место: оценка трудозатрат | у каждого консультанта своя
+EX-&gt;&gt;EX: Оценка часов и состава команды
+EX--&gt;&gt;AM: Передача черновика [Черновик КП]
+end
+
+rect rgb(245, 250, 255)
+Note over CL,EX: Ревью и выпуск КП&lt;br/&gt;Вход: черновик КП&lt;br/&gt;Выход: КП, отправленное клиенту&lt;br/&gt;Артефакты: замечания партнера, финальное КП&lt;br/&gt;Системы: CRM, MAIL&lt;br/&gt;Метрики: число кругов ревью, срок выпуска&lt;br/&gt;Логика: PT проверяет объем и цену, AM выпускает КП клиенту
+Note over PT,EX: Узкое место: возврат после ревью | КП переписывают по второму кругу
+loop Цикл ревью
+    AM-&gt;&gt;PT: Передача на ревью [Версия КП]
+    alt Есть замечания
+        PT--&gt;&gt;EX: Возврат на доработку [Замечания по объему и цене]
+        EX--&gt;&gt;AM: Передача версии [Обновленное КП]
+    else Замечаний нет
+        PT--&gt;&gt;AM: Согласование [Финальное КП]
+    end
+end
+AM-&gt;&gt;CL: Отправка КП [Финальное КП]
+AM-&gt;&gt;CRM: Фиксация статуса [КП отправлено]
+end
+
+rect rgb(240, 255, 240)
+Note over CL,EX: Закрытие сделки&lt;br/&gt;Вход: отправленное КП&lt;br/&gt;Выход: подписанный договор или отказ&lt;br/&gt;Артефакты: договор, причина отказа&lt;br/&gt;Системы: CRM, MAIL&lt;br/&gt;Метрики: доля выигранных КП, срок до решения&lt;br/&gt;Логика: AM ведет клиента до решения и фиксирует итог в CRM
+Note over AM,CRM: Узкое место: ручной follow-up | про часть клиентов забывают
+opt Клиент молчит
+    AM-&gt;&gt;MAIL: Отправка напоминания [Напоминание о КП]
+    CL--&gt;&gt;AM: Ответ или тишина
+end
+alt Согласовано
+    CL-&gt;&gt;AM: Подтверждение [Согласие на договор]
+    AM-&gt;&gt;CRM: Фиксация статуса [Договор подписан]
+else Отказ
+    CL--&gt;&gt;AM: Отказ [Причина]
+    AM-&gt;&gt;CRM: Фиксация статуса [Проигран]
+end
+end</pre>
+      <pre class="mmd-src" id="src-hr">sequenceDiagram
+autonumber
+
+box rgb(240, 240, 240) External
+participant CLI as Клиент
+participant JOB as Работные сайты
+participant CAN as Кандидат
+end
+
+box rgb(245, 245, 245) Systems
+participant ATS as База кандидатов
+participant MAIL as Почта и мессенджеры
+end
+
+box rgb(230, 245, 255) Internal
+participant HR as Рекрутер
+participant RS as Ресёрчер
+end
+
+rect rgb(255, 250, 240)
+Note over CLI,RS: Прием заявки на подбор&lt;br/&gt;Вход: вакансия, требования, вилка, срок&lt;br/&gt;Выход: карточка вакансии, критерии отбора&lt;br/&gt;Артефакты: заявка, профиль должности, критерии&lt;br/&gt;Системы: ATS, MAIL&lt;br/&gt;Метрики: срок запуска поиска, полнота требований&lt;br/&gt;Логика: HR снимает профиль и фиксирует критерии отбора
+CLI-&gt;&gt;HR: Передача вакансии [Роль, требования, вилка, срок]
+par Регистрация вакансии
+    HR-&gt;&gt;ATS: Регистрация заявки [Карточка вакансии]
+and Уточнение профиля
+    HR-&gt;&gt;CLI: Запрос на уточнение [Приоритеты, стоп-факторы]
+    CLI--&gt;&gt;HR: Передача уточнений [Ответы]
+end
+Note over HR,CLI: Узкое место: профиль снят неточно | брак вскрывается после интервью у клиента
+HR-&gt;&gt;ATS: Фиксация критериев [Критерии отбора]
+end
+
+rect rgb(240, 248, 255)
+Note over CLI,RS: Сорсинг кандидатов&lt;br/&gt;Вход: критерии отбора, доступ к источникам&lt;br/&gt;Выход: длинный список кандидатов&lt;br/&gt;Артефакты: резюме, профили, карточки кандидатов&lt;br/&gt;Системы: JOB, ATS&lt;br/&gt;Метрики: релевантных кандидатов в день, стоимость контакта&lt;br/&gt;Логика: RS ищет по фильтрам и вручную разбирает выдачу
+RS-&gt;&gt;JOB: Поиск по фильтрам [Критерии отбора]
+JOB--&gt;&gt;RS: Передача выдачи [Резюме, профили, контакты]
+Note over RS,ATS: Узкое место: скрининг резюме | сотни документов читаются глазами
+RS-&gt;&gt;ATS: Заведение карточек [Карточка кандидата]
+end
+
+rect rgb(255, 240, 240)
+Note over CLI,RS: Первичный контакт и скрининг&lt;br/&gt;Вход: длинный список кандидатов&lt;br/&gt;Выход: шорт-лист под клиента&lt;br/&gt;Артефакты: протокол скрининга, статус кандидата, шорт-лист&lt;br/&gt;Системы: ATS, MAIL&lt;br/&gt;Метрики: процент ответов, доля релевантных, срок до шорт-листа&lt;br/&gt;Логика: HR обзванивает список вручную и сам ведет статусы
+Note over HR,CAN: Узкое место: обзвон базы | до 60% времени рекрутера
+loop По каждому кандидату из списка
+    HR-&gt;&gt;CAN: Первичный контакт [Приглашение, вопросы]
+    alt Кандидат на связи
+        CAN--&gt;&gt;HR: Передача ответов [Опыт, ожидания]
+        HR-&gt;&gt;ATS: Фиксация статуса [На связи]
+    else Не отвечает
+        HR-&gt;&gt;ATS: Фиксация статуса [Не дозвонились]
+    end
+end
+HR-&gt;&gt;CLI: Передача шорт-листа [Карточки кандидатов]
+end
+
+rect rgb(245, 250, 255)
+Note over CLI,RS: Интервью у клиента&lt;br/&gt;Вход: шорт-лист, календари сторон&lt;br/&gt;Выход: решение клиента по кандидатам&lt;br/&gt;Артефакты: слоты, приглашения, фидбек клиента&lt;br/&gt;Системы: MAIL, ATS&lt;br/&gt;Метрики: срок согласования слота, конверсия в финал&lt;br/&gt;Логика: HR вручную сводит календари трех сторон
+Note over HR,CLI: Узкое место: согласование слотов | переписка на три стороны
+loop Пока не найден общий слот
+    HR-&gt;&gt;CLI: Запрос слотов [Состав интервью]
+    CLI--&gt;&gt;HR: Передача слотов [Варианты времени]
+    HR-&gt;&gt;CAN: Приглашение на интервью [Слот, формат]
+    CAN--&gt;&gt;HR: Подтверждение или перенос [Ответ]
+end
+CLI-&gt;&gt;CAN: Проведение интервью [Вопросы, кейсы]
+CLI--&gt;&gt;HR: Передача решения [Фидбек по кандидату]
+end
+
+rect rgb(240, 255, 240)
+Note over CLI,RS: Оффер и закрытие вакансии&lt;br/&gt;Вход: решение клиента&lt;br/&gt;Выход: закрытая вакансия или новый цикл поиска&lt;br/&gt;Артефакты: оффер, дата выхода, статус вакансии&lt;br/&gt;Системы: ATS, MAIL&lt;br/&gt;Метрики: time-to-fill, доля принятых офферов&lt;br/&gt;Логика: HR доводит кандидата до выхода либо перезапускает поиск
+alt Кандидат выбран
+    HR-&gt;&gt;CAN: Передача оффера [Условия, дата выхода]
+    CAN--&gt;&gt;HR: Принятие оффера [Согласие]
+    HR-&gt;&gt;ATS: Фиксация статуса [Вакансия закрыта]
+else Отказ с любой стороны
+    Note over HR,RS: Узкое место: отказ откатывает процесс к поиску | цикл начинается заново
+    HR--&gt;&gt;RS: Возврат в сорсинг [Расширенные критерии]
+end
+end</pre>
+      <pre class="mmd-src" id="src-marketing">sequenceDiagram
+autonumber
+
+box rgb(240, 240, 240) External
+participant CL as Клиент
+participant ADS as Рекламные кабинеты
+end
+
+box rgb(245, 245, 245) Systems
+participant TRK as Таблицы и отчеты
+participant CRM as CRM
+end
+
+box rgb(230, 245, 255) Internal
+participant AM as Аккаунт-менеджер
+participant ST as Стратег
+participant CR as Креатив
+participant TM as Трафик-менеджер
+participant AN as Аналитик
+end
+
+rect rgb(255, 250, 240)
+Note over CL,AN: Бриф и медиаплан&lt;br/&gt;Вход: бриф, цели, бюджет&lt;br/&gt;Выход: согласованный медиаплан&lt;br/&gt;Артефакты: бриф, медиаплан, прогноз&lt;br/&gt;Системы: CRM, TRK&lt;br/&gt;Метрики: срок до медиаплана, точность прогноза&lt;br/&gt;Логика: ST собирает план по данным аналитика, AM согласует его с клиентом
+CL-&gt;&gt;AM: Передача брифа [Цели, бюджет, сроки]
+AM-&gt;&gt;CRM: Регистрация проекта [Карточка проекта]
+par Сбор данных по нише
+    ST-&gt;&gt;AN: Запрос данных [Ниша, прошлые кампании]
+    Note over AN,ST: Узкое место: анализ конкурентов вручную | результат зависит от исполнителя
+    AN--&gt;&gt;ST: Передача данных [Ставки, охваты, бенчмарки]
+and Подготовка структуры плана
+    ST-&gt;&gt;ST: Сборка структуры кампаний
+end
+ST--&gt;&gt;AM: Передача медиаплана [Медиаплан, прогноз]
+AM-&gt;&gt;CL: Передача на согласование [Медиаплан]
+CL--&gt;&gt;AM: Согласование или правки [Решение]
+end
+
+rect rgb(255, 240, 240)
+Note over CL,AN: Производство креативов&lt;br/&gt;Вход: согласованный медиаплан, тон бренда&lt;br/&gt;Выход: утвержденные креативы и тексты&lt;br/&gt;Артефакты: макеты, тексты, правки клиента&lt;br/&gt;Системы: TRK&lt;br/&gt;Метрики: число кругов правок, срок до утверждения&lt;br/&gt;Логика: правки собираются вручную из почты и чатов
+Note over AM,CL: Узкое место: круги правок по креативам | самая долгая часть запуска
+loop Пока клиент не согласует
+    AM-&gt;&gt;CR: Постановка задачи [Медиаплан, тон бренда]
+    CR--&gt;&gt;AM: Передача материалов [Макеты, тексты]
+    AM-&gt;&gt;CL: Передача на согласование [Креативы]
+    CL--&gt;&gt;AM: Возврат с правками [Комментарии]
+end
+end
+
+rect rgb(240, 248, 255)
+Note over CL,AN: Запуск кампаний&lt;br/&gt;Вход: утвержденные креативы, медиаплан&lt;br/&gt;Выход: запущенные кампании&lt;br/&gt;Артефакты: настройки кампаний, аудитории, ставки&lt;br/&gt;Системы: ADS, TRK&lt;br/&gt;Метрики: срок от согласования до старта, доля ошибок в параметрах&lt;br/&gt;Логика: TM настраивает кабинеты вручную по медиаплану
+TM-&gt;&gt;ADS: Настройка кампаний [Аудитории, ставки, площадки]
+ADS--&gt;&gt;TM: Подтверждение запуска [Статус кампаний]
+TM-&gt;&gt;TRK: Фиксация запуска [Реестр кампаний]
+end
+
+rect rgb(245, 250, 255)
+Note over CL,AN: Ведение и отчетность&lt;br/&gt;Вход: запущенные кампании&lt;br/&gt;Выход: еженедельный отчет и решения по оптимизации&lt;br/&gt;Артефакты: выгрузки, отчет, задачи на оптимизацию&lt;br/&gt;Системы: ADS, TRK&lt;br/&gt;Метрики: стоимость заявки, срок подготовки отчета&lt;br/&gt;Логика: AN руками собирает выгрузки и верстает отчет под каждого клиента
+loop Каждую неделю
+    Note over AN,ADS: Узкое место: сбор статистики руками | выгрузки из нескольких кабинетов
+    AN-&gt;&gt;ADS: Выгрузка статистики [Период, кампании]
+    ADS--&gt;&gt;AN: Передача данных [Показы, клики, расход, заявки]
+    Note over AN,TRK: Узкое место: отчеты собираются вручную | своя таблица под каждого клиента
+    AN-&gt;&gt;TRK: Сборка отчета [Отчет за период]
+    AM-&gt;&gt;CL: Передача отчета [Отчет, выводы]
+    opt Метрика хуже плана
+        CL--&gt;&gt;AM: Возврат с требованиями [Замечания по результату]
+        AM-&gt;&gt;TM: Постановка задачи [Задача на оптимизацию]
+        TM-&gt;&gt;ADS: Правка кампаний [Ставки, аудитории, креативы]
+    end
+end
+end
+
+rect rgb(240, 255, 240)
+Note over CL,AN: Закрытие периода&lt;br/&gt;Вход: отчеты за период&lt;br/&gt;Выход: решение о продлении&lt;br/&gt;Артефакты: итоговый отчет, план на период&lt;br/&gt;Системы: CRM, TRK&lt;br/&gt;Метрики: удержание клиента, доля продлений&lt;br/&gt;Логика: AM подводит итоги и защищает план на следующий период
+AN--&gt;&gt;AM: Передача итогов [Итоги месяца, рекомендации]
+AM-&gt;&gt;CL: Передача итогов [Итоговый отчет, план]
+alt Продление
+    CL--&gt;&gt;AM: Подтверждение бюджета [Бюджет на период]
+    AM-&gt;&gt;CRM: Фиксация статуса [Продлен]
+else Пауза
+    CL--&gt;&gt;AM: Остановка кампании [Решение о паузе]
+    AM-&gt;&gt;CRM: Фиксация статуса [На паузе]
+end
+end</pre>
+      <pre class="mmd-src" id="src-callcenter">sequenceDiagram
+autonumber
+
+box rgb(240, 240, 240) External
+participant CL as Клиент
+end
+
+box rgb(245, 245, 245) Systems
+participant CRM as CRM и тикеты
+participant KB as База знаний и скрипты
+participant REC as Записи разговоров
+end
+
+box rgb(230, 245, 255) Internal
+participant OP as Оператор 1-й линии
+participant EX as Эксперт 2-й линии
+participant SV as Супервайзер
+end
+
+rect rgb(255, 250, 240)
+Note over CL,SV: Прием обращения&lt;br/&gt;Вход: звонок или чат клиента&lt;br/&gt;Выход: опознанный клиент и открытый тикет&lt;br/&gt;Артефакты: тикет, карточка клиента, история обращений&lt;br/&gt;Системы: CRM&lt;br/&gt;Метрики: время ожидания в очереди, доля опознанных с первого раза&lt;br/&gt;Логика: OP идентифицирует клиента и поднимает историю вручную
+CL-&gt;&gt;OP: Обращение [Канал, тема]
+par Открытие тикета
+    OP-&gt;&gt;CRM: Регистрация обращения [Тикет]
+and Поиск истории
+    Note over OP,CRM: Узкое место: поиск истории по нескольким системам | клиент ждет на линии
+    OP-&gt;&gt;CRM: Запрос истории [Телефон, email]
+    CRM--&gt;&gt;OP: Передача карточки [Карточка клиента, история]
+end
+end
+
+rect rgb(255, 240, 240)
+Note over CL,SV: Поиск ответа&lt;br/&gt;Вход: тема обращения, карточка клиента&lt;br/&gt;Выход: ответ клиенту или эскалация&lt;br/&gt;Артефакты: скрипт, регламент, решение эксперта&lt;br/&gt;Системы: KB&lt;br/&gt;Метрики: среднее время обработки, доля решенных на 1-й линии&lt;br/&gt;Логика: OP ищет регламент вручную, при нетиповом вопросе передает на 2-ю линию
+OP-&gt;&gt;KB: Поиск регламента [Тема обращения]
+KB--&gt;&gt;OP: Передача найденного [Скрипт или регламент]
+alt Типовой вопрос
+    OP--&gt;&gt;CL: Ответ по скрипту [Решение]
+else Нетиповой вопрос
+    Note over OP,EX: Узкое место: ожидание второй линии | клиент висит или ему перезванивают
+    OP-&gt;&gt;EX: Эскалация обращения [Тикет, контекст]
+    EX--&gt;&gt;OP: Передача решения [Разбор, ответ]
+    OP--&gt;&gt;CL: Ответ клиенту [Решение]
+end
+end
+
+rect rgb(240, 248, 255)
+Note over CL,SV: Фиксация обращения&lt;br/&gt;Вход: результат обращения&lt;br/&gt;Выход: заполненная карточка обращения&lt;br/&gt;Артефакты: тема, решение, статус, теги&lt;br/&gt;Системы: CRM&lt;br/&gt;Метрики: полнота карточки, время постобработки&lt;br/&gt;Логика: OP заполняет карточку руками после каждого контакта
+Note over OP,CRM: Узкое место: заполнение карточки вручную | после каждого контакта
+OP-&gt;&gt;CRM: Заполнение карточки [Тема, решение, теги]
+opt Вопрос не решен
+    Note over OP,EX: Узкое место: повторная эскалация | ответ не закрыл вопрос
+    OP-&gt;&gt;EX: Повторная эскалация [Тикет]
+end
+end
+
+rect rgb(245, 250, 255)
+Note over CL,SV: Контроль качества&lt;br/&gt;Вход: записи и карточки обращений&lt;br/&gt;Выход: обратная связь и правки скриптов&lt;br/&gt;Артефакты: выборка обращений, оценка, правки скриптов&lt;br/&gt;Системы: REC, CRM, KB&lt;br/&gt;Метрики: доля проверенных обращений, средняя оценка&lt;br/&gt;Логика: SV слушает выборку вручную и правит скрипты
+loop Каждую неделю
+    SV-&gt;&gt;REC: Запрос выборки [Период, оператор]
+    REC--&gt;&gt;SV: Передача записей [Записи, карточки]
+    SV-&gt;&gt;SV: Оценка обращений по чек-листу
+    par Обратная связь оператору
+        SV--&gt;&gt;OP: Передача оценки [Замечания, рекомендации]
+    and Обновление базы знаний
+        SV-&gt;&gt;KB: Правка скриптов [Обновленный регламент]
+    end
+end
+end
+
+rect rgb(240, 255, 240)
+Note over CL,SV: Закрытие обращения&lt;br/&gt;Вход: решение по обращению&lt;br/&gt;Выход: закрытый тикет или повторное обращение&lt;br/&gt;Артефакты: статус тикета, уведомление клиенту&lt;br/&gt;Системы: CRM&lt;br/&gt;Метрики: доля решенных с первого контакта, доля повторных&lt;br/&gt;Логика: тикет закрывается только после подтверждения решения
+alt Вопрос решен
+    OP-&gt;&gt;CRM: Закрытие тикета [Статус: закрыт]
+    CRM--&gt;&gt;CL: Уведомление о решении [Итог обращения]
+else Клиент возвращается
+    CL-&gt;&gt;OP: Повторное обращение [Та же тема]
+end
+end</pre>
+      <pre class="mmd-src" id="src-design">sequenceDiagram
+autonumber
+
+box rgb(240, 240, 240) External
+participant CL as Клиент
+end
+
+box rgb(245, 245, 245) Systems
+participant FS as Файлы и исходники
+participant TRK as Трекер задач
+end
+
+box rgb(230, 245, 255) Internal
+participant AM as Аккаунт-менеджер
+participant AD as Арт-директор
+participant DS as Дизайнер
+participant PM as Проектный менеджер
+end
+
+rect rgb(255, 250, 240)
+Note over CL,PM: Бриф и оценка&lt;br/&gt;Вход: бриф, референсы, ограничения&lt;br/&gt;Выход: смета и график работ&lt;br/&gt;Артефакты: бриф, состав работ, смета&lt;br/&gt;Системы: TRK&lt;br/&gt;Метрики: срок до сметы, расхождение оценки с фактом&lt;br/&gt;Логика: AD оценивает объем по опыту, без данных по прошлым проектам
+CL-&gt;&gt;AM: Передача брифа [Задача, референсы]
+Note over AM,CL: Узкое место: бриф снят поверхностно | концепция уходит не туда
+AM-&gt;&gt;AD: Запрос оценки [Бриф, референсы]
+Note over AD,AM: Узкое место: оценка на глаз | часто не сходится с фактом
+AD--&gt;&gt;AM: Передача оценки [Состав работ, сроки, стоимость]
+AM-&gt;&gt;CL: Передача сметы [Смета, график]
+CL--&gt;&gt;AM: Подтверждение [Договор, предоплата]
+end
+
+rect rgb(240, 248, 255)
+Note over CL,PM: Постановка задачи&lt;br/&gt;Вход: подписанная смета, бриф, референсы&lt;br/&gt;Выход: задача у дизайнера с полными вводными&lt;br/&gt;Артефакты: проект в трекере, папки, доступы&lt;br/&gt;Системы: TRK, FS&lt;br/&gt;Метрики: полнота вводных, срок постановки&lt;br/&gt;Логика: PM собирает вводные из разных каналов в одну задачу
+par Заведение проекта
+    PM-&gt;&gt;FS: Создание структуры [Папки, доступы]
+and Постановка в трекер
+    PM-&gt;&gt;TRK: Создание задачи [Бриф, сроки]
+end
+PM-&gt;&gt;DS: Передача задачи [Бриф, референсы, шаблон]
+end
+
+rect rgb(255, 240, 240)
+Note over CL,PM: Концепция&lt;br/&gt;Вход: задача, бриф, референсы&lt;br/&gt;Выход: выбранный клиентом вариант&lt;br/&gt;Артефакты: варианты концепции, замечания, выбранный вариант&lt;br/&gt;Системы: FS, TRK&lt;br/&gt;Метрики: число кругов правок, срок до выбора&lt;br/&gt;Логика: правки приходят разрозненно, критерии приемки не зафиксированы
+DS-&gt;&gt;AD: Передача концепции [2-3 варианта]
+AD--&gt;&gt;DS: Возврат с замечаниями [Правки по концепции]
+DS-&gt;&gt;AM: Передача вариантов [Концепция]
+AM-&gt;&gt;CL: Презентация концепции [Варианты]
+Note over AM,CL: Узкое место: круги правок | критерии приемки нигде не зафиксированы
+loop Пока клиент не выберет вариант
+    CL--&gt;&gt;AM: Возврат с правками [Комментарии]
+    AM-&gt;&gt;DS: Передача сведенных правок [Список правок]
+    DS--&gt;&gt;AM: Передача версии [Обновленные варианты]
+end
+end
+
+rect rgb(245, 250, 255)
+Note over CL,PM: Отрисовка и приемка&lt;br/&gt;Вход: выбранная концепция&lt;br/&gt;Выход: принятые клиентом макеты&lt;br/&gt;Артефакты: макеты, рабочие файлы, замечания&lt;br/&gt;Системы: FS, TRK&lt;br/&gt;Метрики: срок до приемки, число возвратов&lt;br/&gt;Логика: макеты проходят внутреннюю приемку, затем приемку клиента
+DS-&gt;&gt;FS: Сохранение макетов [Макеты, рабочие файлы]
+DS-&gt;&gt;AD: Внутренняя приемка [Макеты]
+AD--&gt;&gt;DS: Передача замечаний [Замечания]
+AM-&gt;&gt;CL: Передача макетов [Финальные макеты]
+alt Принято
+    CL--&gt;&gt;AM: Приемка [Согласование]
+    AM-&gt;&gt;TRK: Фиксация статуса [Принято]
+else Правки
+    CL--&gt;&gt;AM: Возврат с замечаниями [Список правок]
+    AM-&gt;&gt;DS: Передача правок [Замечания]
+end
+end
+
+rect rgb(240, 255, 240)
+Note over CL,PM: Передача и закрытие&lt;br/&gt;Вход: принятые макеты&lt;br/&gt;Выход: переданные исходники и закрытые документы&lt;br/&gt;Артефакты: исходники, шрифты, гайд, закрывающие документы&lt;br/&gt;Системы: FS, TRK&lt;br/&gt;Метрики: срок передачи исходников, доля возвратов после сдачи&lt;br/&gt;Логика: исходники и гайд собираются вручную в конце проекта
+Note over DS,FS: Узкое место: сборка исходников и гайда вручную | рутина в конце проекта
+DS-&gt;&gt;FS: Сборка пакета [Исходники, шрифты, гайд]
+AM-&gt;&gt;CL: Передача пакета [Файлы, гайд]
+AM-&gt;&gt;TRK: Закрытие проекта [Закрывающие документы]
+end</pre>
+      <pre class="mmd-src" id="src-software">sequenceDiagram
+autonumber
+
+box rgb(240, 240, 240) External
+participant CL as Заказчик
+participant US as Пользователи
+end
+
+box rgb(245, 245, 245) Systems
+participant TR as Трекер задач
+participant REP as Репозиторий
+participant CI as Сборка и стенды
+end
+
+box rgb(230, 245, 255) Internal
+participant PO as Продакт-аналитик
+participant TL as Тимлид
+participant DEV as Разработчик
+participant QA as Тестировщик
+participant OPS as Релиз-инженер
+end
+
+rect rgb(255, 250, 240)
+Note over CL,OPS: Прием и уточнение запроса&lt;br/&gt;Вход: запрос заказчика, контекст, приоритет&lt;br/&gt;Выход: задача с критериями приемки&lt;br/&gt;Артефакты: запрос, сценарии, критерии приемки&lt;br/&gt;Системы: TR&lt;br/&gt;Метрики: срок до постановки, доля возвратов на уточнение&lt;br/&gt;Логика: PO уточняет требования перепиской, полнота зависит от него
+CL-&gt;&gt;PO: Передача запроса [Задача, приоритет]
+par Регистрация запроса
+    PO-&gt;&gt;TR: Создание задачи [Карточка задачи]
+and Уточнение требований
+    PO-&gt;&gt;CL: Запрос на уточнение [Сценарии, ограничения]
+    CL--&gt;&gt;PO: Передача уточнений [Ответы, приоритет]
+end
+Note over PO,TR: Узкое место: требования неполные | брак вскрывается на приемке, а не в начале
+PO-&gt;&gt;TR: Фиксация критериев [Критерии приемки]
+end
+
+rect rgb(240, 248, 255)
+Note over CL,OPS: Оценка и планирование&lt;br/&gt;Вход: задача с критериями приемки&lt;br/&gt;Выход: задача в спринте с оценкой&lt;br/&gt;Артефакты: оценка, риски, состав спринта&lt;br/&gt;Системы: TR&lt;br/&gt;Метрики: точность оценки, предсказуемость спринта&lt;br/&gt;Логика: оценка делается по памяти, без данных по похожим задачам
+TL-&gt;&gt;DEV: Запрос оценки [Задача]
+DEV--&gt;&gt;TL: Передача оценки [Часы, риски]
+Note over TL,TR: Узкое место: оценка на глаз | нет данных по похожим задачам
+TL-&gt;&gt;TR: Планирование спринта [Задача в спринте]
+end
+
+rect rgb(255, 240, 240)
+Note over CL,OPS: Разработка и код-ревью&lt;br/&gt;Вход: задача в спринте&lt;br/&gt;Выход: код, влитый в основную ветку&lt;br/&gt;Артефакты: ветка, пул-реквест, замечания ревью&lt;br/&gt;Системы: REP, TR, CI&lt;br/&gt;Метрики: время до вливания, число кругов ревью&lt;br/&gt;Логика: ревью ждет свободного старшего разработчика
+DEV-&gt;&gt;REP: Создание ветки [Ветка задачи]
+DEV-&gt;&gt;REP: Открытие пул-реквеста [Пул-реквест]
+Note over TL,DEV: Узкое место: ревью ждет свободного старшего | пул-реквест лежит днями
+loop Цикл ревью
+    TL--&gt;&gt;DEV: Возврат с замечаниями [Замечания по коду]
+    DEV-&gt;&gt;REP: Внесение исправлений [Обновленный пул-реквест]
+end
+TL-&gt;&gt;REP: Влитие изменений [Основная ветка]
+end
+
+rect rgb(245, 250, 255)
+Note over CL,OPS: Тестирование&lt;br/&gt;Вход: сборка на стенде&lt;br/&gt;Выход: допуск к релизу или дефекты&lt;br/&gt;Артефакты: чек-лист, баг-репорты, отчет о тестировании&lt;br/&gt;Системы: CI, TR&lt;br/&gt;Метрики: доля багов после релиза, срок регрессии&lt;br/&gt;Логика: регрессия прогоняется вручную по чек-листу
+DEV-&gt;&gt;CI: Запуск сборки [Сборка на стенд]
+CI--&gt;&gt;QA: Передача сборки [Стенд с версией]
+Note over QA,DEV: Узкое место: ручная регрессия | прогон чек-листа руками
+QA-&gt;&gt;QA: Прогон сценариев и регрессии
+alt Найдены дефекты
+    Note over QA,DEV: Узкое место: возвраты из тестирования | съедают спринт
+    QA--&gt;&gt;DEV: Возврат на доработку [Баг-репорты]
+    DEV-&gt;&gt;CI: Пересборка [Новая версия]
+else Готово к релизу
+    QA-&gt;&gt;TR: Фиксация статуса [Допуск к релизу]
+end
+end
+
+rect rgb(240, 255, 240)
+Note over CL,OPS: Релиз и обратная связь&lt;br/&gt;Вход: версия с допуском к релизу&lt;br/&gt;Выход: выкаченная версия и принятая задача&lt;br/&gt;Артефакты: релиз, changelog, инциденты, приемка&lt;br/&gt;Системы: CI, TR&lt;br/&gt;Метрики: частота релизов, время восстановления после инцидента&lt;br/&gt;Логика: инциденты разбираются по чатам, контекст собирается заново
+OPS-&gt;&gt;CI: Выкатка на продакшен [Релиз]
+OPS-&gt;&gt;TR: Фиксация релиза [Changelog]
+opt Инцидент после релиза
+    US--&gt;&gt;OPS: Сообщения об ошибках [Обращения]
+    Note over OPS,DEV: Узкое место: разбор инцидента | контекст собирается по чатам
+    OPS-&gt;&gt;DEV: Задача на хотфикс [Описание инцидента]
+    DEV-&gt;&gt;CI: Выкатка патча [Хотфикс]
+end
+PO-&gt;&gt;CL: Демонстрация результата [Готовая функция]
+CL--&gt;&gt;PO: Приемка или новые запросы [Решение]
+end</pre>
+      </div>
+
+      <div class="viewer" id="viewer">
+        <div class="v-tabs" role="tablist" aria-label="Схемы процессов">
+        <button class="v-tab" role="tab" data-key="consult" aria-selected="true"><svg class="ic" aria-hidden="true"><use href="#i-briefcase" xlink:href="#i-briefcase"></use></svg> Консалтинг</button>
+        <button class="v-tab" role="tab" data-key="hr" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-user-focus" xlink:href="#i-user-focus"></use></svg> Рекрутинг</button>
+        <button class="v-tab" role="tab" data-key="marketing" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-megaphone" xlink:href="#i-megaphone"></use></svg> Маркетинг</button>
+        <button class="v-tab" role="tab" data-key="callcenter" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-headset" xlink:href="#i-headset"></use></svg> Колл-центр</button>
+        <button class="v-tab" role="tab" data-key="design" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-palette" xlink:href="#i-palette"></use></svg> Дизайн</button>
+        <button class="v-tab" role="tab" data-key="software" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Разработка ПО</button>
+        </div>
+
+        <!-- Оболочка неподвижна: в ней прокручивается только полотно со схемой,
+             поэтому кнопки и растушёвка краёв остаются на месте. -->
+        <div class="v-shell">
+          <div class="v-stage" id="v-stage">
+            <div class="v-layer" id="v-layer"></div>
+          </div>
+          <span class="v-fade-t" aria-hidden="true"></span>
+          <span class="v-fade v-fade-l" aria-hidden="true"></span>
+          <span class="v-fade v-fade-r" aria-hidden="true"></span>
+          <span class="v-fade-b" aria-hidden="true"></span>
+          <div class="v-tools">
+            <button class="v-btn" type="button" data-zoom="out" aria-label="Мельче"><span class="v-sign" aria-hidden="true">−</span></button>
+            <button class="v-btn v-level" type="button" data-zoom="fit" title="Показать схему целиком"><svg class="ic" aria-hidden="true"><use href="#i-corners-out" xlink:href="#i-corners-out"></use></svg><span id="v-level">100%</span></button>
+            <button class="v-btn" type="button" data-zoom="in" aria-label="Крупнее"><span class="v-sign" aria-hidden="true">+</span></button>
+          </div>
+          <div class="v-save">
+            <button class="v-btn v-wide" type="button" id="v-svg"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> SVG</button>
+            <button class="v-btn v-wide" type="button" id="v-png"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> PNG</button>
+          </div>
+        </div>
+        <p class="v-hint" id="v-hint">Листайте схему вниз колесом или пальцем · кнопки — масштаб</p>
+
+        <div class="v-code">
+          <div class="v-code-head">
+            <span class="v-code-title"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid</span>
+            <div class="v-code-act">
+              <button class="copy v-inline" type="button" id="v-copy"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+            </div>
+          </div>
+          <textarea id="v-input" spellcheck="false" autocomplete="off" aria-label="Код схемы"></textarea>
+          <p class="v-note"><svg class="ic" aria-hidden="true"><use href="#i-pencil-simple" xlink:href="#i-pencil-simple"></use></svg> Правьте код или вставьте свой — схема перерисуется сама. Как получить код из интервью — в блоке ниже.</p>
+          <div class="err" id="v-err" hidden role="alert">
+            <div class="err-h"><svg class="ic" aria-hidden="true"><use href="#i-x-circle" xlink:href="#i-x-circle"></use></svg> В коде схемы ошибка</div>
+            <pre id="v-err-text"></pre>
+            <p class="err-hint">Скопируйте промт ниже вместе с кодом и текстом ошибки и попросите модель перегенерировать схему — она исправит только сломанное место.</p>
+            <div class="err-actions">
+              <button class="btn btn-ghost" id="v-fixprompt" type="button"><svg class="ic" aria-hidden="true"><use href="#i-arrows-clockwise" xlink:href="#i-arrows-clockwise"></use></svg> Копировать промт на исправление</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-info" id="info-consult">
+        <h3>Консалтинг — подготовка коммерческого предложения</h3>
+        <div class="goal">
+          <span><b>Цель:</b> превращать входящий запрос в подписанный договор.</span>
+          <span><b>Метрика:</b> срок от запроса до КП и доля выигранных КП.</span>
+          <span><b>Границы:</b> от обращения клиента до подписания договора.</span>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg> Поиск кейсов: знания лежат в головах и папках, находит только тот, кто «помнит».</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Оценка трудозатрат: делается вручную и по-разному у разных консультантов.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Возврат после ревью партнёра: КП переписывается по второму кругу.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Follow-up: про часть клиентов просто забывают.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> квалификация по бюджету и сроку — отсев по формальным критериям</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> подбор релевантных кейсов и сборка черновика КП по шаблону</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оценка трудозатрат: агент считает по аналогам, партнёр подтверждает</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> переговоры о цене и финальные обязательства перед клиентом</li>
+        </ul>
+      </div>
+      <div class="case-info" id="info-hr" hidden>
+        <h3>Рекрутинговое агентство — подбор кандидата под вакансию</h3>
+        <div class="goal">
+          <span><b>Цель:</b> закрывать вакансию клиента подходящим кандидатом.</span>
+          <span><b>Метрика:</b> срок закрытия вакансии и доля кандидатов, дошедших до интервью.</span>
+          <span><b>Границы:</b> от заявки клиента до выхода кандидата на работу.</span>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Скрининг резюме: сотни документов читаются глазами.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Каждый отказ клиента отбрасывает процесс к поиску.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Согласование слотов: переписка на три стороны.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Профиль снят неточно — брак вскрывается только после интервью у клиента.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> первичный скрининг резюме и ранжирование по профилю</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сборка карточки кандидата из резюме и заметок после звонка</li>
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> отсев по стоп-факторам: локация, право на работу, вилка</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> согласование слотов: агент предлагает время, рекрутер подтверждает</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> оценка мотивации и «впишется ли в команду»</li>
+        </ul>
+      </div>
+      <div class="case-info" id="info-marketing" hidden>
+        <h3>Маркетинговое агентство — запуск рекламной кампании</h3>
+        <div class="goal">
+          <span><b>Цель:</b> запускать кампании клиента и приводить заявки в срок.</span>
+          <span><b>Метрика:</b> срок от брифа до запуска и стоимость заявки.</span>
+          <span><b>Границы:</b> от брифа клиента до отчёта по первой волне.</span>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Круги правок по креативам — самая долгая часть запуска.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Ежедневный сбор статистики из нескольких кабинетов руками.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Отчёты собираются в таблицах и презентациях под каждого клиента.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Анализ конкурентов делается по-разному и зависит от исполнителя.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> черновики креативов и текстов по брифу и tone of voice</li>
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> выгрузка статистики из кабинетов по расписанию</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сборка отчёта с выводами и гипотезами на следующую неделю</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оптимизация ставок: агент предлагает, специалист применяет</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> стратегия кампании и защита идеи перед клиентом</li>
+        </ul>
+      </div>
+      <div class="case-info" id="info-callcenter" hidden>
+        <h3>Колл-центр — обработка входящего обращения</h3>
+        <div class="goal">
+          <span><b>Цель:</b> решать вопрос клиента с первого обращения.</span>
+          <span><b>Метрика:</b> время обработки и доля вопросов, решённых на первой линии.</span>
+          <span><b>Границы:</b> от звонка или сообщения до закрытия тикета.</span>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Поиск истории по нескольким системам, пока клиент ждёт на линии.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Ожидание второй линии — клиент висит или ему перезванивают.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Повторная эскалация, если ответ не решил вопрос.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Заполнение карточки после каждого контакта.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> идентификация клиента и подтяжка карточки из CRM</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сводка истории обращений одним абзацем перед ответом</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> ответы на типовые вопросы и автозаполнение карточки обращения</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> подсказка оператору в реальном времени, отвечает человек</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> конфликтные обращения, возвраты денег, нестандартные случаи</li>
+        </ul>
+      </div>
+      <div class="case-info" id="info-design" hidden>
+        <h3>Дизайн-агентство — проект от брифа до сдачи</h3>
+        <div class="goal">
+          <span><b>Цель:</b> сдавать проект в срок и без бесконечных правок.</span>
+          <span><b>Метрика:</b> число кругов правок и срок от брифа до приёмки.</span>
+          <span><b>Границы:</b> от брифа клиента до передачи исходников.</span>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Круги правок: критерии приёмки нигде не зафиксированы.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Бриф снят поверхностно — концепция уходит не туда.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Оценка объёма делается «на глаз» и часто не сходится с фактом.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Сборка исходников и гайда — ручная рутина в конце проекта.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> структурированный бриф из переписки и созвона с клиентом</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сведение правок клиента в один список задач без потерь</li>
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> лимит кругов правок и чек-лист приёмки в договоре</li>
+          <li><span class="tag t-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg>гибрид</span> оценка объёма: агент считает по прошлым проектам, арт-директор утверждает</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> сама концепция и защита решения перед клиентом</li>
+        </ul>
+      </div>
+      <div class="case-info" id="info-software" hidden>
+        <h3>Разработка ПО — от заявки клиента до релиза</h3>
+        <div class="goal">
+          <span><b>Цель:</b> доводить запросы до работающего релиза предсказуемо.</span>
+          <span><b>Метрика:</b> время от заявки до релиза и доля возвратов из тестирования.</span>
+          <span><b>Границы:</b> от запроса клиента или бизнеса до выката в прод.</span>
+        </div>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg>Узкие места</h4>
+        <ul class="bnecks">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg> Требования неполные — брак вскрывается на приёмке, а не в начале.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Код-ревью ждёт свободного старшего разработчика.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg> Возвраты из тестирования съедают спринт.</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-clock" xlink:href="#i-clock"></use></svg> Разбор инцидентов начинается со сбора контекста по чатам.</li>
+        </ul>
+        <h4><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Чем закрывать</h4>
+        <ul class="fix">
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> черновик требований и критериев приёмки из запроса клиента</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> первый проход код-ревью и генерация тест-кейсов</li>
+          <li><span class="tag t-rule"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg>правило</span> автотесты и линтеры на каждый коммит — до ревью человеком</li>
+          <li><span class="tag t-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>агент</span> сводка инцидента: логи, история изменений, похожие случаи</li>
+          <li><span class="tag t-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg>человек</span> архитектурные решения и финальное «выкатываем»</li>
+        </ul>
+      </div>
+      </div>
+    </section>
+
+    <!-- ===== ИНТЕРВЬЮ → СХЕМА ===== -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-microphone" xlink:href="#i-microphone"></use></svg></span>
+        <h2>Как превратить интервью <span class="accent">в схему</span></h2>
+        <p>Рисовать схему руками не обязательно. Поговорите с владельцем процесса, отдайте расшифровку модели — и получите готовый код mermaid, который тут же можно показать и скачать.</p>
+      </div>
+      <ol class="flow">
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-chats-circle" xlink:href="#i-chats-circle"></use></svg></span>
+          <div><b>1. Опишите процесс</b><span>Интервью с владельцем процесса или таблица шагов: кто что делает, где ждут, где возвращают на предыдущий шаг, чем всё заканчивается.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg></span>
+          <div><b>2. Промт 1 → схема AS-IS</b><span>Отдайте описание модели вместе с первым промтом. Полученный код вставьте в окно выше: если он не разобрался, страница покажет ошибку и даст промт на исправление — повторяйте, пока схема не отрисуется.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg></span>
+          <div><b>3. Промт 2 → точки автоматизации</b><span>Второй промт берёт готовую схему и возвращает таблицу точек автоматизации с типом, эффектом, сложностью и разделом Quick Wins.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg></span>
+          <div><b>4. Промт 3 → схема TO-BE</b><span>Третий промт собирает целевой процесс: ИИ‑агенты отдельным блоком участников, ручные шаги сокращены, у человека остаются контрольные точки. Код — в то же окно.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span>
+          <div><b>5. Промт 4 → граф навыков агента</b><span>Четвёртый промт превращает TO-BE в граф навыков: что агент должен уметь, какие навыки автоматические, а какие когнитивные. Он тоже рисуется в этом окне.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg></span>
+          <div><b>6. Сохраните и сравните</b><span>Обе схемы и граф сохраняются в SVG или PNG. Выпишите, что изменилось между AS-IS и TO-BE и как изменится метрика процесса.</span></div>
+        </li>
+      </ol>
+
+      <details class="src">
+        <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Промт 1: процесс → схема AS-IS</summary>
+        <div class="code-wrap">
+          <pre class="code" id="prompt-asis">Ты — профессиональный бизнес-аналитик и архитектор бизнес-процессов. На основе входной таблицы построй AS-IS диаграмму строго в формате Mermaid sequence diagram.
+
+Задача:
+Сгенерировать валидный Mermaid-код в process-map стиле: с ролями, системами, этапами, ключевыми проверками, возвратами, согласованием, завершением и метриками, если они следуют из входных данных.
+
+Жесткие правила вывода:
+1. Выводи только Mermaid-код.
+2. Не добавляй пояснения, markdown-обрамление, комментарии, кавычки, заголовки и любой текст вне кода.
+3. Код должен быть валиден для Mermaid Live Editor.
+4. Используй только синтаксис sequenceDiagram.
+5. Диаграмма должна начинаться строго так:
+sequenceDiagram
+autonumber
+
+Допустимые конструкции:
+- sequenceDiagram
+- autonumber
+- box ... end
+- rect ... end
+- Note over ...
+- par / and / end
+- alt / else / end
+- loop / end
+- сообщения через -&gt;&gt; и --&gt;&gt;
+
+Запрещено:
+- subgraph
+- flowchart-синтаксис
+- classDef, style, linkStyle
+- %% комментарии
+- любые конструкции вне sequenceDiagram
+
+Структура участников:
+Если применимо по входным данным, сгруппируй участников в 3 блока:
+1. External
+2. Systems
+3. Internal
+
+Пример:
+box rgb(240, 240, 240) External
+...
+end
+
+box rgb(245, 245, 245) Systems
+...
+end
+
+box rgb(230, 245, 255) Internal
+...
+end
+
+Правила участников:
+1. Все значимые роли и системы из таблицы должны быть отражены как participant.
+2. Для каждого участника используй короткий alias латиницей в верхнем регистре.
+3. Alias должен быть уникальным, 2-4 символа или общепринятой аббревиатурой.
+4. Названия ролей и систем отображай на русском.
+5. Одинаковые по смыслу роли нормализуй в одного участника: инициатор, заказчик и заявитель — это один участник, если по смыслу это одна и та же сущность.
+
+Логика построения:
+1. Сначала восстанови корректный порядок процесса, даже если шаги в таблице даны не по порядку.
+2. Сохраняй AS-IS-логику, не оптимизируй процесс в TO-BE.
+3. Покажи не только happy path, но и реальные развилки, если они следуют из данных:
+- нехватка данных,
+- запрос уточнений,
+- возврат на доработку,
+- повторная проверка,
+- повторное согласование,
+- завершение процесса.
+4. Используй:
+- alt — только если есть развилка,
+- loop — только если есть повторение или возврат,
+- par — только если есть действительно параллельные действия.
+5. Если данных недостаточно, делай только минимально необходимые аналитические допущения без выдумывания экзотических сущностей.
+
+Этапы:
+1. Разбивай процесс на крупные этапы через rect rgb(...).
+2. Для каждого этапа используй отдельный rect-блок.
+3. В начале каждого этапа добавляй один Note от первого до последнего участника в формате:
+Note over REQ,DR: Название этапа&lt;br/&gt;Вход: ...&lt;br/&gt;Выход: ...&lt;br/&gt;Артефакты: ...&lt;br/&gt;Системы: ...&lt;br/&gt;Метрики: ...&lt;br/&gt;Логика: ...
+4. Каждый Note должен быть в одной строке.
+5. Переносы внутри Note оформляй только через &lt;br/&gt;.
+
+Правила шагов:
+1. Каждый шаг показывай как сообщение между участниками.
+2. Если действие внутреннее, используй self-message.
+3. Для возвратов, замечаний, уведомлений и обратных сообщений используй --&gt;&gt;.
+4. Если создаётся, передаётся, обновляется, регистрируется или согласуется сущность — указывай артефакт в квадратных скобках.
+5. Формулировки действий деловые и краткие: Передача запроса, Регистрация заявки, Проверка полноты, Передача на согласование, Возврат на доработку, Архивация.
+
+Системы:
+1. Если во входных данных явно есть CRM, ERP, СЭД, почта, реестр, архив, BI, сервис заявок, чат, база знаний, файловое хранилище — отрази их как отдельных participants в блоке Systems.
+2. Если систем нет явно, не добавляй их без необходимости.
+3. Если системная фиксация статуса логически очевидна и типична для процесса, её можно аккуратно добавить.
+
+Приоритеты при конфликте требований:
+1. Валидность Mermaid
+2. Сохранение AS-IS-логики
+3. Корректная процессная структура
+4. Полнота note, артефактов и метрик
+
+Перед выводом проверь:
+1. Код начинается с sequenceDiagram и autonumber.
+2. Участники сгруппированы через box, если это применимо.
+3. Этапы оформлены через rect.
+4. Есть только те alt / loop / par, которые реально следуют из процесса.
+
+Пример по синтаксису:
+
+sequenceDiagram
+autonumber
+
+box rgb(240, 240, 240) External
+participant REQ as Инициатор
+end
+
+box rgb(245, 245, 245) Systems
+participant RMS as Реестр заявок
+participant DMS as СЭД
+participant NOT as Почта и уведомления
+end
+
+box rgb(230, 245, 255) Internal
+participant CO as Координатор
+participant AU as Автор
+participant RV as Проверяющий
+end
+
+rect rgb(255, 250, 240)
+Note over REQ,RV: Прием и обработка заявки&lt;br/&gt;Вход: заявка, тема, срок, материалы&lt;br/&gt;Выход: карточка заявки, ТЗ в работу&lt;br/&gt;Артефакты: заявка, карточка заявки, ТЗ&lt;br/&gt;Системы: RMS, NOT&lt;br/&gt;Метрики: время приема, полнота данных&lt;br/&gt;Логика: проверяет полноту данных и принимает решение о запуске
+REQ-&gt;&gt;CO: Передача запроса [Заявка, тема, срок]
+par Регистрация заявки
+    CO-&gt;&gt;RMS: Регистрация заявки [Карточка заявки]
+and Анализ входных данных
+    CO-&gt;&gt;CO: Проверка полноты заявки и материалов
+end
+alt Данных недостаточно
+    CO--&gt;&gt;REQ: Запрос на уточнение [Недостающие данные]
+    CO-&gt;&gt;NOT: Отправка уведомления [Запрос на уточнение]
+    REQ--&gt;&gt;CO: Передача уточнений [Доп. материалы]
+else Данных достаточно
+    CO-&gt;&gt;DMS: Размещение материалов [Материалы, шаблон]
+    CO-&gt;&gt;AU: Передача в работу [ТЗ, материалы]
+    CO-&gt;&gt;RMS: Фиксация статуса [В работе]
+end
+end
+
+rect rgb(245, 250, 255)
+Note over REQ,RV: Проверка документа&lt;br/&gt;Вход: черновик или доработанная версия&lt;br/&gt;Выход: замечания или статус Проверено&lt;br/&gt;Артефакты: комментарии, свод замечаний, статус проверки&lt;br/&gt;Системы: DMS, RMS&lt;br/&gt;Метрики: время проверки, число циклов доработки&lt;br/&gt;Логика: RV проверяет содержание, CO консолидирует замечания
+loop Цикл проверки и доработки
+    CO-&gt;&gt;RV: Передача на проверку [Версия документа]
+    RV--&gt;&gt;CO: Передача замечаний [Комментарии]
+    alt Есть замечания
+        CO--&gt;&gt;AU: Свод замечаний [Замечания]
+        AU--&gt;&gt;CO: Передача версии [Доработанная версия]
+        CO-&gt;&gt;RMS: Фиксация статуса [На доработке]
+    else Замечаний нет
+        CO-&gt;&gt;RMS: Фиксация статуса [Проверено]
+    end
+end
+end
+
+Входные данные:
+"""
+СЮДА ВСТАВЬТЕ ТАБЛИЦУ ИЛИ РАСШИФРОВКУ ИНТЕРВЬЮ ПО ПРОЦЕССУ
+"""</pre>
+          <div class="code-act"><button class="copy" type="button" data-copy="prompt-asis"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button></div>
+        </div>
+      </details>
+
+      <details class="src">
+        <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Промт 2: схема AS-IS → точки автоматизации</summary>
+        <div class="code-wrap">
+          <pre class="code" id="prompt-points">Ты — консультант по автоматизации бизнес-процессов, эксперт в выявлении точек автоматизации. На вход тебе даётся описание бизнес-процесса в формате Mermaid.
+
+Твоя задача:
+Провести анализ процесса и выявить все потенциальные точки автоматизации.
+
+Что нужно анализировать:
+1. Ручные, повторяющиеся, рутинные действия.
+2. Точки принятия решений.
+3. Шаги, связанные с обработкой документов, сообщений, файлов, заявок, отчетов.
+4. Передачу данных между людьми, отделами и системами.
+5. Исключения, возвраты, доработки и эскалации.
+6. Узкие места, где возникают задержки, ошибки или лишняя ручная работа.
+
+Для каждой найденной точки автоматизации определи:
+- Что именно можно автоматизировать.
+- Тип шага: детерминированный или вероятностный.
+- Тип автоматизации:
+  - детерминированная автоматизация: скрипты, бизнес-правила, интеграции, RPA;
+  - интеллектуальная автоматизация: LLM, ML, классификация, прогнозирование, генерация;
+  - гибридная автоматизация: ИИ плюс человек.
+- Основание: по явным бизнес-правилам, по скрытым экспертным критериям, по шаблонным данным или по контексту и вероятностной логике.
+- Какой эффект даст автоматизация: экономия времени, снижение ошибок, повышение прозрачности, ускорение потока, улучшение клиентского опыта, снижение нагрузки на сотрудников.
+- Сложность реализации: низкая, средняя или высокая.
+- Бизнес-ценность: низкая, средняя или высокая.
+
+Оформи результат в таблицу:
+| № | Этап процесса | Что происходит сейчас | Точка автоматизации | Тип шага | Тип автоматизации | Основание | Эффект | Сложность | Ценность |
+
+После таблицы добавь раздел Quick Wins — точки с высокой ценностью и низкой сложностью.
+
+Правила анализа:
+- Не пересказывай диаграмму целиком.
+- Не проектируй TO-BE.
+- Не описывай роли человека в будущем процессе.
+- Сосредоточься только на выявлении и приоритизации точек автоматизации.
+- Если шаг нецелесообразно автоматизировать, так и укажи.
+- Если автоматизация возможна только при участии человека, укажи гибридный формат.
+
+Входные данные:
+"""
+СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ
+"""</pre>
+          <div class="code-act"><button class="copy" type="button" data-copy="prompt-points"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+          <button class="copy copy-code" type="button" data-copy="prompt-points"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg> копировать со схемой из окна</button></div>
+        </div>
+      </details>
+
+      <details class="src">
+        <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Промт 3: точки автоматизации → схема TO-BE</summary>
+        <div class="code-wrap">
+          <pre class="code" id="prompt-tobe">Ты — профессиональный бизнес-аналитик, архитектор бизнес-процессов и эксперт по автоматизации. На основе входной AS-IS диаграммы и списка точек автоматизации построй TO-BE диаграмму строго в формате Mermaid sequence diagram.
+
+Задача:
+Сгенерировать валидный Mermaid-код целевого процесса TO-BE в process-map стиле: с ролями, системами, ИИ-агентами, этапами, автоматизированными проверками, системными интеграциями, сокращенными ручными шагами, согласованием, возвратами, завершением и метриками.
+
+Жесткие правила вывода:
+1. Выводи только Mermaid-код.
+2. Не добавляй пояснения, markdown-обрамление, комментарии, кавычки, заголовки и любой текст вне кода.
+3. Код должен быть валиден для Mermaid Live Editor.
+4. Используй только синтаксис sequenceDiagram.
+5. Диаграмма должна начинаться строго так:
+sequenceDiagram
+autonumber
+
+Допустимые конструкции:
+- sequenceDiagram
+- autonumber
+- box ... end
+- rect ... end
+- Note over ...
+- par / and / end
+- alt / else / end
+- loop / end
+- сообщения через -&gt;&gt; и --&gt;&gt;
+
+Запрещено:
+- subgraph
+- flowchart-синтаксис
+- classDef, style, linkStyle
+- %% комментарии
+- любые конструкции вне sequenceDiagram
+
+Структура участников:
+Если применимо по входным данным, сгруппируй участников в 4 блока:
+1. External
+2. Systems
+3. AI Agents
+4. Internal
+
+Пример:
+box rgb(240, 240, 240) External
+...
+end
+
+box rgb(245, 245, 245) Systems
+...
+end
+
+box rgb(235, 245, 255) AI Agents
+...
+end
+
+box rgb(230, 245, 255) Internal
+...
+end
+
+Правила участников:
+1. Все значимые роли, системы и ИИ-агенты должны быть отражены как participant.
+2. Для каждого участника используй короткий alias латиницей в верхнем регистре.
+3. Alias должен быть уникальным, 2-4 символа или общепринятой аббревиатурой.
+4. Названия ролей, систем и ИИ-агентов отображай на русском.
+5. Одинаковые по смыслу роли нормализуй в одного участника.
+6. Если часть функций передана ИИ-агенту, явно отрази это отдельным participant, а не скрывай внутри систем.
+7. Если автоматизация полностью заменяет ручную операцию, показывай целевой вариант без лишнего ручного шага.
+
+Логика построения TO-BE:
+1. Сначала восстанови корректный порядок целевого процесса, даже если входные данные частично даны не по порядку.
+2. Проектируй именно TO-BE-логику, а не копию AS-IS.
+3. Обязательно учитывай точки автоматизации из входных данных: автоматическая проверка полноты, автоматическая регистрация, автоматическое формирование артефактов, ИИ-подготовка черновиков, ИИ-проверка качества, автоматическая маршрутизация, автоуведомления, автофиксация статусов, подготовка пакета согласования, архивирование и закрытие.
+4. Сохраняй только те ручные шаги, которые действительно нужны в будущем процессе.
+5. Покажи не только happy path, но и реальные развилки целевого процесса: нехватка данных, запрос уточнений, возврат на доработку, повторная автоматическая проверка, повторное согласование, завершение процесса.
+6. Используй alt только при развилке, loop только при повторении или возврате, par только при действительно параллельных действиях.
+7. Если данных недостаточно, делай минимально необходимые аналитические допущения, но приоритетно переноси типовые ручные операции на системы и ИИ-агентов, если это прямо следует из точек автоматизации.
+
+Этапы:
+1. Разбивай процесс на крупные этапы через rect rgb(...).
+2. Для каждого этапа используй отдельный rect-блок.
+3. В начале каждого этапа добавляй один Note от первого до последнего участника в формате:
+Note over REQ,DR: Название этапа&lt;br/&gt;Вход: ...&lt;br/&gt;Выход: ...&lt;br/&gt;Артефакты: ...&lt;br/&gt;Системы: ...&lt;br/&gt;Метрики: ...&lt;br/&gt;Автоматизация: ...&lt;br/&gt;Логика: ...
+4. Каждый Note должен быть в одной строке.
+5. Переносы внутри Note оформляй только через &lt;br/&gt;.
+6. В поле Автоматизация явно указывай, что делает система, что делает ИИ-агент, а что остается человеку.
+
+Правила шагов:
+1. Каждый шаг показывай как сообщение между участниками.
+2. Если действие внутреннее, используй self-message.
+3. Для возвратов, замечаний, уведомлений и обратных сообщений используй --&gt;&gt;.
+4. Если создаётся, передаётся, обновляется, регистрируется, проверяется, согласуется или архивируется сущность — указывай артефакт в квадратных скобках.
+5. Формулировки действий деловые и краткие: Передача запроса, Автопроверка полноты, Авторегистрация заявки, Генерация черновика, Передача на согласование, Возврат на доработку, Архивация.
+6. Если действие выполняется автоматически, это должно быть видно из участника-исполнителя: система или ИИ-агент.
+7. Если человек только подтверждает результат автоматизации, показывай короткий контрольный шаг, а не полное ручное выполнение.
+
+Системы:
+1. Если во входных данных явно есть CRM, ERP, СЭД, почта, реестр, архив, BI, сервис заявок, чат, база знаний, файловое хранилище, API-шлюз — отрази их как отдельных participants в блоке Systems.
+2. Если систем нет явно, не добавляй их без необходимости.
+3. Если системная фиксация статуса, уведомление, маршрутизация или запись в архив логически очевидны для TO-BE, их можно аккуратно добавить.
+4. Если ИИ-агент использует базу знаний, LLM, retrieval, шаблоны, правила маршрутизации или API, это должно быть отражено через взаимодействие с соответствующей системой.
+
+Правила TO-BE оптимизации:
+1. Убирай лишние ручные передачи, если их заменяет система.
+2. Сокращай количество ручных проверок, если их можно заменить автопроверкой или ИИ-валидацией.
+3. Допускается перевод части функций координатора, автора или проверяющего на ИИ-агента.
+4. Не убирай контрольные точки принятия решения там, где нужен человек по смыслу процесса.
+5. TO-BE должен быть быстрее, короче и технологичнее AS-IS, но оставаться реалистичным и управляемым.
+6. Если в точках автоматизации указан ИИ-агент, покажи его как полноценного участника процесса с конкретными действиями и артефактами.
+
+Приоритеты при конфликте требований:
+1. Валидность Mermaid
+2. Корректность TO-BE-логики
+3. Реалистичная автоматизация процесса
+4. Корректная процессная структура
+5. Полнота note, артефактов и метрик
+
+Перед выводом проверь:
+1. Код начинается с sequenceDiagram и autonumber.
+2. Участники сгруппированы через box, если это применимо.
+3. Есть отдельный блок AI Agents, если автоматизация включает ИИ-агента.
+4. Этапы оформлены через rect.
+5. Есть только те alt / loop / par, которые реально следуют из процесса.
+6. Удалены или сокращены шаги, которые в TO-BE выполняются автоматически.
+7. Видно, какие функции выполняет человек, какие система, а какие ИИ-агент.
+
+Пример кода:
+
+sequenceDiagram
+autonumber
+
+box rgb(240, 240, 240) External
+participant REQ as Инициатор
+end
+
+box rgb(245, 245, 245) Systems
+participant RMS as Реестр заявок
+participant DMS as СЭД
+participant KB as База знаний
+end
+
+box rgb(235, 245, 255) AI Agents
+participant AIA as ИИ-агент
+end
+
+box rgb(230, 245, 255) Internal
+participant CO as Координатор
+participant AU as Автор
+end
+
+rect rgb(255, 250, 240)
+Note over REQ,AU: Прием и обработка заявки&lt;br/&gt;Вход: заявка, тема, срок, материалы&lt;br/&gt;Выход: карточка заявки, ТЗ в работу&lt;br/&gt;Артефакты: заявка, карточка заявки, проект ТЗ&lt;br/&gt;Системы: RMS, KB&lt;br/&gt;Метрики: время приема, полнота данных&lt;br/&gt;Автоматизация: RMS регистрирует заявку, AIA проверяет полноту и готовит ТЗ, CO подтверждает запуск&lt;br/&gt;Логика: человек только принимает решение о запуске
+REQ-&gt;&gt;CO: Передача запроса [Заявка, тема, срок]
+par Авторегистрация заявки
+    CO-&gt;&gt;RMS: Авторегистрация заявки [Карточка заявки]
+and Автопроверка полноты
+    CO-&gt;&gt;AIA: Передача на проверку [Заявка, материалы]
+    AIA-&gt;&gt;KB: Поиск шаблонов и контекста [Тема, материалы]
+    AIA--&gt;&gt;CO: Результат проверки [Статус полноты, проект ТЗ]
+end
+alt Данных недостаточно
+    CO--&gt;&gt;REQ: Запрос на уточнение [Недостающие данные]
+    REQ--&gt;&gt;CO: Передача уточнений [Доп. материалы]
+else Данных достаточно
+    CO-&gt;&gt;AU: Передача в работу [ТЗ, материалы]
+    CO-&gt;&gt;RMS: Автофиксация статуса [В работе]
+end
+end
+
+rect rgb(255, 240, 240)
+Note over REQ,AU: Подготовка документа&lt;br/&gt;Вход: ТЗ, материалы, шаблон&lt;br/&gt;Выход: рабочая версия документа&lt;br/&gt;Артефакты: черновик, рабочая версия&lt;br/&gt;Системы: DMS, KB&lt;br/&gt;Метрики: время подготовки, число версий&lt;br/&gt;Автоматизация: AIA готовит черновик, AU дорабатывает и подтверждает&lt;br/&gt;Логика: ручная работа сведена к доработке черновика
+AIA-&gt;&gt;KB: Получение шаблонов и референсов [ТЗ]
+AIA-&gt;&gt;DMS: Генерация черновика [Черновик документа]
+AIA--&gt;&gt;AU: Передача черновика [Черновик документа]
+AU-&gt;&gt;DMS: Доработка черновика [Рабочая версия]
+AU--&gt;&gt;CO: Передача версии [Рабочая версия]
+end
+
+Входные данные:
+
+1. AS-IS диаграмма процесса:
+"""
+СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ
+"""
+
+2. Точки автоматизации:
+"""
+СЮДА ВСТАВЬТЕ ТАБЛИЦУ ТОЧЕК АВТОМАТИЗАЦИИ ИЗ ПРОМТА 2
+"""</pre>
+          <div class="code-act"><button class="copy" type="button" data-copy="prompt-tobe"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+          <button class="copy copy-code" type="button" data-copy="prompt-tobe"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg> копировать со схемой из окна</button></div>
+        </div>
+      </details>
+
+      <details class="src">
+        <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Промт 4: схема TO-BE → граф навыков агента</summary>
+        <div class="code-wrap">
+          <pre class="code" id="prompt-skills">Ты — архитектор ИИ-систем и эксперт по функциональному моделированию. Твоя задача — по описанию TO-BE процесса построить skill graph ИИ-агента в формате Mermaid graph TD.
+
+Skill graph — это не BPMN и не sequence diagram. Он должен отражать не роли, не статусы и не административные шаги процесса, а именно способности агента: какие функции он должен уметь выполнять, как эти функции декомпозируются, где есть развилки, где есть параллельные ветки, где есть циклы повторной обработки.
+
+1. Формат вывода
+- Верни только Mermaid-код.
+- Используй только синтаксис, совместимый с Mermaid Live Editor.
+- Формат диаграммы: graph TD.
+- Не добавляй пояснительный текст до или после Mermaid-кода.
+
+2. Общие правила построения
+- Начинай сразу с первого функционального блока.
+- Не выноси цель процесса в отдельный узел.
+- Строй именно граф навыков агента, а не диаграмму ролей или статусов процесса.
+- Названия узлов формулируй как способности и навыки, а не как события или административные действия.
+- Если узел в исходном процессе описывает просто статус, передачу ответственности или факт завершения этапа, преобразуй его в функциональный навык агента.
+- Не используй роли людей как узлы.
+- Не копируй sequence-логику механически: обобщай её в способности агента.
+
+3. Иерархия навыков
+Отрази иерархию: верхнеуровневые функциональные области, подфункции, атомарные задачи. Атомарная задача — это функция, которую уже нельзя разумно декомпозировать в рамках данного процесса без потери практического смысла.
+
+4. Что должно быть в каждом узле
+Для каждого узла обязательно укажи название навыка жирным, что делает этот навык, вход, выход и тип навыка:
+- Automation Skill — вызов API, интеграция, запись или чтение в системе, маршрутизация, синхронизация, автоматический поиск или автоматическая обработка данных;
+- Cognitive Skill — анализ, интерпретация, классификация, планирование, генерация, проверка, рассуждение или принятие решений.
+
+Формат узла:
+"&lt;b&gt;Название навыка&lt;/b&gt;&lt;br/&gt;Что делает: ...&lt;br/&gt;Вход: ...&lt;br/&gt;Выход: ...&lt;br/&gt;Тип: ..."
+
+5. Правила связей
+Связи между узлами должны отражать только декомпозицию функции на подфункции, функциональную последовательность выполнения, ветвление по результату решения, слияние результатов параллельных веток и возврат в цикл повторной обработки. Не используй связи как просто передачу документа между ролями.
+
+6. Правила для ветвлений, параллельности и циклов
+- Если во входном процессе есть ветвление (alt, условная логика, разные сценарии), отрази это как навык принятия решения и разведи от него отдельные ветки.
+- Если есть параллельные действия (par), не выстраивай их искусственно в линейную цепочку: покажи fan-out из инициирующего узла в несколько параллельных навыков, затем fan-in в узел консолидации.
+- Если есть цикл (loop, доработка, повторная проверка, возврат), явно отрази замкнутую петлю в графе.
+
+7. Что нельзя делать
+- Не добавляй узлы вроде цель, старт, конец.
+- Не показывай людей, отделы, должности и участников как узлы графа навыков.
+- Не подменяй навыки статусами вроде Проверено, В работе, Закрыто.
+- Не делай граф полностью линейным, если в процессе есть ветвления, параллельность или циклы.
+- Не делай избыточную вложенность subgraph.
+- Не оставляй слишком крупные узлы, если их можно разумно разложить на 2-4 отдельных навыка.
+- Не дроби до бессмысленной микродетализации.
+
+8. Использование subgraph
+- subgraph можно использовать только для группировки верхнеуровневых функциональных областей.
+- Не вкладывай subgraph друг в друга без необходимости.
+- У каждого subgraph должен быть уникальный технический ID, который не совпадает ни с одним ID узла.
+- Для subgraph используй префикс SG1, SG2, SG3; для узлов — A1, A2, B1, B2 и так далее.
+- Никогда не создавай узел с ID, совпадающим с именем функционального блока или subgraph.
+- Перед выводом проверь код на конфликты идентификаторов: совпадения между subgraph и узлами, повторяющиеся ID, самоссылки.
+- Человекочитаемое название subgraph указывай только в квадратных скобках.
+
+9. Критерий качества результата
+Итоговый граф должен быть именно skill graph, а не process flow; быть детализированным до атомарных задач; отражать альтернативные ветки, параллельные действия и циклы; содержать чистые формулировки навыков и быть готовым к вставке без доработки.
+
+Пример:
+
+graph TD
+
+subgraph SG1["Прием и квалификация заявки"]
+A1["&lt;b&gt;Проверка полноты заявки&lt;/b&gt;&lt;br/&gt;Что делает: анализирует заявку, тему, срок и материалы на полноту&lt;br/&gt;Вход: заявка, тема, срок, материалы&lt;br/&gt;Выход: статус полноты, перечень пробелов&lt;br/&gt;Тип: Cognitive Skill"]
+A2["&lt;b&gt;Поиск шаблонов и контекста&lt;/b&gt;&lt;br/&gt;Что делает: находит релевантные шаблоны, правила и контекст по теме&lt;br/&gt;Вход: тема, материалы, база знаний&lt;br/&gt;Выход: шаблоны, контекст, референсы&lt;br/&gt;Тип: Automation Skill"]
+A3["&lt;b&gt;Формирование проекта ТЗ&lt;/b&gt;&lt;br/&gt;Что делает: готовит проект технического задания&lt;br/&gt;Вход: заявка, материалы, шаблоны&lt;br/&gt;Выход: проект ТЗ&lt;br/&gt;Тип: Cognitive Skill"]
+A4["&lt;b&gt;Решение о достаточности данных&lt;/b&gt;&lt;br/&gt;Что делает: определяет, запускать работу или запрашивать уточнения&lt;br/&gt;Вход: статус полноты, проект ТЗ&lt;br/&gt;Выход: решение о маршруте&lt;br/&gt;Тип: Cognitive Skill"]
+A5["&lt;b&gt;Формирование запроса на уточнение&lt;/b&gt;&lt;br/&gt;Что делает: формулирует перечень недостающих данных&lt;br/&gt;Вход: перечень пробелов&lt;br/&gt;Выход: запрос на уточнение&lt;br/&gt;Тип: Cognitive Skill"]
+A6["&lt;b&gt;Обработка уточнений&lt;/b&gt;&lt;br/&gt;Что делает: принимает материалы и актуализирует проверку&lt;br/&gt;Вход: доп. материалы&lt;br/&gt;Выход: обновленный статус полноты&lt;br/&gt;Тип: Cognitive Skill"]
+A1 --&gt; A2
+A2 --&gt; A3
+A3 --&gt; A4
+A4 --&gt; A5
+A5 --&gt; A6
+A6 --&gt; A4
+end
+
+subgraph SG2["Подготовка документа"]
+B1["&lt;b&gt;Планирование структуры документа&lt;/b&gt;&lt;br/&gt;Что делает: определяет состав разделов&lt;br/&gt;Вход: ТЗ, шаблон, референсы&lt;br/&gt;Выход: структура документа&lt;br/&gt;Тип: Cognitive Skill"]
+B2["&lt;b&gt;Генерация черновика&lt;/b&gt;&lt;br/&gt;Что делает: создает первичную версию документа&lt;br/&gt;Вход: ТЗ, материалы, структура&lt;br/&gt;Выход: черновик документа&lt;br/&gt;Тип: Cognitive Skill"]
+B3["&lt;b&gt;Сохранение версии в системе&lt;/b&gt;&lt;br/&gt;Что делает: размещает версию в СЭД&lt;br/&gt;Вход: черновик документа&lt;br/&gt;Выход: сохраненная версия&lt;br/&gt;Тип: Automation Skill"]
+B1 --&gt; B2
+B2 --&gt; B3
+end
+
+A4 --&gt; B1
+
+Входные данные:
+"""
+СЮДА ВСТАВЬТЕ КОД СХЕМЫ TO-BE
+"""</pre>
+          <div class="code-act"><button class="copy" type="button" data-copy="prompt-skills"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+          <button class="copy copy-code" type="button" data-copy="prompt-skills"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg> копировать со схемой из окна</button></div>
+        </div>
+      </details>
+    </section>
+
+    <section class="sec rise d2">
+      <div class="cta">
+        <span class="cta-ico"><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg></span>
+        <h2>Разобрали пример — сделайте это со своим процессом</h2>
+        <p>Инструмент проведёт интервью, соберёт AS-IS, покажет узкие места и соберёт стратегию ИИ‑трансформации вашего процесса.</p>
+        <div class="actions">
+          <a class="btn btn-light" href="https://strategy.andre.technology/ai-strategy" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg> Собрать стратегию ИИ‑трансформации</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="back rise d2">
+      <button class="js-back" type="button"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg> Вернуться назад</button>
+    </div>
+  </main>
+
+<script>
+(function(){
+  /* Кнопка «Назад»: возвращает на страницу, с которой пришли. Если истории нет
+     (открыли по прямой ссылке), уводим на дорожную карту курса — иначе кнопка
+     была бы мёртвой. */
+  var FALLBACK = 'https://andre.technology/automation/main/';
+  Array.prototype.forEach.call(document.querySelectorAll('.js-back'), function(b){
+    b.addEventListener('click', function(){
+      if (history.length > 1) history.back(); else location.href = FALLBACK;
+    });
+  });
+
+  /* Отрасли переключаются вкладками: шесть схем подряд — это простыня. */
+  var tabs = document.querySelectorAll('.tab');
+  Array.prototype.forEach.call(tabs, function(t){
+    t.addEventListener('click', function(){
+      Array.prototype.forEach.call(tabs, function(o){
+        var on = o === t;
+        o.setAttribute('aria-selected', on ? 'true' : 'false');
+        var box = document.getElementById('case-' + o.dataset.case);
+        if (box) box.hidden = !on;
+      });
+    });
+  });
+
+  /* Смена фона: тёмный ⇄ светлый, выбор запоминается на весь путь */
+  var btn = document.getElementById('lec-theme');
+  function syncTheme(){
+    var dark = document.documentElement.classList.contains('dark');
+    btn.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-'+(dark?'sun':'moon')+'" xlink:href="#i-'+(dark?'sun':'moon')+'"></use></svg>';
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if(tc) tc.setAttribute('content', dark ? '#0A0A0A' : '#FFFFFF');
+  }
+  if(btn){
+    btn.addEventListener('click', function(){
+      var dark = document.documentElement.classList.toggle('dark');
+      try{ localStorage.setItem('welcome-theme', dark ? 'dark' : 'light'); }catch(e){}
+      syncTheme();
+      if (window.renderDiagrams) window.renderDiagrams();   // схемы перерисовываем под новый фон
+    });
+    syncTheme();
+  }
+})();
+</script>
+
+<script type="module">
+/* ============================================================
+   Одно окно со схемами.
+   · плашки сверху переключают отрасль, поле кода снизу всегда редактируемое;
+   · схема рисуется mermaid'ом в браузере — никуда не отправляется;
+   · её можно листать в обе стороны и масштабировать (колесо, кнопки, щипок);
+   · узкие места в отрисованной схеме подсвечиваются оранжевым;
+   · ошибка разбора показывается текстом и собирается в промт на исправление.
+   Если библиотека не загрузилась, окно честно об этом говорит.
+   ============================================================ */
+const SRC = new Map();
+document.querySelectorAll('#mmd-sources .mmd-src').forEach(el => {
+  SRC.set(el.id.replace('src-', ''), el.textContent.replace(/^\n+|\s+$/g, ''));
+});
+
+const stage  = document.getElementById('v-stage');
+const layer  = document.getElementById('v-layer');
+const tabs   = [...document.querySelectorAll('.v-tab')];
+const input  = document.getElementById('v-input');
+const errBox = document.getElementById('v-err');
+const errTxt = document.getElementById('v-err-text');
+const levelEl= document.getElementById('v-level');
+const copyBtn= document.getElementById('v-copy');
+
+const SAVE_KEY = 'ait-mermaid-draft';     // код в поле переживает перезагрузку
+let current = 'consult', lastError = '';
+
+/* ── Копирование в буфер ────────────────────────────────────────────────── */
+async function copyText(text, btn){
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e2) {}
+    ta.remove();
+  }
+  if (btn){
+    const was = btn.innerHTML;
+    btn.classList.add('done');
+    btn.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> скопировано';
+    setTimeout(() => { btn.classList.remove('done'); btn.innerHTML = was; }, 1600);
+  }
+}
+document.querySelectorAll('.copy[data-copy]:not(.copy-code)').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const src = document.getElementById(btn.dataset.copy);
+    if (src) copyText(src.textContent, btn);
+  });
+});
+copyBtn.addEventListener('click', () => copyText(input.value, copyBtn));
+
+
+/* «Копировать со схемой из окна» — тот же промт, что показан на странице, но
+   плейсхолдер уже заменён кодом открытой схемы. Так промт получается свой для
+   каждого примера и для своей схемы тоже. */
+document.querySelectorAll('.copy-code[data-copy]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tpl = document.getElementById(btn.dataset.copy);
+    const code = (input.value || '').trim();
+    const text = (tpl ? tpl.textContent : '')
+      .replace('СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ', code)
+      .replace('СЮДА ВСТАВЬТЕ КОД СХЕМЫ TO-BE', code);
+    copyText(text, btn);
+  });
+});
+
+/* ── Масштаб и прокрутка ────────────────────────────────────────────────
+   Схема — обычная лента внутри прокручиваемого поля: колесо, тачпад, палец,
+   полоса прокрутки и клавиши работают сами. Масштаб — это реальный размер
+   SVG, а не transform: при увеличении текст остаётся резким. */
+const shell  = stage.parentElement;
+let k = 1, natW = 0, natH = 0;
+const K_MIN = 0.2, K_MAX = 3;
+
+function svgEl(){ return layer.querySelector('svg'); }
+function pads(){
+  const cs = getComputedStyle(layer);
+  return { x: (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight)  || 0),
+           y: (parseFloat(cs.paddingTop)  || 0) + (parseFloat(cs.paddingBottom) || 0) };
+}
+function room(){
+  const pd = pads();
+  return { w: Math.max(80, stage.clientWidth - pd.x), h: Math.max(80, stage.clientHeight - pd.y) };
+}
+// Меняем масштаб так, чтобы точка схемы под курсором (или под центром окна)
+// осталась на месте — иначе после каждого нажатия «+» приходится искать,
+// куда уехала схема.
+function sizeTo(next, ax, ay){
+  const el = svgEl(); if(!el || !natW) return;
+  const cx = ax === undefined ? stage.clientWidth  / 2 : ax;
+  const cy = ay === undefined ? stage.clientHeight / 2 : ay;
+  const rx = (stage.scrollLeft + cx) / Math.max(1, layer.scrollWidth);
+  const ry = (stage.scrollTop  + cy) / Math.max(1, layer.scrollHeight);
+  k = Math.max(K_MIN, Math.min(K_MAX, next));
+  el.style.width  = Math.round(natW * k) + 'px';
+  el.style.height = Math.round(natH * k) + 'px';
+  levelEl.textContent = Math.round(k * 100) + '%';
+  stage.scrollLeft = rx * layer.scrollWidth  - cx;
+  stage.scrollTop  = ry * layer.scrollHeight - cy;
+  edges();
+}
+function fitAll(){                      // «целиком»: вся схема в окне
+  if(!natW) return;
+  const r = room();
+  sizeTo(Math.min(r.w / natW, r.h / natH));
+  stage.scrollLeft = 0; stage.scrollTop = 0;
+  edges();
+}
+function startView(){
+  // Правило одно: по ШИРИНЕ схема старается войти в окно целиком, длина
+  // уходит в прокрутку вниз. Нижняя граница 50%: мельче уже ничего не разобрать,
+  // и тогда честнее оставить прокрутку вбок, чем показывать точки вместо слов.
+  // Листать можно в обе стороны — и вниз, и вбок.
+  if(!natW) return;
+  syncHint();
+  const kW = room().w / natW;
+  sizeTo(Math.min(Math.max(kW, 0.5), 1.15));
+  stage.scrollLeft = 0; stage.scrollTop = 0;
+  edges();
+}
+function syncHint(){
+  const h = document.getElementById('v-hint');
+  if(!h) return;
+  const tall   = stage.scrollHeight > stage.clientHeight + 2;
+  const wide   = stage.scrollWidth  > stage.clientWidth  + 2;
+  const narrow = window.innerWidth < 760;     // на телефоне подсказка в одну строку
+  if(narrow){
+    h.textContent = tall && wide ? 'Листайте схему пальцем в любую сторону'
+                  : tall ? 'Листайте схему вниз'
+                  : wide ? 'Листайте схему вбок' : 'Кнопки — масштаб';
+    return;
+  }
+  h.textContent = tall && wide
+    ? 'Листайте вниз колесом, вбок — перетаскиванием или Shift+колесо · кнопки — масштаб'
+    : tall ? 'Листайте схему вниз колесом или пальцем · кнопки — масштаб'
+    : wide ? 'Листайте вбок перетаскиванием или Shift+колесо · кнопки — масштаб'
+    : 'Кнопки — масштаб · двойной щелчок — показать целиком';
+}
+function edges(){                       // растушёвка там, где схема продолжается
+  const maxX = stage.scrollWidth  - stage.clientWidth;
+  const maxY = stage.scrollHeight - stage.clientHeight;
+  shell.classList.toggle('has-left',  stage.scrollLeft > 4);
+  shell.classList.toggle('has-right', stage.scrollLeft < maxX - 4);
+  shell.classList.toggle('has-up',    stage.scrollTop  > 4);
+  shell.classList.toggle('has-down',  stage.scrollTop  < maxY - 4);
+}
+stage.addEventListener('scroll', edges, { passive: true });
+
+document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
+  const key = b.dataset.zoom;
+  if(key === 'fit') fitAll(); else sizeTo(k * (key === 'in' ? 1.25 : 1 / 1.25));
+}));
+
+// Колесо и тачпад листают вбок; Ctrl/⌘ + колесо — масштаб (привычка браузера)
+stage.addEventListener('wheel', e => {
+  if(!natW) return;
+  if(e.ctrlKey || e.metaKey){
+    e.preventDefault();
+    const r = stage.getBoundingClientRect();
+    sizeTo(k * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX - r.left, e.clientY - r.top);
+    return;
+  }
+  // Если схема выше окна (вертикальная или увеличенная) — колесо листает
+  // ВНИЗ, как обычно. Если по вертикали листать нечего, вертикальное колесо
+  // мыши превращаем в горизонтальную прокрутку ленты.
+  const canY = stage.scrollHeight > stage.clientHeight + 2;
+  if(canY) return;                                   // браузер прокрутит сам
+  if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+    const max = stage.scrollWidth - stage.clientWidth;
+    const next = stage.scrollLeft + e.deltaY;
+    if(next > 0 && next < max) e.preventDefault();   // на краях отдаём прокрутку странице
+    stage.scrollLeft = next;
+  }
+}, { passive: false });
+
+// Перетаскивание мышью — как «рука» в просмотрщиках; на тачскрине работает
+// обычная прокрутка пальцем, поэтому мышь только.
+let grab = null;
+stage.addEventListener('pointerdown', e => {
+  if(e.pointerType === 'touch' || !natW) return;
+  if(e.target.closest('.v-btn, .v-tools, .v-save')) return;
+  grab = { x: e.clientX, y: e.clientY, left: stage.scrollLeft, top: stage.scrollTop };
+  stage.classList.add('dragging');
+});
+window.addEventListener('pointermove', e => {
+  if(!grab) return;
+  stage.scrollLeft = grab.left - (e.clientX - grab.x);
+  stage.scrollTop  = grab.top  - (e.clientY - grab.y);
+});
+window.addEventListener('pointerup', () => { grab = null; stage.classList.remove('dragging'); });
+stage.addEventListener('dblclick', fitAll);
+
+let rsz;
+window.addEventListener('resize', () => {
+  if(!natW) return;
+  clearTimeout(rsz);
+  rsz = setTimeout(startView, 150);
+});
+
+/* ── Отрисовка ──────────────────────────────────────────────────────────── */
+function activeCode(){ return input.value || ''; }
+/* Узкие места — оранжевые. mermaid не умеет красить отдельную заметку, поэтому
+   после отрисовки находим те, что начинаются со слов «Узкое место», и
+   перекрашиваем: именно их и надо искать в схеме, они не должны теряться
+   среди обычных подписей. */
+const BN = /^\s*узкое место/i;
+
+/* Промт заказчика (и его же примеры) задают цвета блоков непрозрачным
+   rgb(240,240,240). На белом это то, что нужно; на тёмной теме — белый
+   прямоугольник с белым текстом внутри. Поэтому светлую заливку полос
+   пересчитываем в тинт: оттенок усиливаем, чтобы блоки не слились в один
+   серый, и кладём с малой непрозрачностью поверх тёмного фона.
+   Код в поле при этом не меняется — правится только отрисованный svg. */
+function bgRGB(){                                        // фон сцены, на нём и мешаем
+  const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(getComputedStyle(stage).backgroundColor || '');
+  return m ? [+m[1], +m[2], +m[3]] : [16, 16, 16];
+}
+function tint(fill){
+  const m = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(String(fill).trim());
+  if(!m) return null;                                   // rgba или имя — не трогаем
+  const c = [+m[1], +m[2], +m[3]];
+  if((0.299*c[0] + 0.587*c[1] + 0.114*c[2]) / 255 < 0.62) return null;  // и так тёмный
+  // Цвет НЕпрозрачный — это принципиально. Полосы этапов ложатся поверх
+  // блоков участников; полупрозрачные тинты складывались бы, и в зазоре между
+  // блоками, где полоса лежит на голом фоне, появлялась тёмная колонна во всю
+  // высоту схемы. Непрозрачный цвет ведёт себя ровно как светлый rgb(...) на
+  // белой теме: верхний прямоугольник просто закрывает нижний.
+  const bg = bgRGB();
+  const amp = c.map(v => Math.max(0, 255 - Math.min(255, (255 - v) * 8)));
+  return 'rgb(' + amp.map((v, i) => Math.round(bg[i] + (v - bg[i]) * 0.13)).join(', ') + ')';
+}
+function retintBands(){
+  if(!document.documentElement.classList.contains('dark')) return;
+  layer.querySelectorAll('rect.rect').forEach(r => {
+    const t = tint(r.getAttribute('fill') || getComputedStyle(r).fill);
+    if(t) r.style.setProperty('fill', t, 'important');
+  });
+}
+
+
+function markBottlenecks(){
+  const dark = document.documentElement.classList.contains('dark');
+  const bg   = dark ? '#7C3A0C' : '#FDBA74';   // рядом с янтарной обычной
+  const fg   = dark ? '#FFE2C6' : '#5C1E06';   // заметкой оранжевая видна сразу
+  // С переносом строк каждая строка заметки — отдельный <text class="noteText">,
+  // и все они идут сразу за своим <rect class="note">. Собираем строки одной
+  // заметки, склеиваем и смотрим, с чего она начинается.
+  layer.querySelectorAll('rect.note').forEach(rect => {
+    const lines = [];
+    let n = rect.nextElementSibling;
+    while(n && n.tagName.toLowerCase() === 'text' && n.classList.contains('noteText')){
+      lines.push(n); n = n.nextElementSibling;
+    }
+    if(!lines.length) return;
+    if(!BN.test(lines.map(t => t.textContent || '').join(' '))) return;
+    // Именно style, а не атрибут: у mermaid внутри svg лежит правило для
+    // .note и .noteText, а CSS сильнее презентационного атрибута — покраска
+    // атрибутом просто не была бы видна.
+    rect.style.setProperty('fill', bg, 'important');
+    rect.style.setProperty('stroke', '#F97316', 'important');
+    rect.style.setProperty('stroke-width', '2px', 'important');
+    lines.forEach(t => {
+      t.style.setProperty('fill', fg, 'important');
+      t.querySelectorAll('tspan').forEach(sp => sp.style.setProperty('fill', fg, 'important'));
+    });
+  });
+}
+
+function showError(msg){
+  lastError = msg;
+  errTxt.textContent = msg;
+  errBox.hidden = false;
+  layer.innerHTML = ''; natW = natH = 0;
+  levelEl.textContent = '—';
+  shell.classList.remove('has-left', 'has-right', 'has-up', 'has-down');
+}
+function themeVars(){
+  const dark = document.documentElement.classList.contains('dark');
+  const fg     = dark ? '#FAFAFA' : '#0A0A0A';
+  const card   = dark ? '#1B1B1B' : '#FFFFFF';
+  const border = dark ? 'rgba(255,255,255,.22)' : '#D8D8D8';
+  const line   = dark ? 'rgba(255,255,255,.45)' : '#9A9A9A';
+  return {
+    fontFamily: 'Montserrat, sans-serif',
+    primaryColor: card,
+    primaryTextColor: fg,
+    primaryBorderColor: border,
+    lineColor: line,
+    secondaryColor: '#8B5CF6',
+    tertiaryColor: dark ? '#1B1B1B' : '#F6F4FF',
+    edgeLabelBackground: dark ? '#101010' : '#FFFFFF',
+    // sequenceDiagram живёт на своём наборе переменных: без них подписи
+    // сообщений, рамки участников и заголовки alt/loop остаются тёмными
+    // на тёмном фоне (у mermaid они по умолчанию #333)
+    actorBkg: card, actorBorder: border, actorTextColor: fg, actorLineColor: line,
+    signalColor: line, signalTextColor: fg,
+    labelBoxBkgColor: card, labelBoxBorderColor: border, labelTextColor: fg,
+    loopTextColor: fg, sequenceNumberColor: '#FFFFFF',
+    activationBkgColor: dark ? '#2A2A2A' : '#EFEFEF',
+    activationBorderColor: '#8B5CF6',
+    // заметка — «стикер»: янтарная и на белом, и на чёрном, но своей яркости
+    noteBkgColor:    dark ? '#3A2E10' : '#FEF3C7',
+    noteTextColor:   dark ? '#FCD34D' : '#3A2E10',
+    noteBorderColor: dark ? '#8A6A18' : '#F59E0B',
+  };
+}
+
+try {
+  const mermaid = (await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs')).default;
+
+  function init(){
+    mermaid.initialize({
+      startOnLoad: false, securityLevel: 'strict', theme: 'base',
+      themeVariables: themeVars(),
+      themeCSS: `
+        .node rect, .node polygon, .node circle, .node path { stroke-width: 1.5px; }
+        .hot rect, .hot polygon { fill: #F97316 !important; stroke: #F97316 !important; }
+        .hot .nodeLabel, .hot span, .hot p { color: #fff !important; fill: #fff !important; }
+        .edgeLabel { font-size: 12px; }
+        /* Номер шага mermaid рисует маркером, и кружок берёт цвет линий —
+           на тёмном это блёклое серое пятно. Красим в фиолетовый бренда. */
+        marker circle { fill: #8B5CF6; stroke: none; }
+      `,
+      flowchart: { curve: 'basis', nodeSpacing: 26, rankSpacing: 34, useMaxWidth: false },
+      // wrap: длинная подпись сообщения или заметки в sequenceDiagram по
+      // умолчанию не переносится, и одна фраза растягивает всю схему на
+      // несколько тысяч пикселей. С переносом ширина держится в разумных
+      // пределах, а читать всё равно приходится сверху вниз.
+      sequence: { wrap: true, width: 190, actorMargin: 44, boxMargin: 10,
+                  noteMargin: 10, messageMargin: 34, mirrorActors: true,
+                  useMaxWidth: false },
+    });
+  }
+  init();
+
+  window.renderDiagrams = async function(keepView){
+    const code = (activeCode() || '').trim();
+    if(!code){ showError('Пусто: вставьте код схемы — первой строкой идёт тип схемы, например sequenceDiagram'); return; }
+    init();                                   // тема могла смениться
+    try {
+      // parse() бросает исключение с текстом и номером строки — его и показываем
+      await mermaid.parse(code);
+      const { svg } = await mermaid.render('v-svg-' + Date.now(), code);
+      const keepLeft = stage.scrollLeft, keepTop = stage.scrollTop, keepK = k,
+            prevW = natW, prevH = natH;
+      layer.innerHTML = svg;
+      const el = layer.querySelector('svg');
+      const vb = el.viewBox && el.viewBox.baseVal;
+      natW = (vb && vb.width)  || el.getBoundingClientRect().width  || 1;
+      natH = (vb && vb.height) || el.getBoundingClientRect().height || 1;
+      retintBands();
+      markBottlenecks();
+      errBox.hidden = true;
+      // Мелкая правка кода — вид сохраняем (иначе схема прыгает на каждой
+      // букве). Вставили совсем другую схему — подгоняем заново, иначе она
+      // осталась бы крошечной в углу.
+      const same = prevW && Math.abs(natW - prevW) / prevW < 0.25
+                        && Math.abs(natH - prevH) / Math.max(1, prevH) < 0.25;
+      if(keepView && same){
+        sizeTo(keepK); stage.scrollLeft = keepLeft; stage.scrollTop = keepTop; edges(); syncHint();
+      }
+      else startView();
+    } catch (e) {
+      showError((e && (e.str || e.message)) ? String(e.str || e.message) : 'Схема не разобралась');
+    }
+  };
+
+  /* ── Плашки: подставляют пример в поле ───────────────────────────────── */
+  function select(key){
+    current = key;
+    tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.key === key ? 'true' : 'false'));
+    document.querySelectorAll('.case-info').forEach(b => { b.hidden = b.id !== ('info-' + key); });
+    input.value = SRC.get(key) || '';
+    save();
+    errBox.hidden = true;
+    window.renderDiagrams();           // новая схема — новый вид, с начала
+  }
+  tabs.forEach(t => t.addEventListener('click', () => select(t.dataset.key)));
+
+  /* ── Правка кода: рисуем сами, без кнопки ────────────────────────────── */
+  function save(){ try { localStorage.setItem(SAVE_KEY, input.value); } catch (e) {} }
+  let typing;
+  input.addEventListener('input', () => {
+    clearTimeout(typing);
+    // Полсекунды тишины — и перерисовываем. Вид (масштаб и сдвиг) сохраняем:
+    // иначе схема прыгала бы к началу на каждом нажатии клавиши.
+    typing = setTimeout(() => { save(); window.renderDiagrams(true); }, 500);
+  });
+  document.getElementById('v-fixprompt').addEventListener('click', ev => {
+    copyText('Схема mermaid не разобралась. Ниже код и текст ошибки. '
+      + 'Исправь только сломанное место, сохрани смысл процесса и верни ВЕСЬ код целиком, '
+      + 'без пояснений и без markdown-обрамления.\n\nКод:\n' + activeCode().trim()
+      + '\n\nОшибка:\n' + lastError, ev.currentTarget);
+  });
+
+  /* ── Сохранение картинки ─────────────────────────────────────────────── */
+  function currentSvg(){
+    const svg = layer.querySelector('svg');
+    if(!svg){ showError('Сначала покажите схему — сохранять пока нечего'); return null; }
+    const clone = svg.cloneNode(true);
+    const w = Math.max(1, Math.round(natW)), h = Math.max(1, Math.round(natH));
+    clone.setAttribute('width', w); clone.setAttribute('height', h);
+    clone.removeAttribute('style');
+    // Фон не наследуется из страницы: без него тёмная схема в документе
+    // выглядит как белый текст на прозрачном — то есть никак.
+    // Кладём его ровно по viewBox: у mermaid начало координат уходит в минус
+    // (например "-50 -10 3260 1857"), и прямоугольник от нуля оставлял слева
+    // и сверху незакрашенную полосу — в выгрузке она вылезала краем.
+    const vb = svg.viewBox && svg.viewBox.baseVal;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', vb ? vb.x : 0);
+    rect.setAttribute('y', vb ? vb.y : 0);
+    rect.setAttribute('width',  vb && vb.width  ? vb.width  : '100%');
+    rect.setAttribute('height', vb && vb.height ? vb.height : '100%');
+    rect.setAttribute('fill', getComputedStyle(stage).backgroundColor || '#FFFFFF');
+    clone.insertBefore(rect, clone.firstChild);
+    return { markup: new XMLSerializer().serializeToString(clone), w, h };
+  }
+  function saveBlob(blob, name){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function fileName(ext){ return 'process-' + current + '.' + ext; }
+  document.getElementById('v-svg').addEventListener('click', () => {
+    const cur = currentSvg(); if(!cur) return;
+    saveBlob(new Blob([cur.markup], {type:'image/svg+xml;charset=utf-8'}), fileName('svg'));
+  });
+  document.getElementById('v-png').addEventListener('click', () => {
+    const cur = currentSvg(); if(!cur) return;
+    const k = 2;                                   // ретина: схему вставляют в документы
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = cur.w * k; canvas.height = cur.h * k;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(k, k); ctx.drawImage(img, 0, 0);
+      canvas.toBlob(b => { if(b) saveBlob(b, fileName('png')); }, 'image/png');
+    };
+    img.onerror = () => showError('PNG не собрался в этом браузере — сохраните SVG, он открывается везде');
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cur.markup);
+  });
+
+  // Черновик из прошлого захода поднимаем, только если это НЕ один из примеров:
+  // значит, человек работал со своей схемой и не должен её потерять.
+  let draft = '';
+  try { draft = localStorage.getItem(SAVE_KEY) || ''; } catch (e) {}
+  const known = [...SRC.values()].some(v => v.trim() === draft.trim());
+  if(draft && !known){
+    input.value = draft;
+    tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+    document.querySelectorAll('.case-info').forEach(b => { b.hidden = true; });
+    await window.renderDiagrams();
+  } else {
+    select('consult');
+  }
+} catch (e) {
+  showError('Библиотека mermaid не загрузилась — проверьте соединение и обновите страницу. Код схемы можно скопировать и открыть на mermaid.live');
+}
+</script>
+<!-- ГОВОРЯЩАЯ ГОЛОВА (кружок): механика, размеры и разметка — те же, что в
+     задании первой лекции (automation/1/practice), отличается только ролик.
+     Ролик 40 — сороковая запись лекции 2, та, что про практику. Без звука не
+     играет: стоит на кнопке ▶; если звук включали раньше на пути
+     (welcome-audio) — стартует сам. Постер снят с первого кадра ролика и стоит
+     И атрибутом poster, И фоном: пустого кружка не бывает ни секунды. -->
+<style>
+/* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
+  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(170px,13.6vw,260px);height:clamp(170px,13.6vw,260px);touch-action:none;user-select:none;-webkit-user-select:none}
+  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:170px;height:170px}}
+  .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
+  .bubble.dragging .inner{cursor:grabbing}
+  .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
+  .bubble video{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;transition:filter .25s ease,transform .25s ease}
+  /* Пока ролик не играет — кадр стоит РАЗМЫТЫМ под кнопкой play (правка
+     заказчика); scale прячет светлую кайму, которую blur тянет с краёв */
+  .bubble.paused video{filter:blur(5px);transform:scale(1.08)}
+  .bubble-sound{position:absolute;z-index:3;left:50%;bottom:8%;transform:translateX(-50%);display:inline-flex;align-items:center;justify-content:center;height:1.5rem;min-width:1.5rem;padding:0 .4rem;border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font-size:.72rem;pointer-events:none;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);transition:opacity .2s ease}
+  .bubble.paused .bubble-sound{opacity:0}
+  .bubble-play{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.9rem;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity .2s ease;pointer-events:none}
+  .bubble.paused .bubble-play{opacity:1}
+/* Кружок справа, размеры как в лекциях */
+.bubble{ left:auto; right:20px; /* БЕЗ !important: перетаскивание пишет инлайновый style.left, важность из CSS его глушила — кружок ходил только по вертикали */
+  width:clamp(170px,13.6vw,260px) !important; height:clamp(170px,13.6vw,260px) !important; }
+@media(max-width:768px){
+  .bubble{ left:auto; right:12px; width:170px !important; height:170px !important; }
+}
+</style>
+<div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
+    <div class="inner">
+      <div class="grad"></div>
+      <!-- Ролик входа в курс лежит в репозитории: внешний CDN отдавал 404 и
+           кружок оставался пустым градиентом. Обложка стоит и постером, и
+           фоном — дыры на месте кружка нет никогда. -->
+      <video id="bubble-video" src="/assets/video_l2/40.mp4" muted playsinline preload="auto"
+             poster="/assets/video_sq/poster_practice_2.jpg"
+             style="background:#0A0A0A url(/assets/video_sq/poster_practice_2.jpg) center/cover no-repeat"></video>
+      <div class="bubble-sound" id="bubble-sound" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M15.6 8.6 14.2 10l2 2-2 2 1.4 1.4 2-2 2 2L21 14l-2-2 2-2-1.4-1.4-2 2z"/></svg></div>
+      <div class="bubble-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></div>
+    </div>
+  </div>
+<script>
+(function(){
+// ===== Video bubble: tap = sound, then play/pause; drag to move (same as welcome) =====
+    (function(){
+      var bubble = document.getElementById('bubble');
+      var video  = document.getElementById('bubble-video');
+      var sound  = document.getElementById('bubble-sound');
+      if (!bubble || !video) return;
+
+      // ONE journey-wide audio memory (same flag as welcome/roles/skills): if the user enabled
+      // sound earlier in the path, the roadmap video starts WITH sound too (best-effort; falls back
+      // to muted if the browser blocks unmuted autoplay — one tap re-enables).
+      var WANT_SOUND = false;
+      try { WANT_SOUND = localStorage.getItem('welcome-audio') === '1'; } catch (e) {}
+      function rememberSound(){ try { localStorage.setItem('welcome-audio', '1'); } catch (e) {} }
+      // Дорожная карта — конечная страница пути: голова договаривает своё и
+      // замолкает, дальше выбирает пользователь. Зацикливать нельзя: на шагах
+      // мастера ролик по окончании ведёт на следующий шаг, а здесь вести некуда,
+      // и повтор превращался в бесконечно говорящую голову поверх списка модулей.
+      video.loop = false; video.muted = !WANT_SOUND;
+      // БЕЗ ЗВУКА НЕ ИГРАЕМ (правка заказчика): молчаливый ролик выглядел как
+      // сломанный. Если звук включали на предыдущем шаге пути — пробуем
+      // стартовать сразу СО ЗВУКОМ; если браузер запретил (NotAllowedError на
+      // свежей странице) или флага нет — стоим на кнопке ▶, клик всё включит.
+      function tryPlay(){
+        if (video.muted){ bubble.classList.add('paused'); return; }
+        var p = video.play && video.play();
+        if (p && p.catch) p.catch(function(err){
+          if (err && err.name === 'NotAllowedError'){ video.muted = true; video.pause(); bubble.classList.add('paused'); }
+        });
+      }
+      tryPlay();
+      video.addEventListener('loadedmetadata', tryPlay);
+      video.addEventListener('loadeddata', tryPlay);
+      video.addEventListener('canplay', tryPlay);
+      function syncSound(){
+        bubble.classList.toggle('muted', video.muted);
+        if (sound) sound.innerHTML = video.muted ? '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M15.6 8.6 14.2 10l2 2-2 2 1.4 1.4 2-2 2 2L21 14l-2-2 2-2-1.4-1.4-2 2z"/></svg>' : '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M14.5 12c0-1.8-1-3.3-2.5-4v8c1.5-.7 2.5-2.2 2.5-4z"/><path d="M12 3.2v2.1c2.9.9 5 3.6 5 6.7s-2.1 5.8-5 6.7v2.1c4-.9 7-4.5 7-8.8s-3-7.9-7-8.8z"/></svg>';
+      }
+      video.addEventListener('play',  function(){ bubble.classList.remove('paused'); });
+      video.addEventListener('pause', function(){ bubble.classList.add('paused'); });
+      // Договорил — показываем ▶, чтобы кружок не выглядел зависшим и ролик
+      // можно было пересмотреть. Отдельно от 'pause': по спецификации порядок
+      // событий в конце воспроизведения зависит от браузера.
+      video.addEventListener('ended', function(){ try { video.currentTime = 0; } catch (e) {} bubble.classList.add('paused'); });
+      video.addEventListener('volumechange', syncSound);
+      syncSound();
+      // safety net: show ▶ only if playback genuinely never started (rare with the muted fallback)
+      setTimeout(function(){ if (video.paused && video.currentTime < 0.1) bubble.classList.add('paused'); }, 2500);
+
+      // tap: first turn the SOUND on (unmute — allowed inside the user gesture); then toggle play/pause
+      function onTap(){
+        if (video.muted){ video.muted = false; rememberSound(); try { video.currentTime = 0; } catch (e) {} var q = video.play(); if (q && q.catch) q.catch(function(){}); } // включили звук → видео с начала
+        else if (video.paused){ var p2 = video.play(); if (p2 && p2.catch) p2.catch(function(){}); }
+        else video.pause();
+      }
+
+      // body{zoom} on big screens scales fixed elements: clientX / getBoundingClientRect are in
+      // RENDERED px while style.left is in LAYOUT px — reconcile via the measured zoom factor.
+      function zoomF(){ var r=bubble.getBoundingClientRect(); return (r.width && bubble.offsetWidth) ? r.width/bubble.offsetWidth : 1; }
+      // Память позиции кружка (правка владельца): куда перетащили — там и
+      // живёт, на всех страницах курса и после перезагрузки. Храним ДОЛИ
+      // свободного места — позиция переживает смену размера экрана и формы.
+      function saveBubblePos(){
+        try{
+          var r=bubble.getBoundingClientRect();
+          var aw=window.innerWidth-r.width, ah=window.innerHeight-r.height;
+          localStorage.setItem('ait-bubble-pos', JSON.stringify({fx: aw>0? r.left/aw:0, fy: ah>0? r.top/ah:0}));
+        }catch(e){}
+      }
+      function restoreBubblePos(){
+        var s=null; try{ s=JSON.parse(localStorage.getItem('ait-bubble-pos')); }catch(e){}
+        if (!s || typeof s.fx!=='number' || typeof s.fy!=='number') return;
+        var z=zoomF(), rw=bubble.offsetWidth*z, rh=bubble.offsetHeight*z;
+        var aw=Math.max(0, window.innerWidth-rw), ah=Math.max(0, window.innerHeight-rh);
+        var x=Math.min(Math.max(0, s.fx*aw), aw), y=Math.min(Math.max(0, s.fy*ah), ah);
+        bubble.style.left=(x/z)+'px'; bubble.style.top=(y/z)+'px';
+        bubble.style.right='auto'; bubble.style.bottom='auto';
+      }
+      // Позицию больше НЕ восстанавливаем (правка владельца): позиция,
+      // сохранённая на другой странице (лекции), ставила кружок куда
+      // попало — вплоть до верхнего угла поверх кнопок. Кружок всегда
+      // открывается в исходном месте внизу с небольшим отступом от края.
+      void restoreBubblePos;
+      // pointer drag; a tap (no real movement) triggers onTap (sound / play-pause)
+      var down=false, moved=false, sx=0, sy=0, ox=0, oy=0, TH=6;
+      bubble.addEventListener('pointerdown', function(e){
+        down=true; moved=false; sx=e.clientX; sy=e.clientY;
+        var r=bubble.getBoundingClientRect(), z=zoomF(); ox=r.left; oy=r.top;
+        bubble.style.left=(r.left/z)+'px'; bubble.style.top=(r.top/z)+'px';
+        bubble.style.right='auto'; bubble.style.bottom='auto';
+        if (bubble.setPointerCapture){ try { bubble.setPointerCapture(e.pointerId); } catch (err) {} }
+      });
+      bubble.addEventListener('pointermove', function(e){
+        if (!down) return;
+        var dx=e.clientX-sx, dy=e.clientY-sy;
+        if (!moved && (Math.abs(dx)>TH || Math.abs(dy)>TH)){ moved=true; bubble.classList.add('dragging'); }
+        if (moved){
+          var z=zoomF(), rw=bubble.offsetWidth*z, rh=bubble.offsetHeight*z;
+          var nx=Math.min(Math.max(0, ox+dx), window.innerWidth  - rw);
+          var ny=Math.min(Math.max(0, oy+dy), window.innerHeight - rh);
+          bubble.style.left=(nx/z)+'px'; bubble.style.top=(ny/z)+'px';
+        }
+      });
+      function endDrag(){ if (!down) return; down=false; bubble.classList.remove('dragging'); if (moved) saveBubblePos(); else onTap(); }
+      bubble.addEventListener('pointerup', endDrag);
+      bubble.addEventListener('pointercancel', endDrag);
+
+      window.addEventListener('resize', function(){
+        if (!bubble.style.left) return;
+        var z=zoomF(), rw=bubble.offsetWidth*z, rh=bubble.offsetHeight*z;
+        var lx=Math.max(0,Math.min(parseFloat(bubble.style.left)*z, window.innerWidth  - rw));
+        var ly=Math.max(0,Math.min(parseFloat(bubble.style.top)*z,  window.innerHeight - rh));
+        bubble.style.left=(lx/z)+'px'; bubble.style.top=(ly/z)+'px';
+      });
+    })();
+})();
+</script>
+</body>
+</html>
