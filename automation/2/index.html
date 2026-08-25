@@ -7586,6 +7586,12 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   #slide-23 [class*="md:flex-row"] h3{ font-size:1rem !important; }
   #slide-23 [class*="md:flex-row"] p{ font-size:10px !important; letter-spacing:.04em !important; line-height:1.15 !important; }
   #slide-23 [class*="md:flex-row"] p span{ white-space:normal !important; }
+  /* подгонщик, не уместив подпись, ставит overflow-wrap:anywhere прямо на
+     элемент — и «СОСТОЯНИЕ» рвалось посреди слова. Запрещаем всей ветке. */
+  #slide-23 [class*="md:flex-row"], #slide-23 [class*="md:flex-row"] *{
+    overflow-wrap:normal !important; word-break:keep-all !important; hyphens:none !important;
+  }
+  #slide-23 [class*="md:flex-row"] > [class*="rounded-full"]{ align-self:center !important; }
 
   /* 25: «ИИ-агент + Человек» — тоже строкой; столбцом два больших кружка
      занимали пол-экрана. */
@@ -7606,10 +7612,45 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   #slide-17 [class*="grid"] > div > i{ grid-row:1 / span 4; font-size:1.5rem !important; margin:0 !important; }
   #slide-17 [class*="grid"] > div > *:not(i){ margin:0 !important; }
   #slide-17 [class*="grid"] > div > h3{ font-size:.9rem !important; }
-  #slide-17 [class*="grid"] > div > span{ justify-self:start; margin:.15rem 0 !important; }
+  #slide-17 [class*="grid"] > div > div{ justify-self:start; margin:.2rem 0 !important; }
+  #slide-17 [class*="grid"] > div > p + p{ margin-top:.2rem !important; }
   #slide-36 [class*="p-2.5"]{ padding:.45rem !important; }
   #slide-36 [class*="gap-1.5"]{ gap:.35rem !important; }
   #slide-13 [class*="p-2"]{ padding:.45rem !important; }
+
+  /* 11: чипы-вопросы в одном ряду тянутся на общую высоту, текст по центру —
+     иначе ряд гуляет: слева двухстрочный чип, справа однострочный. */
+  #slide-10 [class*="grid-cols-2"]{ align-items:stretch !important; }
+  #slide-10 [class*="grid-cols-2"] > div{ display:flex !important; align-items:center !important; }
+
+  /* 12: у колеса вернулись вторые строки подписей — им нужен свой кегль,
+     иначе подписи упираются в пунктир и в центральный узел. */
+  #slide-11 .rf-label{ line-height:1.15 !important; }
+  #slide-11 .radial-sat .rf-label > span{ font-size:9px !important; }
+
+  /* 2: плашке-выводу не хватало нижнего поля — текст лежал на кромке. */
+  #slide-1 [class*="border-l-4"]{ padding-top:.6rem !important; padding-bottom:.6rem !important; }
+
+  /* 4: заголовок шире колонки — прижимаем к общему полю слайда. */
+  #slide-3 .content-z > h2{ padding-left:.5rem; padding-right:.5rem; }
+
+  /* 33: подпись «Навыки агента» вернулась на телефон, но она абсолютная и
+     легла ПОВЕРХ первой пилюли. Ставим её в поток над списком. */
+  #slide-32 [class*="absolute"][class*="top-3"]{
+    position:static !important; transform:none !important;
+    display:block; text-align:center; margin:0 0 .4rem !important;
+  }
+
+  /* 15: строка «Явные правила» вернулась целиком, и её чипы вылезали за
+     карточку и за край экрана — разрешаем ряду переноситься. */
+  #slide-14 .content-z > div[class*="flex-row"]{ flex-wrap:wrap !important; row-gap:.35rem !important; }
+  #slide-14 .content-z > div[class*="flex-row"] span{ white-space:normal !important; }
+
+  /* 27: подпись «Человек-…» стояла вплотную к заголовку карточки. */
+  #slide-26 [class~="text-[7px]"]{ margin-top:.2rem !important; }
+
+  /* 31: три нижних блока слиплись — возвращаем воздух между ними. */
+  #slide-30 .content-z > *:not(:first-child){ margin-top:.5rem !important; }
 
   /* 4. Слайд 21 «Карта точек автоматизации»: содержимое карточек по центру,
      как всё остальное на слайде (правка владельца «по середине всё выровни»). */
