@@ -2043,7 +2043,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
             <h1 class="text-2xl sm:text-4xl md:text-5xl lg:text-[60px] font-black mb-2 md:mb-8 leading-tight tracking-tight text-black drop-shadow-sm">
                 Переход к <span class="text-solar">процессному подходу</span>
             </h1>
-            <p class="text-black/60 font-medium text-[11px] md:text-xl mb-4 md:mb-12 max-w-3xl mx-auto">Автоматизация в компании начинается с понимания того, как в компании на самом деле создаётся ценность и как устроена работа</p>
+            <p class="text-black/60 font-medium text-[11px] md:text-xl mb-4 md:mb-12 max-w-3xl mx-auto">Автоматизация начинается с понимания того, как в компании на самом деле создаётся ценность и как устроена работа</p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-5 w-full max-w-3xl mx-auto text-left">
                 <!-- Заказчик: «на компьютере в карточках слишком мелкий шрифт» — на md/lg кегль
@@ -3019,7 +3019,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <div class="absolute left-6 right-6 lg:left-10 lg:right-10 top-full mt-1.5 lg:mt-2 pointer-events-none">
                             <div class="h-4 lg:h-6 border-b-2 border-l-2 border-r-2 border-dashed border-black/35 rounded-b-xl lg:rounded-b-2xl"></div>
                             <span class="absolute w-0 h-0 border-l-[5px] border-r-[5px] border-b-[7px] border-l-transparent border-r-transparent js-return-head" style="left:-4px;top:-6px"></span>
-                            <span class="absolute left-1/2 -translate-x-1/2 top-full mt-1 lg:mt-1.5 bg-black text-solar text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap js-hang-badge">Возврат</span>
+                            <span class="absolute left-1/2 -translate-x-1/2 top-full mt-2 lg:mt-1.5 bg-black text-solar text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap js-hang-badge">Возврат</span>
                         </div>
                     </div>
                     <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
@@ -6656,31 +6656,6 @@ html.dark .radial-core .rf-label{ background:#0A0A0A; color:#FFFFFF !important; 
         ]
       },
       {
-        "t": "cards",
-        "v": [
-          {
-            "i": "ph-sliders",
-            "h": "Оператор",
-            "p": "Помогает системе с данными, корректировками и обратной связью — его правки становятся сигналом для улучшения агента."
-          },
-          {
-            "i": "ph-eyeglasses",
-            "h": "Супервайзер",
-            "p": "Разбирает исключения и спорные случаи, контролирует качество работы агентов."
-          },
-          {
-            "i": "ph-steering-wheel",
-            "h": "Менеджер-оркестратор",
-            "p": "Задаёт цели, правила, контекст и метрики — фактически управляет машинным исполнением и интеллектом."
-          },
-          {
-            "i": "ph-certificate",
-            "h": "Эксперт",
-            "p": "Остаётся носителем глубокой доменной экспертизы и принимает стратегические, этические и чувствительные решения."
-          }
-        ]
-      },
-      {
         "t": "p",
         "v": "Эти роли не привязаны к должностям: один и тот же сотрудник в течение дня может подтверждать решения агента как супервайзер и обучать систему как оператор. Важно, чтобы для каждого шага процесса роль была определена заранее."
       },
@@ -7530,7 +7505,7 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
      бейдж вдвое ниже, и этот отступ делал карточку выше соседей по ряду —
      «шаг 4 повыше вертикально выходит», «обработка заказа больше других». */
   .slide-container [class*="relative"]:has(> [class*="-top-2"]),
-  .slide-container [class*="relative"]:has(> [class*="-top-3"]){ padding-top:.4rem !important; }
+  .slide-container [class*="relative"]:has(> [class*="-top-3"]){ padding-top:.7rem !important; }
 
   /* 2. Воздух между элементами, идущими друг за другом (правка владельца).
      Колоночные стопки и сетки с шагом 1.5 (6px) читались одним пятном. */
@@ -7553,6 +7528,19 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
      этому абзацу: на экране он всё равно крупнее прежних 9.2px. */
   #slide-1 .content-z > p{ font-size:10.5px !important; }
 
+  /* 3c. Слайд 3: цепочка «Сайт → CRM → Менеджер → Финсистема → Оплата».
+     Пять карточек в ряд на 376px оставляли подписи по 39px: «Финсист.»
+     разрывалось на «Финс/ист.», «Менедж.» упиралось в борта. Убираем на
+     телефоне только стрелки-разделители — подписи получают по 12px и встают
+     в строку; порядок шагов и так читается слева направо, а полные названия
+     стоят в легенде прямо под цепочкой. */
+  #slide-2 [class*="md:hidden"] i[class*="caret-right"]{ display:none !important; }
+
+  /* 3d. Слайд 16: четыре чипа «минимума журнала событий» стояли в одну
+     нерушимую строку (flex-nowrap + whitespace-nowrap) и вылезали за ОБА края
+     экрана — крайние слова обрезались. На телефоне ряд переносится. */
+  #slide-15 [class*="flex-nowrap"]{ flex-wrap:wrap !important; }
+
   /* 4. Слайд 21 «Карта точек автоматизации»: содержимое карточек по центру,
      как всё остальное на слайде (правка владельца «по середине всё выровни»). */
   #slide-20 [class*="lg:hidden"] > div{ text-align:center !important; }
@@ -7563,6 +7551,8 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
      саму полоску. Полоску сдвигаем правее подписи, сетку — правее полоски. */
   #slide-21 [class*="left-2"][class*="w-1"]{ left:1rem !important; }
   #slide-21 [class*="grid-cols-2"][class*="grid-rows-2"]{ padding-left:1.75rem !important; }
+  /* и горизонтальная ось идёт ровно под квадрантами, а не шире их */
+  #slide-21 [class*="bottom-4"][class*="left-6"]{ left:2.25rem !important; right:.5rem !important; }
 
   /* 6. Слайд 23: восемь пунктов готовности стояли сплошным блоком. */
   #slide-22 [class*="gap-y-2"]{ row-gap:.7rem !important; }
