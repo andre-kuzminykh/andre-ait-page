@@ -10,6 +10,11 @@ import os
 import re
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _unescape(text):
+    """Код схем лежит в HTML, значит &gt; вместо > — читаем как исходник."""
+    return (text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&"))
 _ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
 # Открыт только модуль 1: лекции 2-8 закрыты и НЕ опубликованы — их файлов нет
 # в репозитории, поэтому по адресу /automation/2/ отдаётся 404 и контент
@@ -692,19 +697,33 @@ def test_process_practice_page():
     # схемы — классические sequenceDiagram: участники в блоках box, фазы в
     # rect, ветвления alt/opt/loop, нумерация шагов (FR-SITE28)
     sources = html[html.index('<div id="mmd-sources"'):html.index('<div class="viewer"')]
-    per = re.findall(r'<pre class="mmd-src" id="src-(\w+)">(.*?)</pre>', sources, re.S)
+    per = [(k, _unescape(c)) for k, c in
+           re.findall(r'<pre class="mmd-src" id="src-(\w+)">(.*?)</pre>', sources, re.S)]
     assert len(per) == 6, rel + ": исходников должно быть шесть"
     for key, code in per:
         assert code.lstrip().startswith("sequenceDiagram"), rel + ": %s — не sequenceDiagram" % key
         assert "\nautonumber" in code, rel + ": %s — нет автонумерации шагов" % key
-        assert code.count("\nbox rgba(") == 2, rel + ": %s — нужны блоки внешних и внутренних" % key
-        assert code.count("\nrect rgba(") >= 4, rel + ": %s — фазы процесса не выделены" % key
-        assert "rgb(" not in code.replace("rgba(", ""), \
-            rel + (": %s — непрозрачный цвет; на тёмной теме это белый прямоугольник" % key)
+        # три блока участников: External / Systems / Internal
+        boxes = re.findall(r"\nbox rgb\([^)]+\) (\w+)", code)
+        assert boxes == ["External", "Systems", "Internal"], \
+            rel + ": %s — участники не разложены по блокам (%s)" % (key, boxes)
+        assert code.count("\nrect rgb(") >= 4, rel + ": %s — этапы процесса не выделены" % key
+        # у каждого этапа заметка со всеми полями, во всю ширину схемы
+        heads = re.findall(r"\nNote over \w+,\w+: [^\n]+", code)
+        stage = [h for h in heads if "Вход:" in h]
+        assert len(stage) >= 4, rel + ": %s — у этапов нет заметки с полями" % key
+        for h in stage:
+            for field in ("Вход:", "Выход:", "Артефакты:", "Системы:", "Метрики:", "Логика:"):
+                assert field in h, rel + ": %s — в заметке этапа нет поля %s" % (key, field)
+        # артефакты в квадратных скобках у сообщений
+        assert len([l for l in code.splitlines() if "->>" in l and l.rstrip().endswith("]")]) >= 12, \
+            rel + ": %s — у сообщений не указаны артефакты" % key
         # узкие места отмечены прямо в схеме и подписаны одинаково
-        assert len(re.findall(r"note over [^:]+: Узкое место:", code)) >= 3, \
+        assert len(re.findall(r"Note over [^:]+: Узкое место:", code)) >= 3, \
             rel + ": %s — в схеме меньше трёх узких мест" % key
-        assert re.search(r"\n(alt|opt|loop) ", code), rel + ": %s — нет ветвлений" % key
+        for kw in ("par ", "alt ", "loop "):
+            assert re.search(r"\n\s*" + kw, code) or kw == "par ", \
+                rel + ": %s — нет конструкции %s" % (key, kw.strip())
     assert "flowchart" not in sources, rel + ": примеры процессов — sequenceDiagram, не flowchart"
 
     # главный CTA — инструмент ИИ-стратегии
@@ -726,22 +745,37 @@ def test_process_practice_viewer():
         html = f.read()
 
     # путь «интервью → схема» и готовый промт
-    for step in ("Проведите интервью", "Запишите и расшифруйте", "Отправьте промт AS-IS",
-                 "Вставьте код в окно выше", "Отправьте промт TO-BE", "Отрисуйте TO-BE и сравните"):
+    for step in ("Опишите процесс", "Промт 1 → схема AS-IS", "Промт 2 → точки автоматизации",
+                 "Промт 3 → схема TO-BE", "Промт 4 → граф навыков агента", "Сохраните и сравните"):
         assert step in html, rel + ": нет шага «%s»" % step
     assert "Свой процесс" not in html, rel + ": вкладки «Свой процесс» нет — ссылаться на неё нельзя"
-    prompt = html[html.index('id="prompt-src"'):html.index("</pre>", html.index('id="prompt-src"'))]
-    for must in ("sequenceDiagram", "autonumber", "box rgba(", "rect", "alt/else",
-                 "Узкое место:", "СЮДА ВСТАВЬТЕ ТЕКСТ ИНТЕРВЬЮ", "ТОЛЬКО код mermaid"):
-        assert must in prompt, rel + ": в промте AS-IS нет «%s»" % must
-    # второй промт: схема AS-IS → точки автоматизации, роль человека, TO-BE
-    tobe = html[html.index('id="prompt-tobe"'):html.index("</pre>", html.index('id="prompt-tobe"'))]
-    for must in ("Точки автоматизации", "Новая роль человека", "Навыки будущего агента",
-                 "TO-BE", "СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ"):
-        assert must in tobe, rel + ": во втором промте нет «%s»" % must
-    # кнопка в окне подставляет в этот промт схему, которая сейчас открыта
-    assert 'id="v-tobe"' in html and "СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ', (input.value" in html, \
-        rel + ": «промт TO-BE» должен подставлять код открытой схемы"
+    # четыре промта: AS-IS → точки автоматизации → TO-BE → граф навыков
+    def prompt_of(pid):
+        i = html.index('id="%s"' % pid)
+        return html[i:html.index("</pre>", i)]
+    need = {
+        "prompt-asis":   ("sequenceDiagram", "autonumber", "box rgb(", "rect rgb(",
+                          "Note over", "Вход:", "Артефакты:", "Метрики:",
+                          "только Mermaid-код", "СЮДА ВСТАВЬТЕ ТАБЛИЦУ"),
+        "prompt-points": ("точек автоматизации", "Тип автоматизации", "Quick Wins",
+                          "СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ"),
+        "prompt-tobe":   ("TO-BE", "AI Agents", "ИИ-агент", "Автоматизация:",
+                          "СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ",
+                          "СЮДА ВСТАВЬТЕ ТАБЛИЦУ ТОЧЕК АВТОМАТИЗАЦИИ"),
+        "prompt-skills": ("skill graph", "graph TD", "Automation Skill", "Cognitive Skill",
+                          "subgraph", "СЮДА ВСТАВЬТЕ КОД СХЕМЫ TO-BE"),
+    }
+    for pid, musts in need.items():
+        body = prompt_of(pid)
+        for must in musts:
+            assert must in body, rel + ": в промте %s нет «%s»" % (pid, must)
+    # промты не раскрыты по умолчанию — иначе страница превращается в простыню
+    assert '<details class="src" open' not in html, rel + ": промты должны быть свёрнуты"
+    assert html.count('<details class="src"') == 4, rel + ": промтов должно быть четыре"
+    # кнопка подставляет в промт схему, открытую в окне
+    assert "СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ', code)" in html \
+        and "СЮДА ВСТАВЬТЕ КОД СХЕМЫ TO-BE', code)" in html, \
+        rel + ": «копировать со схемой» должно подставлять код открытой схемы"
 
     # окно: масштаб кнопками и колесом, перетаскивание, «по размеру»
     for el in ('id="v-stage"', 'id="v-layer"', 'id="v-level"', 'data-zoom="in"',
@@ -762,8 +796,8 @@ def test_process_practice_viewer():
         rel + ": перетаскивание работает и по вертикали"
     # схема подгоняется по ширине окна, но не мельче 75%: ниже подписи не
     # прочесть, и тогда остаётся прокрутка вбок
-    assert "function startView(){" in html and "sizeTo(Math.min(Math.max(kW, 0.75), 1.15));" in html, \
-        rel + ": стартовый масштаб — по ширине окна в границах 75-115%"
+    assert "function startView(){" in html and "sizeTo(Math.min(Math.max(kW, 0.5), 1.15));" in html, \
+        rel + ": стартовый масштаб — по ширине окна в границах 50-115%"
     # окно шире текстовой колонки: sequenceDiagram в 864px не читается
     assert "@media (min-width:1180px){ .viewer{ width:1100px;" in html \
         and "@media (min-width:1420px){ .viewer{ width:1340px;" in html, \
@@ -801,14 +835,22 @@ def test_process_practice_viewer():
               "noteBkgColor:", "noteTextColor:"):
         assert v in html, rel + ": в теме нет переменной " + v
     assert "sequence: { wrap: true" in html, rel + ": без переноса одна подпись растягивает всю схему"
+    # непрозрачные цвета из промта на тёмной теме пересчитываются в тинт
+    assert "function tint(fill){" in html and "function retintBands(){" in html, \
+        rel + ": светлый rgb(...) на тёмной теме превращается в белый прямоугольник"
+    # номер шага mermaid рисует маркером и красит цветом линий
+    assert "marker circle { fill: #8B5CF6; stroke: none; }" in html, \
+        rel + ": кружок номера шага должен быть фиолетовым, а не блёклым серым"
+    # подсказка вынесена из-под схемы, окно ниже
+    assert re.search(r"\.v-hint\{[^}]*border-bottom", html) and "position:absolute" not in \
+        html[html.index(".v-hint{"):html.index(".v-hint{") + 320], \
+        rel + ": подсказка должна стоять под сценой, а не поверх схемы"
+    assert "height:clamp(18rem,52vh,30rem)" in html, rel + ": окно со схемой стало ниже"
     # узкие места видно сразу: заметка «Узкое место…» перекрашивается в оранжевый
     assert "function markBottlenecks(){" in html and "const BN = /^\\s*узкое место/i;" in html, \
         rel + ": узкие места должны выделяться в отрисованной схеме"
     assert "rect.style.setProperty('fill', bg, 'important');" in html, \
         rel + ": у mermaid своё правило для .note — атрибут покраски не переживёт"
-    # подсказка висит над схемой, поэтому она в плашке с фоном
-    assert re.search(r"\.v-hint\{[^}]*background:var\(--card\)", html), \
-        rel + ": подсказка на фоне, иначе наезжает на узлы"
 
     # поле кода одно и всегда редактируемое, кнопки «показать схему» нет
     for el in ('id="v-input"', 'id="v-copy"'):
@@ -830,10 +872,8 @@ def test_process_practice_viewer():
     assert "rect.setAttribute('fill', dark ? '#0A0A0A' : '#FFFFFF');" in html, \
         rel + ": в файл подкладывается фон, иначе схема в документе невидима"
 
-    # окно рисует не только flowchart — об этом сказано рядом с полем кода
-    for kind in ("sequenceDiagram", "stateDiagram-v2", "classDiagram", "erDiagram",
-                 "gantt", "mindmap", "timeline", "pie"):
-        assert kind in html, rel + ": в списке поддерживаемых типов нет " + kind
+    assert "Рисуется не только flowchart" not in html, \
+        rel + ": перечень типов диаграмм с страницы убран"
 
 
 def test_locked_modules_closed():
