@@ -893,6 +893,11 @@ html.dark [class*="text-black/"] { color:rgba(250,250,250,0.62) !important; }
 html.dark [class~="text-grayBase"] { color:rgba(255,255,255,0.5) !important; }
 html.dark [class*="border-grayBase"] { border-color:rgba(255,255,255,0.12) !important; }
 html.dark [class*="border-black"] { border-color:rgba(255,255,255,0.18) !important; }
+/* Остриё дуги возврата (слайд «AS-IS»): у треугольника цветная только нижняя
+   грань, а тема красит border-color целиком — поэтому цвет ему задаём здесь,
+   ровно тем же, чем покрашен пунктир дуги. */
+.js-return-head { border-bottom-color:rgba(0,0,0,0.35); }
+html.dark .js-return-head { border-bottom-color:rgba(255,255,255,0.18); }
 </style>
 <style id="lecture-chrome">
 /* Шапка лекции: лого AIT слева, переключатель темы + «Буткемп» справа (без меню).
@@ -960,6 +965,11 @@ window.addEventListener('load', function(){
 // Общий экранный кегль заголовков ЭТОЙ лекции (константа колоды,
 // замер по LECTURE-GUIDE, раздел 7; 0 = не замерен, ищет самокалибровка).
 window.__FLOOR = {pc:51.06,mob:23.312};
+// Холст телефона этой лекции: нижняя полоса короче штатной (владелец разрешил
+// контенту заезжать под кружок с головой — «если он что-то закрывает, пофиг»,
+// стрелки листания при этом остаются свободными), и снят накопительный запас
+// по ширине — из-за него слайд стоял в 0.83 от свободного места.
+window.__FIT = { mob: { bottom: 72 }, tightW: true };
 </script>
 <script id="portal-fit">
 (function(){
@@ -989,6 +999,12 @@ window.__FLOOR = {pc:51.06,mob:23.312};
   // test_title_floor_is_a_measured_constant напомнит обновить константу).
   var REF = { pc:  { w:1380, h:864, top:128, bottom:88,  pad:32 },
               mob: { w:376,  h:844, top:88,  bottom:124, pad:8 } };
+  // Пер-лекционная настройка холста — там же, где кегли (блок lecture-floor):
+  // portal-fit общий для всех лекций и собственных констант держать не может.
+  // Лекция, которая ничего не объявила, считает ровно как считала.
+  var LFIT = window.__FIT || {}, LK;
+  if (LFIT.mob) for (LK in LFIT.mob) if (Object.prototype.hasOwnProperty.call(LFIT.mob, LK)) REF.mob[LK] = LFIT.mob[LK];
+  if (LFIT.pc)  for (LK in LFIT.pc)  if (Object.prototype.hasOwnProperty.call(LFIT.pc, LK))  REF.pc[LK]  = LFIT.pc[LK];
   // Кегль — у КАЖДОЙ лекции свой (тексты слайдов другие), а portal-fit обязан
   // быть побайтово одинаковым во всех лекциях (test_shared_blocks_identical).
   // Поэтому числа живут в пер-лекционном блоке <script id="lecture-floor">
@@ -1470,7 +1486,17 @@ window.__FLOOR = {pc:51.06,mob:23.312};
 
       function target(natH, natW){
         // 0.97, а не 1.0: слайд не должен упираться в края свободной зоны.
-        var t = Math.min(freeH / natH, freeW / natW) * 0.97;
+        var byH = freeH / natH, byW = freeW / natW;
+        // ...но запас по ширине КОПИТСЯ, когда чернила и так ровно по краю.
+        // На телефоне правило `.content-z > * { max-width:100% }` растягивает
+        // детей на всю свободную ширину, поэтому freeW/natW тождественно равно
+        // текущему zoom — и каждый проход умножал его на 0.97. Шесть проходов
+        // цикла = 0.97^6 ≈ 0.83: слайд выходил на шестую часть мельче
+        // свободного места, а под ним оставалась пустота в треть экрана
+        // («сделай покрупнее», правка владельца). Ширину, которая упирается
+        // в край по построению, больше не ужимаем — но только там, где лекция
+        // это объявила: остальные считают по-старому.
+        var t = (LFIT.tightW && byW <= byH) ? byW : Math.min(byH, byW) * 0.97;
         return grow ? Math.min(t, growCap()) : Math.min(t, 1);
       }
 
@@ -2046,7 +2072,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-1">
         <div class="content-z max-w-5xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Что такое <span class="text-solar">процесс</span></h2>
-            <p class="text-center text-black/60 mb-3 md:mb-5 text-[10px] md:text-lg font-medium max-w-5xl mx-auto">Процесс — это <b>устойчивая</b> последовательность действий, которая преобразует вход в <b>измеримый</b> результат. Восемь элементов делают его управляемой системой</p>
+            <p class="text-center text-black/60 mb-3 md:mb-5 text-[10px] md:text-lg font-medium max-w-5xl mx-auto">Процесс — это <b>устойчивая</b> последовательность действий, которая преобразует вход в <b>измеримый</b> результат.<span class="hidden md:inline"> Восемь элементов делают его управляемой системой</span></p>
 
             <!-- Круговая инфографика: ядро «Процесс» + ВОСЕМЬ обязательных
                  элементов (озвучка: «записывайте, их восемь»). Орбиту и размер
@@ -2102,7 +2128,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <span class="rf-label font-black text-[10px] md:text-sm text-solar mt-1">Метрика</span>
                 </div>
             </div>
-            <div class="w-full"><div class="max-w-3xl mx-auto"><div class="bg-solar/20 border-l-4 border-solar p-3 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-3 md:mt-5">
+            <div class="w-full"><div class="max-w-3xl mx-auto"><div class="bg-solar/20 border-l-4 border-solar p-3 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-6 md:mt-5">
                 <p class="text-[11px] md:text-base text-black font-medium leading-snug m-0">Нет метрики — нет управления: <span class="font-black">управлять можно только тем, что измеряешь</span></p>
             </div></div></div>
         </div>
@@ -2391,19 +2417,19 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             </div>
 
             <!-- Связка «метрика → процесс → операции»: первый шаг выделен — с него всё начинается -->
-            <div class="flex flex-row items-center justify-center gap-1.5 md:gap-4 w-full bg-white border border-grayBase p-3 md:p-6 rounded-[20px] md:rounded-3xl shadow-sm mt-3 md:mt-6">
+            <div class="l2-plain flex flex-row items-center justify-center gap-1.5 md:gap-4 w-full bg-white border border-grayBase p-3 md:p-6 rounded-[20px] md:rounded-3xl shadow-sm mt-3 md:mt-6">
                 <div class="bg-black border-2 border-solar rounded-xl md:rounded-2xl px-2 py-2 md:px-5 md:py-3 text-center flex-1 text-white shadow-xl">
                     <span class="text-solar font-bold text-[8px] md:text-[10px] uppercase tracking-widest block mb-0.5">Сначала</span>
                     <h4 class="font-black text-[10px] md:text-base text-solar leading-tight m-0">Бизнес-метрика</h4>
                     <p class="text-[8px] md:text-xs text-white/60 leading-tight m-0 mt-0.5">измеримый результат</p>
                 </div>
-                <i class="ph-bold ph-arrow-right text-black/30 text-base md:text-3xl shrink-0"></i>
+                <i class="ph-bold ph-arrow-down text-black/30 text-xl md:hidden shrink-0"></i><i class="ph-bold ph-arrow-right text-black/30 text-base md:text-3xl shrink-0 hidden md:inline-block"></i>
                 <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-2 py-2 md:px-5 md:py-3 text-center flex-1">
                     <span class="text-black/40 font-bold text-[8px] md:text-[10px] uppercase tracking-widest block mb-0.5">Затем</span>
                     <h4 class="font-black text-[10px] md:text-base text-black leading-tight m-0">Процесс</h4>
                     <p class="text-[8px] md:text-xs text-black/60 leading-tight m-0 mt-0.5">который на неё влияет</p>
                 </div>
-                <i class="ph-bold ph-arrow-right text-black/30 text-base md:text-3xl shrink-0"></i>
+                <i class="ph-bold ph-arrow-down text-black/30 text-xl md:hidden shrink-0"></i><i class="ph-bold ph-arrow-right text-black/30 text-base md:text-3xl shrink-0 hidden md:inline-block"></i>
                 <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-2 py-2 md:px-5 md:py-3 text-center flex-1">
                     <span class="text-black/40 font-bold text-[8px] md:text-[10px] uppercase tracking-widest block mb-0.5">Только потом</span>
                     <h4 class="font-black text-[10px] md:text-base text-black leading-tight m-0">Операции</h4>
@@ -2712,7 +2738,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-14">
         <div class="content-z w-full max-w-4xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Точки решений и <span class="text-solar">скрытые правила</span></h2>
-            <p class="text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">В точках решений процесс выбирает маршрут.<br>Часть правил живёт только в голове эксперта</p>
+            <p class="text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">В точках решений процесс выбирает маршрут. <br>Часть правил живёт только в голове эксперта</p>
             <!-- Развилка: кейс → точка решения → два маршрута. Ревью-луп №1:
                  слайды 21/22/24 были одинаковой парой «тёмная vs фиолетовая
                  карточка» — здесь схема с развилкой, ниже диалог эксперта. -->
@@ -2858,7 +2884,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <i class="ph-fill ph-hard-drives text-2xl md:text-4xl text-solar shrink-0"></i>
                     <div>
                         <h4 class="font-black text-[11px] md:text-base m-0">Журнал событий</h4>
-                        <p class="text-[9px] md:text-xs text-black/55 m-0 mt-0.5">журналы CRM, ERP<br>и обращений</p>
+                        <p class="text-[9px] md:text-xs text-black/55 m-0 mt-0.5">журналы CRM, ERP <br>и обращений</p>
                     </div>
                 </div>
                 <div class="hidden md:flex flex-col justify-center px-3 lg:px-5 gap-12 text-solar">
@@ -2894,7 +2920,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             </div>
             <div class="w-full mt-4 md:mt-8">
                 <div class="bg-solar/20 border-l-4 border-solar p-3 md:p-6 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center">
-                    <p class="text-[11px] md:text-xl text-black font-medium leading-snug">Автоматизируете идеализированный процесс —<br><strong>все исключения всплывут уже после запуска</strong></p>
+                    <p class="text-[11px] md:text-xl text-black font-medium leading-snug">Автоматизируете идеализированный процесс — <br><strong>все исключения всплывут уже после запуска</strong></p>
                 </div>
             </div>
         </div>
@@ -2925,7 +2951,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <h3 class="font-black text-base md:text-2xl mb-1 md:mb-2 text-solar">Mermaid</h3>
                     <div class="bg-solar/20 text-solar border border-solar/50 px-2 md:px-3 py-0.5 md:py-1 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-wider mb-2 md:mb-4">Код</div>
                     <p class="hidden md:block text-[10px] md:text-sm text-white/80 font-medium leading-tight mb-2 md:mb-3">Текстовая визуализация схем прямо в коде</p>
-                    <p class="hidden md:block text-[9px] md:text-xs text-white/50 leading-tight mt-auto">Схема версионируется<br>вместе с кодом</p>
+                    <p class="hidden md:block text-[9px] md:text-xs text-white/50 leading-tight mt-auto">Схема версионируется <br>вместе с кодом</p>
                 </div>
             </div>
             <!-- Ролик 18: спор о нотации не цель — схема обязана отвечать на шесть вопросов -->
@@ -2966,7 +2992,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-4 md:mb-8 text-center text-black">AS-IS: <span class="text-solar">честная модель</span></h2>
             <p class="text-center text-black/60 mb-4 md:mb-8 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">AS-IS — это модель того, как процесс реально работает сейчас. Не в идеале, не по регламенту, а в жизни</p>
 
-            <div class="bg-white border border-grayBase px-6 md:px-10 pt-10 pb-12 lg:pt-12 lg:pb-14 rounded-[24px] md:rounded-[40px] shadow-sm w-full relative overflow-hidden flex flex-col items-center">
+            <div class="bg-white border border-grayBase px-6 md:px-10 pt-10 pb-14 lg:pt-12 lg:pb-16 rounded-[24px] md:rounded-[40px] shadow-sm w-full relative overflow-hidden flex flex-col items-center">
                 <!-- Абстрактная схема процесса.
                      Крупные размеры включаются с lg, а не с md: на 768 портальный
                      zoom (~1.49) сжимает CSS-ширину колонки до ~450px, и цепочка
@@ -2975,30 +3001,30 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                 <div class="flex items-center gap-2 lg:gap-4 text-black relative z-10">
                     <div class="bg-grayBase w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center font-bold lg:text-xl">1</div>
                     <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
-                    <div class="bg-grayBase w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl">2</div>
-                    <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
-                    <!-- Ярлык вынесен в обёртку: пока он лежал внутри кружка,
-                         кружок «переполнялся» (scrollWidth 68 при 44) и попадал
-                         в проверку вылезшего текста. Вид не меняется. -->
-                    <div class="relative flex items-center">
-                        <div class="bg-red-100 border-2 border-red-400 w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-red-500 font-bold lg:text-xl">3</div>
-                        <span class="absolute left-1/2 -translate-x-1/2 -top-7 lg:-top-9 bg-red-500 text-white text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap js-hang-badge">Задержка</span>
+                    <!-- Шаги 2 и 3 лежат в общей обёртке: по ней и рисуется дуга
+                         возврата — рамками, а не SVG. Отступы left-6/right-6
+                         (lg:10) равны половине ширины шага, поэтому концы дуги
+                         всегда приходятся ровно на центры «2» и «3» в обеих
+                         формах, а не на выдуманные координаты viewBox. -->
+                    <div class="relative flex items-center gap-2 lg:gap-4">
+                        <div class="bg-grayBase w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl">2</div>
+                        <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
+                        <!-- Ярлык вынесен в обёртку: пока он лежал внутри кружка,
+                             кружок «переполнялся» (scrollWidth 68 при 44) и попадал
+                             в проверку вылезшего текста. Вид не меняется. -->
+                        <div class="relative flex items-center">
+                            <div class="bg-red-100 border-2 border-red-400 w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-red-500 font-bold lg:text-xl">3</div>
+                            <span class="absolute left-1/2 -translate-x-1/2 -top-7 lg:-top-9 bg-red-500 text-white text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap js-hang-badge">Задержка</span>
+                        </div>
+                        <div class="absolute left-6 right-6 lg:left-10 lg:right-10 top-full mt-1.5 lg:mt-2 pointer-events-none">
+                            <div class="h-4 lg:h-6 border-b-2 border-l-2 border-r-2 border-dashed border-black/35 rounded-b-xl lg:rounded-b-2xl"></div>
+                            <span class="absolute w-0 h-0 border-l-[5px] border-r-[5px] border-b-[7px] border-l-transparent border-r-transparent js-return-head" style="left:-4px;top:-6px"></span>
+                            <span class="absolute left-1/2 -translate-x-1/2 top-full mt-1 lg:mt-1.5 bg-black text-solar text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap js-hang-badge">Возврат</span>
+                        </div>
                     </div>
                     <i class="ph-bold ph-arrow-right text-black/30 text-xl lg:text-3xl"></i>
-                    <div class="relative flex items-center">
-                        <div class="bg-black text-solar w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl">4</div>
-                        <span class="absolute left-1/2 -translate-x-1/2 -bottom-7 lg:-bottom-9 bg-black text-solar text-[8px] lg:text-[10px] px-2 py-1 rounded whitespace-nowrap js-hang-badge">Возврат</span>
-                    </div>
+                    <div class="bg-black text-solar w-12 h-12 lg:w-20 lg:h-20 rounded flex items-center justify-center font-bold lg:text-xl">4</div>
                 </div>
-
-                <svg class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none z-0 text-black" viewBox="0 0 500 200">
-                    <path d="M 315 118 C 315 170, 185 170, 185 118" fill="none" stroke="currentColor" stroke-opacity="0.75" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
-                    <defs>
-                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
-                        </marker>
-                    </defs>
-                </svg>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full mt-3 md:mt-4">
@@ -3034,7 +3060,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-19">
         <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-6 text-center text-black">Три типа <span class="text-solar">операций</span></h2>
-            <p class="text-center text-black/60 mb-4 md:mb-8 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Не всё, что может делать ИИ, должен делать ИИ —<br>природа операции определяет исполнителя</p>
+            <p class="text-center text-black/60 mb-4 md:mb-8 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Не всё, что может делать ИИ, должен делать ИИ — <br>природа операции определяет исполнителя</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 md:gap-5 w-full items-stretch">
                 <div class="bg-white border border-grayBase p-3 md:p-6 rounded-[20px] md:rounded-3xl shadow-sm flex flex-col items-center text-center">
                     <i class="ph-fill ph-list-checks text-2xl md:text-5xl text-black mb-1.5 md:mb-4"></i>
@@ -3258,14 +3284,14 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     </div>
                 </div>
             </div>
-            <p class="text-center text-black/50 text-[9px] md:text-sm font-bold uppercase tracking-widest mt-3 md:mt-5 max-w-2xl mx-auto">Готовность к ИИ — это способность встроить агента<br>в управляемый процесс</p>
+            <p class="text-center text-black/50 text-[9px] md:text-sm font-bold uppercase tracking-widest mt-3 md:mt-5 max-w-2xl mx-auto">Готовность к ИИ — это способность встроить агента <br>в управляемый процесс</p>
         </div>
     </div>
 
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-23">
         <div class="content-z max-w-4xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-5 md:mb-8 text-center text-black">TO-BE: <span class="text-solar">целевая модель</span></h2>
-            <p class="text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Модель того, как процесс должен работать после изменений. Здесь задаётся новая логика: что убрать, автоматизировать и где оставить человека</p>
+            <p class="text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Модель того, как процесс должен работать после изменений. Здесь <br>задаётся новая логика: что автоматизировать и где оставить человека</p>
 
             <div class="hidden md:flex flex flex-col md:flex-row items-center justify-center gap-4 md:gap-3 lg:gap-5 w-full">
                 <div class="bg-grayBase/30 border border-grayBase p-4 md:p-4 lg:p-6 rounded-[24px] md:rounded-3xl shadow-sm text-center flex-1 w-full md:min-w-[10.5rem] lg:min-w-[12rem]">
@@ -3321,7 +3347,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-24">
         <div class="content-z max-w-3xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Гибридный интеллект: <span class="text-solar">новая модель</span></h2>
-            <p class="text-center text-black/60 mb-3 md:mb-6 text-[10px] md:text-lg font-medium max-w-5xl mx-auto">Будущий процесс обычно не полностью человеческий<br>или автоматический</p>
+            <p class="text-center text-black/60 mb-3 md:mb-6 text-[10px] md:text-lg font-medium max-w-5xl mx-auto">Будущий процесс обычно не полностью человеческий <br>или полностью автоматический</p>
 
             <div class="bg-grayBase/20 border border-grayBase p-3 md:p-5 rounded-[24px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-center md:items-stretch justify-center gap-3 md:gap-8 w-full mx-auto">
                 <div class="flex flex-col items-center text-center flex-1">
@@ -3343,21 +3369,21 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                 <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-2.5 py-2 md:py-3 flex flex-col items-center gap-1 text-center">
                     <i class="ph-fill ph-arrows-clockwise text-solar text-sm md:text-xl shrink-0"></i>
                     <div class="min-w-0">
-                        <p class="text-[9px] md:text-sm font-black m-0 leading-tight min-h-[2.4em] flex items-center justify-center text-center">Рутинное<br>и&nbsp;массовое</p>
+                        <p class="text-[9px] md:text-sm font-black m-0 leading-tight min-h-[2.4em] flex items-center justify-center text-center">Рутинное <br>и&nbsp;массовое</p>
                         <p class="text-[8px] md:text-xs m-0 mt-1 md:mt-1.5 leading-tight text-black/55 text-center">Скрипт или ИИ</p>
                     </div>
                 </div>
                 <div class="bg-black text-white border-2 border-solar shadow-lg rounded-xl md:rounded-2xl px-2.5 py-2 md:py-3 flex flex-col items-center gap-1 text-center">
                     <i class="ph-fill ph-brain text-solar text-sm md:text-xl shrink-0"></i>
                     <div class="min-w-0">
-                        <p class="text-[9px] md:text-sm font-black m-0 leading-tight text-solar min-h-[2.4em] flex items-center justify-center text-center">Аналитическое<br>и&nbsp;вероятностное</p>
+                        <p class="text-[9px] md:text-sm font-black m-0 leading-tight text-solar min-h-[2.4em] flex items-center justify-center text-center">Аналитическое <br>и&nbsp;вероятностное</p>
                         <p class="text-[8px] md:text-xs m-0 mt-1 md:mt-1.5 leading-tight text-white/70 text-center">Гибрид: агент + человек</p>
                     </div>
                 </div>
                 <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-2.5 py-2 md:py-3 flex flex-col items-center gap-1 text-center">
                     <i class="ph-fill ph-scales text-solar text-sm md:text-xl shrink-0"></i>
                     <div class="min-w-0">
-                        <p class="text-[9px] md:text-sm font-black m-0 leading-tight min-h-[2.4em] flex items-center justify-center text-center">Стратегическое<br>и&nbsp;этическое</p>
+                        <p class="text-[9px] md:text-sm font-black m-0 leading-tight min-h-[2.4em] flex items-center justify-center text-center">Стратегическое <br>и&nbsp;этическое</p>
                         <p class="text-[8px] md:text-xs m-0 mt-1 md:mt-1.5 leading-tight text-black/55 text-center">Решает человек</p>
                     </div>
                 </div>
@@ -3388,8 +3414,8 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                         <div class="w-9 h-9 md:w-12 md:h-12 bg-grayBase rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-3 shrink-0"><i class="ph-fill ph-robot text-base md:text-2xl text-black"></i></div>
                         <h4 class="font-black text-xs md:text-lg text-black mb-0.5 md:mb-1 leading-tight min-h-[2.4em] flex items-start justify-center">Автономия</h4>
                         <div class="flex flex-col gap-1 md:gap-1.5 w-full mt-auto">
-                        <span class="bg-grayBase/40 border-grayBase border rounded-md px-1.5 py-1 text-[8px] md:text-[11px] font-bold text-black/60 leading-tight">Где агент действует сам?</span>
                         <span class="bg-grayBase/40 border-grayBase border rounded-md px-1.5 py-1 text-[8px] md:text-[11px] font-bold text-black/60 leading-tight">Какая неопределённость допустима?</span>
+                            <span class="bg-grayBase/40 border-grayBase border rounded-md px-1.5 py-1 text-[8px] md:text-[11px] font-bold text-black/60 leading-tight">Где агент действует сам?</span>
                     </div>
                     </div>
                     <div class="bg-white border border-grayBase p-2.5 md:p-5 rounded-2xl text-center shadow-sm w-full md:w-1/3 flex flex-col">
@@ -3465,7 +3491,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-27">
         <div class="content-z max-w-4xl w-full">
         <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-6 text-center text-black">Новая роль <span class="text-solar">человека в процессе</span></h2>
-            <p class="text-center text-black/60 mb-4 md:mb-8 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Человек не исчезает — он поднимается уровнем выше:<br>от исполнения операций к управлению интеллектом системы</p>
+            <p class="text-center text-black/60 mb-4 md:mb-8 text-[10px] md:text-lg font-medium max-w-4xl mx-auto">Человек не исчезает — он поднимается уровнем выше: <br>от исполнения операций к управлению интеллектом системы</p>
 
             <div class="flex flex-col items-center justify-center w-full">
                 <div class="bg-grayBase/30 border border-grayBase px-4 md:px-6 py-2 md:py-4 rounded-xl md:rounded-2xl text-center mb-2 md:mb-5 w-full max-w-sm">
@@ -3480,7 +3506,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                         <span class="bg-solar px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold tracking-widest mb-1 md:mb-2" style="color:#111;-webkit-text-fill-color:#111">H0</span>
                         <i class="ph-fill ph-sliders text-xl md:text-4xl text-solar mb-1 md:mb-2"></i>
                         <h4 class="font-bold text-[11px] md:text-lg text-solar mb-1 md:mb-2">Оператор</h4>
-                        <p class="text-[8px] md:text-xs text-white/70 leading-tight">Помогает с данными, корректировками и обратной связью</p>
+                        <p class="text-[8px] md:text-xs text-white/70 leading-tight">Помогает с данными, корректировками и фидбеком</p>
                     </div>
                     <div class="bg-black text-white p-2 md:p-5 rounded-[14px] md:rounded-3xl shadow-xl flex flex-col items-center text-center border-t-4 border-solar">
                         <span class="bg-solar px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold tracking-widest mb-1 md:mb-2" style="color:#111;-webkit-text-fill-color:#111">H1</span>
@@ -3543,19 +3569,19 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                 </div>
                 <div class="bg-black text-white border-2 border-solar p-2.5 md:p-4 rounded-[14px] md:rounded-[16px] shadow-xl flex flex-col items-center text-center">
                     <i class="ph-fill ph-shield-check text-xl md:text-3xl text-solar mb-1 md:mb-2"></i>
-                    <h4 class="font-black text-[10px] md:text-sm text-solar mb-0.5 md:mb-1 leading-tight min-h-[2.6em] flex items-start justify-center">Ответственность</h4>
-                    <p class="text-[8px] md:text-xs text-white/70 leading-tight">Последняя инстанция<br>за последствия</p>
+                    <h4 class="font-black text-[10px] md:text-sm text-solar mb-0.5 md:mb-1 leading-tight min-h-[2.2em] flex items-center justify-center text-center" style="hyphens:none">Ответственность</h4>
+                    <p class="text-[8px] md:text-xs text-white/70 leading-tight">Последняя инстанция <br>за последствия</p>
                 </div>
                 <div class="bg-black text-white border-2 border-solar p-2.5 md:p-4 rounded-[14px] md:rounded-[16px] shadow-xl flex flex-col items-center text-center">
                     <i class="ph-fill ph-scales text-xl md:text-3xl text-solar mb-1 md:mb-2"></i>
-                    <h4 class="font-black text-[10px] md:text-sm text-solar mb-0.5 md:mb-1 leading-tight min-h-[2.6em] flex items-start justify-center">Этика и доверие</h4>
-                    <p class="text-[8px] md:text-xs text-white/70 leading-tight">Где автономия допустима,<br>а где — нет</p>
+                    <h4 class="font-black text-[10px] md:text-sm text-solar mb-0.5 md:mb-1 leading-tight min-h-[2.2em] flex items-center justify-center text-center" style="hyphens:none">Этика и доверие</h4>
+                    <p class="text-[8px] md:text-xs text-white/70 leading-tight">Где автономия допустима, <br>а где — нет</p>
                 </div>
             </div>
 
             <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-3 md:mt-5">
                 <p class="text-[10px] md:text-base text-black font-medium leading-snug">
-                    <i class="ph-fill ph-graduation-cap text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Человек не исчезает — он <span class="font-black whitespace-nowrap">меняет роль</span>: ставит задачи, проверяет качество<br>и отвечает за результат
+                    <i class="ph-fill ph-graduation-cap text-black text-sm md:text-xl align-[-2px] mr-1.5"></i>Человек не исчезает — он <span class="font-black whitespace-nowrap">меняет роль</span>: ставит задачи, проверяет качество <br class="hidden md:inline">и отвечает за результат
                 </p>
             </div>
         </div>
@@ -3618,7 +3644,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-30">
         <div class="content-z w-full max-w-5xl">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Автономность — <span class="text-solar">не самоцель</span></h2>
-            <p class="text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">«Убрать человека» — примитивная цель.<br>Автономию повышают шаг за шагом по той же шкале H3 → H0</p>
+            <p class="text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">«Убрать человека» — примитивная цель. <br>Автономию повышают шаг за шагом по той же шкале H3 → H0</p>
 
             <div class="flex flex-col md:flex-row items-end justify-center h-auto md:h-[280px] gap-2 md:gap-3 w-full border-b-2 border-grayBase pb-0">
                 <div class="flex-1 w-full bg-grayBase/30 rounded-t-xl md:rounded-t-2xl p-3 md:p-4 border-t border-l border-r border-grayBase flex flex-col justify-start text-center h-full md:h-[46%]">
@@ -4012,7 +4038,7 @@ window.__FLOOR = {pc:51.06,mob:23.312};
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 w-full">
                 <div class="bg-white border-l-4 border-[#F97316] border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
                     <i class="ph-fill ph-database text-xl md:text-3xl mb-1 md:mb-2" style="color:#F97316;-webkit-text-fill-color:#F97316"></i>
-                    <h4 class="font-black text-[11px] md:text-base mb-1 md:mb-1.5 text-center min-h-[2.4em]" style="hyphens:none;line-height:1.2">Плохие данные</h4>
+                    <h4 class="font-black text-[11px] md:text-base mb-1 md:mb-1.5 text-center min-h-[2.4em]" style="hyphens:none;line-height:1.2">Плохие <br>данные</h4>
                     <p class="text-[8px] md:text-xs text-black/60 leading-tight">Грязные, неполные, недоступные</p>
                 </div>
                 <div class="bg-white border-l-4 border-[#F97316] border border-grayBase p-3 md:p-5 rounded-[14px] md:rounded-[16px] shadow-sm flex flex-col items-center text-center">
@@ -4062,11 +4088,11 @@ window.__FLOOR = {pc:51.06,mob:23.312};
                     <div class="bg-solar p-3 md:p-4 rounded-xl flex-1 w-full shadow-[0_0_15px_#8B5CF6] flex flex-col items-center justify-start gap-1" style="color:#111;-webkit-text-fill-color:#111"><i class="ph-fill ph-robot text-base md:text-2xl shrink-0"></i><span class="text-[10px] md:text-[13px] font-black leading-tight flex items-center justify-center text-center whitespace-nowrap">4. Гибрид</span><span class="hidden md:block text-[10px] opacity-90 whitespace-nowrap">человек + агент</span></div>
                 </div>
 
-                <!-- mr-[5rem] на телефоне: кружок с говорящей головой стоит в правом
-                     нижнем углу и накрывал правый край кнопки теста. Отступ справа
-                     уводит центрированную кнопку левее ровно настолько, чтобы она
-                     осталась целой. На планшете и десктопе кружок мельче — отступ снят. -->
-                <button id="open-quiz-btn" type="button" class="mt-6 md:mt-8 mr-[5rem] md:mr-0 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-5 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.4)] uppercase tracking-widest max-w-full" style="color:#111;-webkit-text-fill-color:#111">
+                <!-- Кнопка стоит РОВНО по центру в обеих формах. Прежний mr-[5rem]
+                    уводил её левее, чтобы кружок с говорящей головой не накрывал
+                    правый край, — владелец это отменил: «кружок вообще забудь,
+                    если он что-то закрывает, человек его сам уберёт». -->
+                <button id="open-quiz-btn" type="button" class="mt-6 md:mt-8 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-5 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.4)] uppercase tracking-widest max-w-full" style="color:#111;-webkit-text-fill-color:#111">
                     <i class="ph-fill ph-graduation-cap text-lg md:text-2xl"></i>
                     Пройти тест
                 </button>
@@ -7489,6 +7515,61 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   vertical-align:-.1em;
   margin:0 .3em 0 0 !important;
   align-self:auto !important;
+}
+</style>
+
+<style id="lecture-mobile">
+/* ── ТЕЛЕФОН ЭТОЙ ЛЕКЦИИ ──────────────────────────────────────────────────
+   Блок пер-лекционный (slide-polish общий для всех лекций и правится только
+   вместе с ними) и ЦЕЛИКОМ внутри медиазапроса телефона: веб-форма отсюда
+   измениться не может. Порядок важен — блок идёт после slide-polish, поэтому
+   перебивает его !important при равной специфичности. */
+@media (max-width:767px){
+  /* 1. Карточка с бейджем на верхнем крае. slide-polish (правило 29) даёт ей
+     верхний отступ 1.5rem, чтобы бейдж не накрыл первую строку. На телефоне
+     бейдж вдвое ниже, и этот отступ делал карточку выше соседей по ряду —
+     «шаг 4 повыше вертикально выходит», «обработка заказа больше других». */
+  .slide-container [class*="relative"]:has(> [class*="-top-2"]),
+  .slide-container [class*="relative"]:has(> [class*="-top-3"]){ padding-top:.4rem !important; }
+
+  /* 2. Воздух между элементами, идущими друг за другом (правка владельца).
+     Колоночные стопки и сетки с шагом 1.5 (6px) читались одним пятном. */
+  .slide-container .content-z [class*="flex-col"][class*="gap-1.5"],
+  .slide-container .content-z [class*="grid"][class*="gap-1.5"]{ row-gap:.55rem !important; }
+  .slide-container .content-z [class*="flex-col"][class*="gap-2"]:not([class*="gap-20"]),
+  .slide-container .content-z [class*="grid"][class*="gap-2"]:not([class*="gap-20"]){ row-gap:.6rem !important; }
+
+  /* 3. Слайд 8: на телефоне цепочка «метрика → процесс → операции» стоит
+     столбцом, и серая подложка вокруг неё превращалась в пустой прямоугольник
+     на пол-экрана. Карточки говорят сами за себя. */
+  .slide-container .content-z .l2-plain{
+    background:transparent !important; border:0 !important;
+    padding:0 !important; box-shadow:none !important;
+  }
+  .slide-container .content-z .l2-plain > div{ width:100% !important; }
+
+  /* 3b. Слайд 2: определение процесса должно уложиться в ДВЕ строки под
+     тайтлом (правка владельца). Текст не режем — чуть убавляем кегль именно
+     этому абзацу: на экране он всё равно крупнее прежних 9.2px. */
+  #slide-1 .content-z > p{ font-size:10.5px !important; }
+
+  /* 4. Слайд 21 «Карта точек автоматизации»: содержимое карточек по центру,
+     как всё остальное на слайде (правка владельца «по середине всё выровни»). */
+  #slide-20 [class*="lg:hidden"] > div{ text-align:center !important; }
+  #slide-20 [class*="lg:hidden"] > div > div,
+  #slide-20 [class*="lg:hidden"] > div > p{ justify-content:center !important; }
+
+  /* 5. Слайд 22 «Ценность — Сложность»: вертикальная подпись оси налипала на
+     саму полоску. Полоску сдвигаем правее подписи, сетку — правее полоски. */
+  #slide-21 [class*="left-2"][class*="w-1"]{ left:1rem !important; }
+  #slide-21 [class*="grid-cols-2"][class*="grid-rows-2"]{ padding-left:1.75rem !important; }
+
+  /* 6. Слайд 23: восемь пунктов готовности стояли сплошным блоком. */
+  #slide-22 [class*="gap-y-2"]{ row-gap:.7rem !important; }
+
+  /* 7. Слайд 35 «Паттерны рассуждений»: содержимое карточек по центру. */
+  #slide-34 [class*="grid"] > div{ text-align:center !important; }
+  #slide-34 [class*="grid"] > div > div{ justify-content:center !important; }
 }
 </style>
 

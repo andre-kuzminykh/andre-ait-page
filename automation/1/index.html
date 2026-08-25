@@ -988,6 +988,12 @@ window.__FLOOR = {pc:49.8533,mob:22.4659};
   // test_title_floor_is_a_measured_constant напомнит обновить константу).
   var REF = { pc:  { w:1380, h:864, top:128, bottom:88,  pad:32 },
               mob: { w:376,  h:844, top:88,  bottom:124, pad:8 } };
+  // Пер-лекционная настройка холста — там же, где кегли (блок lecture-floor):
+  // portal-fit общий для всех лекций и собственных констант держать не может.
+  // Лекция, которая ничего не объявила, считает ровно как считала.
+  var LFIT = window.__FIT || {}, LK;
+  if (LFIT.mob) for (LK in LFIT.mob) if (Object.prototype.hasOwnProperty.call(LFIT.mob, LK)) REF.mob[LK] = LFIT.mob[LK];
+  if (LFIT.pc)  for (LK in LFIT.pc)  if (Object.prototype.hasOwnProperty.call(LFIT.pc, LK))  REF.pc[LK]  = LFIT.pc[LK];
   // Кегль — у КАЖДОЙ лекции свой (тексты слайдов другие), а portal-fit обязан
   // быть побайтово одинаковым во всех лекциях (test_shared_blocks_identical).
   // Поэтому числа живут в пер-лекционном блоке <script id="lecture-floor">
@@ -1469,7 +1475,17 @@ window.__FLOOR = {pc:49.8533,mob:22.4659};
 
       function target(natH, natW){
         // 0.97, а не 1.0: слайд не должен упираться в края свободной зоны.
-        var t = Math.min(freeH / natH, freeW / natW) * 0.97;
+        var byH = freeH / natH, byW = freeW / natW;
+        // ...но запас по ширине КОПИТСЯ, когда чернила и так ровно по краю.
+        // На телефоне правило `.content-z > * { max-width:100% }` растягивает
+        // детей на всю свободную ширину, поэтому freeW/natW тождественно равно
+        // текущему zoom — и каждый проход умножал его на 0.97. Шесть проходов
+        // цикла = 0.97^6 ≈ 0.83: слайд выходил на шестую часть мельче
+        // свободного места, а под ним оставалась пустота в треть экрана
+        // («сделай покрупнее», правка владельца). Ширину, которая упирается
+        // в край по построению, больше не ужимаем — но только там, где лекция
+        // это объявила: остальные считают по-старому.
+        var t = (LFIT.tightW && byW <= byH) ? byW : Math.min(byH, byW) * 0.97;
         return grow ? Math.min(t, growCap()) : Math.min(t, 1);
       }
 
