@@ -313,18 +313,28 @@
      колесо, тачпад, палец, полоса прокрутки и клавиши. */
   .v-shell{ position:relative; border-bottom:1px solid var(--card-border); }
   .v-stage{
-    overflow-x:auto; overflow-y:auto; -webkit-overflow-scrolling:touch;
-    height:clamp(15rem,40vh,24rem); background:var(--diagram-bg);   /* стартовая: дальше её ставит startView под схему */
-    scrollbar-width:thin; cursor:grab; overscroll-behavior-x:contain;
+    /* Схема мельче окна — стоит по центру; крупнее — прижата к началу.
+       Ключевое слово safe: без него центрирование переполнившей схемы уводит
+       её верх в отрицательные координаты, докуда прокрутка не достаёт, и
+       первый шаг процесса оказывается срезан. */
+    display:grid;
+    justify-content:center; justify-content:safe center;
+    align-content:center;   align-content:safe center;
+    overflow:auto; -webkit-overflow-scrolling:touch;
+    height:clamp(22rem,64vh,40rem); background:var(--diagram-bg);
+    scrollbar-width:thin; cursor:grab; overscroll-behavior:contain;
   }
   .v-stage.dragging{ cursor:grabbing; }
-  .v-stage::-webkit-scrollbar{ height:10px; }
+  .v-stage::-webkit-scrollbar{ width:10px; height:10px; }
   .v-stage::-webkit-scrollbar-thumb{ background:var(--soft-border); border-radius:999px; }
+  /* Нижний отступ больше верхнего ровно на высоту плашки с кнопками: она висит
+     над сценой, и без запаса последний узел прятался бы под ней. */
+  /* Сверху — место под подсказку, снизу — под плашки с кнопками: обе висят
+     над сценой, и без запаса первый и последний узлы прятались бы под ними. */
   .v-layer{
-    display:inline-block; padding:1.1rem clamp(1.5rem,5vw,3.5rem) 2.6rem;
-    min-width:100%;
+    padding:3rem clamp(1rem,4vw,2.6rem) 4.2rem;
   }
-  @media (max-width:759px){ .v-layer{ padding:1.1rem .6rem 4.4rem; } }
+  @media (max-width:759px){ .v-layer{ padding:3.2rem .5rem 4.4rem; } }
   .v-layer svg{ display:block; max-width:none !important; }
   /* Узел, попавший на край, не срезается ножом, а растворяется — и сразу
      видно, что лента продолжается. */
@@ -336,6 +346,15 @@
   .v-fade-r{ right:0; background:linear-gradient(to left,var(--diagram-bg),transparent); }
   .v-shell.has-left  .v-fade-l{ opacity:1; }
   .v-shell.has-right .v-fade-r{ opacity:1; }
+  /* Схема продолжается вверх или вниз — показываем это растушёвкой у кромки */
+  .v-fade-t, .v-fade-b{
+    position:absolute; left:0; right:0; height:2.2rem; z-index:1;
+    pointer-events:none; opacity:0; transition:opacity .2s ease;
+  }
+  .v-fade-t{ top:0;    background:linear-gradient(to bottom,var(--diagram-bg),transparent); }
+  .v-fade-b{ bottom:0; background:linear-gradient(to top,var(--diagram-bg),transparent); }
+  .v-shell.has-up   .v-fade-t{ opacity:1; }
+  .v-shell.has-down .v-fade-b{ opacity:1; }
   .v-tools, .v-save{
     position:absolute; display:flex; gap:.35rem; z-index:2;
     background:var(--card); border:1px solid var(--card-border); border-radius:999px; padding:.3rem;
@@ -354,10 +373,15 @@
   .v-btn[hidden]{ display:none !important; }
   .v-sign{ font-size:1.2rem; line-height:1; font-weight:800; }
   .v-level{ min-width:3.6rem; font-variant-numeric:tabular-nums; }
+  /* Подсказка висит над схемой, поэтому она в плашке: без фона строка
+     наезжала на узлы и обе становились нечитаемыми. */
   .v-hint{
-    position:absolute; top:clamp(.5rem,1.8vw,.8rem); left:0; right:0; text-align:center;
-    color:var(--muted); font-weight:600; font-size:clamp(10px,2.4vw,11.5px);
-    pointer-events:none; padding:0 1rem; z-index:1;
+    position:absolute; top:clamp(.45rem,1.6vw,.65rem); left:50%; transform:translateX(-50%);
+    max-width:calc(100% - 1.6rem); text-align:center;
+    background:var(--card); border:1px solid var(--card-border); border-radius:999px;
+    padding:.32rem .8rem; margin:0;
+    color:var(--muted); font-weight:600; font-size:clamp(10px,2.4vw,11.5px); line-height:1.25;
+    pointer-events:none; z-index:2;
   }
 
   /* Код снизу: у примеров — только чтение, у своей схемы — редактируемое поле */
@@ -596,6 +620,8 @@
     <symbol id="i-pencil-simple" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM192,108.68,147.31,64l24-24L216,84.68Z"/></symbol>
     <symbol id="i-check-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
     <symbol id="i-x-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol>
+    <symbol id="i-corners-out" viewBox="0 0 256 256"><path d="M220,48V88a12,12,0,0,1-24,0V60H168a12,12,0,0,1,0-24h40A12,12,0,0,1,220,48ZM88,196H60V168a12,12,0,0,0-24,0v40a12,12,0,0,0,12,12H88a12,12,0,0,0,0-24Zm120-40a12,12,0,0,0-12,12v28H168a12,12,0,0,0,0,24h40a12,12,0,0,0,12-12V168A12,12,0,0,0,208,156ZM88,36H48A12,12,0,0,0,36,48V88a12,12,0,0,0,24,0V60H88a12,12,0,0,0,0-24Z"/></symbol>
+    <symbol id="i-shapes" viewBox="0 0 256 256"><path d="M71.49,60.55a12,12,0,0,0-23,0l-36,120A12,12,0,0,0,24,196H96a12,12,0,0,0,11.49-15.45ZM40.13,172,60,105.76,79.87,172ZM212,74a54,54,0,1,0-54,54A54.06,54.06,0,0,0,212,74Zm-84,0a30,30,0,1,1,30,30A30,30,0,0,1,128,74Zm96,70H136a12,12,0,0,0-12,12v52a12,12,0,0,0,12,12h88a12,12,0,0,0,12-12V156A12,12,0,0,0,224,144Zm-12,52H148V168h64Z"/></symbol>
     <symbol id="i-clipboard-text" viewBox="0 0 256 256"><path d="M200,32H163.74a47.92,47.92,0,0,0-71.48,0H56A16,16,0,0,0,40,48V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm-72,0a32,32,0,0,1,32,32H96A32,32,0,0,1,128,32Zm32,128H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z"/></symbol>
     <symbol id="i-target" viewBox="0 0 256 256"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></symbol>
     <symbol id="i-flow-arrow" viewBox="0 0 256 256"><path d="M245.66,85.66l-32,32a8,8,0,0,1-11.32-11.32L220.69,88H208c-38.67,0-46.59,19-56.62,43.08C141.05,155.88,129.33,184,80,184H79a32,32,0,1,1,0-16h1c38.67,0,46.59-19,56.62-43.08C147,100.12,158.67,72,208,72h12.69L202.34,53.66a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,245.66,85.66Z"/></symbol>
@@ -820,7 +846,7 @@
 
       <!-- Исходники схем: правятся как обычный текст, отсюда их берёт окно -->
       <div id="mmd-sources" hidden>
-      <pre class="mmd-src" id="src-consult">flowchart LR
+      <pre class="mmd-src" id="src-consult">flowchart TD
   A([Запрос клиента]) --> B[Квалификация запроса]
   B --> C{Берём проект?}
   C -- нет --> X([Отказ])
@@ -836,7 +862,7 @@
   K --> J
   J -- да --> L([Договор])
   class E,F,K hot</pre>
-      <pre class="mmd-src" id="src-hr">flowchart LR
+      <pre class="mmd-src" id="src-hr">flowchart TD
   A([Заявка на вакансию]) --> B[Профиль должности]
   B --> C[Поиск резюме]
   C --> D[Скрининг резюме]
@@ -852,7 +878,7 @@
   K -- нет --> C
   K -- да --> L([Выход на работу])
   class C,D,J hot</pre>
-      <pre class="mmd-src" id="src-marketing">flowchart LR
+      <pre class="mmd-src" id="src-marketing">flowchart TD
   A([Бриф клиента]) --> B[Анализ ниши]
   B --> C[Медиаплан и бюджет]
   C --> D{Согласование плана}
@@ -868,7 +894,7 @@
   K -- да --> G
   K -- нет --> L([Плановое ведение])
   class E,F,I hot</pre>
-      <pre class="mmd-src" id="src-callcenter">flowchart LR
+      <pre class="mmd-src" id="src-callcenter">flowchart TD
   A([Звонок или чат]) --> B[Идентификация клиента]
   B --> C[История обращений]
   C --> D{Типовой вопрос?}
@@ -882,7 +908,7 @@
   J -- нет --> F
   J -- да --> K([Закрытие тикета])
   class C,G,I hot</pre>
-      <pre class="mmd-src" id="src-design">flowchart LR
+      <pre class="mmd-src" id="src-design">flowchart TD
   A([Бриф и референсы]) --> B[Оценка объёма]
   B --> C[Договор и предоплата]
   C --> D[Концепция: 2-3 варианта]
@@ -894,7 +920,7 @@
   G -- ок --> H[Исходники и гайд]
   H --> I([Передача и закрывающие])
   class D,F,G hot</pre>
-      <pre class="mmd-src" id="src-software">flowchart LR
+      <pre class="mmd-src" id="src-software">flowchart TD
   A([Запрос клиента или бизнеса]) --> B[Уточнение требований]
   B --> C[Оценка и план спринта]
   C --> D[Разработка]
@@ -925,18 +951,20 @@
           <div class="v-stage" id="v-stage">
             <div class="v-layer" id="v-layer"></div>
           </div>
+          <span class="v-fade-t" aria-hidden="true"></span>
           <span class="v-fade v-fade-l" aria-hidden="true"></span>
           <span class="v-fade v-fade-r" aria-hidden="true"></span>
+          <span class="v-fade-b" aria-hidden="true"></span>
           <div class="v-tools">
             <button class="v-btn" type="button" data-zoom="out" aria-label="Мельче"><span class="v-sign" aria-hidden="true">−</span></button>
-            <button class="v-btn v-level" type="button" data-zoom="fit" title="Показать схему целиком"><span id="v-level">100%</span></button>
+            <button class="v-btn v-level" type="button" data-zoom="fit" title="Показать схему целиком"><svg class="ic" aria-hidden="true"><use href="#i-corners-out" xlink:href="#i-corners-out"></use></svg><span id="v-level">100%</span></button>
             <button class="v-btn" type="button" data-zoom="in" aria-label="Крупнее"><span class="v-sign" aria-hidden="true">+</span></button>
           </div>
           <div class="v-save">
             <button class="v-btn v-wide" type="button" id="v-svg"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> SVG</button>
             <button class="v-btn v-wide" type="button" id="v-png"><svg class="ic" aria-hidden="true"><use href="#i-download-simple" xlink:href="#i-download-simple"></use></svg> PNG</button>
           </div>
-          <p class="v-hint" id="v-hint">Листайте вбок колесом или пальцем · кнопки — масштаб</p>
+          <p class="v-hint" id="v-hint">Листайте схему вниз колесом или пальцем · кнопки — масштаб</p>
         </div>
 
         <div class="v-code">
@@ -948,6 +976,7 @@
           </div>
           <textarea id="v-input" spellcheck="false" autocomplete="off" aria-label="Код схемы"></textarea>
           <p class="v-note"><svg class="ic" aria-hidden="true"><use href="#i-pencil-simple" xlink:href="#i-pencil-simple"></use></svg> Правьте код или вставьте свой — схема перерисуется сама. Как получить код из интервью — в блоке ниже.</p>
+          <p class="v-note"><svg class="ic" aria-hidden="true"><use href="#i-shapes" xlink:href="#i-shapes"></use></svg> Рисуется не только flowchart. Вставляйте любой тип mermaid: sequenceDiagram, stateDiagram-v2, classDiagram, erDiagram, journey, gantt, timeline, mindmap, kanban, quadrantChart, xychart-beta, pie, block-beta, architecture-beta, C4Context, gitGraph, requirementDiagram, radar-beta, treemap-beta, packet-beta.</p>
 
           <div class="err" id="v-err" hidden role="alert">
             <div class="err-h"><svg class="ic" aria-hidden="true"><use href="#i-x-circle" xlink:href="#i-x-circle"></use></svg> В коде схемы ошибка</div>
@@ -1290,66 +1319,73 @@ copyBtn.addEventListener('click', () => copyText(input.value, copyBtn));
    SVG, а не transform: при увеличении текст остаётся резким. */
 const shell  = stage.parentElement;
 let k = 1, natW = 0, natH = 0;
-const K_MIN = 0.25, K_MAX = 3;
+const K_MIN = 0.2, K_MAX = 3;
 
 function svgEl(){ return layer.querySelector('svg'); }
-function sizeTo(next, anchor){
+function pads(){
+  const cs = getComputedStyle(layer);
+  return { x: (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight)  || 0),
+           y: (parseFloat(cs.paddingTop)  || 0) + (parseFloat(cs.paddingBottom) || 0) };
+}
+function room(){
+  const pd = pads();
+  return { w: Math.max(80, stage.clientWidth - pd.x), h: Math.max(80, stage.clientHeight - pd.y) };
+}
+// Меняем масштаб так, чтобы точка схемы под курсором (или под центром окна)
+// осталась на месте — иначе после каждого нажатия «+» приходится искать,
+// куда уехала схема.
+function sizeTo(next, ax, ay){
   const el = svgEl(); if(!el || !natW) return;
-  const before = stage.scrollLeft + (anchor === undefined ? stage.clientWidth / 2 : anchor);
-  const ratio  = before / Math.max(1, layer.scrollWidth);
+  const cx = ax === undefined ? stage.clientWidth  / 2 : ax;
+  const cy = ay === undefined ? stage.clientHeight / 2 : ay;
+  const rx = (stage.scrollLeft + cx) / Math.max(1, layer.scrollWidth);
+  const ry = (stage.scrollTop  + cy) / Math.max(1, layer.scrollHeight);
   k = Math.max(K_MIN, Math.min(K_MAX, next));
   el.style.width  = Math.round(natW * k) + 'px';
   el.style.height = Math.round(natH * k) + 'px';
   levelEl.textContent = Math.round(k * 100) + '%';
-  // держим ту же точку схемы под тем же местом окна
-  stage.scrollLeft = ratio * layer.scrollWidth - (anchor === undefined ? stage.clientWidth / 2 : anchor);
+  stage.scrollLeft = rx * layer.scrollWidth  - cx;
+  stage.scrollTop  = ry * layer.scrollHeight - cy;
   edges();
 }
 function fitAll(){                      // «целиком»: вся схема в окне
   if(!natW) return;
-  const pad = 2 * parseFloat(getComputedStyle(layer).paddingLeft || 0);
-  sizeTo(Math.min((stage.clientWidth - pad) / natW, (stage.clientHeight - 70) / natH));
-  stage.scrollLeft = 0;
+  const r = room();
+  sizeTo(Math.min(r.w / natW, r.h / natH));
+  stage.scrollLeft = 0; stage.scrollTop = 0;
+  edges();
 }
 function startView(){
-  // Не окно диктует размер схеме, а схема — окну. Схема рисуется в натуральную
-  // величину (подписи ровно того кегля, на который их рассчитывал mermaid), а
-  // высота окна подгоняется под неё. Раньше было наоборот: в высокой коробке
-  // лежала узкая лента, полокна пустовало, и всё выглядело неопрятно.
+  // Правило одно: по ШИРИНЕ схема входит в окно целиком — вбок ничего не
+  // срезается. Длину показываем прокруткой вниз: листать страницу вниз
+  // привычно, вбок — нет. Нижняя граница 45%: мельче подписи не прочесть,
+  // и тогда честнее оставить прокрутку вбок, чем показывать точки вместо слов.
   if(!natW) return;
   syncHint();
-  const CHROME = 116;                                  // место под подсказку и кнопки
-  const MAXH = Math.round(window.innerHeight * 0.62), MINH = 240;
-  if(isNarrow()){
-    // Вертикальная схема: вписываем по ШИРИНЕ, листается вниз внутри окна
-    stage.style.height = MAXH + 'px';
-    const cs = getComputedStyle(layer);
-    const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
-    sizeTo(Math.max(0.35, Math.min(1.2, (stage.clientWidth - pad - 4) / natW)));
-    stage.scrollLeft = 0; stage.scrollTop = 0; edges();
-    return;
-  }
-  // Совсем невысокую схему (три узла) чуть увеличиваем, чтобы не терялась
-  let kk = natH < 170 ? Math.min(2.2, 170 / natH) : 1;
-  const h = Math.max(MINH, Math.min(MAXH, Math.round(natH * kk) + CHROME));
-  stage.style.height = h + 'px';
-  // Если схема всё же выше окна (вертикальная), ужимаем её по высоте
-  const room = h - CHROME;
-  if(natH * kk > room) kk = room / natH;
-  sizeTo(Math.max(0.35, kk));
-  stage.scrollLeft = 0;
+  const kW = room().w / natW;
+  sizeTo(Math.min(Math.max(kW, 0.45), 1.15));
+  stage.scrollLeft = 0; stage.scrollTop = 0;
   edges();
 }
 function syncHint(){
   const h = document.getElementById('v-hint');
-  if(h) h.textContent = isNarrow()
-    ? 'Листайте схему пальцем · кнопки — масштаб'
-    : 'Листайте вбок колесом или пальцем · кнопки — масштаб';
+  if(!h) return;
+  const tall   = stage.scrollHeight > stage.clientHeight + 2;
+  const wide   = stage.scrollWidth  > stage.clientWidth  + 2;
+  const narrow = window.innerWidth < 760;     // на телефоне подсказка в одну строку
+  h.textContent = tall
+    ? (narrow ? 'Листайте схему вниз'
+              : 'Листайте схему вниз колесом или пальцем · кнопки — масштаб')
+    : (wide   ? (narrow ? 'Листайте схему вбок' : 'Листайте вбок · кнопки — масштаб')
+              : (narrow ? 'Кнопки — масштаб' : 'Кнопки — масштаб · двойной щелчок — показать целиком'));
 }
-function edges(){                       // растушёвка там, где лента продолжается
-  const max = stage.scrollWidth - stage.clientWidth;
+function edges(){                       // растушёвка там, где схема продолжается
+  const maxX = stage.scrollWidth  - stage.clientWidth;
+  const maxY = stage.scrollHeight - stage.clientHeight;
   shell.classList.toggle('has-left',  stage.scrollLeft > 4);
-  shell.classList.toggle('has-right', stage.scrollLeft < max - 4);
+  shell.classList.toggle('has-right', stage.scrollLeft < maxX - 4);
+  shell.classList.toggle('has-up',    stage.scrollTop  > 4);
+  shell.classList.toggle('has-down',  stage.scrollTop  < maxY - 4);
 }
 stage.addEventListener('scroll', edges, { passive: true });
 
@@ -1363,11 +1399,15 @@ stage.addEventListener('wheel', e => {
   if(!natW) return;
   if(e.ctrlKey || e.metaKey){
     e.preventDefault();
-    sizeTo(k * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX - stage.getBoundingClientRect().left);
+    const r = stage.getBoundingClientRect();
+    sizeTo(k * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX - r.left, e.clientY - r.top);
     return;
   }
-  // вертикальное колесо мыши превращаем в горизонтальную прокрутку, а
-  // горизонтальный жест тачпада браузер отработает сам
+  // Если схема выше окна (вертикальная или увеличенная) — колесо листает
+  // ВНИЗ, как обычно. Если по вертикали листать нечего, вертикальное колесо
+  // мыши превращаем в горизонтальную прокрутку ленты.
+  const canY = stage.scrollHeight > stage.clientHeight + 2;
+  if(canY) return;                                   // браузер прокрутит сам
   if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
     const max = stage.scrollWidth - stage.clientWidth;
     const next = stage.scrollLeft + e.deltaY;
@@ -1382,45 +1422,33 @@ let grab = null;
 stage.addEventListener('pointerdown', e => {
   if(e.pointerType === 'touch' || !natW) return;
   if(e.target.closest('.v-btn, .v-tools, .v-save')) return;
-  grab = { x: e.clientX, left: stage.scrollLeft };
+  grab = { x: e.clientX, y: e.clientY, left: stage.scrollLeft, top: stage.scrollTop };
   stage.classList.add('dragging');
 });
 window.addEventListener('pointermove', e => {
   if(!grab) return;
   stage.scrollLeft = grab.left - (e.clientX - grab.x);
+  stage.scrollTop  = grab.top  - (e.clientY - grab.y);
 });
 window.addEventListener('pointerup', () => { grab = null; stage.classList.remove('dragging'); });
 stage.addEventListener('dblclick', fitAll);
 
-let rsz, lastNarrow = isNarrow();
+let rsz;
 window.addEventListener('resize', () => {
   if(!natW) return;
   clearTimeout(rsz);
-  rsz = setTimeout(() => {
-    if(isNarrow() !== lastNarrow){        // окно пересекло границу форм
-      lastNarrow = isNarrow();
-      if(window.renderDiagrams) window.renderDiagrams();
-    } else startView();
-  }, 150);
+  rsz = setTimeout(startView, 150);
 });
 
 /* ── Отрисовка ──────────────────────────────────────────────────────────── */
 function activeCode(){ return input.value || ''; }
-// Узкий экран — схему разворачиваем ВНИЗ: горизонтальная лента на телефоне
-// показывает полтора узла и листается вбок, а вертикальная ложится в экран.
-// Исходник при этом не трогаем — меняется только то, что рисуется.
-function isNarrow(){ return window.innerWidth < 760; }
-function forView(code){
-  return code.replace(/^([ \t]*flowchart[ \t]+)(LR|RL|TD|TB|BT)\b/m,
-                      (m, head) => head + (isNarrow() ? 'TD' : 'LR'));
-}
 function showError(msg){
   lastError = msg;
   errTxt.textContent = msg;
   errBox.hidden = false;
   layer.innerHTML = ''; natW = natH = 0;
   levelEl.textContent = '—';
-  shell.classList.remove('has-left', 'has-right');
+  shell.classList.remove('has-left', 'has-right', 'has-up', 'has-down');
 }
 function themeVars(){
   const dark = document.documentElement.classList.contains('dark');
@@ -1456,14 +1484,14 @@ try {
 
   window.renderDiagrams = async function(keepView){
     const code = (activeCode() || '').trim();
-    if(!code){ showError('Пусто: вставьте код схемы — он начинается со строки flowchart LR'); return; }
+    if(!code){ showError('Пусто: вставьте код схемы — он начинается со строки flowchart TD'); return; }
     init();                                   // тема могла смениться
     try {
       // parse() бросает исключение с текстом и номером строки — его и показываем
-      const shown = forView(code);
-      await mermaid.parse(shown);
-      const { svg } = await mermaid.render('v-svg-' + Date.now(), shown);
-      const keepLeft = stage.scrollLeft, keepK = k, prevW = natW, prevH = natH;
+      await mermaid.parse(code);
+      const { svg } = await mermaid.render('v-svg-' + Date.now(), code);
+      const keepLeft = stage.scrollLeft, keepTop = stage.scrollTop, keepK = k,
+            prevW = natW, prevH = natH;
       layer.innerHTML = svg;
       const el = layer.querySelector('svg');
       const vb = el.viewBox && el.viewBox.baseVal;
@@ -1475,7 +1503,9 @@ try {
       // осталась бы крошечной в углу.
       const same = prevW && Math.abs(natW - prevW) / prevW < 0.25
                         && Math.abs(natH - prevH) / Math.max(1, prevH) < 0.25;
-      if(keepView && same){ sizeTo(keepK); stage.scrollLeft = keepLeft; }
+      if(keepView && same){
+        sizeTo(keepK); stage.scrollLeft = keepLeft; stage.scrollTop = keepTop; edges(); syncHint();
+      }
       else startView();
     } catch (e) {
       showError((e && (e.str || e.message)) ? String(e.str || e.message) : 'Схема не разобралась');

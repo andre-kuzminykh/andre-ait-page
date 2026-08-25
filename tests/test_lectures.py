@@ -679,8 +679,9 @@ def test_process_practice_page():
     for k in keys:
         assert '<pre class="mmd-src" id="src-%s">' % k in html, rel + ": нет исходника схемы " + k
         assert '<div class="case-info" id="info-%s"' % k in html, rel + ": нет описания " + k
-    # схемы горизонтальные — окно тоже горизонтальное
-    assert len(re.findall(r"flowchart LR", html)) >= 6, rel + ": схемы примеров разворачиваются вширь"
+    # схемы вертикальные: цепочка из полутора десятков шагов вбок не влезает
+    # ни в одно окно, а вниз — листается как обычная страница (FR-SITE28)
+    assert len(re.findall(r"flowchart TD", html)) >= 6, rel + ": схемы примеров разворачиваются вниз"
     # узкие места отмечены на КАЖДОЙ схеме (считаем только внутри исходников:
     # такая же строка есть в примере внутри промта)
     sources = html[html.index('<div id="mmd-sources"'):html.index('<div class="viewer"')]
@@ -718,31 +719,52 @@ def test_process_practice_viewer():
     for el in ('id="v-stage"', 'id="v-layer"', 'id="v-level"', 'data-zoom="in"',
                'data-zoom="out"', 'data-zoom="fit"'):
         assert el in html, rel + ": в окне нет " + el
-    # листается обычной прокруткой: колесо, тачпад, палец, полоса, клавиши
-    assert re.search(r"\.v-stage\{[^}]*overflow-x:auto", html), rel + ": лента прокручивается сама"
-    assert "stage.addEventListener('wheel'" in html and "stage.scrollLeft = next;" in html, \
-        rel + ": вертикальное колесо мыши листает ленту вбок"
+    # листается обычной прокруткой по обеим осям: колесо, тачпад, палец,
+    # полоса, клавиши. Вертикальную прокрутку не перехватываем — она нужна
+    # чаще всего (FR-SITE28)
+    assert re.search(r"\.v-stage\{[^}]*overflow:auto", html), rel + ": схема прокручивается сама"
+    assert "stage.addEventListener('wheel'" in html, rel + ": колесо обслуживается"
+    assert "const canY = stage.scrollHeight > stage.clientHeight + 2;" in html \
+        and "if(canY) return;" in html, \
+        rel + ": пока есть куда листать вниз, колесо листает вниз, а не вбок"
     assert "if(e.ctrlKey || e.metaKey){" in html, rel + ": Ctrl+колесо — масштаб, как в браузере"
     assert "if(e.target.closest('.v-btn, .v-tools, .v-save')) return;" in html, \
         rel + ": перетаскивание не должно начинаться на кнопках"
-    # окно подгоняется под схему, а не наоборот
-    assert "function startView(){" in html and "stage.style.height = h + 'px';" in html, \
-        rel + ": высота окна подгоняется под схему — без пустых полей"
+    assert "stage.scrollTop  = grab.top  - (e.clientY - grab.y);" in html, \
+        rel + ": перетаскивание работает и по вертикали"
+    # схема входит в окно по ширине — вбок ничего не срезается
+    assert "function startView(){" in html and "sizeTo(Math.min(Math.max(kW, 0.45), 1.15));" in html, \
+        rel + ": схема подгоняется по ширине окна, длина уходит в прокрутку вниз"
     assert "el.style.width  = Math.round(natW * k) + 'px';" in html, \
         rel + ": масштаб — реальный размер SVG, текст остаётся резким"
-    # узлы на краю растворяются, а не срезаются ножом
+    # центрирование: safe — иначе верх переполнившей схемы уходит туда,
+    # докуда прокрутка не достаёт, и первый шаг оказывается срезан
+    assert "align-content:center;   align-content:safe center;" in html, \
+        rel + ": мелкая схема по центру, крупная — от начала, без срезанного верха"
+    assert "margin:auto" not in html[html.index(".v-layer{"):html.index(".v-layer{") + 200], \
+        rel + ": центрирование margin:auto прячет верх схемы — только safe center"
+    # узлы на краю растворяются, а не срезаются ножом — по всем четырём кромкам
     assert ".v-fade-l{ left:0; background:linear-gradient(to right,var(--diagram-bg),transparent); }" in html
-    assert "shell.classList.toggle('has-left'" in html, rel + ": растушёвка появляется там, где лента продолжается"
-    # на узком экране схема разворачивается вниз
-    assert "function isNarrow(){ return window.innerWidth < 760; }" in html
-    assert "(isNarrow() ? 'TD' : 'LR')" in html, \
-        rel + ": на телефоне схема вертикальная, на компьютере горизонтальная"
+    for cls in ("has-left", "has-right", "has-up", "has-down"):
+        assert "shell.classList.toggle('%s'" % cls in html, \
+            rel + ": нет растушёвки для " + cls
+    # рисуется ровно то, что в поле: направление схемы больше не подменяем
+    assert "forView" not in html, rel + ": код рисуется как есть, без подмены направления"
+    assert "await mermaid.render('v-svg-' + Date.now(), code);" in html, \
+        rel + ": рисуется ровно тот код, что показан в поле"
     # «целиком» показывает всю схему; за край её не увести — прокрутка сама
     # держится в границах ленты
     assert "function fitAll(){" in html and 'data-zoom="fit"' in html, \
         rel + ": кнопка «целиком» показывает схему полностью"
     assert "clampView" not in html, \
         rel + ": ручной панорамы с упорами больше нет — листает обычная прокрутка"
+    # примеры вертикальные: длинная цепочка вбок не помещается ни в одно окно
+    src = html[html.index('id="mmd-sources"'):html.index('</div>', html.rindex('<pre class="mmd-src"'))]
+    assert src.count("flowchart TD") == 6 and "flowchart LR" not in src, \
+        rel + ": примеры разворачиваются вниз — так они входят по ширине"
+    # подсказка висит над схемой, поэтому она в плашке с фоном
+    assert re.search(r"\.v-hint\{[^}]*background:var\(--card\)", html), \
+        rel + ": подсказка на фоне, иначе наезжает на узлы"
 
     # поле кода одно и всегда редактируемое, кнопки «показать схему» нет
     for el in ('id="v-input"', 'id="v-copy"'):
@@ -752,7 +774,7 @@ def test_process_practice_viewer():
     assert "input.addEventListener('input'" in html and "window.renderDiagrams(true); }, 500);" in html, \
         rel + ": правка кода перерисовывает схему сама, без кнопки"
     assert "const SAVE_KEY = 'ait-mermaid-draft';" in html, rel + ": черновик переживает перезагрузку"
-    assert "await mermaid.parse(shown);" in html, rel + ": код проверяется до отрисовки"
+    assert "await mermaid.parse(code);" in html, rel + ": код проверяется до отрисовки"
 
     # ошибка показывается и превращается в промт на исправление
     assert 'id="v-err-text"' in html and 'id="v-fixprompt"' in html
@@ -763,6 +785,11 @@ def test_process_practice_viewer():
     assert "canvas.toBlob" in html and "image/svg+xml" in html, rel + ": сохранение SVG и PNG"
     assert "rect.setAttribute('fill', dark ? '#0A0A0A' : '#FFFFFF');" in html, \
         rel + ": в файл подкладывается фон, иначе схема в документе невидима"
+
+    # окно рисует не только flowchart — об этом сказано рядом с полем кода
+    for kind in ("sequenceDiagram", "stateDiagram-v2", "classDiagram", "erDiagram",
+                 "gantt", "mindmap", "timeline", "pie"):
+        assert kind in html, rel + ": в списке поддерживаемых типов нет " + kind
 
 
 def test_locked_modules_closed():
