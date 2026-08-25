@@ -488,6 +488,26 @@ def test_practice_terms_do_not_break_on_hyphen():
 
 
 
+
+# ── Обложка превью лекции 2 ────────────────────────────────────────────────
+
+def test_lecture2_preview_cover():
+    """У ссылки на лекцию 2 есть картинка превью — во всех вебвью.
+
+    Без og:image мессенджеры и соцсети показывают голую ссылку; карточка
+    должна быть КРУПНОЙ (summary_large_image), иначе обложка ужимается в
+    квадратик сбоку.
+    """
+    img = "https://andre.technology/assets/lecture_2_title.jpg"
+    html = _read(_LECTURE2)
+    for prop in ("og:image", "og:image:secure_url"):
+        assert '<meta property="%s" content="%s">' % (prop, img) in html, prop
+    assert '<meta name="twitter:image" content="%s">' % img in html, "twitter:image"
+    assert '<meta name="twitter:card" content="summary_large_image">' in html, \
+        "карточка превью должна быть крупной"
+    rel = "assets/lecture_2_title.jpg"
+    assert os.path.isfile(os.path.join(_ROOT, rel)), "нет файла " + rel
+
 # ── Практическое задание к лекции 2 ────────────────────────────────────────
 
 _PRACTICE2 = "automation/2/practice/index.html"
