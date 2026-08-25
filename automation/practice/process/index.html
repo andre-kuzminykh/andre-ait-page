@@ -2354,12 +2354,23 @@ const BN = /^\s*узкое место/i;
    пересчитываем в тинт: оттенок усиливаем, чтобы блоки не слились в один
    серый, и кладём с малой непрозрачностью поверх тёмного фона.
    Код в поле при этом не меняется — правится только отрисованный svg. */
+function bgRGB(){                                        // фон сцены, на нём и мешаем
+  const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(getComputedStyle(stage).backgroundColor || '');
+  return m ? [+m[1], +m[2], +m[3]] : [16, 16, 16];
+}
 function tint(fill){
   const m = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(String(fill).trim());
   if(!m) return null;                                   // rgba или имя — не трогаем
   const c = [+m[1], +m[2], +m[3]];
   if((0.299*c[0] + 0.587*c[1] + 0.114*c[2]) / 255 < 0.62) return null;  // и так тёмный
-  return 'rgba(' + c.map(v => Math.max(0, 255 - Math.min(255, (255 - v) * 8))).join(', ') + ', 0.10)';
+  // Цвет НЕпрозрачный — это принципиально. Полосы этапов ложатся поверх
+  // блоков участников; полупрозрачные тинты складывались бы, и в зазоре между
+  // блоками, где полоса лежит на голом фоне, появлялась тёмная колонна во всю
+  // высоту схемы. Непрозрачный цвет ведёт себя ровно как светлый rgb(...) на
+  // белой теме: верхний прямоугольник просто закрывает нижний.
+  const bg = bgRGB();
+  const amp = c.map(v => Math.max(0, 255 - Math.min(255, (255 - v) * 8)));
+  return 'rgb(' + amp.map((v, i) => Math.round(bg[i] + (v - bg[i]) * 0.13)).join(', ') + ')';
 }
 function retintBands(){
   if(!document.documentElement.classList.contains('dark')) return;
@@ -2535,11 +2546,16 @@ try {
     clone.removeAttribute('style');
     // Фон не наследуется из страницы: без него тёмная схема в документе
     // выглядит как белый текст на прозрачном — то есть никак.
-    const dark = document.documentElement.classList.contains('dark');
+    // Кладём его ровно по viewBox: у mermaid начало координат уходит в минус
+    // (например "-50 -10 3260 1857"), и прямоугольник от нуля оставлял слева
+    // и сверху незакрашенную полосу — в выгрузке она вылезала краем.
+    const vb = svg.viewBox && svg.viewBox.baseVal;
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('x', 0); rect.setAttribute('y', 0);
-    rect.setAttribute('width', '100%'); rect.setAttribute('height', '100%');
-    rect.setAttribute('fill', dark ? '#0A0A0A' : '#FFFFFF');
+    rect.setAttribute('x', vb ? vb.x : 0);
+    rect.setAttribute('y', vb ? vb.y : 0);
+    rect.setAttribute('width',  vb && vb.width  ? vb.width  : '100%');
+    rect.setAttribute('height', vb && vb.height ? vb.height : '100%');
+    rect.setAttribute('fill', getComputedStyle(stage).backgroundColor || '#FFFFFF');
     clone.insertBefore(rect, clone.firstChild);
     return { markup: new XMLSerializer().serializeToString(clone), w, h };
   }

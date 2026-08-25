@@ -874,8 +874,15 @@ def test_process_practice_viewer():
 
     # сохранение картинки
     assert "canvas.toBlob" in html and "image/svg+xml" in html, rel + ": сохранение SVG и PNG"
-    assert "rect.setAttribute('fill', dark ? '#0A0A0A' : '#FFFFFF');" in html, \
-        rel + ": в файл подкладывается фон, иначе схема в документе невидима"
+    # фон в файле кладётся ровно по viewBox: у mermaid начало координат уходит
+    # в минус, и прямоугольник от нуля оставлял незакрашенную полосу по краю
+    assert "rect.setAttribute('x', vb ? vb.x : 0);" in html \
+        and "rect.setAttribute('fill', getComputedStyle(stage).backgroundColor || '#FFFFFF');" in html, \
+        rel + ": фон в выгрузке должен закрывать весь viewBox"
+    # тинт полос НЕпрозрачный: иначе тинты складываются и в зазоре между
+    # блоками участников появляется тёмная колонна во всю высоту схемы
+    assert "return 'rgb(' + amp.map((v, i) =>" in html, \
+        rel + ": пересчитанный цвет полосы должен быть непрозрачным"
 
     assert "Рисуется не только flowchart" not in html, \
         rel + ": перечень типов диаграмм с страницы убран"
