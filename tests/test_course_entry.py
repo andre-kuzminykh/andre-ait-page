@@ -291,19 +291,37 @@ def test_lecture1_preview_description():
 
 # ── Лекция: при открытом тексте автоперехода нет ───────────────────────────
 
-def test_video_end_never_advances_the_slide():
-    """Ролик доиграл — слайд НЕ листается сам (правка владельца).
+def test_video_end_advances_the_slide_unless_something_is_open():
+    """Ролик доиграл — слайд листается сам (правка владельца).
 
-    Кружок возвращается в состояние «нажми, чтобы посмотреть снова», а слайды
-    листает человек: стрелками, свайпом или клавишами.
+    Но только если зритель ничего не читает: открытая панель «Текст» держит
+    слайд на месте, иначе статья уезжает из-под глаз на середине абзаца.
+    Открытый тест держит по той же причине — листать под модалкой некуда,
+    а режим экспорта в видео двигает слайды сам.
     """
     for rel in (_LECTURE1, _LECTURE2):
         html = _read(rel)
         m = re.search(r"p\.on\('ended', \(\) => \{(.*?)\n            \}\);", html, re.S)
         assert m, rel + ": не найден обработчик окончания видео"
         body = m.group(1)
-        assert "nextSlide" not in body, rel + ": окончание видео не должно листать слайд"
+        assert "window.nextSlide();" in body, rel + ": окончание видео должно листать слайд"
         assert "setPlayingUI(false)" in body, rel + ": кружок должен вернуться к значку play"
+        for guard in ("if (exportMode) return;",
+                      "if (document.body.classList.contains('notes-open')) return;",
+                      "if (qm && !qm.classList.contains('hidden')) return;"):
+            assert guard in body, "%s: нет условия «%s»" % (rel, guard)
+        # порядок важен: все проверки стоят ДО перехода
+        assert body.index("window.nextSlide();") > body.rindex("return;"), \
+            rel + ": переход должен стоять после всех условий"
+
+
+def test_video_end_handler_is_the_same_in_all_lectures():
+    """Автолистание одинаково во всех лекциях — иначе поведение разъедется."""
+    bodies = []
+    for rel in (_LECTURE1, _LECTURE2):
+        m = re.search(r"p\.on\('ended', \(\) => \{(.*?)\n            \}\);", _read(rel), re.S)
+        bodies.append(m.group(1))
+    assert bodies[0] == bodies[1], "обработчик окончания ролика разъехался между лекциями"
 
 
 def test_notes_panel_keeps_video_bubble_visible():

@@ -3844,12 +3844,23 @@ window.__FLOOR = {pc:49.8533,mob:22.4659};
 
         function setupPlayerEvents(p) {
             p.on('ended', () => {
-                // Ролик доиграл — слайд НЕ переключается сам (правка владельца).
                 // Кружок возвращается в состояние «нажми, чтобы посмотреть
                 // снова»: значок play, кадр с начала, размытие до запуска.
                 setPlayingUI(false);
                 const v = document.getElementById('head-video');
                 if (v) { try { v.currentTime = 0; } catch (e) {} }
+                // ...и слайд листается сам (правка владельца): ролик доиграл —
+                // лекция едет дальше, руки не нужны. НО только если зритель
+                // ничего не читает: при открытой панели «Текст» слайд остаётся
+                // на месте, иначе статья уезжает из-под глаз на середине
+                // абзаца. Открытый тест держит слайд по той же причине —
+                // листать под модалкой некуда. В режиме экспорта в видео
+                // слайды двигает сам рекордер, вмешиваться нельзя.
+                if (exportMode) return;
+                if (document.body.classList.contains('notes-open')) return;
+                const qm = document.getElementById('quiz-modal');
+                if (qm && !qm.classList.contains('hidden')) return;
+                window.nextSlide();
             });
             p.on('play', () => {
                 setPlayingUI(true);
