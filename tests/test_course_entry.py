@@ -508,6 +508,25 @@ def test_lecture2_preview_cover():
     rel = "assets/lecture_2_title.jpg"
     assert os.path.isfile(os.path.join(_ROOT, rel)), "нет файла " + rel
 
+
+def test_lecture2_preview_description_says_what_is_inside():
+    """Подпись под картинкой превью перечисляет, что разбирается в лекции.
+
+    Раньше там стояла общая фраза про «понимание процессов и ценности» —
+    по ней нельзя понять, о чём лекция. Владелец просил лаконично назвать
+    предмет разбора. Три поля (description, og, twitter) обязаны совпадать:
+    разные превью читают разные из них.
+    """
+    html = _read(_LECTURE2)
+    got = re.findall(r'<meta (?:name|property)="(?:og:|twitter:)?description" content="([^"]+)">', html)
+    assert len(got) == 3, "нужны три подписи превью, нашлось %d" % len(got)
+    assert len(set(got)) == 1, "подписи превью разъехались: " + " | ".join(sorted(set(got)))
+    desc = got[0]
+    assert 80 <= len(desc) <= 260, "подпись превью должна быть содержательной, но не простыней: %d знаков" % len(desc)
+    for mark in ("AS-IS", "TO-BE", "автоматизации"):
+        assert mark in desc, "в подписи превью не назван предмет разбора: " + mark
+
+
 # ── Практическое задание к лекции 2 ────────────────────────────────────────
 
 _PRACTICE2 = "automation/2/practice/index.html"
@@ -535,6 +554,64 @@ def test_practice2_page_is_self_sufficient():
     for name in ("i-arrow-left", "i-arrow-right", "i-target"):
         assert 'id="%s"' % name in html and 'href="#%s"' % name in html, \
             "иконка %s должна быть и объявлена, и использована" % name
+
+
+def test_practice2_mermaid_is_vendored_and_complete():
+    """Схемы рисует mermaid ИЗ РЕПОЗИТОРИЯ, а не с чужого CDN.
+
+    Раньше библиотека тянулась с cdn.jsdelivr.net: в закрытой корпоративной
+    сети или при сбое CDN страница оставалась без схем. Теперь сборка лежит
+    рядом, и проверять надо не только адрес импорта, но и ПОЛНОТУ дерева:
+    mermaid делит себя на куски и подтягивает их по мере надобности, поэтому
+    недокопированный chunk всплывёт не на загрузке, а на первой же схеме
+    такого типа — то есть у зрителя, а не у нас.
+    """
+    html = _read(_PRACTICE2)
+    assert "cdn.jsdelivr.net/npm" not in html, \
+        "mermaid должен грузиться со своего домена, а не с jsdelivr"
+    assert "await import('https://" not in html, \
+        "модули страницы подгружаются со своего домена"
+
+    m = re.search(r"await import\('(/assets/mermaid/[^']+\.js)'\)", html)
+    assert m, "не нашёл импорт локальной сборки mermaid"
+    entry_url = m.group(1)
+    entry = os.path.join(_ROOT, entry_url.lstrip("/"))
+    assert os.path.isfile(entry), "нет файла библиотеки " + entry_url
+
+    base = os.path.dirname(entry)
+    assert os.path.isfile(os.path.join(base, "LICENSE")), \
+        "рядом с чужой библиотекой должна лежать её лицензия (mermaid — MIT)"
+
+    src = open(entry, encoding="utf-8").read()
+    refs = set(re.findall(r'from"(\./chunks/[^"]+\.js)"', src))
+    refs |= set(re.findall(r'import\("(\./chunks/[^"]+\.js)"\)', src))
+    assert len(refs) >= 40, "подозрительно мало кусков в сборке: %d" % len(refs)
+    missing = sorted(r for r in refs if not os.path.isfile(os.path.join(base, r)))
+    assert not missing, "куски библиотеки не скопированы: " + ", ".join(missing[:5])
+
+    # ни одного .mjs: GitHub Pages не обязан отдавать это расширение как
+    # javascript, а модуль с чужим типом браузер не исполняет
+    stray = [n for _r, _d, ns in os.walk(base) for n in ns if n.endswith(".mjs")]
+    assert not stray, "в сборке остались .mjs: " + ", ".join(stray[:5])
+    assert '.mjs"' not in src.replace('purify.es.mjs"', ''), \
+        "внутри точки входа осталась ссылка на .mjs"
+
+    # и куски ссылаются друг на друга существующими файлами
+    chunks_dir = os.path.join(base, "chunks", "mermaid.esm.min")
+    broken = []
+    for name in sorted(os.listdir(chunks_dir)):
+        body = open(os.path.join(chunks_dir, name), encoding="utf-8").read()
+        for ref in set(re.findall(r'"(\./[A-Za-z0-9_.\-]+\.js)"', body)):
+            if not os.path.isfile(os.path.join(chunks_dir, ref)):
+                broken.append(name + " → " + ref)
+    assert not broken, "куски ссылаются на несуществующие файлы: " + ", ".join(broken[:5])
+
+
+def test_no_page_loads_mermaid_from_a_cdn():
+    """Ни одна страница курса не тянет mermaid со стороны."""
+    for rel in _COURSE_PAGES:
+        html = _read(rel)
+        assert "npm/mermaid" not in html, rel + ": mermaid должен быть свой, из репозитория"
 
 
 def test_practice2_talking_head_matches_lecture_one():

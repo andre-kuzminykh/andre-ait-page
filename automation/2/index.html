@@ -12,13 +12,13 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
-    <meta name="description" content="Лекция 2: Переход к процессному подходу. Как автоматизация начинается с понимания процессов и создания ценности">
+    <meta name="description" content="Вы научитесь описывать процесс честной моделью AS-IS, находить узкие места и точки автоматизации, выбирать между простым правилом, ИИ-агентом и человеком и собирать целевой процесс TO-BE с метриками.">
     <meta name="theme-color" content="#8B5CF6">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Модуль 2 — Переход к процессному подходу">
-    <meta property="og:description" content="Как автоматизация начинается с понимания процессов и создания ценности">
+    <meta property="og:description" content="Вы научитесь описывать процесс честной моделью AS-IS, находить узкие места и точки автоматизации, выбирать между простым правилом, ИИ-агентом и человеком и собирать целевой процесс TO-BE с метриками.">
     <meta property="og:locale" content="ru_RU">
     <meta property="og:site_name" content="Andre AIT">
     <meta property="og:url" content="https://andre.technology/automation/2/">
@@ -30,7 +30,7 @@
     <meta property="og:image:alt" content="Автоматизация — Модуль 2: переход к процессному подходу">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Модуль 2 — Переход к процессному подходу">
-    <meta name="twitter:description" content="Как автоматизация начинается с понимания процессов и создания ценности">
+    <meta name="twitter:description" content="Вы научитесь описывать процесс честной моделью AS-IS, находить узкие места и точки автоматизации, выбирать между простым правилом, ИИ-агентом и человеком и собирать целевой процесс TO-BE с метриками.">
     <meta name="twitter:image" content="https://andre.technology/assets/lecture_2_title.jpg">
 
     <!-- Tailwind CSS -->
@@ -7588,7 +7588,12 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
      компьютере, — столбцом она съедала треть экрана и весь слайд мельчал. */
   #slide-23 [class*="md:flex-row"]{ flex-direction:row !important; align-items:stretch !important; }
   #slide-23 [class*="md:flex-row"] > [class*="md:hidden"]{ display:none !important; }
-  #slide-23 [class*="md:flex-row"] > [class*="hidden"][class*="md:block"]{ display:block !important; font-size:1.1rem !important; }
+  /* стрелки-разделители: карточки в ряду растянуты на общую высоту, и стрелка,
+     растянувшись вместе с ними, рисовалась у ВЕРХНЕГО края — на 43px выше
+     плашки «Редизайн». Ставим её по центру ряда, вровень с плашкой. */
+  #slide-23 [class*="md:flex-row"] > [class*="hidden"][class*="md:block"]{
+    display:block !important; font-size:1.1rem !important; align-self:center !important;
+  }
   #slide-23 [class*="md:flex-row"] [class*="rounded-full"]{ padding:.45rem .6rem !important; font-size:.62rem !important; }
   #slide-23 [class*="md:flex-row"] h3{ font-size:1rem !important; }
   #slide-23 [class*="md:flex-row"] p{ font-size:10px !important; letter-spacing:.04em !important; line-height:1.15 !important; }
@@ -7599,6 +7604,11 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
     overflow-wrap:normal !important; word-break:keep-all !important; hyphens:none !important;
   }
   #slide-23 [class*="md:flex-row"] > [class*="rounded-full"]{ align-self:center !important; }
+  /* «Целевое состояние» не вставало по центру карточки: слово «состояние»
+     шире колонки (56px), переносить его мы запретили правилом выше — и оно
+     вылезало вправо на 13px. Ужимаем боковые поля карточек: подпись целиком
+     помещается и центрируется сама. */
+  #slide-23 [class*="md:flex-row"] > [class*="p-4"]{ padding:.6rem .35rem !important; }
 
   /* 25: «ИИ-агент + Человек» — тоже строкой; столбцом два больших кружка
      занимали пол-экрана. */
@@ -7611,16 +7621,36 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   /* 15, 18, 37, 14: воздух внутри карточек ужимается, текст остаётся весь */
   #slide-14 [class*="gap-2"]{ gap:.35rem !important; }
   #slide-14 [class*="p-2.5"]{ padding:.45rem !important; }
-  #slide-17 [class*="grid"] > div{
-    display:grid !important; grid-template-columns:auto minmax(0,1fr);
-    column-gap:.7rem; row-gap:0; align-items:center; text-align:left !important;
+  /* 18: содержимое карточек — ПО ЦЕНТРУ, иконка стоит рядом с заголовком и
+     одного с ним кегля (правка владельца). Пара «иконка + заголовок» держится
+     середины за счёт двух пустых колонок по краям (1fr auto auto 1fr), а
+     остальные строки растянуты на всю ширину карточки. Селектор бьёт только
+     по карточкам методов: шесть чипов-вопросов ниже лежат во вложенной сетке
+     и остаются на своей авторской раскладке — иконка вровень с подписью. */
+  #slide-17 .content-z > [class*="grid"] > div{
+    display:grid !important; grid-template-columns:1fr auto auto 1fr;
+    row-gap:0; align-items:center; text-align:center !important;
     padding:.55rem .7rem !important;
   }
-  #slide-17 [class*="grid"] > div > i{ grid-row:1 / span 4; font-size:1.5rem !important; margin:0 !important; }
-  #slide-17 [class*="grid"] > div > *:not(i){ margin:0 !important; }
-  #slide-17 [class*="grid"] > div > h3{ font-size:.9rem !important; }
-  #slide-17 [class*="grid"] > div > div{ justify-self:start; margin:.2rem 0 !important; }
-  #slide-17 [class*="grid"] > div > p + p{ margin-top:.2rem !important; }
+  #slide-17 .content-z > [class*="grid"] > div > i{
+    grid-column:2; grid-row:1; font-size:.9rem !important;
+    margin:0 .3rem 0 0 !important;
+  }
+  #slide-17 .content-z > [class*="grid"] > div > h3{
+    grid-column:3; grid-row:1; font-size:.9rem !important; margin:0 !important;
+  }
+  #slide-17 .content-z > [class*="grid"] > div > div{
+    grid-column:1 / -1; justify-self:center; margin:.2rem 0 !important;
+  }
+  #slide-17 .content-z > [class*="grid"] > div > p{ grid-column:1 / -1; margin:0 !important; }
+  #slide-17 .content-z > [class*="grid"] > div > p + p{ margin-top:.2rem !important; }
+  /* Шесть чипов-вопросов внизу. Общий slide-polish (правило 28) уже делает
+     строку «иконка + подпись» строчной и центрирует их ВМЕСТЕ — но подпись
+     здесь блочный <p>, и иконка оставалась на своей строке, над текстом.
+     Делаем подпись строчной: иконка встаёт возле неё, одного с ней кегля,
+     и чип снова занимает одну строку вместо двух. */
+  #slide-17 .content-z > div > [class*="grid"] > div > p{ display:inline !important; }
+  #slide-17 .content-z > div > [class*="grid"] > div > i{ font-size:11.5px !important; }
   #slide-36 [class*="p-2.5"]{ padding:.45rem !important; }
   #slide-36 [class*="gap-1.5"]{ gap:.35rem !important; }
   #slide-13 [class*="p-2"]{ padding:.45rem !important; }
