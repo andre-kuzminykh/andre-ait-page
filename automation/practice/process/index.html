@@ -298,6 +298,16 @@
     background:var(--card); border:1px solid var(--card-border);
     border-radius:clamp(20px,4vw,28px); overflow:hidden;
   }
+  /* Схема процесса шире текстовой колонки: sequenceDiagram с восемью
+     участниками не помещается в 864px ни при каком масштабе, который ещё
+     можно прочесть. На больших экранах окно выходит за колонку и встаёт по
+     центру экрана. Расчёт в процентах от колонки, а не в vw: 100vw включает
+     полосу прокрутки и дал бы горизонтальный перелив страницы.
+     Шире 1340px окно не растёт: на больших экранах body уже отмасштабирован
+     (zoom 1.15/1.3/1.5 выше), и в пересчёте на CSS-пиксели места там ровно
+     столько же — окно шире просто вылезло бы за край страницы. */
+  @media (min-width:1180px){ .viewer{ width:1100px; margin-left:calc((100% - 1100px) / 2); } }
+  @media (min-width:1420px){ .viewer{ width:1340px; margin-left:calc((100% - 1340px) / 2); } }
   .v-tabs{
     display:flex; gap:.4rem; padding:clamp(.7rem,2.2vw,.9rem);
     overflow-x:auto; scrollbar-width:none; border-bottom:1px solid var(--card-border);
@@ -419,6 +429,11 @@
     color:var(--muted); font-weight:600; font-size:clamp(.78rem,2.5vw,.88rem); line-height:1.5;
   }
   .v-note .ic{ color:#8B5CF6; font-size:1.15rem; }
+  .src-hint{
+    display:flex; align-items:flex-start; gap:.6rem; margin-top:.8rem;
+    color:var(--muted); font-weight:600; font-size:clamp(.78rem,2.5vw,.88rem); line-height:1.55;
+  }
+  .src-hint .ic{ color:#8B5CF6; font-size:1.1rem; flex-shrink:0; }
   /* display:block выше перебивает атрибут hidden — поле ввода оставалось
      видимым на вкладках-примерах пустой рамкой. */
   .v-code textarea[hidden], .v-code pre.code[hidden]{ display:none !important; }
@@ -578,10 +593,6 @@
   }
   .cta li .ic{ color:#F97316; font-size:1.15rem; }
   .cta li:last-child:nth-child(odd){ grid-column:1 / -1; }
-  .cta .hand{
-    margin-top:clamp(.9rem,2.6vw,1.2rem);
-    color:rgba(255,255,255,.62); font-weight:600; font-size:clamp(.78rem,2.5vw,.88rem);
-  }
 
   /* ===== Возврат ===== */
   .back{ display:flex; justify-content:center; margin-top:clamp(1.6rem,4.5vh,2.4rem); }
@@ -770,15 +781,15 @@
           </li>
           <li>
             <span class="mi m-ai"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span>
-            <div><b>ИИ-агент</b><span>Нужны понимание текста, поиск по контексту, черновик документа, разбор неструктурированных данных.</span></div>
+            <div><b>ИИ-агент</b><span>Нужны понимание текста или разбор неструктурированных данных.</span></div>
           </li>
           <li>
             <span class="mi m-human"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg></span>
-            <div><b>Человек</b><span>Цена ошибки высокая, нужна ответственность, переговоры или суждение о людях.</span></div>
+            <div><b>Человек</b><span>Цена ошибки высокая, нужна ответственность.</span></div>
           </li>
           <li>
             <span class="mi m-mix"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span>
-            <div><b>Гибрид</b><span>Агент готовит решение, человек проверяет и подтверждает — Human-in-the-Loop.</span></div>
+            <div><b>Гибрид</b><span>Агент готовит решение, человек проверяет и подтверждает.</span></div>
           </li>
         </ul>
         <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-list-checks" xlink:href="#i-list-checks"></use></svg> Расставьте приоритеты: эффект на метрику — против сложности внедрения</p>
@@ -797,7 +808,7 @@
             <h2>Спроектируйте процесс TO-BE</h2>
           </div>
         </div>
-        <p class="desc">Соберите новую версию процесса — ту, в которой часть шагов уже выполняют агенты. Это и есть ваша стратегия ИИ-автоматизации процесса.</p>
+        <p class="desc">Соберите новую версию процесса — ту, в которой часть шагов уже выполняют агенты. Портфель таких инициатив и есть ваша стратегия ИИ-автоматизации.</p>
         <ul class="checks">
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg></span> новая роль человека в процессе</li>
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> точки Human-in-the-Loop: где человек подтверждает</li>
@@ -814,7 +825,7 @@
       <div class="cta">
         <span class="cta-ico"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg></span>
         <h2>Соберите стратегию в инструменте ИИ-трансформации</h2>
-        <p>Не обязательно проходить все четыре шага вручную. Инструмент проведёт вас по процессу интервью, соберёт информацию, построит модели и сформирует стратегию.</p>
+        <p>Не обязательно проходить все это вручную.<br>Инструмент проведёт с вами интервью и сформирует стратегию.</p>
         <ul>
           <li><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> интервью по вашему процессу</li>
           <li><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> модели AS-IS и TO-BE</li>
@@ -824,7 +835,6 @@
         <div class="actions">
           <a class="btn btn-light" href="https://strategy.andre.technology/ai-strategy" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg> Собрать стратегию ИИ-трансформации</a>
         </div>
-        <p class="hand">Или пройдите все шаги вручную по методологии — результат должен быть тем же.</p>
       </div>
     </section>
 
@@ -843,93 +853,432 @@
 
       <!-- Исходники схем: правятся как обычный текст, отсюда их берёт окно -->
       <div id="mmd-sources" hidden>
-      <pre class="mmd-src" id="src-consult">flowchart TD
-  A([Запрос клиента]) --> B[Квалификация запроса]
-  B --> C{Берём проект?}
-  C -- нет --> X([Отказ])
-  C -- да --> D[Сбор требований]
-  D --> E[Поиск похожих кейсов]
-  E --> F[Оценка трудозатрат]
-  F --> G[Сборка КП]
-  G --> H{Ревью партнёра}
-  H -- правки --> F
-  H -- ок --> I[Отправка клиенту]
-  I --> J{Ответ клиента}
-  J -- молчит --> K[Ручной follow-up]
-  K --> J
-  J -- да --> L([Договор])
-  class E,F,K hot</pre>
-      <pre class="mmd-src" id="src-hr">flowchart TD
-  A([Заявка на вакансию]) --> B[Профиль должности]
-  B --> C[Поиск резюме]
-  C --> D[Скрининг резюме]
-  D --> E{Подходит?}
-  E -- нет --> C
-  E -- да --> F[Телефонное интервью]
-  F --> G[Карточка кандидата]
-  G --> H[Отправка клиенту]
-  H --> I{Решение клиента}
-  I -- отказ --> C
-  I -- интервью --> J[Согласование слотов]
-  J --> K{Оффер принят?}
-  K -- нет --> C
-  K -- да --> L([Выход на работу])
-  class C,D,J hot</pre>
-      <pre class="mmd-src" id="src-marketing">flowchart TD
-  A([Бриф клиента]) --> B[Анализ ниши]
-  B --> C[Медиаплан и бюджет]
-  C --> D{Согласование плана}
-  D -- правки --> C
-  D -- ок --> E[Креативы и тексты]
-  E --> F{Согласование креативов}
-  F -- правки --> E
-  F -- ок --> G[Настройка кампаний]
-  G --> H([Запуск])
-  H --> I[Сбор статистики]
-  I --> J[Отчёт клиенту]
-  J --> K{Нужна оптимизация?}
-  K -- да --> G
-  K -- нет --> L([Плановое ведение])
-  class E,F,I hot</pre>
-      <pre class="mmd-src" id="src-callcenter">flowchart TD
-  A([Звонок или чат]) --> B[Идентификация клиента]
-  B --> C[История обращений]
-  C --> D{Типовой вопрос?}
-  D -- да --> E[Ответ по скрипту]
-  D -- нет --> F[Эскалация на 2-ю линию]
-  F --> G[Ожидание эксперта]
-  G --> H[Ответ клиенту]
-  E --> I[Карточка обращения]
-  H --> I
-  I --> J{Вопрос решён?}
-  J -- нет --> F
-  J -- да --> K([Закрытие тикета])
-  class C,G,I hot</pre>
-      <pre class="mmd-src" id="src-design">flowchart TD
-  A([Бриф и референсы]) --> B[Оценка объёма]
-  B --> C[Договор и предоплата]
-  C --> D[Концепция: 2-3 варианта]
-  D --> E{Выбор клиента}
-  E -- правки --> D
-  E -- ок --> F[Отрисовка макетов]
-  F --> G{Приёмка клиентом}
-  G -- правки --> F
-  G -- ок --> H[Исходники и гайд]
-  H --> I([Передача и закрывающие])
-  class D,F,G hot</pre>
-      <pre class="mmd-src" id="src-software">flowchart TD
-  A([Запрос клиента или бизнеса]) --> B[Уточнение требований]
-  B --> C[Оценка и план спринта]
-  C --> D[Разработка]
-  D --> E{Код-ревью}
-  E -- правки --> D
-  E -- ок --> F{Тестирование}
-  F -- баги --> D
-  F -- ок --> G{Приёмка заказчиком}
-  G -- не то --> B
-  G -- ок --> H([Релиз])
-  H --> I[Поддержка и инциденты]
-  class B,E,F hot</pre>
+      <pre class="mmd-src" id="src-consult">sequenceDiagram
+autonumber
+
+box rgba(148, 163, 184, 0.14) Внешние
+participant CL as Клиент
+end
+
+box rgba(139, 92, 246, 0.10) Консалтинговая компания
+participant AM as Аккаунт-менеджер
+participant PT as Партнёр
+participant EX as Консультант-эксперт
+participant KB as Архив кейсов и КП
+participant CRM as CRM
+end
+
+rect rgba(139, 92, 246, 0.10)
+note right of CL: Вход и квалификация | срок первого ответа
+CL-&gt;&gt;AM: Запрос на проект (задача, сроки, бюджет)
+note right of AM: 1. Квалифицировать запрос | доля отсева на входе
+AM-&gt;&gt;CRM: Карточка сделки (контакт, задача, бюджет)
+alt Не наш профиль или бюджет
+AM--&gt;&gt;CL: Отказ с объяснением
+else Берём в работу
+AM-&gt;&gt;PT: Запрос на оценку проекта
+end
+end
+
+rect rgba(56, 189, 248, 0.10)
+note right of PT: Сбор требований | число уточняющих кругов
+PT-&gt;&gt;CL: Установочная встреча (цели, ограничения, стейкхолдеры)
+CL--&gt;&gt;PT: Вводные и материалы
+note right of PT: 2. Зафиксировать требования и объём | полнота вводных
+PT-&gt;&gt;CRM: Требования, ограничения, риски
+end
+
+rect rgba(249, 115, 22, 0.12)
+note right of EX: Подготовка КП | срок от запроса до КП
+note over EX,KB: Узкое место: поиск похожих кейсов | знания в головах и папках
+EX-&gt;&gt;KB: Поиск похожих проектов вручную
+KB--&gt;&gt;EX: То, что удалось найти и вспомнить
+note over EX: Узкое место: оценка трудозатрат | у каждого консультанта своя
+EX-&gt;&gt;EX: Оценка часов, состава команды и цены
+EX-&gt;&gt;AM: Черновик КП (объём, сроки, цена)
+end
+
+rect rgba(34, 197, 94, 0.10)
+note right of PT: Ревью и выпуск | число кругов ревью
+note over PT,EX: Узкое место: возврат после ревью | КП переписывают по второму кругу
+loop Пока партнёр не согласует
+AM-&gt;&gt;PT: КП на ревью
+PT--&gt;&gt;EX: Правки по объёму и цене
+EX--&gt;&gt;AM: Обновлённое КП
+end
+AM-&gt;&gt;CL: Коммерческое предложение
+end
+
+rect rgba(168, 85, 247, 0.10)
+note right of AM: Сделка | доля выигранных КП
+note over AM,CRM: Узкое место: ручной follow-up | про часть клиентов забывают
+opt Клиент молчит
+AM-&gt;&gt;CL: Напоминание о КП
+CL--&gt;&gt;AM: Ответ или тишина
+end
+alt Согласовано
+CL-&gt;&gt;AM: Подтверждение и подписание договора
+AM-&gt;&gt;CRM: Статус: договор подписан
+else Отказ
+CL--&gt;&gt;AM: Отказ
+AM-&gt;&gt;CRM: Статус: проигран, причина
+end
+end</pre>
+      <pre class="mmd-src" id="src-hr">sequenceDiagram
+autonumber
+
+box rgba(148, 163, 184, 0.14) Внешние
+participant CLI as Клиент (заказчик вакансии)
+participant JOB as Работные сайты и базы
+participant CAND as Кандидат
+end
+
+box rgba(139, 92, 246, 0.10) Рекрутинговое агентство
+participant HR as Рекрутер
+participant RS as Ресёрчер
+participant CRM as База кандидатов
+end
+
+rect rgba(139, 92, 246, 0.10)
+note right of CLI: Заявка на подбор | срок запуска поиска
+CLI-&gt;&gt;HR: Вакансия (роль, требования, вилка, срок)
+note right of HR: 1. Снять профиль должности | полнота требований
+HR-&gt;&gt;CLI: Уточняющие вопросы и приоритеты
+CLI--&gt;&gt;HR: Ответы и стоп-факторы
+note over HR,CLI: Узкое место: профиль снят неточно | брак вскрывается после интервью у клиента
+HR-&gt;&gt;CRM: Карточка вакансии и критерии отбора
+end
+
+rect rgba(56, 189, 248, 0.10)
+note right of RS: Сорсинг | релевантных кандидатов в день
+RS-&gt;&gt;JOB: Поиск по фильтрам и выгрузка контактов
+JOB--&gt;&gt;RS: Резюме, профили, контакты
+note over RS,CRM: Узкое место: скрининг резюме | сотни документов читаются глазами
+RS-&gt;&gt;CRM: Карточки кандидатов (контакт, источник, скор)
+end
+
+rect rgba(249, 115, 22, 0.12)
+note right of HR: Первичный контакт | процент ответов
+loop По каждому кандидату из списка
+HR-&gt;&gt;CAND: Звонок или сообщение
+alt Кандидат на связи
+CAND--&gt;&gt;HR: Интерес, опыт, ожидания
+HR-&gt;&gt;CRM: Статус: на связи
+else Не отвечает
+HR-&gt;&gt;CRM: Статус: не дозвонились
+end
+end
+note right of HR: 2. Собрать шорт-лист под клиента | срок до шорт-листа
+HR-&gt;&gt;CLI: Шорт-лист с карточками кандидатов
+end
+
+rect rgba(34, 197, 94, 0.10)
+note right of CLI: Интервью | конверсия в финал
+note over HR,CLI: Узкое место: согласование слотов | переписка на три стороны
+loop Пока не найден общий слот
+HR-&gt;&gt;CLI: Запрос свободных слотов и состава
+CLI--&gt;&gt;HR: Слоты и участники
+HR-&gt;&gt;CAND: Приглашение на интервью
+CAND--&gt;&gt;HR: Подтверждение или перенос
+end
+CLI-&gt;&gt;CAND: Интервью
+CLI--&gt;&gt;HR: Решение по кандидату
+end
+
+rect rgba(168, 85, 247, 0.10)
+note right of HR: Оффер и закрытие | time-to-fill, доля принятых офферов
+alt Кандидат выбран
+HR-&gt;&gt;CAND: Оффер и условия
+CAND--&gt;&gt;HR: Согласие и дата выхода
+HR-&gt;&gt;CRM: Статус: вакансия закрыта
+else Отказ с любой стороны
+note over HR,RS: Узкое место: отказ откатывает процесс к поиску | цикл начинается заново
+HR-&gt;&gt;RS: Расширить источники и повторить сорсинг
+end
+end</pre>
+      <pre class="mmd-src" id="src-marketing">sequenceDiagram
+autonumber
+
+box rgba(148, 163, 184, 0.14) Внешние
+participant CL as Клиент
+participant ADS as Рекламные кабинеты
+end
+
+box rgba(139, 92, 246, 0.10) Маркетинговое агентство
+participant AM as Аккаунт-менеджер
+participant ST as Стратег
+participant CR as Креатив
+participant TM as Трафик-менеджер
+participant AN as Аналитик
+end
+
+rect rgba(139, 92, 246, 0.10)
+note right of CL: Бриф и медиаплан | срок до медиаплана
+CL-&gt;&gt;AM: Бриф, цели и бюджет
+AM-&gt;&gt;ST: Задача на медиаплан
+note right of ST: 1. Собрать медиаплан и прогноз | точность прогноза
+ST-&gt;&gt;AN: Запрос данных по нише и прошлым кампаниям
+note over AN: Узкое место: анализ конкурентов вручную | результат зависит от исполнителя
+AN--&gt;&gt;ST: Ставки, охваты, бенчмарки
+ST--&gt;&gt;AM: Медиаплан и прогноз
+AM-&gt;&gt;CL: Медиаплан на согласование
+CL--&gt;&gt;AM: Согласование или правки
+end
+
+rect rgba(249, 115, 22, 0.12)
+note right of CR: Креативы | число кругов правок
+note over AM,CL: Узкое место: круги правок по креативам | самая долгая часть запуска
+loop Пока клиент не согласует
+AM-&gt;&gt;CR: Задача на креативы и тексты
+CR--&gt;&gt;AM: Макеты и тексты
+AM-&gt;&gt;CL: Креативы на согласование
+CL--&gt;&gt;AM: Правки или согласие
+end
+end
+
+rect rgba(56, 189, 248, 0.10)
+note right of TM: Запуск | срок от согласования до старта
+note right of TM: 2. Настроить кампании | доля ошибок в параметрах
+TM-&gt;&gt;ADS: Кампании, аудитории, ставки, площадки
+ADS--&gt;&gt;TM: Кампании запущены
+TM-&gt;&gt;AM: Подтверждение старта
+end
+
+rect rgba(34, 197, 94, 0.10)
+note right of AN: Ведение и отчётность | стоимость заявки
+loop Каждую неделю
+note over AN,ADS: Узкое место: сбор статистики руками | выгрузки из нескольких кабинетов
+AN-&gt;&gt;ADS: Выгрузка статистики
+ADS--&gt;&gt;AN: Показы, клики, расход, заявки
+note over AN,AM: Узкое место: отчёты собираются вручную | своя таблица под каждого клиента
+AN-&gt;&gt;AM: Отчёт и выводы
+AM-&gt;&gt;CL: Отчёт по кампании
+opt Метрика хуже плана
+CL--&gt;&gt;AM: Требования по оптимизации
+AM-&gt;&gt;TM: Задача на оптимизацию
+TM-&gt;&gt;ADS: Правки ставок, аудиторий, креативов
+end
+end
+end
+
+rect rgba(168, 85, 247, 0.10)
+note right of AM: Закрытие периода | продление контракта
+AN-&gt;&gt;AM: Итоги месяца и рекомендации
+AM-&gt;&gt;CL: Итоговый отчёт и план на следующий период
+alt Продление
+CL--&gt;&gt;AM: Бюджет на следующий период
+else Пауза
+CL--&gt;&gt;AM: Кампания на паузу
+end
+end</pre>
+      <pre class="mmd-src" id="src-callcenter">sequenceDiagram
+autonumber
+
+box rgba(148, 163, 184, 0.14) Внешние
+participant CL as Клиент
+end
+
+box rgba(139, 92, 246, 0.10) Колл-центр
+participant OP as Оператор 1-й линии
+participant KB as База знаний и скрипты
+participant EX as Эксперт 2-й линии
+participant SV as Супервайзер
+participant CRM as CRM и тикеты
+end
+
+rect rgba(139, 92, 246, 0.10)
+note right of CL: Приём обращения | время ожидания в очереди
+CL-&gt;&gt;OP: Звонок или чат
+note right of OP: 1. Идентифицировать клиента | доля опознанных с первого раза
+note over OP,CRM: Узкое место: поиск истории по нескольким системам | клиент ждёт на линии
+OP-&gt;&gt;CRM: Поиск клиента и прошлых обращений
+CRM--&gt;&gt;OP: Карточка и история
+end
+
+rect rgba(249, 115, 22, 0.12)
+note right of OP: Поиск ответа | среднее время обработки
+OP-&gt;&gt;KB: Поиск регламента или скрипта
+KB--&gt;&gt;OP: Ответ, если он там есть
+alt Типовой вопрос
+OP--&gt;&gt;CL: Ответ по скрипту
+else Нетиповой вопрос
+note over OP,EX: Узкое место: ожидание второй линии | клиент висит или ему перезванивают
+OP-&gt;&gt;EX: Эскалация на 2-ю линию
+EX--&gt;&gt;OP: Разбор и решение
+OP--&gt;&gt;CL: Ответ клиенту
+end
+end
+
+rect rgba(56, 189, 248, 0.10)
+note right of OP: Фиксация обращения | полнота карточки
+note over OP,CRM: Узкое место: заполнение карточки после каждого контакта | ручная рутина
+OP-&gt;&gt;CRM: Тема, решение, статус, теги
+opt Вопрос не решён
+note over OP,EX: Узкое место: повторная эскалация | ответ не закрыл вопрос
+OP-&gt;&gt;EX: Повторная эскалация
+end
+end
+
+rect rgba(34, 197, 94, 0.10)
+note right of SV: Контроль качества | доля проверенных обращений
+SV-&gt;&gt;CRM: Выборка обращений на прослушку
+CRM--&gt;&gt;SV: Записи и карточки
+note right of SV: 2. Оценить обращения выборочно | покрытие контролем
+SV--&gt;&gt;OP: Обратная связь и правка скриптов
+SV--&gt;&gt;KB: Обновление регламентов
+end
+
+rect rgba(168, 85, 247, 0.10)
+note right of CL: Закрытие | доля решённых с первого контакта
+alt Вопрос решён
+OP-&gt;&gt;CRM: Закрытие тикета
+CRM--&gt;&gt;CL: Уведомление о решении
+else Клиент возвращается
+CL-&gt;&gt;OP: Повторное обращение по той же теме
+end
+end</pre>
+      <pre class="mmd-src" id="src-design">sequenceDiagram
+autonumber
+
+box rgba(148, 163, 184, 0.14) Внешние
+participant CL as Клиент
+end
+
+box rgba(139, 92, 246, 0.10) Дизайн-агентство
+participant AM as Аккаунт-менеджер
+participant AD as Арт-директор
+participant DS as Дизайнер
+participant PM as Проектный менеджер
+participant FS as Файлы и исходники
+end
+
+rect rgba(139, 92, 246, 0.10)
+note right of CL: Бриф и оценка | срок до сметы
+CL-&gt;&gt;AM: Бриф и референсы
+note over AM,CL: Узкое место: бриф снят поверхностно | концепция уходит не туда
+AM-&gt;&gt;AD: Запрос на оценку объёма
+note right of AD: 1. Оценить объём и состав работ | расхождение оценки с фактом
+note over AD: Узкое место: оценка на глаз | часто не сходится с фактом
+AD--&gt;&gt;AM: Состав работ, сроки, стоимость
+AM-&gt;&gt;CL: Смета и график
+CL--&gt;&gt;AM: Договор и предоплата
+end
+
+rect rgba(56, 189, 248, 0.10)
+note right of PM: Постановка задачи | полнота вводных у дизайнера
+PM-&gt;&gt;FS: Проект, папки, доступы
+PM-&gt;&gt;DS: Задача с брифом и референсами
+end
+
+rect rgba(249, 115, 22, 0.12)
+note right of DS: Концепция | число кругов правок
+DS-&gt;&gt;AD: Концепция, 2-3 варианта
+AD--&gt;&gt;DS: Правки по концепции
+DS-&gt;&gt;AM: Варианты на показ клиенту
+AM-&gt;&gt;CL: Презентация концепции
+note over AM,CL: Узкое место: круги правок | критерии приёмки нигде не зафиксированы
+loop Пока клиент не выберет вариант
+CL--&gt;&gt;AM: Комментарии и правки
+AM-&gt;&gt;DS: Сведённые правки
+DS--&gt;&gt;AM: Обновлённые варианты
+end
+end
+
+rect rgba(34, 197, 94, 0.10)
+note right of DS: Отрисовка и приёмка | срок до приёмки
+DS-&gt;&gt;FS: Макеты и рабочие файлы
+DS-&gt;&gt;AD: Макеты на внутреннюю приёмку
+AD--&gt;&gt;DS: Замечания
+AM-&gt;&gt;CL: Финальные макеты
+alt Принято
+CL--&gt;&gt;AM: Приёмка
+else Правки
+CL--&gt;&gt;AM: Замечания
+AM-&gt;&gt;DS: Правки в макеты
+end
+end
+
+rect rgba(168, 85, 247, 0.10)
+note right of AM: Передача и закрытие | срок передачи исходников
+note over DS,FS: Узкое место: сборка исходников и гайда вручную | рутина в конце проекта
+DS-&gt;&gt;FS: Исходники, шрифты, гайд
+AM-&gt;&gt;CL: Передача файлов и гайда
+AM-&gt;&gt;PM: Закрывающие документы
+end</pre>
+      <pre class="mmd-src" id="src-software">sequenceDiagram
+autonumber
+
+box rgba(148, 163, 184, 0.14) Внешние
+participant CL as Заказчик
+participant US as Пользователи
+end
+
+box rgba(139, 92, 246, 0.10) Команда разработки
+participant PO as Продакт-аналитик
+participant TL as Тимлид
+participant DEV as Разработчик
+participant QA as Тестировщик
+participant OPS as Релиз-инженер
+participant TR as Трекер задач
+end
+
+rect rgba(139, 92, 246, 0.10)
+note right of CL: Запрос и уточнение | срок до постановки
+CL-&gt;&gt;PO: Запрос на доработку или новую функцию
+note right of PO: 1. Уточнить требования и критерии приёмки | доля возвратов на уточнение
+PO-&gt;&gt;CL: Уточняющие вопросы и сценарии
+CL--&gt;&gt;PO: Ответы и приоритет
+note over PO,TR: Узкое место: требования неполные | брак вскрывается на приёмке, а не в начале
+PO-&gt;&gt;TR: Задача с требованиями и критериями
+end
+
+rect rgba(56, 189, 248, 0.10)
+note right of TL: Оценка и планирование | точность оценки
+TL-&gt;&gt;DEV: Запрос оценки
+DEV--&gt;&gt;TL: Оценка и риски
+note right of TL: 2. Взять задачу в спринт | предсказуемость спринта
+TL-&gt;&gt;TR: Задача в спринт
+end
+
+rect rgba(249, 115, 22, 0.12)
+note right of DEV: Разработка и код-ревью | время до вливания
+DEV-&gt;&gt;TR: Ветка и статус в работе
+DEV-&gt;&gt;TL: Пул-реквест на ревью
+note over TL,DEV: Узкое место: ревью ждёт свободного старшего | пул-реквест лежит днями
+loop Пока ревью не пройдено
+TL--&gt;&gt;DEV: Замечания по коду
+DEV-&gt;&gt;TL: Исправления
+end
+TL-&gt;&gt;DEV: Апрув и влитие
+end
+
+rect rgba(34, 197, 94, 0.10)
+note right of QA: Тестирование | доля багов, найденных после релиза
+DEV-&gt;&gt;QA: Сборка на тест
+note over QA: Узкое место: ручная регрессия | прогон чек-листа руками
+QA-&gt;&gt;QA: Прогон сценариев и регрессия
+alt Найдены дефекты
+note over QA,DEV: Узкое место: возвраты из тестирования | съедают спринт
+QA--&gt;&gt;DEV: Баг-репорты
+DEV-&gt;&gt;QA: Исправления и пересборка
+else Готово к релизу
+QA--&gt;&gt;OPS: Допуск к релизу
+end
+end
+
+rect rgba(168, 85, 247, 0.10)
+note right of OPS: Релиз и обратная связь | частота релизов, время восстановления
+OPS-&gt;&gt;US: Выкатка на продакшен
+OPS-&gt;&gt;TR: Отметка о релизе и changelog
+opt Инцидент после релиза
+US--&gt;&gt;OPS: Сообщения об ошибках
+note over OPS,DEV: Узкое место: разбор инцидента начинается со сбора контекста по чатам
+OPS-&gt;&gt;DEV: Задача на хотфикс
+DEV-&gt;&gt;OPS: Патч
+end
+PO-&gt;&gt;CL: Демонстрация и приёмка
+CL--&gt;&gt;PO: Приёмка или новые запросы
+end</pre>
       </div>
 
       <div class="viewer" id="viewer">
@@ -969,6 +1318,7 @@
             <span class="v-code-title"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg> Код mermaid</span>
             <div class="v-code-act">
               <button class="copy v-inline" type="button" id="v-copy"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+              <button class="copy v-inline" type="button" id="v-tobe" title="Скопировать промт TO-BE вместе с этой схемой"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg> промт TO-BE</button>
             </div>
           </div>
           <textarea id="v-input" spellcheck="false" autocomplete="off" aria-label="Код схемы"></textarea>
@@ -1136,57 +1486,84 @@
       <ol class="flow">
         <li>
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-chats-circle" xlink:href="#i-chats-circle"></use></svg></span>
-          <div><b>1. Проведите интервью</b><span>Спросите владельца процесса: с чего всё начинается, кто что делает дальше, где ждут, где возвращают на предыдущий шаг, что считается исключением и чем всё заканчивается.</span></div>
+          <div><b>1. Проведите интервью</b><span>Спросите владельца процесса: с чего всё начинается, кто что делает дальше, где ждут, где возвращают на предыдущий шаг и чем всё заканчивается.</span></div>
         </li>
         <li>
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-microphone" xlink:href="#i-microphone"></use></svg></span>
-          <div><b>2. Запишите и расшифруйте</b><span>Диктофон в телефоне или запись созвона, затем любая транскрибация. Расшифровка — это и есть сырьё для схемы.</span></div>
+          <div><b>2. Запишите и расшифруйте</b><span>Диктофон в телефоне или запись созвона, затем любая транскрибация. Расшифровка — сырьё для схемы.</span></div>
         </li>
         <li>
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg></span>
-          <div><b>3. Отправьте в ИИ вместе с промтом</b><span>Скопируйте промт ниже, вставьте в него расшифровку и отправьте любой модели. В промте уже лежит пример схемы — так модель точнее попадает в формат.</span></div>
+          <div><b>3. Отправьте промт AS-IS</b><span>Скопируйте первый промт, вставьте в него расшифровку и отправьте любой модели. В промте лежат правила формата и пример — так модель попадает в него с первого раза.</span></div>
         </li>
         <li>
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-pencil-simple" xlink:href="#i-pencil-simple"></use></svg></span>
-          <div><b>4. Вставьте код сюда и скачайте</b><span>Полученный код вставьте во вкладку «Свой процесс» в окне выше: схема отрисуется на этой странице, а её можно сохранить в SVG или PNG. Если в коде ошибка — страница покажет её и подскажет, что попросить у модели.</span></div>
+          <div><b>4. Вставьте код в окно выше</b><span>Схема отрисуется сразу. Если в коде ошибка — страница покажет её и даст промт на исправление: повторяйте, пока схема не отрисуется.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-magnifying-glass" xlink:href="#i-magnifying-glass"></use></svg></span>
+          <div><b>5. Отправьте промт TO-BE</b><span>Второй промт берёт готовую схему и возвращает точки автоматизации, новую роль человека, навыки агента и код схемы TO-BE.</span></div>
+        </li>
+        <li>
+          <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-compass-tool" xlink:href="#i-compass-tool"></use></svg></span>
+          <div><b>6. Отрисуйте TO-BE и сравните</b><span>Вставьте новый код в то же окно, сохраните обе схемы в SVG или PNG и выпишите, что именно изменилось и как изменится метрика.</span></div>
         </li>
       </ol>
 
       <details class="src" open>
-        <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Промт: интервью → схема mermaid</summary>
+        <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Промт 1: интервью → схема AS-IS</summary>
         <div class="code-wrap">
           <pre class="code" id="prompt-src">Ты — бизнес-аналитик. Ниже расшифровка интервью о бизнес-процессе.
 Построй по ней схему процесса «как есть» (AS-IS) в формате mermaid.
 
 Правила:
-1. flowchart TD — направление сверху вниз.
-2. Начало и конец процесса — узлы вида ([Событие]).
-3. Шаги — прямоугольники [Название]. Название не длиннее 25 символов.
-4. Решения — ромбы {Вопрос?}. У стрелок из ромба подписи: -- да --> и -- нет -->.
-5. Возвраты и доработки рисуй стрелкой назад к тому шагу, на который реально возвращаются.
-6. Найди 3 узких места (ручная рутина, ожидание, повторные круги) и последней строкой добавь:
-   class A,B,C hot — где A,B,C идентификаторы этих узлов.
-7. Не используй subgraph, style, click, HTML-теги и кавычки внутри подписей.
-8. В ответе верни ТОЛЬКО код mermaid, без пояснений и без markdown-обрамления.
+1. Тип схемы — sequenceDiagram, второй строкой autonumber.
+2. Участников раздели на два блока box: внешние (клиент, площадки, подрядчики)
+   и внутренние (роли и системы компании). Цвета блоков и фаз бери ТОЛЬКО
+   полупрозрачные (rgba с прозрачностью 0.10-0.14): непрозрачный светлый цвет
+   на тёмной теме превращается в белый прямоугольник.
+3. Участник объявляется так: participant КОД as Название роли.
+4. Каждую фазу процесса оборачивай в rect, первой строкой внутри —
+   note right of УЧАСТНИК: Название фазы | метрика фазы.
+5. Шаги — сообщения: ->> запрос или передача, -->> ответ или результат.
+6. Ветвления — alt/else, необязательные шаги — opt, повторы — loop.
+7. Найди 3-4 узких места (ручная рутина, ожидание, повторные круги, потери) и
+   отметь каждое отдельной строкой ровно в таком виде:
+   note over A,B: Узкое место: что именно | чем это меряется
+8. Никаких HTML-тегов, click, style и кавычек внутри подписей.
+9. В ответе верни ТОЛЬКО код mermaid, без пояснений и без markdown-обрамления.
 
 Пример нужного формата:
 
-flowchart TD
-  A([Запрос клиента]) --> B[Квалификация запроса]
-  B --> C{Берём проект?}
-  C -- нет --> X([Отказ])
-  C -- да --> D[Сбор требований]
-  D --> E[Поиск похожих кейсов]
-  E --> F[Оценка трудозатрат]
-  F --> G[Сборка КП]
-  G --> H{Ревью партнёра}
-  H -- правки --> F
-  H -- ок --> I[Отправка клиенту]
-  I --> J{Ответ клиента}
-  J -- молчит --> K[Ручной follow-up]
-  K --> J
-  J -- да --> L([Договор])
-  class E,F,K hot
+sequenceDiagram
+autonumber
+
+box rgba(148, 163, 184, 0.14) Внешние
+participant CL as Клиент
+end
+
+box rgba(139, 92, 246, 0.10) Внутри компании
+participant AM as Менеджер
+participant EX as Эксперт
+participant CRM as CRM
+end
+
+rect rgba(139, 92, 246, 0.10)
+note right of CL: Вход и квалификация | срок первого ответа
+CL->>AM: Запрос на работу
+note right of AM: 1. Квалифицировать запрос | доля отсева на входе
+AM->>CRM: Карточка сделки
+end
+
+rect rgba(249, 115, 22, 0.12)
+note right of EX: Подготовка ответа | срок подготовки
+note over EX,CRM: Узкое место: поиск похожих работ | знания в головах и папках
+EX->>EX: Поиск аналогов и оценка вручную
+loop Пока не согласовано
+AM->>EX: Правки
+EX-->>AM: Обновлённая версия
+end
+end
 
 Расшифровка интервью:
 """
@@ -1194,6 +1571,34 @@ flowchart TD
 """</pre>
           <button class="copy" type="button" data-copy="prompt-src"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
         </div>
+      </details>
+
+      <details class="src" open>
+        <summary><svg class="ic caret" aria-hidden="true"><use href="#i-caret-down" xlink:href="#i-caret-down"></use></svg><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Промт 2: схема AS-IS → точки автоматизации и TO-BE</summary>
+        <div class="code-wrap">
+          <pre class="code" id="prompt-tobe">Ниже схема бизнес-процесса «как есть» (AS-IS) в формате mermaid.
+
+Сделай по ней проект трансформации процесса:
+1. Точки автоматизации. Для каждой укажи, чем её закрывать: простое правило,
+   ИИ-агент, человек или гибрид (агент готовит, человек подтверждает).
+2. Новая роль человека: что он перестаёт делать и что начинает контролировать.
+3. Навыки будущего агента и данные, которые ему для этого нужны.
+4. Схема TO-BE в том же формате sequenceDiagram и по тем же правилам, что и
+   схема ниже. Агентов вынеси отдельными участниками с кодом на AI,
+   узкие места, которые закрыты, из схемы убери.
+5. Что именно изменилось по сравнению с AS-IS и как изменится метрика
+   процесса — списком, по пунктам.
+
+Ответ дай ровно в этом порядке. Код mermaid — отдельным блоком, без пояснений
+внутри блока.
+
+Схема AS-IS:
+"""
+СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ
+"""</pre>
+          <button class="copy" type="button" data-copy="prompt-tobe"><svg class="ic" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> копировать</button>
+        </div>
+        <p class="src-hint"><svg class="ic" aria-hidden="true"><use href="#i-pencil-simple" xlink:href="#i-pencil-simple"></use></svg> Кнопка «промт TO-BE» в окне со схемой копирует этот же промт, но уже с кодом той схемы, которая открыта.</p>
       </details>
     </section>
 
@@ -1261,10 +1666,10 @@ flowchart TD
 <script type="module">
 /* ============================================================
    Одно окно со схемами.
-   · плашки сверху переключают отрасль и вкладку «Свой процесс»;
+   · плашки сверху переключают отрасль, поле кода снизу всегда редактируемое;
    · схема рисуется mermaid'ом в браузере — никуда не отправляется;
-   · её можно двигать и масштабировать (колесо, кнопки, щипок);
-   · код снизу: у примеров только чтение, у своей схемы — поле ввода;
+   · её можно листать в обе стороны и масштабировать (колесо, кнопки, щипок);
+   · узкие места в отрисованной схеме подсвечиваются оранжевым;
    · ошибка разбора показывается текстом и собирается в промт на исправление.
    Если библиотека не загрузилась, окно честно об этом говорит.
    ============================================================ */
@@ -1310,6 +1715,17 @@ document.querySelectorAll('.copy[data-copy]').forEach(btn => {
 });
 copyBtn.addEventListener('click', () => copyText(input.value, copyBtn));
 
+/* «Промт TO-BE» — тот же текст, что показан ниже на странице, но плейсхолдер
+   уже заменён на схему, открытую в окне. Так промт получается свой для каждого
+   примера и для своей схемы тоже. */
+const tobeBtn = document.getElementById('v-tobe');
+tobeBtn.addEventListener('click', () => {
+  const tpl = document.getElementById('prompt-tobe');
+  const text = (tpl ? tpl.textContent : '')
+    .replace('СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ', (input.value || '').trim());
+  copyText(text, tobeBtn);
+});
+
 /* ── Масштаб и прокрутка ────────────────────────────────────────────────
    Схема — обычная лента внутри прокручиваемого поля: колесо, тачпад, палец,
    полоса прокрутки и клавиши работают сами. Масштаб — это реальный размер
@@ -1353,14 +1769,14 @@ function fitAll(){                      // «целиком»: вся схема
   edges();
 }
 function startView(){
-  // Правило одно: по ШИРИНЕ схема входит в окно целиком — вбок ничего не
-  // срезается. Длину показываем прокруткой вниз: листать страницу вниз
-  // привычно, вбок — нет. Нижняя граница 45%: мельче подписи не прочесть,
+  // Правило одно: по ШИРИНЕ схема старается войти в окно целиком, длина
+  // уходит в прокрутку вниз. Нижняя граница 75%: мельче подписи не прочесть,
   // и тогда честнее оставить прокрутку вбок, чем показывать точки вместо слов.
+  // Листать можно в обе стороны — и вниз, и вбок.
   if(!natW) return;
   syncHint();
   const kW = room().w / natW;
-  sizeTo(Math.min(Math.max(kW, 0.45), 1.15));
+  sizeTo(Math.min(Math.max(kW, 0.75), 1.15));
   stage.scrollLeft = 0; stage.scrollTop = 0;
   edges();
 }
@@ -1370,11 +1786,17 @@ function syncHint(){
   const tall   = stage.scrollHeight > stage.clientHeight + 2;
   const wide   = stage.scrollWidth  > stage.clientWidth  + 2;
   const narrow = window.innerWidth < 760;     // на телефоне подсказка в одну строку
-  h.textContent = tall
-    ? (narrow ? 'Листайте схему вниз'
-              : 'Листайте схему вниз колесом или пальцем · кнопки — масштаб')
-    : (wide   ? (narrow ? 'Листайте схему вбок' : 'Листайте вбок · кнопки — масштаб')
-              : (narrow ? 'Кнопки — масштаб' : 'Кнопки — масштаб · двойной щелчок — показать целиком'));
+  if(narrow){
+    h.textContent = tall && wide ? 'Листайте схему пальцем в любую сторону'
+                  : tall ? 'Листайте схему вниз'
+                  : wide ? 'Листайте схему вбок' : 'Кнопки — масштаб';
+    return;
+  }
+  h.textContent = tall && wide
+    ? 'Листайте вниз колесом, вбок — перетаскиванием или Shift+колесо · кнопки — масштаб'
+    : tall ? 'Листайте схему вниз колесом или пальцем · кнопки — масштаб'
+    : wide ? 'Листайте вбок перетаскиванием или Shift+колесо · кнопки — масштаб'
+    : 'Кнопки — масштаб · двойной щелчок — показать целиком';
 }
 function edges(){                       // растушёвка там, где схема продолжается
   const maxX = stage.scrollWidth  - stage.clientWidth;
@@ -1439,6 +1861,39 @@ window.addEventListener('resize', () => {
 
 /* ── Отрисовка ──────────────────────────────────────────────────────────── */
 function activeCode(){ return input.value || ''; }
+/* Узкие места — оранжевые. mermaid не умеет красить отдельную заметку, поэтому
+   после отрисовки находим те, что начинаются со слов «Узкое место», и
+   перекрашиваем: именно их и надо искать в схеме, они не должны теряться
+   среди обычных подписей. */
+const BN = /^\s*узкое место/i;
+function markBottlenecks(){
+  const dark = document.documentElement.classList.contains('dark');
+  const bg   = dark ? '#7C3A0C' : '#FDBA74';   // рядом с янтарной обычной
+  const fg   = dark ? '#FFE2C6' : '#5C1E06';   // заметкой оранжевая видна сразу
+  // С переносом строк каждая строка заметки — отдельный <text class="noteText">,
+  // и все они идут сразу за своим <rect class="note">. Собираем строки одной
+  // заметки, склеиваем и смотрим, с чего она начинается.
+  layer.querySelectorAll('rect.note').forEach(rect => {
+    const lines = [];
+    let n = rect.nextElementSibling;
+    while(n && n.tagName.toLowerCase() === 'text' && n.classList.contains('noteText')){
+      lines.push(n); n = n.nextElementSibling;
+    }
+    if(!lines.length) return;
+    if(!BN.test(lines.map(t => t.textContent || '').join(' '))) return;
+    // Именно style, а не атрибут: у mermaid внутри svg лежит правило для
+    // .note и .noteText, а CSS сильнее презентационного атрибута — покраска
+    // атрибутом просто не была бы видна.
+    rect.style.setProperty('fill', bg, 'important');
+    rect.style.setProperty('stroke', '#F97316', 'important');
+    rect.style.setProperty('stroke-width', '2px', 'important');
+    lines.forEach(t => {
+      t.style.setProperty('fill', fg, 'important');
+      t.querySelectorAll('tspan').forEach(sp => sp.style.setProperty('fill', fg, 'important'));
+    });
+  });
+}
+
 function showError(msg){
   lastError = msg;
   errTxt.textContent = msg;
@@ -1449,15 +1904,32 @@ function showError(msg){
 }
 function themeVars(){
   const dark = document.documentElement.classList.contains('dark');
+  const fg     = dark ? '#FAFAFA' : '#0A0A0A';
+  const card   = dark ? '#1B1B1B' : '#FFFFFF';
+  const border = dark ? 'rgba(255,255,255,.22)' : '#D8D8D8';
+  const line   = dark ? 'rgba(255,255,255,.45)' : '#9A9A9A';
   return {
     fontFamily: 'Montserrat, sans-serif',
-    primaryColor: dark ? '#1B1B1B' : '#FFFFFF',
-    primaryTextColor: dark ? '#FAFAFA' : '#0A0A0A',
-    primaryBorderColor: dark ? 'rgba(255,255,255,.22)' : '#D8D8D8',
-    lineColor: dark ? 'rgba(255,255,255,.45)' : '#9A9A9A',
+    primaryColor: card,
+    primaryTextColor: fg,
+    primaryBorderColor: border,
+    lineColor: line,
     secondaryColor: '#8B5CF6',
     tertiaryColor: dark ? '#1B1B1B' : '#F6F4FF',
     edgeLabelBackground: dark ? '#101010' : '#FFFFFF',
+    // sequenceDiagram живёт на своём наборе переменных: без них подписи
+    // сообщений, рамки участников и заголовки alt/loop остаются тёмными
+    // на тёмном фоне (у mermaid они по умолчанию #333)
+    actorBkg: card, actorBorder: border, actorTextColor: fg, actorLineColor: line,
+    signalColor: line, signalTextColor: fg,
+    labelBoxBkgColor: card, labelBoxBorderColor: border, labelTextColor: fg,
+    loopTextColor: fg, sequenceNumberColor: '#FFFFFF',
+    activationBkgColor: dark ? '#2A2A2A' : '#EFEFEF',
+    activationBorderColor: '#8B5CF6',
+    // заметка — «стикер»: янтарная и на белом, и на чёрном, но своей яркости
+    noteBkgColor:    dark ? '#3A2E10' : '#FEF3C7',
+    noteTextColor:   dark ? '#FCD34D' : '#3A2E10',
+    noteBorderColor: dark ? '#8A6A18' : '#F59E0B',
   };
 }
 
@@ -1475,13 +1947,20 @@ try {
         .edgeLabel { font-size: 12px; }
       `,
       flowchart: { curve: 'basis', nodeSpacing: 26, rankSpacing: 34, useMaxWidth: false },
+      // wrap: длинная подпись сообщения или заметки в sequenceDiagram по
+      // умолчанию не переносится, и одна фраза растягивает всю схему на
+      // несколько тысяч пикселей. С переносом ширина держится в разумных
+      // пределах, а читать всё равно приходится сверху вниз.
+      sequence: { wrap: true, width: 190, actorMargin: 44, boxMargin: 10,
+                  noteMargin: 10, messageMargin: 34, mirrorActors: true,
+                  useMaxWidth: false },
     });
   }
   init();
 
   window.renderDiagrams = async function(keepView){
     const code = (activeCode() || '').trim();
-    if(!code){ showError('Пусто: вставьте код схемы — он начинается со строки flowchart TD'); return; }
+    if(!code){ showError('Пусто: вставьте код схемы — первой строкой идёт тип схемы, например sequenceDiagram'); return; }
     init();                                   // тема могла смениться
     try {
       // parse() бросает исключение с текстом и номером строки — его и показываем
@@ -1494,6 +1973,7 @@ try {
       const vb = el.viewBox && el.viewBox.baseVal;
       natW = (vb && vb.width)  || el.getBoundingClientRect().width  || 1;
       natH = (vb && vb.height) || el.getBoundingClientRect().height || 1;
+      markBottlenecks();
       errBox.hidden = true;
       // Мелкая правка кода — вид сохраняем (иначе схема прыгает на каждой
       // букве). Вставили совсем другую схему — подгоняем заново, иначе она

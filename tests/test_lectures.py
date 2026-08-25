@@ -689,14 +689,23 @@ def test_process_practice_page():
     for k in keys:
         assert '<pre class="mmd-src" id="src-%s">' % k in html, rel + ": нет исходника схемы " + k
         assert '<div class="case-info" id="info-%s"' % k in html, rel + ": нет описания " + k
-    # схемы вертикальные: цепочка из полутора десятков шагов вбок не влезает
-    # ни в одно окно, а вниз — листается как обычная страница (FR-SITE28)
-    assert len(re.findall(r"flowchart TD", html)) >= 6, rel + ": схемы примеров разворачиваются вниз"
-    # узкие места отмечены на КАЖДОЙ схеме (считаем только внутри исходников:
-    # такая же строка есть в примере внутри промта)
+    # схемы — классические sequenceDiagram: участники в блоках box, фазы в
+    # rect, ветвления alt/opt/loop, нумерация шагов (FR-SITE28)
     sources = html[html.index('<div id="mmd-sources"'):html.index('<div class="viewer"')]
-    assert len(re.findall(r"class [A-Z],[A-Z],[A-Z] hot", sources)) == 6, \
-        rel + ": на каждой схеме отмечены узкие места"
+    per = re.findall(r'<pre class="mmd-src" id="src-(\w+)">(.*?)</pre>', sources, re.S)
+    assert len(per) == 6, rel + ": исходников должно быть шесть"
+    for key, code in per:
+        assert code.lstrip().startswith("sequenceDiagram"), rel + ": %s — не sequenceDiagram" % key
+        assert "\nautonumber" in code, rel + ": %s — нет автонумерации шагов" % key
+        assert code.count("\nbox rgba(") == 2, rel + ": %s — нужны блоки внешних и внутренних" % key
+        assert code.count("\nrect rgba(") >= 4, rel + ": %s — фазы процесса не выделены" % key
+        assert "rgb(" not in code.replace("rgba(", ""), \
+            rel + (": %s — непрозрачный цвет; на тёмной теме это белый прямоугольник" % key)
+        # узкие места отмечены прямо в схеме и подписаны одинаково
+        assert len(re.findall(r"note over [^:]+: Узкое место:", code)) >= 3, \
+            rel + ": %s — в схеме меньше трёх узких мест" % key
+        assert re.search(r"\n(alt|opt|loop) ", code), rel + ": %s — нет ветвлений" % key
+    assert "flowchart" not in sources, rel + ": примеры процессов — sequenceDiagram, не flowchart"
 
     # главный CTA — инструмент ИИ-стратегии
     cta = "https://strategy.andre.technology/ai-strategy"
@@ -717,13 +726,22 @@ def test_process_practice_viewer():
         html = f.read()
 
     # путь «интервью → схема» и готовый промт
-    for step in ("Проведите интервью", "Запишите и расшифруйте",
-                 "Отправьте в ИИ вместе с промтом", "Вставьте код сюда и скачайте"):
+    for step in ("Проведите интервью", "Запишите и расшифруйте", "Отправьте промт AS-IS",
+                 "Вставьте код в окно выше", "Отправьте промт TO-BE", "Отрисуйте TO-BE и сравните"):
         assert step in html, rel + ": нет шага «%s»" % step
+    assert "Свой процесс" not in html, rel + ": вкладки «Свой процесс» нет — ссылаться на неё нельзя"
     prompt = html[html.index('id="prompt-src"'):html.index("</pre>", html.index('id="prompt-src"'))]
-    for must in ("flowchart", "class A,B,C hot", "СЮДА ВСТАВЬТЕ ТЕКСТ ИНТЕРВЬЮ",
-                 "([Событие])", "ТОЛЬКО код mermaid"):
-        assert must in prompt, rel + ": в промте нет «%s»" % must
+    for must in ("sequenceDiagram", "autonumber", "box rgba(", "rect", "alt/else",
+                 "Узкое место:", "СЮДА ВСТАВЬТЕ ТЕКСТ ИНТЕРВЬЮ", "ТОЛЬКО код mermaid"):
+        assert must in prompt, rel + ": в промте AS-IS нет «%s»" % must
+    # второй промт: схема AS-IS → точки автоматизации, роль человека, TO-BE
+    tobe = html[html.index('id="prompt-tobe"'):html.index("</pre>", html.index('id="prompt-tobe"'))]
+    for must in ("Точки автоматизации", "Новая роль человека", "Навыки будущего агента",
+                 "TO-BE", "СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ"):
+        assert must in tobe, rel + ": во втором промте нет «%s»" % must
+    # кнопка в окне подставляет в этот промт схему, которая сейчас открыта
+    assert 'id="v-tobe"' in html and "СЮДА ВСТАВЬТЕ КОД СХЕМЫ ИЗ ОКНА ВЫШЕ', (input.value" in html, \
+        rel + ": «промт TO-BE» должен подставлять код открытой схемы"
 
     # окно: масштаб кнопками и колесом, перетаскивание, «по размеру»
     for el in ('id="v-stage"', 'id="v-layer"', 'id="v-level"', 'data-zoom="in"',
@@ -742,9 +760,18 @@ def test_process_practice_viewer():
         rel + ": перетаскивание не должно начинаться на кнопках"
     assert "stage.scrollTop  = grab.top  - (e.clientY - grab.y);" in html, \
         rel + ": перетаскивание работает и по вертикали"
-    # схема входит в окно по ширине — вбок ничего не срезается
-    assert "function startView(){" in html and "sizeTo(Math.min(Math.max(kW, 0.45), 1.15));" in html, \
-        rel + ": схема подгоняется по ширине окна, длина уходит в прокрутку вниз"
+    # схема подгоняется по ширине окна, но не мельче 75%: ниже подписи не
+    # прочесть, и тогда остаётся прокрутка вбок
+    assert "function startView(){" in html and "sizeTo(Math.min(Math.max(kW, 0.75), 1.15));" in html, \
+        rel + ": стартовый масштаб — по ширине окна в границах 75-115%"
+    # окно шире текстовой колонки: sequenceDiagram в 864px не читается
+    assert "@media (min-width:1180px){ .viewer{ width:1100px;" in html \
+        and "@media (min-width:1420px){ .viewer{ width:1340px;" in html, \
+        rel + ": на больших экранах окно со схемой выходит за колонку"
+    # 100vw включает полосу прокрутки: окно во всю ширину экрана дало бы
+    # горизонтальный перелив страницы. В комментариях слово допустимо.
+    assert "100vw" not in re.sub(r"/\*.*?\*/", "", html, flags=re.S), \
+        rel + ": ширина окна считается от колонки, а не в vw"
     assert "el.style.width  = Math.round(natW * k) + 'px';" in html, \
         rel + ": масштаб — реальный размер SVG, текст остаётся резким"
     # центрирование: safe — иначе верх переполнившей схемы уходит туда,
@@ -768,10 +795,17 @@ def test_process_practice_viewer():
         rel + ": кнопка «целиком» показывает схему полностью"
     assert "clampView" not in html, \
         rel + ": ручной панорамы с упорами больше нет — листает обычная прокрутка"
-    # примеры вертикальные: длинная цепочка вбок не помещается ни в одно окно
-    src = html[html.index('id="mmd-sources"'):html.index('</div>', html.rindex('<pre class="mmd-src"'))]
-    assert src.count("flowchart TD") == 6 and "flowchart LR" not in src, \
-        rel + ": примеры разворачиваются вниз — так они входят по ширине"
+    # sequenceDiagram: без своих переменных темы подписи остаются тёмными на
+    # тёмном, а перенос строк держит ширину схемы в разумных пределах
+    for v in ("signalTextColor:", "actorTextColor:", "labelTextColor:", "loopTextColor:",
+              "noteBkgColor:", "noteTextColor:"):
+        assert v in html, rel + ": в теме нет переменной " + v
+    assert "sequence: { wrap: true" in html, rel + ": без переноса одна подпись растягивает всю схему"
+    # узкие места видно сразу: заметка «Узкое место…» перекрашивается в оранжевый
+    assert "function markBottlenecks(){" in html and "const BN = /^\\s*узкое место/i;" in html, \
+        rel + ": узкие места должны выделяться в отрисованной схеме"
+    assert "rect.style.setProperty('fill', bg, 'important');" in html, \
+        rel + ": у mermaid своё правило для .note — атрибут покраски не переживёт"
     # подсказка висит над схемой, поэтому она в плашке с фоном
     assert re.search(r"\.v-hint\{[^}]*background:var\(--card\)", html), \
         rel + ": подсказка на фоне, иначе наезжает на узлы"
