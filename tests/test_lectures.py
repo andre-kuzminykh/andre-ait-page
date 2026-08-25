@@ -798,10 +798,15 @@ def test_process_practice_viewer():
     # прочесть, и тогда остаётся прокрутка вбок
     assert "function startView(){" in html and "sizeTo(Math.min(Math.max(kW, 0.5), 1.15));" in html, \
         rel + ": стартовый масштаб — по ширине окна в границах 50-115%"
-    # окно шире текстовой колонки: sequenceDiagram в 864px не читается
-    assert "@media (min-width:1180px){ .viewer{ width:1100px;" in html \
-        and "@media (min-width:1420px){ .viewer{ width:1340px;" in html, \
-        rel + ": на больших экранах окно со схемой выходит за колонку"
+    # окно со схемой — ровно в общей колонке, как блок с призывом:
+    # выход за колонку разъезжался по ширине со всей остальной страницей
+    assert not re.search(r"\.viewer\{[^}]*margin-left:calc", html) \
+        and "width:1100px" not in html and "width:1340px" not in html, \
+        rel + ": окно со схемой не должно выходить за текстовую колонку"
+    # плашки отраслей по центру, но safe — иначе первая уезжает за левый край
+    assert "justify-content:center; justify-content:safe center;" in \
+        html[html.index(".v-tabs{"):html.index(".v-tabs{") + 420], \
+        rel + ": плашки отраслей стоят по центру"
     # 100vw включает полосу прокрутки: окно во всю ширину экрана дало бы
     # горизонтальный перелив страницы. В комментариях слово допустимо.
     assert "100vw" not in re.sub(r"/\*.*?\*/", "", html, flags=re.S), \
