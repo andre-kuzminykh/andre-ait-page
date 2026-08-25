@@ -191,22 +191,31 @@
     color:var(--muted); font-weight:600; max-width:36rem;
     font-size:clamp(.85rem,2.7vw,1rem); line-height:1.6;
   }
+  /* Короткая подводка идёт одной строкой: общий предел в 36rem резал её надвое */
+  .sec-head p.wide{ max-width:none; }
 
-  /* ===== С чего начать: три процесса-кандидата ===== */
-  .picks{ list-style:none; display:grid; grid-template-columns:1fr; gap:.6rem; }
-  @media (min-width:768px){ .picks{ grid-template-columns:repeat(3,1fr); gap:.75rem; } }
-  .picks li{
-    background:var(--card); border:1px solid var(--card-border);
-    border-radius:18px; padding:clamp(1rem,3vw,1.3rem);
-    display:flex; flex-direction:column; gap:.55rem;
+  /* ===== С чего начать: критерии «низковисящего фрукта» =====
+     Те же плашки, что и в первом задании (automation/1/practice): критерий —
+     это строка со значком, а не карточка с заголовком. */
+  .criteria{ list-style:none; display:grid; grid-template-columns:1fr; gap:.6rem; }
+  @media (min-width:768px){
+    .criteria{ grid-template-columns:1fr 1fr; gap:.75rem; }
+    /* пятый критерий занимает всю строку — ряд не остаётся полупустым */
+    .criteria li:last-child{ grid-column:1 / -1; }
   }
-  .picks .pi{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:2.6rem; height:2.6rem; border-radius:999px;
-    background:#8B5CF6; color:#fff; font-size:1.25rem;
+  .criteria li{
+    display:flex; align-items:center; gap:.8rem;
+    background:var(--soft); border:1px solid var(--soft-border);
+    border-radius:16px; padding:.85rem 1rem;
+    font-weight:600; font-size:clamp(.82rem,2.7vw,.98rem); line-height:1.45;
   }
-  .picks h3{ font-weight:800; font-size:clamp(.95rem,3vw,1.1rem); line-height:1.25; }
-  .picks p{ color:var(--muted); font-weight:500; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.55; }
+  /* Плашка сплошная, иконка белая: фиолетовая иконка на фиолетовом тинте
+     растворялась бы в подложке. */
+  .criteria .ci{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px;
+    background:#8B5CF6; color:#fff; font-size:1.15rem;
+  }
 
   /* ===== Шаг ===== */
   .step{
@@ -588,7 +597,7 @@
     header, .actions, .back, .tabs{ display:none !important; }
     body{ background:#fff !important; color:#000 !important; }
     main{ padding:0; max-width:none; }
-    .step, .case, .picks li, .checks li, .modes li{ background:#fff; border-color:#D9D9D9; break-inside:avoid; }
+    .step, .case, .criteria li, .checks li, .modes li{ background:#fff; border-color:#D9D9D9; break-inside:avoid; }
     .cta{ background:#fff !important; color:#000 !important; border-color:#D9D9D9; }
     .cta li{ background:#fff; border-color:#D9D9D9; color:#000; }
     .case[hidden]{ display:block !important; }   /* в печать идут все отрасли */
@@ -622,6 +631,8 @@
     <symbol id="i-x-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol>
     <symbol id="i-corners-out" viewBox="0 0 256 256"><path d="M220,48V88a12,12,0,0,1-24,0V60H168a12,12,0,0,1,0-24h40A12,12,0,0,1,220,48ZM88,196H60V168a12,12,0,0,0-24,0v40a12,12,0,0,0,12,12H88a12,12,0,0,0,0-24Zm120-40a12,12,0,0,0-12,12v28H168a12,12,0,0,0,0,24h40a12,12,0,0,0,12-12V168A12,12,0,0,0,208,156ZM88,36H48A12,12,0,0,0,36,48V88a12,12,0,0,0,24,0V60H88a12,12,0,0,0,0-24Z"/></symbol>
     <symbol id="i-shapes" viewBox="0 0 256 256"><path d="M71.49,60.55a12,12,0,0,0-23,0l-36,120A12,12,0,0,0,24,196H96a12,12,0,0,0,11.49-15.45ZM40.13,172,60,105.76,79.87,172ZM212,74a54,54,0,1,0-54,54A54.06,54.06,0,0,0,212,74Zm-84,0a30,30,0,1,1,30,30A30,30,0,0,1,128,74Zm96,70H136a12,12,0,0,0-12,12v52a12,12,0,0,0,12,12h88a12,12,0,0,0,12-12V156A12,12,0,0,0,224,144Zm-12,52H148V168h64Z"/></symbol>
+    <symbol id="i-plugs" viewBox="0 0 256 256"><path d="M137,168l11.52-11.51a12,12,0,0,0-17-17L120,151l-15-15,11.52-11.51a12,12,0,0,0-17-17L88,119,72.49,103.51a12,12,0,0,0-17,17L59,124,38.54,144.49a36,36,0,0,0,0,50.91l2.55,2.54L15.51,223.51a12,12,0,0,0,17,17l25.57-25.58,2.54,2.55a36.06,36.06,0,0,0,50.91,0L132,197l3.51,3.52a12,12,0,0,0,17-17ZM94.54,200.49a12,12,0,0,1-17,0L55.51,178.43a12,12,0,0,1,0-17L76,141l39,39Zm146-185a12,12,0,0,0-17,0L197.94,41.09l-2.54-2.55a36.05,36.05,0,0,0-50.91,0L124,59l-3.51-3.52a12,12,0,0,0-17,17l80,80a12,12,0,0,0,17-17L197,132l20.49-20.49a36,36,0,0,0,0-50.91l-2.55-2.54,25.58-25.57A12,12,0,0,0,240.49,15.51Zm-40,79L180,115,141,76l20.49-20.49a12,12,0,0,1,17,0l22.06,22.06a12,12,0,0,1,0,17Z"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 256 256"><path d="M252,124a60.14,60.14,0,0,0-32-53.08,52,52,0,0,0-92-32.11A52,52,0,0,0,36,70.92a60,60,0,0,0,0,106.14,52,52,0,0,0,92,32.13,52,52,0,0,0,92-32.13A60.05,60.05,0,0,0,252,124ZM88,204a28,28,0,0,1-26.85-20.07c1,0,1.89.07,2.85.07h8a12,12,0,0,0,0-24H64A36,36,0,0,1,52,90.05a12,12,0,0,0,8-11.32V72a28,28,0,0,1,56,0v60.18a51.61,51.61,0,0,0-7.2-3.85,12,12,0,1,0-9.6,22A28,28,0,0,1,88,204Zm104-44h-8a12,12,0,0,0,0,24h8c1,0,1.9,0,2.85-.07a28,28,0,1,1-38-33.61,12,12,0,1,0-9.6-22,51.61,51.61,0,0,0-7.2,3.85V72a28,28,0,0,1,56,0v6.73a12,12,0,0,0,8,11.32,36,36,0,0,1-12,70Zm16-44a12,12,0,0,1-12,12,40,40,0,0,1-40-40V84a12,12,0,0,1,24,0v4a16,16,0,0,0,16,16A12,12,0,0,1,208,116ZM100,88a40,40,0,0,1-40,40,12,12,0,0,1,0-24A16,16,0,0,0,76,88V84a12,12,0,0,1,24,0Z"/></symbol>
     <symbol id="i-clipboard-text" viewBox="0 0 256 256"><path d="M200,32H163.74a47.92,47.92,0,0,0-71.48,0H56A16,16,0,0,0,40,48V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm-72,0a32,32,0,0,1,32,32H96A32,32,0,0,1,128,32Zm32,128H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z"/></symbol>
     <symbol id="i-target" viewBox="0 0 256 256"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></symbol>
     <symbol id="i-flow-arrow" viewBox="0 0 256 256"><path d="M245.66,85.66l-32,32a8,8,0,0,1-11.32-11.32L220.69,88H208c-38.67,0-46.59,19-56.62,43.08C141.05,155.88,129.33,184,80,184H79a32,32,0,1,1,0-16h1c38.67,0,46.59-19,56.62-43.08C147,100.12,158.67,72,208,72h12.69L202.34,53.66a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,245.66,85.66Z"/></symbol>
@@ -643,9 +654,6 @@
     <symbol id="i-warning" viewBox="0 0 256 256"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></symbol>
     <symbol id="i-sparkle" viewBox="0 0 256 256"><path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z"/></symbol>
     <symbol id="i-seal-check" viewBox="0 0 256 256"><path d="M225.86,102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28,23.51,138.44,16,128,16s-18.27,7.51-25.18,14.14c-3.94,3.77-8,7.67-11.57,9.14C88,40.64,82.56,40.72,77.31,40.8c-9.76.15-20.82.31-28.51,8S41,67.55,40.8,77.31c-.08,5.25-.16,10.67-1.52,13.94-1.47,3.56-5.37,7.63-9.14,11.57C23.51,109.72,16,117.56,16,128s7.51,18.27,14.14,25.18c3.77,3.94,7.67,8,9.14,11.57,1.36,3.27,1.44,8.69,1.52,13.94.15,9.76.31,20.82,8,28.51s18.75,7.85,28.51,8c5.25.08,10.67.16,13.94,1.52,3.56,1.47,7.63,5.37,11.57,9.14C109.72,232.49,117.56,240,128,240s18.27-7.51,25.18-14.14c3.94-3.77,8-7.67,11.57-9.14,3.27-1.36,8.69-1.44,13.94-1.52,9.76-.15,20.82-.31,28.51-8s7.85-18.75,8-28.51c.08-5.25.16-10.67,1.52-13.94,1.47-3.56,5.37-7.63,9.14-11.57C232.49,146.28,240,138.44,240,128S232.49,109.73,225.86,102.82Zm-52.2,6.84-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
-    <symbol id="i-tray" viewBox="0 0 256 256"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V168H76.69L96,187.32A15.89,15.89,0,0,0,107.31,192h41.38A15.86,15.86,0,0,0,160,187.31L179.31,168H208v40Z"/></symbol>
-    <symbol id="i-user-plus" viewBox="0 0 256 256"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136ZM144,157.68a68,68,0,1,0-71.9,0c-20.65,6.76-39.23,19.39-54.17,37.17A8,8,0,0,0,24,208H192a8,8,0,0,0,6.13-13.15C183.18,177.07,164.6,164.44,144,157.68Z"/></symbol>
-    <symbol id="i-file-text" viewBox="0 0 256 256"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,176H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm-8-56V44l44,44Z"/></symbol>
     <symbol id="i-moon" viewBox="0 0 256 256"><path d="M235.54,150.21a104.84,104.84,0,0,1-37,52.91A104,104,0,0,1,32,120,103.09,103.09,0,0,1,52.88,57.48a104.84,104.84,0,0,1,52.91-37,8,8,0,0,1,10,10,88.08,88.08,0,0,0,109.8,109.8,8,8,0,0,1,10,10Z"/></symbol>
     <symbol id="i-sun" viewBox="0 0 256 256"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm8,24a64,64,0,1,0,64,64A64.07,64.07,0,0,0,128,64ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></symbol>
     <symbol id="i-path" viewBox="0 0 256 256"><path d="M228,200a28,28,0,0,1-54.83,8H72a48,48,0,0,1,0-96h96a24,24,0,0,0,0-48H72a8,8,0,0,1,0-16h96a40,40,0,0,1,0,80H72a32,32,0,0,0,0,64H173.17A28,28,0,0,1,228,200Z"/></symbol>
@@ -672,8 +680,7 @@
     <section class="hero rise">
       <span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Практика · Моделирование процессов</span>
       <h1>Разберите один реальный <span class="accent">бизнес-процесс</span></h1>
-      <p>Возьмите один процесс из своей компании и проведите его полный разбор: от бизнес-цели и модели AS-IS до узких мест, точек автоматизации и спроектированного процесса TO-BE.</p>
-      <p>На выходе — не список идей «куда внедрить ИИ», а готовый проект трансформации конкретного процесса.</p>
+      <p>Возьмите один процесс из своей компании и проведите его полный разбор: от бизнес-цели и модели AS-IS до узких мест, точек автоматизации, графа навыков агента и спроектированного процесса TO-BE.</p>
     </section>
 
     <!-- ===== С ЧЕГО НАЧАТЬ ===== -->
@@ -681,24 +688,14 @@
       <div class="sec-head">
         <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span>
         <h2>Какой процесс <span class="accent">взять</span></h2>
-        <p>Если сомневаетесь — берите один из этих трёх. Они есть почти в любой компании, у них понятные границы и измеримый результат.</p>
+        <p>Первым берут «низковисящий фрукт» — процесс, который отвечает всем пяти критериям сразу. Чем больше критериев не выполняется, тем дальше процесс отодвигается в очереди.</p>
       </div>
-      <ul class="picks">
-        <li>
-          <span class="pi"><svg class="ic" aria-hidden="true"><use href="#i-tray" xlink:href="#i-tray"></use></svg></span>
-          <h3>Обработка заявки</h3>
-          <p>От входящего обращения до передачи в работу: квалификация, уточнение, ответ клиенту.</p>
-        </li>
-        <li>
-          <span class="pi"><svg class="ic" aria-hidden="true"><use href="#i-user-plus" xlink:href="#i-user-plus"></use></svg></span>
-          <h3>Найм сотрудника</h3>
-          <p>От заявки на подбор до выхода человека: профиль, поиск, скрининг, интервью, оффер.</p>
-        </li>
-        <li>
-          <span class="pi"><svg class="ic" aria-hidden="true"><use href="#i-file-text" xlink:href="#i-file-text"></use></svg></span>
-          <h3>Согласование договора</h3>
-          <p>От запроса на договор до подписи: шаблон, правки, юрист, финансы, подписант.</p>
-        </li>
+      <ul class="criteria">
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chart-line-up" xlink:href="#i-chart-line-up"></use></svg></span> заметно влияет на бизнес-результат</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg></span> не требует большого количества интеграций</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> зависит от минимального числа сотрудников</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg></span> использует доступные и структурированные данные</li>
+        <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-brain" xlink:href="#i-brain"></use></svg></span> может быть реализован с помощью готовых ИИ-моделей</li>
       </ul>
     </section>
 
@@ -707,7 +704,7 @@
       <div class="sec-head">
         <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-list-checks" xlink:href="#i-list-checks"></use></svg></span>
         <h2>Что нужно <span class="accent">сделать</span></h2>
-        <p>Четыре шага. Каждый следующий опирается на результат предыдущего.</p>
+        <p class="wide">Четыре шага. Каждый следующий опирается на результат предыдущего.</p>
       </div>
 
       <article class="step">
@@ -715,15 +712,15 @@
           <span class="step-ico"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span>
           <div class="step-body">
             <span class="kicker">Шаг 1</span>
-            <h2>Определите бизнес-цель, метрику и границы процесса</h2>
+            <h2>Определите бизнес-цель, метрику и границы</h2>
           </div>
         </div>
-        <p class="desc">Зачем этот процесс существует, по какому числу вы поймёте, что он стал лучше, и где он начинается и заканчивается. Без этого разбор превращается в описание ради описания.</p>
+        <p class="desc">Зачем этот процесс существует, по какому числу вы поймёте, что он стал лучше, и где он начинается и заканчивается.</p>
         <ul class="checks">
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span> бизнес-цель процесса</li>
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-chart-line-up" xlink:href="#i-chart-line-up"></use></svg></span> метрика: скорость, стоимость, качество или конверсия</li>
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span> событие-старт и событие-финиш</li>
-          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> кто владелец процесса и кто в нём участвует</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> <span>кто владелец процесса<br>и кто в нём участвует</span></li>
         </ul>
       </article>
 
@@ -740,7 +737,7 @@
             <h2>Восстановите AS-IS и соберите BPMN-модель</h2>
           </div>
         </div>
-        <p class="desc">Опишите, как процесс работает сейчас — честно, а не так, как записано в регламенте. Затем перенесите это в BPMN-модель: она вскрывает разрывы, которые в тексте не видны.</p>
+        <p class="desc">Опишите, как процесс работает сейчас — честно, а не так, как записано в регламенте. Затем перенесите это в BPMN-модель.</p>
         <ul class="checks">
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-users-three" xlink:href="#i-users-three"></use></svg></span> кто участвует и что именно делает</li>
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg></span> какие данные передаются и в каком виде</li>
@@ -749,7 +746,7 @@
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-arrow-u-up-left" xlink:href="#i-arrow-u-up-left"></use></svg></span> где случаются возвраты на предыдущий шаг</li>
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg></span> какие бывают исключения и как их разруливают</li>
         </ul>
-        <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> Ниже — шесть готовых примеров AS-IS по отраслям: возьмите ближайший как образец схемы</p>
+        <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> Ниже — шесть готовых примеров AS-IS по отраслям</p>
       </article>
 
       <div class="link" aria-hidden="true">
