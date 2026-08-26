@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Новые роли в AI-first компании — анимированная графика поверх видео</title>
+<meta name="robots" content="noindex">
+
+<style>
+/* Montserrat лежит рядом (fonts/), а не на Google Fonts: страницу открывают
+   и локально (file://) во время записи экрана, а там CDN недоступен. */
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:400;font-display:block;src:url(fonts/montserrat-cyrillic-400-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:400;font-display:block;src:url(fonts/montserrat-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:500;font-display:block;src:url(fonts/montserrat-cyrillic-500-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:500;font-display:block;src:url(fonts/montserrat-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:700;font-display:block;src:url(fonts/montserrat-cyrillic-700-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:700;font-display:block;src:url(fonts/montserrat-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:900;font-display:block;src:url(fonts/montserrat-cyrillic-900-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:900;font-display:block;src:url(fonts/montserrat-latin-900-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+:root{
+    /* Палитра лекции 1 (automation/1/index.html) — один в один. */
+    --solar:#8B5CF6;
+    --gray:#E9E9E9;
+
+    /* Зона графики = светлая стена НАД головой, ПОД фирменной шапкой.
+       Замеры по кадру (1080×1920): верх постеров ≈ y638, макушка ≈ y816;
+       шапка (лого + «АКАДЕМИЯ ДАТАИСТА») занимает 128…224. Зона 250…630 —
+       не задевает ни шапку, ни картины.
+       Правится на лету: ?zoneTop=&zoneH= под конкретный кадр. */
+    --zone-top:238px;
+    --zone-h:392px;
+    --zone-pad:46px;
+
+    --ease:cubic-bezier(.22,1,.36,1);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:#0b0b10;overflow:hidden}
+body{font-family:'Montserrat',system-ui,sans-serif;color:#000;-webkit-font-smoothing:antialiased}
+
+/* ── Сцена: рабочая система координат ровно 1080×1920, всё остальное
+   масштабируется одним transform. Так вёрстка не «плывёт» между
+   превью в окне, фуллскрином и финальным рендером. ───────────────── */
+#stage{
+    position:absolute;top:50%;left:50%;
+    width:1080px;height:1920px;
+    transform-origin:50% 50%;
+    overflow:hidden;
+    background:#000;
+}
+body.transparent #stage,body.transparent{background:transparent}
+
+#clip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+#clip.ready{display:block}
+
+/* Демо-фон: приближённая реконструкция кадра, чтобы смотреть анимацию
+   до загрузки видео и проверять контраст на сиреневой стене. */
+#mock{position:absolute;inset:0;display:none}
+body.mock #mock{display:block}
+body.transparent #mock{display:none}
+
+/* ── Скрим: мягкое затемнение верхней трети. Подписи белые, а стена в
+   кадре светло-сиреневая — без затемнения белое по светлому не читается.
+   Заодно это тот же верхний виньет, что на обложке. ─────────────────── */
+#scrim{
+    position:absolute;left:0;right:0;top:0;height:820px;pointer-events:none;
+    background:linear-gradient(180deg,
+        rgba(14,7,28,.60) 0%,
+        rgba(14,7,28,.50) 44%,
+        rgba(14,7,28,.26) 72%,
+        rgba(14,7,28,0) 100%);
+    opacity:0;transition:opacity .7s ease;
+}
+#scrim.on{opacity:1}
+body.no-scrim #scrim{display:none}
+
+#layer{
+    position:absolute;left:0;right:0;
+    top:var(--zone-top);height:var(--zone-h);
+    padding:0 var(--zone-pad);
+}
+
+/* ── Фирменный хром: лого AIT слева + «АКАДЕМИЯ ДАТАИСТА» по центру шапки.
+   Геометрия 1:1 с хромом рилсов Академии: top 128, высота 96 (центр на
+   y176), лого 92px при left 56, тег 26px/700, разрядка .3em, капс.
+   Цвет тега — фирменный rgba(245,245,247,.30) + тонкий тёмный ореол:
+   в отличие от рилсов, под ним не чёрный #09080D, а живое видео.
+   Хром вшивается в слой при рендере, как и вся графика. ── */
+#chrome{
+    position:absolute;top:128px;left:56px;right:56px;height:96px;
+    z-index:8;display:flex;align-items:center;pointer-events:none;
+}
+#chrome img{height:92px;width:auto;max-width:300px;object-fit:contain;opacity:.95}
+#chrome .tag{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-size:26px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;
+    color:rgba(245,245,247,.30);white-space:nowrap;
+    text-shadow:0 2px 12px rgba(10,4,24,.5);
+}
+
+
+/* ── Сцены ───────────────────────────────────────────────────────── */
+.scene{
+    position:absolute;left:var(--zone-pad);right:var(--zone-pad);
+    top:0;height:100%;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    opacity:0;visibility:hidden;
+    transform:translateY(26px) scale(.985);
+    filter:blur(6px);
+    transition:opacity .55s var(--ease),transform .55s var(--ease),filter .55s var(--ease),visibility 0s linear .55s;
+}
+.scene.on{
+    opacity:1;visibility:visible;transform:none;filter:none;
+    transition:opacity .6s var(--ease),transform .6s var(--ease),filter .6s var(--ease),visibility 0s;
+}
+
+/* ── Появление элементов ─────────────────────────────────────────── */
+.el{
+    opacity:0;
+    transform:translateY(18px) scale(.96);
+    transition:opacity .5s var(--ease),transform .58s var(--ease);
+}
+.el.on{opacity:1;transform:none}
+/* Пункты списков въезжают сбоку — так глаз ловит порядок сверху вниз. */
+.el.slide-l{transform:translateX(-22px)}
+.el.slide-l.on{transform:none}
+
+/* Иконка «выстреливает» чуть позже своей карточки — оживляет появление. */
+.el .ico{transform:scale(.55);opacity:.2;transition:transform .62s var(--ease) .1s,opacity .4s ease .1s}
+.el.on .ico{transform:none;opacity:1}
+
+/* ── Подсветка: элемент уже на экране, но о нём говорят прямо сейчас ─ */
+.hot{animation:hot 2.6s var(--ease)}
+@keyframes hot{
+    0%{transform:none}
+    18%{transform:translateY(-12px) scale(1.06)}
+    72%{transform:translateY(-7px) scale(1.035)}
+    100%{transform:none}
+}
+.hot .circle{animation:hotRing 2.6s var(--ease)}
+@keyframes hotRing{
+    0%{box-shadow:0 12px 30px rgba(24,10,54,.20)}
+    18%{box-shadow:0 18px 40px rgba(139,92,246,.45),0 0 0 6px rgba(139,92,246,.55)}
+    72%{box-shadow:0 16px 34px rgba(139,92,246,.3),0 0 0 4px rgba(139,92,246,.35)}
+    100%{box-shadow:0 12px 30px rgba(24,10,54,.20)}
+}
+
+/* ── Элементы БЕЗ прямоугольных блоков (правило владельца) ────────
+   Никаких карточек, рамок и плашек: только круглая иконка и подпись
+   прямо на кадре. Круг — единственная допустимая «оправа». ────────── */
+.item{
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    flex:1 1 0;min-width:0;
+}
+.circle{
+    border-radius:50%;background:#fff;
+    display:flex;align-items:center;justify-content:center;flex:none;
+    box-shadow:0 12px 30px rgba(24,10,54,.20);
+    color:#141018;
+}
+.circle svg{width:52%;height:52%}
+.circle.solar{background:#EDE4FE;color:var(--solar)}
+.circle.ember{background:#FFE6D2;color:#F97316}
+
+h1,h2,h3,p,ul{margin:0}
+ul{list-style:none;padding:0}
+
+/* Текст лежит на видео, а не на плашке: тёмный ореол держит контраст,
+   когда под белой буквой проезжает светлый угол стены. */
+.label,#s2 li{
+    text-shadow:0 3px 16px rgba(10,4,24,.6),0 1px 4px rgba(10,4,24,.75);
+}
+.label{
+    font-weight:900;line-height:1.1;letter-spacing:-.01em;color:#fff;
+    overflow-wrap:break-word;hyphens:none;
+}
+
+/* ── Общее ───────────────────────────────────────────────────────────
+   Круги в сцене ОДНОГО размера и на ОДНОЙ высоте. Иерархию несёт не
+   диаметр, а выделение: пока о элементе говорят, он чуть подрастает и
+   берётся во внешнее кольцо, потом плавно возвращается. Соседи НЕ гаснут.
+   Цвета кругов чередуются фиолетовый / оранжевый. */
+.slot{display:flex;align-items:center;justify-content:center;height:112px}
+.scene .row{display:flex;gap:26px;width:100%;align-items:flex-start;justify-content:center}
+.item{position:relative}
+
+.circle{position:relative}
+.item .circle::after,.bar .circle::after{
+    content:'';position:absolute;inset:-9px;border-radius:50%;pointer-events:none;
+    border:3px solid rgba(255,255,255,0);
+    transition:border-color .5s var(--ease),transform .5s var(--ease);
+}
+.el.on.cur .circle{transform:scale(1.12)}
+.el.on.cur .circle::after{border-color:rgba(255,255,255,.62)}
+
+.glow{
+    position:absolute;left:50%;top:38%;width:700px;height:300px;
+    transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+    background:radial-gradient(closest-side,rgba(136,84,243,.8),rgba(136,84,243,.3) 55%,rgba(136,84,243,0) 74%);
+    filter:blur(16px);opacity:0;transition:opacity .6s ease;
+}
+.glow.glow-ember{
+    background:radial-gradient(closest-side,rgba(249,115,22,.75),rgba(249,115,22,.28) 55%,rgba(249,115,22,0) 74%);
+}
+.el.on .glow{opacity:1;animation:glowPulse 2.6s ease-in-out .2s infinite}
+@keyframes glowPulse{
+    0%,100%{transform:translate(-50%,-50%) scale(1)}
+    50%{transform:translate(-50%,-50%) scale(1.16)}
+}
+
+/* ── Общее для этого ролика ─────────────────────────────────────────
+   Ролик-список: семь измерений индекса. У каждого блока одна и та же
+   раскладка — крупный круг сверху, ряд коротких чипов снизу. Линия с
+   стрелкой нужна только в финальной дорожной карте. */
+.stage{position:relative;width:100%;display:flex;flex-direction:column;align-items:center}
+.stage .row{position:relative;z-index:1}
+.link{position:absolute;left:0;top:0;width:100%;pointer-events:none;z-index:0;overflow:visible}
+.link line,.link polyline,.link path{
+    fill:none;stroke:rgba(255,255,255,.30);stroke-width:3;stroke-linecap:round;
+    stroke-linejoin:round;stroke-dasharray:1400;stroke-dashoffset:1400;
+}
+.link polygon{fill:rgba(255,255,255,.30);opacity:0;transition:opacity .5s var(--ease) .5s}
+/* .el сдвигает элемент при появлении — линии это не нужно, она чертится. */
+.link.el,.link.el.on{transform:none;opacity:1}
+.link.el line,.link.el polyline,.link.el path{stroke-dashoffset:1400}
+.link.el.on line,.link.el.on polyline,.link.el.on path{animation:drawLink 1.4s var(--ease) forwards}
+.link.el.on polygon{opacity:1}
+@keyframes drawLink{to{stroke-dashoffset:0}}
+.item .slot{position:relative;z-index:1}
+
+/* Фраза-вывод: крупная строка по центру сцены, цвет чередуется. */
+.cores{position:relative;width:100%;height:44px}
+.cores .core{position:absolute;left:0;right:0;top:0}
+.core{
+    font-size:36px;font-weight:900;color:#fff;white-space:nowrap;text-align:center;
+    text-shadow:0 3px 16px rgba(10,4,24,.6),0 1px 4px rgba(10,4,24,.75);
+}
+.core.solar{color:#C9B2FF}
+.core.ember{color:#FFB380}
+.core .glow{width:780px;height:210px;top:50%}
+/* Подпись второго слоя — то, что говорят про элемент отдельно. */
+.sub{
+    font-size:25px;font-weight:800;color:rgba(255,255,255,.78);margin-top:10px;
+    line-height:1.25;white-space:nowrap;
+    text-shadow:0 3px 16px rgba(10,4,24,.6);
+    opacity:0;transform:translateY(10px);
+    transition:opacity .5s var(--ease),transform .5s var(--ease);
+}
+.sub.on{opacity:1;transform:none}
+/* Обёртка сияния: сам .glow не может быть .el — у .el.on стоит
+   transform:none, он сносит центрирующий translate сияния. */
+.halo{position:absolute;inset:0;pointer-events:none}
+
+/* Два элемента в кадре стоят ШИРОКО: каждый над своей картиной (центры
+   235 и 820 по кадру), середина свободна — там голова. */
+.scene .row.duo{justify-content:space-between;gap:0}
+.scene .row.duo>.item{flex:0 0 400px}
+.duo .label{font-size:34px;margin-top:16px;white-space:nowrap}
+
+/* ── Блок индекса: одно слово, сияние и разлёт значков ──────────────
+   Владелец: «давай только заголовки — Данные / Модели и т.д., без
+   иконок, а оранжевым / фиолетовым сзади свечением и эмодзи слева
+   справа, как ты уже делал». Круг с иконкой убран совсем: якорем стало
+   само слово, цвет держит сияние за ним, а значки вылетают из-за краёв
+   слова влево и вправо — по букве они не проходят.
+   Кегль 54: «Исследования и разработки» на 64 занимает 1029px и в кадр
+   шириной 988 не помещается (замерено по метрикам шрифта). */
+.block{display:flex;flex-direction:column;align-items:center;width:100%}
+.block .head{position:relative;display:flex;align-items:center;justify-content:center}
+.block .title{
+    font-size:54px;font-weight:900;color:#fff;white-space:nowrap;
+    position:relative;z-index:1;letter-spacing:-.01em;
+    text-shadow:0 3px 18px rgba(10,4,24,.65),0 1px 4px rgba(10,4,24,.8);
+}
+/* Фиолетовое сияние на фиолетовой стене почти не читается, поэтому у
+   заголовков центр облака взят светлее обычного — оно работает светом,
+   а не цветом. Оранжевому этого не нужно, стена не оранжевая.
+   Размер облака НЕ фиксированный: у короткого слова («Данные») широкое
+   сияние выглядело пятном втрое больше текста — владелец это и заметил.
+   Ширину считает сборщик по ширине слова, она приезжает в style. */
+.block .head .glow{
+    height:250px;
+    background:radial-gradient(closest-side,rgba(226,210,255,.95),rgba(152,102,250,.42) 52%,rgba(136,84,243,0) 74%);
+}
+.block .head .glow.glow-ember{
+    background:radial-gradient(closest-side,rgba(249,140,60,.82),rgba(249,115,22,.30) 55%,rgba(249,115,22,0) 74%);
+}
+/* Чипы — просто слова: круги под ними и были теми «иконками», от
+   которых владелец отказался. Подсветка тут не кольцо, а цвет и лёгкий
+   подрост; соседи при этом НЕ гаснут — они остаются белыми.
+   Больше четырёх слов в строку не помещается, поэтому длинные наборы
+   идут в ДВА РЯДА (владелец: «в два ряда можно»). */
+.block .chips{display:flex;flex-direction:column;gap:14px;align-items:center;margin-top:30px}
+.block .line{display:flex;gap:34px;justify-content:center}
+.block .chip{
+    font-size:28px;font-weight:800;color:rgba(255,255,255,.92);white-space:nowrap;
+    text-shadow:0 3px 16px rgba(10,4,24,.6),0 1px 4px rgba(10,4,24,.75);
+    transition:opacity .5s var(--ease),transform .5s var(--ease),color .45s var(--ease);
+}
+.block .chip.on.cur{transform:scale(1.09)}
+.block .chip.solar.on.cur{color:#C9B2FF}
+.block .chip.ember.on.cur{color:#FFB380}
+.block .cores{margin-top:26px}
+
+/* Значки вылетают из-за краёв заголовка — влево из левого края, вправо
+   из правого. Это Phosphor того же набора, а не эмодзи: эмодзи рисуются
+   системным шрифтом, которого на чужой машине может не быть. */
+.fly{position:absolute;top:50%;width:0;height:0;pointer-events:none;z-index:0}
+.fly.l{left:-4px}
+.fly.r{right:-4px}
+.fly i{
+    position:absolute;left:-20px;top:-20px;display:block;width:40px;height:40px;
+    opacity:0;color:#fff;
+}
+.fly svg{width:100%;height:100%;fill:currentColor}
+.fly.solar i{filter:drop-shadow(0 0 10px rgba(136,84,243,.95)) drop-shadow(0 2px 6px rgba(10,4,24,.6))}
+.fly.ember i{filter:drop-shadow(0 0 10px rgba(249,115,22,.95)) drop-shadow(0 2px 6px rgba(10,4,24,.6))}
+/* Владелец: «все эмодзи вылетающие сделай 3-4 секунды». Один проход,
+   а не бесконечный цикл: с задержками 0 / 0.55 / 1.1 последний значок
+   гаснет на 3.7-й секунде после появления заголовка. */
+.scene.on .fly.on i{animation:flyOut 2.6s ease-out 1 both}
+@keyframes flyOut{
+    0%{opacity:0;transform:translate(0,0) scale(.4) rotate(0deg)}
+    22%{opacity:.95}
+    58%{opacity:.8}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.05) rotate(var(--rot))}
+}
+
+/* Пара над картинами: вывод шёл впритык к подписям (замер: подпись
+   кончается на 495, строка вывода начиналась там же). Даём воздух. */
+.row.duo + .cores{margin-top:20px}
+
+/* ── Кольцо цикла: шесть этапов вокруг агента ───────────────────────
+   Владелец: «6 этапов кружками вокруг главного кружка с эмодзи агента»,
+   потом — «это должен быть не овал, а круг, но чтобы ничего не залипало,
+   робота внутри можно без круга, пунктирной линии не надо».
+
+   Круг РОВНЫЙ: радиус 120 при центре (540, 434) по кадру. Больше не
+   влезает: у верхней точки подпись стоит НАД кружком (иначе она села бы
+   на боковые кружки — замер показал наезд на 42px), и её верх упирается
+   в границу зоны 240 при пределе 238; у нижней подпись снизу и кончается
+   на 628 при пределе 630. У боковых точек подписи уходят НАРУЖУ: внизу
+   они наезжали на агента в центре.
+   Координаты внутри сцены: 0,0 — это (46, 238) по кадру. */
+.cycle{position:relative;width:988px;height:392px}
+/* Точку кольца держит обёртка: сам .el центрировать нельзя — у .el.on
+   стоит transform:none, он сносит любой translate. */
+.cycle .pos{position:absolute}
+.cycle .pos.t,.cycle .pos.b{width:280px;margin-left:-140px}
+.cycle .pos.t .item{flex-direction:column-reverse}
+.cycle .pos.t .label{margin-top:0;margin-bottom:8px}
+.cycle .pos.side .item{flex-direction:row;align-items:center;gap:14px}
+.cycle .pos.side .label{margin-top:0}
+.cycle .pos.l .item{flex-direction:row-reverse}
+.cycle .label{font-size:26px;margin-top:8px;white-space:nowrap}
+.cycle .slot{height:72px}
+/* Агент в середине — без оправы: только значок и сияние за ним. */
+.cycle .hub{position:absolute;left:494px;top:146px;width:100px;height:100px;margin-left:-50px}
+.cycle .hub .halo{position:absolute;inset:0}
+.cycle .agent{position:relative;width:100px;height:100px;color:#fff;
+    filter:drop-shadow(0 0 20px rgba(136,84,243,.95)) drop-shadow(0 3px 10px rgba(10,4,24,.6))}
+.cycle .agent svg{width:100%;height:100%;fill:currentColor}
+
+/* Стрелка между парой: «эксперименты → управляемость». Стоит средним
+   ребёнком ряда, поэтому space-between сам ставит её посередине; отступ
+   сверху выравнивает её по центрам кругов (54 = 16 + половина стрелки). */
+.row.duo .arrow{flex:0 0 auto;width:76px;height:76px;margin-top:16px;
+    color:rgba(255,255,255,.78);filter:drop-shadow(0 3px 10px rgba(10,4,24,.55))}
+.row.duo .arrow svg{width:100%;height:100%;fill:currentColor}
+/* Длинная подпись в широкой паре: «Мыслить как архитектор» при кегле 28
+   занимает 394px и подходит к левому краю на 49px при пороге 60 (замер в
+   браузере, центр левого кружка 246). Кегль 25 даёт 352px и поле 70 —
+   и остаётся выше минимальных 24px. Меняем обеим подписям пары: разный
+   кегль у соседей в одном ряду читается как небрежность. */
+#s15 .duo .label{font-size:25px}
+/* Владелец: «процессы с ИИ „VS“ процессы без ИИ» — та же середина ряда,
+   только словом, а не стрелкой. */
+.row.duo .vs{flex:0 0 auto;margin-top:30px;font-size:44px;font-weight:900;
+    letter-spacing:.02em;color:rgba(255,255,255,.82);
+    text-shadow:0 3px 16px rgba(10,4,24,.6),0 1px 4px rgba(10,4,24,.75)}
+
+/* ── Ряд иконок: перечисление кружками ──────────────────────────────
+   Владелец: «остальные будут иконками», «ключевые метрики — просто
+   оставь их перечисление с иконками». Ширину колонки считает сборщик
+   по самим подписям (см. колонка()), поэтому подписи не сходятся. */
+.cards{display:flex;flex-direction:column;gap:20px;width:100%}
+.cards .row{gap:40px;justify-content:center;align-items:flex-start}
+.cards .slot{height:104px}
+.cards .label{font-size:28px;margin-top:12px;white-space:nowrap}
+.cards .cores{margin-top:6px}
+/* Владелец: «чуть-чуть совсем повыше можно заголовки поднять».
+   Поднимаем ТОЛЬКО строку-заголовок и только относительным сдвигом:
+   в потоке она остаётся на месте, поэтому ряд иконок под ней не едет
+   и зона 238…630 не меняется. */
+.cards > .cores:first-child{position:relative;top:-22px}
+/* Кадр-точка: один кружок крупнее и с сиянием — это не список. */
+.cards.one .slot{height:132px}
+.cards.one .label{font-size:30px}
+.cards.one .glow{width:460px;height:240px;top:44%}
+/* Пока о кружке говорят, он не только подрастает, но и светится своим
+   цветом: на тёмной стене это читается лучше белого кольца. */
+.el.on.cur .circle.solar{box-shadow:0 16px 36px rgba(136,84,243,.55)}
+.el.on.cur .circle.ember{box-shadow:0 16px 36px rgba(249,115,22,.5)}
+
+/* Ширины колонок рядов — по подписям каждой сцены (см. колонка()). */
+#s2 .cards .item{flex:0 0 160px}
+#s7 .cards .item{flex:0 0 230px}
+#s11 .cards .item{flex:0 0 160px}
+#s12 .cards .item{flex:0 0 160px}
+
+/* ── Обложка: первые секунды готового ролика. Стык с видео жёсткий, без
+   растворения, — ровно так же его склеит ffmpeg, и превью не врёт. ─── */
+#cover{position:absolute;inset:0;display:none;background:#000}
+#cover img{width:100%;height:100%;object-fit:cover;display:block}
+body.on-cover #cover{display:block}
+/* На обложке нет ни графики, ни субтитров, ни скрима. */
+body.on-cover #layer,body.on-cover #sub,body.on-cover #scrim,body.on-cover #chrome{display:none}
+
+/* ── Субтитры ────────────────────────────────────────────────────────
+   Белые, с тонкой чёрной обводкой, без подложки (правило «без блоков»).
+   Позиция снята с кадра владельца: центр строки на 78.6% высоты — под
+   микрофоном и над руками. Двигается через ?subY=. */
+#sub{
+    position:absolute;left:70px;right:70px;top:1510px;
+    transform:translateY(-50%);
+    text-align:center;pointer-events:none;
+    font-size:50px;font-weight:800;line-height:1.18;letter-spacing:-.005em;
+    color:#fff;
+    /* paint-order обязателен: без него обводка съедает половину буквы
+       изнутри и текст выглядит тоньше, чем набран. */
+    -webkit-text-stroke:4px #0A0A0A;paint-order:stroke fill;
+    text-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+#sub:empty{display:none}
+#sub.pop{animation:subIn .16s ease-out}
+@keyframes subIn{from{opacity:0;transform:translateY(calc(-50% + 8px))}}
+body.no-subs #sub{display:none}
+body.only-subs #layer,body.only-subs #chrome,body.only-subs #scrim{display:none!important}
+
+/* ── Направляющие (?guides=1): где в кадре постеры и макушка ─────── */
+#guides{position:absolute;inset:0;display:none;pointer-events:none;font:700 20px/1 Montserrat,sans-serif}
+body.guides #guides{display:block}
+#guides .ln{position:absolute;left:0;right:0;border-top:2px dashed rgba(255,0,80,.85)}
+#guides .ln span{position:absolute;left:8px;top:4px;color:#fff;background:rgba(255,0,80,.85);padding:3px 8px;border-radius:5px}
+#guides .box{position:absolute;left:0;right:0;outline:2px dashed rgba(0,200,255,.8);background:rgba(0,200,255,.07)}
+
+/* ── HUD (в кадр не попадает: живёт вне #stage) ──────────────────── */
+#hud{
+    position:fixed;left:0;right:0;bottom:0;z-index:10;
+    background:rgba(10,10,16,.9);backdrop-filter:blur(10px);
+    border-top:1px solid rgba(255,255,255,.12);
+    color:#fff;font:500 13px/1.3 Montserrat,system-ui,sans-serif;
+    padding:10px 14px 12px;
+    display:flex;flex-direction:column;gap:8px;
+}
+body.rec #hud,body.rec #drop{display:none}
+#hud .line{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#hud button,#hud label.btn{
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+    color:#fff;border-radius:9px;padding:7px 13px;cursor:pointer;
+    font:700 13px Montserrat,system-ui,sans-serif;
+}
+#hud button:hover,#hud label.btn:hover{background:rgba(139,92,246,.35);border-color:var(--solar)}
+#hud button.act{background:var(--solar);border-color:var(--solar);color:#0A0A0A}
+#hud input[type=file]{display:none}
+#time{font-variant-numeric:tabular-nums;font-weight:700;min-width:112px}
+#hint{color:rgba(255,255,255,.5);font-size:12px}
+#track{position:relative;height:24px;flex:1;min-width:220px;cursor:pointer}
+#track .bar{position:absolute;left:0;right:0;top:10px;height:4px;background:rgba(255,255,255,.16);border-radius:3px}
+#track .fill{position:absolute;left:0;top:10px;height:4px;background:var(--solar);border-radius:3px}
+#track .cue{position:absolute;top:4px;width:2px;height:16px;background:rgba(255,255,255,.45);border-radius:1px}
+#track .cue.sc{background:#F97316;height:22px;top:1px;width:3px}
+
+#drop{
+    position:fixed;inset:0;z-index:9;display:none;
+    align-items:center;justify-content:center;
+    background:rgba(10,10,16,.82);color:#fff;
+    font:900 26px Montserrat,system-ui,sans-serif;
+    border:4px dashed var(--solar);
+}
+body.dragging #drop{display:flex}
+</style>
+</head>
+<body class="mock">
+
+<div id="stage">
+    <video id="clip" playsinline preload="auto"></video>
+
+    <!-- Демо-фон: сиреневая стена + два постера + силуэт. Только превью. -->
+    <div id="mock">
+        <svg viewBox="0 0 1080 1920" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+            <defs>
+                <radialGradient id="wall" cx="50%" cy="26%" r="78%">
+                    <stop offset="0%" stop-color="#d6cbe8"/>
+                    <stop offset="42%" stop-color="#bfaedd"/>
+                    <stop offset="72%" stop-color="#9a76c9"/>
+                    <stop offset="100%" stop-color="#6a3f9e"/>
+                </radialGradient>
+                <linearGradient id="glow" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stop-color="#d94fb0" stop-opacity=".75"/>
+                    <stop offset="45%" stop-color="#8b3fd0" stop-opacity=".25"/>
+                    <stop offset="100%" stop-color="#8b3fd0" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+            <rect width="1080" height="1920" fill="url(#wall)"/>
+            <rect y="1050" width="1080" height="870" fill="url(#glow)"/>
+            <!-- постеры -->
+            <rect x="30" y="638" width="410" height="630" fill="#f4f2ee" stroke="#111" stroke-width="16"/>
+            <rect x="590" y="638" width="460" height="630" fill="#f4f2ee" stroke="#111" stroke-width="16"/>
+            <path d="M110 760 q140 60 260 0 q-140 90 -260 30 z" fill="#12121a"/>
+            <path d="M110 900 q140 60 260 0 q-140 90 -260 30 z" fill="#12121a"/>
+            <path d="M110 1040 q140 60 260 0 q-140 90 -260 30 z" fill="#12121a"/>
+            <ellipse cx="820" cy="950" rx="180" ry="205" fill="#f06" opacity=".55"/>
+            <ellipse cx="820" cy="950" rx="120" ry="140" fill="#ff5a1f" opacity=".8"/>
+            <ellipse cx="820" cy="950" rx="58" ry="70" fill="#ff8a3d"/>
+            <!-- силуэт «говорящей головы» -->
+            <ellipse cx="560" cy="990" rx="128" ry="152" fill="#241a2e"/>
+            <path d="M300 1920 q0-420 260-420 q260 0 260 420 z" fill="#141019"/>
+            <rect y="1720" width="1080" height="200" fill="#c9a97e"/>
+        </svg>
+    </div>
+
+    <div id="scrim"></div>
+
+    <div id="chrome">
+        <img src="logo.png" alt="">
+        <div class="tag">АКАДЕМИЯ ДАТАИСТА</div>
+    </div>
+
+    <div id="layer">
+        <!-- ══ СЦЕНА 1 · меняются не только процессы, но и структура ══ -->
+        <section class="scene" id="s1" data-in="0.9" data-out="8.5">
+            <div class="cards">
+            <div class="cores">
+                <p class="core solar el" data-in="3.71">AI-first модель</p>
+            </div>
+            <div class="row duo">
+                <div class="item el" data-in="5.37" data-cur="5.37 6.43"><div class="slot"><div class="circle ember ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></div></div><p class="label">Процессы</p></div>
+                <div class="item el" data-in="7.95" data-cur="7.95 8.49"><div class="slot"><div class="circle solar ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M239.73,208H224V96a16,16,0,0,0-16-16H164a4,4,0,0,0-4,4V208H144V32.41a16.43,16.43,0,0,0-6.16-13,16,16,0,0,0-18.72-.69L39.12,72A16,16,0,0,0,32,85.34V208H16.27A8.18,8.18,0,0,0,8,215.47,8,8,0,0,0,16,224H240a8,8,0,0,0,8-8.53A8.18,8.18,0,0,0,239.73,208ZM76,184a8,8,0,0,1-8.53,8A8.18,8.18,0,0,1,60,183.72V168.27A8.19,8.19,0,0,1,67.47,160,8,8,0,0,1,76,168Zm0-56a8,8,0,0,1-8.53,8A8.19,8.19,0,0,1,60,127.72V112.27A8.19,8.19,0,0,1,67.47,104,8,8,0,0,1,76,112Zm40,56a8,8,0,0,1-8.53,8,8.18,8.18,0,0,1-7.47-8.26V168.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Zm0-56a8,8,0,0,1-8.53,8,8.19,8.19,0,0,1-7.47-8.26V112.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Z"/></svg></div></div><p class="label">Структура</p></div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 2 · появляются роли, которых не было ══ -->
+        <section class="scene" id="s2" data-in="8.6" data-out="11.4">
+            <div class="cards one">
+            <div class="row">
+                <div class="item el" data-in="9.13" data-cur="9.13 10.55"><div class="halo el" data-in="9.13"><div class="glow "></div></div><div class="slot"><div class="circle solar ico" style="width:132px;height:132px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"/></svg></div></div><p class="label">Новые роли</p></div>
+            </div>
+            <div class="cores">
+                <p class="core ember el" data-in="10.55">Которых раньше не было</p>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ Chief AI Officer ══ -->
+        <section class="scene" id="s3" data-in="12.0" data-out="17.6">
+            <div class="block">
+                <div class="head el" data-in="12.95" data-cur="12.95 14.53"><div class="halo"><div class="glow " style="width:730px"></div></div><span class="fly solar l el" data-in="12.95"><i style="--dx:-104px;--dy:-50px;--rot:14deg;animation-delay:0.00s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg></i><i style="--dx:-132px;--dy:-78px;--rot:-10deg;animation-delay:0.28s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg></i><i style="--dx:-166px;--dy:12px;--rot:-12deg;animation-delay:0.55s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg></i><i style="--dx:-214px;--dy:-24px;--rot:8deg;animation-delay:1.10s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg></i></span><p class="title">Chief AI Officer</p><span class="fly solar r el" data-in="12.95"><i style="--dx:104px;--dy:-50px;--rot:-14deg;animation-delay:0.00s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg></i><i style="--dx:132px;--dy:-78px;--rot:10deg;animation-delay:0.28s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg></i><i style="--dx:166px;--dy:12px;--rot:12deg;animation-delay:0.55s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg></i><i style="--dx:214px;--dy:-24px;--rot:-8deg;animation-delay:1.10s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg></i></span></div>
+                <div class="chips">
+                    <div class="line">
+                        <p class="chip ember el" data-in="16.19" data-cur="16.19 17.11">Отвечает за ИИ-стратегию</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ AI Product Engineer ══ -->
+        <section class="scene" id="s4" data-in="17.7" data-out="23.9">
+            <div class="block">
+                <div class="head el" data-in="18.57" data-cur="18.57 19.37"><div class="halo"><div class="glow glow-ember" style="width:873px"></div></div><span class="fly ember l el" data-in="18.57"><i style="--dx:-91px;--dy:-50px;--rot:14deg;animation-delay:0.00s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></i><i style="--dx:-115px;--dy:-78px;--rot:-10deg;animation-delay:0.28s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></i><i style="--dx:-145px;--dy:12px;--rot:-12deg;animation-delay:0.55s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></i><i style="--dx:-187px;--dy:-24px;--rot:8deg;animation-delay:1.10s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></i></span><p class="title">AI Product Engineer</p><span class="fly ember r el" data-in="18.57"><i style="--dx:91px;--dy:-50px;--rot:-14deg;animation-delay:0.00s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></i><i style="--dx:115px;--dy:-78px;--rot:10deg;animation-delay:0.28s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></i><i style="--dx:145px;--dy:12px;--rot:12deg;animation-delay:0.55s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></i><i style="--dx:187px;--dy:-24px;--rot:-8deg;animation-delay:1.10s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M111.59,181.47A8,8,0,0,1,104,192H24a8,8,0,0,1-7.59-10.53l40-120a8,8,0,0,1,15.18,0ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm16,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Z"/></svg></i></span></div>
+                <div class="chips">
+                    <div class="line">
+                        <p class="chip solar el" data-in="20.07" data-cur="20.07 21.07">Создают продукты</p>
+                        <p class="chip ember el" data-in="22.83" data-cur="22.83 23.43">Ценность для клиентов</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ ИИ-инженеры ══ -->
+        <section class="scene" id="s5" data-in="24.0" data-out="32.9">
+            <div class="block">
+                <div class="head el" data-in="26.43" data-cur="26.43 27.31"><div class="halo"><div class="glow " style="width:717px"></div></div><span class="fly solar l el" data-in="26.43"><i style="--dx:-104px;--dy:-50px;--rot:14deg;animation-delay:0.00s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></svg></i><i style="--dx:-132px;--dy:-78px;--rot:-10deg;animation-delay:0.28s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></svg></i><i style="--dx:-166px;--dy:12px;--rot:-12deg;animation-delay:0.55s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></svg></i><i style="--dx:-214px;--dy:-24px;--rot:8deg;animation-delay:1.10s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></svg></i></span><p class="title">ИИ-инженеры</p><span class="fly solar r el" data-in="26.43"><i style="--dx:104px;--dy:-50px;--rot:-14deg;animation-delay:0.00s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></svg></i><i style="--dx:132px;--dy:-78px;--rot:10deg;animation-delay:0.28s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></svg></i><i style="--dx:166px;--dy:12px;--rot:12deg;animation-delay:0.55s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></svg></i><i style="--dx:214px;--dy:-24px;--rot:-8deg;animation-delay:1.10s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM92.8,145.6a8,8,0,1,1-9.6,12.8l-32-24a8,8,0,0,1,0-12.8l32-24a8,8,0,0,1,9.6,12.8L69.33,128Zm58.89-71.4-32,112a8,8,0,1,1-15.38-4.4l32-112a8,8,0,0,1,15.38,4.4Zm53.11,60.2-32,24a8,8,0,0,1-9.6-12.8L186.67,128,163.2,110.4a8,8,0,1,1,9.6-12.8l32,24a8,8,0,0,1,0,12.8Z"/></svg></i></span></div>
+                <div class="chips">
+                    <div class="line">
+                        <p class="chip ember el" data-in="27.31" data-cur="27.31 28.33">По автоматизации</p>
+                        <p class="chip solar el" data-in="30.31" data-cur="30.31 31.07">Создают агентов</p>
+                    </div>
+                    <div class="line">
+                        <p class="chip ember el" data-in="31.83" data-cur="31.83 32.19">Интегрируют в процессы</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ Операторы ИИ-агентов ══ -->
+        <section class="scene" id="s6" data-in="33.6" data-out="41.5">
+            <div class="block">
+                <div class="head el" data-in="35.09" data-cur="35.09 36.95"><div class="halo"><div class="glow glow-ember" style="width:900px"></div></div><span class="fly ember l el" data-in="35.09"><i style="--dx:-63px;--dy:-50px;--rot:14deg;animation-delay:0.00s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></i><i style="--dx:-79px;--dy:-78px;--rot:-10deg;animation-delay:0.28s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></i><i style="--dx:-100px;--dy:12px;--rot:-12deg;animation-delay:0.55s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></i><i style="--dx:-129px;--dy:-24px;--rot:8deg;animation-delay:1.10s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></i></span><p class="title">Операторы ИИ-агентов</p><span class="fly ember r el" data-in="35.09"><i style="--dx:63px;--dy:-50px;--rot:-14deg;animation-delay:0.00s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></i><i style="--dx:79px;--dy:-78px;--rot:10deg;animation-delay:0.28s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></i><i style="--dx:100px;--dy:12px;--rot:12deg;animation-delay:0.55s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></i><i style="--dx:129px;--dy:-24px;--rot:-8deg;animation-delay:1.10s"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></i></span></div>
+                <div class="chips">
+                    <div class="line">
+                        <p class="chip solar el" data-in="36.95" data-cur="36.95 38.31">Контролируют результаты</p>
+                        <p class="chip ember el" data-in="40.23" data-cur="40.23 40.81">Обучают на данных</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 7 · дело не в технологиях ══ -->
+        <section class="scene" id="s7" data-in="41.9" data-out="45.6">
+            <div class="cards one">
+            <div class="row">
+                <div class="item el" data-in="42.03" data-cur="42.03 43.31"><div class="halo el" data-in="42.03"><div class="glow "></div></div><div class="slot"><div class="circle solar ico" style="width:132px;height:132px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M239.73,208H224V96a16,16,0,0,0-16-16H164a4,4,0,0,0-4,4V208H144V32.41a16.43,16.43,0,0,0-6.16-13,16,16,0,0,0-18.72-.69L39.12,72A16,16,0,0,0,32,85.34V208H16.27A8.18,8.18,0,0,0,8,215.47,8,8,0,0,0,16,224H240a8,8,0,0,0,8-8.53A8.18,8.18,0,0,0,239.73,208ZM76,184a8,8,0,0,1-8.53,8A8.18,8.18,0,0,1,60,183.72V168.27A8.19,8.19,0,0,1,67.47,160,8,8,0,0,1,76,168Zm0-56a8,8,0,0,1-8.53,8A8.19,8.19,0,0,1,60,127.72V112.27A8.19,8.19,0,0,1,67.47,104,8,8,0,0,1,76,112Zm40,56a8,8,0,0,1-8.53,8,8.18,8.18,0,0,1-7.47-8.26V168.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Zm0-56a8,8,0,0,1-8.53,8,8.19,8.19,0,0,1-7.47-8.26V112.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Z"/></svg></div></div><p class="label">AI-first компания</p></div>
+            </div>
+            <div class="cores">
+                <p class="core ember el" data-in="44.35">Не просто новые технологии</p>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 8 · человек и ИИ работают вместе ══ -->
+        <section class="scene" id="s8" data-in="45.9" data-out="50.5">
+            <div class="cards">
+            <div class="cores">
+                <p class="core solar el" data-in="46.69">Новая орг-структура</p>
+            </div>
+            <div class="row duo">
+                <div class="item el" data-in="48.55" data-cur="48.55 49.21"><div class="slot"><div class="circle ember ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M164.47,195.63a8,8,0,0,1-6.7,12.37H10.23a8,8,0,0,1-6.7-12.37,95.83,95.83,0,0,1,47.22-37.71,60,60,0,1,1,66.5,0A95.83,95.83,0,0,1,164.47,195.63Zm87.91-.15a95.87,95.87,0,0,0-47.13-37.56A60,60,0,0,0,144.7,54.59a4,4,0,0,0-1.33,6A75.83,75.83,0,0,1,147,150.53a4,4,0,0,0,1.07,5.53,112.32,112.32,0,0,1,29.85,30.83,23.92,23.92,0,0,1,3.65,16.47,4,4,0,0,0,3.95,4.64h60.3a8,8,0,0,0,7.73-5.93A8.22,8.22,0,0,0,252.38,195.48Z"/></svg></div></div><p class="label">Человек</p></div>
+                <div class="item el" data-in="49.21" data-cur="49.21 50.17"><div class="slot"><div class="circle solar ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M200,48H136V16a8,8,0,0,0-16,0V48H56A32,32,0,0,0,24,80V192a32,32,0,0,0,32,32H200a32,32,0,0,0,32-32V80A32,32,0,0,0,200,48ZM172,96a12,12,0,1,1-12,12A12,12,0,0,1,172,96ZM96,184H80a16,16,0,0,1,0-32H96ZM84,120a12,12,0,1,1,12-12A12,12,0,0,1,84,120Zm60,64H112V152h32Zm32,0H160V152h16a16,16,0,0,1,0,32Z"/></svg></div></div><p class="label">ИИ</p></div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 9 · это не инструмент, а другой способ работать ══ -->
+        <section class="scene" id="s9" data-in="50.55" data-out="56.9">
+            <div class="cards">
+            <div class="cores">
+                <p class="core solar el" data-in="50.63">ИИ-агенты</p>
+            </div>
+            <div class="row duo">
+                <div class="item el" data-in="52.85" data-cur="52.85 53.59"><div class="slot"><div class="circle ember ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M232,96a72,72,0,0,1-100.94,66L79,222.22c-.12.14-.26.29-.39.42a32,32,0,0,1-45.26-45.26c.14-.13.28-.27.43-.39L94,124.94a72.07,72.07,0,0,1,83.54-98.78,8,8,0,0,1,3.93,13.19L144,80l5.66,26.35L176,112l40.65-37.52a8,8,0,0,1,13.19,3.93A72.6,72.6,0,0,1,232,96Z"/></svg></div></div><p class="label">Новый инструмент</p></div>
+                <div class="vs el" data-in="53.79">VS</div>
+                <div class="item el" data-in="53.79" data-cur="53.79 55.23"><div class="slot"><div class="circle solar ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z"/></svg></div></div><p class="label">Изменение бизнеса</p></div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 10 · бизнес как поток данных, усиленный интеллектом ══ -->
+        <section class="scene" id="s10" data-in="57.5" data-out="62.4">
+            <div class="cards">
+            <div class="cores">
+                <p class="core solar el" data-in="58.33">Новая модель бизнеса</p>
+            </div>
+            <div class="row duo">
+                <div class="item el" data-in="59.29" data-cur="59.29 60.41"><div class="slot"><div class="circle ember ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64Zm-21.61,74.92C170.93,211.35,150.19,216,128,216s-42.93-4.65-58.39-13.08C55.88,195.43,48,185.62,48,176V159.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64V176C208,185.62,200.12,195.43,186.39,202.92Z"/></svg></div></div><p class="label">Поток данных</p></div>
+                <div class="arrow el" data-in="61.47"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72A8,8,0,0,1,136,200V136H40a8,8,0,0,1,0-16h96V56a8,8,0,0,1,13.66-5.66l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></div>
+                <div class="item el" data-in="61.47" data-cur="61.47 62.39"><div class="slot"><div class="circle solar ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M212,76V72a44,44,0,0,0-74.86-31.31,3.93,3.93,0,0,0-1.14,2.8v88.72a4,4,0,0,0,6.2,3.33A47.67,47.67,0,0,1,167.68,128a8.18,8.18,0,0,1,8.31,7.58,8,8,0,0,1-8,8.42,32,32,0,0,0-32,32v33.88a4,4,0,0,0,1.49,3.12,47.92,47.92,0,0,0,74.21-17.16,4,4,0,0,0-4.49-5.56A68.06,68.06,0,0,1,192,192h-7.73a8.18,8.18,0,0,1-8.25-7.47,8,8,0,0,1,8-8.53h8a51.6,51.6,0,0,0,24-5.88v0A52,52,0,0,0,212,76Zm-12,36h-4a36,36,0,0,1-36-36V72a8,8,0,0,1,16,0v4a20,20,0,0,0,20,20h4a8,8,0,0,1,0,16ZM88,28A44.05,44.05,0,0,0,44,72v4a52,52,0,0,0-4,94.12h0A51.6,51.6,0,0,0,64,176h7.73A8.18,8.18,0,0,1,80,183.47,8,8,0,0,1,72,192H64a67.48,67.48,0,0,1-15.21-1.73,4,4,0,0,0-4.5,5.55A47.93,47.93,0,0,0,118.51,213a4,4,0,0,0,1.49-3.12V176a32,32,0,0,0-32-32,8,8,0,0,1-8-8.42A8.18,8.18,0,0,1,88.32,128a47.67,47.67,0,0,1,25.48,7.54,4,4,0,0,0,6.2-3.33V43.49a4,4,0,0,0-1.14-2.81A43.85,43.85,0,0,0,88,28Zm8,48a36,36,0,0,1-36,36H56a8,8,0,0,1,0-16h4A20,20,0,0,0,80,76V72a8,8,0,0,1,16,0Z"/></svg></div></div><p class="label">Интеллект</p></div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 11 · что уходит к ИИ ══ -->
+        <section class="scene" id="s11" data-in="63.1" data-out="66.3">
+            <div class="cards">
+            <div class="cores">
+                <p class="core ember el" data-in="63.25">ИИ берёт на себя</p>
+            </div>
+            <div class="row">
+                <div class="item el" data-in="64.11" data-cur="64.11 64.68"><div class="slot"><div class="circle solar ico" style="width:104px;height:104px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M100,116.43a8,8,0,0,0,4-6.93v-72A8,8,0,0,0,93.34,30,104.06,104.06,0,0,0,25.73,147a8,8,0,0,0,4.52,5.81,7.86,7.86,0,0,0,3.35.74,8,8,0,0,0,4-1.07ZM88,49.62v55.26L40.12,132.51C40,131,40,129.48,40,128A88.12,88.12,0,0,1,88,49.62ZM232,128A104,104,0,0,1,38.32,180.7a8,8,0,0,1,2.87-11L120,123.83V32a8,8,0,0,1,8-8,104.05,104.05,0,0,1,89.74,51.48c.11.16.21.32.31.49s.2.37.29.55A103.34,103.34,0,0,1,232,128Z"/></svg></div></div><p class="label">Анализ</p></div>
+                <div class="item el" data-in="64.70" data-cur="64.70 65.25"><div class="slot"><div class="circle ember ico" style="width:104px;height:104px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></svg></div></div><p class="label">Решения</p></div>
+                <div class="item el" data-in="65.25" data-cur="65.25 66.27"><div class="slot"><div class="circle solar ico" style="width:104px;height:104px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z"/></svg></div></div><p class="label">Действия</p></div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 12 · что остаётся человеку ══ -->
+        <section class="scene" id="s12" data-in="66.35" data-out="74.3">
+            <div class="cards">
+            <div class="cores">
+                <p class="core solar el" data-in="66.79">Человек — архитектор</p>
+            </div>
+            <div class="row">
+                <div class="item el" data-in="70.63" data-cur="70.63 71.39"><div class="slot"><div class="circle ember ico" style="width:104px;height:104px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></svg></div></div><p class="label">Цели</p></div>
+                <div class="item el" data-in="71.75" data-cur="71.75 72.79"><div class="slot"><div class="circle solar ico" style="width:104px;height:104px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M239.43,133l-32-80A8,8,0,0,0,200,48a8.27,8.27,0,0,0-1.73.21L136,62V40a8,8,0,0,0-16,0V65.58L54.27,80.21A8,8,0,0,0,48.57,85l-32,80a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133Zm-160,35H32.62L56,109.54Zm97.24-32L200,77.54,223.38,136Z"/></svg></div></div><p class="label">Правила</p></div>
+                <div class="item el" data-in="73.67" data-cur="73.67 74.31"><div class="slot"><div class="circle ember ico" style="width:104px;height:104px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M240,56v64a8,8,0,0,1-13.66,5.66L200,99.31l-58.34,58.35a8,8,0,0,1-11.32,0L96,123.31,29.66,189.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0L136,140.69,188.69,88,162.34,61.66A8,8,0,0,1,168,48h64A8,8,0,0,1,240,56Z"/></svg></div></div><p class="label">Развитие</p></div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 13 · победят не пользователи, а те, кто встроил ══ -->
+        <section class="scene" id="s13" data-in="74.9" data-out="82.5">
+            <div class="cards">
+            <div class="cores">
+                <p class="core solar el" data-in="75.57">В этой игре победят</p>
+            </div>
+            <div class="row duo">
+                <div class="item el" data-in="77.17" data-cur="77.17 77.99"><div class="slot"><div class="circle ember ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M224,104v50.93c0,46.2-36.85,84.55-83,85.06A83.71,83.71,0,0,1,80.6,215.4C58.79,192.33,34.15,136,34.15,136a16,16,0,0,1,6.53-22.23c7.66-4,17.1-.84,21.4,6.62l21,36.44a6.09,6.09,0,0,0,6,3.09l.12,0A8.19,8.19,0,0,0,96,151.74V32a16,16,0,0,1,16.77-16c8.61.4,15.23,7.82,15.23,16.43V104a8,8,0,0,0,8.53,8,8.17,8.17,0,0,0,7.47-8.25V88a16,16,0,0,1,16.77-16c8.61.4,15.23,7.82,15.23,16.43V112a8,8,0,0,0,8.53,8,8.17,8.17,0,0,0,7.47-8.25v-7.28c0-8.61,6.62-16,15.23-16.43A16,16,0,0,1,224,104Z"/></svg></div></div><p class="label">Пользуется ИИ</p></div>
+                <div class="vs el" data-in="80.17">VS</div>
+                <div class="item el" data-in="80.17" data-cur="80.17 81.75"><div class="slot"><div class="circle solar ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M104,104h48v48H104Zm136,48a8,8,0,0,1-8,8H216v40a16,16,0,0,1-16,16H160v16a8,8,0,0,1-16,0V216H112v16a8,8,0,0,1-16,0V216H56a16,16,0,0,1-16-16V160H24a8,8,0,0,1,0-16H40V112H24a8,8,0,0,1,0-16H40V56A16,16,0,0,1,56,40H96V24a8,8,0,0,1,16,0V40h32V24a8,8,0,0,1,16,0V40h40a16,16,0,0,1,16,16V96h16a8,8,0,0,1,0,16H216v32h16A8,8,0,0,1,240,152ZM168,96a8,8,0,0,0-8-8H96a8,8,0,0,0-8,8v64a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8Z"/></svg></div></div><p class="label">Операционное ядро</p></div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 14 · видеть бизнес как поток данных ══ -->
+        <section class="scene" id="s14" data-in="82.8" data-out="92.0">
+            <div class="cards">
+            <div class="cores">
+                <p class="core solar el" data-in="83.73">Будущее за компаниями</p>
+            </div>
+            <div class="row duo">
+                <div class="item el" data-in="87.13" data-cur="87.13 88.35"><div class="slot"><div class="circle ember ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></svg></div></div><p class="label">Уровень процессов</p></div>
+                <div class="item el" data-in="88.35" data-cur="88.35 89.19"><div class="slot"><div class="circle solar ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64Zm-21.61,74.92C170.93,211.35,150.19,216,128,216s-42.93-4.65-58.39-13.08C55.88,195.43,48,185.62,48,176V159.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64V176C208,185.62,200.12,195.43,186.39,202.92Z"/></svg></div></div><p class="label">Поток данных</p></div>
+            </div>
+            <div class="cores">
+                <p class="core ember el" data-in="90.19">Внедрять интеллект в процессы</p>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 15 · зачем этот курс ══ -->
+        <section class="scene" id="s15" data-in="92.4" data-out="98.6">
+            <div class="cards">
+            <div class="cores">
+                <p class="core ember el" data-in="93.09">Этот курс — первый шаг</p>
+            </div>
+            <div class="row duo">
+                <div class="item el" data-in="94.95" data-cur="94.95 96.45"><div class="slot"><div class="circle solar ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-18.24-41.05A36,36,0,0,0,136,44.91V24a8,8,0,0,0-16,0V44.91a36,36,0,0,0-13.56,63.9L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,160a79.52,79.52,0,0,1-25-4l18.08-40.68a35.75,35.75,0,0,0,13.88,0l18.14,40.8A83.21,83.21,0,0,1,128,160Z"/></svg></div></div><p class="label">Мыслить как архитектор</p></div>
+                <div class="item el" data-in="97.51" data-cur="97.51 98.47"><div class="slot"><div class="circle ember ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M232,96a72,72,0,0,1-100.94,66L79,222.22c-.12.14-.26.29-.39.42a32,32,0,0,1-45.26-45.26c.14-.13.28-.27.43-.39L94,124.94a72.07,72.07,0,0,1,83.54-98.78,8,8,0,0,1,3.93,13.19L144,80l5.66,26.35L176,112l40.65-37.52a8,8,0,0,1,13.19,3.93A72.6,72.6,0,0,1,232,96Z"/></svg></div></div><p class="label">Создавать решения</p></div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ══ СЦЕНА 16 · финал: меняются бизнес и экономика ══ -->
+        <section class="scene" id="s16" data-in="98.7" data-out="101.8">
+            <div class="cards">
+            <div class="cores">
+                <p class="core ember el" data-in="98.89">Реально меняют</p>
+            </div>
+            <div class="row duo">
+                <div class="item el" data-in="99.61" data-cur="99.61 100.41"><div class="slot"><div class="circle solar ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M152,112a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h32A8,8,0,0,1,152,112Zm80-40V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V72A16,16,0,0,1,40,56H80V48a24,24,0,0,1,24-24h48a24,24,0,0,1,24,24v8h40A16,16,0,0,1,232,72ZM96,56h64V48a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8Zm120,57.61V72H40v41.61A184,184,0,0,0,128,136,184,184,0,0,0,216,113.61Z"/></svg></div></div><p class="label">Бизнес</p></div>
+                <div class="item el" data-in="101.17" data-cur="101.17 101.81"><div class="slot"><div class="circle ember ico" style="width:108px;height:108px"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM200,192H56a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v76.69l34.34-34.35a8,8,0,0,1,11.32,0L128,132.69,172.69,88H144a8,8,0,0,1,0-16h48a8,8,0,0,1,8,8v48a8,8,0,0,1-16,0V99.31l-50.34,50.35a8,8,0,0,1-11.32,0L104,131.31l-40,40V176H200a8,8,0,0,1,0,16Z"/></svg></div></div><p class="label">Экономика</p></div>
+            </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="cover"><img src="cover.png" alt=""></div>
+
+    <div id="sub"></div>
+
+    <div id="guides">
+        <div class="box" style="top:70px;height:500px"></div>
+        <div class="ln" style="top:638px"><span>верх постеров · y638</span></div>
+        <div class="ln" style="top:816px"><span>макушка · y816</span></div>
+    </div>
+</div>
+
+<div id="drop">Отпустите видео здесь</div>
+
+<div id="hud">
+    <div class="line">
+        <div id="track"><div class="bar"></div><div class="fill"></div></div>
+        <span id="time">00:00.0 / 02:23</span>
+    </div>
+    <div class="line">
+        <button id="play">▶ Пуск</button>
+        <label class="btn">Загрузить видео<input type="file" id="file" accept="video/*"></label>
+        <button id="bMock" class="act">Демо-фон</button>
+        <button id="bJoin">Скрипт сборки</button>
+        <button id="bSubs" class="act">Субтитры</button>
+        <button id="bScrim" class="act">Скрим</button>
+        <button id="bGuide">Границы</button>
+        <button id="bRec">Режим записи</button>
+        <button id="bFull">Во весь экран</button>
+        <span id="subsnote" style="display:none;color:#FFB27A;font-weight:700"></span>
+        <span id="hint">Space — пуск/пауза · ←/→ ±1с · Shift+←/→ ±5с · H — спрятать панель · перетащите mp4 в окно</span>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* Субтитры: тайминг из SRT (снят с реальной дорожки), слова — из
+       сценария владельца, распознавалка их перевирала. Границы совпадают
+       с границами реплик SRT, поэтому строка не может разъехаться с речью;
+       паузы держат предыдущую реплику на экране, а не мигают пустотой. */
+    var SUBS = [];
+
+    function parseSRT(text) {
+        var out = [];
+        text.replace(/\r/g, '').split(/\n\n+/).forEach(function (block) {
+            var lines = block.split('\n'), i;
+            for (i = 0; i < lines.length; i++) {
+                var m = lines[i].match(/(\d\d):(\d\d):(\d\d)[,.](\d\d\d)\s*-->\s*(\d\d):(\d\d):(\d\d)[,.](\d\d\d)/);
+                if (!m) continue;
+                var txt = lines.slice(i + 1).join(' ').trim();
+                if (txt) out.push([
+                    (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3]) + (+m[4]) / 1000,
+                    (+m[5]) * 3600 + (+m[6]) * 60 + (+m[7]) + (+m[8]) / 1000,
+                    txt
+                ]);
+                break;
+            }
+        });
+        return out;
+    }
+
+    function subsWarn(msg) {
+        var el = document.getElementById('subsnote');
+        if (el) { el.textContent = '\u26A0\uFE0E ' + msg; el.style.display = 'block'; }
+    }
+
+    function loadSubs() {
+        return new Promise(function (done) {
+            var x = new XMLHttpRequest();
+            x.open('GET', '\u0441\u0443\u0431\u0442\u0438\u0442\u0440\u044B.srt?' + Date.now());
+            x.onload = function () {
+                SUBS = parseSRT(x.responseText || '');
+                if (!SUBS.length) subsWarn('\u0444\u0430\u0439\u043B \u0441\u0443\u0431\u0442\u0438\u0442\u0440\u043E\u0432 \u043F\u0443\u0441\u0442\u043E\u0439');
+                done();
+            };
+            x.onerror = function () {
+                subsWarn('\u00AB\u0441\u0443\u0431\u0442\u0438\u0442\u0440\u044B.srt\u00BB \u043D\u0435 \u043F\u0440\u043E\u0447\u0438\u0442\u0430\u043B\u0441\u044F \u2014 \u043E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \u0447\u0435\u0440\u0435\u0437 \u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C.command');
+                done();
+            };
+            try { x.send(); } catch (e) { x.onerror(); }
+        });
+    }
+
+    var DURATION = 103.3;                     // дорожка 101.8 c + хвост под шапку
+    var HOT = 2.6;                            // столько живёт подсветка .hot
+    /* Обложка идёт ПЕРЕД роликом, поэтому мастер-время = обложка + видео,
+       а графика и субтитры считаются от времени ВИДЕО (time - COVER):
+       так тайминги остаются те же, что в SRT, сколько бы ни длилась заставка. */
+    var COVER = 0.2;
+
+    var stage = document.getElementById('stage');
+    var clip = document.getElementById('clip');
+    var scrim = document.getElementById('scrim');
+    var track = document.getElementById('track');
+    var fill = track.querySelector('.fill');
+    var timeEl = document.getElementById('time');
+    var playBtn = document.getElementById('play');
+    var subEl = document.getElementById('sub');
+
+    var scenes = [].slice.call(document.querySelectorAll('.scene'));
+    var els = [].slice.call(document.querySelectorAll('.el'));
+
+    els.forEach(function (el) {
+        el.__in = parseFloat(el.getAttribute('data-in'));
+        /* data-out — элемент уходит: карусель функций в сцене 8 сменяет
+           их по одному, шесть подписей в ряд не помещаются. */
+        el.__out = parseFloat(el.getAttribute('data-out'));
+        el.__hl = (el.getAttribute('data-hl') || '').split(/\s+/)
+            .filter(Boolean).map(parseFloat);
+        /* data-cur — окна «о нём говорят прямо сейчас», парами. */
+        el.__cur = (el.getAttribute('data-cur') || '').split(/\s+/)
+            .filter(Boolean).map(parseFloat);
+    });
+    scenes.forEach(function (s) {
+        s.__in = parseFloat(s.getAttribute('data-in'));
+        s.__out = parseFloat(s.getAttribute('data-out'));
+    });
+
+    /* ── Часы. С видео ведущий — video.currentTime, без него — свой
+       таймер, чтобы анимацию можно было смотреть до загрузки mp4. ── */
+    var hasVideo = false, playing = false, t = 0, last = 0, onCover = true;
+
+    function videoLen() { return hasVideo && clip.duration ? clip.duration : DURATION; }
+    function total() { return COVER + videoLen(); }
+    /* Пока идёт заставка, ведёт свой таймер; дальше — сам ролик. */
+    function now() { return (hasVideo && !onCover) ? COVER + clip.currentTime : t; }
+
+    /* Состояние считается ИЗ времени каждый кадр (а не по событиям) —
+       иначе перемотка назад оставляла бы элементы включёнными. */
+    function render(time) {
+        document.body.classList.toggle('on-cover', time < COVER);
+        var vt = time - COVER;               // время внутри ролика = время SRT
+
+        scrim.classList.toggle('on', vt >= scenes[0].__in - 0.4 &&
+            vt < scenes[scenes.length - 1].__out + 0.5);
+
+        scenes.forEach(function (s) {
+            s.classList.toggle('on', vt >= s.__in && vt < s.__out);
+        });
+
+        els.forEach(function (el) {
+            var vis = vt >= el.__in && (isNaN(el.__out) || vt < el.__out);
+            if (el.classList.contains('on') !== vis) el.classList.toggle('on', vis);
+            var hot = false;
+            for (var i = 0; i < el.__hl.length; i++) {
+                if (vt >= el.__hl[i] && vt < el.__hl[i] + HOT) { hot = true; break; }
+            }
+            if (el.classList.contains('hot') !== hot) el.classList.toggle('hot', hot);
+            var cur = false;
+            for (i = 0; i + 1 < el.__cur.length; i += 2) {
+                if (vt >= el.__cur[i] && vt < el.__cur[i + 1]) { cur = true; break; }
+            }
+            if (el.classList.contains('cur') !== cur) el.classList.toggle('cur', cur);
+        });
+
+        var line = '';
+        for (var k = 0; k < SUBS.length; k++) {
+            if (vt >= SUBS[k][0] && vt < SUBS[k][1]) { line = SUBS[k][2]; break; }
+        }
+        if (subEl.textContent !== line) {
+            subEl.textContent = line;
+            subEl.classList.remove('pop');
+            void subEl.offsetWidth;              // перезапуск анимации появления
+            if (line) subEl.classList.add('pop');
+        }
+
+        var d = total();
+        fill.style.width = (Math.min(time / d, 1) * 100) + '%';
+        timeEl.textContent = fmt(time) + ' / ' + fmt(d);
+    }
+
+    function fmt(s) {
+        s = Math.max(0, s);
+        var m = Math.floor(s / 60), r = s - m * 60;
+        return (m < 10 ? '0' : '') + m + ':' + (r < 10 ? '0' : '') + r.toFixed(1);
+    }
+
+    function frame(ts) {
+        if (!last) last = ts;
+        var dt = (ts - last) / 1000; last = ts;
+        if (playing) {
+            if (!hasVideo) {
+                t += dt;
+                if (t > total()) { t = total(); setPlaying(false); }
+            } else if (onCover) {
+                t += dt;
+                if (t >= COVER) { onCover = false; clip.currentTime = 0; play(); }
+            } else {
+                t = COVER + clip.currentTime;
+            }
+        }
+        render(now());
+        requestAnimationFrame(frame);
+    }
+
+    function setPlaying(p) {
+        playing = p;
+        playBtn.textContent = p ? '❚❚ Пауза' : '▶ Пуск';
+        if (!hasVideo) return;
+        if (!p || onCover) { clip.pause(); return; }
+        play();
+    }
+    // play() отдаёт промис и падает на нераспознанном кодеке — без catch
+    // получаем необработанное исключение и молча мёртвый таймлайн.
+    function play() {
+        var r = clip.play();
+        if (r && r.catch) r.catch(dropVideo);
+    }
+    function seek(time) {
+        t = Math.max(0, Math.min(total(), time));
+        onCover = t < COVER;
+        if (hasVideo) {
+            if (onCover) { clip.pause(); clip.currentTime = 0; }
+            else { clip.currentTime = t - COVER; if (playing) play(); }
+        }
+        render(t);
+    }
+
+    /* ── Масштаб сцены под окно ─────────────────────────────────── */
+    function fit() {
+        var pad = document.body.classList.contains('rec') ? 0 : 116;
+        var k = Math.min(window.innerWidth / 1080, (window.innerHeight - pad) / 1920);
+        stage.style.transform = 'translate(-50%,-50%) scale(' + k + ')';
+        stage.style.marginTop = document.body.classList.contains('rec') ? '0' : (-pad / 2) + 'px';
+    }
+    window.addEventListener('resize', fit);
+
+    /* ── Загрузка видео ─────────────────────────────────────────── */
+    var HINT = document.getElementById('hint').textContent;
+    function loadVideo(url) {
+        document.getElementById('hint').textContent = HINT;   // снимаем прошлую жалобу
+        clip.src = url;
+        clip.classList.add('ready');
+        document.body.classList.remove('mock');
+        document.getElementById('bMock').classList.remove('act');
+        hasVideo = true;
+        clip.addEventListener('loadedmetadata', function () { render(0); }, { once: true });
+        clip.addEventListener('play', function () { setPlaying(true); });
+        clip.addEventListener('pause', function () { setPlaying(false); });
+        clip.addEventListener('error', dropVideo);
+    }
+
+    /* Браузер не смог открыть файл. Без этого возврата часы навсегда стояли
+       бы на video.currentTime = 0, и анимация выглядела бы «сломанной». */
+    function dropVideo() {
+        if (!hasVideo) return;
+        hasVideo = false; t = 0;
+        clip.classList.remove('ready');
+        clip.removeAttribute('src');
+        document.body.classList.add('mock');
+        document.getElementById('bMock').classList.add('act');
+        document.getElementById('hint').textContent =
+            'Браузер не открыл этот файл — играет демо-фон. Нужен mp4/webm, который тянет сам браузер.';
+        setPlaying(false);
+    }
+    document.getElementById('file').addEventListener('change', function (e) {
+        if (e.target.files[0]) {
+            videoFile = e.target.files[0];
+            videoName = videoFile.name;
+            loadVideo(URL.createObjectURL(videoFile));
+        }
+    });
+    ['dragenter', 'dragover'].forEach(function (n) {
+        window.addEventListener(n, function (e) { e.preventDefault(); document.body.classList.add('dragging'); });
+    });
+    ['dragleave', 'drop'].forEach(function (n) {
+        window.addEventListener(n, function (e) {
+            e.preventDefault();
+            if (n === 'dragleave' && e.relatedTarget) return;
+            document.body.classList.remove('dragging');
+            if (n === 'drop' && e.dataTransfer.files[0]) {
+                videoFile = e.dataTransfer.files[0];
+                videoName = videoFile.name;
+                loadVideo(URL.createObjectURL(videoFile));
+            }
+        });
+    });
+
+    /* ── Управление ─────────────────────────────────────────────── */
+    playBtn.addEventListener('click', function () { setPlaying(!playing); });
+    track.addEventListener('pointerdown', function scrub(e) {
+        var move = function (ev) {
+            var r = track.getBoundingClientRect();
+            seek((ev.clientX - r.left) / r.width * total());
+        };
+        move(e);
+        var up = function () {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+    });
+
+    function toggle(btn, cls) {
+        document.getElementById(btn).addEventListener('click', function () {
+            document.body.classList.toggle(cls);
+            this.classList.toggle('act', document.body.classList.contains(cls));
+            fit();
+        });
+    }
+    toggle('bMock', 'mock');
+    toggle('bGuide', 'guides');
+    toggle('bRec', 'rec');
+    /* ── Сборка «обложка + ролик» ────────────────────────────────
+       Браузер не умеет пересобирать mp4 без перекодирования, а
+       перекодировать дорожку ради двух секунд заставки — потерять
+       качество исходника. Поэтому кнопка готовит команду: обложка
+       кодируется под параметры ролика, а сам ролик копируется
+       потоком (-c copy), то есть остаётся байт в байт. */
+    var videoName = '', videoFile = null;
+    function joinScript() {
+        var v = videoName || 'video.mp4';
+        return [
+            '#!/bin/sh',
+            '# Обложка 0.2 с + ролик + графика + субтитры, вжжённые в кадр.',
+            '#',
+            '# Графику и субтитры нельзя доложить копированием дорожки — их надо',
+            '# нарисовать поверх КАЖДОГО кадра. Значит одна пересборка, с битрейтом',
+            '# исходника: второй проход на 10+ Мбит/с на глаз неотличим, а раздувать',
+            '# файл незачем.',
+            '#',
+            '# СЛОВА СУБТИТРОВ ЖИВУТ В ФАЙЛЕ «субтитры.srt» РЯДОМ. Поправили слово —',
+            '# просто запустите скрипт заново: перерендеривать графику не нужно,',
+            '# субтитров в слое нет, они вжигаются из этого файла.',
+            '#',
+            '# Запуск:  sh собрать.sh "ваше видео.MOV"   (кавычки — если в имени пробелы)',
+            'set -e',
+            '# ffmpeg-ов в системе бывает несколько: conda затеняет brew, а её сборка',
+            '# урезана — без libass, то есть без фильтра subtitles («No such filter»).',
+            '# Поэтому команда ffmpeg не берётся на веру: перебираем кандидатов и',
+            '# берём первого, кто реально умеет вжигать субтитры.',
+            'FF=""; FULL=0',
+            'for c in ffmpeg /opt/homebrew/bin/ffmpeg /usr/local/bin/ffmpeg; do',
+            '  command -v "$c" >/dev/null 2>&1 || continue',
+            '  if "$c" -hide_banner -filters 2>/dev/null | grep -q " subtitles "; then FF="$c"; FULL=1; break; fi',
+            '  [ -n "$FF" ] || FF="$c"',
+            'done',
+            '[ -n "$FF" ] || { echo "Нет ffmpeg вообще. macOS: brew install ffmpeg"; exit 1; }',
+            'FP="$(dirname "$FF")/ffprobe"; [ -x "$FP" ] || FP=ffprobe',
+            'command -v "$FP" >/dev/null || { echo "Рядом с $FF нет ffprobe"; exit 1; }',
+            'echo "ffmpeg: $FF"',
+            'DIR=$(cd "$(dirname "$0")" && pwd)',
+            'for f in overlay_c.mp4 overlay_a.mp4 субтитры.srt fonts/Montserrat-Black.ttf; do',
+            '  [ -f "$DIR/$f" ] || { echo "Рядом со скриптом нет $f"; exit 1; }',
+            'done',
+            '',
+            '# Запасной путь без libass: субтитры лежат ГОТОВЫМ слоем (subs_c/subs_a),',
+            '# нужны только overlay и alphamerge — они есть даже в урезанной сборке.',
+            '# Но слой отрендерен из конкретного текста: если субтитры.srt правился,',
+            '# честно останавливаемся, а не собираем со старыми словами.',
+            'if [ "$FULL" = 0 ]; then',
+            '  for f in subs_c.mp4 subs_a.mp4 субтитры.sha; do',
+            '    [ -f "$DIR/$f" ] || { echo "Этот ffmpeg без libass, а запасного слоя субтитров ($f) нет. Поставьте полный: brew install ffmpeg"; exit 1; }',
+            '  done',
+            '  WANT=$(cat "$DIR/субтитры.sha")',
+            '  GOT=$( (shasum -a 256 "$DIR/субтитры.srt" 2>/dev/null || sha256sum "$DIR/субтитры.srt") | cut -d" " -f1 )',
+            '  if [ "$GOT" != "$WANT" ]; then',
+            '    echo "субтитры.srt правился, а этот ffmpeg вжигать текст не умеет (нет libass):"',
+            '    echo "готовый слой субтитров собран из ПРЕЖНЕГО текста, правки бы потерялись."',
+            '    echo "Поставьте полный ffmpeg (brew install ffmpeg) — тогда правки вожгутся, — или пришлите новый субтитры.srt мне, пересоберу слой."',
+            '    exit 1',
+            '  fi',
+            '  echo "Субтитры: ffmpeg без libass — беру готовый слой (текст совпадает с субтитры.srt)"',
+            'fi',
+            'VIDEO="${1:-' + v + '}"',
+            '[ -f "$VIDEO" ] || { echo "Не найден файл: $VIDEO"; exit 1; }',
+            '# Дважды собранный ролик — верный способ получить ДВЕ строки',
+            '# субтитров друг на друге: во второй заход они лягут поверх уже',
+            '# вжжённых. Ловим по имени файла.',
+            'case "$VIDEO" in',
+            '  *-готовый.mp4|*-готовый.MP4)',
+            '    echo "Это уже собранный ролик: субтитры и графика в нём вжжены."',
+            '    echo "Второй заход положит вторую строку субтитров поверх первой."',
+            '    echo "Возьмите ИСХОДНЫЙ дубль. Если всё же надо — sh собрать.sh \\"$VIDEO\\" заново"',
+            '    [ "$2" = "заново" ] || exit 1 ;;',
+            'esac',
+            'OUT="${VIDEO%.*}-готовый.mp4"',
+            'SEC=' + COVER + '   # обложка: столько секунд cover.png перед роликом',
+            '',
+            'p()  { "$FP" -v error -select_streams "$1" -show_entries stream="$2"  -of csv=p=0 "$VIDEO"; }',
+            'pf() { "$FP" -v error -show_entries format="$1" -of csv=p=0 "$VIDEO"; }',
+            'W=$(p v:0 width);  H=$(p v:0 height)',
+            'FPS=$(p v:0 r_frame_rate)',
+            'PIX=$(p v:0 pix_fmt); VCODEC=$(p v:0 codec_name); ACODEC=$(p a:0 codec_name); BR=$(pf bit_rate)',
+            'ROT=$("$FP" -v error -select_streams v:0 -show_entries stream_side_data=rotation -of csv=p=0 "$VIDEO" 2>/dev/null | head -1)',
+            ': "${ROT:=0}"',
+            '# Снятый телефоном ролик часто лежит боком плюс метка поворота: работаем',
+            '# в тех размерах, в каких кадр ВИДЕН, а не в каких хранится.',
+            'case "$ROT" in 90|-90|270|-270) DW=$H; DH=$W ;; *) DW=$W; DH=$H ;; esac',
+            'echo "Ролик: $VCODEC ${DW}x${DH}, поворот $ROT, звук ${ACODEC:-нет}"',
+            '',
+            '# Субтитры: SRT → ASS средствами самого ffmpeg, потом подменяется строка',
+            '# стиля. Через force_style то же самое не выходит: запятые внутри стиля',
+            '# ffmpeg считает своими разделителями, и субтитр молча не рисуется —',
+            '# проверено, кадр остаётся чистым, без единой ошибки в логе.',
+            '# Имя файла — явным ключом filename=: ffmpeg 8 (brew на маке) короткую',
+            '# форму subtitles=файл не разбирает («No option name near …»), а с',
+            '# ключом одинаково работают и 7-я, и 8-я версии.',
+            '# Имена рабочих файлов латиницей и без пробелов: путь уходит внутрь',
+            '# фильтра, где двоеточия и пробелы пришлось бы экранировать.',
+            'TMP=.overlay-build',
+            'if [ "$FULL" = 1 ]; then',
+            'rm -rf "$TMP"; mkdir -p "$TMP/fonts"',
+            'cp "$DIR/fonts/Montserrat-Black.ttf" "$TMP/fonts/"',
+            '"$FF" -y -v error -i "$DIR/субтитры.srt" "$TMP/raw.ass"',
+            '# Кегль. libass (как и VSFilter) считает Fontsize не по em, а по метрикам',
+            '# OS/2: строка ростом winAscent+winDescent. У Montserrat Black это 1.562em,',
+            '# поэтому «Fontsize 53» рисуется как 34px — в полтора раза мельче, чем',
+            '# показывает страница-превью и чем лежит в запасном слое субтитров.',
+            '# Проверено рендером: 53 → буквы шириной 505px, 78 → 743px, а в слое 738px.',
+            '# Поэтому нужный кегль (50px на кадр 1920, как на странице) умножаем на',
+            '# 1.562, и обе дороги сборки дают ОДИН И ТОТ ЖЕ кадр.',
+            "KEGL=$(awk -v h=\"$DH\" 'BEGIN{ printf \"%.0f\", h*0.026 }')",
+            "SUBSIZE=$(awk -v k=\"$KEGL\" 'BEGIN{ printf \"%.0f\", k*1.562 }')",
+            "MARGIN=$(awk -v h=\"$DH\" 'BEGIN{ printf \"%d\", h*0.193 }')",
+            "OUTLINE=$(awk -v k=\"$KEGL\" 'BEGIN{ v=int(k/13); if(v<3) v=3; printf \"%d\", v }')",
+            'STYLE="Style: Default,Montserrat Black,$SUBSIZE,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,$OUTLINE,0,2,60,60,$MARGIN,1"',
+            '# Имя шрифта — ПОЛНОЕ («Montserrat Black», это name ID 1 в ttf).',
+            '# По семейному имени «JetBrains Mono» libass шрифт не находит и молча',
+            '# уходит в системный: проверено — кадр с ним побайтово совпал с кадром,',
+            '# где указан заведомо несуществующий шрифт.',
+            '# ffmpeg пишет ASS в координатах 384x288 — переводим их в размер кадра,',
+            '# иначе кегль и отступ субтитров считаются не от того.',
+            'awk -v st="$STYLE" -v w="$DW" -v h="$DH" \'/^Style: Default,/{print st;next} /^PlayResX:/{print "PlayResX: " w;next} /^PlayResY:/{print "PlayResY: " h;next} {print}\' "$TMP/raw.ass" > "$TMP/subs.ass"',
+            'fi',
+            '# Битрейт как у исходника, но не ниже 10 Мбит/с.',
+            'TARGET=$(awk -v b="${BR:-0}" \'BEGIN{ if(b<1) b=12000000; if(b<10000000) b=10000000; printf "%d", b }\')',
+            'HW=$("$FF" -hide_banner -encoders 2>/dev/null | grep -o "hevc_videotoolbox\\|h264_videotoolbox" | tr "\\n" " ")',
+            'case "$VCODEC:$HW" in',
+            '  hevc:*hevc_videotoolbox*) VE="hevc_videotoolbox -b:v $TARGET -tag:v hvc1" ;;',
+            '  *:*h264_videotoolbox*)    VE="h264_videotoolbox -b:v $TARGET" ;;',
+            '  hevc:*)                   VE="libx265 -preset medium -crf 18 -tag:v hvc1 -x265-params log-level=none" ;;',
+            '  *)                        VE="libx264 -preset medium -crf 17" ;;',
+            'esac',
+            '# Обложка необязательна: нет своей — берём первый кадр ролика, он и так',
+            '# становится превью в ленте.',
+            'if [ -f "$DIR/cover.png" ]; then',
+            '  COVERPIC="$DIR/cover.png"',
+            'else',
+            '  COVERPIC="$TMP/cover.png"; mkdir -p "$TMP"',
+            '  "$FF" -y -v error -i "$VIDEO" -frames:v 1 -vf "scale=$DW:$DH" "$COVERPIC"',
+            '  echo "Обложка: своей нет — взял первый кадр ролика"',
+            'fi',
+            'echo "Кодировщик: $VE"',
+            'echo "Собираю: обложка ${SEC}с + ролик + графика + субтитры…"',
+            '',
+            '# [0] обложка · [1] ролик · [2] цвет слоя · [3] маска слоя.',
+            '# Слой лежит ДВУМЯ файлами: прозрачности в mp4 нет, webm с альфой',
+            '# собирается не везде, а две дорожки в одном mp4 не переживают ремукс.',
+            '# alphamerge сшивает цвет с маской обратно в прозрачную картинку.',
+            '# eof_action=pass: слой кончился — картинка идёт дальше. Со shortest=1',
+            '# ролик ДЛИННЕЕ слоя обрезался по слою: 70-секундный дубль выходил',
+            '# 59.12 с видео при 70 с звука — 11 секунд черноты под звук.',
+            '# setpts прижимает видеодорожку ролика к нулю: в MOV с телефона она',
+            '# бывает начинается позже звука, и тогда в начале чёрный кадр.',
+            '# Обложка приклеивается concat-ом ПОСЛЕ графики и субтитров: они',
+            '# накладываются на чистое время ролика, и тайминги от заставки не едут.',
+            '# После concat частота кадров ТЕРЯЕТСЯ (переход через overlay), и без',
+            '# явного -r на выходе ffmpeg молча писал 25 к/с, выбрасывая каждый',
+            '# шестой кадр 30-кадрового ролика. Фильтр fps после concat не годится:',
+            '# он на конце потока съедал последний кадр. Проверено покадрово:',
+            '# только с -r выходит ровно (кадры обложки) + (кадры ролика).',
+            'if [ "$FULL" = 1 ]; then',
+            '  VF="[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge,tpad=stop=-1:stop_mode=clone[ov];[1:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass,subtitles=filename=$TMP/subs.ass:fontsdir=$TMP/fonts,format=$PIX,setsar=1[m];[c][m]concat=n=2:v=1[v]"',
+            '  EXTRA=""',
+            'else',
+            '  VF="[0:v]scale=$DW:$DH:flags=lanczos,format=$PIX,setsar=1,fps=$FPS[c];[2:v]scale=$DW:$DH:flags=lanczos[oc];[3:v]scale=$DW:$DH:flags=lanczos[oa];[oc][oa]alphamerge,tpad=stop=-1:stop_mode=clone[ov];[5:v]scale=$DW:$DH:flags=lanczos[tc];[6:v]scale=$DW:$DH:flags=lanczos[ta];[tc][ta]alphamerge[tv];[1:v]setpts=PTS-STARTPTS[cv];[cv][ov]overlay=0:0:format=auto:eof_action=pass[m1];[m1][tv]overlay=0:0:format=auto:eof_action=pass,format=$PIX,setsar=1[m];[c][m]concat=n=2:v=1[v]"',
+            '  # Путь к слою кладём в РАБОЧУЮ папку: $EXTRA подставляется в',
+            '  # команду без кавычек (иначе «-i файл» приедет одним аргументом),',
+            '  # а папка ролика вполне может называться «Где ИИ создаёт ценность» —',
+            '  # пробелы рвали команду, и ffmpeg искал файл «…/Desktop/Где».',
+            '  mkdir -p "$TMP"',
+            '  cp "$DIR/subs_c.mp4" "$TMP/sc.mp4"; cp "$DIR/subs_a.mp4" "$TMP/sa.mp4"',
+            '  EXTRA="-i $TMP/sc.mp4 -i $TMP/sa.mp4"',
+            'fi',
+            '# ЗВУК НЕ ТРОГАЕМ ВООБЩЕ — как в лекции. Обложка нужна только',
+            '# КАРТИНКЕ: пересобирается одна видеодорожка, а звук идёт копией из',
+            '# исходника отдельным входом (проверено md5 — бит-в-бит), просто',
+            '# начинается на длину заставки позже. Сдвиг = заставка ПЛЮС исходное',
+            '# смещение дорожек (edit list в MOV с телефона), воспроизводится',
+            '# контейнером: положительный — звук позже (-itsoffset), отрицательный —',
+            '# начало срезается (-ss) с точностью до одного AAC-кадра (~21 мс).',
+            '# Никакой растяжки aresample: она правила таймстемпы вставкой сэмплов',
+            '# и слышалась как искажение.',
+            'AS=$("$FP" -v error -select_streams a:0 -show_entries stream=start_time -of csv=p=0 "$VIDEO" 2>/dev/null || echo 0)',
+            'VS=$("$FP" -v error -select_streams v:0 -show_entries stream=start_time -of csv=p=0 "$VIDEO" 2>/dev/null || echo 0)',
+            ': "${AS:=0}"; : "${VS:=0}"',
+            'OFF=$(awk -v c="$SEC" -v a="$AS" -v v="$VS" \'BEGIN{ printf "%.3f", c + a - v }\')',
+            'case "$OFF" in -*) AIN="-ss ${OFF#-}" ;; *) AIN="-itsoffset $OFF" ;; esac',
+            '# Пережим остаётся только для не-AAC дорожек: их в mp4 копией не положить.',
+            'AENC=aac; "$FF" -hide_banner -encoders 2>/dev/null | grep -q aac_at && AENC=aac_at',
+            'if [ -z "$ACODEC" ]; then',
+            '  AOPT="-an"; echo "Звук: в ролике его нет"',
+            'elif [ "$ACODEC" = "aac" ]; then',
+            '  AOPT="-c:a copy"; echo "Звук: копирую дорожку как есть (без пережима, сдвиг ${OFF}с)"',
+            'else',
+            '  AOPT="-c:a $AENC -b:a 256k"; echo "Звук: дорожка $ACODEC — в mp4 её копией не положить, пережимаю через $AENC 256k"',
+            'fi',
+            '# Входы: 0 обложка · 1 ролик · 2-3 слой графики · 4 ролик со сдвигом',
+            '# (из него берётся ТОЛЬКО звук) · 5-6 слой субтитров (только запасной',
+            '# путь). Аудиовход при EXTRA остаётся четвёртым: EXTRA идёт ПОСЛЕ него.',
+            '# -framerate у обложки обязателен: картинка по умолчанию идёт 25 к/с,',
+            '# и на 30-кадровом ролике заставка выходила 5 кадров (0.167 с) вместо 6.',
+            'if [ -n "$ACODEC" ]; then',
+            '  "$FF" -y -loglevel error -stats -loop 1 -framerate "$FPS" -t "$SEC" -i "$COVERPIC" \\',
+            '    -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
+            '    $AIN -i "$VIDEO" $EXTRA \\',
+            '    -filter_complex "$VF" \\',
+            '    -map "[v]" -map 4:a:0 -r "$FPS" -c:v $VE -pix_fmt "$PIX" $AOPT -movflags +faststart "$OUT"',
+            'else',
+            '  "$FF" -y -loglevel error -stats -loop 1 -framerate "$FPS" -t "$SEC" -i "$COVERPIC" \\',
+            '    -i "$VIDEO" -i "$DIR/overlay_c.mp4" -i "$DIR/overlay_a.mp4" \\',
+            '    -f lavfi -t 0.1 -i anullsrc $EXTRA \\',
+            '    -filter_complex "$VF" \\',
+            '    -map "[v]" -r "$FPS" -c:v $VE -pix_fmt "$PIX" -an -movflags +faststart "$OUT"',
+            'fi',
+            'rm -rf "$TMP"',
+            '',
+            '# Проверка декодированием: файл нужного размера и длины может не играть.',
+            'ERR=$("$FF" -v error -i "$OUT" -f null - 2>&1 || true)',
+            '[ -z "$ERR" ] || { echo "ОШИБКА: результат не декодируется — $(echo "$ERR" | head -1)"; exit 1; }',
+            'echo "Готово: $OUT"'
+        ].join('\n') + '\n';
+    }
+
+    var joinBtn = document.getElementById('bJoin');
+    function tell(msg) { document.getElementById('hint').textContent = msg; }
+
+    /* Кнопка отдаёт скрипт, а не собирает сама.
+       Раньше сборка шла прямо здесь, в ffmpeg.wasm, и это работало — пока
+       речь была только о склейке обложки с роликом. Но графику и субтитры
+       «доложить» нельзя, их надо нарисовать поверх КАЖДОГО кадра, то есть
+       пересобрать ролик целиком. В wasm это десятки минут на вкладку;
+       у ffmpeg на маке тот же ролик проходит за минуту через VideoToolbox.
+       Поэтому путь один — скрипт, и он же честнее: видно, что происходит. */
+    joinBtn.addEventListener('click', function () {
+        var url = URL.createObjectURL(new Blob([joinScript()], { type: 'text/x-shellscript' }));
+        var a = document.createElement('a');
+        a.href = url; a.download = 'собрать.sh'; a.click();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+        tell('Скрипт скачан. Положите его в эту же папку (рядом с cover.png и ' +
+             'overlay.mp4) и запустите: sh собрать.sh "' +
+             (videoName || 'ваше-видео.mov') + '"');
+    });
+
+    document.getElementById('bSubs').addEventListener('click', function () {
+        document.body.classList.toggle('no-subs');
+        this.classList.toggle('act', !document.body.classList.contains('no-subs'));
+    });
+    document.getElementById('bScrim').addEventListener('click', function () {
+        document.body.classList.toggle('no-scrim');
+        this.classList.toggle('act', !document.body.classList.contains('no-scrim'));
+    });
+    document.getElementById('bFull').addEventListener('click', function () {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        var step = e.shiftKey ? 5 : 1;
+        if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); }
+        else if (e.code === 'ArrowRight') { e.preventDefault(); seek(now() + step); }
+        else if (e.code === 'ArrowLeft') { e.preventDefault(); seek(now() - step); }
+        else if (e.key === 'h' || e.key === 'H' || e.key === 'р' || e.key === 'Р') {
+            document.body.classList.toggle('rec'); fit();
+        }
+    });
+
+    /* ── Метки на таймлайне: видно, где что появляется ──────────── */
+    scenes.forEach(function (s) { mark(s.__in, 'sc'); });
+    els.forEach(function (el) { mark(el.__in, ''); });
+    function mark(vtime, cls) {
+        var d = document.createElement('div');
+        d.className = 'cue ' + cls;
+        d.style.left = ((COVER + vtime) / (COVER + DURATION) * 100) + '%';
+        track.appendChild(d);
+    }
+
+    /* ── Старт ──────────────────────────────────────────────────── */
+    var q = new URLSearchParams(location.search);
+    if (q.get('src')) loadVideo(q.get('src'));
+    if (q.get('guides')) document.body.classList.add('guides');
+    if (q.get('rec')) document.body.classList.add('rec');
+    if (q.get('mock') === '0') document.body.classList.remove('mock');
+    if (q.get('bg') === 'none') {
+        document.body.classList.add('transparent', 'rec');
+        // Фон живёт ещё и на <html>: без этого снимок выходит непрозрачным,
+        // и слой нечем накладывать на видео.
+        document.documentElement.style.background = 'transparent';
+    }
+    if (q.get('scrim') === '0') document.body.classList.add('no-scrim');
+    if (q.get('only') === 'subs') document.body.classList.add('only-subs');
+    if (q.get('subs') === '0') document.body.classList.add('no-subs');
+    if (q.get('subY')) document.getElementById('sub').style.top = q.get('subY') + 'px';
+    if (q.get('cover')) COVER = parseFloat(q.get('cover'));
+    if (q.get('zoneTop')) document.documentElement.style.setProperty('--zone-top', q.get('zoneTop') + 'px');
+    if (q.get('zoneH')) document.documentElement.style.setProperty('--zone-h', q.get('zoneH') + 'px');
+
+    fit();
+    // Шрифт обязан приехать до первого кадра — иначе первая анимация
+    // проигрывается системным шрифтом и «прыгает» при подмене.
+    Promise.all([
+        document.fonts ? document.fonts.ready : Promise.resolve(),
+        loadSubs()
+    ]).then(function () {
+        seek(q.get('t') ? parseFloat(q.get('t')) : 0);
+        if (!q.get('still')) requestAnimationFrame(frame);
+        window.__seek = seek;
+
+        /* Покадровый рендер слоя (tools/render_overlay.py). Время КАЖДОЙ
+           анимации выставляется явно: иначе переходы играют по реальным
+           часам браузера, а снимки идут втрое медленнее реального времени,
+           и все появления в слое размазываются. Виртуальное время браузера
+           для этого не годится — под паузой он не отдаёт снимок вообще. */
+        window.__renderAt = function (time) {
+            seek(time);
+            if (!document.getAnimations) return;
+            document.getAnimations().forEach(function (an) {
+                var el = an.effect && an.effect.target;
+                if (!el) return;
+                var name = an.animationName || '';
+                var start = null, host, list, i;
+                if (name.indexOf('hot') === 0) {
+                    host = el.closest('[data-hl]');
+                    if (host) {
+                        list = host.getAttribute('data-hl').split(/\s+/).map(parseFloat);
+                        for (i = 0; i < list.length; i++) {
+                            if (time >= list[i] && time < list[i] + HOT) start = list[i];
+                        }
+                    }
+                } else if (name === 'era') {
+                    host = el.closest('[data-in]');
+                    if (host) start = parseFloat(host.getAttribute('data-in')) + 1.1;
+                } else if (el.id === 'sub') {
+                    for (i = 0; i < SUBS.length; i++) {
+                        if (time >= SUBS[i][0] && time < SUBS[i][1]) { start = SUBS[i][0]; break; }
+                    }
+                } else {
+                    host = el.closest('[data-in]');
+                    if (host) start = parseFloat(host.getAttribute('data-in'));
+                }
+                if (start === null) return;
+                an.pause();
+                try { an.currentTime = Math.max(0, (time - start) * 1000); } catch (ignored) {}
+            });
+        };
+        window.__ready = true;
+    });
+})();
+</script>
+</body>
+</html>
