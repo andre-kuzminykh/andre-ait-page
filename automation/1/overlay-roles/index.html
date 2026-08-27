@@ -1391,9 +1391,28 @@ body.dragging #drop{display:flex}
                     for (i = 0; i < SUBS.length; i++) {
                         if (time >= SUBS[i][0] && time < SUBS[i][1]) { start = SUBS[i][0]; break; }
                     }
+                } else if (el.id === 'scrim') {
+                    /* Затемнение верха кадра лежит вне сцен, и его переход
+                       раньше не перематывался вовсе — он играл по часам
+                       браузера. В покадровом рендере это лотерея: как лягут
+                       снимки, так и выйдет. Считаем от его собственных
+                       времён: включается за 0.4 c до первой сцены,
+                       выключается через 0.5 c после последней. */
+                    start = el.classList.contains('on')
+                        ? scenes[0].__in - 0.4
+                        : scenes[scenes.length - 1].__out + 0.5;
                 } else {
                     host = el.closest('[data-in]');
-                    if (host) start = parseFloat(host.getAttribute('data-in'));
+                    if (host) {
+                        /* Уходящий элемент считает переход от data-out:
+                           от data-in выходило время в разы больше длины
+                           перехода, и он прыгал в конец — графика гасла за
+                           один кадр. Видно только в рендере, не на превью. */
+                        var leaving = !host.classList.contains('on');
+                        var outAt = parseFloat(host.getAttribute('data-out'));
+                        start = (leaving && !isNaN(outAt))
+                            ? outAt : parseFloat(host.getAttribute('data-in'));
+                    }
                 }
                 if (start === null) return;
                 an.pause();
