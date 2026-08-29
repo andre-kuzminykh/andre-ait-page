@@ -1,0 +1,589 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Макеты сервиса «Ролики»</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Тёмный интерфейс — как сами ролики: акценты те же, #8B5CF6 и #F97316.
+   Семантика проверок (зелёное/красное/жёлтое) держится отдельно. */
+:root{
+    --bg:#0B0912; --panel:#141020; --panel2:#1A1528; --sunk:#0F0C18;
+    --line:#251E3A; --line2:#2E2545;
+    --ink:#F2EFFA; --soft:#B4ACC9; --mute:#7E7597;
+    --violet:#8B5CF6; --violet-dim:#2A2046;
+    --orange:#F97316; --orange-dim:#33200F;
+    --ok:#4ADE80; --ok-dim:#12291D;
+    --bad:#F87171; --bad-dim:#2E1517;
+    --warn:#FBBF24; --warn-dim:#2E240D;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --disp:'Montserrat',sans-serif;
+    --body:'Golos Text',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05040A;font-family:var(--body);color:var(--ink);padding:30px;display:flex;flex-direction:column;gap:40px}
+
+.screen{width:1440px;height:900px;background:var(--bg);border-radius:14px;overflow:hidden;
+    display:grid;grid-template-columns:210px 1fr;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+
+/* ── левая колонка ───────────────────────────────────────────── */
+.rail{background:var(--sunk);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:22px}
+.brand{display:flex;align-items:center;gap:9px;padding:0 6px}
+.brand .mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--violet),var(--orange));
+    display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:12px;color:#fff}
+.brand b{font-family:var(--disp);font-size:15px;font-weight:700;letter-spacing:-.01em}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;color:var(--soft);
+    font-size:14px;text-decoration:none}
+.nav a.on{background:var(--violet-dim);color:var(--ink);font-weight:500}
+.nav a .ic{width:16px;height:16px;border-radius:4px;background:var(--line2);flex:0 0 auto}
+.nav a.on .ic{background:var(--violet)}
+.rail .foot{margin-top:auto;font-family:var(--mono);font-size:10.5px;color:var(--mute);line-height:1.7;
+    border-top:1px solid var(--line);padding-top:14px}
+.rail .foot .row{display:flex;justify-content:space-between}
+
+/* ── правая часть ────────────────────────────────────────────── */
+/* min-height:0 обязателен: без него grid-элемент растёт по min-content, ряд
+   становится выше 900px, и нижняя панель уезжает под срез рамки. */
+.rail{min-height:0}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+.top{height:62px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+    gap:14px;padding:0 24px;background:var(--panel)}
+.top h1{font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:-.01em}
+.top .sep{color:var(--mute);font-size:14px}
+.top .sub{color:var(--mute);font-size:13.5px}
+.top .sp{flex:1}
+.content{flex:1;padding:20px 24px;overflow:hidden;display:flex;flex-direction:column;gap:14px;min-height:0}
+
+.btn{font-family:var(--body);font-size:13.5px;font-weight:600;padding:8px 15px;border-radius:8px;
+    background:var(--violet);color:#fff;border:none;white-space:nowrap}
+.btn.gh{background:transparent;color:var(--soft);border:1px solid var(--line2)}
+.btn.or{background:var(--orange)}
+.btn.sm{font-size:12.5px;padding:6px 11px}
+
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;
+    padding:4px 9px;border-radius:20px;letter-spacing:.02em;white-space:nowrap}
+.chip.ok{background:var(--ok-dim);color:var(--ok)}
+.chip.bad{background:var(--bad-dim);color:var(--bad)}
+.chip.warn{background:var(--warn-dim);color:var(--warn)}
+.chip.mute{background:var(--panel2);color:var(--mute)}
+.chip.vi{background:var(--violet-dim);color:var(--violet)}
+
+.lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+
+/* ── экран «Ролики» ──────────────────────────────────────────── */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+/* кадр вертикальный, плитка широкая: кладём кадр целиком и по центру —
+   обрезка по ширине съедала бы как раз графику у краёв */
+.card .thumb{height:210px;background:#100D1C;position:relative;overflow:hidden;
+    display:grid;place-items:center}
+/* предел в пикселях, а не в процентах: процентный max-height в grid-области
+   Chromium не разрешает, и кадр вылезал за плитку, обрезаясь по букве */
+.card .thumb img{max-width:100%;max-height:210px;width:auto;height:auto;display:block}
+.card .meta{padding:11px 13px;display:flex;flex-direction:column;gap:7px}
+.card .meta b{font-family:var(--disp);font-size:13.5px;font-weight:600;line-height:1.3}
+.card .meta .row{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);
+    font-size:10.5px;color:var(--mute)}
+.card.new{border-style:dashed;display:grid;place-items:center;color:var(--mute);gap:8px;
+    grid-template-rows:1fr;min-height:200px}
+.card.new .plus{width:40px;height:40px;border-radius:11px;border:1px dashed var(--line2);display:grid;
+    place-items:center;font-size:20px;color:var(--violet);margin:0 auto 10px}
+
+/* ── экран «Материалы» ───────────────────────────────────────── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.two.fill{flex:1;min-height:0}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;
+    display:flex;flex-direction:column;gap:12px}
+.box > .lbl{margin-bottom:2px}
+.drop{border:1px dashed var(--line2);border-radius:9px;padding:11px 13px;display:flex;align-items:center;gap:11px;
+    background:var(--sunk)}
+.drop .ic{width:34px;height:34px;border-radius:8px;background:var(--panel2);flex:0 0 auto;display:grid;
+    place-items:center;font-family:var(--mono);font-size:9px;color:var(--mute)}
+.drop .t b{display:block;font-size:13.5px;font-weight:500}
+.drop .t span{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.drop.done{border-style:solid;border-color:var(--line2)}
+.drop.done .ic{background:var(--ok-dim);color:var(--ok)}
+.field{display:flex;align-items:center;gap:10px;font-size:13.5px}
+.field .k{color:var(--mute);width:120px;flex:0 0 auto;font-size:13px}
+.field .v{background:var(--sunk);border:1px solid var(--line2);border-radius:7px;padding:6px 11px;
+    font-family:var(--mono);font-size:12.5px;flex:1}
+.checkline{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.checkline .txt{flex:1;font-size:13.5px;line-height:1.45}
+.checkline .txt em{font-style:normal;color:var(--mute);display:block;font-size:12.5px;margin-top:2px}
+
+/* ── экран «Раскадровка» ─────────────────────────────────────── */
+.board{display:grid;grid-template-columns:230px minmax(0,1fr) 250px;gap:14px;flex:1;min-height:0;overflow:hidden}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:12px;display:flex;
+    flex-direction:column;overflow:hidden}
+.pane .h{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;
+    align-items:center}
+.pane .b{padding:8px;overflow:hidden;display:flex;flex-direction:column;gap:1px}
+.sc{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;padding:4px 8px;
+    border-radius:6px;font-size:12.5px;color:var(--soft);line-height:1.25}
+.sc .no{font-family:var(--mono);font-size:10.5px;color:var(--mute)}
+.sc .tm{font-family:var(--mono);font-size:10.5px;color:var(--mute)}
+.sc.on{background:var(--violet-dim);color:var(--ink);font-weight:500}
+.sc.on .no,.sc.on .tm{color:var(--violet)}
+.sc.cut{color:var(--orange);font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+/* точка «есть замечание» живёт внутри времени: четвёртым ребёнком грида
+   она срывалась на отдельную строку и висела над соседней сценой */
+.sc .dot{width:6px;height:6px;border-radius:50%;background:var(--bad);
+    display:inline-block;vertical-align:middle;margin-left:5px}
+
+.stage{display:flex;flex-direction:column;align-items:center;gap:9px;padding:10px;flex:1;min-height:0}
+.viewer{position:relative;height:100%;aspect-ratio:9/16;border-radius:10px;overflow:hidden;
+    border:1px solid var(--line2);background:#000}
+.viewer img{width:100%;height:100%;object-fit:cover;display:block}
+.transport{display:flex;align-items:center;gap:12px;width:100%;max-width:430px}
+.transport .play{width:32px;height:32px;border-radius:50%;background:var(--violet);display:grid;
+    place-items:center;color:#fff;font-size:12px;flex:0 0 auto}
+.track{flex:1;height:30px;position:relative;background:var(--sunk);border:1px solid var(--line);border-radius:6px;
+    overflow:hidden;display:flex}
+.track .seg{border-right:1px solid var(--line);flex:1;position:relative}
+.track .seg.on{background:var(--violet-dim)}
+.track .cut{position:absolute;top:0;bottom:0;width:2px;background:var(--orange);left:41%}
+.track .cur{position:absolute;top:0;bottom:0;width:2px;background:#fff;left:14%}
+.transport .tc{font-family:var(--mono);font-size:12px;color:var(--soft);font-variant-numeric:tabular-nums}
+
+.insp{padding:12px 13px;display:flex;flex-direction:column;gap:11px;overflow:hidden}
+.ifield{display:flex;flex-direction:column;gap:4px}
+.ifield .k{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.ifield .v{background:var(--sunk);border:1px solid var(--line2);border-radius:7px;padding:7px 10px;font-size:13px}
+.ifield .v.mono{font-family:var(--mono);font-size:12px}
+.pairv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.why{background:var(--sunk);border-left:2px solid var(--violet);border-radius:0 7px 7px 0;padding:8px 11px;
+    font-size:12.5px;color:var(--soft);line-height:1.45}
+.why b{color:var(--violet);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    display:block;margin-bottom:3px;font-weight:500}
+
+.bottom{display:flex;flex-direction:column;gap:9px}
+.bar{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 13px;
+    display:flex;align-items:center;gap:11px}
+.bar.bad{border-color:#4A2A2E}
+.bar .grow{flex:1;font-size:13.5px;color:var(--soft)}
+.bar input{flex:1;background:var(--sunk);border:1px solid var(--line2);border-radius:8px;padding:9px 12px;
+    color:var(--ink);font-family:var(--body);font-size:13.5px}
+
+/* ── экран «Сборка» ──────────────────────────────────────────── */
+.steps{display:flex;flex-direction:column;gap:9px}
+.step{display:grid;grid-template-columns:26px 1fr 130px 80px;gap:13px;align-items:center;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 16px}
+.step .n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);
+    font-size:10.5px;background:var(--panel2);color:var(--mute)}
+.step.done .n{background:var(--ok-dim);color:var(--ok)}
+.step.run .n{background:var(--violet);color:#fff}
+.step .t{font-size:14px}
+.step .t em{font-style:normal;color:var(--mute);font-size:12.5px;display:block;margin-top:2px}
+.step .pr{height:5px;border-radius:3px;background:var(--sunk);overflow:hidden;position:relative}
+.step .pr i{position:absolute;left:0;top:0;bottom:0;background:var(--violet);border-radius:3px}
+.step.done .pr i{background:var(--ok)}
+.step .tm{font-family:var(--mono);font-size:11.5px;color:var(--mute);text-align:right}
+.log{background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:13px 15px;
+    font-family:var(--mono);font-size:11.5px;color:var(--soft);line-height:1.85;flex:1;overflow:hidden}
+.log .g{color:var(--ok)}.log .m{color:var(--mute)}.log .v{color:var(--violet)}
+
+/* ── экран «Готово» ──────────────────────────────────────────── */
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.part{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:grid;
+    grid-template-columns:150px 1fr}
+.part img{width:100%;height:100%;object-fit:cover;display:block;max-height:250px}
+.part .info{padding:15px 17px;display:flex;flex-direction:column;gap:9px}
+.part .info b{font-family:var(--disp);font-size:15px}
+.part .info .row{display:flex;gap:8px;font-family:var(--mono);font-size:11px;color:var(--mute)}
+.report{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 18px;
+    display:flex;flex-direction:column;gap:10px}
+.rline{display:flex;align-items:center;gap:11px;font-size:13.5px;color:var(--soft)}
+.rline .name{width:190px;color:var(--ink)}
+.rline .val{font-family:var(--mono);font-size:11.5px;color:var(--mute);margin-left:auto}
+
+/* ── экран «Правила» ─────────────────────────────────────────── */
+.rules{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);
+    font-weight:500;background:var(--sunk)}
+tr:last-child td{border-bottom:none}
+td .val{font-family:var(--mono);font-size:12.5px;background:var(--sunk);border:1px solid var(--line2);
+    border-radius:6px;padding:5px 10px;display:inline-block;min-width:96px}
+td .src{font-size:12px;color:var(--mute);font-style:italic}
+.sw{width:34px;height:19px;border-radius:11px;background:var(--ok);position:relative;display:inline-block}
+.sw::after{content:"";position:absolute;right:2px;top:2px;width:15px;height:15px;border-radius:50%;background:#0B0912}
+.sw.off{background:var(--line2)}
+.sw.off::after{right:auto;left:2px}
+.textrule{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 18px;
+    display:flex;flex-direction:column;gap:9px}
+.textrule .t{font-size:14px;line-height:1.5}
+</style>
+
+<!-- ═══════════ 1. РОЛИКИ ═══════════ -->
+<div class="screen" id="s1">
+  <aside class="rail">
+    <div class="brand"><span class="mark">Р</span><b>Ролики</b></div>
+    <nav class="nav">
+      <a class="on"><span class="ic"></span>Все ролики</a>
+      <a><span class="ic"></span>Правила подачи</a>
+      <a><span class="ic"></span>Значки</a>
+      <a><span class="ic"></span>Очередь</a>
+      <a><span class="ic"></span>Настройки</a>
+    </nav>
+    <div class="foot">
+      <div class="row"><span>правила</span><span>v7</span></div>
+      <div class="row"><span>шрифт</span><span>2.1</span></div>
+      <div class="row"><span>ffmpeg</span><span>7.0</span></div>
+      <div class="row"><span>расход за месяц</span><span>412 ₽</span></div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="top"><h1>Все ролики</h1><span class="sep">·</span><span class="sub">9 готовых, 1 в работе</span>
+      <span class="sp"></span><button class="btn gh sm">Импорт из папки</button><button class="btn">Новый ролик</button></div>
+    <div class="content">
+      <div class="grid">
+        <div class="card"><div class="thumb"><img src="img/scene3.jpg" alt=""></div>
+          <div class="meta"><b>Лекция 9 · Новые роли</b>
+            <div class="row"><span>16 сцен · 1:42</span><span class="chip ok">готово</span></div>
+            <div class="row"><span>правила v7</span><span>2 части</span></div></div></div>
+        <div class="card"><div class="thumb"><img src="img/scene12.jpg" alt=""></div>
+          <div class="meta"><b>Лекция 10 · Черновик</b>
+            <div class="row"><span>14 сцен · 2:08</span><span class="chip warn">3 замечания</span></div>
+            <div class="row"><span>правила v7</span><span>ждёт решения</span></div></div></div>
+        <div class="card"><div class="thumb"><img src="img/scene8.jpg" alt=""></div>
+          <div class="meta"><b>Лекция 8 · AgentOps</b>
+            <div class="row"><span>25 сцен · 2:52</span><span class="chip vi">выпущено</span></div>
+            <div class="row"><span>правила v6</span><span>4 части</span></div></div></div>
+        <div class="card"><div class="thumb"><img src="img/cover1.jpg" alt=""></div>
+          <div class="meta"><b>Лекция 7 · ИИ-стратегия</b>
+            <div class="row"><span>22 сцены · 2:31</span><span class="chip vi">выпущено</span></div>
+            <div class="row"><span>правила v6</span><span>4 части</span></div></div></div>
+        <div class="card"><div class="thumb"><img src="img/cover2.jpg" alt=""></div>
+          <div class="meta"><b>Лекция 6 · ИИ-индекс</b>
+            <div class="row"><span>18 сцен · 2:04</span><span class="chip vi">выпущено</span></div>
+            <div class="row"><span>правила v5</span><span>3 части</span></div></div></div>
+        <div class="card"><div class="thumb"><img src="img/scene3.jpg" alt=""></div>
+          <div class="meta"><b>Лекция 5 · Ценность ИИ</b>
+            <div class="row"><span>20 сцен · 2:18</span><span class="chip vi">выпущено</span></div>
+            <div class="row"><span>правила v5</span><span>3 части</span></div></div></div>
+        <div class="card new"><div><div class="plus">+</div>Новый ролик</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 2. МАТЕРИАЛЫ ═══════════ -->
+<div class="screen" id="s2">
+  <aside class="rail">
+    <div class="brand"><span class="mark">Р</span><b>Ролики</b></div>
+    <nav class="nav">
+      <a class="on"><span class="ic"></span>Все ролики</a>
+      <a><span class="ic"></span>Правила подачи</a>
+      <a><span class="ic"></span>Значки</a>
+      <a><span class="ic"></span>Очередь</a>
+      <a><span class="ic"></span>Настройки</a>
+    </nav>
+    <div class="foot"><div class="row"><span>шаг</span><span>1 из 4</span></div>
+      <div class="row"><span>правила</span><span>v7</span></div></div>
+  </aside>
+  <div class="main">
+    <div class="top"><h1>Лекция 10</h1><span class="sep">·</span><span class="sub">материалы</span>
+      <span class="sp"></span><button class="btn gh sm">Как в прошлый раз</button><button class="btn">Собрать раскадровку</button></div>
+    <div class="content">
+      <div class="two fill">
+        <div class="box">
+          <span class="lbl">Файлы</span>
+          <div class="drop done"><span class="ic">MOV</span><span class="t"><b>лекция-10.MOV</b><span>1080×1920 · 30 к/с · 2:08 · 1.4 ГБ</span></span></div>
+          <div class="drop done"><span class="ic">SRT</span><span class="t"><b>auto_10.srt</b><span>134 реплики · начало 0.92</span></span></div>
+          <div class="drop done"><span class="ic">PNG</span><span class="t"><b>lecture_1_10.png</b><span>1080×1920</span></span></div>
+          <div class="drop"><span class="ic">TXT</span><span class="t"><b>Сценарий озвучки</b><span>по нему чинится распознавание — перетащите или вставьте</span></span></div>
+        </div>
+        <div class="box">
+          <span class="lbl">Настройки</span>
+          <div class="field"><span class="k">Слайды лекции</span><span class="v">44–47</span></div>
+          <div class="field"><span class="k">Резы</span><span class="v">каждые 41 с</span></div>
+          <div class="field"><span class="k">Правила</span><span class="v">Курс · v7</span></div>
+          <span class="lbl" style="margin-top:6px">Проверка входа</span>
+          <div class="checkline"><span class="chip ok">✓</span><span class="txt">Дорожка от этого дубля — совпадение 94%
+            <em>сверены первые 40 секунд: распознавание дубля против начала SRT</em></span></div>
+          <div class="checkline"><span class="chip ok">✓</span><span class="txt">Обложка: место под «Часть N» найдено
+            <em>верх до y500 пустой, тайтл с 540 — подпись встанет на 250</em></span></div>
+          <div class="checkline"><span class="chip bad">!</span><span class="txt">Рез 41 попадает внутрь слова «данных»
+            <em>реплика 40.81…41.27, пауза за ней 41.27…42.03</em></span>
+            <button class="btn sm">Сдвинуть на 41.9</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 3. РАСКАДРОВКА ═══════════ -->
+<div class="screen" id="s3">
+  <aside class="rail">
+    <div class="brand"><span class="mark">Р</span><b>Ролики</b></div>
+    <nav class="nav">
+      <a class="on"><span class="ic"></span>Все ролики</a>
+      <a><span class="ic"></span>Правила подачи</a>
+      <a><span class="ic"></span>Значки</a>
+      <a><span class="ic"></span>Очередь</a>
+      <a><span class="ic"></span>Настройки</a>
+    </nav>
+    <div class="foot"><div class="row"><span>сцен</span><span>16</span></div>
+      <div class="row"><span>элементов</span><span>49</span></div>
+      <div class="row"><span>замечаний</span><span>1</span></div></div>
+  </aside>
+  <div class="main">
+    <div class="top"><h1>Лекция 9 · Новые роли</h1><span class="sep">·</span><span class="sub">раскадровка</span>
+      <span class="sp"></span><span class="chip mute">черновик от OpenAI · правок 4</span>
+      <button class="btn gh sm">Прокрутить стыки</button><button class="btn or">Утвердить и собрать</button></div>
+    <div class="content">
+      <div class="board">
+        <div class="pane">
+          <div class="h"><span class="lbl">Сцены</span><span class="chip mute">16</span></div>
+          <div class="b">
+            <div class="sc"><span class="no">1</span><span>Процессы ↔ Структура</span><span class="tm">0.9</span></div>
+            <div class="sc"><span class="no">2</span><span>Новые роли</span><span class="tm">8.6</span></div>
+            <div class="sc"><span class="no">3</span><span>Chief AI Officer</span><span class="tm">12.0</span></div>
+            <div class="sc"><span class="no">4</span><span>AI Product Engineer</span><span class="tm">17.7</span></div>
+            <div class="sc"><span class="no">5</span><span>ИИ-инженеры</span><span class="tm">24.0</span></div>
+            <div class="sc"><span class="no">6</span><span>Операторы агентов</span><span class="tm">33.6</span></div>
+            <div class="sc cut"><span></span><span>◆ рез · часть 2</span><span>41.9</span></div>
+            <div class="sc"><span class="no">7</span><span>AI-first компания</span><span class="tm">41.9</span></div>
+            <div class="sc on"><span class="no">8</span><span>Человек ↔ ИИ</span><span class="tm">45.9</span></div>
+            <div class="sc"><span class="no">9</span><span>Инструмент VS Изменение</span><span class="tm">50.6</span></div>
+            <div class="sc"><span class="no">10</span><span>Поток данных → Интеллект</span><span class="tm">57.5</span></div>
+            <div class="sc"><span class="no">11</span><span>Анализ · Решения · Действия</span><span class="tm">63.1</span></div>
+            <div class="sc"><span class="no">12</span><span>Цели · Правила · Развитие</span><span class="tm">66.4</span></div>
+            <div class="sc"><span class="no">13</span><span>Пользуется VS Ядро</span><span class="tm">74.9</span></div>
+            <div class="sc"><span class="no">14</span><span>Процессы ↔ Поток данных</span><span class="tm">82.8</span></div>
+            <div class="sc"><span class="no">15</span><span>Архитектор ↔ Решения</span><span class="tm">92.4<i class="dot"></i></span></div>
+            <div class="sc"><span class="no">16</span><span>Бизнес ↔ Экономика</span><span class="tm">98.7</span></div>
+          </div>
+        </div>
+
+        <div class="pane">
+          <div class="h"><span class="lbl">Кадр 1080 × 1920</span><span class="chip vi">играет</span></div>
+          <div class="stage">
+            <div class="viewer"><img src="img/scene8.jpg" alt=""></div>
+            <div class="transport">
+              <span class="play">▶</span>
+              <div class="track">
+                <div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div>
+                <div class="seg"></div><div class="seg"></div><div class="seg on"></div><div class="seg"></div>
+                <div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div>
+                <div class="cut"></div><div class="cur"></div>
+              </div>
+              <span class="tc">48.9 / 101.8</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane">
+          <div class="h"><span class="lbl">Сцена 8</span><span class="chip mute">пара</span></div>
+          <div class="insp">
+            <div class="ifield"><span class="k">Тип сцены</span><span class="v">Пара над картинами</span></div>
+            <div class="pairv">
+              <div class="ifield"><span class="k">Слева</span><span class="v">Человек</span></div>
+              <div class="ifield"><span class="k">Справа</span><span class="v">ИИ</span></div>
+            </div>
+            <div class="pairv">
+              <div class="ifield"><span class="k">Выходит</span><span class="v mono">48.55</span></div>
+              <div class="ifield"><span class="k">Выходит</span><span class="v mono">49.21</span></div>
+            </div>
+            <div class="ifield"><span class="k">Значки</span><span class="v mono">users · robot</span></div>
+            <div class="ifield"><span class="k">Держится до</span><span class="v mono">50.55 — начала сцены 9</span></div>
+            <div class="why"><b>почему здесь</b>«…в которой человек и AI работают вместе» — 48.27…50.63</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="bar bad">
+          <span class="chip bad">замечание</span>
+          <span class="grow">Сцена 15: подпись «Мыслить как архитектор» подходит к левому краю на 49px при пороге 60</span>
+          <button class="btn sm">Починить — кегль 25</button>
+          <button class="btn gh sm">Поправить руками</button>
+          <button class="btn gh sm">Принять как есть</button>
+        </div>
+        <div class="bar">
+          <span class="chip vi">правка словами</span>
+          <input value="две иконки — широкой парой, как процессы / структура">
+          <span class="chip mute">покажу, что изменю, до применения</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 4. СБОРКА ═══════════ -->
+<div class="screen" id="s4">
+  <aside class="rail">
+    <div class="brand"><span class="mark">Р</span><b>Ролики</b></div>
+    <nav class="nav">
+      <a><span class="ic"></span>Все ролики</a>
+      <a><span class="ic"></span>Правила подачи</a>
+      <a><span class="ic"></span>Значки</a>
+      <a class="on"><span class="ic"></span>Очередь</a>
+      <a><span class="ic"></span>Настройки</a>
+    </nav>
+    <div class="foot"><div class="row"><span>в очереди</span><span>1</span></div>
+      <div class="row"><span>осталось</span><span>~5 мин</span></div></div>
+  </aside>
+  <div class="main">
+    <div class="top"><h1>Лекция 9 · Новые роли</h1><span class="sep">·</span><span class="sub">сборка</span>
+      <span class="sp"></span><span class="chip mute">вкладку можно закрыть</span>
+      <button class="btn gh sm">Сообщить, когда будет готово</button><button class="btn gh sm">Остановить</button></div>
+    <div class="content">
+      <div class="steps">
+        <div class="step done"><span class="n">✓</span><span class="t">Страница слоя<em>16 сцен, 49 элементов</em></span>
+          <span class="pr"><i style="width:100%"></i></span><span class="tm">3 с</span></div>
+        <div class="step done"><span class="n">✓</span><span class="t">Проверки<em>зона, зазоры, переносы, значки, речь, слова, пары, пустоты — 8 из 8</em></span>
+          <span class="pr"><i style="width:100%"></i></span><span class="tm">12 с</span></div>
+        <div class="step run"><span class="n">3</span><span class="t">Рендер кадров<em>3099 кадров, 30 в секунду</em></span>
+          <span class="pr"><i style="width:68%"></i></span><span class="tm">4:05 / 6:00</span></div>
+        <div class="step"><span class="n">4</span><span class="t">Кодирование слоёв<em>цвет и маска прозрачности</em></span>
+          <span class="pr"><i style="width:0"></i></span><span class="tm">~3 мин</span></div>
+        <div class="step"><span class="n">5</span><span class="t">Склейка с дублем<em>обложка, слой, субтитры, звук копией</em></span>
+          <span class="pr"><i style="width:0"></i></span><span class="tm">~1 мин</span></div>
+        <div class="step"><span class="n">6</span><span class="t">Нарезка на части<em>рез 41.9 → две части</em></span>
+          <span class="pr"><i style="width:0"></i></span><span class="tm">~20 с</span></div>
+      </div>
+      <div class="log">
+        <div><span class="m">19:04:12</span> <span class="g">✓</span> проверки пройдены: зона 0, зазоры 0, переносы 0 из 37, значки 0</div>
+        <div><span class="m">19:04:12</span> <span class="g">✓</span> речь: 78 появлений внутри реплик · слова: 49 элементов под своими словами</div>
+        <div><span class="m">19:04:13</span> <span class="g">✓</span> пары: 8 широких · пустоты: 0 c пустого кадра</div>
+        <div><span class="m">19:04:15</span> <span class="v">→</span> рендер: кадр 200 из 3099 (6%), ~5:20 осталось</div>
+        <div><span class="m">19:06:40</span> <span class="v">→</span> рендер: кадр 1400 из 3099 (45%), ~3:10 осталось</div>
+        <div><span class="m">19:08:17</span> <span class="v">→</span> рендер: кадр 2100 из 3099 (68%), ~1:55 осталось</div>
+        <div><span class="m">19:08:18</span> <span class="m">этап атомарный: при перезапуске сервиса продолжит с кадра 2100</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 5. ГОТОВО ═══════════ -->
+<div class="screen" id="s5">
+  <aside class="rail">
+    <div class="brand"><span class="mark">Р</span><b>Ролики</b></div>
+    <nav class="nav">
+      <a class="on"><span class="ic"></span>Все ролики</a>
+      <a><span class="ic"></span>Правила подачи</a>
+      <a><span class="ic"></span>Значки</a>
+      <a><span class="ic"></span>Очередь</a>
+      <a><span class="ic"></span>Настройки</a>
+    </nav>
+    <div class="foot"><div class="row"><span>слепок</span><span>v3</span></div>
+      <div class="row"><span>правила</span><span>v7</span></div>
+      <div class="row"><span>стоил</span><span>38 ₽</span></div></div>
+  </aside>
+  <div class="main">
+    <div class="top"><h1>Лекция 9 · Новые роли</h1><span class="sep">·</span><span class="sub">готово · 2 части</span>
+      <span class="sp"></span><button class="btn gh sm">Пересобрать</button><button class="btn gh sm">Выпущено</button>
+      <button class="btn">Скачать всё</button></div>
+    <div class="content">
+      <div class="parts">
+        <div class="part"><img src="img/cover1.jpg" alt="">
+          <div class="info"><b>Часть 1</b>
+            <div class="row"><span>00:00 — 00:41.9</span></div>
+            <div class="row"><span>18.4 МБ · 1080×1920 · 30 к/с</span></div>
+            <div><span class="chip ok">обложка · Часть 1</span></div>
+            <div style="margin-top:auto"><button class="btn sm">Скачать</button><button class="btn gh sm">Открыть</button></div>
+          </div></div>
+        <div class="part"><img src="img/cover2.jpg" alt="">
+          <div class="info"><b>Часть 2</b>
+            <div class="row"><span>00:41.9 — 01:41.8</span></div>
+            <div class="row"><span>25.1 МБ · 1080×1920 · 30 к/с</span></div>
+            <div><span class="chip ok">обложка · Часть 2</span></div>
+            <div style="margin-top:auto"><button class="btn sm">Скачать</button><button class="btn gh sm">Открыть</button></div>
+          </div></div>
+      </div>
+      <div class="report">
+        <span class="lbl">Проверки готового слоя</span>
+        <div class="rline"><span class="chip ok">✓</span><span class="name">Пустой кадр между сценами</span>
+          <span>графика держится до следующей</span><span class="val">0 c</span></div>
+        <div class="rline"><span class="chip ok">✓</span><span class="name">Смена сцены — кроссфейд</span>
+          <span>обрывов нет, самый длинный переход 20 кадров</span><span class="val">3099 кадров</span></div>
+        <div class="rline"><span class="chip ok">✓</span><span class="name">Элементы под своими словами</span>
+          <span>сверено по корням слов</span><span class="val">49 из 49</span></div>
+        <div class="rline"><span class="chip ok">✓</span><span class="name">Рез в паузе и на смене сцены</span>
+          <span>41.9 — дорожка молчит до 42.03</span><span class="val">1 рез</span></div>
+      </div>
+      <div class="report" style="flex:1;min-height:0">
+        <span class="lbl">Слепок сборки · по нему пересборка повторится один в один</span>
+        <div class="rline"><span class="name">Дубль</span><span>лекция-9.MOV · 2:08</span>
+          <span class="val">sha 4f2a…c71</span></div>
+        <div class="rline"><span class="name">Дорожка</span><span>субтитры.srt · 75 реплик, 222 слова</span>
+          <span class="val">sha 91be…04d</span></div>
+        <div class="rline"><span class="name">Обложка</span><span>lecture_1_9.png · подпись на y250</span>
+          <span class="val">sha 0c7d…a52</span></div>
+        <div class="rline"><span class="name">Правила подачи</span><span>v7 · 14 измеримых, 23 текстовых</span>
+          <span class="val">2026-08-29</span></div>
+        <div class="rline"><span class="name">Шрифт</span><span>Montserrat Black 2.1</span>
+          <span class="val">×1.562 в libass</span></div>
+        <div class="rline"><span class="name">ffmpeg · Chromium</span><span>7.0 · 140</span>
+          <span class="val">libx264 crf 18</span></div>
+        <div class="rline"><span class="name">Модель</span><span>черновик раскадровки, 4 правки словами</span>
+          <span class="val">38 ₽</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 6. ПРАВИЛА ═══════════ -->
+<div class="screen" id="s6">
+  <aside class="rail">
+    <div class="brand"><span class="mark">Р</span><b>Ролики</b></div>
+    <nav class="nav">
+      <a><span class="ic"></span>Все ролики</a>
+      <a class="on"><span class="ic"></span>Правила подачи</a>
+      <a><span class="ic"></span>Значки</a>
+      <a><span class="ic"></span>Очередь</a>
+      <a><span class="ic"></span>Настройки</a>
+    </nav>
+    <div class="foot"><div class="row"><span>версия</span><span>v7</span></div>
+      <div class="row"><span>измеримых</span><span>14</span></div>
+      <div class="row"><span>текстовых</span><span>23</span></div></div>
+  </aside>
+  <div class="main">
+    <div class="top"><h1>Правила подачи</h1><span class="sep">·</span><span class="sub">версия 7 · собрано 3 ролика</span>
+      <span class="sp"></span><button class="btn gh sm">Проверить на прошлых роликах</button>
+      <button class="btn gh sm">История версий</button><button class="btn">Сохранить как v8</button></div>
+    <div class="content">
+      <div class="rules">
+        <table>
+          <thead><tr><th>Правило</th><th>Значение</th><th>Откуда</th><th>Проверяется</th></tr></thead>
+          <tbody>
+            <tr><td>Зона графики</td><td><span class="val">238…630</span></td>
+              <td><span class="src">замер: верх картин y638</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Минимальный кегль</td><td><span class="val">24 px</span></td>
+              <td><span class="src">правило подачи №3</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Зазор между подписями</td><td><span class="val">18 px</span></td>
+              <td><span class="src">«Поддерживающие» и «Управленческие» слиплись</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Пара: центры кружков</td><td><span class="val">246 · 834</span></td>
+              <td><span class="src">«иконки, когда их две, — как процессы / структура»</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Значков в разлёте</td><td><span class="val">4</span></td>
+              <td><span class="src">ролик 7: «эмодзи добавь вылетающие»</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Пустой кадр между сценами</td><td><span class="val">запрещён</span></td>
+              <td><span class="src">«надо чтобы оставалась, пока не появляется новая»</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Полоса строки субтитров</td><td><span class="val">940 px</span></td>
+              <td><span class="src">«субтитры друг на друга накладывались»</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Слов в реплике</td><td><span class="val">не больше 4</span></td>
+              <td><span class="src">«субтитры по два слова мелькают»</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Кегль вжжённых субтитров</td><td><span class="val">× 1.562</span></td>
+              <td><span class="src">замер: libass читает Fontsize как высоту строки</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Хвост слоя за дорожкой</td><td><span class="val">1.5 c</span></td>
+              <td><span class="src">замер: шапка держится до конца дубля</span></td><td><span class="sw"></span></td></tr>
+            <tr><td>Крупных слов в ролике</td><td><span class="val">по числу блоков</span></td>
+              <td><span class="src">«крупное слово — только опорный блок»</span></td><td><span class="sw off"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="textrule">
+        <span class="lbl">Правило-текст · уходит в промт модели</span>
+        <div class="t">В кадре «ИИ», а не «AI». Латиницей остаются только имена собственные:
+          AI-first, AgentOps, Chief AI Officer, A/B-тестирование.</div>
+        <div style="display:flex;gap:9px;align-items:center">
+          <span class="chip warn">не проверяется автоматически</span>
+          <span class="chip mute">действует с ролика 5</span>
+          <span class="sp" style="flex:1"></span>
+          <button class="btn gh sm">Изменить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
