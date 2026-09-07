@@ -83,6 +83,8 @@ def refresh_icons(src_dir):
         used.add(d.get("icon", "circle"))
         for t in d["tiles"]:
             used.add(t.get("icon", "circle"))
+    for key in ("map", "assembly", "finale"):
+        used.add(SLIDE_META[key]["icon"])
     used |= set(UI_ICONS)
     out = {}
     missing = []
@@ -101,12 +103,12 @@ def refresh_icons(src_dir):
     print("icons.json: %d значков" % len(out))
 
 
-# Значки самой страницы (шапка, стрелки, разделы карточки)
+# Значки, которые рисует не разметка, а скрипты: шапка, стрелки карточки,
+# полоса «что делает человек», стрелки конвейера. Всё остальное собирается
+# из готовой разметки, поэтому список короткий и не разъезжается.
 UI_ICONS = [
-    "moon", "sun", "book-open-text", "chalkboard-teacher", "arrow-left",
-    "arrow-right", "x", "sign-in", "gear-fine", "package", "user-focus",
-    "gauge", "shield-warning", "arrow-fat-line-right", "wrench", "target",
-    "caret-right", "squares-four",
+    "moon", "sun", "book-open-text", "chalkboard-teacher",
+    "arrow-left", "arrow-right", "x", "user-focus", "caret-right",
 ]
 
 
@@ -223,28 +225,25 @@ body:not(.fit-ready) #deck{opacity:0}
 .slide.is-on{opacity:1;visibility:visible;pointer-events:auto}
 @media (max-width:767px){ .slide{padding:88px 14px 96px} }
 
-/* ── Заголовок слайда ──────────────────────────────────────────────────── */
-.s-head{flex:0 0 auto;margin-bottom:14px}
-.s-kicker{
-  display:inline-flex;align-items:center;gap:.45em;font-size:11px;font-weight:800;
-  letter-spacing:.18em;text-transform:uppercase;color:var(--ac);margin-bottom:8px;
+/* ── Заголовок слайда: значок и название, больше сверху ничего ────────── */
+/* Раньше здесь были надпись «направление N из 10» и подводка на три строки.
+   Слайд про сто ролей и так плотный: текст сверху съедал место у плиток,
+   а место в колоде показывает счётчик внизу. */
+.s-head{flex:0 0 auto;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.s-ic{
+  flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  width:54px; height:54px; border-radius:17px; background:var(--ac-s);
+  color:var(--ac); font-size:29px;
 }
-.s-kicker .ic{font-size:14px}
 .s-title{
   font-size:44px;line-height:1.06;font-weight:900;letter-spacing:-.015em;
   background-image:linear-gradient(90deg,var(--pur) 0%,var(--org) 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
 }
-.s-sub{margin-top:9px;font-size:15px;line-height:1.45;font-weight:500;color:var(--muted);max-width:1000px}
-.s-sub.mob{display:none}
 @media (max-width:767px){
-  .s-head{margin-bottom:10px}
-  .s-kicker{font-size:9px;letter-spacing:.14em;margin-bottom:5px}
-  .s-kicker .ic{font-size:11px}
+  .s-head{margin-bottom:11px;gap:9px}
+  .s-ic{width:34px;height:34px;border-radius:11px;font-size:19px}
   .s-title{font-size:23px;line-height:1.1}
-  .s-sub{margin-top:6px;font-size:11.5px;line-height:1.38}
-  .s-sub.pc{display:none}
-  .s-sub.mob{display:block}
 }
 
 /* ── Сетка плиток: 5x2 на компьютере, 2x5 на телефоне ──────────────────── */
@@ -255,8 +254,8 @@ body:not(.fit-ready) #deck{opacity:0}
 @media (max-width:767px){ .grid{grid-template-columns:repeat(2,1fr);gap:9px} }
 
 .tile{
-  position:relative; display:flex; flex-direction:column; align-items:flex-start;
-  text-align:left; padding:15px 15px 13px; border-radius:18px;
+  position:relative; display:flex; flex-direction:column; align-items:stretch;
+  text-align:left; justify-content:center; padding:18px; border-radius:18px;
   background:var(--card); border:1px solid var(--bd); overflow:hidden;
   transition:border-color .18s ease,background .18s ease;
 }
@@ -266,42 +265,44 @@ body:not(.fit-ready) #deck{opacity:0}
 }
 .tile:hover,.tile:focus-visible{border-color:var(--ac);background:var(--soft)}
 .tile:hover::after,.tile:focus-visible::after{opacity:1}
-.t-no{
-  position:absolute; top:13px; right:14px; font-size:11px; font-weight:800;
-  letter-spacing:.06em; color:var(--muted); opacity:.65;
+/* Название слева, значок справа — заказчик просил именно такой порядок. */
+.t-top{display:flex;align-items:flex-start;gap:10px;width:100%}
+.t-name{
+  flex:1 1 auto; min-width:0; font-size:17px; line-height:1.18; font-weight:800;
+  letter-spacing:-.005em;
+  /* Слово посреди себя не рвём: «Производительнос-ть» — это дефект, а не
+     перенос. Если слово не влезает, кегль подбирает fitNames() сразу для
+     ВСЕХ плиток колоды, чтобы ряд не скакал. */
+  overflow-wrap:normal; word-break:normal; hyphens:none;
 }
 .t-ic{
-  display:flex; align-items:center; justify-content:center; width:44px; height:44px;
-  border-radius:14px; background:var(--ac-s);
-  color:var(--ac); font-size:24px; margin-bottom:11px; flex:0 0 auto;
+  flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  width:48px; height:48px; border-radius:15px; background:var(--ac-s);
+  color:var(--ac); font-size:26px;
 }
-.t-name{font-size:15.5px;line-height:1.2;font-weight:800;letter-spacing:-.005em;overflow-wrap:break-word;hyphens:none}
-.t-lead{margin-top:7px;font-size:11.5px;line-height:1.38;font-weight:500;color:var(--muted);overflow-wrap:break-word}
-.t-do{margin-top:10px;display:grid;gap:4px;width:100%}
-.t-do i{display:flex;align-items:flex-start;gap:.45em;font-size:10.5px;line-height:1.3;font-style:normal;font-weight:600;color:var(--muted)}
-.t-do i::before{content:'';flex:0 0 auto;width:4px;height:4px;border-radius:50%;background:var(--ac);margin-top:.44em;opacity:.75}
-.t-foot{margin-top:auto;padding-top:10px;display:flex;align-items:center;gap:7px;width:100%}
-.t-dots{display:flex;gap:3px}
-.t-dots i{width:11px;height:4px;border-radius:2px;background:var(--soft-bd);display:block}
-.t-dots i.on{background:var(--ac)}
-.t-cnt{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ac);white-space:nowrap}
-.t-trig{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.t-lead{margin-top:11px;font-size:12.5px;line-height:1.38;font-weight:500;color:var(--muted);overflow-wrap:break-word}
+/* Три главные функции — нумерованными значками, а не точками: плитка сама
+   читается как схема, без открытия карточки. */
+.t-do{margin-top:13px;display:grid;gap:7px;width:100%;counter-reset:st}
+.t-do i{
+  display:flex; align-items:flex-start; gap:.55em; font-size:12px; line-height:1.32;
+  font-style:normal; font-weight:600; color:var(--ink); opacity:.86;
+}
+.t-do i::before{
+  counter-increment:st; content:counter(st); flex:0 0 auto;
+  width:1.45em; height:1.45em; border-radius:6px; background:var(--ac-s);
+  color:var(--ac); font-size:.85em; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
 @media (max-width:767px){
-  .tile{padding:9px 9px 8px;border-radius:13px}
-  .t-no{top:7px;right:8px;font-size:8.5px}
-  .t-ic{width:27px;height:27px;border-radius:9px;font-size:15px;margin-bottom:6px}
-  .t-name{font-size:11px;line-height:1.16}
-  .t-lead{display:none}
+  .tile{padding:11px 10px;border-radius:13px}
+  .t-top{gap:7px}
+  .t-name{font-size:12px;line-height:1.15}
+  .t-ic{width:30px;height:30px;border-radius:9px;font-size:17px}
+  .t-lead{margin-top:7px;font-size:9.5px;line-height:1.3}
+  /* Три шага на телефон не помещаются — там остаются название, значок
+     и подпись, а разбор работы открывается в карточке. */
   .t-do{display:none}
-  /* На телефоне под подпись и три шага места нет — остаются значок, имя и
-     шкала. Пустоту между ними не оставляем внизу карточки: два auto-отступа
-     делят её поровну, и группа «значок + имя» встаёт по центру. */
-  .t-ic{margin-top:auto}
-  .t-name{margin-bottom:2px}
-  .t-foot{padding-top:6px;gap:5px}
-  .t-dots i{width:7px;height:3px}
-  .t-trig{display:none}
-  .t-cnt{font-size:8.5px;letter-spacing:.04em}
 }
 
 /* ── Стрелки, счётчик и полоса прогресса ───────────────────────────────── */
@@ -338,17 +339,17 @@ body:not(.fit-ready) #deck{opacity:0}
 CSS += r"""
 /* ── Карточка сотрудника ───────────────────────────────────────────────── */
 /* Карточка — оконный слой, а не содержимое слайда: она не масштабируется
-   вместе с холстом и прокручивается внутри себя. Слайд под ней остаётся
-   неподвижным, поэтому правило «ничего не листается» не нарушено. */
+   вместе с холстом. На компьютере обязана помещаться целиком без прокрутки
+   (это стережёт tools/seminar_check.py), на телефоне листать вниз разрешено. */
 #pop{position:fixed;inset:0;z-index:9600;display:flex;align-items:center;justify-content:center;padding:18px}
 #pop[hidden]{display:none!important}
 .pop-card:focus,.pop-card:focus-visible{outline:none}
 .pop-scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;transition:opacity .22s ease}
 #pop.on .pop-scrim{opacity:1}
 .pop-card{
-  position:relative; width:min(760px,100%); max-height:min(88dvh,860px); overflow-y:auto;
+  position:relative; width:min(880px,100%); max-height:min(88dvh,820px); overflow-y:auto;
   overscroll-behavior:contain; background:var(--card); border:1px solid var(--bd);
-  border-radius:24px; padding:26px 26px 28px; opacity:0; transform:translateY(14px);
+  border-radius:24px; padding:24px 24px 22px; opacity:0; transform:translateY(14px);
   transition:opacity .22s ease,transform .22s cubic-bezier(.22,1,.36,1);
   scrollbar-width:thin; scrollbar-color:var(--ac) transparent;
 }
@@ -358,99 +359,90 @@ CSS += r"""
 .pop-x{
   position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:999px;
   display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--muted);
-  border:1px solid transparent;transition:color .2s ease,border-color .2s ease;
+  border:1px solid transparent;transition:color .2s ease,border-color .2s ease;z-index:2;
 }
 .pop-x:hover{color:var(--ac);border-color:var(--soft-bd)}
-.pop-head{display:flex;align-items:flex-start;gap:16px;padding-right:38px}
+/* Название слева, значок справа — как на плитках. */
+.pop-head{display:flex;align-items:center;gap:16px;padding-right:48px}
+.pop-id{flex:1 1 auto;min-width:0}
+.pop-dom{
+  font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ac);margin-bottom:5px;
+}
+.pop-name{font-size:27px;line-height:1.12;font-weight:900;letter-spacing:-.015em;overflow-wrap:break-word}
 .pop-ic{
-  flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:62px;height:62px;
-  border-radius:19px;font-size:33px;color:#fff;
+  flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:64px;height:64px;
+  border-radius:20px;font-size:34px;color:#fff;
   background:linear-gradient(135deg,var(--pur) 0%,var(--org) 100%);
 }
-.pop-id{min-width:0}
-.chips-top{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px}
-.chip{
-  display:inline-flex;align-items:center;gap:.35em;padding:4px 9px;border-radius:999px;
-  font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
-  background:var(--soft);border:1px solid var(--soft-bd);color:var(--muted);white-space:nowrap;
-}
-.chip-ac{background:var(--ac-s);border-color:var(--ac-l);color:var(--ac)}
-.pop-name{font-size:26px;line-height:1.14;font-weight:900;letter-spacing:-.015em;overflow-wrap:break-word}
-.pop-en{margin-top:4px;font-size:11.5px;font-weight:600;letter-spacing:.06em;color:var(--muted);opacity:.75}
-.pop-mission{margin-top:15px;font-size:14.5px;line-height:1.6;font-weight:500;color:var(--ink);opacity:.86}
 
-.sect{margin-top:20px}
-.sect-h{
-  display:flex;align-items:center;gap:.55em;font-size:10.5px;font-weight:800;
-  letter-spacing:.15em;text-transform:uppercase;color:var(--ac);margin-bottom:9px;
-}
-.sect-h .ic{font-size:13px}
-.sect-h::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--ac-l),transparent)}
-
-/* Конвейер: что входит → что делает → что остаётся */
-.flow{display:grid;grid-template-columns:1fr 22px 1fr 22px 1fr;align-items:stretch;gap:0}
-.flow-col{padding:13px 13px 12px;border-radius:16px;background:var(--soft);border:1px solid var(--soft-bd);min-width:0}
+/* Конвейер: вход → логика работы → выход. Это вся карточка, текста нет. */
+.flow{margin-top:20px;display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:stretch}
+.flow-col{padding:14px 14px 13px;border-radius:16px;background:var(--soft);border:1px solid var(--soft-bd);min-width:0}
 .flow-col.mid{background:var(--ac-m);border-color:var(--ac-b)}
-.flow-h{display:flex;align-items:center;gap:.4em;font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
-.flow-h .ic{font-size:12px;color:var(--ac)}
-.flow-col ul{list-style:none;display:grid;gap:6px}
+.flow-h{
+  font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;
+}
+.flow-col.mid .flow-h{color:var(--ac)}
+.flow-col ul,.flow-col ol{list-style:none;display:grid;gap:7px;counter-reset:fs}
 .flow-col li{
-  display:flex;align-items:flex-start;gap:.5em;font-size:12px;line-height:1.34;
-  font-weight:600;color:var(--ink);opacity:.85;overflow-wrap:break-word;
+  display:flex;align-items:flex-start;gap:.55em;font-size:12.5px;line-height:1.32;
+  font-weight:600;color:var(--ink);opacity:.88;overflow-wrap:break-word;
 }
-.flow-col li::before{content:'';flex:0 0 auto;width:5px;height:5px;border-radius:50%;background:var(--ac);margin-top:.42em;opacity:.75}
-.flow-ar{display:flex;align-items:center;justify-content:center;color:var(--ac);font-size:15px;opacity:.6}
-
-/* Две шкалы: самостоятельность и класс действия */
-.meters{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.meter{padding:12px 13px;border-radius:16px;background:var(--soft);border:1px solid var(--soft-bd)}
-.meter-h{font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.meter-seg{display:flex;gap:4px;margin-bottom:8px}
-.meter-seg i{flex:1;height:7px;border-radius:3px;background:var(--soft-bd);display:block}
-.meter-seg i.on{background:var(--ac)}
-.meter-seg.warm i.on{background:var(--org)}
-.meter-v{font-size:12.5px;font-weight:800;line-height:1.3;overflow-wrap:break-word}
-
-/* Строки-акценты: участие человека и ограничение */
-.row{display:flex;align-items:flex-start;gap:11px;padding:12px 14px;border-radius:16px;margin-top:12px}
-.row .ic{font-size:19px;flex:0 0 auto;margin-top:1px}
-.row-t{font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;margin-bottom:4px;opacity:.72}
-.row-v{font-size:12.8px;line-height:1.45;font-weight:600}
-.row-human{background:rgba(139,92,246,.10);border:1px solid rgba(139,92,246,.26);color:var(--ink)}
-.row-human .ic{color:var(--pur)}
-.row-guard{background:rgba(249,115,22,.11);border:1px solid rgba(249,115,22,.30);color:var(--ink)}
-.row-guard .ic{color:var(--org)}
-
-.chips-wrap{display:flex;flex-wrap:wrap;gap:7px}
-.chip-lg{
-  display:inline-flex;align-items:center;gap:.4em;padding:7px 12px;border-radius:999px;
-  font-size:12px;font-weight:700;background:var(--soft);border:1px solid var(--soft-bd);
-  color:var(--ink);opacity:.9;letter-spacing:0;text-transform:none;
+.flow-col ul li::before{
+  content:'';flex:0 0 auto;width:5px;height:5px;border-radius:50%;
+  background:var(--ac);margin-top:.45em;opacity:.7;
 }
-.chip-lg .ic{font-size:13px;color:var(--ac);opacity:.85}
-.chip-next{background:var(--ac-m);border-color:var(--ac-b)}
+.flow-col ol li::before{
+  counter-increment:fs;content:counter(fs);flex:0 0 auto;
+  width:1.45em;height:1.45em;border-radius:6px;background:var(--ac);color:#fff;
+  font-size:.82em;font-weight:800;display:flex;align-items:center;justify-content:center;
+}
+.flow-ar{display:flex;align-items:center;justify-content:center;color:var(--ac);font-size:19px;opacity:.85}
 
-.roles{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.roles li{display:flex;align-items:center;gap:.6em;padding:9px 12px;border-radius:12px;background:var(--soft);border:1px solid var(--soft-bd);font-size:12.5px;font-weight:700;line-height:1.25;overflow-wrap:break-word}
-.roles .r-n{flex:0 0 auto;font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--ac);opacity:.8}
-@media (max-width:767px){ .roles{grid-template-columns:1fr} }
+/* Что делает человек — отдельной полосой */
+.row-human{
+  margin-top:14px;display:flex;align-items:flex-start;gap:12px;padding:13px 15px;
+  border-radius:16px;background:rgba(139,92,246,.10);border:1px solid rgba(139,92,246,.26);
+}
+.row-human .ic{font-size:20px;flex:0 0 auto;margin-top:1px;color:var(--pur)}
+.row-t{font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;margin-bottom:4px;opacity:.7}
+.row-v{font-size:13px;line-height:1.45;font-weight:600}
 
-.pop-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;padding-top:16px;border-top:1px solid var(--soft-bd)}
-.pop-nav button{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:999px;border:1px solid var(--soft-bd);background:var(--soft);color:var(--ink);font-size:15px;transition:background .2s ease,border-color .2s ease,color .2s ease}
+/* Метрики — хэштегами внизу карточки */
+.tags{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px 14px}
+.tags span{font-size:12px;font-weight:700;color:var(--ac);opacity:.95;white-space:nowrap}
+
+/* Плитка направления: вместо конвейера — состав из десяти ролей */
+.roles{margin-top:20px;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px;counter-reset:rn}
+.roles li{
+  display:flex;align-items:center;gap:.6em;padding:10px 13px;border-radius:12px;
+  background:var(--soft);border:1px solid var(--soft-bd);font-size:13px;font-weight:700;
+  line-height:1.25;overflow-wrap:break-word;
+}
+.roles li::before{
+  counter-increment:rn;content:counter(rn,decimal-leading-zero);flex:0 0 auto;
+  font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--ac);opacity:.85;
+}
+
+.pop-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:18px;padding-top:14px;border-top:1px solid var(--soft-bd)}
+.pop-nav button{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;border:1px solid var(--soft-bd);background:var(--soft);color:var(--ink);font-size:14px;transition:background .2s ease,border-color .2s ease,color .2s ease}
 .pop-nav button:hover{background:var(--ac);border-color:var(--ac);color:#fff}
 .pop-nav span{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--muted)}
 
 @media (max-width:767px){
   #pop{padding:10px}
-  .pop-card{width:100%;max-height:92dvh;padding:20px 16px 22px;border-radius:20px}
-  .pop-head{gap:12px;padding-right:34px}
-  .pop-ic{width:50px;height:50px;border-radius:16px;font-size:27px}
-  .pop-name{font-size:20px}
-  .pop-mission{font-size:13px;margin-top:13px}
-  .flow{grid-template-columns:1fr;gap:0}
+  .pop-card{width:100%;max-height:92dvh;padding:18px 15px 20px;border-radius:20px}
+  .pop-head{gap:11px;padding-right:38px}
+  .pop-ic{width:48px;height:48px;border-radius:15px;font-size:26px}
+  .pop-name{font-size:19px}
+  .pop-dom{font-size:9.5px;letter-spacing:.13em}
+  .flow{margin-top:15px;grid-template-columns:1fr}
   .flow-ar{height:20px;transform:rotate(90deg)}
-  .meters{grid-template-columns:1fr}
-  .sect{margin-top:17px}
+  .flow-col li{font-size:12px}
+  .roles{grid-template-columns:1fr;margin-top:15px}
+  .row-v{font-size:12.5px}
 }
 
 /* ── Панель «Текст к слайду»: дикторский текст семинара ────────────────── */
@@ -541,11 +533,68 @@ JS_MAIN = r"""
     root.style.setProperty('--view-scale', String(Math.min(availW / g.w, availH / g.h)));
     root.style.setProperty('--deck-shift', (dock / 2) + 'px');
   }
+  // ── Общий кегль названий плиток ────────────────────────────────────────
+  // Длинное русское слово («Производительность») в колонку плитки не влезает,
+  // а рвать его посреди себя нельзя — получается «Производительнос-ть».
+  // Перенос тут не спасает: слово одно. Значит уменьшаем кегль, и сразу у ВСЕХ
+  // плиток колоды, иначе соседние карточки получают разные размеры и ряд
+  // «скачет». Это КОНСТАНТА ФОРМЫ: считается один раз на форму и от размера
+  // окна не зависит вовсе.
+  var MEASURE = null;
+  try { MEASURE = document.createElement('canvas').getContext('2d'); } catch(e){}
+  function fitNames(){
+    if (!MEASURE) return;
+    var all = [].slice.call(document.querySelectorAll('.t-name'));
+    if (!all.length) return;
+    all.forEach(function(n){ n.style.fontSize = ''; });
+    var cs = window.getComputedStyle(all[0]);
+    var base = parseFloat(cs.fontSize) || 16;
+    var head = cs.fontStyle + ' ' + cs.fontWeight + ' ';
+    var tail = 'px ' + cs.fontFamily;
+    MEASURE.font = head + base + tail;
+    // Группа — РЯД плиток одного слайда: канон требует одного кегля в ряду,
+    // но не по всей колоде. Иначе одно длинное слово на десятом слайде
+    // ужимало бы подписи на всех остальных.
+    var groups = {};
+    all.forEach(function(n){
+      var tile = n.closest('.tile');
+      var slide = n.closest('.slide');
+      if (!tile || !slide) return;
+      var key = slide.getAttribute('data-i') + ':' + Math.round(tile.offsetTop / 8);
+      (groups[key] = groups[key] || []).push(n);
+    });
+    Object.keys(groups).forEach(function(key){
+      var row = groups[key], ratio = 1;
+      row.forEach(function(n){
+        var w = n.clientWidth;
+        if (!w) return;
+        // Дефис — законная точка переноса, браузер там рвёт строку сам.
+        // Меряем куски МЕЖДУ дефисами, иначе «Агент-распорядитель» ужимал
+        // весь ряд как одно неразрывное слово.
+        var words = n.textContent.split(/[\s\u2011-]+/), i, ww;
+        for (i = 0; i < words.length; i++){
+          ww = MEASURE.measureText(words[i]).width;
+          if (ww > w && w / ww < ratio) ratio = w / ww;
+        }
+      });
+      // 0.97 — запас на межбуквенный интервал: canvas его не учитывает.
+      if (ratio < 1){
+        var px = Math.max(9, Math.floor(base * ratio * 0.97 * 100) / 100);
+        row.forEach(function(n){ n.style.fontSize = px + 'px'; });
+      }
+    });
+  }
+  var lastForm = null;
+  function fitAll(){
+    fit();
+    var f = form();
+    if (f !== lastForm){ lastForm = f; fitNames(); }
+  }
   // Без дебаунса: при ресайзе меняется одна transform-величина, пересобирать
   // нечего — иначе картинка «дышит» секунду после каждого движения окна.
-  window.addEventListener('resize', fit, { passive:true });
-  window.addEventListener('orientationchange', fit, { passive:true });
-  fit();
+  window.addEventListener('resize', fitAll, { passive:true });
+  window.addEventListener('orientationchange', fitAll, { passive:true });
+  fitAll();
 
   // ══ Колода ═════════════════════════════════════════════════════════════
   var slides = [].slice.call(document.querySelectorAll('.slide'));
@@ -618,7 +667,8 @@ JS_MAIN = r"""
 
   // Показываем колоду только когда шрифты доехали и масштаб посчитан:
   // иначе виден кадр с чужой метрикой шрифта и другой раскладкой строк.
-  function reveal(){ fit(); body.classList.add('fit-ready'); }
+  // Шрифт мог доехать после первого замера — считаем кегль заново.
+  function reveal(){ lastForm = null; fitAll(); body.classList.add('fit-ready'); }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(reveal).catch(reveal);
   else reveal();
   window.addEventListener('load', reveal);
@@ -633,7 +683,6 @@ JS_POP = r"""
   var DECK = {};
   try { DECK = JSON.parse(dataEl.textContent || '{}'); } catch(e){ return; }
 
-  var AUTO = DECK.autonomy || [], RISK = DECK.risk || [];
   var pop = document.getElementById('pop');
   var card = document.getElementById('pop-card');
   var opener = null, seq = [], seqIdx = 0;
@@ -641,91 +690,56 @@ JS_POP = r"""
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
     return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
   function ic(name, cls){ return '<svg class="' + (cls || 'ic') + '" aria-hidden="true"><use href="#i-' + esc(name) + '"></use></svg>'; }
-  function chips(list, cls, icon){
-    return '<div class="chips-wrap">' + (list || []).map(function(v){
-      return '<span class="chip-lg ' + (cls || '') + '">' + (icon ? ic(icon) : '') + esc(v) + '</span>';
-    }).join('') + '</div>';
-  }
-  function seg(level, count, warm){
-    var out = '<div class="meter-seg' + (warm ? ' warm' : '') + '">';
-    for (var i = 0; i < count; i++) out += '<i class="' + (i <= level ? 'on' : '') + '"></i>';
-    return out + '</div>';
-  }
-  function col(head, icon, items, mid){
-    return '<div class="flow-col' + (mid ? ' mid' : '') + '">' +
-      '<div class="flow-h">' + ic(icon) + esc(head) + '</div><ul>' +
-      (items || []).map(function(v){ return '<li>' + esc(v) + '</li>'; }).join('') + '</ul></div>';
-  }
 
+  function col(head, items, ordered){
+    var tag = ordered ? 'ol' : 'ul';
+    return '<div class="flow-col' + (ordered ? ' mid' : '') + '">' +
+      '<div class="flow-h">' + esc(head) + '</div><' + tag + '>' +
+      (items || []).map(function(v){ return '<li>' + esc(v) + '</li>'; }).join('') +
+      '</' + tag + '></div>';
+  }
+  function flowBlock(t){
+    return '<div class="flow">' +
+      col('Что на входе', t['in'], false) +
+      '<div class="flow-ar">' + ic('caret-right') + '</div>' +
+      col('Логика работы', t['do'], true) +
+      '<div class="flow-ar">' + ic('caret-right') + '</div>' +
+      col('Что на выходе', t.out, false) + '</div>';
+  }
   function rolesBlock(list){
-    return '<ol class="roles">' + (list || []).map(function(v, k){
-      return '<li><span class="r-n">' + (k < 9 ? '0' : '') + (k + 1) + '</span>' + esc(v) + '</li>';
-    }).join('') + '</ol>';
+    return '<ol class="roles">' + (list || []).map(function(v){
+      return '<li>' + esc(v) + '</li>'; }).join('') + '</ol>';
+  }
+  // Метрики идут хэштегами: короткая строка внизу вместо ещё одного раздела.
+  function tags(list){
+    if(!(list || []).length) return '';
+    return '<div class="tags">' + list.map(function(v){
+      var s = String(v).trim();
+      return '<span>#' + esc(s.charAt(0).toLowerCase() + s.slice(1)) + '</span>';
+    }).join('') + '</div>';
   }
 
   function render(t){
     var isDom = !!(t.roles && t.roles.length);
-    var a = Math.max(0, Math.min(4, t.autonomy | 0));
-    var r = Math.max(0, Math.min(4, t.risk | 0));
     var nav = seq.length > 1
       ? '<div class="pop-nav"><button type="button" id="pop-prev" aria-label="Предыдущая карточка">' + ic('arrow-left') + '</button>' +
         '<span>' + (seqIdx + 1) + ' / ' + seq.length + '</span>' +
         '<button type="button" id="pop-next" aria-label="Следующая карточка">' + ic('arrow-right') + '</button></div>'
       : '';
-    var head =
+    card.innerHTML =
       '<button class="pop-x" type="button" data-close aria-label="Закрыть">' + ic('x') + '</button>' +
-      '<div class="pop-head"><span class="pop-ic">' + ic(t.icon || 'circle') + '</span>' +
-        '<div class="pop-id"><div class="chips-top">' +
-          '<span class="chip chip-ac">' + esc(t.dom || '') + '</span>' +
-          (t.no ? '<span class="chip">' + esc(t.no) + '</span>' : '') +
-          (t.trigger ? '<span class="chip">' + esc(t.trigger) + '</span>' : '') +
-        '</div><h3 class="pop-name" id="pop-name">' + esc(t.ru) + '</h3>' +
-        (t.en ? '<div class="pop-en">' + esc(t.en) + '</div>' : '') + '</div></div>' +
-      '<p class="pop-mission">' + esc(t.mission) + '</p>';
-
-    var middle;
-    if (isDom){
-      middle =
-        '<div class="sect"><div class="sect-h">' + ic('squares-four') + 'Десять ролей направления</div>' +
-          rolesBlock(t.roles) + '</div>';
-    } else {
-      middle =
-        '<div class="sect"><div class="sect-h">' + ic('arrow-fat-line-right') + 'Как устроена работа</div>' +
-          flowBlock(t) + '</div>' +
-        '<div class="sect"><div class="sect-h">' + ic('gauge') + 'Самостоятельность и цена ошибки</div>' +
-          '<div class="meters">' +
-            '<div class="meter"><div class="meter-h">Насколько действует сам</div>' + seg(a, 5, false) +
-              '<div class="meter-v">' + esc(AUTO[a] || '') + '</div></div>' +
-            '<div class="meter"><div class="meter-h">Что меняет в мире</div>' + seg(r, 5, true) +
-              '<div class="meter-v">' + esc(RISK[r] || '') + '</div></div>' +
-          '</div>' +
-          '<div class="row row-human">' + ic('user-focus') +
-            '<div><div class="row-t">Где включается человек</div><div class="row-v">' + esc(t.human) + '</div></div></div>' +
-          '<div class="row row-guard">' + ic('shield-warning') +
-            '<div><div class="row-t">Чего делать нельзя</div><div class="row-v">' + esc(t.guard) + '</div></div></div>' +
-        '</div>' +
-        '<div class="sect"><div class="sect-h">' + ic('target') + 'Чем меряют пользу</div>' + chips(t.metrics, '', 'target') + '</div>' +
-        '<div class="sect"><div class="sect-h">' + ic('wrench') + 'С чем работает</div>' + chips(t.tools, '', 'wrench') + '</div>';
-    }
-
-    card.innerHTML = head + middle +
-      '<div class="sect"><div class="sect-h">' + ic('arrow-right') +
-        (isDom ? 'С чего начинается направление' : 'Передаёт дальше') + '</div>' +
-        chips(t.handoffs, 'chip-next', 'caret-right') + '</div>' + nav;
+      '<div class="pop-head"><div class="pop-id">' +
+        (t.dom ? '<div class="pop-dom">' + esc(t.dom) + '</div>' : '') +
+        '<h3 class="pop-name" id="pop-name">' + esc(t.ru) + '</h3></div>' +
+        '<span class="pop-ic">' + ic(t.icon || 'circle') + '</span></div>' +
+      (isDom ? rolesBlock(t.roles) : flowBlock(t)) +
+      (t.human ? '<div class="row-human">' + ic('user-focus') +
+        '<div><div class="row-t">Что делает человек</div><div class="row-v">' + esc(t.human) + '</div></div></div>' : '') +
+      tags(t.metrics) + nav;
     card.scrollTop = 0;
     var p = document.getElementById('pop-prev'), n = document.getElementById('pop-next');
     if (p) p.addEventListener('click', function(){ step(-1); });
     if (n) n.addEventListener('click', function(){ step(1); });
-  }
-
-  // Конвейер: три колонки «что приходит → что делает → что остаётся».
-  function flowBlock(t){
-    return '<div class="flow">' +
-      col('Что приходит', 'sign-in', t['in'], false) +
-      '<div class="flow-ar">' + ic('caret-right') + '</div>' +
-      col('Что делает', 'gear-fine', t['do'], true) +
-      '<div class="flow-ar">' + ic('caret-right') + '</div>' +
-      col('Что остаётся', 'package', t.out, false) + '</div>';
   }
 
   function step(d){
@@ -835,71 +849,35 @@ JS_NOTES = r"""
 # ── Сборка страницы ───────────────────────────────────────────────────────
 
 SLIDE_META = {
-    "map": dict(
-        kicker="Семинар к лекции 1", icon="squares-four",
-        title="Сто ИИ-сотрудников",
-        sub=("Десять направлений по десять ролей. Это процессы, построенные вокруг ИИ "
-             "с самого начала: из них собирается компания, которая ставит запуск продуктов "
-             "на поток. Нажмите на плитку — откроется состав направления."),
-        sub_mob="Нажмите на плитку — откроется состав направления.",
-    ),
-    "assembly": dict(
-        kicker="Сборка", icon="puzzle-piece",
-        title="Из ста ролей — компания",
-        sub=None,
-    ),
-    "finale": dict(
-        kicker="Что дальше", icon="rocket-launch",
-        title="Ваш агент",
-        sub=None,
-    ),
+    "map": dict(icon="squares-four", title="100 ИИ-сотрудников"),
+    "assembly": dict(icon="puzzle-piece", title="Из 100 ролей — компания"),
+    "finale": dict(icon="rocket-launch", title="Ваш агент"),
 }
 
 
-def dots(level, count=5):
-    return "".join('<i class="%s"></i>' % ("on" if i <= level else "") for i in range(count))
-
-
-def tile_html(s_idx, t_idx, t, show_lead=True):
-    lead = ('<span class="t-lead">%s</span>' % esc(t["lead"])) if (show_lead and t.get("lead")) else ""
+def tile_html(s_idx, t_idx, t):
+    """Плитка: название слева, значок справа, под ними подпись и три функции."""
+    lead = ('<span class="t-lead">%s</span>' % esc(t["lead"])) if t.get("lead") else ""
     steps = (t.get("do") or [])[:3]
     do = ('<span class="t-do">%s</span>' % "".join("<i>%s</i>" % esc(x) for x in steps)) if steps else ""
-    trig = ('<span class="t-trig">%s</span>' % esc(t["trigger"])) if t.get("trigger") else ""
-    if t.get("roles"):
-        # У плитки направления шкалы самостоятельности нет: это не сотрудник,
-        # а группа из десяти. В подвале — сколько ролей внутри.
-        foot = '<span class="t-cnt">%d ролей внутри</span>' % len(t["roles"])
-    else:
-        level = max(0, min(4, int(t.get("autonomy", 0))))
-        foot = '<span class="t-dots">%s</span>%s' % (dots(level), trig)
     return (
         '<button class="tile" type="button" data-s="%d" data-t="%d" aria-label="%s — открыть карточку">'
-        '<span class="t-no">%02d</span>'
-        '<span class="t-ic">%s</span>'
-        '<span class="t-name">%s</span>%s%s'
-        '<span class="t-foot">%s</span>'
-        "</button>"
-    ) % (s_idx, t_idx, esc(t["ru"]), t_idx + 1, ic(t.get("icon", "circle")),
-         esc(t["ru"]), lead, do, foot)
+        '<span class="t-top"><span class="t-name">%s</span><span class="t-ic">%s</span></span>'
+        "%s%s</button>"
+    ) % (s_idx, t_idx, esc(t["ru"]), esc(t["ru"]), ic(t.get("icon", "circle")), lead, do)
 
 
 def slide_html(idx, meta, tiles):
     # Соседние слайды чередуют фиолетовый и оранжевый акцент: иначе
     # тринадцать одинаковых сеток сливаются в одну.
     warm = " acc-warm" if idx % 2 else ""
-    sub = ""
-    if meta.get("sub"):
-        sub += '<p class="s-sub pc">%s</p>' % esc(meta["sub"])
-    if meta.get("sub_mob"):
-        sub += '<p class="s-sub mob">%s</p>' % esc(meta["sub_mob"])
     body = "".join(tile_html(idx, i, t) for i, t in enumerate(tiles))
     return (
         '<section class="slide%s" data-i="%d">'
-        '<div class="s-head"><div class="s-kicker">%s%s</div>'
-        '<h2 class="s-title" data-slide-title>%s</h2>%s</div>'
+        '<div class="s-head"><span class="s-ic">%s</span>'
+        '<h2 class="s-title" data-slide-title>%s</h2></div>'
         '<div class="grid">%s</div></section>'
-    ) % (warm, idx, ic(meta.get("icon", "circle")), esc(meta["kicker"]),
-         esc(meta["title"]), sub, body)
+    ) % (warm, idx, ic(meta.get("icon", "circle")), esc(meta["title"]), body)
 
 
 def paragraphs(text, per=3):
@@ -927,17 +905,15 @@ def build():
 
     # Плитки карты — сами направления: у них не конвейер, а состав из десяти ролей.
     map_tiles = []
-    for i, key in enumerate(DOMAIN_ORDER):
+    for key in DOMAIN_ORDER:
         d = data[key]
         map_tiles.append({
-            "ru": d["ru"], "en": d["en"], "icon": d["icon"], "lead": d["line"],
-            "mission": d["blurb"], "roles": [t["ru"] for t in d["tiles"]],
+            "ru": d["ru"], "icon": d["icon"], "lead": d["line"],
+            "dom": "Направление",
+            "roles": [t["ru"] for t in d["tiles"]],
             # На плитке направления показываем три роли из десяти — чтобы
             # карта читалась и без открытия карточки.
             "do": [t["ru"] for t in d["tiles"][:3]],
-            "handoffs": [t["ru"] for t in d["tiles"][:3]],
-            "dom": "Направление %d из 10" % (i + 1), "no": "10 ролей",
-            "autonomy": 2, "trigger": "",
         })
 
     slides, deck_tiles, notes = [], [], []
@@ -945,11 +921,10 @@ def build():
     # ── Слайд 1: карта направлений ───────────────────────────────────────
     slides.append(slide_html(0, SLIDE_META["map"], map_tiles))
     deck_tiles.append({"key": "map", "tiles": map_tiles})
-    intro = speech["intro"]["intro"]
     notes.append({
-        "title": "Вступление: карта из ста ролей",
+        "title": "Вступление: карта из 100 ролей",
         "lead": "Слайд открывает семинар. Дальше — десять направлений по десять ролей.",
-        "paras": paragraphs(intro, 3),
+        "paras": paragraphs(speech["intro"]["intro"], 3),
         "items": [],
     })
 
@@ -957,15 +932,8 @@ def build():
     for i, key in enumerate(DOMAIN_ORDER):
         d, sp = data[key], speech[key]
         idx = i + 1
-        tiles = []
-        for t in d["tiles"]:
-            t = dict(t)
-            t["dom"] = d["ru"]
-            t["no"] = "№ %d из 100" % (i * 10 + int(t["n"]))
-            tiles.append(t)
-        meta = dict(kicker="Направление %d из 10" % idx, icon=d["icon"],
-                    title=d["ru"], sub=d["blurb"], sub_mob=d["line"])
-        slides.append(slide_html(idx, meta, tiles))
+        tiles = [dict(t, dom=d["ru"]) for t in d["tiles"]]
+        slides.append(slide_html(idx, dict(icon=d["icon"], title=d["ru"]), tiles))
         deck_tiles.append({"key": key, "tiles": tiles})
         notes.append({
             "title": d["ru"],
@@ -977,15 +945,8 @@ def build():
     for key in ("assembly", "finale"):
         d, sp = data[key], speech[key]
         idx = len(slides)
-        tiles = []
-        for t in d["tiles"]:
-            t = dict(t)
-            t["dom"] = d["ru"]
-            t["no"] = ""
-            tiles.append(t)
-        meta = dict(SLIDE_META[key])
-        meta["sub"] = d["blurb"]
-        meta["sub_mob"] = d["line"]
+        meta = SLIDE_META[key]
+        tiles = [dict(t, dom=meta["title"]) for t in d["tiles"]]
         slides.append(slide_html(idx, meta, tiles))
         deck_tiles.append({"key": key, "tiles": tiles})
         note = {
@@ -997,17 +958,19 @@ def build():
             note["outro"] = paragraphs(sp["outro"], 3)
         notes.append(note)
 
-    used = set(UI_ICONS)
-    for s in deck_tiles:
-        for t in s["tiles"]:
-            used.add(t.get("icon", "circle"))
+    # Состав спрайта берём из ГОТОВОЙ разметки, а не из данных: заголовки
+    # слайдов рисуются своими значками, и список «по данным» их однажды уже
+    # терял — на слайде оставалась пустота вместо значка.
+    used = set(re.findall(r'href="#i-([a-z0-9-]+)"', "".join(slides))) | set(UI_ICONS)
     missing = sorted(n for n in used if n not in ICONS)
     if missing:
         sys.exit("значков нет в icons.json: %s (обнови: --icons DIR)" % ", ".join(missing))
 
+    keep = ("ru", "icon", "dom", "in", "do", "out", "human", "metrics", "roles")
     deck_data = {
-        "autonomy": AUTONOMY, "risk": RISK,
-        "slides": [{"key": s["key"], "tiles": s["tiles"]} for s in deck_tiles],
+        "slides": [{"key": s["key"],
+                    "tiles": [{k: t[k] for k in keep if k in t} for t in s["tiles"]]}
+                   for s in deck_tiles],
     }
 
     html = PAGE.replace("__SPRITE__", sprite(used))

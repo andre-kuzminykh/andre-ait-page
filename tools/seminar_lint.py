@@ -40,6 +40,66 @@ RULES = [
 ]
 
 
+# Числа на слайде пишем цифрами: «100», а не «сто». Правится только то, что
+# видно на слайде и в шапке карточки (имя плитки, подпись, строка направления);
+# дикторский текст остаётся словами — его читают вслух.
+NUMERALS = [
+    ("Выбрать одного из ста", "Выбрать одного из 100"),
+    ("Взять роль из сотни как проект", "Взять роль из 100 как проект"),
+    ("Роль, которой нет в сотне", "Роль, которой нет в 100"),
+    ("Финансы вне сотни", "Финансы вне 100"),
+    ("Право вне сотни", "Право вне 100"),
+    ("Из ста ролей", "Из 100 ролей"),
+    ("Свериться с сотней", "Проверить по списку"),
+]
+# Списки in/do/out тоже видны — они рисуются и на плитке, и в карточке.
+NUMERAL_FIELDS = ("ru", "lead", "line", "title", "in", "do", "out")
+
+
+def numerals(apply):
+    """Заменить числительные словами на цифры в видимых полях."""
+    hits = 0
+    for name in sorted(os.listdir(DATA_DIR)):
+        if not name.endswith(".json") or name == "icons.json":
+            continue
+        path = os.path.join(DATA_DIR, name)
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        changed = []
+
+        def fix(node):
+            nonlocal changed
+            if isinstance(node, dict):
+                for k, v in node.items():
+                    if k in NUMERAL_FIELDS and isinstance(v, str):
+                        for a, b in NUMERALS:
+                            if a in v:
+                                node[k] = v = v.replace(a, b)
+                                changed.append("%s → %s" % (a, b))
+                    elif k in NUMERAL_FIELDS and isinstance(v, list):
+                        for i, item in enumerate(v):
+                            if not isinstance(item, str):
+                                continue
+                            for a, b in NUMERALS:
+                                if a in item:
+                                    v[i] = item = item.replace(a, b)
+                                    changed.append("%s → %s" % (a, b))
+                    else:
+                        fix(v)
+            elif isinstance(node, list):
+                for v in node:
+                    fix(v)
+
+        fix(data)
+        if changed:
+            hits += len(changed)
+            print("%s: %d числительных — %s" % (name, len(changed), ", ".join(sorted(set(changed)))))
+            if apply:
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=1)
+    return hits
+
+
 def walk(node, fn):
     if isinstance(node, str):
         return fn(node)
@@ -85,6 +145,7 @@ def normalize(apply):
 def main():
     apply = "--apply" in sys.argv
     normalize(apply)
+    numerals(apply)
     hits = 0
     for name in sorted(os.listdir(DATA_DIR)):
         if not name.endswith(".json") or name == "icons.json":

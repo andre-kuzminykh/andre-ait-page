@@ -111,7 +111,7 @@ PROBE = r"""
 """
 
 POP_PROBE = r"""
-() => {
+(noScroll) => {
   const bad = [];
   const W = window.innerWidth, H = window.innerHeight;
   const card = document.getElementById('pop-card');
@@ -119,6 +119,11 @@ POP_PROBE = r"""
   if (r.left < -0.5 || r.right > W + 0.5) bad.push('карточка шире окна');
   if (r.top < -0.5 || r.bottom > H + 0.5) bad.push('карточка выше окна');
   if (card.scrollWidth > card.clientWidth + 1) bad.push('в карточке появилась горизонтальная прокрутка');
+  // На компьютере карточка обязана помещаться целиком: заказчик просил
+  // «чтобы всплывающие штуки вмещались без пролистывания». На телефоне
+  // листать вниз разрешено — там столько места просто нет.
+  if (noScroll && card.scrollHeight > card.clientHeight + 2)
+    bad.push('карточка не помещается: нужно листать на ' + (card.scrollHeight - card.clientHeight) + 'px');
   if (document.documentElement.scrollWidth > W + 1) bad.push('страница поехала вбок при открытой карточке');
   if (document.documentElement.scrollHeight > H + 1) bad.push('страница поехала вниз при открытой карточке');
   card.querySelectorAll('.flow-col li,.chip-lg,.row-v,.meter-v,.pop-name,.roles li').forEach(el => {
@@ -168,7 +173,7 @@ def main():
                             "([i,t]) => document.querySelector('.slide.is-on').querySelectorAll('.tile')[t].click()",
                             [i, t])
                         page.wait_for_timeout(80)
-                        for msg in page.evaluate(POP_PROBE):
+                        for msg in page.evaluate(POP_PROBE, w >= 768):
                             problems.append("%dx%d %s слайд %d плитка %d: %s" % (w, h, theme, i + 1, t + 1, msg))
                         if shots and (w, h) in ((1440, 900), (390, 844)) and theme == "dark" and t == 0:
                             page.screenshot(path=os.path.join(shots, "pop-s%02d-%dx%d.png" % (i + 1, w, h)))

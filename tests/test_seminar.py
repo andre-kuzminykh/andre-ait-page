@@ -54,37 +54,63 @@ def test_page_exists_with_thirteen_slides_of_ten_tiles():
         assert got == _TILES, "на слайде %d плиток %d, а должно быть %d" % (s + 1, got, _TILES)
 
 
-def test_hundred_employees_are_all_numbered():
-    """Сотня — это ровно сто карточек с номерами от 1 до 100, без пропусков."""
+def test_hundred_employees_on_ten_domain_slides():
+    """Сотня — это ровно 100 карточек сотрудников на десяти слайдах направлений."""
     deck = _json_block(_html(), "seminar-data")
-    nums = []
-    for s in deck["slides"]:
-        for t in s["tiles"]:
-            m = re.match(r"№ (\d+) из 100", t.get("no") or "")
-            if m:
-                nums.append(int(m.group(1)))
-    assert sorted(nums) == list(range(1, 101)), "номера сотрудников должны идти 1..100 без дыр"
+    domains = [s for s in deck["slides"] if s["key"] not in ("map", "assembly", "finale")]
+    assert len(domains) == 10, "направлений должно быть десять"
+    agents = sum(len(s["tiles"]) for s in domains)
+    assert agents == 100, "ИИ-сотрудников должно быть ровно 100, а не %d" % agents
+    names = [t["ru"] for s in domains for t in s["tiles"]]
+    assert len(set(names)) == 100, "имена сотрудников не должны повторяться"
 
 
-def test_every_tile_card_has_all_fields():
+def test_every_tile_card_has_what_the_card_draws():
+    """В карточке ровно то, что она рисует: вход, логика, выход, человек, метрики."""
     deck = _json_block(_html(), "seminar-data")
     assert len(deck["slides"]) == _SLIDES
     for s in deck["slides"]:
         assert len(s["tiles"]) == _TILES, s["key"]
         for t in s["tiles"]:
             where = "%s / %s" % (s["key"], t.get("ru"))
-            for f in ("ru", "icon", "mission", "handoffs"):
-                assert t.get(f), where + ": пустое поле " + f
+            assert t.get("ru") and t.get("icon") and t.get("dom"), where
             if t.get("roles"):                      # плитка направления — состав из десяти ролей
                 assert len(t["roles"]) == _TILES, where
                 continue
-            for f, n in (("in", 4), ("do", 4), ("out", 4), ("tools", 4), ("metrics", 3)):
-                assert len(t.get(f) or []) == n, "%s: в поле %s должно быть %d строк" % (where, f, n)
-            assert len(t["handoffs"]) == 3, where
-            for f in ("human", "guard", "trigger"):
-                assert t.get(f), where + ": пустое поле " + f
-            assert 0 <= int(t["autonomy"]) <= 4, where
-            assert 0 <= int(t["risk"]) <= 4, where
+            for f in ("in", "do", "out"):
+                n = len(t.get(f) or [])
+                assert 3 <= n <= 5, "%s: в поле %s должно быть 3-5 строк, а не %d" % (where, f, n)
+            assert t.get("human"), where + ": нет строки про человека"
+            assert 2 <= len(t.get("metrics") or []) <= 4, where + ": метрик-хэштегов 2-4"
+
+
+def test_card_carries_nothing_it_no_longer_shows():
+    """Убранное из карточки не должно ехать в страницу мёртвым грузом."""
+    deck = _json_block(_html(), "seminar-data")
+    gone = ("mission", "tools", "handoffs", "guard", "trigger", "autonomy", "risk", "no", "en")
+    for s in deck["slides"]:
+        for t in s["tiles"]:
+            extra = [f for f in gone if f in t]
+            assert not extra, "%s / %s: лишние поля %s" % (s["key"], t.get("ru"), ", ".join(extra))
+
+
+def test_slide_top_is_only_an_icon_and_a_name():
+    """Сверху слайда — значок и название, без подзаголовков и «направление N из 10»."""
+    html = _html()
+    assert 's-kicker' not in html, "надпись «направление N из 10» убрана"
+    assert 's-sub' not in html, "подводка сверху слайда убрана — текст живёт в панели «Текст»"
+    heads = re.findall(r'<div class="s-head">(.*?)</div>', html, re.S)
+    assert len(heads) == _SLIDES
+    for h in heads:
+        assert h.count("<svg") == 1 and h.count("<h2") == 1, "в шапке слайда только значок и название"
+
+
+def test_numbers_on_slides_are_digits():
+    """На слайде пишем «100», а не «сто» (правка владельца)."""
+    text = _visible_text(_html())
+    for word in ("Сто ", "из ста", "сотни", "сотне"):
+        assert word not in text, "на слайдах осталось числительное словами: %r" % word
+    assert "100 ИИ-сотрудников" in text
 
 
 def test_notes_cover_every_slide():
@@ -154,8 +180,9 @@ def test_window_only_scales_the_ready_picture():
     """Окно меняет ОДИН масштаб; раскладка внутри формы от окна не зависит."""
     html = _html()
     assert "transform:translateX(var(--deck-shift,0px)) scale(var(--view-scale))" in html
-    assert "window.addEventListener('resize', fit, { passive:true })" in html
-    assert "setTimeout(fit" not in html, "подгонка при ресайзе не откладывается — картинка не должна «дышать»"
+    assert "window.addEventListener('resize', fitAll, { passive:true })" in html
+    assert "setTimeout(fitAll" not in html and "setTimeout(fit," not in html, \
+        "подгонка при ресайзе не откладывается — картинка не должна «дышать»"
 
 
 # ── Иконки и внешние зависимости ──────────────────────────────────────────
