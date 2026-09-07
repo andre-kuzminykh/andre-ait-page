@@ -13,6 +13,10 @@
 - `automation/` — страницы курса по автоматизации:
   - `index.html` (+ статические копии `roles/`, `skills/`) — SPA-визард из 3 шагов;
   - `main/index.html` — дорожная карта курса;
+  - `1/seminar/` — семинар к лекции 1: сто ИИ-сотрудников, 13 слайдов по
+    10 плиток; правится не HTML, а данные `tools/seminar/*.json`,
+    страницу пересобирает `python3 tools/build_seminar.py`
+    (браузерный свип — `python3 tools/seminar_check.py`);
   - `1/` … `8/` — лекции-презентации (Tailwind, отдельный «портальный» дизайн —
     их стиль НЕ приводится к главной странице); контент лекций 3–8 перенесён из
     репозитория `aisala` (`ai-agents-corp`), видео-головы лекций 6–8 лежат в
@@ -37,6 +41,7 @@
    python3 tests/test_site.py
    python3 tests/test_automation.py
    python3 tests/test_lectures.py
+   python3 tests/test_seminar.py
    ```
 5. **Вёрстку проверяй в реальном браузере** (Playwright/Chromium): десктоп
    1440×900 и 1024×768, мобилка 390×844; для automation-страниц — обе темы

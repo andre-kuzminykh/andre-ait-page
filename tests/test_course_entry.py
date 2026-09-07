@@ -36,6 +36,7 @@ _COURSE_PAGES = (
     "automation/roles/index.html",
     "automation/skills/index.html",
     "automation/1/practice/index.html",
+    "automation/1/seminar/index.html",
     "automation/2/practice/index.html",
 ) + tuple("automation/%d/index.html" % n for n in range(1, 9))
 # Открыт только модуль 1: лекции 2-8 закрыты и не опубликованы (см.
