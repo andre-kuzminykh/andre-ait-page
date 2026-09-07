@@ -265,8 +265,8 @@ body:not(.fit-ready) #deck{opacity:0}
 }
 .tile:hover,.tile:focus-visible{border-color:var(--ac);background:var(--soft)}
 .tile:hover::after,.tile:focus-visible::after{opacity:1}
-/* Название слева, значок справа — заказчик просил именно такой порядок. */
-.t-top{display:flex;align-items:flex-start;gap:10px;width:100%}
+/* Значок слева, название справа — заказчик просил именно такой порядок. */
+.t-top{display:flex;align-items:center;gap:11px;width:100%}
 .t-name{
   flex:1 1 auto; min-width:0; font-size:17px; line-height:1.18; font-weight:800;
   letter-spacing:-.005em;
@@ -362,7 +362,7 @@ CSS += r"""
   border:1px solid transparent;transition:color .2s ease,border-color .2s ease;z-index:2;
 }
 .pop-x:hover{color:var(--ac);border-color:var(--soft-bd)}
-/* Название слева, значок справа — как на плитках. */
+/* Значок слева, название справа — как на плитках. */
 .pop-head{display:flex;align-items:center;gap:16px;padding-right:48px}
 .pop-id{flex:1 1 auto;min-width:0}
 .pop-dom{
@@ -700,11 +700,11 @@ JS_POP = r"""
   }
   function flowBlock(t){
     return '<div class="flow">' +
-      col('Что на входе', t['in'], false) +
+      col('Артефакты на входе', t['in'], false) +
       '<div class="flow-ar">' + ic('caret-right') + '</div>' +
       col('Логика работы', t['do'], true) +
       '<div class="flow-ar">' + ic('caret-right') + '</div>' +
-      col('Что на выходе', t.out, false) + '</div>';
+      col('Артефакты на выходе', t.out, false) + '</div>';
   }
   function rolesBlock(list){
     return '<ol class="roles">' + (list || []).map(function(v){
@@ -728,10 +728,10 @@ JS_POP = r"""
       : '';
     card.innerHTML =
       '<button class="pop-x" type="button" data-close aria-label="Закрыть">' + ic('x') + '</button>' +
-      '<div class="pop-head"><div class="pop-id">' +
+      '<div class="pop-head"><span class="pop-ic">' + ic(t.icon || 'circle') + '</span>' +
+        '<div class="pop-id">' +
         (t.dom ? '<div class="pop-dom">' + esc(t.dom) + '</div>' : '') +
-        '<h3 class="pop-name" id="pop-name">' + esc(t.ru) + '</h3></div>' +
-        '<span class="pop-ic">' + ic(t.icon || 'circle') + '</span></div>' +
+        '<h3 class="pop-name" id="pop-name">' + esc(t.ru) + '</h3></div></div>' +
       (isDom ? rolesBlock(t.roles) : flowBlock(t)) +
       (t.human ? '<div class="row-human">' + ic('user-focus') +
         '<div><div class="row-t">Что делает человек</div><div class="row-v">' + esc(t.human) + '</div></div></div>' : '') +
@@ -850,7 +850,7 @@ JS_NOTES = r"""
 
 SLIDE_META = {
     "map": dict(icon="squares-four", title="100 ИИ-сотрудников"),
-    "assembly": dict(icon="puzzle-piece", title="Из 100 ролей — компания"),
+    "assembly": dict(icon="puzzle-piece", title="Создание компании"),
     "finale": dict(icon="rocket-launch", title="Ваш агент"),
 }
 
@@ -862,9 +862,9 @@ def tile_html(s_idx, t_idx, t):
     do = ('<span class="t-do">%s</span>' % "".join("<i>%s</i>" % esc(x) for x in steps)) if steps else ""
     return (
         '<button class="tile" type="button" data-s="%d" data-t="%d" aria-label="%s — открыть карточку">'
-        '<span class="t-top"><span class="t-name">%s</span><span class="t-ic">%s</span></span>'
+        '<span class="t-top"><span class="t-ic">%s</span><span class="t-name">%s</span></span>'
         "%s%s</button>"
-    ) % (s_idx, t_idx, esc(t["ru"]), esc(t["ru"]), ic(t.get("icon", "circle")), lead, do)
+    ) % (s_idx, t_idx, esc(t["ru"]), ic(t.get("icon", "circle")), esc(t["ru"]), lead, do)
 
 
 def slide_html(idx, meta, tiles):
@@ -881,9 +881,13 @@ def slide_html(idx, meta, tiles):
 
 
 def paragraphs(text, per=3):
-    """Длинный монолог режем на абзацы по несколько предложений: сплошная
-    простыня в панели не читается, а диктору нужны точки для дыхания."""
-    parts = re.split(r"(?<=[.!?])\s+", (text or "").strip())
+    """Длинный монолог режем на абзацы: сплошная простыня в панели не читается,
+    а диктору нужны точки для дыхания. Если владелец сам разбил текст пустой
+    строкой — уважаем его разбивку и ничего не пересобираем."""
+    text = (text or "").strip()
+    if "\n\n" in text:
+        return [p.strip() for p in text.split("\n\n") if p.strip()]
+    parts = re.split(r"(?<=[.!?])\s+", text)
     out, buf = [], []
     for p in parts:
         buf.append(p)

@@ -1032,13 +1032,13 @@ test_portrait_files_exist_and_markup_matches. Браузерно: `|низ сн�
    имена не повторяются.
 3. **Сверху слайда только значок и название.** Ни «направление N из 10»,
    ни подводки: место в колоде показывает счётчик внизу, а разбор живёт
-   в панели «Текст». Числа на слайде пишутся цифрами — «100», а не «сто».
-4. **Плитка:** название слева, значок справа, под ними короткая подпись и
+   в панели «Текст». Заголовок первого слайда — «100 ИИ-сотрудников» цифрами.
+4. **Плитка:** значок слева, название справа, под ними короткая подпись и
    три главные функции нумерованными значками. Ни режима запуска, ни шкал,
-   ни порядкового номера. На телефоне остаются название, значок и подпись.
+   ни порядкового номера. На телефоне остаются значок, название и подпись.
 5. **Карточка плитки** — только схема, без описательного текста:
-   сверху название направления и имя сотрудника (значок справа), затем
-   конвейер «что на входе → логика работы → что на выходе» по 3-5 пунктов,
+   сверху значок, название направления и имя сотрудника, затем конвейер
+   «артефакты на входе → логика работы → артефакты на выходе» по 3-5 пунктов,
    отдельной полосой «что делает человек», внизу метрики хэштегами.
    Плитка направления вместо конвейера показывает состав из десяти ролей.
 6. Карточка **помещается целиком без прокрутки на веб-форме** (это стережёт
@@ -1063,8 +1063,11 @@ test_portrait_files_exist_and_markup_matches. Браузерно: `|низ сн�
 11. Кнопка «Текст» открывает дикторский текст к текущему слайду: подводка
     к слайду и реплика к каждой плитке. Общий хронометраж речи — час
     с небольшим при темпе 135 слов в минуту.
-12. Термины по-русски по тому же словарю, что у лекций и книги (FR-SITE16).
-    Латиницы на слайдах и в карточках нет вовсе.
+12. Тексты слайдов, карточек и панели — дикторский текст владельца, слово
+    в слово. Имена ролей задаёт он же: где он оставил латиницу (`CI/CD`,
+    `Deep Research`, `Landing Page`, `User Flow`, `User Experience`,
+    `User Interface`, `Decision Intelligence`), она остаётся. Всё, чего в его
+    списке нет, проверяется словарём англицизмов лекций (FR-SITE16).
 13. Правится не HTML, а данные: `tools/seminar/data-*.json` и `speech-*.json`,
     страницу пересобирает `python3 tools/build_seminar.py`. Сборка обязана быть
     воспроизводимой — тест сверяет опубликованный файл с пересобранным.
@@ -1079,7 +1082,7 @@ test_page_exists_with_thirteen_slides_of_ten_tiles,
 test_hundred_employees_on_ten_domain_slides,
 test_every_tile_card_has_what_the_card_draws,
 test_card_carries_nothing_it_no_longer_shows,
-test_slide_top_is_only_an_icon_and_a_name, test_numbers_on_slides_are_digits,
+test_slide_top_is_only_an_icon_and_a_name, test_title_counts_in_digits,
 test_notes_cover_every_slide, test_narration_is_about_an_hour,
 test_two_forms_and_a_single_breakpoint, test_nothing_scrolls,
 test_no_shadows_anywhere, test_palette_is_the_lecture_palette,
@@ -1087,7 +1090,7 @@ test_window_only_scales_the_ready_picture, test_icons_are_inlined_not_hotlinked,
 test_favicons_match_the_main_site, test_no_underscore_asset_paths,
 test_links_back_to_the_lecture, test_seminar_is_linked_from_the_lecture,
 test_slides_and_notes_speak_russian,
-test_english_names_live_only_in_the_catalogue_field,
+test_latin_on_slides_is_only_the_owners_names,
 test_page_is_reproducible_from_its_data.
 Браузерно (`python3 tools/seminar_check.py`): свип 13 слайдов × 11 окон × две
 темы — ноль случаев прокрутки, выхода за экран, наезда на шапку и выезда
