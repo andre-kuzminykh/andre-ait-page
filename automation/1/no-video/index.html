@@ -4783,6 +4783,21 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
    вся колода (text-black / text-black/60 / bg-white / border-grayBase),
    поэтому здесь только геометрия и то, чего нет в собранном Tailwind. */
 
+/* ── Печать в PDF (?pdf, ?mode=pdf, #pdf) ──────────────────────────────── */
+/* Слайд по умолчанию `visibility:hidden`, и снимает скрытие только класс
+   .opacity-100, который вешает updateSlides(). В режиме экспорта эта функция
+   не вызывается (`if (exportMode) ... else updateSlides()`), так что правила
+   `opacity:1 !important` из pdf-export-mode было мало: слайды оставались
+   скрытыми, и в PDF уходили 46 пустых страниц. */
+body.pdf-export-mode .slide-container{ visibility:visible !important; }
+/* И последний слайд не гонит за собой пустую страницу: page-break-after у
+   .slide-container давал в PDF лишнюю 47-ю. Адресуем слайд по id, а не
+   через :last-of-type — этот псевдокласс смотрит на тип тега, а после
+   последнего слайда в разметке идут ещё div'ы (окно теста и панель «Текст»),
+   и правило не срабатывало бы вовсе. */
+@media print{ #slide-45{ page-break-after:auto !important;
+                         break-after:auto !important; } }
+
 /* ── «Об авторе» ───────────────────────────────────────────────────────── */
 /* Форма авторской колоды: слева портрет с подписью, справа — опыт простыми
    строками «роль — компания». Никаких плашек вокруг строк опыта. */
