@@ -1988,43 +1988,43 @@ window.__FLOOR = {pc:49.8533,mob:22.4659};
                     <div class="bg-white border border-grayBase rounded-[16px] md:rounded-2xl p-2 md:p-3 flex items-center gap-2 md:gap-3">
                         <div class="w-8 h-8 md:w-11 md:h-11 bg-grayBase rounded-full flex items-center justify-center text-black shrink-0"><i class="ph-fill ph-database text-sm md:text-lg"></i></div>
                         <div class="min-w-0">
-                            <h4 class="font-bold text-black text-[9px] md:text-[13px] leading-tight">Ex-Data Engineer</h4>
-                            <p class="text-[8px] md:text-xs text-black/60 leading-tight">Accenture</p>
+                            <h4 class="ai-role font-bold text-black">Ex-Data Engineer</h4>
+                            <p class="ai-org text-black/60">Accenture</p>
                         </div>
                     </div>
                     <div class="bg-white border border-grayBase rounded-[16px] md:rounded-2xl p-2 md:p-3 flex items-center gap-2 md:gap-3">
                         <div class="w-8 h-8 md:w-11 md:h-11 bg-grayBase rounded-full flex items-center justify-center text-black shrink-0"><i class="ph-fill ph-stack text-sm md:text-lg"></i></div>
                         <div class="min-w-0">
-                            <h4 class="font-bold text-black text-[9px] md:text-[13px] leading-tight">Ex-Chief Data Officer</h4>
-                            <p class="text-[8px] md:text-xs text-black/60 leading-tight">Сбер</p>
+                            <h4 class="ai-role font-bold text-black">Ex-Chief Data Officer</h4>
+                            <p class="ai-org text-black/60">Сбер</p>
                         </div>
                     </div>
                     <div class="bg-white border border-grayBase rounded-[16px] md:rounded-2xl p-2 md:p-3 flex items-center gap-2 md:gap-3">
                         <div class="w-8 h-8 md:w-11 md:h-11 bg-grayBase rounded-full flex items-center justify-center text-black shrink-0"><i class="ph-fill ph-brain text-sm md:text-lg"></i></div>
                         <div class="min-w-0">
-                            <h4 class="font-bold text-black text-[9px] md:text-[13px] leading-tight">Ex-Chief Data Scientist</h4>
-                            <p class="text-[8px] md:text-xs text-black/60 leading-tight">Сбер</p>
+                            <h4 class="ai-role font-bold text-black">Ex-Chief Data Scientist</h4>
+                            <p class="ai-org text-black/60">Сбер</p>
                         </div>
                     </div>
                     <div class="bg-white border border-grayBase rounded-[16px] md:rounded-2xl p-2 md:p-3 flex items-center gap-2 md:gap-3">
                         <div class="w-8 h-8 md:w-11 md:h-11 bg-grayBase rounded-full flex items-center justify-center text-black shrink-0"><i class="ph-fill ph-code text-sm md:text-lg"></i></div>
                         <div class="min-w-0">
-                            <h4 class="font-bold text-black text-[9px] md:text-[13px] leading-tight">Ex-Chief Technology Officer</h4>
-                            <p class="text-[8px] md:text-xs text-black/60 leading-tight">Венчурная студия для ИИ-стартапов</p>
+                            <h4 class="ai-role font-bold text-black">Ex-Chief Technology Officer</h4>
+                            <p class="ai-org text-black/60">Венчурная студия для ИИ-стартапов</p>
                         </div>
                     </div>
                     <div class="bg-white border border-grayBase rounded-[16px] md:rounded-2xl p-2 md:p-3 flex items-center gap-2 md:gap-3">
                         <div class="w-8 h-8 md:w-11 md:h-11 bg-grayBase rounded-full flex items-center justify-center text-black shrink-0"><i class="ph-fill ph-rocket text-sm md:text-lg"></i></div>
                         <div class="min-w-0">
-                            <h4 class="font-bold text-black text-[9px] md:text-[13px] leading-tight">Ex-Chief AI Product Technology Officer</h4>
-                            <p class="text-[8px] md:text-xs text-black/60 leading-tight">Unlimit, международная финтех-компания</p>
+                            <h4 class="ai-role font-bold text-black">Ex-Chief AI Product Technology Officer</h4>
+                            <p class="ai-org text-black/60">Unlimit, международная финтех-компания</p>
                         </div>
                     </div>
                     <div class="bg-white border border-grayBase rounded-[16px] md:rounded-2xl p-2 md:p-3 flex items-center gap-2 md:gap-3">
                         <div class="w-8 h-8 md:w-11 md:h-11 bg-grayBase rounded-full flex items-center justify-center text-black shrink-0"><i class="ph-fill ph-robot text-sm md:text-lg"></i></div>
                         <div class="min-w-0">
-                            <h4 class="font-bold text-black text-[9px] md:text-[13px] leading-tight">Ex-AI Lead</h4>
-                            <p class="text-[8px] md:text-xs text-black/60 leading-tight">Humanoid, робототехническая компания</p>
+                            <h4 class="ai-role font-bold text-black">Ex-AI Lead</h4>
+                            <p class="ai-org text-black/60">Humanoid, робототехническая компания</p>
                         </div>
                     </div>
                 </div>
@@ -4868,6 +4868,14 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   border:3px solid #8B5CF6; background:#E9E9E9;
 }
 @media (min-width:768px){ .ai-photo{ width:13rem; height:13rem; border-width:5px; } }
+
+/* Строка опыта: должность крупнее и жирнее компании. Свои размеры, а не
+   text-[..]: в собранном Tailwind нет md-варианта для произвольных кеглей,
+   и на компьютере подпись оказывалась крупнее самой должности. В мобильной
+   стопке кегль перебивает правило .js-card из portal-deck — так и задумано. */
+.ai-role{ font-size:9.5px; line-height:1.22; }
+.ai-org { font-size:8.5px; line-height:1.28; }
+@media (min-width:768px){ .ai-role{ font-size:13px; } .ai-org{ font-size:11px; } }
 
 /* Колонка с QR стоит ВНИЗУ ряда — под последней строкой опыта. */
 @media (min-width:768px){ .ai-contact{ align-self:flex-end; } }
