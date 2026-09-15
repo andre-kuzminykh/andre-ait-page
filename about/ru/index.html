@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<meta name="color-scheme" content="dark">
+<title>Обо мне | Andre AI Technologies</title>
+<meta name="description" content="Андрей Кузьминых: от шахмат и олимпиад на Дальнем Востоке до директора по данным и ИИ в Сбербанке, CTO ИИ-стартап-студии и основателя Andre AI Technologies — AI-native экосистемы во благо людей.">
+<link rel="canonical" href="https://andre.technology/about/ru/">
+<link rel="alternate" hreflang="en" href="https://andre.technology/about/">
+<link rel="alternate" hreflang="ru" href="https://andre.technology/about/ru/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<meta property="og:type" content="profile">
+<meta property="og:url" content="https://andre.technology/about/ru/">
+<meta property="og:site_name" content="Andre AI Technologies">
+<meta property="og:title" content="Обо мне | Andre AI Technologies">
+<meta property="og:description" content="Я строю AI-Native экосистему во благо людей.">
+<meta property="og:image" content="https://andre.technology/assets/og/andre-ai-technologies.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<!-- как на главной: шрифт и иконки НЕ блокируют первую отрисовку -->
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all';this.onload=null">
+<noscript>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</noscript>
+
+<link rel="stylesheet" href="/assets/about.css">
+</head>
+<body>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="top-fade" aria-hidden="true"></div>
+
+<!-- Тигр (детство на Дальнем Востоке) — в Font Awesome его нет, рисуем линиями -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-tiger" viewBox="0 0 200 200">
+    <g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M100 176c-38 0-66-28-66-66 0-16 3-30 9-42l-9-38 35 22c9-4 19-6 31-6s22 2 31 6l35-22-9 38c6 12 9 26 9 42 0 38-28 66-66 66z"/>
+      <path d="M86 56v16M100 50v20M114 56v16"/>
+      <path d="M36 92h18M32 112h20M164 92h-18M168 112h-20"/>
+      <ellipse cx="76" cy="102" rx="9" ry="7"/>
+      <ellipse cx="124" cy="102" rx="9" ry="7"/>
+      <path d="M90 128h20l-10 12z"/>
+      <path d="M100 140v10M100 150c-7 11-22 10-26 1M100 150c7 11 22 10 26 1"/>
+      <path d="M66 132H40M66 142l-24 9M134 132h26M134 142l24 9"/>
+    </g>
+  </symbol>
+</svg>
+
+<!-- ===== Видео: колонка слева (десктоп) / кружок (мобилка) ===== -->
+<div class="media" id="media">
+  <video id="hero-video" src="/assets/Andre_AIT_video_compressed_ru.mp4" poster="/andre_ai.jpg" loop muted autoplay playsinline preload="auto"></video>
+  <div class="media-shadow" aria-hidden="true"></div>
+  <div class="bubble-play" aria-hidden="true"><i class="fa-solid fa-circle-play"></i></div>
+  <div class="speaker">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span class="speaker-emoji" aria-hidden="true">🤖</span>
+      <h3>Andre AI</h3>
+      <span class="sep">|</span>
+      <p class="role">ИИ-консультант</p>
+    </div>
+    <button class="mic-btn" id="mic-btn" aria-label="Toggle voice">
+      <i id="mic-icon" class="fa-solid fa-microphone-lines-slash" style="font-size: 11px; color: rgba(255,255,255,0.5);"></i>
+      <span id="mic-wave" class="mic-wave"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== Header ===== -->
+<header>
+  <div class="header-row">
+    <div class="header-left">
+      <a class="logo-btn" href="/" aria-label="Home">
+        <img class="logo-img" src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
+      </a>
+    </div>
+
+    <nav class="nav" id="nav" aria-label="Sections">
+      <button class="nav-close" id="nav-close" aria-label="Close menu"><i class="fa-solid fa-xmark" style="font-size: 26px;"></i></button>
+      <div class="nav-brand" aria-hidden="true">
+        <img class="nav-brand-img" src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="">
+        <span class="nav-brand-name">Andre AI Technologies</span>
+      </div>
+      <a class="nav-tab active" href="/about/ru/" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-user"></i></span><span class="nav-label">Обо мне</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <span class="nav-divider" aria-hidden="true">|</span>
+      <a class="nav-tab" href="/#strategy" style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-chess-knight"></i></span><span class="nav-label">ИИ-стратегия</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <span class="nav-divider" aria-hidden="true">|</span>
+      <a class="nav-tab" href="/#neuronium" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-brain"></i></span><span class="nav-label">Нейроний</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <span class="nav-divider" aria-hidden="true">|</span>
+      <a class="nav-tab" href="/#landao" style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span class="nav-label">Ландао</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <span class="nav-divider" aria-hidden="true">|</span>
+      <a class="nav-tab" href="/#antropolis" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-city"></i></span><span class="nav-label">Антрополис</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <span class="nav-divider" aria-hidden="true">|</span>
+      <a class="nav-tab" href="/#academy" style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-graduation-cap"></i></span><span class="nav-label">Академия</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <span class="nav-divider" aria-hidden="true">|</span>
+      <a class="nav-tab" href="/#dataist" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-newspaper"></i></span><span class="nav-label">Датаист</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <span class="nav-divider" aria-hidden="true">|</span>
+      <a class="nav-tab" href="/#contact" style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-address-book"></i></span><span class="nav-label">Контакты</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></a>
+      <div class="nav-foot">
+        <div class="nav-social">
+          <a class="social" href="https://t.me/andre_dataist" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE;"><i class="fa-brands fa-telegram"></i></a>
+          <a class="social" href="https://dataist.ai/" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3;"><i class="fa-solid fa-globe"></i></a>
+          <a class="social" href="https://www.youtube.com/@andre_dataist" target="_blank" rel="noopener" aria-label="YouTube" style="--brand:#FF0000;"><i class="fa-brands fa-youtube"></i></a>
+          <a class="social" href="https://www.linkedin.com/in/andre-kuzminykh/" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2;"><i class="fa-brands fa-linkedin"></i></a>
+          <a class="social" href="mailto:admin@andre.technology" aria-label="Email" style="--brand:#F97316;"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+        <div class="nav-legal">
+          <a class="nav-legal-link" href="/">Политика конфиденциальности</a>
+          <span class="nav-legal-sep" aria-hidden="true">&middot;</span>
+          <a class="nav-legal-link" href="/">Условия использования</a>
+        </div>
+        <p class="nav-copy">2026 &copy; Andre AI Technologies LTD</p>
+      </div>
+    </nav>
+
+    <div class="header-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <a class="lang-opt" href="/about/">EN</a>
+        <span class="lang-sep" aria-hidden="true">|</span>
+        <span class="lang-opt active">RU</span>
+      </div>
+      <button class="menu-btn" id="menu-btn" aria-label="Menu"><i id="menu-icon" class="fa-solid fa-bars" style="font-size: clamp(14px, 4vw, 18px);"></i></button>
+      <a class="btn-white cta" href="https://maturity.andre.technology/" rel="noopener">ИИ-диагностика <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Колонка чтения ===== -->
+<main class="read" id="read">
+  <article class="article">
+
+    <button class="back" id="back-btn" type="button"><i class="fa-solid fa-arrow-left"></i> Назад</button>
+
+    <!-- ── Детство: знак тигра слева ─────────────────────────── -->
+    <section class="chapter">
+      <div class="wm l" style="top: 4rem; transform: rotate(-8deg);" aria-hidden="true"><svg><use href="#ic-tiger"></use></svg></div>
+
+      <p class="eyebrow">Обо мне</p>
+      <h1>Я строю <span class="hl-p">AI-Native экосистему</span> во <span class="hl-o">благо людей</span>.</h1>
+
+      <p class="lead reveal">Я родился и вырос в Уссурийске, на Дальнем Востоке — там, где живут самые крупные тигры на планете.</p>
+
+      <p class="reveal">Когда мне было три года, дедушка купил мне первый компьютер, и искусственный интеллект стал моим соперником по шахматам задолго до того, как ИИ вошел в повседневную жизнь.</p>
+
+      <p class="reveal">Я выигрывал шахматные турниры, олимпиады по математике и информатике. Параллельно больше двенадцати лет занимался единоборствами, а позже — пауэрлифтингом и бодибилдингом.</p>
+
+      <p class="reveal">Довольно рано я понял две вещи, которые до сих пор определяют мой подход к жизни:</p>
+
+      <div class="quote reveal">
+        <p>Интеллект открывает возможности, но именно дисциплина позволяет превратить их в результат.</p>
+      </div>
+
+      <p class="reveal">Мой путь в технологии не был прямым. Подростком я писал статьи для компьютерного журнала, работал на стройках, разгружал фуры и даже чистил подвалы, чтобы заработать деньги.</p>
+
+      <p class="reveal">Этот период сформировал еще один принцип, которым я руководствуюсь до сих пор:</p>
+
+      <div class="quote reveal">
+        <p>Иногда самая сильная мотивация — не мечта о лучшей жизни, а решимость никогда не возвращаться к прежней.</p>
+      </div>
+    </section>
+
+    <!-- ── Образование: шапочка справа ───────────────────────── -->
+    <section class="chapter">
+      <div class="wm r" style="top: 6rem; transform: rotate(9deg); font-size: clamp(10rem, 17vw, 16rem);" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i></div>
+
+      <h2 class="reveal" style="--ic:#F97316;"><i class="fa-solid fa-graduation-cap"></i>От образования к ИИ</h2>
+
+      <p class="reveal">Образование стало для меня способом двигаться вперед.</p>
+
+      <ul class="facts reveal">
+        <li><i class="fa-solid fa-circle-check"></i><span><strong>Бакалавр по бизнес-информатике</strong> — Дальневосточный федеральный университет.</span></li>
+        <li><i class="fa-solid fa-circle-check"></i><span><strong>Магистр по бизнес-информатике</strong> — Высшая школа экономики, один из ведущих российских университетов, после переезда в Москву.</span></li>
+        <li><i class="fa-solid fa-circle-check"></i><span><strong>Диплом</strong> Международного института бизнес-анализа.</span></li>
+        <li><i class="fa-solid fa-circle-check"></i><span><strong>Аспирантура</strong> в области ИИ и анализа данных — и преподавание в университетах.</span></li>
+      </ul>
+
+      <p class="reveal">В это же время я побеждал в соревнованиях по машинному обучению и выиграл Всероссийскую олимпиаду по бизнес-информатике.</p>
+
+      <div class="note o reveal">
+        <p>Университет дал мне фундамент. Следующим шагом было проверить эти знания в реальном бизнесе.</p>
+      </div>
+    </section>
+
+    <!-- ── Карьера: монеты слева ─────────────────────────────── -->
+    <section class="chapter">
+      <div class="wm l" style="top: 9rem; transform: rotate(6deg); font-size: clamp(11rem, 19vw, 18rem);" aria-hidden="true"><i class="fa-solid fa-coins"></i></div>
+
+      <h2 class="reveal" style="--ic:#8854F3;"><i class="fa-solid fa-chart-line"></i>От данных к ИИ-трансформации</h2>
+
+      <p class="reveal">Свою профессиональную карьеру я начал в <strong>Accenture</strong>, работая с данными крупнейших финансовых организаций.</p>
+
+      <p class="reveal">Позже я пришел в <strong>Сбербанк</strong> на позицию инженера по данным. За несколько лет я прошел путь до <strong>директора по данным и ИИ</strong> — от построения инфраструктуры данных до руководства масштабной ИИ-трансформацией.</p>
+
+      <p class="reveal">Там я создавал аналитические и ИИ-системы, которые помогали топ-менеджменту принимать более качественные решения, а также внедрял ИИ в стратегическое управление, макроэкономический анализ, HR, организационный дизайн и тысячи бизнес-процессов.</p>
+
+      <div class="stat reveal">
+        <span class="stat-num">3 млрд ₽</span>
+        <p>Экономический эффект от этой работы был 3 млрд руб, а созданные решения изменили работу сотен людей. Я был признан одним из лучших руководителей банка.</p>
+      </div>
+
+      <p class="reveal">Работая в Сбербанке, я также выиграл корпоративный стартап-акселератор со своим ИИ-дейтинг-сервисом.</p>
+
+      <p class="reveal">Тогда я понял: я больше не хотел создавать что-то только внутри чужих систем. Я хотел строить свои.</p>
+
+      <p class="reveal">А достижение позиции топ-менеджера помогло понять кое-что еще более важное:</p>
+
+      <div class="quote reveal">
+        <p>Статус, высокая зарплата и карьерный успех сами по себе не делают человека свободным.</p>
+      </div>
+    </section>
+
+    <!-- ── Стартапы: ракета справа ───────────────────────────── -->
+    <section class="chapter">
+      <div class="wm r" style="top: 5rem; transform: rotate(14deg);" aria-hidden="true"><i class="fa-solid fa-rocket"></i></div>
+
+      <h2 class="reveal" style="--ic:#F97316;"><i class="fa-solid fa-rocket"></i>Уход из корпоративного мира</h2>
+
+      <p class="reveal">Я хотел создавать продукты, которые могли бы приносить пользу людям по всему миру. Поэтому я оставил корпоративную карьеру, ушел из аспирантуры и переехал на Кипр.</p>
+
+      <p class="reveal">Там я стал <strong>CTO ИИ-стартап-студии</strong> и начал создавать технологии в совершенно разных направлениях.</p>
+
+      <ul class="facts reveal">
+        <li><i class="fa-solid fa-car-side"></i><span>Обучал <strong>беспилотные автомобили</strong> в симуляции.</span></li>
+        <li><i class="fa-solid fa-bolt"></i><span>Создавал <strong>ИИ-цифрового двойника энергетической сети</strong> для выявления потерь электроэнергии.</span></li>
+        <li><i class="fa-solid fa-users"></i><span>Помогал создавать <strong>тысячи виртуальных инфлюенсеров</strong>.</span></li>
+        <li><i class="fa-solid fa-flask"></i><span>Работал над множеством других ИИ-стартапов в разных индустриях.</span></li>
+      </ul>
+
+      <div class="stat reveal">
+        <span class="stat-num">200 тыс.+</span>
+        <p>Один из этих стартапов стал <strong>продуктом дня и недели</strong> на Product Hunt и вырос до более чем 200 тыс. пользователей.</p>
+      </div>
+
+      <p class="reveal">За эти годы я научился управлять командами инженеров, запускать продукты и превращать технологии в реальные бизнесы.</p>
+
+      <p class="reveal">Но затем все изменилось. По мере развития ИИ я увидел, что многие вещи, для которых раньше требовались целые команды, теперь способен создавать один человек.</p>
+
+      <p class="reveal">Я начал учиться создавать продукты и запускать бизнесы без необходимости каждый раз собирать под них традиционную команду. Это полностью изменило мое представление о предпринимательстве.</p>
+
+      <div class="note reveal">
+        <p>Я больше не хотел строить очередной стартап по старым правилам. Я хотел создать систему, которая позволила бы одному человеку или небольшой команде делать то, для чего раньше требовалась целая компания.</p>
+      </div>
+
+      <p class="reveal">Так появилась <strong>Andre AI Technologies</strong>.</p>
+    </section>
+
+    <!-- ── Экосистема: процессор слева ───────────────────────── -->
+    <section class="chapter">
+      <div class="wm l" style="top: 7rem; transform: rotate(-11deg); font-size: clamp(11rem, 18vw, 17rem);" aria-hidden="true"><i class="fa-solid fa-microchip"></i></div>
+
+      <h2 class="reveal" style="--ic:#8854F3;"><i class="fa-solid fa-microchip"></i>Создаю AI-native экосистему во благо людей</h2>
+
+      <p class="reveal">После более чем десяти лет работы в корпорациях, стартапах, исследованиях и образовании я решил объединить весь накопленный опыт в одну систему.</p>
+
+      <p class="reveal">Я видел рынок с обеих сторон.</p>
+
+      <div class="cards reveal">
+        <div class="card">
+          <h3><i class="fa-solid fa-building"></i>Крупные компании</h3>
+          <p>У них были ресурсы, но зачастую им не хватало скорости.</p>
+        </div>
+        <div class="card o">
+          <h3><i class="fa-solid fa-bolt-lightning"></i>Стартапы</h3>
+          <p>Могли двигаться невероятно быстро, но из-за ограниченных ресурсов далеко не каждую идею удавалось воплотить в жизнь.</p>
+        </div>
+      </div>
+
+      <div class="note o reveal">
+        <p>Моей целью стало дать соло-предпринимателям и небольшим командам силу корпорации, а крупным компаниям — скорость и гибкость стартапа.</p>
+      </div>
+
+      <p class="reveal">Я начал работать и с теми, и с другими. Я консультировал стартапы и крупные компании по ИИ-стратегии, ИИ-разработке продуктов и ИИ-трансформации.</p>
+
+      <div class="stat reveal">
+        <span class="stat-num">$20M+</span>
+        <p>Совокупный финансовый эффект решений, которые я помогал создавать в рамках этих проектов, превысил $20 миллионов.</p>
+      </div>
+
+      <p class="reveal">Но одним консалтингом невозможно масштабировать такую экспертизу достаточно широко. Я один и физически не могу лично работать с каждым предпринимателем и каждой компанией, которые хотят пройти ИИ-трансформацию.</p>
+
+      <p class="reveal">Поэтому я начал превращать свой опыт в систему. Я разработал методологию диагностики бизнеса, которая позволяет определить, где именно ИИ способен создать реальную ценность, а затем сформировать ИИ-стратегию, задающую понятное направление трансформации компании.</p>
+
+      <div class="note reveal">
+        <p>Стратегия становится картой движения. Следующий этап — исполнение.</p>
+      </div>
+
+      <p class="reveal">Сейчас я создаю <strong>ИИ-операционную систему для бизнеса</strong>, в основе которой — сотни ИИ-сотрудников, способных помогать в управлении, маркетинге, продажах, разработке продуктов и других бизнес-функциях.</p>
+
+      <p class="reveal">Но одной технологии недостаточно. Новая экономика требует новых навыков, новых ролей и новых способов работы.</p>
+
+      <p class="reveal">Поэтому я начал сотрудничать с <strong>университетами</strong>, чтобы помогать людям осваивать новые ИИ-роли и делать прикладное образование в области ИИ доступным для большего числа людей. Я также сотрудничаю с <strong>исследовательскими центрами</strong>, чтобы создавать новые технологии и превращать их в продукты, которые приносят реальную пользу.</p>
+
+      <p class="reveal">Образование, исследования, технологии, продукты и трансформация бизнеса для меня — не отдельные направления. Это части одной экосистемы.</p>
+
+      <p class="reveal">Я создаю продукты для собственной работы, превращаю самые полезные из них в инструменты, которыми могут пользоваться другие, и объединяю предпринимателей, исследователей и инженеров, которые хотят участвовать в создании новой экономики.</p>
+
+      <p class="reveal">А образование я делаю доступным бесплатно. Вот что я строю в <strong>Andre AI Technologies</strong>.</p>
+    </section>
+
+    <!-- ── Финал + CTA ───────────────────────────────────────── -->
+    <div class="finale reveal">
+      <p>Добро пожаловать в новую экономику — экономику, в которой <span class="hl-p">люди</span> и <span class="hl-o">ИИ-агенты</span> работают вместе на благо людей.</p>
+      <a class="btn-white" href="https://maturity.andre.technology/" rel="noopener">Начать ИИ-трансформацию <i class="fa-solid fa-arrow-right"></i></a>
+      <br>
+      <a class="home-link" href="/"><i class="fa-solid fa-arrow-left"></i> На главную</a>
+    </div>
+
+    <div class="foot">
+      <div class="nav-social">
+        <a class="social" href="https://t.me/andre_dataist" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE;"><i class="fa-brands fa-telegram"></i></a>
+        <a class="social" href="https://dataist.ai/" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3;"><i class="fa-solid fa-globe"></i></a>
+        <a class="social" href="https://www.youtube.com/@andre_dataist" target="_blank" rel="noopener" aria-label="YouTube" style="--brand:#FF0000;"><i class="fa-brands fa-youtube"></i></a>
+        <a class="social" href="https://www.linkedin.com/in/andre-kuzminykh/" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2;"><i class="fa-brands fa-linkedin"></i></a>
+        <a class="social" href="mailto:admin@andre.technology" aria-label="Email" style="--brand:#F97316;"><i class="fa-solid fa-envelope"></i></a>
+      </div>
+      <p class="nav-copy">2026 &copy; Andre AI Technologies LTD</p>
+    </div>
+
+  </article>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var LANG_KEY = 'ait_lang';
+  var read = document.getElementById('read');
+  var bar = document.getElementById('progress');
+  var nav = document.getElementById('nav');
+  var menuIcon = document.getElementById('menu-icon');
+  var media = document.getElementById('media');
+  var video = document.getElementById('hero-video');
+  var micIcon = document.getElementById('mic-icon');
+  var micWave = document.getElementById('mic-wave');
+  var mqDesktop = window.matchMedia('(min-width: 1024px)');
+
+  /* язык страницы синхронизирован с главной (ключ ait_lang): вернувшись на «/»,
+     посетитель увидит сайт на том же языке, что и эта страница */
+  try { localStorage.setItem(LANG_KEY, 'ru'); } catch (err) {}
+
+  /* ---- прокрутка: на десктопе листается колонка текста, на мобилке — окно ---- */
+  function onScroll() {
+    var desk = mqDesktop.matches;
+    var el = desk ? read : document.documentElement;
+    var top = desk ? el.scrollTop : (window.pageYOffset || el.scrollTop);
+    var max = el.scrollHeight - (desk ? el.clientHeight : window.innerHeight);
+    bar.style.width = (max > 0 ? Math.min(100, (top / max) * 100) : 0) + '%';
+  }
+  read.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  onScroll();
+
+  /* ---- появление блоков и фоновых знаков глав ---- */
+  var targets = document.querySelectorAll('.reveal, .chapter');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { root: mqDesktop.matches ? read : null, rootMargin: '0px 0px -8% 0px', threshold: 0.02 });
+    targets.forEach(function (el) { io.observe(el); });
+  } else {
+    targets.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* ---- меню ---- */
+  function openMenu() { nav.classList.add('open'); menuIcon.className = 'fa-solid fa-xmark'; document.body.style.overflow = 'hidden'; }
+  function closeMenu() { nav.classList.remove('open'); menuIcon.className = 'fa-solid fa-bars'; document.body.style.overflow = ''; }
+  document.getElementById('menu-btn').addEventListener('click', function () { nav.classList.contains('open') ? closeMenu() : openMenu(); });
+  document.getElementById('nav-close').addEventListener('click', closeMenu);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+
+  /* ---- «Назад»: в историю, а если страницу открыли напрямую — на главную ---- */
+  document.getElementById('back-btn').addEventListener('click', function () {
+    if (document.referrer && history.length > 1) history.back();
+    else location.href = '/';
+  });
+
+  /* ---- звук: клик по видео (и по кружку на мобилке) включает голову ---- */
+  function setMuted(m) {
+    video.muted = m;
+    media.classList.toggle('is-playing', !m);
+    micIcon.className = m ? 'fa-solid fa-microphone-lines-slash' : 'fa-solid fa-microphone-lines';
+    micIcon.style.color = m ? 'rgba(255,255,255,0.5)' : '#ffffff';
+    micWave.style.display = m ? 'none' : 'block';
+  }
+  setMuted(true);
+  function toggle() { setMuted(!video.muted); var p = video.play && video.play(); if (p && p.catch) p.catch(function () {}); }
+  document.getElementById('mic-btn').addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
+  media.addEventListener('click', toggle);
+})();
+</script>
+</body>
+</html>

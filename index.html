@@ -978,7 +978,8 @@
           <a class="btn-white" href="https://maturity.andre.technology/" rel="noopener" data-i18n="overview.cta" style="padding: 1.05rem 2.1rem; letter-spacing: 0.15em; font-size: clamp(12px, 0.9vw, 15px); gap: 0.75rem; width: fit-content; text-decoration: none; display: inline-flex; align-items: center;">
             Start AI Transformation <i class="fa-solid fa-arrow-right"></i>
           </a>
-          <a class="about-link" href="https://andre.technology/about/" rel="noopener" data-i18n="overview.about">About me</a>
+          <a class="about-link" href="https://andre.technology/about/" rel="noopener" data-i18n="overview.about"
+             data-href-en="https://andre.technology/about/" data-href-ru="https://andre.technology/about/ru/">About me</a>
         </section>
 
         <!-- AI STRATEGY -->
@@ -1762,8 +1763,13 @@
   /* ---- init ---- */
   function init() {
     setLang(storeGet(LANG_KEY) === 'ru' ? 'ru' : 'en');
-    showScreen('overview');
-    setActiveNav('overview');
+    /* FR-SITE40: в меню страницы /about/ пункты ведут на «/#<экран>» —
+       открываем сразу нужный экран, иначе посетитель попадал на первый */
+    var start = (location.hash || '').replace('#', '');
+    if (SCREENS.indexOf(start) < 0) start = 'overview';
+    state.tab = start;
+    showScreen(start);
+    setActiveNav(start);
     applyExpanded();
     setMuted(true);
     applyVideoMask();
@@ -1788,6 +1794,12 @@
     window.addEventListener('resize', onResize);
     if (mqDesktop.addEventListener) mqDesktop.addEventListener('change', onResize);
     else if (mqDesktop.addListener) mqDesktop.addListener(onResize);
+
+    /* возврат «назад» со страницы /about/ меняет только хеш — переключаем экран */
+    window.addEventListener('hashchange', function () {
+      var id = (location.hash || '').replace('#', '');
+      if (SCREENS.indexOf(id) >= 0) openTab(id);
+    });
 
     initCookieBanner();
     flushLeadQueue();
