@@ -17,7 +17,9 @@ _ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
 # Проверки идут по фактически опубликованным лекциям, так что вернувшийся
 # модуль автоматически попадает под весь набор тестов — без правки списка.
 _LECTURES = tuple(r for r in _ALL_LECTURES if os.path.exists(os.path.join(_ROOT, r)))
-_VIMEO = ("automation/3/index.html", "automation/4/index.html", "automation/5/index.html")
+# Лекции 4-5 остались архивными (головы с Vimeo). Лекция 3 пересобрана
+# на общем каноне: свой плеер и ролики со своего домена, как у 1 и 2.
+_VIMEO = ("automation/4/index.html", "automation/5/index.html")
 _NATIVE_CDN = {
     "automation/6/index.html": "corp/6/videos",
     "automation/7/index.html": "corp/7/videos",
@@ -707,25 +709,36 @@ def _published_pages():
 
 
 def test_locked_modules_closed():
-    """Открыты модули 1 и 2. Лекций 3-8 нет в репозитории — значит их нет и в
-    артефакте Pages: по адресу /automation/3/ отдаётся 404, контент недоступен
-    даже прямой ссылкой (не редирект и не спрятанный CSS-ом слой, из которого
-    исходник всё равно вычитывается). Архив контента — тег lectures-2-8-archive.
+    """Открыты модули 1 и 2. Модуль 3 выложен как превью по просьбе владельца:
+    он хочет смотреть колоду на живом сайте, пока записывает озвучку. На
+    дорожной карте он по-прежнему заперт и ниоткуда не связан, то есть попасть
+    туда можно только прямой ссылкой, которую владелец даёт сам. Модулей 4-8 в
+    репозитории нет: по их адресам отдаётся 404, контент недоступен даже прямой
+    ссылкой. Архив контента — тег lectures-2-8-archive.
     """
     for n in (1, 2):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
             "модуль %d открыт и должен быть опубликован" % n
-    for n in range(3, 9):
+    for n in range(4, 9):
         assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
             "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
 
 
 def test_no_links_to_locked_modules():
     """Ни одна опубликованная страница не ведёт на закрытый модуль — на сайте
-    нет ссылок, которые упирались бы в 404."""
+    нет ссылок, которые упирались бы в 404.
+
+    Модуль 3 выложен как превью (см. test_locked_modules_closed): попасть туда
+    можно только прямой ссылкой от владельца, и с дорожной карты, входа в курс
+    и остальных страниц на него по-прежнему не ведёт ничего. Собственные
+    адреса внутри самой лекции 3 (og:url, ссылки на её же практику) под
+    правило не попадают — это не путь с сайта, а её собственная разметка.
+    """
     link = re.compile(r"automation/[3-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
+        if rel.startswith("automation/3/"):
+            hits = [h for h in hits if h != "automation/3"]
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
 
 
