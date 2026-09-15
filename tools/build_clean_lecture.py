@@ -87,13 +87,38 @@ def build(lecture, out_path):
         html = html.replace(vid.group(0), "const videoIds = [];")
         steps.append("videoIds обнулён — страница не тянет ролики")
 
-    # 3. Сам блок сокрытия — последним в <head>, чтобы перебить всё остальное.
+    # 3. Собранный Tailwind ВШИВАЕТСЯ в страницу. Ссылка на него корневая
+    #    (/assets/lecture-3.css): по сети она находится, а у файла, открытого
+    #    с диска двойным кликом, указывает в корень файловой системы — стилей
+    #    нет вовсе, и страница превращается в простыню системным шрифтом.
+    #    Иконки и Montserrat остаются внешними: они приезжают с CDN и без
+    #    интернета всё равно не появятся, а весят несопоставимо больше.
+    css_path = os.path.join(ROOT, "assets", "lecture-%d.css" % lecture)
+    link = '<link rel="stylesheet" href="/assets/lecture-%d.css">' % lecture
+    if link not in html:
+        sys.exit("не найдена ссылка на собранный CSS — страница осталась бы без стилей")
+    if not os.path.isfile(css_path):
+        sys.exit("нет %s — сначала python3 tools/build_lecture_css.py %d" % (css_path, lecture))
+    css = open(css_path, encoding="utf-8").read()
+    html = html.replace(link, "<style id=\"lecture-css-inline\">\n%s\n</style>" % css, 1)
+    steps.append("собранный CSS вшит в страницу (%.0f КБ) — файл работает с диска"
+                 % (len(css) / 1024))
+
+    # 4. Остальные корневые ссылки — иконки вкладки и манифест. С диска они
+    #    не найдутся и дадут пустые запросы; на вид не влияют, но убираем.
+    for dead in ('<link rel="icon" href="/favicon.ico"',):
+        pass
+    html = re.sub(r'\s*<link[^>]+href="/(?:favicon|apple-touch-icon|site\.webmanifest)[^"]*"[^>]*>',
+                  "", html)
+    steps.append("иконки вкладки и манифест убраны — с диска они не находятся")
+
+    # 5. Сам блок сокрытия — последним в <head>, чтобы перебить всё остальное.
     if "</head>" not in html:
         sys.exit("нет </head> — не туда вставляю")
     html = html.replace("</head>", CLEAN_CSS + "</head>", 1)
     steps.append("хром скрыт одним блоком стилей")
 
-    # 4. Заголовок вкладки — чтобы чистую страницу было видно в списке окон.
+    # 6. Заголовок вкладки — чтобы чистую страницу было видно в списке окон.
     html = re.sub(r"<title>(.*?)</title>", lambda m: "<title>%s — только слайды</title>"
                   % m.group(1), html, count=1, flags=re.S)
 
