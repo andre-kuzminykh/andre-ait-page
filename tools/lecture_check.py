@@ -10,6 +10,7 @@
     python3 tools/lecture_check.py parnost 3     # П1: текст ПК -> телефон, 0 потерь
     python3 tools/lecture_check.py perenos 3     # аварийные переносы, 0
     python3 tools/lecture_check.py ikonki 3      # ложные иконки, 0
+    python3 tools/lecture_check.py transform 3   # анимация стёрла transform, 0
     python3 tools/lecture_check.py kadry 3 ДО    # кадры до правки
     python3 tools/lecture_check.py kadry 3 ПОСЛЕ # кадры после правки
     python3 tools/lecture_check.py sverka ДО ПОСЛЕ   # П8, должно быть 0
@@ -95,9 +96,13 @@ def chromium_path():
 class Stand:
     """Открытая лекция в нужной форме: сервер, браузер, подгруженный шрифт."""
 
-    def __init__(self, lecture, viewport, vendor=None):
+    def __init__(self, lecture, viewport, vendor=None, motion=False):
         self.lecture, self.viewport = lecture, viewport
         self.vendor = vendor if vendor is not None else vendor_dir()
+        # Кадры для П8 снимаются с ЗАГЛУШЕННОЙ анимацией — на этом держится
+        # их детерминизм. Но тогда стенд слеп к дефектам, которые живут
+        # ИМЕННО в анимации (см. cmd_transform), поэтому она включаема.
+        self.motion = motion
 
     def __enter__(self):
         from playwright.sync_api import sync_playwright
@@ -116,7 +121,7 @@ class Stand:
             args=["--no-sandbox", "--hide-scrollbars"])
         self.ctx = self.browser.new_context(
             viewport=dict(self.viewport), device_scale_factor=1,
-            reduced_motion="reduce")
+            reduced_motion="no-preference" if self.motion else "reduce")
         if self.vendor:
             self.ctx.route("**/*", rl.vendor_route(self.vendor))
         self.page = self.ctx.new_page()
@@ -533,6 +538,88 @@ JS_IKONKI = r"""
 """
 
 
+# ── затирание статических трансформов анимацией ──────────────────────────
+#
+# Кадры для П8 снимаются с заглушённой анимацией — иначе попиксельная сверка
+# развалится. Но из-за этого стенд СЛЕП к дефектам, которые живут именно в
+# анимации, и один такой уже доехал до прода: keyframes, заканчивающиеся
+# кадром transform:none при animation-fill-mode:both, НАВСЕГДА перебивают
+# собственный transform элемента. У карточек радиальной схемы это стирало
+# -translate-x-1/2 -translate-y-1/2, и они висели углом на точке кольца
+# вместо центра. В кадрах сканера дефекта не было — там анимация не шла.
+#
+# Поэтому здесь стенд поднимается С анимацией и меряет то, что реально
+# осталось от трансформа, когда движение доиграло.
+
+JS_TRANSFORM = r"""
+(() => {
+  // 1. Какие анимации вообще трогают transform в КОНЕЧНОМ кадре.
+  const risky = new Set();
+  for (const sheet of document.styleSheets) {
+    let rules;
+    try { rules = sheet.cssRules; } catch (e) { continue; }   // чужой источник
+    if (!rules) continue;
+    for (const r of rules) {
+      if (r.type !== CSSRule.KEYFRAMES_RULE) continue;
+      for (const kf of r.cssRules) {
+        const key = (kf.keyText || '').replace(/\s/g, '');
+        if (key !== '100%' && key !== 'to') continue;
+        if (kf.style && kf.style.transform) risky.add(r.name);
+      }
+    }
+  }
+  // 2. Элементы, у которых КЛАСС объявляет transform, а в браузере его нет.
+  const TW = /(^|\s)-?(translate-x-|translate-y-|translate-|rotate-|scale-|skew-)/;
+  const IDENT = /^(none|matrix\(1,\s*0,\s*0,\s*1,\s*0,\s*0\))$/;
+  const out = [];
+  const slide = document.querySelector('.slide-container.opacity-100');
+  if (!slide) return {risky: [...risky], hits: out};
+  for (const el of slide.querySelectorAll('*')) {
+    const cls = (el.className || '').toString();
+    if (!TW.test(cls)) continue;
+    const st = getComputedStyle(el);
+    if (!IDENT.test(st.transform)) continue;        // трансформ на месте — всё хорошо
+    const names = (st.animationName || '').split(',').map(x => x.trim());
+    const hit = names.filter(n => risky.has(n));
+    if (!hit.length) continue;                      // обнулил не анимация — не наш случай
+    out.push({anim: hit.join(','), fill: st.animationFillMode,
+              cls: cls.slice(0, 80),
+              text: (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 34)});
+  }
+  return {risky: [...risky], hits: out};
+})()
+"""
+
+
+def cmd_transform(lecture):
+    """Анимация не имеет права стирать собственный transform элемента."""
+    print("Затирание статических трансформов анимацией (норма 0)")
+    bad, risky = [], []
+    with Stand(lecture, PC, motion=True) as st:
+        for i in st.each_slide(settle=1100):     # даём движению доиграть
+            r = st.page.evaluate(JS_TRANSFORM)
+            if not risky:
+                risky = r["risky"]
+            for e in r["hits"]:
+                bad.append((i, e))
+    print("   анимаций, задающих transform в конечном кадре: %d%s"
+          % (len(risky), (" — " + ", ".join(sorted(risky))) if risky else ""))
+    if bad:
+        print("   СТЁРТЫХ ТРАНСФОРМОВ: %d" % len(bad))
+        for i, e in bad[:12]:
+            print("     слайд %-3d %-10s fill:%-9s %s" % (i, e["anim"], e["fill"], e["text"]))
+            print("            class=\"%s\"" % e["cls"])
+        if len(bad) > 12:
+            print("     ... ещё %d" % (len(bad) - 12))
+        print("   Лечение: в keyframes использовать независимые свойства"
+              " scale/translate/rotate\n"
+              "   вместо transform — они композируются с трансформом элемента,"
+              " а не заменяют его.")
+    else:
+        print("   ВСЁ ЧИСТО: ни один элемент не потерял свой transform")
+    return len(bad)
+
+
 def cmd_ikonki(lecture):
     print("Ложные имена иконок Phosphor (норма 0)")
     with Stand(lecture, PC) as st:
@@ -671,7 +758,8 @@ def main():
     ap = argparse.ArgumentParser(
         description="Сканеры приёмки лекции (П1-П9). Запускать из корня репозитория.")
     ap.add_argument("cmd", choices=["kegl", "kraya", "parnost", "perenos",
-                                    "ikonki", "kadry", "sverka", "vse", "vendor"])
+                                    "ikonki", "transform", "kadry", "sverka",
+                                    "vse", "vendor"])
     ap.add_argument("a", nargs="?", help="номер лекции (или метка ДО для sverka)")
     ap.add_argument("b", nargs="?", help="метка кадров")
     args = ap.parse_args()
@@ -695,13 +783,15 @@ def main():
         return cmd_kadry(n, args.b)
     if args.cmd == "vse":
         bad = 0
-        for fn in (cmd_kegl, cmd_kraya, cmd_parnost, cmd_perenos, cmd_ikonki):
+        for fn in (cmd_kegl, cmd_kraya, cmd_parnost, cmd_perenos,
+                   cmd_ikonki, cmd_transform):
             bad += fn(n)
             print()
         print("ИТОГО нарушений: %d" % bad)
         return bad
     return {"kegl": cmd_kegl, "kraya": cmd_kraya, "parnost": cmd_parnost,
-            "perenos": cmd_perenos, "ikonki": cmd_ikonki}[args.cmd](n)
+            "perenos": cmd_perenos, "ikonki": cmd_ikonki,
+            "transform": cmd_transform}[args.cmd](n)
 
 
 if __name__ == "__main__":
