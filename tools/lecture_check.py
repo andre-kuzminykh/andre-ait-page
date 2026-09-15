@@ -319,6 +319,13 @@ JS_KRAYA = JS_SCALE + r"""
                 out: Math.round(Math.max(-r.left, -r.top, r.right - vw, r.bottom - vh) * 10) / 10});
       continue;
     }
+    // Плашка-ярлык (position:absolute с отрицательным смещением) СИДИТ на
+    // рамке карточки по замыслу — «СРЕДА ИСПОЛНЕНИЯ» на слайде 7, например.
+    // Для неё правило «текст не выходит за карточку» не писалось: это не
+    // текст в потоке, а элемент, положенный на борт руками. Под неё в
+    // slide-polish есть отдельные правила :has(> [class*="-top-2"]).
+    const pos = getComputedStyle(el).position;
+    if (pos === 'absolute' || pos === 'fixed') continue;
     // Рамка — КОНТЕНТ-БОКС карточки: паддинг принадлежит карточке, не тексту (§2.2 п.8).
     const card = el.parentElement && el.parentElement.closest(
       '[class*="rounded"],[class*="border"],[class*="bg-"]');
@@ -338,17 +345,33 @@ JS_KRAYA = JS_SCALE + r"""
 })()
 """
 
+# Зазор меряем по тому, что зритель ВИДИТ: по тексту и по крашеным боксам.
+# Сам холст .content-z — прозрачная коробка без фона: она шире картинки и
+# давала «зазор 5.1px» там, где глазами его 14px.
+
 JS_GUTTER = r"""
 (() => {
   const slide = document.querySelector('.slide-container.opacity-100')
              || document.querySelector('.slide-container');
   if (!slide) return null;
+  const paints = (el, st) => {
+    for (const n of el.childNodes) if (n.nodeType === 3 && n.nodeValue.trim()) return true;
+    const bg = st.backgroundColor;
+    if (bg && bg !== 'transparent' && !/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(bg)) return true;
+    if (st.backgroundImage && st.backgroundImage !== 'none') return true;
+    for (const s of ['Top', 'Right', 'Bottom', 'Left'])
+      if (parseFloat(st['border' + s + 'Width']) > 0.4
+          && st['border' + s + 'Style'] !== 'none') return true;
+    return el.tagName === 'IMG' || el.tagName === 'SVG' || el.tagName === 'I';
+  };
   let l = Infinity, r = -Infinity;
   for (const el of slide.querySelectorAll('*')) {
     const st = getComputedStyle(el);
     if (st.visibility === 'hidden' || st.display === 'none') continue;
+    if (parseFloat(st.opacity) < 0.05) continue;
     const b = el.getBoundingClientRect();
     if (b.width < 0.5 || b.height < 0.5) continue;
+    if (!paints(el, st)) continue;
     l = Math.min(l, b.left); r = Math.max(r, b.right);
   }
   if (!isFinite(l)) return null;
