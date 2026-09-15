@@ -11,6 +11,7 @@
     python3 tools/lecture_check.py perenos 3     # аварийные переносы, 0
     python3 tools/lecture_check.py ikonki 3      # ложные иконки, 0
     python3 tools/lecture_check.py transform 3   # анимация стёрла transform, 0
+    python3 tools/lecture_check.py perehod 3     # движение при смене слайда, 0
     python3 tools/lecture_check.py kadry 3 ДО    # кадры до правки
     python3 tools/lecture_check.py kadry 3 ПОСЛЕ # кадры после правки
     python3 tools/lecture_check.py sverka ДО ПОСЛЕ   # П8, должно быть 0
@@ -538,6 +539,96 @@ JS_IKONKI = r"""
 """
 
 
+
+# ── движение при смене слайда ────────────────────────────────────────────
+#
+# markActive() перещёлкивает .is-active при КАЖДОЙ смене слайда — это
+# перезапускает каскад появления (FR-LECTURE-14). Если в каскаде остались
+# анимации, меняющие геометрию (deckRise поднимал блок на 14px, iconPop
+# масштабировал иконку с 0.72), зритель видит, как содержимое «встаёт на
+# место» после каждого переключения. Кадры П8 снимаются без анимации и
+# этого не видят вовсе.
+#
+# Проверка честная: щёлкаем слайд и дважды снимаем геометрию — сразу после
+# переключения и когда движение заведомо доиграло. Позиции обязаны совпасть.
+
+JS_GEOM = r"""
+(() => {
+  const s = document.querySelector('.slide-container.opacity-100');
+  if (!s) return [];
+  // Бесконечные анимации (вращение кольца, бегущий пунктир, дыхание узла)
+  // двигаются ВСЕГДА и по замыслу — они не «встают на место». Такие элементы
+  // и всё, что внутри них, из проверки исключаем, иначе она всегда красная.
+  const forever = (el) => {
+    for (let n = el; n && n !== s.parentElement; n = n.parentElement) {
+      if (/infinite/.test(getComputedStyle(n).animationIterationCount || '')) return true;
+    }
+    return false;
+  };
+  const out = [];
+  for (const el of s.querySelectorAll('*')) {
+    if (forever(el)) { out.push(null); continue; }
+    const r = el.getBoundingClientRect();
+    out.push([Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10,
+              Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10]);
+  }
+  return out;
+})()
+"""
+
+JS_LABEL = r"""
+(i) => {
+  const s = document.querySelector('.slide-container.opacity-100');
+  const el = s ? s.querySelectorAll('*')[i] : null;
+  if (!el) return '';
+  const t = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 34);
+  return t || ('<' + el.tagName.toLowerCase() + ' class="'
+               + (el.className || '').toString().slice(0, 44) + '">');
+}
+"""
+
+MOVE_EPS = 0.5      # меньше — это округление подпикселей, а не движение
+
+
+def cmd_perehod(lecture):
+    """При переключении слайда содержимое не имеет права двигаться."""
+    print("Движение содержимого при смене слайда (норма 0)")
+    bad = []
+    with Stand(lecture, PC, motion=True) as st:
+        st.page.wait_for_timeout(900)
+        for i in range(st.total - 1):
+            st.page.evaluate("() => window.nextSlide && window.nextSlide()")
+            st.page.wait_for_timeout(40)          # каскад только начался
+            a = st.page.evaluate(JS_GEOM)
+            st.page.wait_for_timeout(900)         # заведомо доиграл
+            b = st.page.evaluate(JS_GEOM)
+            if len(a) != len(b):
+                bad.append((i + 1, "состав слайда изменился", 0))
+                continue
+            worst, worst_i = 0.0, -1
+            for k in range(len(a)):
+                if a[k] is None or b[k] is None:
+                    continue                      # вечное движение — не наш случай
+                d = max(abs(a[k][j] - b[k][j]) for j in range(4))
+                if d > worst:
+                    worst, worst_i = d, k
+            if worst > MOVE_EPS:
+                label = st.page.evaluate(JS_LABEL, worst_i)
+                bad.append((i + 1, label, worst))
+    if bad:
+        print("   ДВИГАЕТСЯ на %d переходах:" % len(bad))
+        for i, label, d in bad[:12]:
+            print("     слайд %-3d сдвиг %5.1fpx  %s" % (i, d, label))
+        if len(bad) > 12:
+            print("     ... ещё %d" % (len(bad) - 12))
+        print("   Лечение: убрать из каскада появления всё, что меняет геометрию"
+              " —\n   оставить только прозрачность. Каскад играет заново на КАЖДОЙ"
+              " смене слайда.")
+    else:
+        print("   ВСЁ ЧИСТО: на %d переходах геометрия не шелохнулась" % (st.total - 1))
+    return len(bad)
+
+
 # ── затирание статических трансформов анимацией ──────────────────────────
 #
 # Кадры для П8 снимаются с заглушённой анимацией — иначе попиксельная сверка
@@ -555,18 +646,25 @@ JS_TRANSFORM = r"""
 (() => {
   // 1. Какие анимации вообще трогают transform в КОНЕЧНОМ кадре.
   const risky = new Set();
-  for (const sheet of document.styleSheets) {
-    let rules;
-    try { rules = sheet.cssRules; } catch (e) { continue; }   // чужой источник
-    if (!rules) continue;
+  // Рекурсия обязательна: @keyframes внутри @media первая версия проверки
+  // пропускала, и iconPop — с тем же transform:none в конечном кадре —
+  // не попал в список рискованных.
+  const walk = (rules) => {
+    if (!rules) return;
     for (const r of rules) {
-      if (r.type !== CSSRule.KEYFRAMES_RULE) continue;
-      for (const kf of r.cssRules) {
-        const key = (kf.keyText || '').replace(/\s/g, '');
-        if (key !== '100%' && key !== 'to') continue;
-        if (kf.style && kf.style.transform) risky.add(r.name);
+      if (r.type === CSSRule.KEYFRAMES_RULE) {
+        for (const kf of r.cssRules) {
+          const key = (kf.keyText || '').replace(/\s/g, '');
+          if (key !== '100%' && key !== 'to') continue;
+          if (kf.style && kf.style.transform) risky.add(r.name);
+        }
+      } else if (r.cssRules) {
+        walk(r.cssRules);                 // @media, @supports, @layer
       }
     }
+  };
+  for (const sheet of document.styleSheets) {
+    try { walk(sheet.cssRules); } catch (e) { continue; }      // чужой источник
   }
   // 2. Элементы, у которых КЛАСС объявляет transform, а в браузере его нет.
   const TW = /(^|\s)-?(translate-x-|translate-y-|translate-|rotate-|scale-|skew-)/;
@@ -758,7 +856,7 @@ def main():
     ap = argparse.ArgumentParser(
         description="Сканеры приёмки лекции (П1-П9). Запускать из корня репозитория.")
     ap.add_argument("cmd", choices=["kegl", "kraya", "parnost", "perenos",
-                                    "ikonki", "transform", "kadry", "sverka",
+                                    "ikonki", "transform", "perehod", "kadry", "sverka",
                                     "vse", "vendor"])
     ap.add_argument("a", nargs="?", help="номер лекции (или метка ДО для sverka)")
     ap.add_argument("b", nargs="?", help="метка кадров")
@@ -784,14 +882,15 @@ def main():
     if args.cmd == "vse":
         bad = 0
         for fn in (cmd_kegl, cmd_kraya, cmd_parnost, cmd_perenos,
-                   cmd_ikonki, cmd_transform):
+                   cmd_ikonki, cmd_transform, cmd_perehod):
             bad += fn(n)
             print()
         print("ИТОГО нарушений: %d" % bad)
         return bad
     return {"kegl": cmd_kegl, "kraya": cmd_kraya, "parnost": cmd_parnost,
             "perenos": cmd_perenos, "ikonki": cmd_ikonki,
-            "transform": cmd_transform}[args.cmd](n)
+            "transform": cmd_transform,
+            "perehod": cmd_perehod}[args.cmd](n)
 
 
 if __name__ == "__main__":

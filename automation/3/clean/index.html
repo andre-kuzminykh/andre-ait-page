@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Автоматизация - Модуль 3 - Инженерия ИИ-агентов</title>
+    <title>Автоматизация - Модуль 3 - Инженерия ИИ-агентов — только слайды</title>
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
@@ -986,7 +986,8 @@ window.__FLOOR = {pc:34.2851,mob:21.9938};
 // контенту заезжать под кружок с головой — «если он что-то закрывает, пофиг»,
 // стрелки листания при этом остаются свободными), и снят накопительный запас
 // по ширине — из-за него слайд стоял в 0.83 от свободного места.
-window.__FIT = { mob: { bottom: 72 }, tightW: true };
+window.__FIT = { pc: { top: 28, bottom: 28 },
+                 mob: { top: 16, bottom: 16 }, tightW: true };
 </script>
 <script id="portal-fit">
 (function(){
@@ -1981,6 +1982,27 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
   window.addEventListener('orientationchange', function(){ setTimeout(soon, 150); });
 })();
 </script>
+
+<style id="clean-mode">
+/* ЧИСТАЯ СТРАНИЦА: на экране только слайд.
+   Узлы остаются в DOM — скрипт лекции обращается к ним по id и падает,
+   если их вырезать. Прячем видимость, а не существование. */
+#lecture-header,            /* лого, ТЕКСТ, ЗАДАНИЕ, смена темы, БУТКЕМП */
+.nav-arrow,                 /* стрелки листания внизу */
+#progress-container,        /* полоса прогресса */
+#video-bubble,              /* кружок с говорящей головой */
+#start-overlay,             /* «нажмите, чтобы начать» */
+#intro-overlay,
+#notes-panel,               /* панель «Текст» — её кнопка тоже убрана */
+#quiz-modal,                /* тест */
+#open-quiz-btn{             /* кнопка «Пройти тест» на последнем слайде */
+  display:none !important;
+}
+/* Кнопка теста — прямой ребёнок content-z: без неё у последнего слайда
+   остаётся её отступ сверху. Гасим и его. */
+#open-quiz-btn{ margin:0 !important; }
+html, body{ overflow:hidden; }
+</style>
 </head>
 <body class="font-sans selection:bg-solar selection:text-black">
 
@@ -5474,50 +5496,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
             window.location.hash === '#pdf';
 
         // Ролики к слайдам (mp4 со своего домена); '' — слайд пока без видео
-        const videoIds = [
-            '/assets/video_l3/1.mp4',
-            '/assets/video_l3/2.mp4',
-            '/assets/video_l3/3.mp4',
-            '/assets/video_l3/4.mp4',
-            '/assets/video_l3/5.mp4',
-            '/assets/video_l3/6.mp4',
-            '/assets/video_l3/7.mp4',
-            '/assets/video_l3/8.mp4',
-            '/assets/video_l3/9.mp4',
-            '/assets/video_l3/10.mp4',
-            '/assets/video_l3/11.mp4',
-            '/assets/video_l3/12.mp4',
-            '/assets/video_l3/13.mp4',
-            '/assets/video_l3/14.mp4',
-            '/assets/video_l3/15.mp4',
-            '/assets/video_l3/16.mp4',
-            '/assets/video_l3/17.mp4',
-            '/assets/video_l3/18.mp4',
-            '/assets/video_l3/19.mp4',
-            '/assets/video_l3/20.mp4',
-            '/assets/video_l3/21.mp4',
-            '/assets/video_l3/22.mp4',
-            '/assets/video_l3/23.mp4',
-            '/assets/video_l3/24.mp4',
-            '/assets/video_l3/25.mp4',
-            '/assets/video_l3/26.mp4',
-            '/assets/video_l3/27.mp4',
-            '/assets/video_l3/28.mp4',
-            '/assets/video_l3/29.mp4',
-            '/assets/video_l3/30.mp4',
-            '/assets/video_l3/31.mp4',
-            '/assets/video_l3/32.mp4',
-            '/assets/video_l3/33.mp4',
-            '/assets/video_l3/34.mp4',
-            '/assets/video_l3/35.mp4',
-            '/assets/video_l3/36.mp4',
-            '/assets/video_l3/37.mp4',
-            '/assets/video_l3/38.mp4',
-            '/assets/video_l3/39.mp4',
-            '/assets/video_l3/40.mp4',
-            '/assets/video_l3/41.mp4',
-            '/assets/video_l3/42.mp4'
-        ];
+        const videoIds = [];
 
         let player = null;
         // Нативный mp4-плеер с Vimeo-совместимым API (on/loadVideo/play/pause/getPaused/ready)
