@@ -599,7 +599,9 @@ h1 .text-solar, h2 .text-solar {
 
 /* Премиальное «оживление» контента при показе слайда — каскадный fade-rise (FR-LECTURE-14).
    Класс .is-active ставит скрипт portal-fit при каждой смене слайда. */
-@keyframes deckRise { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform:none; } }
+/* translate вместо transform — по той же причине, что и в aIn: конечный
+   кадр transform:none стирал позиционирующие классы у детей content-z. */
+@keyframes deckRise { from { opacity:0; translate:0 14px; } to { opacity:1; translate:0 0; } }
 /* Заголовки никогда не должны быть невидимыми из-за анимации (FR-LECTURE-25) */
 .slide-container h1, .slide-container h2, .slide-container h3, .slide-container h4 { opacity:1 !important; }
 /* FR-LECTURE-28 — вертикальное центрирование + СИММЕТРИЧНЫЙ резерв сверху/снизу,
@@ -2202,7 +2204,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
     </div>
 
     <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-3">
-        <div class="content-z max-w-4xl w-full">
+        <div class="content-z max-w-6xl w-full">
             <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-4 text-center text-black">Правило <span class="text-solar">или модель</span></h2>
             <p class="text-center text-black/60 mb-3 md:mb-6 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Модель нужна там, где есть неоднозначность смысла. Там, где условие пишется одной строкой, она добавит только цену</p>
 
@@ -2428,7 +2430,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
 
                 <div class="flex flex-col gap-1.5 md:gap-3 flex-1 min-w-0">
                     <div class="bg-black border-2 border-solar rounded-[14px] md:rounded-2xl p-2.5 md:p-4 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-4 a-in-4">
-                        <div class="flex items-center gap-2 md:gap-3 md:w-[200px] shrink-0">
+                        <div class="flex items-center gap-2 md:gap-3 md:w-[250px] shrink-0">
                             <span class="w-7 h-7 md:w-11 md:h-11 rounded-full bg-white/10 flex items-center justify-center shrink-0"><i class="ph-fill ph-brain text-sm md:text-2xl text-solar"></i></span>
                             <div class="min-w-0">
                                 <span class="block text-solar/70 font-bold text-[9px] md:text-[10px] uppercase tracking-widest">Слой 4</span>
@@ -2443,7 +2445,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
 
                     <div class="bg-white border border-grayBase rounded-[14px] md:rounded-2xl p-2.5 md:p-4 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-4 a-in-3">
-                        <div class="flex items-center gap-2 md:gap-3 md:w-[200px] shrink-0">
+                        <div class="flex items-center gap-2 md:gap-3 md:w-[250px] shrink-0">
                             <span class="w-7 h-7 md:w-11 md:h-11 rounded-full bg-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-database text-sm md:text-2xl text-solar"></i></span>
                             <div class="min-w-0">
                                 <span class="block text-black/40 font-bold text-[9px] md:text-[10px] uppercase tracking-widest">Слой 3</span>
@@ -2459,7 +2461,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
 
                     <div class="bg-white border border-grayBase rounded-[14px] md:rounded-2xl p-2.5 md:p-4 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-4 a-in-2">
-                        <div class="flex items-center gap-2 md:gap-3 md:w-[200px] shrink-0">
+                        <div class="flex items-center gap-2 md:gap-3 md:w-[250px] shrink-0">
                             <span class="w-7 h-7 md:w-11 md:h-11 rounded-full bg-grayBase flex items-center justify-center shrink-0"><i class="ph-fill ph-plugs-connected text-sm md:text-2xl text-solar"></i></span>
                             <div class="min-w-0">
                                 <span class="block text-black/40 font-bold text-[9px] md:text-[10px] uppercase tracking-widest">Слой 2</span>
@@ -2476,11 +2478,11 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
 
                     <div class="bg-grayBase/40 border border-grayBase rounded-[14px] md:rounded-2xl p-2.5 md:p-4 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-4 a-in">
-                        <div class="flex items-center gap-2 md:gap-3 md:w-[200px] shrink-0">
+                        <div class="flex items-center gap-2 md:gap-3 md:w-[250px] shrink-0">
                             <span class="w-7 h-7 md:w-11 md:h-11 rounded-full bg-white flex items-center justify-center shrink-0"><i class="ph-fill ph-cube text-sm md:text-2xl text-solar"></i></span>
                             <div class="min-w-0">
                                 <span class="block text-black/40 font-bold text-[9px] md:text-[10px] uppercase tracking-widest">Слой 1</span>
-                                <h3 class="font-black text-[11px] md:text-base text-black leading-tight m-0">Инфра&shy;структура</h3>
+                                <h3 class="font-black text-[11px] md:text-base text-black leading-tight m-0">Инфраструктура</h3>
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-1 md:gap-1.5 min-w-0">
@@ -2550,7 +2552,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                 </div>
 
                 <!-- Колонка вопросов эксплуатации -->
-                <div class="w-full md:w-[228px] lg:w-[258px] shrink-0 bg-white border border-grayBase rounded-[20px] md:rounded-[28px] p-3 md:p-5">
+                <div class="w-full md:w-[228px] lg:w-[258px] shrink-0 p-3 md:p-5 md:flex md:flex-col md:justify-center">
                     <p class="text-center md:text-left text-black/40 text-[9px] md:text-xs font-bold uppercase tracking-widest m-0 mb-2 md:mb-4">Вопросы эксплуатации</p>
                     <div class="grid grid-cols-2 md:grid-cols-1 gap-1.5 md:gap-2.5">
                         <div class="flex items-start gap-1.5 md:gap-2">
@@ -3334,11 +3336,11 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <span class="whitespace-nowrap text-[10px] md:text-xs font-bold uppercase tracking-widest text-orange-500"><i class="ph-fill ph-database"></i> Как приходит</span>
                     </div>
                     <div class="flex flex-col gap-1.5 md:gap-2.5">
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Дата: 03/07/24 · 2024-07-03</p>
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Сумма: «1 250,00»</p>
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Клиент: ооо ромашка</p>
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Почта: поля нет</p>
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Заказ 7841 — дважды</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Дата: 03/07/24 · 2024-07-03</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Сумма: «1 250,00»</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Клиент: ооо ромашка</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Почта: поля нет</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-black leading-tight m-0"><i class="ph-fill ph-warning text-orange-500 text-[10px] md:text-sm shrink-0 mt-0.5"></i>Заказ 7841 — дважды</p>
                     </div>
                 </div>
 
@@ -3375,11 +3377,11 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <span class="whitespace-nowrap text-[10px] md:text-xs font-bold uppercase tracking-widest text-solar"><i class="ph-fill ph-cube"></i> Как нужно</span>
                     </div>
                     <div class="flex flex-col gap-1.5 md:gap-2.5">
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Дата: 2024-07-03</p>
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Сумма: 1250.00</p>
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Клиент: ООО «Ромашка»</p>
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Почта: нет данных</p>
-                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight whitespace-nowrap m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Заказ 7841 — один</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Дата: 2024-07-03</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Сумма: 1250.00</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Клиент: ООО «Ромашка»</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Почта: нет данных</p>
+                        <p class="flex items-start gap-1.5 text-[10px] md:text-sm font-bold text-white leading-tight m-0"><i class="ph-fill ph-check text-solar text-[10px] md:text-sm shrink-0 mt-0.5"></i>Заказ 7841 — один</p>
                     </div>
                 </div>
             </div>
@@ -4909,7 +4911,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
 
             <!-- Длинная цепочка: восемь звеньев в две строки (на телефоне — по два в ряд),
                  стрелки стоят только внутри ряда, переносы держит нумерация. -->
-            <div class="grid grid-cols-[1fr_auto_1fr] md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] items-stretch gap-x-1 gap-y-2 md:gap-x-2 md:gap-y-4 w-full">
+            <div class="grid grid-cols-[1fr_auto_1fr] md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] items-stretch gap-x-1 gap-y-3 md:gap-x-2 md:gap-y-6 w-full">
                 <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl p-1.5 md:p-3 flex flex-col items-center text-center min-w-0">
                     <div class="flex items-center justify-center gap-1 md:gap-1.5 mb-0.5 md:mb-1">
                         <i class="ph-fill ph-tree-structure text-lg md:text-3xl text-solar"></i>
@@ -4982,7 +4984,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                 <div class="h-[2px] flex-1 text-solar/40 a-flow"></div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 w-full">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 w-full mt-1 md:mt-2">
                 <div class="bg-black border-2 border-solar rounded-xl md:rounded-2xl p-2 md:p-4 flex items-center gap-2 md:gap-3 text-left">
                     <i class="ph-fill ph-lightning text-xl md:text-4xl text-solar shrink-0"></i>
                     <div class="min-w-0">
@@ -5154,7 +5156,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                             <div class="w-[2px] flex-1 text-solar/40 a-flow-y"></div>
                         </div>
                         <div class="min-w-0 pb-1.5 md:pb-2.5">
-                            <p class="text-[10px] md:text-sm text-white/80 leading-snug m-0"><span class="font-bold text-solar/80">Ответ модели:</span> {"решение":"скидка"}</p>
+                            <p class="text-[10px] md:text-sm text-white/80 leading-snug m-0"><span class="font-bold text-solar/80">Ответ модели:</span> {"решение":"скидка","процент":12}</p>
                         </div>
                     </div>
 
@@ -5164,7 +5166,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                             <div class="w-[2px] flex-1 text-solar/40 a-flow-y"></div>
                         </div>
                         <div class="min-w-0 pb-1.5 md:pb-2.5">
-                            <p class="text-[10px] md:text-sm text-white/80 leading-snug m-0"><span class="font-bold text-solar/80">Инструмент:</span> create_offer(id=4812, процент=12) → 200</p>
+                            <p class="text-[10px] md:text-sm text-white/80 leading-snug m-0"><span class="font-bold text-solar/80">Инструмент:</span> create_offer(id=4812) → 200</p>
                         </div>
                     </div>
 
@@ -9747,7 +9749,11 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 .a-in-2{ animation-delay:.09s; } .a-in-3{ animation-delay:.18s; }
 .a-in-4{ animation-delay:.27s; } .a-in-5{ animation-delay:.36s; }
 .a-in-6{ animation-delay:.45s; }
-@keyframes aIn{ from{ opacity:0; transform:scale(.94); } to{ opacity:1; transform:none; } }
+/* scale, а не transform: независимое свойство КОМПОНУЕТСЯ со статическим
+   transform элемента, а не стирает его. С transform:none в конечном кадре
+   и fill-mode both анимация навсегда затирала -translate-x-1/2 у карточек
+   радиальной схемы — они висели углом на точке вместо центра. */
+@keyframes aIn{ from{ opacity:0; scale:.94; } to{ opacity:1; scale:1; } }
 
 @media (prefers-reduced-motion:reduce){
   .a-flow,.a-flow-y,.a-pulse,.a-orbit,.a-step,.a-draw,.a-in{ animation:none !important; }
