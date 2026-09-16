@@ -87,17 +87,25 @@ def stages(t):
 
     # 03 — процессы связаны между собой, где люди — оранжевые
     proc = s["s3_cards"]
-    chain = []
-    warm = 0
-    for i, (name, kind) in enumerate(proc):
+    nodes, warm = [], 0
+    for name, kind in proc:
         icon = "fa-user" if kind == "human" else "fa-database"
-        last = i == len(proc) - 1
         flip = ""
         if kind == "human":
             flip = ' data-flip="o%d"' % warm
             warm += 1
-        chain.append('<div class="pnode %s%s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
-                     % ("human" if kind == "human" else "sys", "" if last else " linked", flip, icon, name))
+        nodes.append('<div class="pnode %s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
+                     % ("human" if kind == "human" else "sys", flip, icon, name))
+    # рядами по три: в одну строку шесть блоков не влезают, а сетка оставляла
+    # висящую чёрточку в конце ряда и рвала связь между рядами
+    PARROW = '<span class="parrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
+    PDOWN = '<span class="pwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
+    rows = [nodes[i:i + 3] for i in range(0, len(nodes), 3)]
+    chain = []
+    for r, row in enumerate(rows):
+        chain.append('<div class="prow">' + PARROW.join(row) + "</div>")
+        if r < len(rows) - 1:
+            chain.append(PDOWN)
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot o"></span>{bar}</div>
@@ -191,8 +199,9 @@ def page(t, lang):
             id=sec, ic=icon, c=color, label=t["nav"][i], act=" active" if i == 0 else "")
         for i, (sec, icon, color) in enumerate(NAV))
 
-    back = ('<button class="back" id="back-btn" type="button">'
-            '<i class="fa-solid fa-arrow-left"></i> {label}</button>').format(label=t["back"])
+    # правка владельца: овал «назад» стоит над заголовком на каждом экране и
+    # всегда ведёт на главную, поэтому это обычная ссылка, а не кнопка
+    back = ('<a class="back" href="/"><i class="fa-solid fa-arrow-left"></i> {label}</a>').format(label=t["back"])
 
     questions = "".join('<li class="q-item">%s</li>' % q for q in t["questions"])
 
@@ -221,13 +230,14 @@ def page(t, lang):
       <section class="screen step-screen" data-chapter="process" data-step="{n}">
         <div class="wrap step-wrap">
           <article class="step-copy">
+            {back}
             <p class="step-n">{n:02d} &mdash; {tag}</p>
             <h2>{title}</h2>
             <p>{body}</p>
           </article>
           <div class="stage-card">{stage}</div>
         </div>
-      </section>""".format(n=i + 1, tag=st[0], title=st[1], body=st[2], stage=stage_html[i])
+      </section>""".format(n=i + 1, tag=st[0], title=st[1], body=st[2], stage=stage_html[i], back=back)
         for i, st in enumerate(t["steps"]))
 
     roles = "".join('<span class="role"><i class="fa-solid %s"></i>%s</span>' % (ic, name) for name, ic in t["roles"])
@@ -345,6 +355,7 @@ def page(t, lang):
   <!-- 2. Проблема -->
   <section class="screen" data-chapter="problem" id="problem">
     <div class="wrap center">
+      {back}
       <h2>{q_head}</h2>
       <ul class="qs">{questions}</ul>
       <p class="q-final">{q_final}</p>
@@ -354,6 +365,7 @@ def page(t, lang):
   <!-- 3. Рынок -->
   <section class="screen" data-chapter="problem" id="numbers">
     <div class="wrap center">
+      {back}
       <p class="eyebrow o">{n_eyebrow}</p>
       <h2 class="one-line">{n_head}</h2>
       <div class="nums">{nums}</div>
@@ -364,6 +376,7 @@ def page(t, lang):
   <!-- 4. Кейсы -->
   <section class="screen" data-chapter="usecases" id="usecases">
     <div class="wrap">
+      {back}
       <p class="eyebrow">{b_eyebrow}</p>
       <h2>{b_head}</h2>
       <div class="biz-grid">{biz}</div>
@@ -374,6 +387,7 @@ def page(t, lang):
   <!-- 5. Решение -->
   <section class="screen" data-chapter="solution" id="solution">
     <div class="wrap">
+      {back}
       <p class="eyebrow o">{d_eyebrow}</p>
       <h2>{d_head}</h2>
       <p class="lead">{d_sub}</p>
@@ -387,6 +401,7 @@ def page(t, lang):
   <!-- 6. Как это работает -->
   <section class="screen" data-chapter="process" id="process">
     <div class="wrap center">
+      {back}
       <p class="eyebrow">{s_eyebrow}</p>
       <h2>{s_head}</h2>
       <p class="lead">{s_sub}</p>
@@ -397,6 +412,7 @@ def page(t, lang):
   <!-- 7. Обучение -->
   <section class="screen" data-chapter="learning" id="learning">
     <div class="wrap center">
+      {back}
       <p class="eyebrow o">{l_eyebrow}</p>
       <h2>{l_head}</h2>
       <p class="lead">{l_sub}</p>
@@ -410,6 +426,7 @@ def page(t, lang):
   <!-- 8. Тарифы -->
   <section class="screen" data-chapter="pricing" id="pricing">
     <div class="wrap">
+      {back}
       <p class="eyebrow">{pr_eyebrow}</p>
       <h2>{pr_head}</h2>
       <p class="lead">{pr_sub}</p>
@@ -421,6 +438,7 @@ def page(t, lang):
   <!-- 9. Финал -->
   <section class="screen final" data-chapter="start" id="start">
     <div class="wrap center">
+      {back}
       <p class="eyebrow"><i class="fa-solid fa-arrow-right"></i>{f_eyebrow}</p>
       <h2 class="final-1">{f_1}</h2>
       <p class="final-2">{f_2}</p>

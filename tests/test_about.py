@@ -153,11 +153,25 @@ def test_main_page_opens_the_screen_from_the_hash():
         "возврат «назад» меняет только хеш — нужен hashchange"
 
 
-def test_back_button_falls_back_to_home():
+def test_back_is_on_every_screen_and_leads_home():
+    """Правка владельца: овал «назад» стоит НАД заголовком на каждом экране и
+    стрелка всегда перемещает на главную."""
     for lang, html in _pages():
-        assert 'id="back-btn"' in html, lang + ": нет кнопки «Назад»"
-        assert "location.href = '/'" in html, \
-            lang + ": при прямом заходе «Назад» ведёт на главную"
+        screens = re.findall(r'<section class="screen[^"]*"[^>]*>(.*?)</section>', html, re.S)
+        assert len(screens) == 6, "%s: шесть экранов, стало %d" % (lang, len(screens))
+        for i, body in enumerate(screens):
+            m = re.search(r'<a class="back" href="/">', body)
+            assert m, "%s: на экране %d нет овала «назад»" % (lang, i)
+            head = re.search(r"<(h1|h2|p class=\"eyebrow)", body)
+            if head:
+                assert m.start() < head.start(), \
+                    "%s: на экране %d «назад» должен стоять НАД заголовком" % (lang, i)
+        assert 'id="back-btn"' not in html, lang + ": кнопка-скрипт больше не нужна"
+    css = _css()
+    back = re.search(r"\n  \.back \{(.*?)\}", css, re.S).group(1)
+    assert "border-radius: 999px" in back, "«назад» — овал"
+    assert "margin-left: auto" in back and "margin-right: auto" in back, \
+        "овал «назад» выровнен по центру колонки"
 
 
 def test_logo_and_menu_are_present_on_both_pages():
@@ -188,7 +202,7 @@ def test_diagnostic_button_links_to_maturity():
 
 def test_quotes_and_accent_blocks_are_used():
     for lang, html in _pages():
-        assert html.count('class="quote reveal"') >= 3, lang + ": ключевые цитаты — в рамках"
+        assert html.count('class="quote reveal"') >= 2, lang + ": ключевые цитаты — в рамках"
         assert html.count('class="stat reveal"') >= 3, lang + ": цифры — карточками"
         assert 'class="finale reveal"' in html, lang + ": нет финального блока"
 
@@ -225,9 +239,12 @@ def test_chapters_are_dense_slides():
         assert screens[:5] == ["childhood", "education", "career", "startups", "ecosystem"], \
             "%s: порядок глав сбился: %s" % (lang, screens[:5])
         first = re.search(r'<section class="screen active".*?</section>', html, re.S).group(0)
-        for mark in ("Intelligence creates possibilities", "Sometimes the strongest motivation") \
-                if lang == "en" else ("Интеллект открывает возможности", "Иногда самая сильная мотивация"):
-            assert mark in first, "%s: цитата должна быть на первом слайде" % lang
+        keep = "Intelligence creates possibilities" if lang == "en" else "Интеллект открывает возможности"
+        drop = "Sometimes the strongest motivation" if lang == "en" else "Иногда самая сильная мотивация"
+        assert keep in first, "%s: цитата должна быть на первом слайде" % lang
+        assert drop not in html, "%s: вторую цитату владелец просил убрать" % lang
+        tail = "That period shaped" if lang == "en" else "Этот период сформировал"
+        assert tail not in html, "%s: хвост главы про детство убран" % lang
         last = re.findall(r'<section class="screen"[^>]*>.*?</section>', html, re.S)[-1]
         assert 'class="finale' in last and 'class="foot"' in last, \
             "%s: финал и подвал с иконками — на последнем слайде" % lang
@@ -251,7 +268,8 @@ def test_biography_is_a_deck_of_screens():
     assert ".article.leaving .screen.active" in css, "уходящий экран анимируется"
     for lang, html in _pages():
         screens = re.findall(r'<section class="screen"[^>]*>(.*?)</section>', html, re.S)
-        assert len(screens) >= 6, "%s: биография должна быть разложена по экранам (%d)" % (lang, len(screens))
+        total = len(re.findall(r'<section class="screen[^"]*" data-i=', html))
+        assert total == 6, "%s: шесть экранов, по главе (%d)" % (lang, total)
         for i, body in enumerate(screens):
             text = re.sub(r"<[^>]+>", " ", body).strip()
             assert len(text) > 40, "%s: экран %d почти пустой" % (lang, i + 1)
@@ -293,6 +311,59 @@ def test_frame_is_not_measured_in_vw():
         css = _read(rel)
         for m in re.finditer(r"(width|left|right): calc\([^)]*?\d+vw", css):
             raise AssertionError(rel + ": рамка в vw — " + m.group(0))
+
+
+def test_quotes_are_not_clickable_or_zoomable():
+    """Правка владельца: цитаты просто стоят на своих местах."""
+    css = _css()
+    lock = re.search(r"\.quote, \.note, \.stat \{(.*?)\}", css, re.S)
+    assert lock, "нет правила, запрещающего нажатие на цитаты"
+    body = lock.group(1)
+    for rule in ("pointer-events: none", "user-select: none", "touch-action: manipulation"):
+        assert rule in body, "у цитат нет «%s»" % rule
+
+
+def test_reveal_offsets_are_reset_after_the_block_appears():
+    """Корень «налипания»: у .quote/.note/.stat своя transform той же
+    специфичности, и без сброса ПОСЛЕ них блок навсегда оставался смещённым."""
+    css = _css()
+    reset = ".quote.reveal.in, .note.reveal.in, .stat.reveal.in { transform: none; }"
+    assert reset in css, "нет сброса смещения после появления"
+    assert css.index(".stat.reveal {") < css.index(reset), \
+        "сброс обязан идти ПОСЛЕ частных правил, иначе он ничего не значит"
+
+
+def test_headline_fits_one_line_on_desktop():
+    """Правка владельца: заголовок должен влезать в одну строку по шрифту."""
+    for lang, html in _pages():
+        assert "function fitHeadings" in html, lang + ": нет подбора кегля заголовка"
+        assert "whiteSpace = 'nowrap'" in html, lang + ": заголовок набирается в одну строку"
+        assert "fitHeadings(screens[cur])" in html, \
+            lang + ": подбор должен работать и на показанном экране, а не только при загрузке"
+        assert "!root.querySelectorAll" in html, \
+            lang + ": resize передаёт событие — его нельзя принимать за узел"
+
+
+def test_ecosystem_chapters_are_merged_into_one_screen():
+    """Правка владельца: «Моя цель…» и «Сейчас я строю…» переехали на слайд
+    про экосистему, и все три части живут на одном экране."""
+    for lang, html in _pages():
+        dense = re.search(r'<section class="screen dense"[^>]*>(.*?)</section>', html, re.S)
+        assert dense, lang + ": нет объединённого экрана экосистемы"
+        body = dense.group(1)
+        marks = (("My goal became", "Now I am building", "$20M+", "Large companies")
+                 if lang == "en" else
+                 ("Моей целью стало", "Сейчас я создаю", "$20M+", "Крупные компании"))
+        for mark in marks:
+            assert mark in body, "%s: на объединённом экране нет «%s»" % (lang, mark)
+    css = _css()
+    assert ".screen.dense { columns: 2;" in css, \
+        "объединённый экран на широких окнах — в две колонки, иначе он не помещается"
+
+
+def test_data_engineer_is_bold():
+    assert "<strong>Data Engineer</strong>" in _en()
+    assert "<strong>инженера по данным</strong>" in _ru()
 
 
 if __name__ == "__main__":

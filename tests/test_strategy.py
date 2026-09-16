@@ -125,20 +125,27 @@ def test_menu_lists_seven_product_chapters():
     assert ">Solution<" in _en(), "раздел называется Solution"
 
 
-def test_back_is_an_oval_pill_above_the_product_name():
-    """Правка владельца: «← BACK» — овал ОТДЕЛЬНОЙ строкой над «AI Strategy»."""
+def test_back_is_an_oval_pill_on_every_screen():
+    """Правка владельца: «← BACK» — овал ОТДЕЛЬНОЙ строкой над заголовком на
+    КАЖДОМ экране, и стрелка всегда перемещает на главную."""
     css = _read("assets/strategy.css")
     back = re.search(r"\n\.back \{(.*?)\}", css, re.S).group(1)
     assert "border-radius: 999px" in back, "кнопка «назад» — овал"
     assert "display: flex" in back and "width: fit-content" in back, \
         "овал занимает свою строку, а не встаёт рядом с надписью"
     for lang, html in _pages():
-        top = html[html.index('id="top"'):html.index("</section>", html.index('id="top"'))]
-        b = top.index('id="back-btn"')
-        e = top.index('class="eyebrow"')
-        assert b < e, lang + ": овал «назад» стоит выше надписи AI Strategy"
+        screens = re.findall(r'<section class="screen[^"]*"[^>]*>(.*?)</section>', html, re.S)
+        assert len(screens) == 15, "%s: пятнадцать экранов (%d)" % (lang, len(screens))
+        for i, body in enumerate(screens):
+            m = re.search(r'<a class="back" href="/">', body)
+            assert m, "%s: на экране %d нет овала «назад»" % (lang, i)
+            head = re.search(r"<(h1|h2|p class=\"eyebrow|p class=\"step-n)", body)
+            if head:
+                assert m.start() < head.start(), \
+                    "%s: на экране %d «назад» должен стоять НАД заголовком" % (lang, i)
+        assert 'id="back-btn"' not in html, lang + ": кнопка-скрипт больше не нужна"
         header = html[html.index("<header>"):html.index("</header>")]
-        assert 'id="back-btn"' not in header, lang + ": в шапке стрелки нет"
+        assert 'class="back"' not in header, lang + ": в шапке стрелки нет"
         assert 'class="prod-name"' not in html, lang + ": у лого не пишем название продукта"
 
 
@@ -152,8 +159,8 @@ def test_header_matches_the_main_site():
                  "padding: 0 1.4rem; font-size: 11.5px"):    # кнопка действия
         assert rule in css, "в шапке лендинга нет правила «%s» с главной" % rule
         assert rule in site or rule.replace("; ", ";\n") in site, "правило «%s» изменилось на главной" % rule
-    assert "location.href = '/'" in _read("assets/strategy.js"), \
-        "при прямом заходе «назад» ведёт на главную"
+    assert "location.href = '/'" not in _read("assets/strategy.js"), \
+        "«назад» — обычная ссылка на главную, скрипт тут не нужен"
 
 
 def test_page_scales_like_the_main_site():
@@ -272,7 +279,7 @@ def test_orange_blocks_fly_from_process_to_opportunities_to_ai_first():
         keys = re.findall(r'data-flip="(o\d)"', html)
         assert keys.count("o0") == 3 and keys.count("o1") == 3 and keys.count("o2") == 3, \
             lang + ": три оранжевых блока связаны на всех трёх сценах"
-        for cls in ("pnode human linked", "opnode", "fnode human"):
+        for cls in ("pnode human", "opnode", "fnode human"):
             assert re.search(r'class="%s" data-seq data-flip="o0"' % cls, html), \
                 "%s: нет связанного блока на сцене «%s»" % (lang, cls)
     js = _read("assets/strategy.js")
@@ -382,6 +389,70 @@ def test_headings_have_no_trailing_dots():
 def test_copy_makes_no_guarantees():
     for lang, html in _pages():
         assert "replace McKinsey" not in html and "заменяем McKinsey" not in html, lang
+
+
+def test_agent_passport_is_purple_orange():
+    """Правка владельца: «где агент давай фиолетово-оранжевый»."""
+    css = _read("assets/strategy.css")
+    core = re.search(r"\.hub-core \{(.*?)\}", css, re.S).group(1)
+    assert "rgba(136,84,243" in core and "rgba(249,115,22" in core, \
+        "карточка агента должна быть фиолетово-оранжевой"
+    edge = re.search(r"\.hub-core::before \{(.*?)\}", css, re.S).group(1)
+    assert "var(--p)" in edge and "var(--o)" in edge, "рамка агента — градиент из двух цветов"
+    assert ".spoke:nth-of-type(even) { border-color: rgba(249,115,22" in css, \
+        "поля вокруг агента чередуются фиолетовым и оранжевым"
+
+
+def test_process_chain_has_no_dangling_connectors():
+    """Цепочка идёт рядами по три со стрелкой переноса — без висящих чёрточек."""
+    css = _read("assets/strategy.css")
+    assert ".pnode.linked::after" not in css, "псевдо-соединители убраны"
+    assert ".prow {" in css and ".pwrap {" in css, "цепочка рисуется рядами"
+    for lang, html in _pages():
+        assert html.count('class="prow"') == 2, lang + ": два ряда процессов"
+        assert html.count('class="pwrap"') == 1, lang + ": одна стрелка переноса"
+        assert html.count('class="frow"') == 2, lang + ": AI-First тоже рядами"
+
+
+def test_one_line_headings_are_fitted_by_script():
+    """clamp в vw не спасал: на 1280–1366px строка вылезала за колонку."""
+    js = _read("assets/strategy.js")
+    assert "function fitHeadings" in js, "нет подбора кегля"
+    assert "fitHeadings(screens[cur])" in js, \
+        "подбор обязан работать на показанном экране: у скрытого clientWidth = 0"
+    assert "!root.querySelectorAll" in js, \
+        "resize передаёт событие — его нельзя принимать за узел"
+
+
+def test_rail_left_fade_only_after_scrolling():
+    """Растушёвка слева гасила первую карточку в покое."""
+    css = _read("assets/strategy.css")
+    assert ".rail-wrap.scrolled::before { opacity: 1; }" in css
+    assert re.search(r"\.rail-wrap::before \{[^}]*opacity: 0", css, re.S), \
+        "в покое левой растушёвки нет"
+    assert "classList.toggle('scrolled'" in _read("assets/strategy.js")
+
+
+def test_explore_label_survives_on_mobile():
+    """Владелец просил подпись «Explore →», а не голую стрелку."""
+    css = _read("assets/strategy.css")
+    assert ".biz-go span { display: none; }" not in css, \
+        "на мобилке подпись «Explore» не прячем"
+
+
+def test_final_screen_content_is_centred():
+    """На финальном экране между кнопкой и подвалом зияла половина экрана."""
+    css = _read("assets/strategy.css")
+    wrap = re.search(r"\.final \.wrap \{(.*?)\}", css, re.S).group(1)
+    assert "justify-content: center" in wrap, "призыв — по центру экрана"
+    assert "flex: 1 1 auto" in wrap, "блок занимает высоту до подвала"
+    assert ".final footer { margin-top: auto;" in css, "подвал прижат к низу"
+
+
+def test_screens_never_clip_their_top_when_content_is_tall():
+    """safe center: иначе у длинного экрана срезался верх и до него не докрутить."""
+    for rel in ("assets/strategy.css", "assets/about.css"):
+        assert "justify-content: safe center" in _read(rel), rel + ": нет safe-центрирования"
 
 
 if __name__ == "__main__":

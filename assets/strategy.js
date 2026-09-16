@@ -35,6 +35,42 @@
     return b;
   });
 
+  /* ---------- заголовки в одну строку ----------
+     h2.one-line и строки заголовка первого экрана набраны с nowrap. Кегль в
+     vw их не спасает: ширина колонки зависит и от масштаба, и от языка, и на
+     1280–1366px строка вылезала за экран. Подбираем кегль по факту. */
+  function fitHeadings(root) {
+    if (!root || !root.querySelectorAll) root = document;
+    $$('h2.one-line, h1 .l', root).forEach(function (el) {
+      el.style.fontSize = '';
+      var box = el.closest('.wrap') || el.parentElement;
+      var room = box.clientWidth - 2;
+      if (room <= 0) return;
+      var size = parseFloat(getComputedStyle(el).fontSize);
+      var min = size * 0.55;
+      while (size > min && el.scrollWidth > room) {
+        size -= 0.5;
+        el.style.fontSize = size + 'px';
+      }
+    });
+  }
+  fitHeadings();
+  window.addEventListener('resize', fitHeadings);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeadings);
+
+  /* ---------- лента артефактов: левая растушёвка только после прокрутки ---------- */
+  $$('.rail-wrap').forEach(function (wrap) {
+    var rail = $('.rail', wrap);
+    if (!rail) return;
+    function paintFade() {
+      wrap.classList.toggle('scrolled', rail.scrollLeft > 4);
+      wrap.classList.toggle('ended', rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 4);
+    }
+    rail.addEventListener('scroll', paintFade, { passive: true });
+    window.addEventListener('resize', paintFade);
+    paintFade();
+  });
+
   /* ---------- перелёт оранжевых блоков между шагами 03 → 04 → 05 ----------
      Считаем позиции через offsetLeft/offsetTop: смещения не зависят от transform,
      которым экран въезжает, поэтому FLIP получается точным. Ключ data-flip="oN"
@@ -103,6 +139,7 @@
     navTabs.forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-go') === chapter); });
     dots.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
     screens[cur].scrollTop = 0;
+    fitHeadings(screens[cur]);
     countUpIn(screens[cur]);
   }
   function go(i) {
@@ -226,11 +263,8 @@
     el.addEventListener('click', function () { goChapter(el.getAttribute('data-go')); });
   });
 
-  /* ---------- «Назад» ---------- */
-  var back = $('#back-btn');
-  if (back) back.addEventListener('click', function () {
-    if (document.referrer && history.length > 1) history.back(); else location.href = '/';
-  });
+  /* «Назад» — обычная ссылка на главную, по овалу на каждом экране; скрипту
+     тут делать нечего (правка владельца: стрелка всегда ведёт на главную) */
 
   /* ---------- лицо: звук по клику; на мобилке кружок ещё и перетаскивается ---------- */
   function setPlaying(on) {
