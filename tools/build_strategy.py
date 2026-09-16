@@ -259,9 +259,6 @@ def page(t, lang):
             id=sec, ic=icon, label=t["nav"][i], c="#8854F3" if i % 2 == 0 else "#F97316")
         for i, (sec, icon) in enumerate(NAV))
 
-    phrases = "".join('<div class="phrase{cls}">{txt}</div>'.format(
-        cls=" answer" if i == len(t["hero_phrases"]) - 1 else "", txt=p) for i, p in enumerate(t["hero_phrases"]))
-
     questions = "".join('<div class="q-item">%s</div>' % q for q in t["questions"])
     dots = "".join('<span class="qs-dot"></span>' for _ in t["questions"])
 
@@ -293,16 +290,20 @@ def page(t, lang):
 
     stage_html = stages(t)
     steps = "".join("""
-        <article class="story-step reveal" data-step="{n}" style="--n:{n}">
-          <p class="step-n">{n:02d} &mdash; {tag}</p>
-          <h2>{title}</h2>
-          <p>{body}</p>
-          {note}
-        </article>""".format(n=i + 1, tag=st[0], title=st[1], body=st[2],
-                             note='<p class="step-note">%s</p>' % st[3] if st[3] else "")
+      <section class="story-screen" id="step-{n}" data-step="{n}">
+        <div class="wrap">
+          <article class="story-step reveal" data-step="{n}">
+            <p class="step-n">{n:02d} &mdash; {tag}</p>
+            <h2>{title}</h2>
+            <p>{body}</p>
+            {note}
+          </article>
+          <div class="stage-card" data-step="{n}">{stage}</div>
+        </div>
+      </section>""".format(n=i + 1, tag=st[0], title=st[1], body=st[2], stage=stage_html[i],
+                           note='<p class="step-note">%s</p>' % st[3] if st[3] else "")
         for i, st in enumerate(t["steps"]))
-    stage_cards = "".join('<div class="stage-card" data-step="{n}" style="--n:{n}">{html}</div>'.format(n=i + 1, html=h)
-                          for i, h in enumerate(stage_html))
+    stage_cards = ""
     rail = "".join('<button class="rail-n" data-step="%d">%02d</button>' % (i + 1, i + 1) for i in range(len(t["steps"])))
 
     model = "".join('<div class="node %s reveal"><i class="fa-solid %s"></i>%s</div>'
@@ -381,7 +382,6 @@ def page(t, lang):
   <div class="head-play" aria-hidden="true"><i class="fa-solid fa-circle-play"></i></div>
 </div>
 <div class="head-badge"><b>Andre AI</b><span>{role}</span><i><i class="fa-solid fa-microphone-lines-slash" id="head-mic"></i></i></div>
-<div class="phrases" aria-hidden="true">{phrases}</div>
 
 <!-- ===== Шапка ===== -->
 <header>
@@ -390,7 +390,7 @@ def page(t, lang):
       <button class="back" id="back-btn" type="button" aria-label="{back}"><i class="fa-solid fa-arrow-left"></i></button>
       <a class="logo-btn" href="/" aria-label="Andre AI Technologies">
         <img class="logo-img" src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
-        <span class="prod-name">Andre <span>AI Strategy</span></span>
+        <span class="prod-name"><span>AI Strategy</span></span>
       </a>
     </div>
 
@@ -398,7 +398,7 @@ def page(t, lang):
       <button class="nav-close" id="nav-close" aria-label="{close}"><i class="fa-solid fa-xmark"></i></button>
       <div class="nav-brand" aria-hidden="true">
         <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="">
-        <span>Andre AI Strategy</span>
+        <span>AI Strategy</span>
       </div>
       {nav_html}
     </nav>
@@ -418,15 +418,14 @@ def page(t, lang):
 <!-- ===== 1. HERO ===== -->
 <section class="hero" id="top">
   <div class="wrap">
-    <p class="eyebrow hero-rise">Andre AI Strategy</p>
+    <p class="eyebrow hero-rise">AI Strategy</p>
     <h1 class="hero-rise">{h1}</h1>
     <p class="lead hero-rise">{hero_lead}</p>
     <p class="hero-body hero-rise">{hero_body}</p>
     <div class="hero-cta hero-rise">
       <a class="btn btn-primary" href="{cta_href}" rel="noopener">{cta_main} <i class="fa-solid fa-arrow-right"></i></a>
-      <button class="btn btn-ghost" data-go-hero="process" type="button">{cta_how}</button>
+      <button class="btn btn-ghost" data-go-hero="questions" type="button">{cta_how}</button>
     </div>
-    <div class="hero-note hero-rise">{hero_notes}</div>
   </div>
 </section>
 
@@ -490,21 +489,16 @@ def page(t, lang):
   </div>
 </section>
 
-<!-- ===== 7. Как это работает: десять шагов ===== -->
+<!-- ===== 7. Как это работает: десять экранов, по шагу на экран ===== -->
 <section class="sec" id="process">
   <div class="wrap">
     <p class="eyebrow reveal">{s_eyebrow}</p>
     <h2 class="reveal">{s_head}</h2>
-    <p class="lead reveal" style="max-width:40rem; margin-top:1rem">{s_sub}</p>
-  </div>
-  <div class="wrap story">
-    <div class="story-inner">
-      <aside class="story-rail" aria-hidden="true">{rail}</aside>
-      <div class="story-steps">{steps}</div>
-      <div class="story-stage">{stage_cards}</div>
-    </div>
+    <p class="lead reveal" style="margin-top:1rem">{s_sub}</p>
   </div>
 </section>
+<aside class="story-rail" aria-label="{steps_nav}">{rail}</aside>
+<div class="story">{steps}</div>
 
 <!-- ===== 8. Модель компании ===== -->
 <section class="sec" id="model">
@@ -605,21 +599,20 @@ def page(t, lang):
 </html>
 """.format(
         lang=lang, title=t["title"], desc=t["meta_desc"], self_href=self_href, video=video,
-        video_aria=t["video_aria"], role=t["role"], phrases=phrases, back=t["back"], sections=t["sections"],
+        video_aria=t["video_aria"], role=t["role"], back=t["back"], sections=t["sections"],
         close=t["close"], menu=t["menu"], nav_html=nav_html, cta_href=t["cta_href"], cta_top=t["cta_top"],
         lang_switch=('<span class="lang-opt active">EN</span><span class="lang-sep">|</span>'
                      '<a class="lang-opt" href="%s">RU</a>' % other_href) if lang == "en" else
                     ('<a class="lang-opt" href="%s">EN</a><span class="lang-sep">|</span>'
                      '<span class="lang-opt active">RU</span>' % other_href),
         h1=t["h1"], hero_lead=t["hero_lead"], hero_body=t["hero_body"], cta_main=t["cta_main"], cta_how=t["cta_how"],
-        hero_notes="".join('<span><i class="fa-solid fa-circle"></i>%s</span>' % n for n in t["hero_notes"]),
         q_head=t["q_head"], questions=questions, q_final=t["q_final"], dots=dots,
         n_eyebrow=t["n_eyebrow"], n_head=t["n_head"], nums=nums, n_foot=t["n_foot"], n_verdict=t["n_verdict"], n_note=t["n_note"],
         p_head=t["p_head"], p_sub=t["p_sub"], chips=chips, p_core=t["p_core"],
         b_eyebrow=t["b_eyebrow"], b_head=t["b_head"], b_sub=t["b_sub"], biz=biz, b_all=t["b_all"],
         b_arch=t["b_arch"], b_metrics_note=t["b_metrics_note"],
         d_eyebrow=t["d_eyebrow"], d_head=t["d_head"], d_sub=t["d_sub"], outs=outs, d_hint=t["d_hint"],
-        s_eyebrow=t["s_eyebrow"], s_head=t["s_head"], s_sub=t["s_sub"], rail=rail, steps=steps, stage_cards=stage_cards,
+        s_eyebrow=t["s_eyebrow"], s_head=t["s_head"], s_sub=t["s_sub"], rail=rail, steps=steps, steps_nav=t["steps_nav"],
         m_eyebrow=t["m_eyebrow"], m_head=t["m_head"], m_sub=t["m_sub"], model=model,
         t_eyebrow=t["t_eyebrow"], t_head=t["t_head"], t_l_head=t["t_l_head"], t_l_body=t["t_l_body"],
         t_r_head=t["t_r_head"], t_r_body=t["t_r_body"], t_foot=t["t_foot"],

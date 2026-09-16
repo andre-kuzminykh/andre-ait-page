@@ -171,9 +171,11 @@
   /* ===== Колонка чтения ===== */
   .read { position: relative; z-index: 6; overflow-x: clip;
     padding: 6rem 1.25rem calc(clamp(104px, 29vw, 132px) + 2.2rem + env(safe-area-inset-bottom, 0px)); }
+  @media (max-width:1023px) { html { scroll-snap-type: y proximity; } }
   @media (min-width:1024px) {
     /* своя прокрутка: видео слева стоит на месте, листается только текст */
     .read { margin-left: 44%; width: 56%; height: 100dvh; overflow-y: auto; overscroll-behavior: contain;
+      scroll-snap-type: y proximity;
       padding: 8.5rem clamp(2rem, 4.5vw, 5rem) 2rem; scrollbar-width: thin; scrollbar-color: rgba(136,84,243,0.55) transparent; }
     .read::-webkit-scrollbar { width: 6px; }
     .read::-webkit-scrollbar-thumb { background: rgba(136,84,243,0.5); border-radius: 999px; }
@@ -181,20 +183,30 @@
     .read::-webkit-scrollbar-track { background: transparent; }
   }
   .article { max-width: 44rem; margin: 0 auto; }
-  /* главы: у каждой свой фоновый знак, поэтому нужна своя система координат */
-  .chapter { position: relative; }
-  .chapter > *:not(.wm) { position: relative; z-index: 1; }
+  /* ===== Экраны =====
+     Правило владельца: не простыня, а аккуратные блоки — на каждом экране
+     свой текст. Прокрутка «прилипает» к экрану (scroll-snap, колесо не
+     перехватываем), у каждого экрана свой фоновый знак главы. */
+  .screen { position: relative; display: flex; flex-direction: column; justify-content: center;
+    min-height: 100dvh; padding: 1.5rem 0; scroll-snap-align: center; }
+  .screen > *:not(.wm) { position: relative; z-index: 1; }
+  .screen > *:last-child { margin-bottom: 0; }
+  @media (max-width:1023px) {
+    /* на телефоне высоту держим по контенту, но экран всё равно один «кадр» */
+    .screen { min-height: 88dvh; padding: 2rem 0; }
+  }
+  @media (max-height:640px) and (min-width:1024px) { .screen { min-height: auto; padding: 3rem 0; } }
 
   /* ===== Фоновые знаки глав (тигр, шапочка, монеты, ракета, процессор) =====
      Еле заметные, серые, по очереди слева и справа, с разным наклоном и
      размером — «в разнобой». На мобилке их нет: там только текст и кружок. */
-  .wm { position: absolute; z-index: 0; pointer-events: none; user-select: none; color: #ffffff; opacity: 0;
-    font-size: clamp(11rem, 20vw, 19rem); line-height: 1; transform: translate3d(0, 26px, 0);
+  .wm { position: absolute; top: 50%; z-index: 0; pointer-events: none; user-select: none; color: #ffffff; opacity: 0;
+    font-size: clamp(11rem, 20vw, 19rem); line-height: 1; transform: translate3d(0, calc(-50% + 26px), 0);
     transition: opacity 1.3s ease, transform 1.3s cubic-bezier(0.22, 1, 0.36, 1); }
   /* наклон и параллакс живут на вложенном знаке: .wm занят появлением главы */
   .wm > svg, .wm > i { display: block; width: 1em; height: 1em;
     transform: rotate(var(--rot, 0deg)) translate3d(0, var(--py, 0px), 0); transition: transform 0.35s linear; }
-  .chapter.in .wm { opacity: 0.055; transform: none; }
+  .screen.in .wm { opacity: 0.055; transform: translate3d(0, -50%, 0); }
   .wm.l { left: -3rem; }
   .wm.r { right: -3.5rem; }
   @media (max-width:1023px) { .wm { display: none; } }
@@ -212,7 +224,7 @@
   h1 { margin: 0 0 1.6rem; font-size: clamp(1.6rem, 4.6vw, 2.7rem); font-weight: 800; line-height: 1.22; letter-spacing: -0.01em; color: #ffffff; }
   .hl-p { color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.45); }
   .hl-o { color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.45); }
-  h2 { position: relative; margin: 3.4rem 0 1.3rem; padding-top: 1.8rem; font-size: clamp(1.05rem, 2.3vw, 1.45rem); font-weight: 800; text-transform: uppercase;
+  h2 { position: relative; margin: 0 0 1.3rem; padding-top: 1.6rem; font-size: clamp(1.05rem, 2.3vw, 1.45rem); font-weight: 800; text-transform: uppercase;
     letter-spacing: 0.04em; color: #ffffff; display: flex; align-items: center; gap: 0.8rem; line-height: 1.35; }
   h2 i { font-size: 0.85em; color: var(--ic, #8854F3); flex-shrink: 0; }
   /* тонкая линия над заголовком: смена главы читается глазом */

@@ -57,19 +57,32 @@ def test_each_page_uses_its_own_video():
 
 # ── FR-SITE41: голова слева на вебе, кружок ниже и на мобилке ────────────
 
-def test_head_turns_from_column_into_circle():
+def test_face_is_always_half_the_screen_on_web():
+    """Правило владельца: слева всегда лицо на полэкрана, никакого кружка на вебе."""
     css = _read("assets/strategy.css")
-    assert re.search(r"\.head \{[^}]*position: fixed", css), "голова — фиксированный слой"
+    assert "--head-w: 50vw;" in css, "лицо занимает половину экрана"
     assert re.search(r"\.head \{ left: 0; top: 0; width: var\(--head-w\); height: 100dvh", css), \
         "на вебе голова — колонка слева"
-    assert ".head.mini" in css and "border-radius: 50%" in css, "ниже по странице голова становится кружком"
+    assert ".head.mini" not in css, "на вебе голова больше не сжимается в кружок"
+    assert "main, footer { margin-left: var(--head-w);" in css, "контент живёт в правой половине"
     mob = [b for b in re.findall(r"@media \(max-width:1023px\) \{.*?\n\}", css, re.S) if ".head {" in b]
-    assert mob and "border-radius: 50%" in mob[0], "на мобилке голова сразу кружок"
+    assert mob and "border-radius: 50%" in mob[0], "на мобилке голова — кружок"
 
 
-def test_head_is_draggable_and_clickable():
+def test_page_scrolls_as_separate_screens():
+    """Не простыня: каждый раздел — отдельный экран с прилипанием прокрутки."""
+    css = _read("assets/strategy.css")
+    assert "scroll-snap-type: y proximity" in css, "у страницы включено прилипание"
+    assert ".sec, .hero, .final, .qs { scroll-snap-align: start; }" in css
+    assert ".story-screen { scroll-snap-align: start;" in css, "каждый шаг — свой экран"
+    for lang, html in _pages():
+        assert html.count('<section class="story-screen"') == 10, lang + ": десять экранов-шагов"
+
+
+def test_head_is_draggable_on_mobile_and_clickable():
     js = _read("assets/strategy.js")
-    assert "pointerdown" in js and "pointermove" in js, "кружок должен перетаскиваться"
+    assert "pointerdown" in js and "pointermove" in js, "кружок на мобилке должен перетаскиваться"
+    assert "if (mqDesk.matches) return;" in js, "на вебе лицо — колонка, двигать нечего"
     assert "drag.moved < 6" in js, "короткое нажатие — это клик, а не перетаскивание"
     assert "ait_strategy_head" in js, "место кружка запоминается"
 
@@ -102,14 +115,6 @@ def test_language_is_stored_for_the_main_site():
 
 # ── структура лендинга ───────────────────────────────────────────────────
 
-def test_hero_and_questions():
-    for lang, html in _pages():
-        assert html.count('class="q-item"') == 6, lang + ": шесть вопросов по спеке"
-        assert 'class="qs-final"' in html, lang + ": нет итоговой строки после вопросов"
-        assert html.count('<div class="phrase"') == 3 and html.count('<div class="phrase answer"') == 1, \
-            lang + ": три вопроса рядом с Андре и ответ"
-
-
 def test_numbers_businesses_and_deliverables():
     for lang, html in _pages():
         assert html.count('class="num-val"') == 3, lang + ": три цифры рынка"
@@ -120,7 +125,7 @@ def test_numbers_businesses_and_deliverables():
 def test_ten_steps_with_stages_and_rail():
     for lang, html in _pages():
         assert html.count('class="story-step reveal"') == 10, lang + ": десять шагов"
-        assert html.count('class="stage-card"') == 10, lang + ": десять сцен продукта"
+        assert html.count('<div class="stage-card"') == 10, lang + ": десять сцен продукта"
         assert html.count('class="rail-n"') == 10, lang + ": десять номеров в колонке"
         for n in range(1, 11):
             assert 'data-step="%d"' % n in html, "%s: нет шага %d" % (lang, n)

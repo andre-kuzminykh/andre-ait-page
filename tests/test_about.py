@@ -180,17 +180,32 @@ WM_ICONS = ["ic-tiger", "fa-graduation-cap", "fa-coins", "fa-rocket", "fa-microc
 def test_chapter_watermarks_alternate_sides():
     for lang, html in _pages():
         marks = re.findall(r'<div class="wm ([lr])"[^>]*>(.*?)</div>', html, re.S)
-        assert len(marks) == 5, "%s: ожидается 5 фоновых знаков, найдено %d" % (lang, len(marks))
+        assert len(marks) >= 12, "%s: у экранов должны быть фоновые знаки, найдено %d" % (lang, len(marks))
         sides = [side for side, _ in marks]
-        assert sides == ["l", "r", "l", "r", "l"], \
+        assert sides == ["l" if i % 2 == 0 else "r" for i in range(len(sides))], \
             "%s: знаки идут по очереди слева и справа, получилось %s" % (lang, sides)
-        for icon, (_, body) in zip(WM_ICONS, marks):
-            assert icon in body, "%s: знак главы должен быть %s" % (lang, icon)
+        bodies = " ".join(b for _, b in marks)
+        for icon in WM_ICONS:
+            assert icon in bodies, "%s: нет знака главы %s" % (lang, icon)
+
+
+def test_biography_is_split_into_screens():
+    """Правило владельца: не простыня, а экраны — на каждом свой текст."""
+    css = _css()
+    assert ".screen {" in css and "min-height: 100dvh" in css, "экран занимает высоту окна"
+    assert "scroll-snap-align: center" in css, "прокрутка прилипает к экрану"
+    assert "scroll-snap-type: y proximity" in css, "у колонки чтения включено прилипание"
+    for lang, html in _pages():
+        screens = re.findall(r'<section class="screen"[^>]*>(.*?)</section>', html, re.S)
+        assert len(screens) >= 12, "%s: биография должна быть разложена по экранам (%d)" % (lang, len(screens))
+        for i, body in enumerate(screens):
+            text = re.sub(r"<[^>]+>", " ", body).strip()
+            assert len(text) > 40, "%s: экран %d почти пустой" % (lang, i + 1)
 
 
 def test_watermarks_are_faint_and_hidden_on_mobile():
     css = _css()
-    assert re.search(r"\.chapter\.in \.wm \{ opacity: 0\.0\d+;", css), \
+    assert re.search(r"\.screen\.in \.wm \{ opacity: 0\.0\d+;", css), \
         "знаки глав — еле заметные"
     assert "@media (max-width:1023px) { .wm { display: none; } }" in css, \
         "на мобилке фоновых знаков нет: только текст и кружок"

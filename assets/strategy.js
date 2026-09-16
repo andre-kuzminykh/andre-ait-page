@@ -62,24 +62,7 @@
     $$('.reveal').forEach(function (el) { el.classList.add('in', 'done'); });
   }
 
-  /* ---------- HERO: фразы, которые «звучат» рядом с Андре ---------- */
-  var phrases = $$('.phrase');
-  if (phrases.length && !reduce) {
-    var pi = -1;
-    var cycle = function () {
-      if (document.body.classList.contains('mini-head')) { setTimeout(cycle, 1200); return; }
-      if (pi >= 0) phrases[pi].classList.remove('on');
-      pi = (pi + 1) % phrases.length;
-      phrases[pi].classList.add('on');
-      /* на ответе задерживаемся дольше: это вывод всей сцены */
-      setTimeout(cycle, phrases[pi].classList.contains('answer') ? 3200 : 2000);
-    };
-    setTimeout(cycle, 900);
-  } else {
-    phrases.forEach(function (p, i) { if (i === phrases.length - 1) p.classList.add('on'); });
-  }
-
-  /* ---------- Голова: колонка → кружок, звук по клику ---------- */
+  /* ---------- Голова: на вебе всегда колонка, на мобилке кружок ---------- */
   var video = $('#head-video');
   function setPlaying(on) {
     if (!video) return;
@@ -90,13 +73,14 @@
     var p = video.play && video.play();
     if (p && p.catch) p.catch(function () {});
   }
-  /* Кружок перетаскивается (как на страницах лекций): он неизбежно накрывает
-     часть текста, и правило владельца — «пусть двигают куда хотят».
-     Место запоминаем; клик от перетаскивания отличаем по пройденному пути. */
+  /* Кружок перетаскивается только на мобилке (как на страницах лекций): там он
+     накрывает часть текста, и правило владельца — «пусть двигают куда хотят».
+     На вебе лицо — колонка на полэкрана, двигать нечего.
+     Клик от перетаскивания отличаем по пройденному пути. */
   var POS_KEY = 'ait_strategy_head';
   var drag = null;
   function applyPos(p) {
-    if (!p || !head.classList.contains('mini')) return;
+    if (!p || mqDesk.matches) return;
     head.style.left = p.x + 'px';
     head.style.top = p.y + 'px';
     head.style.bottom = 'auto';
@@ -104,7 +88,7 @@
   function savedPos() { try { return JSON.parse(localStorage.getItem(POS_KEY)); } catch (e) { return null; } }
   if (head) {
     head.addEventListener('pointerdown', function (e) {
-      if (!head.classList.contains('mini')) return;
+      if (mqDesk.matches) return;
       var r = head.getBoundingClientRect();
       drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: 0, w: r.width, h: r.height };
       head.setPointerCapture(e.pointerId);
@@ -129,32 +113,46 @@
     });
   }
 
-  /* ---------- Секция вопросов: кадр выбирается положением скролла ---------- */
+  /* ---------- Секция вопросов: свой экран, кадры сменяются сами ----------
+     Раньше кадр выбирался положением скролла (секция была 320vh). Теперь
+     раздел — обычный экран, поэтому последовательность играет, пока экран
+     виден, и останавливается, когда его пролистали. */
   var qs = $('#questions');
   var qItems = $$('.q-item');
   var qDots = $$('.qs-dot');
   var qFinal = $('.qs-final');
   var qHead = $('.qs-head');
-  function tickQuestions() {
-    if (!qs || !qItems.length) return;
-    var r = qs.getBoundingClientRect();
-    var span = r.height - window.innerHeight;
-    var p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
-    /* первые 12% — заголовок, последние 22% — итоговая строка */
-    var qZone = (p - 0.12) / 0.66;
-    var idx = Math.floor(qZone * qItems.length);
-    var showFinal = p > 0.80;
-    qItems.forEach(function (el, i) {
-      el.classList.toggle('on', !showFinal && i === idx && qZone >= 0 && qZone < 1);
-      el.classList.toggle('gone', !showFinal && i < idx);
+  var qTimer = null, qIdx = -1;
+  function qShow(i) {
+    qItems.forEach(function (el, n) {
+      el.classList.toggle('on', n === i);
+      el.classList.toggle('gone', n < i);
     });
-    qDots.forEach(function (d, i) { d.classList.toggle('on', showFinal || i <= idx); });
-    if (qFinal) qFinal.classList.toggle('on', showFinal);
+    qDots.forEach(function (d, n) { d.classList.toggle('on', n <= i); });
     if (qHead) {
-      var fade = showFinal || qZone > 0.1;
-      qHead.style.opacity = fade ? 0 : 1;
-      qHead.style.transform = fade ? 'translateY(-18px)' : 'none';
+      var away = i >= 0;
+      qHead.style.opacity = away ? 0 : 1;
+      qHead.style.transform = away ? 'translateY(-18px)' : 'none';
     }
+  }
+  function qStep() {
+    qIdx++;
+    if (qIdx < qItems.length) { qShow(qIdx); qTimer = setTimeout(qStep, 1400); return; }
+    qItems.forEach(function (el) { el.classList.add('gone'); el.classList.remove('on'); });
+    if (qFinal) qFinal.classList.add('on');
+    qDots.forEach(function (d) { d.classList.add('on'); });
+  }
+  function qPlay() {
+    if (qTimer || (qFinal && qFinal.classList.contains('on'))) return;
+    if (reduce) { qShow(qItems.length - 1); qStep(); return; }
+    qIdx = -1;
+    qTimer = setTimeout(qStep, 600);
+  }
+  function qStop() { clearTimeout(qTimer); qTimer = null; }
+  if (qs && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) qPlay(); else qStop(); });
+    }, { threshold: 0.35 }).observe(qs);
   }
 
   /* ---------- Обещание: понятия появляются и схлопываются в один узел ---------- */
@@ -177,27 +175,15 @@
     orbit.classList.toggle('collapsed', p > 0.95);
   }
 
-  /* ---------- 10 шагов: сцена меняется, номер подсвечивается ---------- */
-  var steps = $$('.story-step');
+  /* ---------- 10 шагов: у каждого свой экран ---------- */
+  var storyScreens = $$('.story-screen');
   var stages = $$('.stage-card');
   var railNs = $$('.rail-n');
-  var activeStep = 0;
-  function setStep(n) {
-    if (n === activeStep) return;
-    activeStep = n;
-    /* на мобилке сцены стоят в потоке и включаются своим наблюдателем —
-       иначе этот перебор гасил бы все, кроме текущей */
-    if (mqDesk.matches) stages.forEach(function (s) { s.classList.toggle('on', +s.getAttribute('data-step') === n); });
-    railNs.forEach(function (b) { b.classList.toggle('on', +b.getAttribute('data-step') === n); });
-    var stage = stages.filter(function (s) { return +s.getAttribute('data-step') === n; })[0];
-    if (stage && mqDesk.matches) playStage(stage);
-  }
-  /* внутри сцены есть свои маленькие «включения» (AS-IS → TO-BE и т.п.) */
   function playStage(stage) {
-    if (reduce) { stage.classList.add('played'); return; }
-    stage.classList.remove('played');
-    var seq = $$('[data-seq]', stage);
-    seq.forEach(function (el, i) {
+    if (!stage) return;
+    stage.classList.add('on');
+    if (reduce) return;
+    $$('[data-seq]', stage).forEach(function (el, i) {
       el.style.transitionDelay = (i * 110) + 'ms';
       el.style.animationDelay = (i * 110) + 'ms';
     });
@@ -208,35 +194,35 @@
       stage._t = setTimeout(function () { morph.classList.add('to-be'); }, 1500);
     }
   }
-  function tickSteps() {
-    if (!steps.length) return;
-    var mid = window.innerHeight * (mqDesk.matches ? 0.5 : 0.35);
-    var cur = 1;
-    steps.forEach(function (s) {
-      var r = s.getBoundingClientRect();
-      if (r.top <= mid) cur = +s.getAttribute('data-step');
-    });
-    setStep(cur);
+  function markStep(n) {
+    railNs.forEach(function (b) { b.classList.toggle('on', +b.getAttribute('data-step') === n); });
   }
-  /* на мобилке сцены идут в потоке между шагами — включаем по входу в экран */
-  if (!mqDesk.matches && 'IntersectionObserver' in window) {
+  if (storyScreens.length && 'IntersectionObserver' in window) {
     var sio = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
         if (!e.isIntersecting) return;
-        e.target.classList.add('on');
-        playStage(e.target);
-        sio.unobserve(e.target);
+        var n = +e.target.getAttribute('data-step');
+        markStep(n);
+        playStage(e.target.querySelector('.stage-card'));
       });
-    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.15 });
-    stages.forEach(function (s) { sio.observe(s); });
+    }, { threshold: 0.4 });
+    storyScreens.forEach(function (s) { sio.observe(s); });
+  } else {
+    stages.forEach(function (s) { s.classList.add('on'); });
   }
-
   railNs.forEach(function (b) {
     b.addEventListener('click', function () {
-      var t = steps.filter(function (s) { return s.getAttribute('data-step') === b.getAttribute('data-step'); })[0];
-      if (t) t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+      var t = document.getElementById('step-' + b.getAttribute('data-step'));
+      if (t) t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
     });
   });
+  /* полоса с номерами показывается только пока идут шаги */
+  function tickStoryRail() {
+    if (!storyScreens.length) return;
+    var first = storyScreens[0].getBoundingClientRect();
+    var last = storyScreens[storyScreens.length - 1].getBoundingClientRect();
+    document.body.classList.toggle('in-story', first.top < window.innerHeight * 0.5 && last.bottom > window.innerHeight * 0.5);
+  }
 
   /* ---------- Финальный экран: строки выходят по очереди ---------- */
   var finalSec = $('#start');
@@ -272,16 +258,8 @@
     var y = window.pageYOffset || doc.scrollTop;
     if (progress) progress.style.width = (max > 0 ? Math.min(100, (y / max) * 100) : 0) + '%';
     if (header) header.classList.toggle('solid', y > window.innerHeight * 0.75);
-    var mini = y > window.innerHeight * 0.72;
-    document.body.classList.toggle('mini-head', mini);
-    if (head && head.classList.contains('mini') !== mini) {
-      head.classList.toggle('mini', mini);
-      if (mini) applyPos(savedPos());
-      else { head.style.left = ''; head.style.top = ''; head.style.bottom = ''; }
-    }
-    tickQuestions();
     tickOrbit();
-    tickSteps();
+    tickStoryRail();
     tickFinal();
     tickNav();
   }
@@ -334,6 +312,6 @@
     });
   }
 
+  if (!mqDesk.matches) applyPos(savedPos());
   onScroll();
-  setStep(1);
 })();

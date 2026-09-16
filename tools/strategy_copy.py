@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Тексты лендинга Andre AI Strategy: английская и русская версии.
+"""Тексты лендинга AI Strategy: английская и русская версии.
 
 Правило владельца: точек в конце строк нет (ни в заголовках, ни в абзацах).
 Структуру собирает tools/build_strategy.py.
 """
 
 EN = {
-    "title": "Andre AI Strategy | Where should you start with AI in your business?",
-    "meta_desc": "Tell Andre AI Strategy how your business works — it analyzes your processes, finds automation opportunities, defines the roles of people and AI agents, and builds a step-by-step plan to become an AI-First company",
-    "video_aria": "Andre explains Andre AI Strategy",
+    "title": "AI Strategy | Where should you start with AI in your business?",
+    "meta_desc": "Tell AI Strategy how your business works — it analyzes your processes, finds automation opportunities, defines the roles of people and AI agents, and builds a step-by-step plan to become an AI-First company",
+    "video_aria": "Andre explains AI Strategy",
     "role": "AI Strategy",
     "back": "Back",
     "sections": "Sections",
@@ -21,11 +21,11 @@ EN = {
     "cta_how": "See how it works",
 
     # ── Hero ──
-    "h1": 'Where should you start with <span class="hl-p">AI</span> in your business?',
-    "hero_lead": "Andre AI Strategy shows you the path from how your business works today to how it should work with AI",
-    "hero_body": "Simply explain how your company operates in your own words. The system analyzes your processes, finds automation opportunities, defines the roles of people and AI agents, and builds a step-by-step strategy for becoming an <strong>AI-First company</strong>",
-    "hero_notes": ["First process free", "No process documentation required", "No AI consultant required"],
-    "hero_phrases": ["“Where do I start?”", "“What should I automate?”", "“Which AI agents do I need?”", "Andre AI Strategy"],
+    # две строки, «business» оранжевым — правка владельца
+    "h1": 'Where should you start<br>with <span class="hl-p">AI</span> in your <span class="hl-o">business</span>?',
+    "hero_lead": "AI Strategy shows you the path from how your business works today to how it should work with AI",
+    "hero_body": "Explain how your company operates in your own words",
+    "steps_nav": "Steps",
 
     # ── Questions ──
     "q_head": "The problem is no longer access to AI",
@@ -37,7 +37,7 @@ EN = {
         "Which AI agents do we actually need?",
         "What should we implement first?",
     ],
-    "q_final": "That is exactly what Andre AI Strategy is designed to answer",
+    "q_final": "That is exactly what AI Strategy is designed to answer",
 
     # ── Numbers ──
     "n_eyebrow": "The market today",
@@ -53,7 +53,7 @@ EN = {
 
     # ── Promise ──
     "p_head": "You don’t need to be an AI expert to get started",
-    "p_sub": "Tell us how your business works. Andre AI Strategy will figure out where AI fits",
+    "p_sub": "Tell us how your business works. AI Strategy will figure out where AI fits",
     "promise_chips": ["Tools", "Processes", "Agents", "People", "Data", "Priorities"],
     "p_core": "AI-First Strategy",
 
@@ -84,7 +84,7 @@ EN = {
     ],
     "b_all": "Explore all 50 business types",
     "b_arch": "50 categories → <b>~500 specializations</b>, 10 inside every business",
-    "b_metrics_note": "The metrics are presented as metrics Andre AI Strategy can help you target and track, not as guaranteed improvement percentages",
+    "b_metrics_note": "The metrics are presented as metrics AI Strategy can help you target and track, not as guaranteed improvement percentages",
 
     # ── Deliverables ──
     "d_eyebrow": "What you get",
@@ -203,12 +203,12 @@ EN = {
     "t_l_body": "The owner describes the company from the top down: what the business does, how money comes in, what matters",
     "t_r_head": "Employees",
     "t_r_body": "Employees add the processes they understand best — the details no one at the top ever sees",
-    "t_foot": "Andre AI Strategy brings everything together into one operating model",
+    "t_foot": "AI Strategy brings everything together into one operating model",
 
     # ── Learning ──
     "l_eyebrow": "Learning",
     "l_head": "Learn while you transform",
-    "l_sub": "Free education is built directly into Andre AI Strategy. You and your team can learn the new roles and skills required to work in an AI-First company — including how to design, build and manage AI agents yourselves",
+    "l_sub": "Free education is built directly into AI Strategy. You and your team can learn the new roles and skills required to work in an AI-First company — including how to design, build and manage AI agents yourselves",
     "learn_steps": [
         ("Roadmap", "Build AI Support Agent", "An item from your own strategy, not an abstract course"),
         ("Education", "Learn how to build AI agents", "The lesson opens exactly where the roadmap needs it"),
@@ -223,7 +223,7 @@ EN = {
     "cost_cols": [
         ("Traditional consulting", "$500K+", "Months of interviews, workshops, analysis and presentations"),
         ("AI transformation consulting", "$2K–$50K", "Typical SMB AI readiness and strategy projects commonly fall in the low-thousands to tens-of-thousands range, depending on scope"),
-        ("Andre AI Strategy", "From $59", "Start with one process for free. Build the strategy yourself. Bring in human experts only when you actually need them"),
+        ("AI Strategy", "From $59", "Start with one process for free. Build the strategy yourself. Bring in human experts only when you actually need them"),
     ],
     "c_note": "Ontora itself currently compares a McKinsey-style engagement at $500K+ with approximately $50K for its AI-powered approach. Published 2026 SMB AI-consulting guides commonly place assessments and strategy engagements around $2K–$25K, depending on depth and scope",
 
@@ -247,7 +247,7 @@ EN = {
     # ── Final ──
     "f_1": "Where should you start with AI?",
     "f_2": "You don’t need to know",
-    "f_3": "That is what Andre AI Strategy is for",
+    "f_3": "That is what AI Strategy is for",
     "final_flow": ["Your business today", "Understand", "Redesign", "AI Agents", "AI-First"],
     "final_list": [
         "where you are today",
@@ -261,9 +261,9 @@ EN = {
 }
 
 RU = {
-    "title": "Andre AI Strategy | С чего начать внедрять ИИ в вашем бизнесе?",
-    "meta_desc": "Расскажите Andre AI Strategy, как устроен ваш бизнес — система разберёт процессы, найдёт возможности для автоматизации, определит роли людей и ИИ-агентов и соберёт пошаговый план перехода к AI-First компании",
-    "video_aria": "Андре рассказывает про Andre AI Strategy",
+    "title": "AI Strategy | С чего начать внедрять ИИ в вашем бизнесе?",
+    "meta_desc": "Расскажите AI Strategy, как устроен ваш бизнес — система разберёт процессы, найдёт возможности для автоматизации, определит роли людей и ИИ-агентов и соберёт пошаговый план перехода к AI-First компании",
+    "video_aria": "Андре рассказывает про AI Strategy",
     "role": "ИИ-стратегия",
     "back": "Назад",
     "sections": "Разделы",
@@ -275,11 +275,10 @@ RU = {
     "cta_main": "Начать бесплатно",
     "cta_how": "Как это работает",
 
-    "h1": 'С чего начать внедрять <span class="hl-p">ИИ</span> в вашем бизнесе?',
-    "hero_lead": "Andre AI Strategy показывает путь от того, как ваш бизнес работает сегодня, к тому, как он должен работать с ИИ",
-    "hero_body": "Просто расскажите своими словами, как устроена ваша компания. Система разберёт процессы, найдёт возможности для автоматизации, определит роли людей и ИИ-агентов и соберёт пошаговую стратегию перехода к <strong>AI-First компании</strong>",
-    "hero_notes": ["Первый процесс бесплатно", "Не нужны описанные регламенты", "Не нужен ИИ-консультант"],
-    "hero_phrases": ["«С чего начать?»", "«Что автоматизировать?»", "«Какие ИИ-агенты нужны?»", "Andre AI Strategy"],
+    "h1": 'С чего начать внедрять <span class="hl-p">ИИ</span><br>в вашем <span class="hl-o">бизнесе</span>?',
+    "hero_lead": "AI Strategy показывает путь от того, как ваш бизнес работает сегодня, к тому, как он должен работать с ИИ",
+    "hero_body": "Расскажите своими словами, как работает ваша компания",
+    "steps_nav": "Шаги",
 
     "q_head": "Проблема больше не в доступе к ИИ",
     "questions": [
@@ -290,7 +289,7 @@ RU = {
         "Какие ИИ-агенты нам действительно нужны?",
         "Что внедрять в первую очередь?",
     ],
-    "q_final": "Именно на эти вопросы и отвечает Andre AI Strategy",
+    "q_final": "Именно на эти вопросы и отвечает AI Strategy",
 
     "n_eyebrow": "Рынок сегодня",
     "n_head": "Пользоваться ИИ и быть AI-First — не одно и то же",
@@ -304,7 +303,7 @@ RU = {
     "n_note": "Показательна работа Anthropic с малым бизнесом в 2026 году: воркшопы посетили более 1000 владельцев, 80% зарегистрировавшихся вели компании на 5–50 человек, а главным барьером в предварительном опросе была неопределённость — когда и как применять ИИ. Почти две трети участников итогового опроса просили больше практической помощи с внедрением",
 
     "p_head": "Чтобы начать, не нужно быть экспертом по ИИ",
-    "p_sub": "Расскажите, как работает ваш бизнес. Andre AI Strategy сам разберётся, где место ИИ",
+    "p_sub": "Расскажите, как работает ваш бизнес. AI Strategy сам разберётся, где место ИИ",
     "promise_chips": ["Инструменты", "Процессы", "Агенты", "Люди", "Данные", "Приоритеты"],
     "p_core": "AI-First стратегия",
 
@@ -334,7 +333,7 @@ RU = {
     ],
     "b_all": "Посмотреть все 50 типов бизнеса",
     "b_arch": "50 категорий → <b>~500 специализаций</b>, по 10 внутри каждого бизнеса",
-    "b_metrics_note": "Метрики показаны как то, на что Andre AI Strategy помогает целиться и что отслеживать, а не как гарантированные проценты улучшения",
+    "b_metrics_note": "Метрики показаны как то, на что AI Strategy помогает целиться и что отслеживать, а не как гарантированные проценты улучшения",
 
     "d_eyebrow": "Что вы получите",
     "d_head": "Восемь артефактов, которые складываются в модель вашей компании",
@@ -449,11 +448,11 @@ RU = {
     "t_l_body": "Владелец описывает компанию сверху вниз: чем занимается бизнес, откуда приходят деньги, что важно",
     "t_r_head": "Сотрудники",
     "t_r_body": "Сотрудники добавляют процессы, которые знают лучше всех — детали, которых сверху не видно",
-    "t_foot": "Andre AI Strategy сводит всё это в одну операционную модель",
+    "t_foot": "AI Strategy сводит всё это в одну операционную модель",
 
     "l_eyebrow": "Обучение",
     "l_head": "Учитесь по ходу трансформации",
-    "l_sub": "Бесплатное обучение встроено прямо в Andre AI Strategy. Вы и ваша команда осваиваете новые роли и навыки работы в AI-First компании — в том числе то, как самим проектировать, собирать и вести ИИ-агентов",
+    "l_sub": "Бесплатное обучение встроено прямо в AI Strategy. Вы и ваша команда осваиваете новые роли и навыки работы в AI-First компании — в том числе то, как самим проектировать, собирать и вести ИИ-агентов",
     "learn_steps": [
         ("Дорожная карта", "Собрать ИИ-агента поддержки", "Пункт из вашей же стратегии, а не абстрактный курс"),
         ("Обучение", "Как собирать ИИ-агентов", "Урок открывается ровно там, где он нужен по карте"),
@@ -467,7 +466,7 @@ RU = {
     "cost_cols": [
         ("Классический консалтинг", "$500K+", "Месяцы интервью, воркшопов, анализа и презентаций"),
         ("Консалтинг по ИИ-трансформации", "$2K–$50K", "Типовые проекты по оценке готовности и ИИ-стратегии для малого и среднего бизнеса обычно укладываются в диапазон от нескольких тысяч до десятков тысяч долларов — в зависимости от объёма"),
-        ("Andre AI Strategy", "От $59", "Начните с одного процесса бесплатно. Соберите стратегию сами. Привлекайте людей-экспертов тогда, когда они действительно нужны"),
+        ("AI Strategy", "От $59", "Начните с одного процесса бесплатно. Соберите стратегию сами. Привлекайте людей-экспертов тогда, когда они действительно нужны"),
     ],
     "c_note": "Сама Ontora сейчас сравнивает проект уровня McKinsey за $500K+ примерно с $50K за свой подход на ИИ. Опубликованные в 2026 году гайды по ИИ-консалтингу для малого и среднего бизнеса обычно оценивают диагностику и стратегию в $2K–$25K — в зависимости от глубины и объёма",
 
@@ -489,7 +488,7 @@ RU = {
 
     "f_1": "С чего начать внедрять ИИ?",
     "f_2": "Вам не обязательно это знать",
-    "f_3": "Для этого и нужен Andre AI Strategy",
+    "f_3": "Для этого и нужен AI Strategy",
     "final_flow": ["Ваш бизнес сегодня", "Понять", "Перестроить", "ИИ-агенты", "AI-First"],
     "final_list": [
         "где вы находитесь сегодня",
