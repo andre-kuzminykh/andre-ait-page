@@ -18,7 +18,7 @@
   --card: rgba(255,255,255,0.025);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --head-w: 42vw;
-  --mini: 150px;
+  --mini: 128px;
 }
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -145,7 +145,7 @@ header.solid { background: rgba(5,5,5,0.93); -webkit-backdrop-filter: blur(14px)
 .head.playing .head-play { opacity: 0; }
 @media (min-width:1024px) {
   .head { left: 0; top: 0; width: var(--head-w); height: 100dvh; border-radius: 0; }
-  .head.mini { cursor: grab; left: 1.6rem; top: calc(100dvh - var(--mini) - 1.6rem); width: var(--mini); height: var(--mini); border-radius: 50%;
+  .head.mini { cursor: grab; left: 1rem; top: calc(100dvh - var(--mini) - 1.2rem); width: var(--mini); height: var(--mini); border-radius: 50%;
     border-color: rgba(255,255,255,0.18); box-shadow: 0 16px 40px rgba(0,0,0,0.6); }
   .head.mini .head-shade { opacity: 0; }
   .head.mini .head-play { display: flex; }
@@ -505,6 +505,11 @@ header.solid { background: rgba(5,5,5,0.93); -webkit-backdrop-filter: blur(14px)
 footer { padding: 3rem 0 calc(3rem + env(safe-area-inset-bottom, 0px)); border-top: 1px solid rgba(255,255,255,0.07); }
 @media (max-width:1023px) { footer { padding-bottom: calc(clamp(100px, 28vw, 128px) + 3rem + env(safe-area-inset-bottom, 0px)); } }
 @media (min-width:1024px) { footer { padding-left: calc(var(--mini) + 3rem); } }
+/* до 1400px колонка контента подходит к левому краю вплотную — отдаём кружку
+   собственную полосу, чтобы он не накрывал начало заголовков */
+@media (min-width:1024px) and (max-width:1399px) {
+  body.mini-head .wrap { padding-left: calc(var(--mini) + 1.6rem); }
+}
 .foot-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
 .socials { display: flex; gap: 1rem; }
 .socials a { color: rgba(255,255,255,0.7); font-size: 16px; transition: color 0.3s ease, transform 0.3s ease; }
@@ -522,10 +527,100 @@ footer { padding: 3rem 0 calc(3rem + env(safe-area-inset-bottom, 0px)); border-t
 .reveal.from-r { transform: translate3d(26px, 10px, 0); }
 .reveal.zoom { transform: translate3d(0, 22px, 0) scale(0.97); }
 
+/* ===== Подача по типам элементов (как на /about/) =====
+   Каскад внутри группы держит --d (ставит strategy.js), внутри карточек и
+   списков — nth-child: так строки выходят одна за другой, а не скопом. */
+
+/* заголовок раздела: под ним раскрывается фирменная линия */
+.sec h2.reveal { position: relative; padding-bottom: 0.7rem; }
+.sec h2.reveal::after { content: ''; position: absolute; left: 0; bottom: 0; width: min(9rem, 40%); height: 2px;
+  transform: scaleX(0); transform-origin: left center;
+  background: linear-gradient(90deg, var(--p), var(--o));
+  transition: transform 0.9s var(--ease) calc(var(--d, 0ms) + 200ms); }
+.sec h2.reveal.in::after { transform: none; }
+.center h2.reveal::after { left: 50%; transform: translateX(-50%) scaleX(0); transform-origin: center; }
+.center h2.reveal.in::after { transform: translateX(-50%); }
+
+/* надзаголовок: черта растёт вместе с появлением */
+.eyebrow.reveal::after { transform: scaleX(0); transform-origin: left center;
+  transition: transform 0.8s var(--ease) calc(var(--d, 0ms) + 120ms); }
+.eyebrow.reveal.in::after { transform: none; }
+
+/* цифры рынка: карточка приподнимается, число «выпрыгивает» (счёт ведёт JS) */
+.num-card.reveal { transform: translate3d(0, 26px, 0) scale(0.97); }
+.num-card.reveal.in .num-val { animation: numPop 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--d, 0ms) + 120ms) both; }
+@keyframes numPop { 0% { transform: scale(0.8); } 60% { transform: scale(1.05); } 100% { transform: none; } }
+
+/* карточки-сетки выходят волной: у каждой своя задержка по месту в ряду */
+.biz.reveal:nth-child(4n+2), .plan.reveal:nth-child(4n+2) { transition-delay: 90ms; }
+.biz.reveal:nth-child(4n+3), .plan.reveal:nth-child(4n+3) { transition-delay: 180ms; }
+.biz.reveal:nth-child(4n+4), .plan.reveal:nth-child(4n+4) { transition-delay: 270ms; }
+/* лента артефактов: появляется целиком, карточки внутри — по очереди
+   (наблюдать сами карточки нельзя: те, что за правым краем ленты, в экран
+   не попадают и остались бы невидимыми) */
+.rail.reveal { opacity: 1; filter: none; transform: none; }
+.rail.reveal .out { opacity: 0; transform: translate3d(0, 20px, 0); transition: opacity 0.6s ease, transform 0.6s var(--ease); }
+.rail.reveal.in .out { opacity: 1; transform: none; }
+.rail.reveal.in .out:nth-child(1) { transition-delay: 40ms; }
+.rail.reveal.in .out:nth-child(2) { transition-delay: 120ms; }
+.rail.reveal.in .out:nth-child(3) { transition-delay: 200ms; }
+.rail.reveal.in .out:nth-child(4) { transition-delay: 280ms; }
+.rail.reveal.in .out:nth-child(5) { transition-delay: 360ms; }
+.rail.reveal.in .out:nth-child(6) { transition-delay: 440ms; }
+.rail.reveal.in .out:nth-child(7) { transition-delay: 520ms; }
+.rail.reveal.in .out:nth-child(8) { transition-delay: 600ms; }
+.learn-step.reveal:nth-child(2), .cost-col.reveal:nth-child(2) { transition-delay: 110ms; }
+.learn-step.reveal:nth-child(3), .cost-col.reveal:nth-child(3) { transition-delay: 220ms; }
+.learn-step.reveal:nth-child(4) { transition-delay: 330ms; }
+.model-map .node.reveal:nth-child(n) { transform: translate3d(0, 18px, 0) scale(0.94); }
+.model-map .node.reveal:nth-child(2) { transition-delay: 70ms; }
+.model-map .node.reveal:nth-child(3) { transition-delay: 140ms; }
+.model-map .node.reveal:nth-child(4) { transition-delay: 210ms; }
+.model-map .node.reveal:nth-child(5) { transition-delay: 280ms; }
+.model-map .node.reveal:nth-child(6) { transition-delay: 350ms; }
+.model-map .node.reveal:nth-child(7) { transition-delay: 420ms; }
+.model-map .node.reveal:nth-child(8) { transition-delay: 490ms; }
+.plan.best.reveal { transform: translate3d(0, 26px, 0) scale(0.955); }
+
+/* шаг скроллителлинга: номер, заголовок, текст и врезка идут по очереди */
+.story-step.reveal .step-n, .story-step.reveal h2, .story-step.reveal p, .story-step.reveal .step-note {
+  opacity: 0; transform: translate3d(0, 14px, 0); transition: opacity 0.55s ease, transform 0.55s var(--ease); }
+.story-step.reveal.in .step-n { opacity: 1; transform: none; transition-delay: 60ms; }
+.story-step.reveal.in h2 { opacity: 1; transform: none; transition-delay: 150ms; }
+.story-step.reveal.in p { opacity: 1; transform: none; transition-delay: 250ms; }
+.story-step.reveal.in .step-note { opacity: 1; transform: none; transition-delay: 350ms; }
+
+/* врезка с цифрой под сравнением консалтинга приезжает от своей полосы */
+.nums-foot.reveal { transform: translate3d(-18px, 12px, 0); }
+
+/* строки финального списка — построчно */
+.final-list div { opacity: 0; transform: translate3d(-10px, 6px, 0); transition: opacity 0.5s ease, transform 0.5s var(--ease); }
+.final-list.in div { opacity: 1; transform: none; }
+.final-list.in div:nth-child(1) { transition-delay: 60ms; }
+.final-list.in div:nth-child(2) { transition-delay: 150ms; }
+.final-list.in div:nth-child(3) { transition-delay: 240ms; }
+.final-list.in div:nth-child(4) { transition-delay: 330ms; }
+.final-list.in div:nth-child(5) { transition-delay: 420ms; }
+.final-list.in div:nth-child(6) { transition-delay: 510ms; }
+
+/* первый экран поднимается сразу при загрузке, по очереди сверху вниз */
+.hero-rise { opacity: 0; transform: translate3d(0, 20px, 0); animation: heroRise 0.9s var(--ease) both; }
+.hero .eyebrow.hero-rise { animation-delay: 0.10s; }
+.hero h1.hero-rise { animation-delay: 0.22s; }
+.hero .lead.hero-rise { animation-delay: 0.34s; }
+.hero .hero-body.hero-rise { animation-delay: 0.44s; }
+.hero .hero-cta.hero-rise { animation-delay: 0.56s; }
+.hero .hero-note.hero-rise { animation-delay: 0.68s; }
+@keyframes heroRise { to { opacity: 1; transform: none; } }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .reveal, .phrase, .q-item, .final-line, .flow span, .orbit-chip, .orbit-core, .passport-row {
-    opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+  .reveal, .phrase, .q-item, .final-line, .flow span, .orbit-chip, .orbit-core, .passport-row,
+  .hero-rise, .final-list div, .rail.reveal .out, .story-step.reveal .step-n, .story-step.reveal h2,
+  .story-step.reveal p, .story-step.reveal .step-note {
+    opacity: 1 !important; transform: none !important; filter: none !important;
+    transition: none !important; animation: none !important; }
+  .sec h2.reveal::after, .eyebrow.reveal::after { transform: none !important; }
   .wave span, .caret { animation: none; }
   .head { transition: none; }
 }

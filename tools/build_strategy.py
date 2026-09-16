@@ -418,15 +418,15 @@ def page(t, lang):
 <!-- ===== 1. HERO ===== -->
 <section class="hero" id="top">
   <div class="wrap">
-    <p class="eyebrow">Andre AI Strategy</p>
-    <h1>{h1}</h1>
-    <p class="lead">{hero_lead}</p>
-    <p>{hero_body}</p>
-    <div class="hero-cta">
+    <p class="eyebrow hero-rise">Andre AI Strategy</p>
+    <h1 class="hero-rise">{h1}</h1>
+    <p class="lead hero-rise">{hero_lead}</p>
+    <p class="hero-body hero-rise">{hero_body}</p>
+    <div class="hero-cta hero-rise">
       <a class="btn btn-primary" href="{cta_href}" rel="noopener">{cta_main} <i class="fa-solid fa-arrow-right"></i></a>
       <button class="btn btn-ghost" data-go-hero="process" type="button">{cta_how}</button>
     </div>
-    <div class="hero-note">{hero_notes}</div>
+    <div class="hero-note hero-rise">{hero_notes}</div>
   </div>
 </section>
 
@@ -485,7 +485,7 @@ def page(t, lang):
     <p class="eyebrow o reveal">{d_eyebrow}</p>
     <h2 class="reveal">{d_head}</h2>
     <p class="lead reveal" style="max-width:40rem; margin-top:1rem">{d_sub}</p>
-    <div class="rail">{outs}</div>
+    <div class="rail reveal">{outs}</div>
     <p class="rail-hint reveal"><i class="fa-solid fa-arrows-left-right"></i> {d_hint}</p>
   </div>
 </section>
@@ -560,7 +560,7 @@ def page(t, lang):
     <div class="pay-once reveal">
       <h3>{pr_once}</h3>
       <p class="lead">{pr_once_sub}</p>
-      <div class="acc">
+      <div class="acc reveal">
         <button class="acc-btn" type="button">{pr_what} <i class="fa-solid fa-plus"></i></button>
         <div class="acc-body"><div class="acc-in"><div>
           <div class="op-chain">{op_chain}</div>
@@ -580,7 +580,7 @@ def page(t, lang):
       <h2 class="final-line hl-p">{f_3}</h2>
     </div>
     <div class="flow">{flow}</div>
-    <div class="final-list">{final_list}</div>
+    <div class="final-list reveal">{final_list}</div>
     <a class="btn btn-primary" href="{cta_href}" rel="noopener">{f_cta} <i class="fa-solid fa-arrow-right"></i></a>
   </div>
 </section>
