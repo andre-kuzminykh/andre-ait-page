@@ -442,9 +442,9 @@ def page(t, lang):
   <section class="screen final" data-chapter="start" id="start">
     <div class="wrap center">
       <div class="final-mark" aria-hidden="true">
-        <span class="fm-ring"></span>
+        <span class="fm-side fm-l">{coins}</span>
         <i class="fa-solid fa-robot fm-bot"></i>
-        <span class="fm-coin"><i class="fa-solid fa-coins"></i></span>
+        <span class="fm-side fm-r">{coins}</span>
       </div>
       <h2 class="final-1">{f_1}</h2>
       <p class="final-2">{f_2}</p>
@@ -484,6 +484,7 @@ def page(t, lang):
         steps=steps,
         l_eyebrow=t["l_eyebrow"], l_head=t["l_head"], l_sub=t["l_sub"], l_note=t["l_note"], roles=roles,
         pr_eyebrow=t["pr_eyebrow"], pr_head=t["pr_head"], pr_sub=t["pr_sub"], plans=plans, compare=compare,
+        coins="".join('<i class="fa-solid fa-coins" style="--d:%.2fs"></i>' % (k * 0.8) for k in range(3)),
         f_1=t["f_1"], f_2=t["f_2"], f_3=t["f_3"], f_cta=t["f_cta"],
         company=t["company"], legal0=t["legal"][0], legal1=t["legal"][1],
     )

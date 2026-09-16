@@ -141,8 +141,12 @@
      градиенте начинается раньше — шва не остаётся. */
   .media { position: fixed; top: 0; left: 0; width: calc(44% + 2px); height: 100dvh; overflow: hidden; background: #050505; z-index: 2; }
   .media video { width: 100%; height: 100%; object-fit: cover; object-position: center center; display: block; cursor: pointer; }
+  /* Растушёвка гасит правый край КАДРА, а не только край колонки: в съёмке
+     подсвеченный фон обрывается примерно на 84% ширины, и этот вертикальный
+     шов просвечивал сквозь мягкий градиент (жалоба владельца «полоса»). */
   .media-shadow { position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(to right, rgba(5,5,5,0.5) 0%, rgba(5,5,5,0.06) 35%, rgba(5,5,5,0.86) 84%, #050505 93%, #050505 100%); }
+    background: linear-gradient(to right, rgba(5,5,5,0.5) 0%, rgba(5,5,5,0.06) 38%, rgba(5,5,5,0.16) 58%,
+      rgba(5,5,5,0.6) 70%, rgba(5,5,5,0.95) 80%, #050505 87%, #050505 100%); }
   /* Мобилка (и узкий планшет): та же <video>, но формой — «говорящая голова»
      в кружке внизу слева, как на страницах лекций. Кадр размыт, пока не нажали. */
   /* селекторы с .media — чтобы правила бейджа/затемнения ниже их не перебили */
@@ -188,8 +192,11 @@
   /* Блок выключен по центру ПО ГОРИЗОНТАЛИ, но прижат к постоянному верху:
      при вертикальном центрировании заголовок главы прыгал от слайда к слайду
      почти на 200px, а владелец просил «чтобы ничего не скакало». */
+  /* Глава стоит ПО ЦЕНТРУ экрана (правка владельца). Именно safe center, а не
+     center: при выключке center содержимое выше экрана обрезается сверху и
+     до него не доскроллить, а safe в этом случае откатывается к началу. */
   .screen { position: absolute; inset: 0; display: none; flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center; justify-content: safe center;
     align-items: center; touch-action: manipulation;
     padding: 5.5rem clamp(1.1rem, 4vw, 1.8rem) calc(clamp(104px, 29vw, 132px) + 1.2rem + env(safe-area-inset-bottom, 0px));
     overflow-y: auto; overflow-x: clip; scrollbar-width: none; }

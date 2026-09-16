@@ -489,16 +489,13 @@ def test_final_screen_content_is_centred():
 
 
 def test_screens_never_clip_their_top_when_content_is_tall():
-    """Верх длинного экрана обязан оставаться доступным: на лендинге это
-    `safe center`, в биографии — жёсткая привязка к верху (правка владельца:
-    заголовок главы не должен прыгать от слайда к слайду)."""
-    assert "justify-content: safe center" in _read("assets/strategy.css"), \
-        "на лендинге нет safe-центрирования"
-    about = _read("assets/about.css")
-    assert "justify-content: flex-start" in about, \
-        "в биографии экран прижат к постоянному верху"
-    assert "justify-content: safe center" not in about, \
-        "вертикального центрирования в биографии больше нет — оно двигало заголовок"
+    """Обе страницы центрируют экран по вертикали (правка владельца «по
+    середине всё»), но именно `safe center`: при обычном center содержимое
+    выше экрана обрезается сверху и до него не доскроллить."""
+    for name in ("assets/strategy.css", "assets/about.css"):
+        css = _read(name)
+        assert "justify-content: center; justify-content: safe center" in css, \
+            name + ": экран центрируется, но именно safe — иначе верх длинного экрана обрезается"
 
 
 def test_process_blocks_are_the_same_size_on_every_scene():
@@ -672,16 +669,23 @@ def test_chain_keeps_air_at_the_panel_edges():
 
 
 def test_final_screen_has_the_robot_and_coins_mark():
-    """Правка владельца: «на последнем слайде сверху иконку классную сделай с
-    роботом и деньгами — фиолетово-оранжевое, робот фиолетовый, монетки
-    оранжевые»."""
+    """Правка владельца: «просто иконка агента, а слева и справа монетки как
+    фонтан появляются и исчезают бесконечно»."""
     css = _read("assets/strategy.css")
     assert re.search(r"\.fm-bot \{[^}]*color: var\(--p-l\)", css), "робот фиолетовый"
-    assert re.search(r"\.fm-coin i \{[^}]*color: var\(--o-l\)", css), "монеты оранжевые"
-    assert "@keyframes markSpin" in css, "кольцо знака крутится своим кадром, без сдвига на половину"
+    assert re.search(r"\.fm-side i \{[^}]*color: var\(--o-l\)", css), "монеты оранжевые"
+    assert "@keyframes coinL" in css and "@keyframes coinR" in css, "монеты летят в обе стороны"
+    assert "animation: coinL 2.4s ease-out infinite" in css, "фонтан бесконечный"
+    assert "@keyframes markSpin" not in css and ".fm-ring" not in css, \
+        "колец вокруг знака больше нет — осталась только иконка агента"
     for lang, html in _pages():
         mark = html[html.index('class="final-mark"'):html.index('class="final-1"')]
-        assert "fa-robot" in mark and "fa-coins" in mark, lang + ": робот и монеты"
+        assert "fa-robot" in mark, lang + ": иконка агента"
+        assert mark.count("fa-coins") == 6, lang + ": по три монеты с каждой стороны"
+        assert 'class="fm-side fm-l"' in mark and 'class="fm-side fm-r"' in mark, \
+            lang + ": монеты слева и справа"
+        assert len(set(re.findall(r"--d:([\d.]+)s", mark))) == 3, \
+            lang + ": монеты вылетают по очереди, а не разом"
         assert html.index('class="final-mark"') < html.index('class="final-1"'), \
             lang + ": знак стоит НАД заголовком финала"
 

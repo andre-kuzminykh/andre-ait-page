@@ -59,7 +59,8 @@ EN = {
     "d_eyebrow": "Solution",
     "d_head": ('<span class="l">An <span class="hl-p">AI-First</span> operating model</span>'
                '<span class="l">for your <span class="hl-o">business</span></span>'),
-    "d_sub": "Built around how your business actually works",
+    "d_sub": ('<span class="l">Built around how your business</span>'
+              '<span class="l">actually works</span>'),
     "deliverables": [
         ("AI Maturity Index", "See where you stand — and what’s holding you back"),
         ("Process Map", "Your business broken down into processes, in your own words"),
@@ -75,7 +76,7 @@ EN = {
     # ── 6. Как это работает ──
     "s_eyebrow": "How it works",
     "steps": [
-        ("AI Maturity", "Understand where you are today",
+        ("AI Maturity", 'Understand where <span class="hl-o">you</span> are today',
          "Assess your AI maturity and see what’s holding you back"),
         ("Voice input", "Just talk",
          "Describe how your business works. I turn your words into structured processes. Add your team and let employees add the details"),
@@ -84,8 +85,9 @@ EN = {
         ("Opportunities", 'See what <span class="hl-p">AI</span> can <span class="hl-o">automate</span>',
          "Identify automatable operations by impact and complexity"),
         ("AI-First Model", 'How your <span class="hl-o">business</span> should work with <span class="hl-p">AI</span>',
-         "We redesign your processes around AI — automating execution and moving people to approval and supervision"),
-        ("AI Agents", "Know what to build",
+         '<span class="l">We redesign your processes around AI</span>'
+         '<span class="l">— automating execution and moving people to approval and supervision</span>'),
+        ("AI Agents", 'Know <span class="hl-o">what</span> to build',
          "Each AI agent becomes a build-ready specification"),
     ],
     "stage": {
@@ -143,7 +145,7 @@ EN = {
 
     # ── 9. Финал ──
     "f_1": 'Where should <span class="hl-o">you</span> start with <span class="hl-p">AI</span>?',
-    "f_2": '<span class="hl-o">You</span> don’t need to know',
+    "f_2": "You don’t need to know",
     "f_3": '<span class="hl-p">AI</span> Strategy shows <span class="hl-o">you</span>',
     "f_cta": "Start AI transformation for free",
     "legal": ["Privacy Policy", "Terms of Use"],
@@ -200,7 +202,8 @@ RU = {
     "d_eyebrow": "Решение",
     "d_head": ('<span class="l"><span class="hl-p">AI-First</span> операционная модель</span>'
                '<span class="l">вашего <span class="hl-o">бизнеса</span></span>'),
-    "d_sub": "Построена вокруг того, как ваш бизнес работает на самом деле",
+    "d_sub": ('<span class="l">Построена вокруг того, как ваш бизнес</span>'
+              '<span class="l">работает на самом деле</span>'),
     "deliverables": [
         ("Индекс ИИ-зрелости", "Где вы сейчас — и что вас тормозит"),
         ("Карта процессов", "Ваш бизнес, разложенный на процессы вашими же словами"),
@@ -215,7 +218,7 @@ RU = {
 
     "s_eyebrow": "Как это работает",
     "steps": [
-        ("ИИ-зрелость", "Понять, где вы сейчас",
+        ("ИИ-зрелость", 'Понять, где <span class="hl-o">вы</span> сейчас',
          "Оцените ИИ-зрелость и увидьте, что тормозит компанию"),
         ("Голос", "Просто расскажите",
          "Расскажите, как работает бизнес. Я превращу ваши слова в структурированные процессы, а команда добавит детали"),
@@ -224,8 +227,9 @@ RU = {
         ("Возможности", 'Что <span class="hl-p">ИИ</span> может <span class="hl-o">автоматизировать</span>',
          "Находим операции, посильные ИИ, по эффекту и сложности"),
         ("AI-First модель", 'Как <span class="hl-o">бизнес</span> должен работать с <span class="hl-p">ИИ</span>',
-         "Мы перестраиваем процессы вокруг ИИ: исполнение уходит агентам, люди — к утверждению и надзору"),
-        ("ИИ-агенты", "Знать, что именно строить",
+         '<span class="l">Мы перестраиваем процессы вокруг ИИ:</span>'
+         '<span class="l">исполнение уходит агентам, люди — к утверждению и надзору</span>'),
+        ("ИИ-агенты", 'Знать, <span class="hl-o">что</span> именно строить',
          "Каждый ИИ-агент превращается в готовую к сборке спецификацию"),
     ],
     "stage": {
@@ -280,7 +284,7 @@ RU = {
                 ("Собрать ИИ-стратегию самому", False)],
 
     "f_1": 'С чего начать внедрять <span class="hl-p">ИИ</span>?',
-    "f_2": '<span class="hl-o">Вам</span> не обязательно это знать',
+    "f_2": "Вам не обязательно это знать",
     "f_3": '<span class="hl-p">AI</span> Strategy <span class="hl-o">покажет</span>',
     "f_cta": "Начать ИИ-трансформацию бесплатно",
     "legal": ["Политика конфиденциальности", "Условия использования"],

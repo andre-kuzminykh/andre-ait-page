@@ -99,7 +99,11 @@ def test_seam_between_video_and_text_has_no_bright_line():
     css = _css()
     assert "width: calc(44% + 2px)" in css, "ролик заходит под колонку текста"
     shade = re.search(r"\.media-shadow \{[^}]*\}", css, re.S).group(0)
-    assert "#050505 93%" in shade, "чёрное в градиенте начинается до самого края"
+    assert "#050505 87%" in shade, "чёрное в градиенте начинается до самого края"
+    # в самой съёмке подсвеченный фон обрывается примерно на 84% ширины колонки —
+    # к этому месту растушёвка обязана быть уже почти непрозрачной, иначе
+    # вертикальный шов кадра просвечивает (жалоба владельца «полоса»)
+    assert "rgba(5,5,5,0.95) 80%" in shade, "шов кадра должен быть закрыт до 84%"
 
 
 def test_mobile_turns_the_video_into_a_round_head():
@@ -391,16 +395,17 @@ def test_last_two_paragraphs_moved_to_the_mission():
             assert mark not in dense, "%s: «%s» осталось на экране экосистемы" % (lang, mark)
 
 
-def test_chapter_heading_never_jumps_between_slides():
-    """Правка владельца «чтобы ничего не скакало»: экран прижат к постоянному
-    верху, поэтому заголовок главы стоит на одной высоте на всех слайдах."""
+def test_chapter_stands_in_the_middle_of_the_screen():
+    """Правка владельца «по середине всё»: глава центрируется по вертикали.
+    Именно safe center: при обычном center содержимое выше экрана обрезается
+    сверху и до него не доскроллить."""
     css = _css()
     screen = re.search(r"\n  \.screen \{(.*?)\}", css, re.S)
     assert screen, "не найдено правило .screen"
     body = screen.group(1)
-    assert "justify-content: flex-start" in body, "экран прижат к верху"
-    assert "safe center" not in body, \
-        "вертикального центрирования быть не должно — оно двигало заголовок"
+    assert "justify-content: center; justify-content: safe center" in body, \
+        "глава стоит по центру экрана, и именно safe"
+    assert "justify-content: flex-start" not in body, "прижатия к верху больше нет"
 
 
 def test_dense_screen_is_typeset_like_the_others():
