@@ -53,13 +53,9 @@ def radar(values, dims):
                    % (cx, cy, cx + math.cos(-math.pi / 2 + i * 2 * math.pi / len(dims)) * r,
                       cy + math.sin(-math.pi / 2 + i * 2 * math.pi / len(dims)) * r)
                    for i in range(len(dims)))
-    labels = []
-    for i, d in enumerate(dims):
-        a = -math.pi / 2 + i * 2 * math.pi / len(dims)
-        x, y = cx + math.cos(a) * (r + 17), cy + math.sin(a) * (r + 17)
-        anchor = "middle" if abs(math.cos(a)) < 0.3 else ("start" if math.cos(a) > 0 else "end")
-        labels.append('<text x="%.1f" y="%.1f" text-anchor="%s">%s</text>' % (x, y + 3, anchor, d))
-    return rings + axes + '<polygon class="shape" points="%s"/>' % pts(None, values) + "".join(labels)
+    # подписи осей на самой паутине не нужны: названия показателей стоят справа
+    # у горизонтальных графиков, а в узкой колонке они обрезались по краям
+    return rings + axes + '<polygon class="shape" points="%s"/>' % pts(None, values)
 
 
 def stages(t):
@@ -67,16 +63,26 @@ def stages(t):
     s = t["stage"]
     out = []
 
-    # 01 — индекс зрелости: оценка над паутиной
+    # 01 — зрелость: СЛЕВА паутина, СПРАВА семь горизонтальных графиков.
+    # Оба появляются анимацией, когда экран показан (правка владельца).
+    vals = [0.62, 0.3, 0.55, 0.48, 0.42, 0.35, 0.5]
+    bars7 = "".join(
+        '<div class="dim" data-seq style="--v:{pct}%">'
+        '<span class="dim-name">{name}</span>'
+        '<span class="dim-track"><i class="dim-fill"></i></span>'
+        '<b class="dim-val">{val}</b></div>'.format(pct=round(v * 100), name=d, val=("%.1f" % (v * 5)))
+        for d, v in zip(s["dims"], vals))
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
-          <div class="score"><b class="idx-val">2.4</b><span>/ 5 &middot; {score}</span></div>
-          <svg class="radar" viewBox="0 0 200 200" role="img" aria-label="{bar}">{svg}</svg>
+          <div class="score"><b class="idx-val">2.4</b><span>/ 5</span></div>
+          <div class="maturity">
+            <svg class="radar" viewBox="0 0 200 200" role="img" aria-label="{bar}">{svg}</svg>
+            <div class="dims">{bars7}</div>
+          </div>
         </div>
-      </div>""".format(bar=s["s1_bar"], score=s["s1_score"],
-                       svg=radar([0.62, 0.3, 0.55, 0.48, 0.42, 0.35, 0.5], s["dims"])))
+      </div>""".format(bar=s["s1_bar"], svg=radar(vals, s["dims"]), bars7=bars7))
 
     # 02 — голос превращается в процессы
     out.append("""
@@ -84,7 +90,7 @@ def stages(t):
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
           <div class="wave">{bars}</div>
-          <p class="typing">{quote}<span class="caret"></span></p>
+          <p class="typing" data-type="{quote}"><span class="typed"></span><span class="caret"></span></p>
           <div class="flow-row">{cards}</div>
         </div>
       </div>""".format(
@@ -130,11 +136,9 @@ def stages(t):
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
           <div class="opgrid">{ops}</div>
-          <div class="chips"><span class="chip p"><i class="fa-solid fa-bolt"></i>{impact}</span>
-            <span class="chip o"><i class="fa-solid fa-layer-group"></i>{complexity}</span></div>
         </div>
       </div>""".format(
-        bar=s["s4_bar"], impact=s["s4_impact"], complexity=s["s4_complexity"],
+        bar=s["s4_bar"],
         ops="".join(ops_html)))
 
     # 05 — AI-First модель: люди оранжевые, агенты фиолетовые
@@ -160,12 +164,8 @@ def stages(t):
         <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>{bar}</div>
         <div class="ui-body">
           <div class="fflow">{flow}</div>
-          <div class="legend">
-            <span><i style="background:var(--o)"></i>{lh}</span>
-            <span><i style="background:var(--p)"></i>{la}</span>
-          </div>
         </div>
-      </div>""".format(bar=s["s5_bar"], flow="".join(flow), lh=s["s5_legend_h"], la=s["s5_legend_a"]))
+      </div>""".format(bar=s["s5_bar"], flow="".join(flow)))
 
     # 06 — паспорт агента: агент в центре, поля вокруг
     n = len(s["s6_spokes"])
@@ -421,7 +421,6 @@ def page(t, lang):
       <a class="btn btn-primary final-cta" href="{cta_href}" rel="noopener">{f_cta} <i class="fa-solid fa-arrow-right"></i></a>
     </div>
     <footer>
-      <p class="company">{company}</p>
       <div class="socials">
         <a href="https://t.me/andre_dataist" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE"><i class="fa-brands fa-telegram"></i></a>
         <a href="https://dataist.ai/" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3"><i class="fa-solid fa-globe"></i></a>

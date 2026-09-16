@@ -83,10 +83,73 @@
     if (metrics.length) shrinkToFit(metrics);
     var ops = $$('.opnode', root);
     if (ops.length) shrinkToFit(ops);
+    var chain = $$('.pnode, .fnode, .node', root);
+    if (chain.length) {
+      shrinkToFit(chain);
+      /* ряд целиком тоже не должен вылезать за колонку: у блоков nowrap, и
+         переполнение видно только на самом ряду */
+      var box = $('.stage-card .ui-body', root) || $('.stage-card', root);
+      var rows = $$('.frow, .prow', root).filter(function (r) { return r.clientWidth > 0; });
+      /* флекс-ряд не «прокручивается», поэтому переполнение ловим сравнением
+         рамок ряда и панели, а не scrollWidth */
+      function tooWide() {
+        if (!box) return false;
+        var lim = box.getBoundingClientRect();
+        return rows.some(function (r) {
+          var rr = r.getBoundingClientRect();
+          return rr.width > lim.width - 2 || rr.right > lim.right + 0.5 || rr.left < lim.left - 0.5;
+        });
+      }
+      var size = chain[0] ? parseFloat(getComputedStyle(chain[0]).fontSize) : 0;
+      var min = Math.max(size * 0.6, 9);
+      while (size > min && tooWide()) {
+        size -= 0.5;
+        chain.forEach(function (el) { el.style.fontSize = size + 'px'; });
+      }
+    }
   }
   fitHeadings();
   window.addEventListener('resize', fitHeadings);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeadings);
+
+  /* ---------- запуск анимаций сцены ----------
+     Переход НЕ стартует для элемента, который в этом же кадре был display:none —
+     браузеру не от чего анимировать, и он сразу ставит конечное значение.
+     Поэтому конечное состояние повешено на класс .lit, а класс ставится через
+     два кадра после показа экрана. */
+  function sceneIn(screen) {
+    if (!screen || !screen.classList) return;
+    screen.classList.remove('lit');
+    if (reduce) { screen.classList.add('lit'); return; }
+    void screen.offsetWidth;
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { screen.classList.add('lit'); });
+    });
+  }
+
+  /* ---------- цитата печатается, когда экран показан ----------
+     Владелец просил, чтобы фраза «We get most leads through the website…»
+     именно набиралась, а не появлялась целиком. Печатаем один раз на экран;
+     при prefers-reduced-motion текст ставится сразу. */
+  var typeT;
+  function typeIn(root) {
+    if (!root || !root.querySelectorAll) return;
+    $$('.typing[data-type]', root).forEach(function (el) {
+      var out = $('.typed', el);
+      if (!out) return;
+      var text = el.getAttribute('data-type');
+      if (reduce) { out.textContent = text; return; }
+      if (el.dataset.typed === '1') return;
+      el.dataset.typed = '1';
+      out.textContent = '';
+      var i = 0;
+      clearInterval(typeT);
+      typeT = setInterval(function () {
+        out.textContent = text.slice(0, ++i);
+        if (i >= text.length) clearInterval(typeT);
+      }, 22);
+    });
+  }
 
   /* ---------- лента артефактов: растушёвка по краям ----------
      Считать её можно только на ПОКАЗАННОМ экране: у скрытого clientWidth и
@@ -176,6 +239,8 @@
     screens[cur].scrollTop = 0;
     fitHeadings(screens[cur]);
     paintFades(screens[cur]);
+    sceneIn(screens[cur]);
+    typeIn(screens[cur]);
     countUpIn(screens[cur]);
   }
   function go(i) {

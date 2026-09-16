@@ -361,7 +361,9 @@ def test_final_screen_carries_the_footer():
     for lang, html in _pages():
         final = html[html.index('id="start"'):]
         assert "<footer" in final, lang + ": подвал живёт на последнем экране"
-        assert 'class="company"' in final, lang + ": название компании внизу"
+        assert 'class="company"' not in final, \
+            lang + ": отдельной строки с названием компании перед иконками быть не должно"
+        assert "Andre AI Technologies LTD" in final, lang + ": название компании — в копирайте внизу"
         assert "2026" in final, lang + ": копирайт внизу"
         assert final.count("fa-") >= 3, lang + ": иконки соцсетей внизу"
 
@@ -518,6 +520,59 @@ def test_mobile_hero_headline_is_bigger_than_section_headings():
     assert "h1 .l { white-space: normal; }" in css, "на мобилке строки переносятся"
     assert "if (!mqDesk.matches)" in _read("assets/strategy.js"), \
         "подбор кегля не должен трогать мобильный заголовок"
+
+
+def test_maturity_scene_has_radar_left_and_seven_bars_right():
+    """Правка владельца: «слева паутина, справа графики горизонтальные»."""
+    css = _read("assets/strategy.css")
+    assert ".maturity { display: grid;" in css, "сцена зрелости — две колонки"
+    for lang, html in _pages():
+        card = html[html.index('data-step="1"'):html.index('data-step="2"')]
+        assert card.index('class="radar"') < card.index('class="dims"'), \
+            lang + ": паутина слева, графики справа"
+        assert card.count('class="dim"') == 7, lang + ": семь показателей"
+        assert "/ 5 &middot; " not in card, lang + ": название индекса дублировать не нужно"
+        assert 'class="ui-bar"' in card, lang + ": название индекса остаётся на панели"
+    assert "<text" not in _en(), "подписей осей на самой паутине нет — они у графиков справа"
+
+
+def test_scene_animations_start_after_the_screen_is_shown():
+    """Переход НЕ стартует для элемента, который в этом же кадре был display:none:
+    браузеру не от чего анимировать. Поэтому конечное состояние — на классе .lit."""
+    js = _read("assets/strategy.js")
+    assert "function sceneIn" in js and "classList.add('lit')" in js, "нет запуска анимаций сцены"
+    assert "sceneIn(screens[cur])" in js, "анимации запускаются при показе экрана"
+    css = _read("assets/strategy.css")
+    for rule in (".screen.lit .dim-fill", ".screen.lit .radar .shape", ".screen.lit .stage-card .prow"):
+        assert rule in css, "конечное состояние «%s» должно висеть на .lit" % rule
+    assert ".screen.active .radar .shape" not in css, \
+        "старое правило на .active зажигало паутину сразу"
+
+
+def test_quote_is_typed_out():
+    """Правка владельца: фраза про заявки с сайта должна ПЕЧАТАТЬСЯ."""
+    for lang, html in _pages():
+        assert 'class="typing" data-type="' in html, lang + ": цитата набирается скриптом"
+        assert 'class="typed"' in html, lang + ": есть место под набираемый текст"
+    js = _read("assets/strategy.js")
+    assert "function typeIn" in js and "setInterval" in js, "нет печати"
+    assert "if (reduce)" in js, "при отключённых анимациях текст ставится сразу"
+
+
+def test_removed_labels_are_gone():
+    """Владелец убрал чипы эффекта/сложности и легенду People / AI agents."""
+    css = _read("assets/strategy.css")
+    for lang, html in _pages():
+        assert 'class="chips"' not in html, lang + ": чипы эффекта и сложности убраны"
+        assert 'class="legend"' not in html, lang + ": легенда убрана"
+    assert ">Explore<" not in _en() and ">Открыть<" not in _ru(), \
+        "у карточек кейсов только стрелка, без подписи"
+
+
+def test_everything_is_centred_including_buttons():
+    css = _read("assets/strategy.css")
+    assert re.search(r"\.hero-cta \{[^}]*justify-content: center", css), "кнопки первого экрана по центру"
+    assert re.search(r"\.biz-all \{[^}]*margin: 0 auto", css), "ссылка на все типы бизнеса по центру"
 
 
 if __name__ == "__main__":
