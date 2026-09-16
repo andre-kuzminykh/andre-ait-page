@@ -237,7 +237,10 @@ strong { color: var(--w); font-weight: 700; }
 /* ===== Рынок: четыре квадрата, при наведении ничего не прыгает ===== */
 .nums { display: grid; gap: 0.7rem; grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-auto-rows: 1fr; max-width: 32rem; margin: 1.3rem auto 1.1rem; }
-.num-card { aspect-ratio: 1 / 0.46; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;
+/* высоту выравниваем min-height, а НЕ aspect-ratio: вместе с align-self:
+   stretch пропорция начинала считать ШИРИНУ от высоты, и карточки
+   вылезали из своих ячеек на 86px */
+.num-card { min-height: clamp(5.6rem, 11vh, 7.4rem); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;
   padding: 1rem; border-radius: 1.1rem; border: 1px solid var(--line); background: var(--card); text-align: center; }
 .num-card:nth-child(2n) { background: linear-gradient(165deg, rgba(249,115,22,0.08), rgba(255,255,255,0.01)); }
 .num-card:nth-child(2n+1) { background: linear-gradient(165deg, rgba(136,84,243,0.08), rgba(255,255,255,0.01)); }
@@ -247,7 +250,7 @@ strong { color: var(--w); font-weight: 700; }
 @media (min-width:1024px) and (max-height:760px),
          (min-width:1600px) and (max-height:874px),
          (min-width:1900px) and (max-height:988px),
-         (min-width:2300px) and (max-height:1140px) { .num-card { aspect-ratio: auto; padding: 0.8rem; } }
+         (min-width:2300px) and (max-height:1140px) { .num-card { min-height: 4.6rem; padding: 0.8rem; } }
 .nums-foot { font-size: clamp(12px, 1.05vw, 15.5px); font-weight: 700; color: var(--o-l); }
 
 /* ===== Кейсы: восемь карточек на одном экране ===== */
@@ -312,10 +315,14 @@ strong { color: var(--w); font-weight: 700; }
 /* Шесть шагов обязаны выглядеть одинаково: шапка и панель имеют постоянную
    высоту, иначе от шага к шагу они прыгали по вертикали на 100–150px, а высота
    панели менялась втрое (жалоба владельца «чтобы ничего не скакало»). */
-.step-wrap { max-width: 50rem; display: grid; grid-template-rows: auto 1fr;
+/* minmax(0,1fr) обязателен: неявная колонка грида равна max-content, и
+   блоки в одну строку на сцене возможностей растягивали весь шаг за экран */
+.step-wrap { max-width: 50rem; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr;
   gap: clamp(0.9rem, 2vh, 1.4rem); align-content: start; }
 /* заголовок шага занимает две строки всегда — иначе шапка прыгает на 32px */
-.step-copy { min-height: 8.8rem; }
+/* именно height, а не min-height: при трёхстрочном русском заголовке шапка
+   всё равно раздвигалась и панель уезжала вниз на 15px */
+.step-copy { height: 9.2rem; }
 .step-copy h2 { min-height: 2.5em; }
 .step-copy p { margin-bottom: 0; }
 /* высота панели ФИКСИРОВАНА: иначе она менялась от шага к шагу втрое */
@@ -324,7 +331,7 @@ strong { color: var(--w); font-weight: 700; }
 .stage-card > .ui { width: 100%; }
 .step-n { font-size: 10px; font-weight: 700; letter-spacing: 0.2em; color: var(--o-l); margin-bottom: 0.6rem; }
 .step-copy h2 { font-size: clamp(1.1rem, 1.9vw, 1.55rem); margin-bottom: 0.7rem; }
-.step-copy p { max-width: 38rem; }
+.step-copy p { max-width: min(38rem, 100%); }
 
 /* ===== Мини-интерфейс продукта ===== */
 .ui { position: relative; border-radius: 1rem; border: 1px solid var(--line);
@@ -362,7 +369,7 @@ strong { color: var(--w); font-weight: 700; }
 @keyframes caret { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 .flow-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .node { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.62rem 0.95rem; border-radius: 0.7rem; font-size: 12px;
-  border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); font-size: 10.5px; color: var(--w); }
+  border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); color: var(--w); }
 /* шаги процесса окрашены ОДИНАКОВО на всех сценах: люди оранжевые, системы
    фиолетовые, ИИ-агенты фиолетово-оранжевым градиентом */
 .node.human, .fnode.human, .pnode.human { border: 1px solid rgba(249,115,22,0.55); background: rgba(249,115,22,0.12); }
@@ -377,7 +384,7 @@ strong { color: var(--w); font-weight: 700; }
 .prow { display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
 .pwrap { color: rgba(255,255,255,0.22); font-size: 10px; line-height: 1; }
 .parrow { color: rgba(255,255,255,0.25); font-size: 9px; }
-.pnode { position: relative; display: flex; align-items: center; justify-content: center; gap: 0.55rem; min-width: 0;
+.pnode { position: relative; display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-width: 0;
   padding: 0.55rem 0.6rem; border-radius: 0.6rem; text-align: center;
   border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.03); font-size: 10px; color: var(--w); }
 .pnode.human { border-color: rgba(249,115,22,0.5); background: rgba(249,115,22,0.10); }
@@ -388,11 +395,18 @@ strong { color: var(--w); font-weight: 700; }
 
 
 /* 04 — что может забрать ИИ */
-.opgrid { display: grid; gap: 0.4rem; grid-template-columns: repeat(2, 1fr); }
-@media (min-width:560px) { .opgrid { grid-template-columns: repeat(4, 1fr); } }
-.opnode { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; text-align: center; font-size: 11.5px;
+/* блоки естественной ширины и в одну строку: иначе тот же шаг был шире и
+   выше, чем на соседних сценах, и скачком менял размер в перелёте */
+/* minmax(0,1fr): у 1fr минимум равен min-content, и блок в одну строку с
+   длинной русской подписью раздвигал колонку за экран */
+.opgrid { display: grid; gap: 0.45rem; grid-template-columns: repeat(2, minmax(0, 1fr)); justify-items: center; }
+@media (min-width:560px) { .opgrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* тот же шаг процесса должен выглядеть так же, как на соседних сценах:
+   иконка слева, строка в ряд — колоночная вёрстка делала блок в полтора
+   раза крупнее и он скачком менял размер в перелёте */
+.opnode { display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-align: left; font-size: 11.5px;
   padding: 0.55rem 0.35rem; border-radius: 0.6rem; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03);
-  font-size: 9.5px; color: var(--w); }
+  color: var(--w); }
 .opnode i { font-size: 12.5px; color: var(--tx-d); }
 .opnode.can { border-color: rgba(136,84,243,0.65); background: linear-gradient(135deg, rgba(136,84,243,0.18), rgba(249,115,22,0.10));
   box-shadow: 0 0 0 1px rgba(136,84,243,0.25), 0 0 22px -6px rgba(136,84,243,0.8); }
@@ -546,4 +560,30 @@ strong { color: var(--w); font-weight: 700; }
   .spoke { font-size: 9px; padding: 0.28rem 0.5rem; }
   /* подпись метрики на узкой карточке переносится, а не мельчает */
   .biz-metric { white-space: normal; }
+}
+
+/* ===== Один шаг процесса — один размер на всех сценах =====
+   В .node и .opnode было по ДВА объявления font-size, и более мелкое
+   перебивало крупное, поэтому «сделать покрупнее» ничего не меняло, а один и
+   тот же блок имел три разных размера (10 / 9.5 / 12px) на трёх соседних
+   сценах и скачком менял размер прямо в перелёте. */
+.node, .pnode, .opnode, .fnode { font-size: 12px; line-height: 1.25; }
+.node, .pnode, .fnode { padding: 0.62rem 0.95rem; }
+.opnode { padding: 0.62rem 0.95rem; width: fit-content; max-width: 100%; white-space: nowrap; }
+.node i, .pnode i, .opnode i, .fnode i { font-size: 11px; }
+
+/* Панель продукта имеет ПОСТОЯННУЮ высоту вместе с рамкой: фиксировать только
+   контейнер было мало — видимая рамка .ui всё равно скакала со 152 до 414px. */
+.stage-card > .ui { width: 100%; height: 100%; display: flex; flex-direction: column; }
+.stage-card > .ui > .ui-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+/* Квадраты рынка одной высоты: у грид-элемента с aspect-ratio выравнивание
+   normal работает как start, и карточка не растягивалась на высоту ряда. */
+.num-card { align-self: stretch; }
+
+/* На мобилке заголовок первого экрана должен быть ЗАМЕТНО крупнее заголовков
+   разделов: строки переносятся, поэтому кегль не зажат шириной колонки. */
+@media (max-width:1023px) {
+  h1 { font-size: clamp(1.9rem, 8.4vw, 2.6rem); line-height: 1.14; }
+  h1 .l { white-space: normal; }
 }

@@ -466,6 +466,60 @@ def test_screens_never_clip_their_top_when_content_is_tall():
         "вертикального центрирования в биографии больше нет — оно двигало заголовок"
 
 
+def test_process_blocks_are_the_same_size_on_every_scene():
+    """Правка владельца «элементы покрупнее» самонейтрализовалась: в правилах
+    .node и .opnode было ПО ДВА объявления font-size, и меньшее побеждало."""
+    css = _read("assets/strategy.css")
+    for sel in (".node {", ".opnode {"):
+        i = css.index(sel)
+        body = css[i:css.index("}", i)]
+        assert body.count("font-size:") <= 1, \
+            "в правиле «%s» два объявления font-size — крупное перебивается мелким" % sel
+    assert ".node, .pnode, .opnode, .fnode { font-size: 12px;" in css, \
+        "один и тот же шаг обязан быть одного кегля на всех сценах"
+
+
+def test_step_panel_geometry_is_fixed():
+    """Шесть шагов обязаны стоять на одном месте: фиксируем и шапку, и рамку."""
+    css = _read("assets/strategy.css")
+    assert ".step-copy { height:" in css, "высота шапки шага фиксирована"
+    assert re.search(r"\.stage-card \{[^}]*height: min\(", css, re.S), "высота панели фиксирована"
+    assert ".stage-card > .ui { width: 100%; height: 100%;" in css, \
+        "рамка тянется на всю панель, иначе она скакала со 152 до 414px"
+    assert "grid-template-columns: minmax(0, 1fr); grid-template-rows" in css, \
+        "неявная колонка грида равна max-content и растягивала шаг за экран"
+
+
+def test_market_squares_are_equal_height_without_aspect_ratio():
+    """aspect-ratio вместе с align-self:stretch считал ШИРИНУ от высоты и
+    выбрасывал карточки из ячеек на 86px."""
+    css = _read("assets/strategy.css")
+    assert "aspect-ratio: 1 / 0.46" not in css, "пропорции у квадратов рынка быть не должно"
+    assert ".num-card { align-self: stretch; }" in css, "карточки тянутся на высоту ряда"
+    assert re.search(r"\.num-card \{[^}]*min-height:", css, re.S), "высота задана min-height"
+
+
+def test_grids_never_widen_past_their_column():
+    """У 1fr минимум равен min-content: блок в одну строку раздвигал сетку."""
+    css = _read("assets/strategy.css")
+    assert "repeat(4, 1fr)" not in css and "repeat(2, 1fr)" not in css, \
+        "во всех сетках нужен minmax(0, 1fr)"
+
+
+def test_mobile_hero_headline_is_bigger_than_section_headings():
+    """Правка владельца «побольше надо»: на мобилке nowrap зажимал заголовок
+    первого экрана до размера обычных заголовков разделов."""
+    css = _read("assets/strategy.css")
+    blocks = [b for b in re.findall(r"@media \(max-width:1023px\) \{(.*?)\n\}", css, re.S)
+              if re.search(r"\bh1 \{", b)]
+    assert blocks, "нет мобильного правила для заголовка первого экрана"
+    assert any("8.4vw" in b for b in blocks), \
+        "кегль заголовка на мобилке считается от ширины окна"
+    assert "h1 .l { white-space: normal; }" in css, "на мобилке строки переносятся"
+    assert "if (!mqDesk.matches)" in _read("assets/strategy.js"), \
+        "подбор кегля не должен трогать мобильный заголовок"
+
+
 if __name__ == "__main__":
     import sys
     fails = 0

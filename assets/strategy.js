@@ -65,6 +65,13 @@
        заметно мельче первой */
     $$('h1', root).forEach(function (h) {
       var lines = $$('.l', h);
+      /* на мобилке строка заголовка переносится и кегль задаёт CSS: подгонка
+         под nowrap в узкой колонке зажимала его до размера обычных заголовков */
+      if (!mqDesk.matches) {
+        lines.forEach(function (el) { el.style.fontSize = ''; });
+        h.style.fontSize = '';
+        return;
+      }
       shrinkToFit(lines.length ? lines : [h]);
     });
     $$('h2.one-line', root).forEach(function (h) { shrinkToFit([h]); });
@@ -74,6 +81,8 @@
     if (titles.length) shrinkToFit(titles);
     var metrics = $$('.biz-metric', root);
     if (metrics.length) shrinkToFit(metrics);
+    var ops = $$('.opnode', root);
+    if (ops.length) shrinkToFit(ops);
   }
   fitHeadings();
   window.addEventListener('resize', fitHeadings);
