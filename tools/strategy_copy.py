@@ -22,7 +22,8 @@ EN = {
 
     # ── Hero ──
     # две строки, «business» оранжевым — правка владельца
-    "h1": 'Where should you start<br>with <span class="hl-p">AI</span> in your <span class="hl-o">business</span>?',
+    "h1": ('<span class="l">Where should you start</span>'
+           '<span class="l">with <span class="hl-p">AI</span> in your <span class="hl-o">business</span>?</span>'),
     "hero_lead": "AI Strategy shows you the path from how your business works today to how it should work with AI",
     "hero_body": "Explain how your company operates in your own words",
     "steps_nav": "Steps",
@@ -275,7 +276,8 @@ RU = {
     "cta_main": "Начать бесплатно",
     "cta_how": "Как это работает",
 
-    "h1": 'С чего начать внедрять <span class="hl-p">ИИ</span><br>в вашем <span class="hl-o">бизнесе</span>?',
+    "h1": ('<span class="l">С чего начать внедрять <span class="hl-p">ИИ</span></span>'
+           '<span class="l">в вашем <span class="hl-o">бизнесе</span>?</span>'),
     "hero_lead": "AI Strategy показывает путь от того, как ваш бизнес работает сегодня, к тому, как он должен работать с ИИ",
     "hero_body": "Расскажите своими словами, как работает ваша компания",
     "steps_nav": "Шаги",

@@ -61,8 +61,9 @@ def test_language_switch_links_to_the_other_page():
 
 
 def test_page_stores_its_language_for_the_main_site():
-    assert "localStorage.setItem(LANG_KEY, 'en')" in _en()
-    assert "localStorage.setItem(LANG_KEY, 'ru')" in _ru()
+    for lang, html in _pages():
+        assert "localStorage.setItem(LANG_KEY, LANG)" in html, lang
+    assert "document.documentElement.lang === 'ru' ? 'ru' : 'en'" in _en()
 
 
 def test_main_page_about_link_is_language_aware():
@@ -87,10 +88,18 @@ def test_each_page_uses_its_own_video():
 
 def test_desktop_splits_video_and_reading_column():
     css = _css()
-    assert re.search(r"\.media\s*\{[^}]*position:\s*fixed[^}]*width:\s*44%", css), \
-        "на десктопе ролик — фиксированная колонка на 44%"
-    assert re.search(r"\.read\s*\{[^}]*margin-left:\s*44%[^}]*overflow-y:\s*auto", css, re.S), \
-        "текст листается своей колонкой рядом с роликом"
+    assert re.search(r"\.media \{ position: fixed;[^}]*width: calc\(44% \+ 2px\)", css), \
+        "на десктопе ролик — фиксированная колонка на 44% (плюс 2px, чтобы не было шва)"
+    assert "@media (min-width:1024px) { .read { left: 44%; } }" in css, \
+        "экраны с текстом занимают правую часть рядом с роликом"
+
+
+def test_seam_between_video_and_text_has_no_bright_line():
+    """Жалоба владельца: на стыке ролика и чёрного блестела полоска."""
+    css = _css()
+    assert "width: calc(44% + 2px)" in css, "ролик заходит под колонку текста"
+    shade = re.search(r"\.media-shadow \{[^}]*\}", css, re.S).group(0)
+    assert "#050505 93%" in shade, "чёрное в градиенте начинается до самого края"
 
 
 def test_mobile_turns_the_video_into_a_round_head():
@@ -108,14 +117,32 @@ def test_mobile_turns_the_video_into_a_round_head():
 
 # ── FR-SITE40·4/5: меню и «назад» ────────────────────────────────────────
 
-NAV = ["strategy", "neuronium", "landao", "antropolis", "academy", "dataist", "contact"]
+CHAPTERS = ["childhood", "education", "career", "startups", "ecosystem", "mission"]
 
 
-def test_menu_links_point_to_main_page_screens():
+def test_menu_lists_biography_chapters():
+    """Сверху — главы биографии: детство, образование и так далее."""
     for lang, html in _pages():
-        for screen in NAV:
-            assert 'href="/#%s"' % screen in html, \
-                "%s: в меню нет пункта на экран %s" % (lang, screen)
+        for key in CHAPTERS:
+            assert 'data-chapter="%s"' % key in html, "%s: в меню нет главы %s" % (lang, key)
+        assert html.count('class="nav-tab') == len(CHAPTERS), lang + ": в меню шесть глав"
+        screens = re.findall(r'<section class="screen[^"]*" data-i="(\d+)" data-chapter="([a-z]+)"', html)
+        assert len(screens) >= 12, lang + ": биография разложена по экранам"
+        assert screens[0][1] == "childhood", lang + ": первый экран — про детство"
+
+
+def test_first_screen_carries_the_tiger():
+    """Тигр — на первом экране, там же, где про детство."""
+    for lang, html in _pages():
+        first = re.search(r'<section class="screen active"[^>]*>(.*?)</section>', html, re.S).group(1)
+        assert "ic-tiger" in first, lang + ": на первом экране должен быть тигр"
+
+
+def test_screens_switch_by_wheel_swipe_and_keys():
+    for lang, html in _pages():
+        for hook in ("'wheel'", "'touchend'", "'keydown'", "function step(dir)"):
+            assert hook in html, "%s: нет переключения экранов (%s)" % (lang, hook)
+        assert "now - lastWheel < 900" in html, lang + ": один жест = один экран"
 
 
 def test_main_page_opens_the_screen_from_the_hash():
@@ -136,6 +163,7 @@ def test_back_button_falls_back_to_home():
 def test_logo_and_menu_are_present_on_both_pages():
     for lang, html in _pages():
         assert 'class="logo-btn" href="/"' in html, lang + ": лого ведёт на главную"
+        assert 'class="brand-name"' not in html, lang + ": у лого не пишем название страницы"
         assert 'id="menu-btn"' in html, lang + ": нет кнопки меню"
         assert 'class="nav-brand-name"' in html, lang + ": нет бренд-шапки меню"
         assert "https://t.me/andre_dataist" in html, lang + ": нет соцсетей в подвале"
@@ -189,12 +217,14 @@ def test_chapter_watermarks_alternate_sides():
             assert icon in bodies, "%s: нет знака главы %s" % (lang, icon)
 
 
-def test_biography_is_split_into_screens():
-    """Правило владельца: не простыня, а экраны — на каждом свой текст."""
+def test_biography_is_a_deck_of_screens():
+    """Правило владельца: не простыня, а экраны, которые СМЕНЯЮТ друг друга —
+    как разделы на главной."""
     css = _css()
-    assert ".screen {" in css and "min-height: 100dvh" in css, "экран занимает высоту окна"
-    assert "scroll-snap-align: center" in css, "прокрутка прилипает к экрану"
-    assert "scroll-snap-type: y proximity" in css, "у колонки чтения включено прилипание"
+    assert "overflow: hidden; width: 100vw" in css, "страница не прокручивается: это слайды"
+    assert ".screen.active { display: flex; }" in css, "показан один экран"
+    assert "@keyframes slideInScreen" in css, "экран приходит анимацией, как на главной"
+    assert ".article.leaving .screen.active" in css, "уходящий экран анимируется"
     for lang, html in _pages():
         screens = re.findall(r'<section class="screen"[^>]*>(.*?)</section>', html, re.S)
         assert len(screens) >= 12, "%s: биография должна быть разложена по экранам (%d)" % (lang, len(screens))
@@ -205,7 +235,7 @@ def test_biography_is_split_into_screens():
 
 def test_watermarks_are_faint_and_hidden_on_mobile():
     css = _css()
-    assert re.search(r"\.screen\.in \.wm \{ opacity: 0\.0\d+;", css), \
+    assert re.search(r"\.screen\.active \.wm \{ opacity: 0\.0\d+;", css), \
         "знаки глав — еле заметные"
     assert "@media (max-width:1023px) { .wm { display: none; } }" in css, \
         "на мобилке фоновых знаков нет: только текст и кружок"

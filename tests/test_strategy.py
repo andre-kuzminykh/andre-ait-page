@@ -100,10 +100,27 @@ def test_menu_covers_product_sections():
         assert html.count('class="nav-tab"') == len(SECTIONS), lang + ": в меню должно быть 8 разделов"
 
 
-def test_back_button_and_logo():
+def test_back_arrow_sits_next_to_the_product_name():
+    """Правка владельца: у лого стрелки нет, она стоит рядом с «AI Strategy»."""
     for lang, html in _pages():
-        assert 'id="back-btn"' in html, lang + ": нет кнопки «назад»"
         assert 'class="logo-btn" href="/"' in html, lang + ": лого ведёт на главную"
+        assert 'class="prod-name"' not in html, lang + ": у лого не пишем название продукта"
+        eyebrow = re.search(r'<p class="eyebrow hero-rise">(.*?)</p>', html, re.S).group(1)
+        assert 'id="back-btn"' in eyebrow, lang + ": стрелка «назад» — рядом с AI Strategy"
+        header = html[html.index("<header>"):html.index("</header>")]
+        assert 'id="back-btn"' not in header, lang + ": в шапке стрелки быть не должно"
+
+
+def test_header_matches_the_main_site():
+    """Кнопки сверху — того же размера и на тех же местах, что на главной."""
+    css = _read("assets/strategy.css")
+    site = _read("index.html")
+    for rule in ("width: clamp(2.85rem, 12vw, 3.7rem)",     # лого
+                 "height: 2.85rem",                          # пилюля меню и кнопка
+                 "font-size: 14px; font-weight: 500",        # пункты меню
+                 "padding: 0 1.4rem; font-size: 11.5px"):    # кнопка диагностики
+        assert rule in css, "в шапке лендинга нет правила «%s» с главной" % rule
+        assert rule in site or rule.replace("; ", ";\n") in site, "правило «%s» изменилось на главной" % rule
     js = _read("assets/strategy.js")
     assert "location.href = '/'" in js, "при прямом заходе «назад» ведёт на главную"
 

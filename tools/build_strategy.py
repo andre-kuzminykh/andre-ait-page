@@ -387,10 +387,8 @@ def page(t, lang):
 <header>
   <div class="header-row">
     <div class="header-left">
-      <button class="back" id="back-btn" type="button" aria-label="{back}"><i class="fa-solid fa-arrow-left"></i></button>
       <a class="logo-btn" href="/" aria-label="Andre AI Technologies">
         <img class="logo-img" src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT">
-        <span class="prod-name"><span>AI Strategy</span></span>
       </a>
     </div>
 
@@ -418,7 +416,7 @@ def page(t, lang):
 <!-- ===== 1. HERO ===== -->
 <section class="hero" id="top">
   <div class="wrap">
-    <p class="eyebrow hero-rise">AI Strategy</p>
+    <p class="eyebrow hero-rise"><button class="back" id="back-btn" type="button" aria-label="{back}"><i class="fa-solid fa-arrow-left"></i></button>AI Strategy</p>
     <h1 class="hero-rise">{h1}</h1>
     <p class="lead hero-rise">{hero_lead}</p>
     <p class="hero-body hero-rise">{hero_body}</p>

@@ -11,8 +11,10 @@
   html, body { margin: 0; padding: 0; background: #050505; color-scheme: dark;
     font-family: 'JetBrains Mono', monospace; color: #E5E7EB;
     -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
-    -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
-  body { min-height: 100dvh; }
+    -webkit-tap-highlight-color: transparent; overscroll-behavior: none;
+    /* биография листается ЭКРАНАМИ, как главная: страница не прокручивается,
+       экраны сменяют друг друга анимацией (колесо, свайп, стрелки, меню) */
+    overflow: hidden; width: 100vw; height: 100vh; height: 100dvh; }
   a { color: inherit; text-decoration: none; }
   *:focus-visible { outline: 2px solid #8854F3; outline-offset: 2px; }
   ::selection { background: #8854F3; color: #ffffff; }
@@ -129,11 +131,14 @@
   }
 
   /* ===== Видео: колонка слева (десктоп) → кружок внизу слева (мобилка) ===== */
-  .media { position: fixed; top: 0; left: 0; width: 44%; height: 100dvh; overflow: hidden; background: #050505; z-index: 2; }
+  /* На стыке ролика и чёрной колонки блестела светлая полоска: градиент
+     доходил до #050505 ровно на краю, и крайний столбец пикселей кадра
+     просвечивал. Теперь ролик заходит на 2px под колонку, а чёрное в
+     градиенте начинается раньше — шва не остаётся. */
+  .media { position: fixed; top: 0; left: 0; width: calc(44% + 2px); height: 100dvh; overflow: hidden; background: #050505; z-index: 2; }
   .media video { width: 100%; height: 100%; object-fit: cover; object-position: center center; display: block; cursor: pointer; }
-  /* правый край ролика растворяется в чёрном — оттуда начинается колонка текста */
   .media-shadow { position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(to right, rgba(5,5,5,0.5) 0%, rgba(5,5,5,0.06) 35%, rgba(5,5,5,0.72) 86%, #050505 100%); }
+    background: linear-gradient(to right, rgba(5,5,5,0.5) 0%, rgba(5,5,5,0.06) 35%, rgba(5,5,5,0.86) 84%, #050505 93%, #050505 100%); }
   /* Мобилка (и узкий планшет): та же <video>, но формой — «говорящая голова»
      в кружке внизу слева, как на страницах лекций. Кадр размыт, пока не нажали. */
   /* селекторы с .media — чтобы правила бейджа/затемнения ниже их не перебили */
@@ -168,66 +173,66 @@
   .mic-wave::after { animation-delay: 1s; }
   @keyframes soundWave { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.9); opacity: 0; } }
 
-  /* ===== Колонка чтения ===== */
-  .read { position: relative; z-index: 6; overflow-x: clip;
-    padding: 6rem 1.25rem calc(clamp(104px, 29vw, 132px) + 2.2rem + env(safe-area-inset-bottom, 0px)); }
-  @media (max-width:1023px) { html { scroll-snap-type: y proximity; } }
-  @media (min-width:1024px) {
-    /* своя прокрутка: видео слева стоит на месте, листается только текст */
-    .read { margin-left: 44%; width: 56%; height: 100dvh; overflow-y: auto; overscroll-behavior: contain;
-      scroll-snap-type: y proximity;
-      padding: 8.5rem clamp(2rem, 4.5vw, 5rem) 2rem; scrollbar-width: thin; scrollbar-color: rgba(136,84,243,0.55) transparent; }
-    .read::-webkit-scrollbar { width: 6px; }
-    .read::-webkit-scrollbar-thumb { background: rgba(136,84,243,0.5); border-radius: 999px; }
-    .read::-webkit-scrollbar-thumb:hover { background: rgba(136,84,243,0.8); }
-    .read::-webkit-scrollbar-track { background: transparent; }
-  }
-  .article { max-width: 44rem; margin: 0 auto; }
+  /* ===== Колонка чтения: слой с экранами ===== */
+  .read { position: fixed; inset: 0; z-index: 6; overflow: hidden; }
+  @media (min-width:1024px) { .read { left: 44%; } }
+  .article { position: absolute; inset: 0; }
+
   /* ===== Экраны =====
      Правило владельца: не простыня, а аккуратные блоки — на каждом экране
-     свой текст. Прокрутка «прилипает» к экрану (scroll-snap, колесо не
-     перехватываем), у каждого экрана свой фоновый знак главы. */
-  .screen { position: relative; display: flex; flex-direction: column; justify-content: center;
-    min-height: 100dvh; padding: 1.5rem 0; scroll-snap-align: center; }
+     свой текст, и они СМЕНЯЮТ друг друга, как разделы на главной. */
+  .screen { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center;
+    padding: 6.5rem clamp(1.25rem, 4vw, 2rem) calc(clamp(104px, 29vw, 132px) + 1.6rem + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto; scrollbar-width: none; }
+  .screen::-webkit-scrollbar { width: 0; }
+  @media (min-width:1024px) {
+    .screen { padding: 8rem clamp(2rem, 4.5vw, 5rem) 4rem; }
+  }
+  .screen.active { display: flex; }
   .screen > *:not(.wm) { position: relative; z-index: 1; }
   .screen > *:last-child { margin-bottom: 0; }
-  @media (max-width:1023px) {
-    /* на телефоне высоту держим по контенту, но экран всё равно один «кадр» */
-    .screen { min-height: 88dvh; padding: 2rem 0; }
-  }
-  @media (max-height:640px) and (min-width:1024px) { .screen { min-height: auto; padding: 3rem 0; } }
+  /* уход и приход экрана — та же анимация, что на главной */
+  .article.leaving .screen.active { opacity: 0; transform: translateY(-28px); transition: opacity 0.24s ease, transform 0.24s ease; }
+  .article.entering .screen.active { animation: slideInScreen 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+  @keyframes slideInScreen { from { opacity: 0; transform: translateY(44px); } to { opacity: 1; transform: none; } }
+
+  /* точки-индикаторы: где мы внутри биографии */
+  .dots { position: fixed; z-index: 20; display: flex; gap: 0.4rem; pointer-events: auto; }
+  @media (min-width:1024px) { .dots { right: 1.6rem; top: 50%; transform: translateY(-50%); flex-direction: column; } }
+  @media (max-width:1023px) { .dots { left: 50%; transform: translateX(-50%); bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); } }
+  .dot { width: 6px; height: 6px; border-radius: 999px; border: 0; padding: 0; cursor: pointer;
+    background: rgba(255,255,255,0.22); transition: background 0.3s ease, transform 0.3s ease; }
+  .dot.on { background: linear-gradient(120deg, #a071ff, #ff8a33); transform: scale(1.5); }
+  @media (hover:hover) { .dot:hover { background: rgba(255,255,255,0.5); } }
 
   /* ===== Фоновые знаки глав (тигр, шапочка, монеты, ракета, процессор) =====
-     Еле заметные, серые, по очереди слева и справа, с разным наклоном и
-     размером — «в разнобой». На мобилке их нет: там только текст и кружок. */
+     Еле заметные, серые, по очереди слева и справа, с разным наклоном.
+     На мобилке их нет: там только текст и кружок. */
   .wm { position: absolute; top: 50%; z-index: 0; pointer-events: none; user-select: none; color: #ffffff; opacity: 0;
     font-size: clamp(11rem, 20vw, 19rem); line-height: 1; transform: translate3d(0, calc(-50% + 26px), 0);
     transition: opacity 1.3s ease, transform 1.3s cubic-bezier(0.22, 1, 0.36, 1); }
-  /* наклон и параллакс живут на вложенном знаке: .wm занят появлением главы */
-  .wm > svg, .wm > i { display: block; width: 1em; height: 1em;
-    transform: rotate(var(--rot, 0deg)) translate3d(0, var(--py, 0px), 0); transition: transform 0.35s linear; }
-  .screen.in .wm { opacity: 0.055; transform: translate3d(0, -50%, 0); }
+  .wm > svg, .wm > i { display: block; width: 1em; height: 1em; transform: rotate(var(--rot, 0deg)); }
+  .screen.active .wm { opacity: 0.055; transform: translate3d(0, -50%, 0); }
   .wm.l { left: -3rem; }
   .wm.r { right: -3.5rem; }
   @media (max-width:1023px) { .wm { display: none; } }
-  @media (min-width:1024px) and (max-width:1399px) { .wm { font-size: clamp(9rem, 15vw, 13rem); } .wm.l { left: -3.5rem; } .wm.r { right: -3.5rem; } }
+  @media (min-width:1024px) and (max-width:1399px) { .wm { font-size: clamp(9rem, 15vw, 13rem); } .wm.l { left: -2rem; } .wm.r { right: -2rem; } }
 
-  /* «назад» — голая стрелка в одну строку с надписью «About me», без обводки */
+  /* кнопка «назад» — голая стрелка в одну строку с надписью «About me» */
   .back { display: inline-flex; align-items: center; justify-content: center; padding: 0; margin: 0;
     background: none; border: 0; color: rgba(255,255,255,0.55); font-family: inherit; font-size: 15px; line-height: 1;
     cursor: pointer; transition: color 0.3s ease, transform 0.3s ease; }
   @media (hover:hover) { .back:hover { color: #ffffff; transform: translateX(-3px); } }
 
-  .eyebrow { display: inline-flex; align-items: center; gap: 0.6rem; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  .eyebrow { display: inline-flex; align-items: center; gap: 0.55rem; font-size: 11px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.22em; color: #a071ff; margin: 0 0 1rem; }
   .eyebrow::after { content: ''; width: clamp(2rem, 8vw, 4rem); height: 1px; background: linear-gradient(90deg, #8854F3, rgba(249,115,22,0)); }
   h1 { margin: 0 0 1.6rem; font-size: clamp(1.6rem, 4.6vw, 2.7rem); font-weight: 800; line-height: 1.22; letter-spacing: -0.01em; color: #ffffff; }
   .hl-p { color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.45); }
   .hl-o { color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.45); }
-  h2 { position: relative; margin: 0 0 1.3rem; padding-top: 1.6rem; font-size: clamp(1.05rem, 2.3vw, 1.45rem); font-weight: 800; text-transform: uppercase;
-    letter-spacing: 0.04em; color: #ffffff; display: flex; align-items: center; gap: 0.8rem; line-height: 1.35; }
+  h2 { position: relative; margin: 0 0 1.3rem; padding-top: 1.6rem; font-size: clamp(1.05rem, 2.3vw, 1.45rem); font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; display: flex; align-items: center; gap: 0.8rem; line-height: 1.35; }
   h2 i { font-size: 0.85em; color: var(--ic, #8854F3); flex-shrink: 0; }
-  /* тонкая линия над заголовком: смена главы читается глазом */
   h2::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
     background: linear-gradient(90deg, rgba(136,84,243,0.5), rgba(249,115,22,0.2), rgba(255,255,255,0)); }
   p { margin: 0 0 1.15rem; font-size: clamp(13.5px, 1.05vw, 15.5px); line-height: 1.95; color: #b9c2d0; }
