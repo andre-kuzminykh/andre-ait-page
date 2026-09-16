@@ -1,342 +1,257 @@
 # -*- coding: utf-8 -*-
-"""Собирает лендинг Andre AI Strategy на двух языках из одного шаблона.
+"""Собирает лендинг AI Strategy на двух языках из одного шаблона.
 
-    python3 tools/build_strategy.py        # пишет strategy/index.html и strategy/ru/index.html
+    python3 tools/build_strategy.py      # пишет strategy/index.html и strategy/ru/index.html
 
-Почему генератор, а не два рукописных файла: страница огромная (15 разделов,
-10 сцен продукта), и держать две копии вручную — гарантированно развести их.
-Вёрстка в assets/strategy.css, поведение в assets/strategy.js; здесь только
-структура и тексты. Точек в конце строк нет — правило владельца.
+Страница листается ЭКРАНАМИ, как биография и главная: экраны сменяют друг
+друга анимацией, а не прокруткой. Вёрстка — assets/strategy.css, поведение —
+assets/strategy.js, тексты — tools/strategy_copy.py. Точек в конце строк нет.
 """
 import math
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# ── Навигация: восемь разделов продукта + иконки для мобильного меню ──────
+# Разделы меню: id экрана + иконка для мобильного меню
 NAV = [
-    ("questions",   "fa-circle-question"),
-    ("businesses",  "fa-city"),
-    ("deliverables", "fa-box-open"),
-    ("process",     "fa-diagram-project"),
-    ("model",       "fa-sitemap"),
-    ("learning",    "fa-graduation-cap"),
-    ("pricing",     "fa-tag"),
-    ("start",       "fa-rocket"),
+    ("problem",    "fa-circle-question", "#8854F3"),
+    ("usecases",   "fa-city",            "#F97316"),
+    ("solution",   "fa-cubes",           "#8854F3"),
+    ("process",    "fa-diagram-project", "#F97316"),
+    ("learning",   "fa-graduation-cap",  "#8854F3"),
+    ("pricing",    "fa-tag",             "#F97316"),
+    ("start",      "fa-rocket",          "#8854F3"),
 ]
 
 BIZ_ICONS = ["fa-briefcase", "fa-user-tie", "fa-bullhorn", "fa-pen-nib",
              "fa-headset", "fa-life-ring", "fa-palette", "fa-code"]
-
-OUT_ICONS = ["fa-gauge-high", "fa-diagram-project", "fa-map", "fa-lightbulb",
-             "fa-people-arrows", "fa-wand-magic-sparkles", "fa-id-card", "fa-route"]
-
-
-def radar_points(values, cx=100, cy=98, r=74):
-    """Семиугольник зрелости: значения 0..1 по семи осям."""
-    pts = []
-    for i, v in enumerate(values):
-        a = -math.pi / 2 + i * 2 * math.pi / len(values)
-        pts.append("%.1f,%.1f" % (cx + math.cos(a) * r * v, cy + math.sin(a) * r * v))
-    return " ".join(pts)
+OUT_ICONS = ["fa-gauge-high", "fa-diagram-project", "fa-brain", "fa-lightbulb",
+             "fa-people-arrows", "fa-wand-magic-sparkles", "fa-robot", "fa-route"]
 
 
-def radar_axes(n=7, cx=100, cy=98, r=74):
-    out = []
-    for i in range(n):
-        a = -math.pi / 2 + i * 2 * math.pi / n
-        out.append('<line class="axis" x1="%d" y1="%d" x2="%.1f" y2="%.1f"/>'
-                   % (cx, cy, cx + math.cos(a) * r, cy + math.sin(a) * r))
-    return "".join(out)
-
-
-def radar_ring(k, n=7, cx=100, cy=98, r=74):
-    pts = []
-    for i in range(n):
-        a = -math.pi / 2 + i * 2 * math.pi / n
-        pts.append("%.1f,%.1f" % (cx + math.cos(a) * r * k, cy + math.sin(a) * r * k))
-    return '<polygon class="grid-l" points="%s"/>' % " ".join(pts)
+def radar(values, dims):
+    """Паутина зрелости: семь осей, оценка живёт НАД схемой."""
+    cx = cy = 100
+    r = 68
+    def pts(k, vals=None):
+        out = []
+        for i in range(len(dims)):
+            a = -math.pi / 2 + i * 2 * math.pi / len(dims)
+            v = k if vals is None else vals[i]
+            out.append("%.1f,%.1f" % (cx + math.cos(a) * r * v, cy + math.sin(a) * r * v))
+        return " ".join(out)
+    rings = "".join('<polygon class="grid-l" points="%s"/>' % pts(k) for k in (0.34, 0.67, 1.0))
+    axes = "".join('<line class="axis" x1="%d" y1="%d" x2="%.1f" y2="%.1f"/>'
+                   % (cx, cy, cx + math.cos(-math.pi / 2 + i * 2 * math.pi / len(dims)) * r,
+                      cy + math.sin(-math.pi / 2 + i * 2 * math.pi / len(dims)) * r)
+                   for i in range(len(dims)))
+    labels = []
+    for i, d in enumerate(dims):
+        a = -math.pi / 2 + i * 2 * math.pi / len(dims)
+        x, y = cx + math.cos(a) * (r + 17), cy + math.sin(a) * (r + 17)
+        anchor = "middle" if abs(math.cos(a)) < 0.3 else ("start" if math.cos(a) > 0 else "end")
+        labels.append('<text x="%.1f" y="%.1f" text-anchor="%s">%s</text>' % (x, y + 3, anchor, d))
+    return rings + axes + '<polygon class="shape" points="%s"/>' % pts(None, values) + "".join(labels)
 
 
 def stages(t):
-    """Десять сцен: упрощённый, но настоящий интерфейс продукта."""
+    """Шесть сцен продукта — по одной на шаг."""
     s = t["stage"]
     out = []
 
-    # 01 — диагностика зрелости
-    dims = s["dims"]
-    vals = [0.62, 0.38, 0.55, 0.44, 0.28, 0.5, 0.46]
+    # 01 — индекс зрелости: оценка над паутиной
     out.append("""
       <div class="ui">
-        <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>{bar}</div>
-        <div class="ui-body" style="display:grid; gap:1.2rem; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center;">
-          <div>
-            <svg class="radar" viewBox="0 0 200 200" role="img" aria-label="{bar}">
-              {rings}{axes}
-              <polygon class="shape" points="{pts}"/>
-              <circle class="weak" cx="{wx}" cy="{wy}" r="4"/>
-            </svg>
-          </div>
-          <div>
-            <div class="rows">{rows}</div>
-            <div class="idx"><b>2.4</b><span>/ 5 &middot; {index}</span></div>
-            <p class="muted" style="margin-top:.7rem">{weak}</p>
-          </div>
+        <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
+        <div class="ui-body">
+          <div class="score"><b class="idx-val">2.4</b><span>/ 5 &middot; {score}</span></div>
+          <svg class="radar" viewBox="0 0 200 200" role="img" aria-label="{bar}">{svg}</svg>
         </div>
-      </div>""".format(
-        bar=s["s1_bar"], index=s["s1_index"], weak=s["s1_weak"],
-        rings="".join(radar_ring(k) for k in (0.33, 0.66, 1.0)),
-        axes=radar_axes(), pts=radar_points(vals),
-        wx=100 + math.cos(-math.pi / 2 + 4 * 2 * math.pi / 7) * 74 * vals[4],
-        wy=98 + math.sin(-math.pi / 2 + 4 * 2 * math.pi / 7) * 74 * vals[4],
-        rows="".join(
-            '<div class="row"><b>%s</b><div class="meter" style="--v:%d%%; flex:1; max-width:7rem"><i></i></div></div>'
-            % (d, int(v * 100)) for d, v in zip(dims, vals))))
+      </div>""".format(bar=s["s1_bar"], score=s["s1_score"],
+                       svg=radar([0.62, 0.3, 0.55, 0.48, 0.42, 0.35, 0.5], s["dims"])))
 
-    # 02 — «просто расскажите»
+    # 02 — голос превращается в процессы
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
           <div class="wave">{bars}</div>
-          <p class="typing" style="margin:1rem 0 1.2rem">{quote}<span class="caret"></span></p>
-          <div style="display:grid; gap:.5rem; grid-template-columns:repeat(3,1fr)">
-            {cards}
-          </div>
+          <p class="typing">{quote}<span class="caret"></span></p>
+          <div class="flow-row">{cards}</div>
         </div>
       </div>""".format(
         bar=s["s2_bar"], quote=s["s2_quote"],
-        bars="".join('<span style="animation-delay:%.2fs"></span>' % (i * 0.08) for i in range(16)),
-        cards="".join('<div class="node ai" data-seq style="justify-content:center"><i class="fa-solid fa-diagram-project"></i>%s</div>' % c
+        bars="".join('<span style="animation-delay:%.2fs"></span>' % (i * 0.08) for i in range(18)),
+        cards="".join('<div class="node ai" data-seq><i class="fa-solid fa-diagram-project"></i>%s</div>' % c
                       for c in s["s2_cards"])))
 
-    # 03 — процессы найдены
-    out.append("""
-      <div class="ui">
-        <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
-        <div class="ui-body">
-          <div style="display:grid; gap:.5rem; grid-template-columns:repeat(2,1fr)">{cards}</div>
-          <div class="legend" style="margin-top:1rem">
-            <span><i class="fa-solid fa-pen"></i> {rename}</span>
-            <span><i class="fa-solid fa-plus"></i> {add}</span>
-            <span><i class="fa-solid fa-trash"></i> {delete}</span>
-            <span><i class="fa-solid fa-grip-vertical"></i> {drag}</span>
-          </div>
-        </div>
-      </div>""".format(
-        bar=s["s3_bar"], rename=s["s3_rename"], add=s["s3_add"], delete=s["s3_delete"], drag=s["s3_drag"],
-        cards="".join('<div class="node" data-seq><i class="fa-solid fa-grip-vertical"></i>%s</div>' % c
-                      for c in s["s3_cards"])))
-
-    # 04 — процесс раскрыт в операции
-    ops = s["s4_ops"]
+    # 03 — процессы связаны между собой, где люди — оранжевые
+    proc = s["s3_cards"]
+    chain = []
+    warm = 0
+    for i, (name, kind) in enumerate(proc):
+        icon = "fa-user" if kind == "human" else "fa-database"
+        last = i == len(proc) - 1
+        flip = ""
+        if kind == "human":
+            flip = ' data-flip="o%d"' % warm
+            warm += 1
+        chain.append('<div class="pnode %s%s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
+                     % ("human" if kind == "human" else "sys", "" if last else " linked", flip, icon, name))
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot o"></span>{bar}</div>
-        <div class="ui-body" style="display:grid; gap:1rem; grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)">
-          <div class="chain">{chain}</div>
-          <div style="border-left:1px solid rgba(255,255,255,.08); padding-left:1rem">
-            <p class="muted" style="margin-bottom:.6rem; letter-spacing:.14em; text-transform:uppercase">{panel}</p>
-            <div class="rows">{rows}</div>
-          </div>
-        </div>
-      </div>""".format(
-        bar=s["s4_bar"], panel=s["s4_panel"],
-        chain="".join(
-            ('<div class="node%s" data-seq><i class="fa-solid fa-circle-dot"></i>%s</div>' % (" glow" if i == 1 else "", o))
-            + ('<div class="arrow">&darr;</div>' if i < len(ops) - 1 else "")
-            for i, o in enumerate(ops)),
-        rows="".join('<div class="row"><b>%s</b><span>%s</span></div>' % (k, v) for k, v in s["s4_fields"])))
+        <div class="ui-body"><div class="pchain">{chain}</div></div>
+      </div>""".format(bar=s["s3_bar"], chain="".join(chain)))
 
-    # 05 — когнитивная разведка
+    # 04 — что может забрать ИИ
+    ops_html, warm = [], 0
+    for name, can in s["s4_ops"]:
+        flip = ""
+        if not can:
+            flip = ' data-flip="o%d"' % warm
+            warm += 1
+        ops_html.append('<div class="opnode%s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
+                        % (" can" if can else "", flip, "fa-wand-magic-sparkles" if can else "fa-user", name))
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
-          <div class="node human glow" style="justify-content:center; margin-bottom:1rem"><i class="fa-solid fa-user"></i>{node}</div>
-          <div style="display:grid; gap:.45rem">{qs}</div>
-          <div class="arrow" style="text-align:center; margin:.7rem 0; color:rgba(255,255,255,.3)">&darr;</div>
-          <div class="node ai" data-seq style="justify-content:center"><i class="fa-solid fa-brain"></i>{logic}</div>
+          <div class="opgrid">{ops}</div>
+          <div class="chips"><span class="chip p"><i class="fa-solid fa-bolt"></i>{impact}</span>
+            <span class="chip o"><i class="fa-solid fa-layer-group"></i>{complexity}</span></div>
         </div>
       </div>""".format(
-        bar=s["s5_bar"], node=s["s5_node"], logic=s["s5_logic"],
-        qs="".join('<div class="chip" data-seq style="width:100%%; justify-content:flex-start"><i class="fa-solid fa-circle-question"></i>%s</div>' % q
-                   for q in s["s5_qs"])))
+        bar=s["s4_bar"], impact=s["s4_impact"], complexity=s["s4_complexity"],
+        ops="".join(ops_html)))
 
-    # 06 — карта AS-IS
-    def map_nodes(items, extra=""):
-        return "".join('<div class="node %s" data-seq%s><i class="fa-solid %s"></i>%s</div>' % (kind, extra, ic, label)
-                       for kind, ic, label in items)
-
-    out.append("""
-      <div class="ui">
-        <div class="ui-bar"><span class="ui-dot"></span>{bar}</div>
-        <div class="ui-body">
-          <div class="map">{nodes}</div>
-          <div class="legend">
-            <span><i style="background:#cbd5e1"></i>{human}</span>
-            <span><i style="background:var(--o)"></i>{system}</span>
-            <span><i style="background:rgba(255,255,255,.35)"></i>{doc}</span>
-            <span><i style="background:var(--p)"></i>{bottleneck}</span>
-          </div>
-        </div>
-      </div>""".format(bar=s["s6_bar"], human=s["l_human"], system=s["l_system"], doc=s["l_doc"],
-                       bottleneck=s["l_bottleneck"], nodes=map_nodes(s["s6_nodes"])))
-
-    # 07 — возможности ИИ
-    out.append("""
-      <div class="ui">
-        <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
-        <div class="ui-body">
-          <div class="map">{nodes}</div>
-          <div style="display:flex; flex-wrap:wrap; gap:.4rem; margin-top:1rem">
-            <span class="chip p"><i class="fa-solid fa-bolt"></i>{impact}</span>
-            <span class="chip o"><i class="fa-solid fa-layer-group"></i>{complexity}</span>
-            <span class="chip p" style="margin-left:auto"><i class="fa-solid fa-wand-magic-sparkles"></i>{automate}</span>
-          </div>
-        </div>
-      </div>""".format(bar=s["s7_bar"], impact=s["s7_impact"], complexity=s["s7_complexity"],
-                       automate=s["s7_automate"], nodes=map_nodes(s["s7_nodes"])))
-
-    # 08 — роль человека
+    # 05 — AI-First модель: люди оранжевые, агенты фиолетовые
+    # цепочка идёт рядами по три: в одну строку шесть блоков не помещаются,
+    # а перенос флексом оставлял «висящую» стрелку в конце ряда
+    items, warm = [], 0
+    for name, kind in s["s5_flow"]:
+        icon = "fa-user" if kind == "human" else "fa-robot"
+        flip = ""
+        if kind == "human":
+            flip = ' data-flip="o%d"' % warm
+            warm += 1
+        items.append('<div class="fnode %s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
+                     % (kind, flip, icon, name))
+    ARROW = '<span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
+    DOWN = '<span class="fwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
+    flow, rows = [], [items[i:i + 3] for i in range(0, len(items), 3)]
+    for r, row in enumerate(rows):
+        flow.append('<div class="frow">' + ARROW.join(row) + "</div>")
+        if r < len(rows) - 1:
+            flow.append(DOWN)
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>{bar}</div>
         <div class="ui-body">
-          <div class="node ai" style="justify-content:center; margin-bottom:.9rem"><i class="fa-solid fa-robot"></i>{op}</div>
-          <div style="display:grid; gap:.45rem; grid-template-columns:repeat(2,1fr)">{roles}</div>
-          <div class="chain" style="margin-top:1rem">
-            <div class="node ai" data-seq><i class="fa-solid fa-robot"></i>{flow1}</div>
-            <div class="arrow">&darr;</div>
-            <div class="node doc" data-seq><i class="fa-solid fa-file-lines"></i>{flow2}</div>
-            <div class="arrow">&darr;</div>
-            <div class="node human glow" data-seq><i class="fa-solid fa-user-check"></i>{flow3}</div>
+          <div class="fflow">{flow}</div>
+          <div class="legend">
+            <span><i style="background:var(--o)"></i>{lh}</span>
+            <span><i style="background:var(--p)"></i>{la}</span>
           </div>
         </div>
-      </div>""".format(bar=s["s8_bar"], op=s["s8_op"], flow1=s["s8_flow"][0], flow2=s["s8_flow"][1], flow3=s["s8_flow"][2],
-                       roles="".join('<div class="chip%s" data-seq style="width:100%%; justify-content:center">%s</div>'
-                                     % (" p" if i == 1 else "", r) for i, r in enumerate(s["s8_roles"]))))
+      </div>""".format(bar=s["s5_bar"], flow="".join(flow), lh=s["s5_legend_h"], la=s["s5_legend_a"]))
 
-    # 09 — AS-IS → TO-BE (сцена сама переключается)
-    out.append("""
-      <div class="ui" data-transform>
-        <div class="ui-bar">
-          <span class="ui-dot p"></span>
-          <span class="tag-asis">{asis}</span><span style="color:rgba(255,255,255,.3)">&rarr;</span><span class="tag-tobe">{tobe}</span>
-        </div>
-        <div class="ui-body">
-          <div class="map">{nodes}</div>
-          <p class="muted" style="margin-top:1rem">{caption}</p>
-        </div>
-      </div>""".format(
-        bar="", asis=s["s9_asis"], tobe=s["s9_tobe"], caption=s["s9_caption"],
-        nodes="".join('<div class="node %s %s"><i class="fa-solid %s"></i>%s</div>' % (kind, state, ic, label)
-                      for kind, state, ic, label in s["s9_nodes"])))
-
-    # 10 — паспорт агента
+    # 06 — паспорт агента: агент в центре, поля вокруг
+    n = len(s["s6_spokes"])
+    spokes = []
+    for i, sp in enumerate(s["s6_spokes"]):
+        a = -math.pi / 2 + i * 2 * math.pi / n
+        x = 50 + math.cos(a) * 40
+        y = 50 + math.sin(a) * 40
+        spokes.append('<span class="spoke" data-seq style="left:%.1f%%; top:%.1f%%">%s</span>' % (x, y, sp))
+    spokes = "".join(spokes)
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
-          <h3 style="margin-bottom:.9rem">{name}</h3>
-          {rows}
+          <div class="hub">
+            <div class="hub-core"><i class="fa-solid fa-robot"></i><b>{name}</b></div>
+            {spokes}
+          </div>
         </div>
-      </div>""".format(bar=s["s10_bar"], name=s["s10_name"],
-                       rows="".join('<div class="passport-row" data-seq><b>%s</b><span>%s</span></div>' % (k, v)
-                                    for k, v in s["s10_fields"])))
+      </div>""".format(bar=s["s6_bar"], name=s["s6_name"], spokes=spokes))
     return out
 
 
 def page(t, lang):
-    other = "ru" if lang == "en" else "en"
     other_href = "/strategy/ru/" if lang == "en" else "/strategy/"
     self_href = "/strategy/" if lang == "en" else "/strategy/ru/"
     video = "/assets/Andre_AIT_video_compressed%s.mp4" % ("" if lang == "en" else "_ru")
 
     nav_html = "".join(
-        '<button class="nav-tab" data-go="{id}" style="--ic:{c}"><span class="nav-ic"><i class="fa-solid {ic}"></i></span>'
-        '<span class="nav-label">{label}</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>'.format(
-            id=sec, ic=icon, label=t["nav"][i], c="#8854F3" if i % 2 == 0 else "#F97316")
-        for i, (sec, icon) in enumerate(NAV))
+        '<button class="nav-tab{act}" data-go="{id}" style="--ul:{c}; --hover:{c}; --ic:{c};">'
+        '<span class="nav-ic"><i class="fa-solid {ic}"></i></span>'
+        '<span class="nav-label">{label}</span>'
+        '<span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>'.format(
+            id=sec, ic=icon, c=color, label=t["nav"][i], act=" active" if i == 0 else "")
+        for i, (sec, icon, color) in enumerate(NAV))
 
-    questions = "".join('<div class="q-item">%s</div>' % q for q in t["questions"])
-    dots = "".join('<span class="qs-dot"></span>' for _ in t["questions"])
+    back = ('<button class="back" id="back-btn" type="button">'
+            '<i class="fa-solid fa-arrow-left"></i> {label}</button>').format(label=t["back"])
 
-    nums = "".join(
-        '<div class="num-card reveal"><span class="num-val">{v}</span><p>{p}</p></div>'.format(v=v, p=p)
-        for v, p in t["numbers"])
+    questions = "".join('<li class="q-item">%s</li>' % q for q in t["questions"])
 
-    chips = "".join('<span class="orbit-chip">%s</span>' % c for c in t["promise_chips"])
+    nums = "".join('<div class="num-card"><span class="num-val">{v}</span><p>{p}</p></div>'.format(v=v, p=p)
+                   for v, p in t["numbers"])
 
     biz = "".join("""
-        <article class="biz reveal">
-          <div class="biz-ic"><i class="fa-solid {ic}"></i></div>
-          <h3>{name}</h3>
-          <div><p class="biz-label">{ops_l}</p><p class="biz-ops">{ops}</p></div>
-          <div><p class="biz-label">{met_l}</p><div class="biz-metrics">{metrics}</div></div>
-          <span class="biz-go">{explore} <i class="fa-solid fa-arrow-right"></i></span>
-        </article>""".format(
-        ic=BIZ_ICONS[i], name=b[0], ops=b[1], metrics="".join("<span>%s</span>" % m for m in b[2]),
-        ops_l=t["biz_ops_label"], met_l=t["biz_metrics_label"], explore=t["biz_explore"])
+          <article class="biz">
+            <span class="biz-ic"><i class="fa-solid {ic}"></i></span>
+            <h3>{name}</h3>
+            <span class="biz-metric"><b>{val}</b>{label}</span>
+            <span class="biz-go"><span>{explore}</span> <i class="fa-solid fa-arrow-right"></i></span>
+          </article>""".format(ic=BIZ_ICONS[i], name=b[0], val=b[1], label=b[2], explore=t["biz_explore"])
         for i, b in enumerate(t["businesses"]))
 
     outs = "".join("""
-        <article class="out">
-          <span class="out-n">{n:02d}</span>
-          <h3><i class="fa-solid {ic}" style="margin-right:.5rem; color:var(--p-l)"></i>{name}</h3>
-          <p>{desc}</p>
-        </article>""".format(n=i + 1, ic=OUT_ICONS[i], name=o[0], desc=o[1])
+          <article class="out">
+            <span class="out-n">{n:02d}</span>
+            <h3><i class="fa-solid {ic}"></i>{name}</h3>
+            <p>{desc}</p>
+          </article>""".format(n=i + 1, ic=OUT_ICONS[i], name=o[0], desc=o[1])
         for i, o in enumerate(t["deliverables"]))
 
     stage_html = stages(t)
     steps = "".join("""
-      <section class="story-screen" id="step-{n}" data-step="{n}">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="{n}">
+      <section class="screen step-screen" data-chapter="process" data-step="{n}">
+        <div class="wrap step-wrap">
+          <article class="step-copy">
             <p class="step-n">{n:02d} &mdash; {tag}</p>
             <h2>{title}</h2>
             <p>{body}</p>
-            {note}
           </article>
-          <div class="stage-card" data-step="{n}">{stage}</div>
+          <div class="stage-card">{stage}</div>
         </div>
-      </section>""".format(n=i + 1, tag=st[0], title=st[1], body=st[2], stage=stage_html[i],
-                           note='<p class="step-note">%s</p>' % st[3] if st[3] else "")
+      </section>""".format(n=i + 1, tag=st[0], title=st[1], body=st[2], stage=stage_html[i])
         for i, st in enumerate(t["steps"]))
-    stage_cards = ""
-    rail = "".join('<button class="rail-n" data-step="%d">%02d</button>' % (i + 1, i + 1) for i in range(len(t["steps"])))
 
-    model = "".join('<div class="node %s reveal"><i class="fa-solid %s"></i>%s</div>'
-                    % (k, ic, n) for k, ic, n in t["model_nodes"])
-
-    learn = "".join('<div class="learn-step reveal"><span>%s</span><b>%s</b><p class="muted">%s</p></div>'
-                    % (a, b, c) for a, b, c in t["learn_steps"])
-
-    costs = "".join('<div class="cost-col{win} reveal"><h3>{h}</h3><span class="cost-val">{v}</span><p>{p}</p></div>'.format(
-        win=" win" if i == 2 else "", h=c[0], v=c[1], p=c[2]) for i, c in enumerate(t["cost_cols"]))
+    roles = "".join('<span class="role"><i class="fa-solid %s"></i>%s</span>' % (ic, name) for name, ic in t["roles"])
 
     plans = "".join("""
-        <article class="plan{best} reveal">
-          {badge}
-          <h3>{name}</h3>
-          <div class="plan-price">{price}</div>
-          <div class="plan-scope">{scope}</div>
-          <p>{desc}</p>
-          <a class="btn btn-{style} btn-sm" href="{cta_href}">{cta}</a>
-          {hint}
-        </article>""".format(
-        best=" best" if p[0] == "best" else "", name=p[1], price=p[2], scope=p[3], desc=p[4],
+          <article class="plan{best}">
+            {badge}
+            <h3>{name}</h3>
+            <div class="plan-price">{price}</div>
+            <div class="plan-scope">{scope}</div>
+            <a class="btn btn-{style} btn-sm" href="{href}" rel="noopener">{cta} <i class="fa-solid fa-arrow-right"></i></a>
+          </article>""".format(
+        best=" best" if p[0] == "best" else "", name=p[1], price=p[2], scope=p[3], cta=p[4],
         badge='<span class="plan-badge">%s</span>' % t["best_value"] if p[0] == "best" else "",
-        hint='<span class="plan-hint">%s</span>' % t["best_hint"] if p[0] == "best" else "",
-        style="primary" if p[0] == "best" else "ghost", cta=p[5], cta_href=t["cta_href"])
+        style="primary" if p[0] == "best" else "ghost", href=t["cta_href"])
         for p in t["plans"])
 
-    flow = "".join('<span>%s</span>%s' % (f, '<i class="fa-solid fa-arrow-right"></i>' if i < len(t["final_flow"]) - 1 else "")
-                   for i, f in enumerate(t["final_flow"]))
-
-    final_list = "".join('<div><i class="fa-solid fa-circle"></i><span>%s</span></div>' % f for f in t["final_list"])
+    compare = "".join(
+        '<span class="cmp%s">%s</span>%s' % (" old" if old else " now", txt,
+                                             '<i class="fa-solid fa-circle"></i>' if i < len(t["compare"]) - 1 else "")
+        for i, (txt, old) in enumerate(t["compare"]))
 
     return """<!DOCTYPE html>
+<!-- Собрано tools/build_strategy.py — править этот файл руками нельзя, сборка перезапишет -->
 <html lang="{lang}">
 <head>
 <meta charset="utf-8">
@@ -373,9 +288,7 @@ def page(t, lang):
 </head>
 <body>
 
-<div class="progress" id="progress" aria-hidden="true"></div>
-
-<!-- ===== Говорящая голова: колонка на вебе, кружок ниже и на мобилке ===== -->
+<!-- ===== Лицо: слева на полэкрана (веб), кружок внизу слева (мобилка) ===== -->
 <div class="head" id="head" role="button" tabindex="0" aria-label="{video_aria}">
   <video id="head-video" src="{video}" poster="/andre_ai.jpg" loop muted autoplay playsinline preload="auto"></video>
   <div class="head-shade" aria-hidden="true"></div>
@@ -383,7 +296,7 @@ def page(t, lang):
 </div>
 <div class="head-badge"><b>Andre AI</b><span>{role}</span><i><i class="fa-solid fa-microphone-lines-slash" id="head-mic"></i></i></div>
 
-<!-- ===== Шапка ===== -->
+<!-- ===== Шапка: как на главной ===== -->
 <header>
   <div class="header-row">
     <div class="header-left">
@@ -411,223 +324,152 @@ def page(t, lang):
   </div>
 </header>
 
-<main>
+<div class="dots" id="dots" aria-hidden="true"></div>
 
-<!-- ===== 1. HERO ===== -->
-<section class="hero" id="top">
-  <div class="wrap">
-    <p class="eyebrow hero-rise"><button class="back" id="back-btn" type="button" aria-label="{back}"><i class="fa-solid fa-arrow-left"></i></button>AI Strategy</p>
-    <h1 class="hero-rise">{h1}</h1>
-    <p class="lead hero-rise">{hero_lead}</p>
-    <p class="hero-body hero-rise">{hero_body}</p>
-    <div class="hero-cta hero-rise">
-      <a class="btn btn-primary" href="{cta_href}" rel="noopener">{cta_main} <i class="fa-solid fa-arrow-right"></i></a>
-      <button class="btn btn-ghost" data-go-hero="questions" type="button">{cta_how}</button>
-    </div>
-  </div>
-</section>
+<main class="deck" id="deck">
 
-<!-- ===== 2. Вопросы ===== -->
-<section class="qs" id="questions">
-  <div class="qs-stage">
-    <div class="qs-head"><h2>{q_head}</h2></div>
-    <div class="qs-list">{questions}</div>
-    <div class="qs-final"><h2>{q_final}</h2></div>
-    <div class="qs-dots">{dots}</div>
-  </div>
-</section>
-
-<!-- ===== 3. Цифры рынка ===== -->
-<section class="sec" id="numbers">
-  <div class="wrap">
-    <p class="eyebrow o reveal">{n_eyebrow}</p>
-    <h2 class="reveal">{n_head}</h2>
-    <div class="nums">{nums}</div>
-    <div class="nums-foot reveal"><p>{n_foot}</p></div>
-    <div class="verdict reveal"><h2>{n_verdict}</h2></div>
-    <p class="foot-note reveal">{n_note}</p>
-  </div>
-</section>
-
-<!-- ===== 4. Простое обещание ===== -->
-<section class="sec center" id="promise">
-  <div class="wrap">
-    <h2 class="reveal">{p_head}</h2>
-    <p class="lead reveal" style="max-width:38rem; margin:1.2rem auto 0">{p_sub}</p>
-    <div class="promise-orbit" id="orbit">
-      {chips}
-      <div class="orbit-core"><b>{p_core}</b></div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== 5. Под ваш бизнес ===== -->
-<section class="sec" id="businesses">
-  <div class="wrap">
-    <p class="eyebrow reveal">{b_eyebrow}</p>
-    <h2 class="reveal">{b_head}</h2>
-    <p class="lead reveal" style="max-width:40rem; margin-top:1rem">{b_sub}</p>
-    <div class="biz-grid">{biz}</div>
-    <div class="biz-more reveal">
-      <a class="btn btn-ghost" href="{cta_href}">{b_all} <i class="fa-solid fa-arrow-right"></i></a>
-      <p class="biz-arch">{b_arch}</p>
-      <p class="muted" style="max-width:40rem">{b_metrics_note}</p>
-    </div>
-  </div>
-</section>
-
-<!-- ===== 6. Что вы получаете ===== -->
-<section class="sec" id="deliverables">
-  <div class="wrap">
-    <p class="eyebrow o reveal">{d_eyebrow}</p>
-    <h2 class="reveal">{d_head}</h2>
-    <p class="lead reveal" style="max-width:40rem; margin-top:1rem">{d_sub}</p>
-    <div class="rail reveal">{outs}</div>
-    <p class="rail-hint reveal"><i class="fa-solid fa-arrows-left-right"></i> {d_hint}</p>
-  </div>
-</section>
-
-<!-- ===== 7. Как это работает: десять экранов, по шагу на экран ===== -->
-<section class="sec" id="process">
-  <div class="wrap">
-    <p class="eyebrow reveal">{s_eyebrow}</p>
-    <h2 class="reveal">{s_head}</h2>
-    <p class="lead reveal" style="margin-top:1rem">{s_sub}</p>
-  </div>
-</section>
-<aside class="story-rail" aria-label="{steps_nav}">{rail}</aside>
-<div class="story">{steps}</div>
-
-<!-- ===== 8. Модель компании ===== -->
-<section class="sec" id="model">
-  <div class="wrap center">
-    <p class="eyebrow reveal">{m_eyebrow}</p>
-    <h2 class="reveal">{m_head}</h2>
-    <p class="lead reveal" style="max-width:40rem; margin:1rem auto 0">{m_sub}</p>
-    <div class="model-map">{model}</div>
-  </div>
-</section>
-
-<!-- ===== 9. Команда ===== -->
-<section class="sec" id="team">
-  <div class="wrap">
-    <p class="eyebrow o reveal">{t_eyebrow}</p>
-    <h2 class="reveal">{t_head}</h2>
-    <div class="team-split">
-      <div class="team-col p reveal from-l"><h3><i class="fa-solid fa-user-tie" style="margin-right:.5rem"></i>{t_l_head}</h3><p>{t_l_body}</p></div>
-      <div class="team-join reveal"><i class="fa-solid fa-arrows-left-right"></i></div>
-      <div class="team-col o reveal from-r"><h3><i class="fa-solid fa-users" style="margin-right:.5rem"></i>{t_r_head}</h3><p>{t_r_body}</p></div>
-    </div>
-    <p class="lead reveal" style="margin-top:1.6rem">{t_foot}</p>
-  </div>
-</section>
-
-<!-- ===== 10. Обучение ===== -->
-<section class="sec" id="learning">
-  <div class="wrap">
-    <p class="eyebrow reveal">{l_eyebrow}</p>
-    <h2 class="reveal">{l_head}</h2>
-    <p class="lead reveal" style="max-width:42rem; margin-top:1rem">{l_sub}</p>
-    <div class="learn-chain">{learn}</div>
-    <p class="reveal" style="margin-top:1.6rem; max-width:42rem">{l_foot}</p>
-  </div>
-</section>
-
-<!-- ===== 11. Сколько стоит консалтинг ===== -->
-<section class="sec cost" id="cost">
-  <div class="wrap">
-    <p class="eyebrow o reveal">{c_eyebrow}</p>
-    <h2 class="reveal" style="max-width:44rem">{c_head}</h2>
-    <div class="cost-cols">{costs}</div>
-    <p class="foot-note reveal">{c_note}</p>
-  </div>
-</section>
-
-<!-- ===== 12. Тарифы ===== -->
-<section class="sec" id="pricing">
-  <div class="wrap">
-    <p class="eyebrow reveal">{pr_eyebrow}</p>
-    <h2 class="reveal">{pr_head}</h2>
-    <div class="plans">{plans}</div>
-    <div class="pay-once reveal">
-      <h3>{pr_once}</h3>
-      <p class="lead">{pr_once_sub}</p>
-      <div class="acc reveal">
-        <button class="acc-btn" type="button">{pr_what} <i class="fa-solid fa-plus"></i></button>
-        <div class="acc-body"><div class="acc-in"><div>
-          <div class="op-chain">{op_chain}</div>
-          <p class="muted">{pr_ops_note}</p>
-        </div></div></div>
+  <!-- 1. Первый экран -->
+  <section class="screen active" data-chapter="top" id="top">
+    <div class="wrap">
+      {back}
+      <p class="eyebrow">AI Strategy</p>
+      <h1>{h1}</h1>
+      <p class="lead">{hero_lead}</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="{cta_href}" rel="noopener">{cta_main} <i class="fa-solid fa-arrow-right"></i></a>
+        <button class="btn btn-ghost" data-go="process" type="button">{cta_how}</button>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ===== 13. Финал ===== -->
-<section class="final" id="start">
-  <div class="wrap">
-    <div class="final-lines">
-      <h2 class="final-line">{f_1}</h2>
-      <p class="final-line quiet">{f_2}</p>
-      <h2 class="final-line hl-p">{f_3}</h2>
+  <!-- 2. Проблема -->
+  <section class="screen" data-chapter="problem" id="problem">
+    <div class="wrap center">
+      <h2>{q_head}</h2>
+      <ul class="qs">{questions}</ul>
+      <p class="q-final">{q_final}</p>
     </div>
-    <div class="flow">{flow}</div>
-    <div class="final-list reveal">{final_list}</div>
-    <a class="btn btn-primary" href="{cta_href}" rel="noopener">{f_cta} <i class="fa-solid fa-arrow-right"></i></a>
-  </div>
-</section>
+  </section>
+
+  <!-- 3. Рынок -->
+  <section class="screen" data-chapter="problem" id="numbers">
+    <div class="wrap center">
+      <p class="eyebrow o">{n_eyebrow}</p>
+      <h2 class="one-line">{n_head}</h2>
+      <div class="nums">{nums}</div>
+      <p class="nums-foot">{n_foot}</p>
+    </div>
+  </section>
+
+  <!-- 4. Кейсы -->
+  <section class="screen" data-chapter="usecases" id="usecases">
+    <div class="wrap">
+      <p class="eyebrow">{b_eyebrow}</p>
+      <h2>{b_head}</h2>
+      <div class="biz-grid">{biz}</div>
+      <a class="biz-all" href="{cta_href}" rel="noopener">{b_all} <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </section>
+
+  <!-- 5. Решение -->
+  <section class="screen" data-chapter="solution" id="solution">
+    <div class="wrap">
+      <p class="eyebrow o">{d_eyebrow}</p>
+      <h2>{d_head}</h2>
+      <p class="lead">{d_sub}</p>
+      <div class="rail-wrap">
+        <div class="rail">{outs}</div>
+      </div>
+      <p class="rail-hint"><i class="fa-solid fa-arrows-left-right"></i> {d_hint}</p>
+    </div>
+  </section>
+
+  <!-- 6. Как это работает -->
+  <section class="screen" data-chapter="process" id="process">
+    <div class="wrap center">
+      <p class="eyebrow">{s_eyebrow}</p>
+      <h2>{s_head}</h2>
+      <p class="lead">{s_sub}</p>
+    </div>
+  </section>
+{steps}
+
+  <!-- 7. Обучение -->
+  <section class="screen" data-chapter="learning" id="learning">
+    <div class="wrap center">
+      <p class="eyebrow o">{l_eyebrow}</p>
+      <h2>{l_head}</h2>
+      <p class="lead">{l_sub}</p>
+      <p class="l-note"><i class="fa-solid fa-circle-nodes"></i>{l_note}</p>
+    </div>
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-row">{roles}{roles}</div>
+    </div>
+  </section>
+
+  <!-- 8. Тарифы -->
+  <section class="screen" data-chapter="pricing" id="pricing">
+    <div class="wrap">
+      <p class="eyebrow">{pr_eyebrow}</p>
+      <h2>{pr_head}</h2>
+      <p class="lead">{pr_sub}</p>
+      <div class="plans">{plans}</div>
+      <p class="compare">{compare}</p>
+    </div>
+  </section>
+
+  <!-- 9. Финал -->
+  <section class="screen final" data-chapter="start" id="start">
+    <div class="wrap center">
+      <p class="eyebrow"><i class="fa-solid fa-arrow-right"></i>{f_eyebrow}</p>
+      <h2 class="final-1">{f_1}</h2>
+      <p class="final-2">{f_2}</p>
+      <h2 class="final-3">{f_3}</h2>
+      <a class="btn btn-primary final-cta" href="{cta_href}" rel="noopener">{f_cta} <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <footer>
+      <p class="company">{company}</p>
+      <div class="socials">
+        <a href="https://t.me/andre_dataist" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE"><i class="fa-brands fa-telegram"></i></a>
+        <a href="https://dataist.ai/" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3"><i class="fa-solid fa-globe"></i></a>
+        <a href="https://www.youtube.com/@andre_dataist" target="_blank" rel="noopener" aria-label="YouTube" style="--brand:#FF0000"><i class="fa-brands fa-youtube"></i></a>
+        <a href="https://www.linkedin.com/in/andre-kuzminykh/" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="mailto:admin@andre.technology" aria-label="Email" style="--brand:#F97316"><i class="fa-solid fa-envelope"></i></a>
+      </div>
+      <p class="legal"><a href="/">{legal0}</a><span>&middot;</span><a href="/">{legal1}</a></p>
+      <p class="copy">2026 &copy; Andre AI Technologies LTD</p>
+    </footer>
+  </section>
 
 </main>
-
-<footer>
-  <div class="wrap foot-row">
-    <div class="socials">
-      <a href="https://t.me/andre_dataist" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE"><i class="fa-brands fa-telegram"></i></a>
-      <a href="https://dataist.ai/" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3"><i class="fa-solid fa-globe"></i></a>
-      <a href="https://www.youtube.com/@andre_dataist" target="_blank" rel="noopener" aria-label="YouTube" style="--brand:#FF0000"><i class="fa-brands fa-youtube"></i></a>
-      <a href="https://www.linkedin.com/in/andre-kuzminykh/" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2"><i class="fa-brands fa-linkedin"></i></a>
-      <a href="mailto:admin@andre.technology" aria-label="Email" style="--brand:#F97316"><i class="fa-solid fa-envelope"></i></a>
-    </div>
-    <a class="copy" href="/">2026 &copy; Andre AI Technologies LTD</a>
-  </div>
-</footer>
 
 <script src="/assets/strategy.js"></script>
 </body>
 </html>
 """.format(
         lang=lang, title=t["title"], desc=t["meta_desc"], self_href=self_href, video=video,
-        video_aria=t["video_aria"], role=t["role"], back=t["back"], sections=t["sections"],
-        close=t["close"], menu=t["menu"], nav_html=nav_html, cta_href=t["cta_href"], cta_top=t["cta_top"],
+        video_aria=t["video_aria"], role=t["role"], sections=t["sections"], close=t["close"], menu=t["menu"],
+        nav_html=nav_html, cta_href=t["cta_href"], cta_top=t["cta_top"], back=back,
         lang_switch=('<span class="lang-opt active">EN</span><span class="lang-sep">|</span>'
                      '<a class="lang-opt" href="%s">RU</a>' % other_href) if lang == "en" else
                     ('<a class="lang-opt" href="%s">EN</a><span class="lang-sep">|</span>'
                      '<span class="lang-opt active">RU</span>' % other_href),
-        h1=t["h1"], hero_lead=t["hero_lead"], hero_body=t["hero_body"], cta_main=t["cta_main"], cta_how=t["cta_how"],
-        q_head=t["q_head"], questions=questions, q_final=t["q_final"], dots=dots,
-        n_eyebrow=t["n_eyebrow"], n_head=t["n_head"], nums=nums, n_foot=t["n_foot"], n_verdict=t["n_verdict"], n_note=t["n_note"],
-        p_head=t["p_head"], p_sub=t["p_sub"], chips=chips, p_core=t["p_core"],
-        b_eyebrow=t["b_eyebrow"], b_head=t["b_head"], b_sub=t["b_sub"], biz=biz, b_all=t["b_all"],
-        b_arch=t["b_arch"], b_metrics_note=t["b_metrics_note"],
+        h1=t["h1"], hero_lead=t["hero_lead"], cta_main=t["cta_main"], cta_how=t["cta_how"],
+        q_head=t["q_head"], questions=questions, q_final=t["q_final"],
+        n_eyebrow=t["n_eyebrow"], n_head=t["n_head"], nums=nums, n_foot=t["n_foot"],
+        b_eyebrow=t["b_eyebrow"], b_head=t["b_head"], biz=biz, b_all=t["b_all"],
         d_eyebrow=t["d_eyebrow"], d_head=t["d_head"], d_sub=t["d_sub"], outs=outs, d_hint=t["d_hint"],
-        s_eyebrow=t["s_eyebrow"], s_head=t["s_head"], s_sub=t["s_sub"], rail=rail, steps=steps, steps_nav=t["steps_nav"],
-        m_eyebrow=t["m_eyebrow"], m_head=t["m_head"], m_sub=t["m_sub"], model=model,
-        t_eyebrow=t["t_eyebrow"], t_head=t["t_head"], t_l_head=t["t_l_head"], t_l_body=t["t_l_body"],
-        t_r_head=t["t_r_head"], t_r_body=t["t_r_body"], t_foot=t["t_foot"],
-        l_eyebrow=t["l_eyebrow"], l_head=t["l_head"], l_sub=t["l_sub"], learn=learn, l_foot=t["l_foot"],
-        c_eyebrow=t["c_eyebrow"], c_head=t["c_head"], costs=costs, c_note=t["c_note"],
-        pr_eyebrow=t["pr_eyebrow"], pr_head=t["pr_head"], plans=plans, pr_once=t["pr_once"], pr_once_sub=t["pr_once_sub"],
-        pr_what=t["pr_what"], pr_ops_note=t["pr_ops_note"],
-        op_chain="".join('<span>%s</span>%s' % (o, '<i class="fa-solid fa-arrow-right"></i>' if i < len(t["op_chain"]) - 1 else "")
-                         for i, o in enumerate(t["op_chain"])),
-        f_1=t["f_1"], f_2=t["f_2"], f_3=t["f_3"], flow=flow, final_list=final_list, f_cta=t["f_cta"],
+        s_eyebrow=t["s_eyebrow"], s_head=t["s_head"], s_sub=t["s_sub"], steps=steps,
+        l_eyebrow=t["l_eyebrow"], l_head=t["l_head"], l_sub=t["l_sub"], l_note=t["l_note"], roles=roles,
+        pr_eyebrow=t["pr_eyebrow"], pr_head=t["pr_head"], pr_sub=t["pr_sub"], plans=plans, compare=compare,
+        f_eyebrow=t["f_eyebrow"], f_1=t["f_1"], f_2=t["f_2"], f_3=t["f_3"], f_cta=t["f_cta"],
+        company=t["company"], legal0=t["legal"][0], legal1=t["legal"][1],
     )
 
 
 def build():
-    from strategy_copy import EN, RU  # тексты вынесены в соседний файл
-    out = [("strategy/index.html", page(EN, "en")), ("strategy/ru/index.html", page(RU, "ru"))]
-    for rel, html in out:
+    from strategy_copy import EN, RU
+    for rel, html in (("strategy/index.html", page(EN, "en")), ("strategy/ru/index.html", page(RU, "ru"))):
         path = os.path.join(ROOT, rel)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:

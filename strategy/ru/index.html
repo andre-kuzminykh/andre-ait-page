@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Собрано tools/build_strategy.py — править этот файл руками нельзя, сборка перезапишет -->
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -6,7 +7,7 @@
 <meta name="theme-color" content="#050505">
 <meta name="color-scheme" content="dark">
 <title>AI Strategy | С чего начать внедрять ИИ в вашем бизнесе?</title>
-<meta name="description" content="Расскажите AI Strategy, как устроен ваш бизнес — система разберёт процессы, найдёт возможности для автоматизации, определит роли людей и ИИ-агентов и соберёт пошаговый план перехода к AI-First компании">
+<meta name="description" content="AI Strategy показывает, как трансформировать бизнес с помощью ИИ: расскажите, как работает компания, и получите AI-First операционную модель, спецификации ИИ-агентов и дорожную карту">
 <link rel="canonical" href="https://andre.technology/strategy/ru/">
 <link rel="alternate" hreflang="en" href="https://andre.technology/strategy/">
 <link rel="alternate" hreflang="ru" href="https://andre.technology/strategy/ru/">
@@ -18,7 +19,7 @@
 <meta property="og:url" content="https://andre.technology/strategy/ru/">
 <meta property="og:site_name" content="Andre AI Technologies">
 <meta property="og:title" content="AI Strategy | С чего начать внедрять ИИ в вашем бизнесе?">
-<meta property="og:description" content="Расскажите AI Strategy, как устроен ваш бизнес — система разберёт процессы, найдёт возможности для автоматизации, определит роли людей и ИИ-агентов и соберёт пошаговый план перехода к AI-First компании">
+<meta property="og:description" content="AI Strategy показывает, как трансформировать бизнес с помощью ИИ: расскажите, как работает компания, и получите AI-First операционную модель, спецификации ИИ-агентов и дорожную карту">
 <meta property="og:image" content="https://andre.technology/assets/og/andre-ai-technologies.png">
 <meta name="twitter:card" content="summary_large_image">
 
@@ -35,9 +36,7 @@
 </head>
 <body>
 
-<div class="progress" id="progress" aria-hidden="true"></div>
-
-<!-- ===== Говорящая голова: колонка на вебе, кружок ниже и на мобилке ===== -->
+<!-- ===== Лицо: слева на полэкрана (веб), кружок внизу слева (мобилка) ===== -->
 <div class="head" id="head" role="button" tabindex="0" aria-label="Андре рассказывает про AI Strategy">
   <video id="head-video" src="/assets/Andre_AIT_video_compressed_ru.mp4" poster="/andre_ai.jpg" loop muted autoplay playsinline preload="auto"></video>
   <div class="head-shade" aria-hidden="true"></div>
@@ -45,7 +44,7 @@
 </div>
 <div class="head-badge"><b>Andre AI</b><span>ИИ-стратегия</span><i><i class="fa-solid fa-microphone-lines-slash" id="head-mic"></i></i></div>
 
-<!-- ===== Шапка ===== -->
+<!-- ===== Шапка: как на главной ===== -->
 <header>
   <div class="header-row">
     <div class="header-left">
@@ -60,7 +59,7 @@
         <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="">
         <span>AI Strategy</span>
       </div>
-      <button class="nav-tab" data-go="questions" style="--ic:#8854F3"><span class="nav-ic"><i class="fa-solid fa-circle-question"></i></span><span class="nav-label">Проблема</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="businesses" style="--ic:#F97316"><span class="nav-ic"><i class="fa-solid fa-city"></i></span><span class="nav-label">Бизнесы</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="deliverables" style="--ic:#8854F3"><span class="nav-ic"><i class="fa-solid fa-box-open"></i></span><span class="nav-label">Что вы получите</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="process" style="--ic:#F97316"><span class="nav-ic"><i class="fa-solid fa-diagram-project"></i></span><span class="nav-label">Как это работает</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="model" style="--ic:#8854F3"><span class="nav-ic"><i class="fa-solid fa-sitemap"></i></span><span class="nav-label">Модель компании</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="learning" style="--ic:#F97316"><span class="nav-ic"><i class="fa-solid fa-graduation-cap"></i></span><span class="nav-label">Обучение</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="pricing" style="--ic:#8854F3"><span class="nav-ic"><i class="fa-solid fa-tag"></i></span><span class="nav-label">Тарифы</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="start" style="--ic:#F97316"><span class="nav-ic"><i class="fa-solid fa-rocket"></i></span><span class="nav-label">Начать</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
+      <button class="nav-tab active" data-go="problem" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-circle-question"></i></span><span class="nav-label">Проблема</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="usecases" style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-city"></i></span><span class="nav-label">Кейсы</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="solution" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-cubes"></i></span><span class="nav-label">Решение</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="process" style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-diagram-project"></i></span><span class="nav-label">Как это работает</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="learning" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-graduation-cap"></i></span><span class="nav-label">Обучение</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="pricing" style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-tag"></i></span><span class="nav-label">Тарифы</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button><button class="nav-tab" data-go="start" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-rocket"></i></span><span class="nav-label">Начать</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
     </nav>
 
     <div class="header-right">
@@ -73,540 +72,346 @@
   </div>
 </header>
 
-<main>
+<div class="dots" id="dots" aria-hidden="true"></div>
 
-<!-- ===== 1. HERO ===== -->
-<section class="hero" id="top">
-  <div class="wrap">
-    <p class="eyebrow hero-rise"><button class="back" id="back-btn" type="button" aria-label="Назад"><i class="fa-solid fa-arrow-left"></i></button>AI Strategy</p>
-    <h1 class="hero-rise"><span class="l">С чего начать внедрять <span class="hl-p">ИИ</span></span><span class="l">в вашем <span class="hl-o">бизнесе</span>?</span></h1>
-    <p class="lead hero-rise">AI Strategy показывает путь от того, как ваш бизнес работает сегодня, к тому, как он должен работать с ИИ</p>
-    <p class="hero-body hero-rise">Расскажите своими словами, как работает ваша компания</p>
-    <div class="hero-cta hero-rise">
-      <a class="btn btn-primary" href="https://strategy.andre.technology/" rel="noopener">Начать бесплатно <i class="fa-solid fa-arrow-right"></i></a>
-      <button class="btn btn-ghost" data-go-hero="questions" type="button">Как это работает</button>
+<main class="deck" id="deck">
+
+  <!-- 1. Первый экран -->
+  <section class="screen active" data-chapter="top" id="top">
+    <div class="wrap">
+      <button class="back" id="back-btn" type="button"><i class="fa-solid fa-arrow-left"></i> Назад</button>
+      <p class="eyebrow">AI Strategy</p>
+      <h1><span class="l">С чего начать внедрять <span class="hl-p">ИИ</span></span><span class="l">в вашем <span class="hl-o">бизнесе</span>?</span></h1>
+      <p class="lead">AI Strategy показывает, как трансформировать ваш бизнес с помощью ИИ</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="https://strategy.andre.technology/" rel="noopener">Начать бесплатно <i class="fa-solid fa-arrow-right"></i></a>
+        <button class="btn btn-ghost" data-go="process" type="button">Как это работает</button>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ===== 2. Вопросы ===== -->
-<section class="qs" id="questions">
-  <div class="qs-stage">
-    <div class="qs-head"><h2>Проблема больше не в доступе к ИИ</h2></div>
-    <div class="qs-list"><div class="q-item">С чего начать?</div><div class="q-item">Какие процессы менять первыми?</div><div class="q-item">Что можно отдать ИИ?</div><div class="q-item">Что должно остаться за людьми?</div><div class="q-item">Какие ИИ-агенты нам действительно нужны?</div><div class="q-item">Что внедрять в первую очередь?</div></div>
-    <div class="qs-final"><h2>Именно на эти вопросы и отвечает AI Strategy</h2></div>
-    <div class="qs-dots"><span class="qs-dot"></span><span class="qs-dot"></span><span class="qs-dot"></span><span class="qs-dot"></span><span class="qs-dot"></span><span class="qs-dot"></span></div>
-  </div>
-</section>
-
-<!-- ===== 3. Цифры рынка ===== -->
-<section class="sec" id="numbers">
-  <div class="wrap">
-    <p class="eyebrow o reveal">Рынок сегодня</p>
-    <h2 class="reveal">Пользоваться ИИ и быть AI-First — не одно и то же</h2>
-    <div class="nums"><div class="num-card reveal"><span class="num-val">76%</span><p>малых компаний уже используют ИИ</p></div><div class="num-card reveal"><span class="num-val">14%</span><p>полностью встроили его в основную работу</p></div><div class="num-card reveal"><span class="num-val">81%</span><p>владельцев малого бизнеса открыты к новым ИИ-инструментам — но один из главных барьеров в том, что сотрудники не знают, когда и как их применять</p></div></div>
-    <div class="nums-foot reveal"><p>73% говорят, что им нужно больше ресурсов и поддержки, чтобы довести внедрение ИИ до результата</p></div>
-    <div class="verdict reveal"><h2>Пользоваться ИИ и быть AI-First — не одно и то же</h2></div>
-    <p class="foot-note reveal">Показательна работа Anthropic с малым бизнесом в 2026 году: воркшопы посетили более 1000 владельцев, 80% зарегистрировавшихся вели компании на 5–50 человек, а главным барьером в предварительном опросе была неопределённость — когда и как применять ИИ. Почти две трети участников итогового опроса просили больше практической помощи с внедрением</p>
-  </div>
-</section>
-
-<!-- ===== 4. Простое обещание ===== -->
-<section class="sec center" id="promise">
-  <div class="wrap">
-    <h2 class="reveal">Чтобы начать, не нужно быть экспертом по ИИ</h2>
-    <p class="lead reveal" style="max-width:38rem; margin:1.2rem auto 0">Расскажите, как работает ваш бизнес. AI Strategy сам разберётся, где место ИИ</p>
-    <div class="promise-orbit" id="orbit">
-      <span class="orbit-chip">Инструменты</span><span class="orbit-chip">Процессы</span><span class="orbit-chip">Агенты</span><span class="orbit-chip">Люди</span><span class="orbit-chip">Данные</span><span class="orbit-chip">Приоритеты</span>
-      <div class="orbit-core"><b>AI-First стратегия</b></div>
+  <!-- 2. Проблема -->
+  <section class="screen" data-chapter="problem" id="problem">
+    <div class="wrap center">
+      <h2>Проблема больше не в доступе к ИИ</h2>
+      <ul class="qs"><li class="q-item">С чего начать?</li><li class="q-item">Какие процессы менять первыми?</li><li class="q-item">Что можно отдать ИИ?</li><li class="q-item">Что должно остаться за людьми?</li><li class="q-item">Какие ИИ-агенты нам действительно нужны?</li><li class="q-item">Что внедрять в первую очередь?</li></ul>
+      <p class="q-final">Именно на эти вопросы и отвечает AI Strategy</p>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ===== 5. Под ваш бизнес ===== -->
-<section class="sec" id="businesses">
-  <div class="wrap">
-    <p class="eyebrow reveal">Под ваш бизнес</p>
-    <h2 class="reveal">Ваша отрасль, ваши процессы, ваши метрики</h2>
-    <p class="lead reveal" style="max-width:40rem; margin-top:1rem">У каждого типа бизнеса свои возможности для ИИ и свои метрики — стратегия начинается с вашей реальности, а не с универсального шаблона</p>
-    <div class="biz-grid">
-        <article class="biz reveal">
-          <div class="biz-ic"><i class="fa-solid fa-briefcase"></i></div>
-          <h3>Консалтинг</h3>
-          <div><p class="biz-label">Возможности ИИ</p><p class="biz-ops">Исследования · анализ · диагностика клиента · отчёты · презентации · работа со знаниями</p></div>
-          <div><p class="biz-label">Метрики эффекта</p><div class="biz-metrics"><span>Срок проекта</span><span>Часы исследований</span><span>Загрузка консультантов</span></div></div>
-          <span class="biz-go">Открыть этот бизнес <i class="fa-solid fa-arrow-right"></i></span>
-        </article>
-        <article class="biz reveal">
-          <div class="biz-ic"><i class="fa-solid fa-user-tie"></i></div>
-          <h3>Кадровое агентство</h3>
-          <div><p class="biz-label">Возможности ИИ</p><p class="biz-ops">Поиск · скрининг · разбор резюме · аутрич · аналитика интервью · follow-up</p></div>
-          <div><p class="biz-label">Метрики эффекта</p><div class="biz-metrics"><span>Срок закрытия вакансии</span><span>Кандидатов на рекрутера</span><span>Стоимость найма</span></div></div>
-          <span class="biz-go">Открыть этот бизнес <i class="fa-solid fa-arrow-right"></i></span>
-        </article>
-        <article class="biz reveal">
-          <div class="biz-ic"><i class="fa-solid fa-bullhorn"></i></div>
-          <h3>Маркетинговое агентство</h3>
-          <div><p class="biz-label">Возможности ИИ</p><p class="biz-ops">Исследования · стратегия · кампании · отчётность · оптимизация · общение с клиентом</p></div>
-          <div><p class="biz-label">Метрики эффекта</p><div class="biz-metrics"><span>Срок запуска кампании</span><span>Часы на отчётность</span><span>CAC / ROAS</span></div></div>
-          <span class="biz-go">Открыть этот бизнес <i class="fa-solid fa-arrow-right"></i></span>
-        </article>
-        <article class="biz reveal">
-          <div class="biz-ic"><i class="fa-solid fa-pen-nib"></i></div>
-          <h3>Контент-агентство</h3>
-          <div><p class="biz-label">Возможности ИИ</p><p class="biz-ops">Исследования · идеи · сценарии · тексты · переупаковка · локализация · публикация</p></div>
-          <div><p class="biz-label">Метрики эффекта</p><div class="biz-metrics"><span>Срок до публикации</span><span>Выпуск на сотрудника</span><span>Стоимость единицы контента</span></div></div>
-          <span class="biz-go">Открыть этот бизнес <i class="fa-solid fa-arrow-right"></i></span>
-        </article>
-        <article class="biz reveal">
-          <div class="biz-ic"><i class="fa-solid fa-headset"></i></div>
-          <h3>Колл-центр</h3>
-          <div><p class="biz-label">Возможности ИИ</p><p class="biz-ops">Входящие звонки · квалификация · маршрутизация · типовые запросы · саммари · контроль качества</p></div>
-          <div><p class="biz-label">Метрики эффекта</p><div class="biz-metrics"><span>Среднее время обработки</span><span>Доля автоответов</span><span>Стоимость контакта</span></div></div>
-          <span class="biz-go">Открыть этот бизнес <i class="fa-solid fa-arrow-right"></i></span>
-        </article>
-        <article class="biz reveal">
-          <div class="biz-ic"><i class="fa-solid fa-life-ring"></i></div>
-          <h3>Поддержка клиентов</h3>
-          <div><p class="biz-label">Возможности ИИ</p><p class="biz-ops">Классификация · поиск по базе знаний · ответы · диагностика · эскалация · контроль качества</p></div>
-          <div><p class="biz-label">Метрики эффекта</p><div class="biz-metrics"><span>Время первого ответа</span><span>Время решения</span><span>Доля закрытых без человека</span><span>CSAT</span></div></div>
-          <span class="biz-go">Открыть этот бизнес <i class="fa-solid fa-arrow-right"></i></span>
-        </article>
-        <article class="biz reveal">
-          <div class="biz-ic"><i class="fa-solid fa-palette"></i></div>
-          <h3>Дизайн-агентство</h3>
-          <div><p class="biz-label">Возможности ИИ</p><p class="biz-ops">Разбор брифа · исследование · концепции · вариации · продакшн · ревью</p></div>
-          <div><p class="biz-label">Метрики эффекта</p><div class="biz-metrics"><span>Срок дизайн-цикла</span><span>Круги правок</span><span>Концепций на бриф</span></div></div>
-          <span class="biz-go">Открыть этот бизнес <i class="fa-solid fa-arrow-right"></i></span>
-        </article>
-        <article class="biz reveal">
-          <div class="biz-ic"><i class="fa-solid fa-code"></i></div>
-          <h3>Разработка ПО</h3>
-          <div><p class="biz-label">Возможности ИИ</p><p class="biz-ops">Требования · архитектура · код · ревью · тестирование · документация · релиз</p></div>
-          <div><p class="biz-label">Метрики эффекта</p><div class="biz-metrics"><span>Время до изменения</span><span>Срок цикла разработки</span><span>Частота релизов</span><span>Доля дефектов</span></div></div>
-          <span class="biz-go">Открыть этот бизнес <i class="fa-solid fa-arrow-right"></i></span>
-        </article></div>
-    <div class="biz-more reveal">
-      <a class="btn btn-ghost" href="https://strategy.andre.technology/">Посмотреть все 50 типов бизнеса <i class="fa-solid fa-arrow-right"></i></a>
-      <p class="biz-arch">50 категорий → <b>~500 специализаций</b>, по 10 внутри каждого бизнеса</p>
-      <p class="muted" style="max-width:40rem">Метрики показаны как то, на что AI Strategy помогает целиться и что отслеживать, а не как гарантированные проценты улучшения</p>
+  <!-- 3. Рынок -->
+  <section class="screen" data-chapter="problem" id="numbers">
+    <div class="wrap center">
+      <p class="eyebrow o">Рынок сегодня</p>
+      <h2 class="one-line">Пользоваться ИИ и быть AI-First — не одно и то же</h2>
+      <div class="nums"><div class="num-card"><span class="num-val">76%</span><p>используют ИИ</p></div><div class="num-card"><span class="num-val">14%</span><p>встроили его в основную работу</p></div><div class="num-card"><span class="num-val">81%</span><p>не знают, как применять его эффективно</p></div><div class="num-card"><span class="num-val">73%</span><p>нужна поддержка во внедрении</p></div></div>
+      <p class="nums-foot">Не дайте конкурентам уйти вперёд с ИИ</p>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ===== 6. Что вы получаете ===== -->
-<section class="sec" id="deliverables">
-  <div class="wrap">
-    <p class="eyebrow o reveal">Что вы получите</p>
-    <h2 class="reveal">Восемь артефактов, которые складываются в модель вашей компании</h2>
-    <p class="lead reveal" style="max-width:40rem; margin-top:1rem">Не отчёт, который читают один раз, а рабочая модель бизнеса, которой можно пользоваться дальше</p>
-    <div class="rail reveal">
-        <article class="out">
-          <span class="out-n">01</span>
-          <h3><i class="fa-solid fa-gauge-high" style="margin-right:.5rem; color:var(--p-l)"></i>Диагностика ИИ-зрелости</h3>
-          <p>Где компания находится по семи измерениям и что именно её тормозит</p>
-        </article>
-        <article class="out">
-          <span class="out-n">02</span>
-          <h3><i class="fa-solid fa-diagram-project" style="margin-right:.5rem; color:var(--p-l)"></i>Карта процессов</h3>
-          <p>Ваш бизнес, разложенный на процессы вашими же словами</p>
-        </article>
-        <article class="out">
-          <span class="out-n">03</span>
-          <h3><i class="fa-solid fa-map" style="margin-right:.5rem; color:var(--p-l)"></i>AS-IS</h3>
-          <p>Как работа идёт сегодня — люди, системы, документы</p>
-        </article>
-        <article class="out">
-          <span class="out-n">04</span>
-          <h3><i class="fa-solid fa-lightbulb" style="margin-right:.5rem; color:var(--p-l)"></i>Возможности ИИ</h3>
-          <p>Операции, которые ИИ может взять на себя, с эффектом и сложностью</p>
-        </article>
-        <article class="out">
-          <span class="out-n">05</span>
-          <h3><i class="fa-solid fa-people-arrows" style="margin-right:.5rem; color:var(--p-l)"></i>Человек + ИИ</h3>
-          <p>Кто что делает: оператор, супервайзер, управляющий или соавтор</p>
-        </article>
-        <article class="out">
-          <span class="out-n">06</span>
-          <h3><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:.5rem; color:var(--p-l)"></i>TO-BE</h3>
-          <p>Тот же бизнес, перестроенный вокруг ИИ</p>
-        </article>
-        <article class="out">
-          <span class="out-n">07</span>
-          <h3><i class="fa-solid fa-id-card" style="margin-right:.5rem; color:var(--p-l)"></i>Спецификации ИИ-агентов</h3>
-          <p>Готовый к сборке паспорт каждого нужного агента</p>
-        </article>
-        <article class="out">
-          <span class="out-n">08</span>
-          <h3><i class="fa-solid fa-route" style="margin-right:.5rem; color:var(--p-l)"></i>Дорожная карта</h3>
-          <p>Что внедрять первым, вторым и третьим</p>
-        </article></div>
-    <p class="rail-hint reveal"><i class="fa-solid fa-arrows-left-right"></i> Листайте карточки</p>
-  </div>
-</section>
+  <!-- 4. Кейсы -->
+  <section class="screen" data-chapter="usecases" id="usecases">
+    <div class="wrap">
+      <p class="eyebrow">Кейсы</p>
+      <h2>Собрано под то, как ваш бизнес работает на самом деле</h2>
+      <div class="biz-grid">
+          <article class="biz">
+            <span class="biz-ic"><i class="fa-solid fa-briefcase"></i></span>
+            <h3>Консалтинг</h3>
+            <span class="biz-metric"><b>20% ↑</b>Рост выручки</span>
+            <span class="biz-go"><span>Открыть</span> <i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+          <article class="biz">
+            <span class="biz-ic"><i class="fa-solid fa-user-tie"></i></span>
+            <h3>Кадровое агентство</h3>
+            <span class="biz-metric"><b>30% ↓</b>Срок найма</span>
+            <span class="biz-go"><span>Открыть</span> <i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+          <article class="biz">
+            <span class="biz-ic"><i class="fa-solid fa-bullhorn"></i></span>
+            <h3>Маркетинговое агентство</h3>
+            <span class="biz-metric"><b>25% ↑</b>Отдача от маркетинга</span>
+            <span class="biz-go"><span>Открыть</span> <i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+          <article class="biz">
+            <span class="biz-ic"><i class="fa-solid fa-pen-nib"></i></span>
+            <h3>Контент-агентство</h3>
+            <span class="biz-metric"><b>20% ↑</b>Вовлечённость аудитории</span>
+            <span class="biz-go"><span>Открыть</span> <i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+          <article class="biz">
+            <span class="biz-ic"><i class="fa-solid fa-headset"></i></span>
+            <h3>Колл-центр</h3>
+            <span class="biz-metric"><b>30% ↓</b>Стоимость звонка</span>
+            <span class="biz-go"><span>Открыть</span> <i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+          <article class="biz">
+            <span class="biz-ic"><i class="fa-solid fa-life-ring"></i></span>
+            <h3>Поддержка клиентов</h3>
+            <span class="biz-metric"><b>15% ↑</b>Удовлетворённость клиентов</span>
+            <span class="biz-go"><span>Открыть</span> <i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+          <article class="biz">
+            <span class="biz-ic"><i class="fa-solid fa-palette"></i></span>
+            <h3>Дизайн-агентство</h3>
+            <span class="biz-metric"><b>40% ↓</b>Срок поставки</span>
+            <span class="biz-go"><span>Открыть</span> <i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+          <article class="biz">
+            <span class="biz-ic"><i class="fa-solid fa-code"></i></span>
+            <h3>Разработка ПО</h3>
+            <span class="biz-metric"><b>30% ↓</b>Срок запуска</span>
+            <span class="biz-go"><span>Открыть</span> <i class="fa-solid fa-arrow-right"></i></span>
+          </article></div>
+      <a class="biz-all" href="https://strategy.andre.technology/" rel="noopener">Посмотреть все типы бизнеса <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </section>
 
-<!-- ===== 7. Как это работает: десять экранов, по шагу на экран ===== -->
-<section class="sec" id="process">
-  <div class="wrap">
-    <p class="eyebrow reveal">Как это работает</p>
-    <h2 class="reveal">Десять шагов от «нам нужен ИИ» до «вот что мы строим»</h2>
-    <p class="lead reveal" style="margin-top:1rem">Вы рассказываете о бизнесе так, как понимаете его сами. Методологию берёт на себя система — и показывает результат на каждом шаге</p>
-  </div>
-</section>
-<aside class="story-rail" aria-label="Шаги"><button class="rail-n" data-step="1">01</button><button class="rail-n" data-step="2">02</button><button class="rail-n" data-step="3">03</button><button class="rail-n" data-step="4">04</button><button class="rail-n" data-step="5">05</button><button class="rail-n" data-step="6">06</button><button class="rail-n" data-step="7">07</button><button class="rail-n" data-step="8">08</button><button class="rail-n" data-step="9">09</button><button class="rail-n" data-step="10">10</button></aside>
-<div class="story">
-      <section class="story-screen" id="step-1" data-step="1">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="1">
+  <!-- 5. Решение -->
+  <section class="screen" data-chapter="solution" id="solution">
+    <div class="wrap">
+      <p class="eyebrow o">Решение</p>
+      <h2>AI-First операционная модель вашего бизнеса</h2>
+      <p class="lead">Построена вокруг того, как ваш бизнес работает на самом деле</p>
+      <div class="rail-wrap">
+        <div class="rail">
+          <article class="out">
+            <span class="out-n">01</span>
+            <h3><i class="fa-solid fa-gauge-high"></i>Индекс ИИ-зрелости</h3>
+            <p>Где вы сейчас — и что вас тормозит</p>
+          </article>
+          <article class="out">
+            <span class="out-n">02</span>
+            <h3><i class="fa-solid fa-diagram-project"></i>Карта процессов</h3>
+            <p>Ваш бизнес, разложенный на процессы вашими же словами</p>
+          </article>
+          <article class="out">
+            <span class="out-n">03</span>
+            <h3><i class="fa-solid fa-brain"></i>Когнитивная карта</h3>
+            <p>Как люди думают, решают и используют знания</p>
+          </article>
+          <article class="out">
+            <span class="out-n">04</span>
+            <h3><i class="fa-solid fa-lightbulb"></i>Возможности ИИ</h3>
+            <p>Операции, которые ИИ может взять на себя, с потенциальным эффектом</p>
+          </article>
+          <article class="out">
+            <span class="out-n">05</span>
+            <h3><i class="fa-solid fa-people-arrows"></i>Человек + ИИ</h3>
+            <p>Кто что делает — человек или ИИ</p>
+          </article>
+          <article class="out">
+            <span class="out-n">06</span>
+            <h3><i class="fa-solid fa-wand-magic-sparkles"></i>AI-First модель</h3>
+            <p>Как ваш бизнес должен работать с ИИ</p>
+          </article>
+          <article class="out">
+            <span class="out-n">07</span>
+            <h3><i class="fa-solid fa-robot"></i>ИИ-агенты</h3>
+            <p>Что должен делать каждый агент и как он должен работать</p>
+          </article>
+          <article class="out">
+            <span class="out-n">08</span>
+            <h3><i class="fa-solid fa-route"></i>Дорожная карта</h3>
+            <p>Что внедрять — и в каком порядке</p>
+          </article></div>
+      </div>
+      <p class="rail-hint"><i class="fa-solid fa-arrows-left-right"></i> Листайте карточки</p>
+    </div>
+  </section>
+
+  <!-- 6. Как это работает -->
+  <section class="screen" data-chapter="process" id="process">
+    <div class="wrap center">
+      <p class="eyebrow">Как это работает</p>
+      <h2>От «нам нужен ИИ» до «вот что мы строим»</h2>
+      <p class="lead">Расскажите о бизнесе своими словами и получите ИИ-стратегию</p>
+    </div>
+  </section>
+
+      <section class="screen step-screen" data-chapter="process" data-step="1">
+        <div class="wrap step-wrap">
+          <article class="step-copy">
             <p class="step-n">01 &mdash; ИИ-зрелость</p>
             <h2>Понять, где вы сейчас</h2>
-            <p>35 вопросов по семи измерениям превращаются в индекс ИИ-зрелости — это бизнес-диагностика, а не тест. Видно, какое измерение тормозит компанию, ещё до того, как что-то перестраивать</p>
-            
+            <p>Оцените ИИ-зрелость и увидьте, что тормозит компанию</p>
           </article>
-          <div class="stage-card" data-step="1">
+          <div class="stage-card">
       <div class="ui">
-        <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>Диагностика ИИ-зрелости</div>
-        <div class="ui-body" style="display:grid; gap:1.2rem; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center;">
-          <div>
-            <svg class="radar" viewBox="0 0 200 200" role="img" aria-label="Диагностика ИИ-зрелости">
-              <polygon class="grid-l" points="100.0,73.6 119.1,82.8 123.8,103.4 110.6,120.0 89.4,120.0 76.2,103.4 80.9,82.8"/><polygon class="grid-l" points="100.0,49.2 138.2,67.5 147.6,108.9 121.2,142.0 78.8,142.0 52.4,108.9 61.8,67.5"/><polygon class="grid-l" points="100.0,24.0 157.9,51.9 172.1,114.5 132.1,164.7 67.9,164.7 27.9,114.5 42.1,51.9"/><line class="axis" x1="100" y1="98" x2="100.0" y2="24.0"/><line class="axis" x1="100" y1="98" x2="157.9" y2="51.9"/><line class="axis" x1="100" y1="98" x2="172.1" y2="114.5"/><line class="axis" x1="100" y1="98" x2="132.1" y2="164.7"/><line class="axis" x1="100" y1="98" x2="67.9" y2="164.7"/><line class="axis" x1="100" y1="98" x2="27.9" y2="114.5"/><line class="axis" x1="100" y1="98" x2="42.1" y2="51.9"/>
-              <polygon class="shape" points="100.0,52.1 122.0,80.5 139.7,107.1 114.1,127.3 91.0,116.7 63.9,106.2 73.4,76.8"/>
-              <circle class="weak" cx="91.00992892548419" cy="116.66807494293812" r="4"/>
-            </svg>
-          </div>
-          <div>
-            <div class="rows"><div class="row"><b>Стратегия</b><div class="meter" style="--v:62%; flex:1; max-width:7rem"><i></i></div></div><div class="row"><b>Данные</b><div class="meter" style="--v:38%; flex:1; max-width:7rem"><i></i></div></div><div class="row"><b>Технологии</b><div class="meter" style="--v:55%; flex:1; max-width:7rem"><i></i></div></div><div class="row"><b>Процессы</b><div class="meter" style="--v:44%; flex:1; max-width:7rem"><i></i></div></div><div class="row"><b>Люди</b><div class="meter" style="--v:28%; flex:1; max-width:7rem"><i></i></div></div><div class="row"><b>Управление</b><div class="meter" style="--v:50%; flex:1; max-width:7rem"><i></i></div></div><div class="row"><b>Культура</b><div class="meter" style="--v:46%; flex:1; max-width:7rem"><i></i></div></div></div>
-            <div class="idx"><b>2.4</b><span>/ 5 &middot; Индекс ИИ-зрелости</span></div>
-            <p class="muted" style="margin-top:.7rem">Самое слабое измерение: люди — навыки и роли для работы с ИИ</p>
-          </div>
+        <div class="ui-bar"><span class="ui-dot p"></span>Индекс ИИ-зрелости</div>
+        <div class="ui-body">
+          <div class="score"><b class="idx-val">2.4</b><span>/ 5 &middot; Индекс ИИ-зрелости</span></div>
+          <svg class="radar" viewBox="0 0 200 200" role="img" aria-label="Индекс ИИ-зрелости"><polygon class="grid-l" points="100.0,76.9 118.1,85.6 122.5,105.1 110.0,120.8 90.0,120.8 77.5,105.1 81.9,85.6"/><polygon class="grid-l" points="100.0,54.4 135.6,71.6 144.4,110.1 119.8,141.0 80.2,141.0 55.6,110.1 64.4,71.6"/><polygon class="grid-l" points="100.0,32.0 153.2,57.6 166.3,115.1 129.5,161.3 70.5,161.3 33.7,115.1 46.8,57.6"/><line class="axis" x1="100" y1="100" x2="100.0" y2="32.0"/><line class="axis" x1="100" y1="100" x2="153.2" y2="57.6"/><line class="axis" x1="100" y1="100" x2="166.3" y2="115.1"/><line class="axis" x1="100" y1="100" x2="129.5" y2="161.3"/><line class="axis" x1="100" y1="100" x2="70.5" y2="161.3"/><line class="axis" x1="100" y1="100" x2="33.7" y2="115.1"/><line class="axis" x1="100" y1="100" x2="46.8" y2="57.6"/><polygon class="shape" points="100.0,57.8 115.9,87.3 136.5,108.3 114.2,129.4 87.6,125.7 76.8,105.3 73.4,78.8"/><text x="100.0" y="18.0" text-anchor="middle">Стратегия</text><text x="166.5" y="50.0" text-anchor="start">Люди</text><text x="182.9" y="121.9" text-anchor="start">Инфраструктура</text><text x="136.9" y="179.6" text-anchor="start">Данные</text><text x="63.1" y="179.6" text-anchor="end">Модели</text><text x="17.1" y="121.9" text-anchor="end">Внедрение</text><text x="33.5" y="50.0" text-anchor="end">R&D</text></svg>
         </div>
       </div></div>
         </div>
       </section>
-      <section class="story-screen" id="step-2" data-step="2">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="2">
-            <p class="step-n">02 &mdash; Голосовой ввод</p>
+      <section class="screen step-screen" data-chapter="process" data-step="2">
+        <div class="wrap step-wrap">
+          <article class="step-copy">
+            <p class="step-n">02 &mdash; Голос</p>
             <h2>Просто расскажите</h2>
-            <p>Расскажите вслух и своими словами, как устроена компания. Расшифровка не остаётся текстом — слова превращаются в структурированные карточки процессов прямо у вас на глазах</p>
-            
+            <p>Расскажите, как работает бизнес. Мы превратим ваши слова в структурированные процессы. Подключите команду — сотрудники добавят детали</p>
           </article>
-          <div class="stage-card" data-step="2">
+          <div class="stage-card">
       <div class="ui">
-        <div class="ui-bar"><span class="ui-dot p"></span>Расскажите, как работает бизнес</div>
+        <div class="ui-bar"><span class="ui-dot p"></span>Ваши слова</div>
         <div class="ui-body">
-          <div class="wave"><span style="animation-delay:0.00s"></span><span style="animation-delay:0.08s"></span><span style="animation-delay:0.16s"></span><span style="animation-delay:0.24s"></span><span style="animation-delay:0.32s"></span><span style="animation-delay:0.40s"></span><span style="animation-delay:0.48s"></span><span style="animation-delay:0.56s"></span><span style="animation-delay:0.64s"></span><span style="animation-delay:0.72s"></span><span style="animation-delay:0.80s"></span><span style="animation-delay:0.88s"></span><span style="animation-delay:0.96s"></span><span style="animation-delay:1.04s"></span><span style="animation-delay:1.12s"></span><span style="animation-delay:1.20s"></span></div>
-          <p class="typing" style="margin:1rem 0 1.2rem">«Большинство заявок приходит с сайта, дальше менеджер квалифицирует их и назначает созвон…»<span class="caret"></span></p>
-          <div style="display:grid; gap:.5rem; grid-template-columns:repeat(3,1fr)">
-            <div class="node ai" data-seq style="justify-content:center"><i class="fa-solid fa-diagram-project"></i>Привлечение лидов</div><div class="node ai" data-seq style="justify-content:center"><i class="fa-solid fa-diagram-project"></i>Продажи</div><div class="node ai" data-seq style="justify-content:center"><i class="fa-solid fa-diagram-project"></i>Онбординг</div>
-          </div>
+          <div class="wave"><span style="animation-delay:0.00s"></span><span style="animation-delay:0.08s"></span><span style="animation-delay:0.16s"></span><span style="animation-delay:0.24s"></span><span style="animation-delay:0.32s"></span><span style="animation-delay:0.40s"></span><span style="animation-delay:0.48s"></span><span style="animation-delay:0.56s"></span><span style="animation-delay:0.64s"></span><span style="animation-delay:0.72s"></span><span style="animation-delay:0.80s"></span><span style="animation-delay:0.88s"></span><span style="animation-delay:0.96s"></span><span style="animation-delay:1.04s"></span><span style="animation-delay:1.12s"></span><span style="animation-delay:1.20s"></span><span style="animation-delay:1.28s"></span><span style="animation-delay:1.36s"></span></div>
+          <p class="typing">«Большинство заявок приходит с сайта, дальше менеджер квалифицирует их и назначает созвон…»<span class="caret"></span></p>
+          <div class="flow-row"><div class="node ai" data-seq><i class="fa-solid fa-diagram-project"></i>Привлечение лидов</div><div class="node ai" data-seq><i class="fa-solid fa-diagram-project"></i>Продажи</div><div class="node ai" data-seq><i class="fa-solid fa-diagram-project"></i>Онбординг</div></div>
         </div>
       </div></div>
         </div>
       </section>
-      <section class="story-screen" id="step-3" data-step="3">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="3">
-            <p class="step-n">03 &mdash; Поиск процессов</p>
-            <h2>Ваш бизнес, разложенный на процессы</h2>
-            <p>Система предлагает процессы, которые услышала: привлечение лидов, продажи, онбординг, поставка, поддержка, счета. Переименуйте, удалите, добавьте, поменяйте местами</p>
-            <p class="step-note">Последнее слово всегда за вами</p>
+      <section class="screen step-screen" data-chapter="process" data-step="3">
+        <div class="wrap step-wrap">
+          <article class="step-copy">
+            <p class="step-n">03 &mdash; Процессы</p>
+            <h2>Ваш бизнес как процессы</h2>
+            <p>Мы раскладываем услышанное на процессы</p>
           </article>
-          <div class="stage-card" data-step="3">
+          <div class="stage-card">
       <div class="ui">
-        <div class="ui-bar"><span class="ui-dot p"></span>Поиск процессов</div>
-        <div class="ui-body">
-          <div style="display:grid; gap:.5rem; grid-template-columns:repeat(2,1fr)"><div class="node" data-seq><i class="fa-solid fa-grip-vertical"></i>Привлечение лидов</div><div class="node" data-seq><i class="fa-solid fa-grip-vertical"></i>Продажи</div><div class="node" data-seq><i class="fa-solid fa-grip-vertical"></i>Онбординг клиента</div><div class="node" data-seq><i class="fa-solid fa-grip-vertical"></i>Поставка</div><div class="node" data-seq><i class="fa-solid fa-grip-vertical"></i>Поддержка</div><div class="node" data-seq><i class="fa-solid fa-grip-vertical"></i>Счета</div></div>
-          <div class="legend" style="margin-top:1rem">
-            <span><i class="fa-solid fa-pen"></i> Переименовать</span>
-            <span><i class="fa-solid fa-plus"></i> Добавить</span>
-            <span><i class="fa-solid fa-trash"></i> Удалить</span>
-            <span><i class="fa-solid fa-grip-vertical"></i> Поменять местами</span>
-          </div>
-        </div>
+        <div class="ui-bar"><span class="ui-dot o"></span>Ваш бизнес как процессы</div>
+        <div class="ui-body"><div class="pchain"><div class="pnode human linked" data-seq data-flip="o0"><i class="fa-solid fa-user"></i><span>Привлечение лидов</span></div><div class="pnode human linked" data-seq data-flip="o1"><i class="fa-solid fa-user"></i><span>Продажи</span></div><div class="pnode human linked" data-seq data-flip="o2"><i class="fa-solid fa-user"></i><span>Онбординг</span></div><div class="pnode human linked" data-seq data-flip="o3"><i class="fa-solid fa-user"></i><span>Поставка</span></div><div class="pnode human linked" data-seq data-flip="o4"><i class="fa-solid fa-user"></i><span>Поддержка</span></div><div class="pnode sys" data-seq><i class="fa-solid fa-database"></i><span>Счета</span></div></div></div>
       </div></div>
         </div>
       </section>
-      <section class="story-screen" id="step-4" data-step="4">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="4">
-            <p class="step-n">04 &mdash; Разбор процесса</p>
-            <h2>Один процесс раскрывается в реальные операции</h2>
-            <p>Выберите процесс — и он развернётся по шагам. Нажмите на операцию: вход, выход, роль, система, метод и метрика. Это тот уровень, на котором и принимаются решения об автоматизации</p>
-            
+      <section class="screen step-screen" data-chapter="process" data-step="4">
+        <div class="wrap step-wrap">
+          <article class="step-copy">
+            <p class="step-n">04 &mdash; Возможности</p>
+            <h2>Увидеть, что ИИ может автоматизировать</h2>
+            <p>Находим операции, посильные ИИ, по эффекту и сложности</p>
           </article>
-          <div class="stage-card" data-step="4">
-      <div class="ui">
-        <div class="ui-bar"><span class="ui-dot o"></span>Продажи · операции</div>
-        <div class="ui-body" style="display:grid; gap:1rem; grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)">
-          <div class="chain"><div class="node" data-seq><i class="fa-solid fa-circle-dot"></i>Пришёл лид</div><div class="arrow">&darr;</div><div class="node glow" data-seq><i class="fa-solid fa-circle-dot"></i>Квалификация</div><div class="arrow">&darr;</div><div class="node" data-seq><i class="fa-solid fa-circle-dot"></i>Встреча</div><div class="arrow">&darr;</div><div class="node" data-seq><i class="fa-solid fa-circle-dot"></i>Предложение</div><div class="arrow">&darr;</div><div class="node" data-seq><i class="fa-solid fa-circle-dot"></i>Переговоры</div><div class="arrow">&darr;</div><div class="node" data-seq><i class="fa-solid fa-circle-dot"></i>Сделка</div><div class="arrow">&darr;</div><div class="node" data-seq><i class="fa-solid fa-circle-dot"></i>Передача</div></div>
-          <div style="border-left:1px solid rgba(255,255,255,.08); padding-left:1rem">
-            <p class="muted" style="margin-bottom:.6rem; letter-spacing:.14em; text-transform:uppercase">Операция · квалификация</p>
-            <div class="rows"><div class="row"><b>Вход</b><span>Заявка + форма</span></div><div class="row"><b>Выход</b><span>Квалифицирован или отказ</span></div><div class="row"><b>Роль</b><span>Менеджер по продажам</span></div><div class="row"><b>Система</b><span>CRM</span></div><div class="row"><b>Метод</b><span>Звонок по чек-листу</span></div><div class="row"><b>Метрика</b><span>Доля квалификаций</span></div></div>
-          </div>
-        </div>
-      </div></div>
-        </div>
-      </section>
-      <section class="story-screen" id="step-5" data-step="5">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="5">
-            <p class="step-n">05 &mdash; Когнитивная разведка</p>
-            <h2>Процессы говорят, что делают люди. Когнитивная разведка — как они решают</h2>
-            <p>Для каждого человеческого решения система фиксирует, на что вы смотрите, какие критерии важны, что вы знаете из опыта, что происходит при нехватке информации и когда вы эскалируете</p>
-            <p class="step-note">Эти ответы становятся логикой решений — а позже рассуждением внутри вашего ИИ-агента</p>
-          </article>
-          <div class="stage-card" data-step="5">
-      <div class="ui">
-        <div class="ui-bar"><span class="ui-dot p"></span>Когнитивная разведка</div>
-        <div class="ui-body">
-          <div class="node human glow" style="justify-content:center; margin-bottom:1rem"><i class="fa-solid fa-user"></i>Решение человека · квалифицировать лид</div>
-          <div style="display:grid; gap:.45rem"><div class="chip" data-seq style="width:100%; justify-content:flex-start"><i class="fa-solid fa-circle-question"></i>На какую информацию вы смотрите?</div><div class="chip" data-seq style="width:100%; justify-content:flex-start"><i class="fa-solid fa-circle-question"></i>Какие критерии важны?</div><div class="chip" data-seq style="width:100%; justify-content:flex-start"><i class="fa-solid fa-circle-question"></i>Что вы знаете из опыта?</div><div class="chip" data-seq style="width:100%; justify-content:flex-start"><i class="fa-solid fa-circle-question"></i>Что делать, если данных не хватает?</div><div class="chip" data-seq style="width:100%; justify-content:flex-start"><i class="fa-solid fa-circle-question"></i>Когда вы эскалируете?</div></div>
-          <div class="arrow" style="text-align:center; margin:.7rem 0; color:rgba(255,255,255,.3)">&darr;</div>
-          <div class="node ai" data-seq style="justify-content:center"><i class="fa-solid fa-brain"></i>Логика решения</div>
-        </div>
-      </div></div>
-        </div>
-      </section>
-      <section class="story-screen" id="step-6" data-step="6">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="6">
-            <p class="step-n">06 &mdash; AS-IS</p>
-            <h2>Увидеть, как бизнес работает сегодня</h2>
-            <p>Процесс отдаляется в одну карту: люди, системы и документы читаются по-разному, а узкие места проявляются сами. Аналитично, без красной краски по всему экрану</p>
-            
-          </article>
-          <div class="stage-card" data-step="6">
-      <div class="ui">
-        <div class="ui-bar"><span class="ui-dot"></span>AS-IS · как работает сегодня</div>
-        <div class="ui-body">
-          <div class="map"><div class="node human" data-seq><i class="fa-solid fa-user"></i>Пришёл лид</div><div class="node sys" data-seq><i class="fa-solid fa-database"></i>CRM</div><div class="node human" data-seq><i class="fa-solid fa-user"></i>Квалификация</div><div class="node doc" data-seq><i class="fa-solid fa-file-lines"></i>Чек-лист</div><div class="node human" data-seq><i class="fa-solid fa-user"></i>Встреча</div><div class="node doc" data-seq><i class="fa-solid fa-file-lines"></i>Предложение</div><div class="node human" data-seq><i class="fa-solid fa-user"></i>Follow-up</div><div class="node sys" data-seq><i class="fa-solid fa-chart-line"></i>Отчётность</div></div>
-          <div class="legend">
-            <span><i style="background:#cbd5e1"></i>Люди</span>
-            <span><i style="background:var(--o)"></i>Системы</span>
-            <span><i style="background:rgba(255,255,255,.35)"></i>Документы</span>
-            <span><i style="background:var(--p)"></i>Узкое место</span>
-          </div>
-        </div>
-      </div></div>
-        </div>
-      </section>
-      <section class="story-screen" id="step-7" data-step="7">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="7">
-            <p class="step-n">07 &mdash; Возможности ИИ</p>
-            <h2>Увидеть, что ИИ может взять на себя</h2>
-            <p>Операции, посильные ИИ, начинают светиться — у каждой свой потенциальный эффект и сложность. Что автоматизировать, решаете вы: система лишь показывает, где это возможно</p>
-            
-          </article>
-          <div class="stage-card" data-step="7">
+          <div class="stage-card">
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>Возможности ИИ</div>
         <div class="ui-body">
-          <div class="map"><div class="node human" data-seq><i class="fa-solid fa-user"></i>Пришёл лид</div><div class="node sys glow" data-seq><i class="fa-solid fa-database"></i>Обновление CRM</div><div class="node human glow" data-seq><i class="fa-solid fa-user"></i>Квалификация</div><div class="node doc glow" data-seq><i class="fa-solid fa-file-lines"></i>Разбор документов</div><div class="node human" data-seq><i class="fa-solid fa-user"></i>Встреча</div><div class="node doc" data-seq><i class="fa-solid fa-file-lines"></i>Предложение</div><div class="node human glow" data-seq><i class="fa-solid fa-user"></i>Follow-up</div><div class="node sys glow" data-seq><i class="fa-solid fa-chart-line"></i>Отчётность</div></div>
-          <div style="display:flex; flex-wrap:wrap; gap:.4rem; margin-top:1rem">
-            <span class="chip p"><i class="fa-solid fa-bolt"></i>Эффект · высокий</span>
-            <span class="chip o"><i class="fa-solid fa-layer-group"></i>Сложность · средняя</span>
-            <span class="chip p" style="margin-left:auto"><i class="fa-solid fa-wand-magic-sparkles"></i>Автоматизировать</span>
+          <div class="opgrid"><div class="opnode" data-seq data-flip="o0"><i class="fa-solid fa-user"></i><span>Пришёл лид</span></div><div class="opnode can" data-seq><i class="fa-solid fa-wand-magic-sparkles"></i><span>Обновление CRM</span></div><div class="opnode can" data-seq><i class="fa-solid fa-wand-magic-sparkles"></i><span>Квалификация</span></div><div class="opnode can" data-seq><i class="fa-solid fa-wand-magic-sparkles"></i><span>Разбор документов</span></div><div class="opnode" data-seq data-flip="o1"><i class="fa-solid fa-user"></i><span>Встреча</span></div><div class="opnode" data-seq data-flip="o2"><i class="fa-solid fa-user"></i><span>Предложение</span></div><div class="opnode can" data-seq><i class="fa-solid fa-wand-magic-sparkles"></i><span>Follow-up</span></div><div class="opnode can" data-seq><i class="fa-solid fa-wand-magic-sparkles"></i><span>Отчётность</span></div></div>
+          <div class="chips"><span class="chip p"><i class="fa-solid fa-bolt"></i>Эффект · высокий</span>
+            <span class="chip o"><i class="fa-solid fa-layer-group"></i>Сложность · средняя</span></div>
+        </div>
+      </div></div>
+        </div>
+      </section>
+      <section class="screen step-screen" data-chapter="process" data-step="5">
+        <div class="wrap step-wrap">
+          <article class="step-copy">
+            <p class="step-n">05 &mdash; AI-First модель</p>
+            <h2>Увидеть, как бизнес должен работать с ИИ</h2>
+            <p>Мы перестраиваем процессы вокруг ИИ: исполнение уходит агентам, люди — к утверждению и надзору</p>
+          </article>
+          <div class="stage-card">
+      <div class="ui">
+        <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>AI-First модель</div>
+        <div class="ui-body">
+          <div class="fflow"><div class="frow"><div class="fnode human" data-seq data-flip="o0"><i class="fa-solid fa-user"></i><span>Лид</span></div><span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span><div class="fnode ai" data-seq><i class="fa-solid fa-robot"></i><span>ИИ-квалификация</span></div><span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span><div class="fnode human" data-seq data-flip="o1"><i class="fa-solid fa-user"></i><span>Встреча</span></div></div><span class="fwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span><div class="frow"><div class="fnode ai" data-seq><i class="fa-solid fa-robot"></i><span>ИИ-предложение</span></div><span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span><div class="fnode human" data-seq data-flip="o2"><i class="fa-solid fa-user"></i><span>Follow-up</span></div><span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span><div class="fnode ai" data-seq><i class="fa-solid fa-robot"></i><span>ИИ-отчётность</span></div></div></div>
+          <div class="legend">
+            <span><i style="background:var(--o)"></i>Люди</span>
+            <span><i style="background:var(--p)"></i>ИИ-агенты</span>
           </div>
         </div>
       </div></div>
         </div>
       </section>
-      <section class="story-screen" id="step-8" data-step="8">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="8">
-            <p class="step-n">08 &mdash; Человек + ИИ</p>
-            <h2>Решите роль человека до того, как перестраивать процесс</h2>
-            <p>Для каждой автоматизированной операции вы выбираете, как в ней остаётся человек: оператор, супервайзер, управляющий или соавтор. ИИ готовит черновик, человек утверждает — или наоборот</p>
-            
+      <section class="screen step-screen" data-chapter="process" data-step="6">
+        <div class="wrap step-wrap">
+          <article class="step-copy">
+            <p class="step-n">06 &mdash; ИИ-агенты</p>
+            <h2>Знать, что именно строить</h2>
+            <p>Каждый ИИ-агент превращается в готовую к сборке спецификацию</p>
           </article>
-          <div class="stage-card" data-step="8">
+          <div class="stage-card">
       <div class="ui">
-        <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>Человек + ИИ</div>
+        <div class="ui-bar"><span class="ui-dot p"></span>ИИ-агент</div>
         <div class="ui-body">
-          <div class="node ai" style="justify-content:center; margin-bottom:.9rem"><i class="fa-solid fa-robot"></i>Квалификация · автоматизирована</div>
-          <div style="display:grid; gap:.45rem; grid-template-columns:repeat(2,1fr)"><div class="chip" data-seq style="width:100%; justify-content:center">Оператор</div><div class="chip p" data-seq style="width:100%; justify-content:center">Супервайзер</div><div class="chip" data-seq style="width:100%; justify-content:center">Управляющий</div><div class="chip" data-seq style="width:100%; justify-content:center">Соавтор</div></div>
-          <div class="chain" style="margin-top:1rem">
-            <div class="node ai" data-seq><i class="fa-solid fa-robot"></i>ИИ квалифицирует лид</div>
-            <div class="arrow">&darr;</div>
-            <div class="node doc" data-seq><i class="fa-solid fa-file-lines"></i>Черновик саммари и оценка</div>
-            <div class="arrow">&darr;</div>
-            <div class="node human glow" data-seq><i class="fa-solid fa-user-check"></i>Супервайзер утверждает</div>
+          <div class="hub">
+            <div class="hub-core"><i class="fa-solid fa-robot"></i><b>ИИ-агент квалификации продаж</b></div>
+            <span class="spoke" data-seq style="left:50.0%; top:10.0%">Функции</span><span class="spoke" data-seq style="left:78.3%; top:21.7%">Входы</span><span class="spoke" data-seq style="left:90.0%; top:50.0%">Выходы</span><span class="spoke" data-seq style="left:78.3%; top:78.3%">Системы</span><span class="spoke" data-seq style="left:50.0%; top:90.0%">Правила</span><span class="spoke" data-seq style="left:21.7%; top:78.3%">Метрики</span><span class="spoke" data-seq style="left:10.0%; top:50.0%">Роль человека</span><span class="spoke" data-seq style="left:21.7%; top:21.7%">Инструкции</span>
           </div>
         </div>
       </div></div>
         </div>
       </section>
-      <section class="story-screen" id="step-9" data-step="9">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="9">
-            <p class="step-n">09 &mdash; TO-BE</p>
-            <h2>Увидеть, как тот же бизнес должен работать с ИИ</h2>
-            <p>Карта AS-IS перестраивается: часть операций исчезает, часть сливается, появляются ИИ-агенты, а люди уходят от исполнения к утверждению и надзору</p>
-            
-          </article>
-          <div class="stage-card" data-step="9">
-      <div class="ui" data-transform>
-        <div class="ui-bar">
-          <span class="ui-dot p"></span>
-          <span class="tag-asis">AS-IS</span><span style="color:rgba(255,255,255,.3)">&rarr;</span><span class="tag-tobe">TO-BE</span>
-        </div>
-        <div class="ui-body">
-          <div class="map"><div class="node human "><i class="fa-solid fa-user"></i>Пришёл лид</div><div class="node ai add "><i class="fa-solid fa-robot"></i>ИИ-квалификация</div><div class="node human drop "><i class="fa-solid fa-user"></i>Ручная квалификация</div><div class="node ai add "><i class="fa-solid fa-robot"></i>ИИ-разбор документов</div><div class="node human "><i class="fa-solid fa-user-check"></i>Встреча</div><div class="node ai add "><i class="fa-solid fa-robot"></i>ИИ-черновик предложения</div><div class="node human drop "><i class="fa-solid fa-user"></i>Ручной follow-up</div><div class="node ai add "><i class="fa-solid fa-chart-line"></i>ИИ-отчётность</div></div>
-          <p class="muted" style="margin-top:1rem">Операции сливаются, появляются ИИ-агенты, люди уходят к утверждению и надзору</p>
-        </div>
-      </div></div>
-        </div>
-      </section>
-      <section class="story-screen" id="step-10" data-step="10">
-        <div class="wrap">
-          <article class="story-step reveal" data-step="10">
-            <p class="step-n">10 &mdash; Паспорт ИИ-агента</p>
-            <h2>Уйти, точно зная, какой ИИ строить</h2>
-            <p>Каждый ИИ-узел раскрывается в спецификацию: функции, входы, выходы, системы, навыки, правила решений, метрики, роль человека и инструкции</p>
-            <p class="step-note">Не «нам нужен ИИ», а понятный первый агент к сборке</p>
-          </article>
-          <div class="stage-card" data-step="10">
-      <div class="ui">
-        <div class="ui-bar"><span class="ui-dot p"></span>Паспорт ИИ-агента</div>
-        <div class="ui-body">
-          <h3 style="margin-bottom:.9rem">ИИ-агент квалификации продаж</h3>
-          <div class="passport-row" data-seq><b>Функции</b><span>Квалифицирует входящие лиды, оценивает их, назначает созвон</span></div><div class="passport-row" data-seq><b>Входы</b><span>Форма, поведение на сайте, история в CRM</span></div><div class="passport-row" data-seq><b>Выходы</b><span>Оценка, саммари, следующий шаг</span></div><div class="passport-row" data-seq><b>Системы</b><span>CRM, календарь, почта</span></div><div class="passport-row" data-seq><b>Навыки</b><span>Извлечение данных, скоринг, текст</span></div><div class="passport-row" data-seq><b>Правила решений</b><span>Сняты с логики вашего же менеджера</span></div><div class="passport-row" data-seq><b>Метрики</b><span>Доля квалификаций, время ответа</span></div><div class="passport-row" data-seq><b>Роль человека</b><span>Супервайзер — утверждает спорные случаи</span></div><div class="passport-row" data-seq><b>Инструкции</b><span>Готовы к передаче разработчику или в Нейроний</span></div>
-        </div>
-      </div></div>
-        </div>
-      </section></div>
 
-<!-- ===== 8. Модель компании ===== -->
-<section class="sec" id="model">
-  <div class="wrap center">
-    <p class="eyebrow reveal">Модель компании</p>
-    <h2 class="reveal">От одного процесса к AI-First операционной модели</h2>
-    <p class="lead reveal" style="max-width:40rem; margin:1rem auto 0">Процессы перестают быть отдельными схемами: подразделения, люди, роли, системы, артефакты и ИИ-агенты собираются в одну карту компании</p>
-    <div class="model-map"><div class="node human reveal"><i class="fa-solid fa-building"></i>Подразделения</div><div class="node human reveal"><i class="fa-solid fa-users"></i>Люди</div><div class="node human reveal"><i class="fa-solid fa-id-badge"></i>Роли</div><div class="node sys reveal"><i class="fa-solid fa-diagram-project"></i>Процессы</div><div class="node sys reveal"><i class="fa-solid fa-database"></i>Системы</div><div class="node doc reveal"><i class="fa-solid fa-file-lines"></i>Артефакты</div><div class="node ai reveal"><i class="fa-solid fa-robot"></i>ИИ-агенты</div><div class="node ai reveal"><i class="fa-solid fa-sitemap"></i>AI-First модель</div></div>
-  </div>
-</section>
-
-<!-- ===== 9. Команда ===== -->
-<section class="sec" id="team">
-  <div class="wrap">
-    <p class="eyebrow o reveal">Команда</p>
-    <h2 class="reveal">Начните с себя. Потом подключите команду</h2>
-    <div class="team-split">
-      <div class="team-col p reveal from-l"><h3><i class="fa-solid fa-user-tie" style="margin-right:.5rem"></i>Основатель</h3><p>Владелец описывает компанию сверху вниз: чем занимается бизнес, откуда приходят деньги, что важно</p></div>
-      <div class="team-join reveal"><i class="fa-solid fa-arrows-left-right"></i></div>
-      <div class="team-col o reveal from-r"><h3><i class="fa-solid fa-users" style="margin-right:.5rem"></i>Сотрудники</h3><p>Сотрудники добавляют процессы, которые знают лучше всех — детали, которых сверху не видно</p></div>
+  <!-- 7. Обучение -->
+  <section class="screen" data-chapter="learning" id="learning">
+    <div class="wrap center">
+      <p class="eyebrow o">Обучение</p>
+      <h2>Новая бизнес-модель. Новые роли</h2>
+      <p class="lead">Бесплатное обучение помогает команде научиться работать с ИИ и собирать агентов самостоятельно</p>
+      <p class="l-note"><i class="fa-solid fa-circle-nodes"></i>Для более сложных задач — пишите в Andre AI Technologies</p>
     </div>
-    <p class="lead reveal" style="margin-top:1.6rem">AI Strategy сводит всё это в одну операционную модель</p>
-  </div>
-</section>
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-row"><span class="role"><i class="fa-solid fa-robot"></i>AI Automation Engineer</span><span class="role"><i class="fa-solid fa-cubes"></i>AI Product Engineer</span><span class="role"><i class="fa-solid fa-compass-drafting"></i>AI Product Manager</span><span class="role"><i class="fa-solid fa-microchip"></i>AI Engineer</span><span class="role"><i class="fa-solid fa-crown"></i>AI CEO</span><span class="role"><i class="fa-solid fa-screwdriver-wrench"></i>AI CTO</span><span class="role"><i class="fa-solid fa-brain"></i>CAIO</span><span class="role"><i class="fa-solid fa-rocket"></i>AI Founder</span><span class="role"><i class="fa-solid fa-database"></i>Data Engineer</span><span class="role"><i class="fa-solid fa-chart-simple"></i>Data Analyst</span><span class="role"><i class="fa-solid fa-flask"></i>Data Scientist</span><span class="role"><i class="fa-solid fa-diagram-project"></i>ML Engineer</span><span class="role"><i class="fa-solid fa-robot"></i>AI Automation Engineer</span><span class="role"><i class="fa-solid fa-cubes"></i>AI Product Engineer</span><span class="role"><i class="fa-solid fa-compass-drafting"></i>AI Product Manager</span><span class="role"><i class="fa-solid fa-microchip"></i>AI Engineer</span><span class="role"><i class="fa-solid fa-crown"></i>AI CEO</span><span class="role"><i class="fa-solid fa-screwdriver-wrench"></i>AI CTO</span><span class="role"><i class="fa-solid fa-brain"></i>CAIO</span><span class="role"><i class="fa-solid fa-rocket"></i>AI Founder</span><span class="role"><i class="fa-solid fa-database"></i>Data Engineer</span><span class="role"><i class="fa-solid fa-chart-simple"></i>Data Analyst</span><span class="role"><i class="fa-solid fa-flask"></i>Data Scientist</span><span class="role"><i class="fa-solid fa-diagram-project"></i>ML Engineer</span></div>
+    </div>
+  </section>
 
-<!-- ===== 10. Обучение ===== -->
-<section class="sec" id="learning">
-  <div class="wrap">
-    <p class="eyebrow reveal">Обучение</p>
-    <h2 class="reveal">Учитесь по ходу трансформации</h2>
-    <p class="lead reveal" style="max-width:42rem; margin-top:1rem">Бесплатное обучение встроено прямо в AI Strategy. Вы и ваша команда осваиваете новые роли и навыки работы в AI-First компании — в том числе то, как самим проектировать, собирать и вести ИИ-агентов</p>
-    <div class="learn-chain"><div class="learn-step reveal"><span>Дорожная карта</span><b>Собрать ИИ-агента поддержки</b><p class="muted">Пункт из вашей же стратегии, а не абстрактный курс</p></div><div class="learn-step reveal"><span>Обучение</span><b>Как собирать ИИ-агентов</b><p class="muted">Урок открывается ровно там, где он нужен по карте</p></div><div class="learn-step reveal"><span>Навык</span><b>Освоен</b><p class="muted">Навык остаётся в команде, а не в сертификате</p></div><div class="learn-step reveal"><span>Сборка</span><b>Агент в работе</b><p class="muted">И дорожная карта двигается на шаг вперёд</p></div></div>
-    <p class="reveal" style="margin-top:1.6rem; max-width:42rem">Цель не только в том, чтобы сказать, какие агенты нужны бизнесу. Цель — чтобы вы или ваша команда могли собрать их и вести самостоятельно. Если нужна дополнительная поддержка, можно работать напрямую с <strong>Andre AI Technologies</strong> по внедрению, консалтингу и более сложным проектам трансформации</p>
-  </div>
-</section>
+  <!-- 8. Тарифы -->
+  <section class="screen" data-chapter="pricing" id="pricing">
+    <div class="wrap">
+      <p class="eyebrow">Тарифы</p>
+      <h2>Начните бесплатно. Масштабируйте, когда нужно</h2>
+      <p class="lead">Разовая покупка. Без подписки</p>
+      <div class="plans">
+          <article class="plan">
+            
+            <h3>Бесплатно</h3>
+            <div class="plan-price">$0</div>
+            <div class="plan-scope">1 процесс</div>
+            <a class="btn btn-ghost btn-sm" href="https://strategy.andre.technology/" rel="noopener">Начать бесплатно <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="plan">
+            
+            <h3>Стартап</h3>
+            <div class="plan-price">$59</div>
+            <div class="plan-scope">60 операций</div>
+            <a class="btn btn-ghost btn-sm" href="https://strategy.andre.technology/" rel="noopener">Выбрать «Стартап» <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="plan">
+            
+            <h3>SMB</h3>
+            <div class="plan-price">$199</div>
+            <div class="plan-scope">300 операций</div>
+            <a class="btn btn-ghost btn-sm" href="https://strategy.andre.technology/" rel="noopener">Выбрать SMB <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="plan best">
+            <span class="plan-badge">Лучшее предложение</span>
+            <h3>Компания</h3>
+            <div class="plan-price">$499</div>
+            <div class="plan-scope">1 000 операций</div>
+            <a class="btn btn-primary btn-sm" href="https://strategy.andre.technology/" rel="noopener">Выбрать «Компанию» <i class="fa-solid fa-arrow-right"></i></a>
+          </article></div>
+      <p class="compare"><span class="cmp old">Консалтинговая компания — $100K+</span><i class="fa-solid fa-circle"></i><span class="cmp old">ИИ-консультант — $10K+</span><i class="fa-solid fa-circle"></i><span class="cmp now">Собрать ИИ-стратегию самому</span></p>
+    </div>
+  </section>
 
-<!-- ===== 11. Сколько стоит консалтинг ===== -->
-<section class="sec cost" id="cost">
-  <div class="wrap">
-    <p class="eyebrow o reveal">Цена ясности</p>
-    <h2 class="reveal" style="max-width:44rem">Чтобы понять, с чего начать, не нужен консалтинговый проект за сотни тысяч долларов</h2>
-    <div class="cost-cols"><div class="cost-col reveal"><h3>Классический консалтинг</h3><span class="cost-val">$500K+</span><p>Месяцы интервью, воркшопов, анализа и презентаций</p></div><div class="cost-col reveal"><h3>Консалтинг по ИИ-трансформации</h3><span class="cost-val">$2K–$50K</span><p>Типовые проекты по оценке готовности и ИИ-стратегии для малого и среднего бизнеса обычно укладываются в диапазон от нескольких тысяч до десятков тысяч долларов — в зависимости от объёма</p></div><div class="cost-col win reveal"><h3>AI Strategy</h3><span class="cost-val">От $59</span><p>Начните с одного процесса бесплатно. Соберите стратегию сами. Привлекайте людей-экспертов тогда, когда они действительно нужны</p></div></div>
-    <p class="foot-note reveal">Сама Ontora сейчас сравнивает проект уровня McKinsey за $500K+ примерно с $50K за свой подход на ИИ. Опубликованные в 2026 году гайды по ИИ-консалтингу для малого и среднего бизнеса обычно оценивают диагностику и стратегию в $2K–$25K — в зависимости от глубины и объёма</p>
-  </div>
-</section>
-
-<!-- ===== 12. Тарифы ===== -->
-<section class="sec" id="pricing">
-  <div class="wrap">
-    <p class="eyebrow reveal">Тарифы</p>
-    <h2 class="reveal">Начните с малого. Перестраивайте столько компании, сколько нужно</h2>
-    <div class="plans">
-        <article class="plan reveal">
-          
-          <h3>Бесплатно</h3>
-          <div class="plan-price">$0</div>
-          <div class="plan-scope">1 процесс</div>
-          <p>Пройдите всю методологию на реальном процессе вашего бизнеса</p>
-          <a class="btn btn-ghost btn-sm" href="https://strategy.andre.technology/">Начать бесплатно</a>
-          
-        </article>
-        <article class="plan reveal">
-          
-          <h3>Стартап</h3>
-          <div class="plan-price">$59</div>
-          <div class="plan-scope">60 операций</div>
-          <p>Для основателей и небольших команд</p>
-          <a class="btn btn-ghost btn-sm" href="https://strategy.andre.technology/">Выбрать «Стартап»</a>
-          
-        </article>
-        <article class="plan reveal">
-          
-          <h3>SMB</h3>
-          <div class="plan-price">$199</div>
-          <div class="plan-scope">300 операций</div>
-          <p>Для растущего бизнеса с несколькими функциями и процессами</p>
-          <a class="btn btn-ghost btn-sm" href="https://strategy.andre.technology/">Выбрать SMB</a>
-          
-        </article>
-        <article class="plan best reveal">
-          <span class="plan-badge">Лучшее предложение</span>
-          <h3>Компания</h3>
-          <div class="plan-price">$499</div>
-          <div class="plan-scope">1 000 операций</div>
-          <p>Для трансформации всей компании</p>
-          <a class="btn btn-primary btn-sm" href="https://strategy.andre.technology/">Выбрать «Компанию»</a>
-          <span class="plan-hint">Лучший выбор для полной трансформации</span>
-        </article></div>
-    <div class="pay-once reveal">
-      <h3>Разовая покупка. Без подписки</h3>
-      <p class="lead">Платите один раз за тот объём бизнеса, который хотите разобрать и перестроить</p>
-      <div class="acc reveal">
-        <button class="acc-btn" type="button">Что такое операция? <i class="fa-solid fa-plus"></i></button>
-        <div class="acc-body"><div class="acc-in"><div>
-          <div class="op-chain"><span>Пришёл лид</span><i class="fa-solid fa-arrow-right"></i><span>Квалификация</span><i class="fa-solid fa-arrow-right"></i><span>Назначить встречу</span><i class="fa-solid fa-arrow-right"></i><span>Встреча</span><i class="fa-solid fa-arrow-right"></i><span>Предложение</span><i class="fa-solid fa-arrow-right"></i><span>Переговоры</span><i class="fa-solid fa-arrow-right"></i><span>Сделка</span></div>
-          <p class="muted">Семь операций — это один небольшой процесс продаж</p>
-        </div></div></div>
+  <!-- 9. Финал -->
+  <section class="screen final" data-chapter="start" id="start">
+    <div class="wrap center">
+      <p class="eyebrow"><i class="fa-solid fa-arrow-right"></i>Начать бесплатно</p>
+      <h2 class="final-1">С чего начать внедрять ИИ?</h2>
+      <p class="final-2">Вам не обязательно это знать</p>
+      <h2 class="final-3">AI Strategy покажет</h2>
+      <a class="btn btn-primary final-cta" href="https://strategy.andre.technology/" rel="noopener">Начать ИИ-трансформацию бесплатно <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <footer>
+      <p class="company">Andre AI Technologies</p>
+      <div class="socials">
+        <a href="https://t.me/andre_dataist" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE"><i class="fa-brands fa-telegram"></i></a>
+        <a href="https://dataist.ai/" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3"><i class="fa-solid fa-globe"></i></a>
+        <a href="https://www.youtube.com/@andre_dataist" target="_blank" rel="noopener" aria-label="YouTube" style="--brand:#FF0000"><i class="fa-brands fa-youtube"></i></a>
+        <a href="https://www.linkedin.com/in/andre-kuzminykh/" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="mailto:admin@andre.technology" aria-label="Email" style="--brand:#F97316"><i class="fa-solid fa-envelope"></i></a>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== 13. Финал ===== -->
-<section class="final" id="start">
-  <div class="wrap">
-    <div class="final-lines">
-      <h2 class="final-line">С чего начать внедрять ИИ?</h2>
-      <p class="final-line quiet">Вам не обязательно это знать</p>
-      <h2 class="final-line hl-p">Для этого и нужен AI Strategy</h2>
-    </div>
-    <div class="flow"><span>Ваш бизнес сегодня</span><i class="fa-solid fa-arrow-right"></i><span>Понять</span><i class="fa-solid fa-arrow-right"></i><span>Перестроить</span><i class="fa-solid fa-arrow-right"></i><span>ИИ-агенты</span><i class="fa-solid fa-arrow-right"></i><span>AI-First</span></div>
-    <div class="final-list reveal"><div><i class="fa-solid fa-circle"></i><span>где вы находитесь сегодня</span></div><div><i class="fa-solid fa-circle"></i><span>что стоит менять</span></div><div><i class="fa-solid fa-circle"></i><span>что отдать ИИ</span></div><div><i class="fa-solid fa-circle"></i><span>что должно остаться за людьми</span></div><div><i class="fa-solid fa-circle"></i><span>каких ИИ-агентов создать</span></div><div><i class="fa-solid fa-circle"></i><span>и в каком порядке всё это внедрять</span></div></div>
-    <a class="btn btn-primary" href="https://strategy.andre.technology/" rel="noopener">Разобрать первый процесс бесплатно <i class="fa-solid fa-arrow-right"></i></a>
-  </div>
-</section>
+      <p class="legal"><a href="/">Политика конфиденциальности</a><span>&middot;</span><a href="/">Условия использования</a></p>
+      <p class="copy">2026 &copy; Andre AI Technologies LTD</p>
+    </footer>
+  </section>
 
 </main>
-
-<footer>
-  <div class="wrap foot-row">
-    <div class="socials">
-      <a href="https://t.me/andre_dataist" target="_blank" rel="noopener" aria-label="Telegram" style="--brand:#2AABEE"><i class="fa-brands fa-telegram"></i></a>
-      <a href="https://dataist.ai/" target="_blank" rel="noopener" aria-label="Website" style="--brand:#8854F3"><i class="fa-solid fa-globe"></i></a>
-      <a href="https://www.youtube.com/@andre_dataist" target="_blank" rel="noopener" aria-label="YouTube" style="--brand:#FF0000"><i class="fa-brands fa-youtube"></i></a>
-      <a href="https://www.linkedin.com/in/andre-kuzminykh/" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2"><i class="fa-brands fa-linkedin"></i></a>
-      <a href="mailto:admin@andre.technology" aria-label="Email" style="--brand:#F97316"><i class="fa-solid fa-envelope"></i></a>
-    </div>
-    <a class="copy" href="/">2026 &copy; Andre AI Technologies LTD</a>
-  </div>
-</footer>
 
 <script src="/assets/strategy.js"></script>
 </body>

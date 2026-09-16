@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-"""FR-SITE41 — лендинг Andre AI Strategy (/strategy/ и /strategy/ru/).
+"""FR-SITE41 — лендинг AI Strategy (/strategy/ и /strategy/ru/).
 
-Без зависимостей: `python3 tests/test_strategy.py` или через pytest.
+Страница листается экранами, как биография и главная. Без зависимостей:
+`python3 tests/test_strategy.py` или через pytest.
 """
 import os
 import re
@@ -26,7 +27,7 @@ def _pages():
     return (("en", _en()), ("ru", _ru()))
 
 
-# ── страницы, общая вёрстка и поведение ───────────────────────────────────
+# ── страницы, общая вёрстка, языки ────────────────────────────────────────
 
 def test_pages_and_shared_assets_exist():
     for rel in ("strategy/index.html", "strategy/ru/index.html",
@@ -55,60 +56,90 @@ def test_each_page_uses_its_own_video():
     assert 'src="/assets/Andre_AIT_video_compressed_ru.mp4"' in _ru()
 
 
-# ── FR-SITE41: голова слева на вебе, кружок ниже и на мобилке ────────────
+def test_language_is_stored_for_the_main_site():
+    assert "localStorage.setItem('ait_lang', lang)" in _read("assets/strategy.js")
+
+
+def test_pages_are_generated_not_hand_written():
+    """Править strategy/*.html руками нельзя — сборка перезапишет."""
+    for lang, html in _pages():
+        assert "tools/build_strategy.py" in html, lang + ": в шапке файла нет отметки о сборке"
+
+
+# ── FR-SITE41: лицо слева на полэкрана, кружок только на мобилке ──────────
 
 def test_face_is_always_half_the_screen_on_web():
-    """Правило владельца: слева всегда лицо на полэкрана, никакого кружка на вебе."""
     css = _read("assets/strategy.css")
-    assert "--head-w: 50vw;" in css, "лицо занимает половину экрана"
-    assert re.search(r"\.head \{ left: 0; top: 0; width: var\(--head-w\); height: 100dvh", css), \
-        "на вебе голова — колонка слева"
-    assert ".head.mini" not in css, "на вебе голова больше не сжимается в кружок"
-    assert "main, footer { margin-left: var(--head-w);" in css, "контент живёт в правой половине"
+    assert "--head-w: 50%;" in css, "лицо занимает половину экрана"
+    assert "50vw" not in css, "рамку страницы нельзя мерить в vw: body{zoom} их умножает"
+    assert ".head.mini" not in css, "на вебе голова не сжимается в кружок"
     mob = [b for b in re.findall(r"@media \(max-width:1023px\) \{.*?\n\}", css, re.S) if ".head {" in b]
     assert mob and "border-radius: 50%" in mob[0], "на мобилке голова — кружок"
-
-
-def test_page_scrolls_as_separate_screens():
-    """Не простыня: каждый раздел — отдельный экран с прилипанием прокрутки."""
-    css = _read("assets/strategy.css")
-    assert "scroll-snap-type: y proximity" in css, "у страницы включено прилипание"
-    assert ".sec, .hero, .final, .qs { scroll-snap-align: start; }" in css
-    assert ".story-screen { scroll-snap-align: start;" in css, "каждый шаг — свой экран"
-    for lang, html in _pages():
-        assert html.count('<section class="story-screen"') == 10, lang + ": десять экранов-шагов"
 
 
 def test_head_is_draggable_on_mobile_and_clickable():
     js = _read("assets/strategy.js")
     assert "pointerdown" in js and "pointermove" in js, "кружок на мобилке должен перетаскиваться"
     assert "if (mqDesk.matches) return;" in js, "на вебе лицо — колонка, двигать нечего"
-    assert "drag.moved < 6" in js, "короткое нажатие — это клик, а не перетаскивание"
     assert "ait_strategy_head" in js, "место кружка запоминается"
 
 
-# ── меню разделов, «назад», язык ──────────────────────────────────────────
+# ── лендинг листается экранами, как биография ─────────────────────────────
 
-SECTIONS = ["questions", "businesses", "deliverables", "process", "model", "learning", "pricing", "start"]
+SCREEN_IDS = ["top", "problem", "numbers", "usecases", "solution",
+              "process", "learning", "pricing", "start"]
 
 
-def test_menu_covers_product_sections():
+def test_landing_is_a_deck_of_screens():
+    """Не простыня и не scroll-snap: экраны сменяют друг друга анимацией."""
+    css = _read("assets/strategy.css")
+    assert "scroll-snap-type: y" not in css, "вертикальной прокрутки страницы нет — только смена экранов"
+    assert "scroll-snap-type: x mandatory" in css, "горизонтальная лента артефактов прилипает по-прежнему"
+    assert re.search(r"html, body \{.*?overflow: hidden", css, re.S), "страница сама не прокручивается"
+    assert ".screen.active { display: flex; }" in css
+    assert ".deck.leaving .screen.active" in css and ".deck.entering .screen.active" in css
+    assert "@keyframes slideInScreen" in css
     for lang, html in _pages():
-        for sec in SECTIONS:
-            assert 'data-go="%s"' % sec in html, "%s: в меню нет раздела %s" % (lang, sec)
-            assert 'id="%s"' % sec in html, "%s: нет секции %s" % (lang, sec)
-        assert html.count('class="nav-tab"') == len(SECTIONS), lang + ": в меню должно быть 8 разделов"
+        assert html.count('<section class="screen') == 15, lang + ": пятнадцать экранов"
+        for sid in SCREEN_IDS:
+            assert 'id="%s"' % sid in html, "%s: нет экрана %s" % (lang, sid)
 
 
-def test_back_arrow_sits_next_to_the_product_name():
-    """Правка владельца: у лого стрелки нет, она стоит рядом с «AI Strategy»."""
+def test_screens_switch_by_wheel_swipe_and_keys():
+    js = _read("assets/strategy.js")
+    for handler in ("'wheel'", "'touchstart'", "'touchend'", "'keydown'"):
+        assert js.count(handler), "нет обработчика " + handler
+    assert "innerScroll" in js, "внутри прокручиваемых лент колесо не перехватывается"
+    assert re.search(r"now - lastWheel < \d+", js), "один жест = один экран"
+
+
+def test_menu_lists_seven_product_chapters():
+    nav = ["problem", "usecases", "solution", "process", "learning", "pricing", "start"]
     for lang, html in _pages():
-        assert 'class="logo-btn" href="/"' in html, lang + ": лого ведёт на главную"
-        assert 'class="prod-name"' not in html, lang + ": у лого не пишем название продукта"
-        eyebrow = re.search(r'<p class="eyebrow hero-rise">(.*?)</p>', html, re.S).group(1)
-        assert 'id="back-btn"' in eyebrow, lang + ": стрелка «назад» — рядом с AI Strategy"
         header = html[html.index("<header>"):html.index("</header>")]
-        assert 'id="back-btn"' not in header, lang + ": в шапке стрелки быть не должно"
+        for key in nav:
+            assert 'data-go="%s"' % key in header, "%s: в меню нет раздела %s" % (lang, key)
+        assert header.count('class="nav-tab') == len(nav), lang + ": в меню семь разделов"
+    assert ">Use Cases<" in _en(), "раздел называется Use Cases, а не Businesses"
+    assert ">Problem<" in _en(), "раздел называется Problem, а не The problem"
+    assert ">Solution<" in _en(), "раздел называется Solution"
+
+
+def test_back_is_an_oval_pill_above_the_product_name():
+    """Правка владельца: «← BACK» — овал ОТДЕЛЬНОЙ строкой над «AI Strategy»."""
+    css = _read("assets/strategy.css")
+    back = re.search(r"\n\.back \{(.*?)\}", css, re.S).group(1)
+    assert "border-radius: 999px" in back, "кнопка «назад» — овал"
+    assert "display: flex" in back and "width: fit-content" in back, \
+        "овал занимает свою строку, а не встаёт рядом с надписью"
+    for lang, html in _pages():
+        top = html[html.index('id="top"'):html.index("</section>", html.index('id="top"'))]
+        b = top.index('id="back-btn"')
+        e = top.index('class="eyebrow"')
+        assert b < e, lang + ": овал «назад» стоит выше надписи AI Strategy"
+        header = html[html.index("<header>"):html.index("</header>")]
+        assert 'id="back-btn"' not in header, lang + ": в шапке стрелки нет"
+        assert 'class="prod-name"' not in html, lang + ": у лого не пишем название продукта"
 
 
 def test_header_matches_the_main_site():
@@ -118,44 +149,210 @@ def test_header_matches_the_main_site():
     for rule in ("width: clamp(2.85rem, 12vw, 3.7rem)",     # лого
                  "height: 2.85rem",                          # пилюля меню и кнопка
                  "font-size: 14px; font-weight: 500",        # пункты меню
-                 "padding: 0 1.4rem; font-size: 11.5px"):    # кнопка диагностики
+                 "padding: 0 1.4rem; font-size: 11.5px"):    # кнопка действия
         assert rule in css, "в шапке лендинга нет правила «%s» с главной" % rule
         assert rule in site or rule.replace("; ", ";\n") in site, "правило «%s» изменилось на главной" % rule
-    js = _read("assets/strategy.js")
-    assert "location.href = '/'" in js, "при прямом заходе «назад» ведёт на главную"
+    assert "location.href = '/'" in _read("assets/strategy.js"), \
+        "при прямом заходе «назад» ведёт на главную"
 
 
-def test_language_is_stored_for_the_main_site():
-    js = _read("assets/strategy.js")
-    assert "localStorage.setItem('ait_lang', lang)" in js
+def test_page_scales_like_the_main_site():
+    """Масштабирование body zoom — как на главной, чтобы вид совпадал."""
+    css = _read("assets/strategy.css")
+    site = _read("index.html")
+    for w in ("1600px", "1900px", "2300px"):
+        assert re.search(r"min-width: ?%s" % w, css), "нет ступени масштаба " + w
+        assert re.search(r"min-width: ?%s" % w, site), "ступень %s пропала на главной" % w
+    assert css.count("zoom:") >= 3, "масштаб задаётся через zoom, как на главной"
 
 
-# ── структура лендинга ───────────────────────────────────────────────────
+# ── первый экран ──────────────────────────────────────────────────────────
 
-def test_numbers_businesses_and_deliverables():
+def test_hero_headline_is_two_lines_with_orange_business():
     for lang, html in _pages():
-        assert html.count('class="num-val"') == 3, lang + ": три цифры рынка"
-        assert html.count('class="biz reveal"') == 8, lang + ": восемь карточек бизнесов"
+        h1 = re.search(r"<h1>(.*?)</h1>", html, re.S).group(1)
+        assert h1.count('<span class="l">') == 2, lang + ": заголовок ровно в две строки"
+        assert 'class="hl-o">' in h1, lang + ": «бизнес» — оранжевым"
+    assert "AI Strategy shows how to transform your business with AI" in _en()
+    assert 'class="hl-o">business<' in _en()
+    assert 'class="hl-o">бизнес' in _ru()
+
+
+def test_hero_has_two_buttons_of_equal_size():
+    css = _read("assets/strategy.css")
+    hero = re.search(r"\.hero-cta \.btn \{([^}]*)\}", css).group(1)
+    assert "width: 13.5rem" in hero and "flex: 0 0 13.5rem" in hero, \
+        "две кнопки первого экрана — ровно одного размера"
+    for lang, html in _pages():
+        hero = html[html.index('id="top"'):html.index("</section>", html.index('id="top"'))]
+        assert hero.count('class="btn btn-') == 2, lang + ": на первом экране ровно две кнопки"
+
+
+def test_buttons_do_not_move_on_hover():
+    """Правка владельца: кнопка не должна ездить под курсором."""
+    css, js = _read("assets/strategy.css"), _read("assets/strategy.js")
+    assert "magnetic" not in css and "magnetic" not in js, "магнитных кнопок быть не должно"
+    for m in re.finditer(r"\.btn[^{]*:hover \{([^}]*)\}", css):
+        assert "translate" not in m.group(1), "кнопка не смещается при наведении: " + m.group(1)
+
+
+# ── экран «Problem» и цифры рынка ─────────────────────────────────────────
+
+def test_six_questions_each_on_one_line_without_dots():
+    css = _read("assets/strategy.css")
+    q = re.search(r"\.q-item \{(.*?)\}", css, re.S).group(1)
+    assert "white-space: nowrap" in q, "каждый вопрос — в одну строку"
+    for lang, html in _pages():
+        items = re.findall(r'<li class="q-item">(.*?)</li>', html, re.S)
+        assert len(items) == 6, lang + ": шесть вопросов"
+        for it in items:
+            text = re.sub(r"<[^>]+>", "", it).strip()
+            assert not text.endswith("."), lang + ": точка в конце вопроса: " + text
+            assert "•" not in it and "list-style" not in it, lang + ": маркеров у вопросов нет"
+
+
+def test_market_numbers_are_four_squares_without_hover_jump():
+    css = _read("assets/strategy.css")
+    for m in re.finditer(r"\.num-card:hover \{([^}]*)\}", css):
+        assert "translate" not in m.group(1), "квадраты не прыгают при наведении"
+    for lang, html in _pages():
+        assert html.count('class="num-card"') == 4, lang + ": четыре квадрата рынка"
+        assert html.count('class="num-val"') == 4, lang + ": четыре цифры"
+        for v in ("76", "14", "81", "73"):
+            assert ">%s" % v in html, "%s: нет цифры %s" % (lang, v)
+        assert 'class="nums-foot"' in html, lang + ": оранжевая строка про конкурентов"
+    assert "Don’t let your competitors get ahead with AI" in _en()
+    assert "Anthropic" not in _en(), "сноску про Anthropic владелец просил убрать"
+
+
+# ── Use Cases ─────────────────────────────────────────────────────────────
+
+def test_use_cases_fit_one_screen_with_one_metric_each():
+    for lang, html in _pages():
+        assert html.count('class="biz"') == 8, lang + ": восемь карточек"
+        assert html.count('class="biz-metric"') == 8, lang + ": по одной метрике на карточку"
+        assert html.count('class="biz-ic"') == 8, lang + ": иконка слева от названия"
+        assert html.count('class="biz-go"') == 8, lang + ": «Explore» справа"
+        assert 'class="biz-all"' in html, lang + ": простая ссылка на все типы бизнеса"
+    css = _read("assets/strategy.css")
+    assert re.search(r"\.biz-grid \{[^}]*minmax\(0, ?1fr\)", css), "карточки не вылезают за экран"
+    assert ".rail-wrap::before" in css and ".rail-wrap::after" in css, \
+        "края ленты уходят в тёмный градиент"
+
+
+# ── Solution: восемь артефактов с новыми названиями ───────────────────────
+
+DELIVERABLES_EN = ["AI Maturity Index", "Process Map", "Cognitive Map", "AI Opportunities",
+                   "Human + AI", "AI-First Model", "AI Agents", "Roadmap"]
+
+
+def test_solution_cards_use_the_agreed_names():
+    en = _en()
+    assert en.count('class="out"') == 8, "восемь артефактов"
+    for name in DELIVERABLES_EN:
+        assert ">%s<" % name in en, "нет карточки «%s»" % name
+    for lang, html in _pages():
         assert html.count('class="out"') == 8, lang + ": восемь артефактов"
 
 
-def test_ten_steps_with_stages_and_rail():
+# ── How it works: шесть шагов и перелёт оранжевых блоков ──────────────────
+
+def test_six_steps_each_on_its_own_screen():
     for lang, html in _pages():
-        assert html.count('class="story-step reveal"') == 10, lang + ": десять шагов"
-        assert html.count('<div class="stage-card"') == 10, lang + ": десять сцен продукта"
-        assert html.count('class="rail-n"') == 10, lang + ": десять номеров в колонке"
-        for n in range(1, 11):
+        assert html.count('class="screen step-screen"') == 6, lang + ": шесть шагов"
+        assert html.count('<div class="stage-card"') == 6, lang + ": шесть сцен продукта"
+        for n in range(1, 7):
             assert 'data-step="%d"' % n in html, "%s: нет шага %d" % (lang, n)
-        assert "data-transform" in html, lang + ": шаг AS-IS → TO-BE должен перестраиваться"
+        assert 'data-step="7"' not in html, lang + ": шагов должно быть шесть, не больше"
 
 
-def test_pricing_has_four_plans_with_company_highlighted():
+def test_orange_blocks_fly_from_process_to_opportunities_to_ai_first():
+    """Правка владельца: оранжевые блоки перелетают AS-IS → AI Opportunity → AI-First."""
+    for lang, html in _pages():
+        keys = re.findall(r'data-flip="(o\d)"', html)
+        assert keys.count("o0") == 3 and keys.count("o1") == 3 and keys.count("o2") == 3, \
+            lang + ": три оранжевых блока связаны на всех трёх сценах"
+        for cls in ("pnode human linked", "opnode", "fnode human"):
+            assert re.search(r'class="%s" data-seq data-flip="o0"' % cls, html), \
+                "%s: нет связанного блока на сцене «%s»" % (lang, cls)
+    js = _read("assets/strategy.js")
+    assert "captureFlip" in js and "playFlip" in js, "перелёт блоков должен быть реализован"
+    assert "offsetIn" in js, "позиции считаются через offset, чтобы transform не мешал"
+    css = _read("assets/strategy.css")
+    assert ".deck.morph .screen.active .stage-card" in css, \
+        "во время перелёта карточка не въезжает заново"
+    assert ".deck.leaving.morph-out .screen.active { transform: none; }" in css, \
+        "уходящий экран при перелёте только гаснет"
+
+
+def test_people_are_orange_and_agents_are_purple():
+    css = _read("assets/strategy.css")
+    ORANGE, PURPLE = "249,115,22", "136,84,243"
+    assert re.search(r"\.pnode\.human \{[^}]*" + ORANGE, css), "люди в процессах — оранжевые"
+    assert re.search(r"\.fnode\.human \{[^}]*" + ORANGE, css), "люди в AI-First — оранжевые"
+    assert re.search(r"\.fnode\.ai \{[^}]*" + PURPLE, css), "агенты — фиолетовые"
+
+
+def test_maturity_scene_shows_score_above_the_radar():
+    for lang, html in _pages():
+        card = html[html.index('data-step="1"'):html.index('data-step="2"')]
+        assert card.index('class="score"') < card.index('class="radar"'), \
+            lang + ": оценка стоит над паутиной"
+    en = _en()
+    for dim in ("Strategy", "People", "Infrastructure", "Data", "Models", "Implementation", "R&D"):
+        assert ">%s<" % dim in en, "нет оси зрелости «%s»" % dim
+
+
+def test_agent_passport_fields_sit_around_the_agent():
+    """Иконка агента — в центре, поля вокруг (координаты считает сборщик)."""
+    for lang, html in _pages():
+        spokes = re.findall(r'<span class="spoke" data-seq style="left:([\d.]+)%; top:([\d.]+)%"', html)
+        assert len(spokes) == 8, lang + ": восемь полей паспорта агента"
+        assert len(set(spokes)) == 8, lang + ": поля не должны слипаться в центре"
+        assert 'class="hub-core"' in html, lang + ": агент в центре"
+
+
+def test_company_model_and_team_blocks_are_gone():
+    """Владелец просил убрать блоки модели компании и команды."""
+    for lang, html in _pages():
+        assert 'id="model"' not in html, lang + ": блок модели компании удалён"
+        assert 'id="team"' not in html, lang + ": блок команды удалён"
+
+
+# ── Learning ──────────────────────────────────────────────────────────────
+
+def test_learning_has_an_endless_roles_ticker():
+    css = _read("assets/strategy.css")
+    assert "@keyframes tick" in css and "translateX(-50%)" in css, "лента ролей крутится без конца"
+    for lang, html in _pages():
+        assert html.count('class="role"') == 24, lang + ": 12 ролей, продублированных для бесшовной ленты"
+        roles = html[html.index('class="ticker"'):]
+        assert roles.count("fa-solid") >= 24, lang + ": у каждой роли своя иконка"
+
+
+# ── Pricing ───────────────────────────────────────────────────────────────
+
+def test_pricing_is_one_block_with_strikethrough_comparison():
     for lang, html in _pages():
         assert html.count('<article class="plan') == 4, lang + ": четыре тарифа"
-        assert 'class="plan best reveal"' in html, lang + ": «Компания» выделена"
-        assert "$0" in html and "$59" in html and "$199" in html and "$499" in html, lang + ": цены по спеке"
-    assert "1,000 operations" in _en()
-    assert "1 000 операций" in _ru()
+        assert html.count('class="cmp old"') >= 1, lang + ": сравнение зачёркнуто"
+        assert "$0" in html and "$59" in html and "$199" in html and "$499" in html, lang
+        assert "What is an operation?" not in html and "Что такое операция?" not in html, \
+            lang + ": пояснение про операции владелец просил убрать"
+    css = _read("assets/strategy.css")
+    assert "text-decoration: line-through" in css, "старая цена зачёркнута"
+    assert re.search(r"\.plans \{[^}]*minmax\(0, ?1fr\)", css), "тарифы не вылезают за экран"
+
+
+# ── финал и подвал ────────────────────────────────────────────────────────
+
+def test_final_screen_carries_the_footer():
+    for lang, html in _pages():
+        final = html[html.index('id="start"'):]
+        assert "<footer" in final, lang + ": подвал живёт на последнем экране"
+        assert 'class="company"' in final, lang + ": название компании внизу"
+        assert "2026" in final, lang + ": копирайт внизу"
+        assert final.count("fa-") >= 3, lang + ": иконки соцсетей внизу"
 
 
 def test_cta_targets_the_product():
@@ -166,24 +363,15 @@ def test_cta_targets_the_product():
             assert h == "https://strategy.andre.technology/", lang + ": кнопка ведёт мимо продукта: " + h
 
 
-# ── правила спеки и владельца ────────────────────────────────────────────
-
-def test_no_scroll_jacking():
-    js = _read("assets/strategy.js")
-    assert "preventDefault" not in js.split("keydown")[0] or "wheel" not in js, \
-        "перехват прокрутки запрещён спекой"
-    assert "'wheel'" not in js and "touchmove" not in js, "никаких обработчиков колеса и тач-прокрутки"
-
+# ── общие правила спеки и владельца ───────────────────────────────────────
 
 def test_reduced_motion_is_respected():
-    css = _read("assets/strategy.css")
-    js = _read("assets/strategy.js")
+    css, js = _read("assets/strategy.css"), _read("assets/strategy.js")
     assert "@media (prefers-reduced-motion: reduce)" in css
     assert "prefers-reduced-motion: reduce" in js, "скрипт тоже должен уважать настройку"
 
 
 def test_headings_have_no_trailing_dots():
-    """Правило владельца: точек в конце строк нет."""
     for lang, html in _pages():
         for tag in ("h1", "h2", "h3"):
             for m in re.finditer(r"<%s[^>]*>(.*?)</%s>" % (tag, tag), html, re.S):
@@ -191,11 +379,7 @@ def test_headings_have_no_trailing_dots():
                 assert not text.endswith("."), "%s: точка в конце <%s>: %s" % (lang, tag, text[-40:])
 
 
-def test_copy_follows_the_no_guarantee_rule():
-    """Метрики — это то, на что целимся, а не обещанные проценты."""
-    assert "not as guaranteed improvement percentages" in _en()
-    assert "не как гарантированные проценты улучшения" in _ru()
-    # и не обещаем «замену McKinsey за $499»
+def test_copy_makes_no_guarantees():
     for lang, html in _pages():
         assert "replace McKinsey" not in html and "заменяем McKinsey" not in html, lang
 
@@ -211,5 +395,8 @@ if __name__ == "__main__":
             except AssertionError as e:
                 fails += 1
                 print("FAIL " + name + ": " + str(e))
+            except Exception as e:
+                fails += 1
+                print("ERR  " + name + ": " + type(e).__name__ + ": " + str(e))
     print("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if not fails else "ПРОВАЛЕНО: %d" % fails)
     sys.exit(1 if fails else 0)

@@ -1,10 +1,8 @@
 /* ============================================================
-   FR-SITE41 — поведение лендинга Andre AI Strategy.
-   Один скрипт на обе языковые версии: все тексты лежат в разметке,
-   язык страницы приходит из <html lang> (им же синхронизируем ait_lang).
-
-   Правило спеки: НИКАКОГО перехвата прокрутки. Всё, что «играет»,
-   привязано к обычному скроллу: листаешь быстрее — анимация идёт быстрее.
+   FR-SITE41 — поведение лендинга AI Strategy.
+   Листание экранами устроено так же, как в биографии: экраны сменяют друг
+   друга анимацией, один жест = один экран, колесо не перехватывается внутри
+   прокручиваемых лент. Все тексты — в разметке, скрипт общий на оба языка.
    ============================================================ */
 (function () {
   "use strict";
@@ -17,53 +15,224 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
-  /* ---------- шапка: фон появляется, когда ушли с первого экрана ---------- */
-  var header = $('header');
+  var deck = $('#deck');
+  var screens = $$('.screen');
+  var navTabs = $$('.nav-tab');
+  var nav = $('#nav');
+  var menuIcon = $('#menu-icon');
   var head = $('#head');
-  var progress = $('#progress');
+  var video = $('#head-video');
+  var dotsBox = $('#dots');
 
-  /* ---------- появление блоков каскадом (как на /about/) ---------- */
-  function countUp(el, delay) {
-    if (!el || reduce) return;
-    var m = /^(\D*)(\d+)([\s\S]*)$/.exec(el.textContent.trim());
-    if (!m) return;
-    var pre = m[1], target = parseInt(m[2], 10), post = m[3];
-    if (!isFinite(target) || target < 2) return;
-    var t0 = 0, dur = 1200;
-    setTimeout(function () {
-      requestAnimationFrame(function step(ts) {
+  /* ---------- точки-индикаторы ---------- */
+  var dots = screens.map(function (s, i) {
+    var b = document.createElement('button');
+    b.className = 'dot';
+    b.type = 'button';
+    b.setAttribute('aria-label', String(i + 1));
+    b.addEventListener('click', function () { go(i); });
+    dotsBox.appendChild(b);
+    return b;
+  });
+
+  /* ---------- перелёт оранжевых блоков между шагами 03 → 04 → 05 ----------
+     Считаем позиции через offsetLeft/offsetTop: смещения не зависят от transform,
+     которым экран въезжает, поэтому FLIP получается точным. Ключ data-flip="oN"
+     нумерует оранжевые (человеческие) блоки по порядку внутри каждой сцены. */
+  var FLIP_MS = 760;
+  var FLIP_EASE = 'cubic-bezier(0.65, 0.02, 0.25, 1)';
+  function offsetIn(el, root) {
+    var x = 0, y = 0, n = el;
+    while (n && n !== root) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+    return { x: x, y: y, w: el.offsetWidth, h: el.offsetHeight };
+  }
+  function captureFlip(screen) {
+    if (!screen || !screen.classList.contains('step-screen')) return null;
+    var map = null;
+    $$('[data-flip]', screen).forEach(function (el) {
+      (map = map || {})[el.getAttribute('data-flip')] = offsetIn(el, screen);
+    });
+    return map;
+  }
+  function playFlip(screen, from) {
+    if (!from || !screen || !screen.classList.contains('step-screen')) return false;
+    var moved = [];
+    $$('[data-flip]', screen).forEach(function (el) {
+      var was = from[el.getAttribute('data-flip')];
+      if (!was) return;
+      var now = offsetIn(el, screen);
+      var dx = was.x - now.x, dy = was.y - now.y;
+      var sx = now.w ? was.w / now.w : 1, sy = now.h ? was.h / now.h : 1;
+      if (Math.abs(dx) < 2 && Math.abs(dy) < 2 && Math.abs(sx - 1) < 0.02 && Math.abs(sy - 1) < 0.02) return;
+      el.style.transition = 'none';
+      el.style.opacity = '1';
+      el.style.transformOrigin = 'top left';
+      el.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) scale(' +
+        sx.toFixed(3) + ',' + sy.toFixed(3) + ')';
+      el.style.zIndex = '3';
+      el.classList.add('flying');
+      moved.push(el);
+    });
+    if (!moved.length) return false;
+    deck.classList.add('morph');
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        moved.forEach(function (el) {
+          el.style.transition = 'transform ' + FLIP_MS + 'ms ' + FLIP_EASE;
+          el.style.transform = '';
+        });
+      });
+    });
+    clearTimeout(flipT);
+    flipT = setTimeout(function () {
+      deck.classList.remove('morph');
+      moved.forEach(function (el) {
+        el.classList.remove('flying');
+        el.style.transition = el.style.transform = el.style.transformOrigin = '';
+        el.style.opacity = el.style.zIndex = '';
+      });
+    }, FLIP_MS + 120);
+    return true;
+  }
+
+  /* ---------- переключение экранов ---------- */
+  var cur = 0, swapT, enterT, flipT, busy = false;
+  function paint() {
+    screens.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    var chapter = screens[cur].getAttribute('data-chapter');
+    navTabs.forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-go') === chapter); });
+    dots.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
+    screens[cur].scrollTop = 0;
+    countUpIn(screens[cur]);
+  }
+  function go(i) {
+    if (i < 0 || i >= screens.length || i === cur || busy) return;
+    closeMenu();
+    busy = true;
+    clearTimeout(swapT); clearTimeout(enterT);
+    if (reduce) { cur = i; paint(); busy = false; return; }
+    /* соседние шаги процесса связаны перелётом блоков, а не сменой экрана */
+    var from = Math.abs(i - cur) === 1 && screens[i].classList.contains('step-screen')
+      ? captureFlip(screens[cur]) : null;
+    deck.classList.add('leaving');
+    if (from) deck.classList.add('morph-out');
+    swapT = setTimeout(function () {
+      cur = i;
+      paint();
+      deck.classList.remove('leaving');
+      deck.classList.remove('morph-out');
+      if (!playFlip(screens[cur], from)) deck.classList.add('entering');
+      enterT = setTimeout(function () { deck.classList.remove('entering'); busy = false; }, 520);
+    }, 240);
+  }
+  function step(dir) { go(cur + dir); }
+  function goChapter(key) {
+    for (var i = 0; i < screens.length; i++) {
+      if (screens[i].getAttribute('data-chapter') === key) { go(i); return; }
+    }
+  }
+
+  /* цифры набегают один раз, когда экран показан */
+  function countUpIn(screen) {
+    if (reduce) return;
+    $$('.num-val, .idx-val', screen).forEach(function (el) {
+      if (el.dataset.done) return;
+      var m = /^(\D*)([\d.]+)([\s\S]*)$/.exec(el.textContent.trim());
+      if (!m) return;
+      var pre = m[1], target = parseFloat(m[2]), post = m[3];
+      var decimals = (m[2].split('.')[1] || '').length;
+      if (!isFinite(target) || target < 2) return;
+      el.dataset.done = '1';
+      var t0 = 0, dur = 1100;
+      requestAnimationFrame(function tick(ts) {
         if (!t0) t0 = ts;
         var p = Math.min(1, (ts - t0) / dur);
-        el.textContent = pre + Math.round(target * (1 - Math.pow(1 - p, 3))) + post;
-        if (p < 1) requestAnimationFrame(step);
+        el.textContent = pre + (target * (1 - Math.pow(1 - p, 3))).toFixed(decimals) + post;
+        if (p < 1) requestAnimationFrame(tick);
       });
-    }, delay + 140);
+    });
   }
 
-  function reveal(el, delay) {
-    if (delay) el.style.setProperty('--d', delay + 'ms');
-    el.classList.add('in');
-    var num = el.querySelector('.num-val');
-    if (num) countUp(num, delay);
-    setTimeout(function () { el.style.removeProperty('--d'); el.classList.add('done'); }, 760 + delay);
+  /* ---------- колесо, свайп, клавиши ---------- */
+  function innerScroll(node, horizontal) {
+    while (node && node !== document.body) {
+      if (node.nodeType === 1) {
+        var span = horizontal ? (node.scrollWidth - node.clientWidth) : (node.scrollHeight - node.clientHeight);
+        if (span > 4) {
+          var ov = getComputedStyle(node)[horizontal ? 'overflowX' : 'overflowY'];
+          if (ov === 'auto' || ov === 'scroll') return node;
+        }
+      }
+      node = node.parentElement;
+    }
+    return null;
   }
+  var lastWheel = 0;
+  window.addEventListener('wheel', function (e) {
+    if (nav.classList.contains('open')) return;
+    var sc = innerScroll(e.target, false);
+    if (sc) {
+      var canDown = sc.scrollTop + sc.clientHeight < sc.scrollHeight - 2;
+      var canUp = sc.scrollTop > 2;
+      if ((e.deltaY > 0 && canDown) || (e.deltaY < 0 && canUp)) return;
+    }
+    if (Math.abs(e.deltaY) < 30) return;
+    var now = Date.now();
+    if (now - lastWheel < 900) return;    /* один жест = один экран */
+    lastWheel = now;
+    step(e.deltaY > 0 ? 1 : -1);
+  }, { passive: true });
 
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.filter(function (e) { return e.isIntersecting; })
-        .sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; })
-        .forEach(function (e, i) {
-          io.unobserve(e.target);
-          reveal(e.target, reduce ? 0 : Math.min(i, 5) * 60);
-        });
-    }, { rootMargin: '0px 0px -4% 0px', threshold: 0.01 });
-    $$('.reveal').forEach(function (el) { io.observe(el); });
-  } else {
-    $$('.reveal').forEach(function (el) { el.classList.add('in', 'done'); });
-  }
+  var ty = null, tx = null, lastSwipe = 0;
+  window.addEventListener('touchstart', function (e) {
+    if (e.touches && e.touches[0]) { ty = e.touches[0].clientY; tx = e.touches[0].clientX; }
+  }, { passive: true });
+  window.addEventListener('touchend', function (e) {
+    if (nav.classList.contains('open') || ty == null) return;
+    var t = e.changedTouches && e.changedTouches[0];
+    if (!t) return;
+    var dy = t.clientY - ty, dx = t.clientX - tx;
+    if (Math.abs(dy) < 45 || Math.abs(dx) > Math.abs(dy)) return;
+    var sc = innerScroll(e.target, false);
+    if (sc) {
+      var canDown = sc.scrollTop + sc.clientHeight < sc.scrollHeight - 2;
+      var canUp = sc.scrollTop > 2;
+      if ((dy < 0 && canDown) || (dy > 0 && canUp)) return;
+    }
+    var now = Date.now();
+    if (now - lastSwipe < 700) return;
+    lastSwipe = now;
+    step(dy < 0 ? 1 : -1);
+  }, { passive: true });
 
-  /* ---------- Голова: на вебе всегда колонка, на мобилке кружок ---------- */
-  var video = $('#head-video');
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeMenu(); return; }
+    if (nav.classList.contains('open')) return;
+    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); step(1); }
+    else if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); step(-1); }
+    else if (e.key === 'Home') { go(0); }
+    else if (e.key === 'End') { go(screens.length - 1); }
+  });
+
+  /* ---------- меню ---------- */
+  function openMenu() { nav.classList.add('open'); menuIcon.className = 'fa-solid fa-xmark'; }
+  function closeMenu() { nav.classList.remove('open'); menuIcon.className = 'fa-solid fa-bars'; }
+  $('#menu-btn').addEventListener('click', function () {
+    nav.classList.contains('open') ? closeMenu() : openMenu();
+  });
+  var navClose = $('#nav-close');
+  if (navClose) navClose.addEventListener('click', closeMenu);
+  $$('[data-go]').forEach(function (el) {
+    el.addEventListener('click', function () { goChapter(el.getAttribute('data-go')); });
+  });
+
+  /* ---------- «Назад» ---------- */
+  var back = $('#back-btn');
+  if (back) back.addEventListener('click', function () {
+    if (document.referrer && history.length > 1) history.back(); else location.href = '/';
+  });
+
+  /* ---------- лицо: звук по клику; на мобилке кружок ещё и перетаскивается ---------- */
   function setPlaying(on) {
     if (!video) return;
     video.muted = !on;
@@ -73,10 +242,6 @@
     var p = video.play && video.play();
     if (p && p.catch) p.catch(function () {});
   }
-  /* Кружок перетаскивается только на мобилке (как на страницах лекций): там он
-     накрывает часть текста, и правило владельца — «пусть двигают куда хотят».
-     На вебе лицо — колонка на полэкрана, двигать нечего.
-     Клик от перетаскивания отличаем по пройденному пути. */
   var POS_KEY = 'ait_strategy_head';
   var drag = null;
   function applyPos(p) {
@@ -92,7 +257,6 @@
       var r = head.getBoundingClientRect();
       drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: 0, w: r.width, h: r.height };
       head.setPointerCapture(e.pointerId);
-      head.style.transition = 'none';
     });
     head.addEventListener('pointermove', function (e) {
       if (!drag) return;
@@ -102,216 +266,18 @@
       applyPos({ x: x, y: y });
       drag.last = { x: x, y: y };
     });
-    head.addEventListener('pointerup', function (e) {
-      head.style.transition = '';
-      if (drag && drag.moved < 6) setPlaying(video.muted);          /* это был клик */
+    head.addEventListener('pointerup', function () {
+      if (drag && drag.moved < 6) setPlaying(video.muted);
       else if (drag && drag.last) { try { localStorage.setItem(POS_KEY, JSON.stringify(drag.last)); } catch (err) {} }
       drag = null;
     });
+    head.addEventListener('click', function () { if (mqDesk.matches) setPlaying(video.muted); });
     head.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPlaying(video.muted); }
     });
   }
-
-  /* ---------- Секция вопросов: свой экран, кадры сменяются сами ----------
-     Раньше кадр выбирался положением скролла (секция была 320vh). Теперь
-     раздел — обычный экран, поэтому последовательность играет, пока экран
-     виден, и останавливается, когда его пролистали. */
-  var qs = $('#questions');
-  var qItems = $$('.q-item');
-  var qDots = $$('.qs-dot');
-  var qFinal = $('.qs-final');
-  var qHead = $('.qs-head');
-  var qTimer = null, qIdx = -1;
-  function qShow(i) {
-    qItems.forEach(function (el, n) {
-      el.classList.toggle('on', n === i);
-      el.classList.toggle('gone', n < i);
-    });
-    qDots.forEach(function (d, n) { d.classList.toggle('on', n <= i); });
-    if (qHead) {
-      var away = i >= 0;
-      qHead.style.opacity = away ? 0 : 1;
-      qHead.style.transform = away ? 'translateY(-18px)' : 'none';
-    }
-  }
-  function qStep() {
-    qIdx++;
-    if (qIdx < qItems.length) { qShow(qIdx); qTimer = setTimeout(qStep, 1400); return; }
-    qItems.forEach(function (el) { el.classList.add('gone'); el.classList.remove('on'); });
-    if (qFinal) qFinal.classList.add('on');
-    qDots.forEach(function (d) { d.classList.add('on'); });
-  }
-  function qPlay() {
-    if (qTimer || (qFinal && qFinal.classList.contains('on'))) return;
-    if (reduce) { qShow(qItems.length - 1); qStep(); return; }
-    qIdx = -1;
-    qTimer = setTimeout(qStep, 600);
-  }
-  function qStop() { clearTimeout(qTimer); qTimer = null; }
-  if (qs && 'IntersectionObserver' in window) {
-    new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting) qPlay(); else qStop(); });
-    }, { threshold: 0.35 }).observe(qs);
-  }
-
-  /* ---------- Обещание: понятия появляются и схлопываются в один узел ---------- */
-  var orbit = $('#orbit');
-  var chips = $$('.orbit-chip');
-  if (orbit && chips.length) {
-    /* раскладываем по кругу один раз: в разметке только тексты */
-    chips.forEach(function (c, i) {
-      var a = (-Math.PI / 2) + (i / chips.length) * Math.PI * 2;
-      c.style.left = (50 + Math.cos(a) * 36) + '%';
-      c.style.top = (50 + Math.sin(a) * 38) + '%';
-    });
-  }
-  function tickOrbit() {
-    if (!orbit) return;
-    var r = orbit.getBoundingClientRect();
-    var vh = window.innerHeight;
-    var p = 1 - (r.top - vh * 0.25) / (vh * 0.7);
-    chips.forEach(function (c, i) { c.classList.toggle('on', p > 0.12 + i * 0.07); });
-    orbit.classList.toggle('collapsed', p > 0.95);
-  }
-
-  /* ---------- 10 шагов: у каждого свой экран ---------- */
-  var storyScreens = $$('.story-screen');
-  var stages = $$('.stage-card');
-  var railNs = $$('.rail-n');
-  function playStage(stage) {
-    if (!stage) return;
-    stage.classList.add('on');
-    if (reduce) return;
-    $$('[data-seq]', stage).forEach(function (el, i) {
-      el.style.transitionDelay = (i * 110) + 'ms';
-      el.style.animationDelay = (i * 110) + 'ms';
-    });
-    var morph = stage.querySelector('[data-transform]');
-    if (morph) {
-      clearTimeout(stage._t);
-      morph.classList.remove('to-be');
-      stage._t = setTimeout(function () { morph.classList.add('to-be'); }, 1500);
-    }
-  }
-  function markStep(n) {
-    railNs.forEach(function (b) { b.classList.toggle('on', +b.getAttribute('data-step') === n); });
-  }
-  if (storyScreens.length && 'IntersectionObserver' in window) {
-    var sio = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        var n = +e.target.getAttribute('data-step');
-        markStep(n);
-        playStage(e.target.querySelector('.stage-card'));
-      });
-    }, { threshold: 0.4 });
-    storyScreens.forEach(function (s) { sio.observe(s); });
-  } else {
-    stages.forEach(function (s) { s.classList.add('on'); });
-  }
-  railNs.forEach(function (b) {
-    b.addEventListener('click', function () {
-      var t = document.getElementById('step-' + b.getAttribute('data-step'));
-      if (t) t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-    });
-  });
-  /* полоса с номерами показывается только пока идут шаги */
-  function tickStoryRail() {
-    if (!storyScreens.length) return;
-    var first = storyScreens[0].getBoundingClientRect();
-    var last = storyScreens[storyScreens.length - 1].getBoundingClientRect();
-    document.body.classList.toggle('in-story', first.top < window.innerHeight * 0.5 && last.bottom > window.innerHeight * 0.5);
-  }
-
-  /* ---------- Финальный экран: строки выходят по очереди ---------- */
-  var finalSec = $('#start');
-  var finalLines = $$('.final-line');
-  var flowItems = $$('.flow span');
-  function tickFinal() {
-    if (!finalSec) return;
-    var r = finalSec.getBoundingClientRect();
-    var p = 1 - (r.top - window.innerHeight * 0.1) / (window.innerHeight * 0.75);
-    finalLines.forEach(function (l, i) { l.classList.toggle('on', p > 0.1 + i * 0.16); });
-    flowItems.forEach(function (f, i) { f.classList.toggle('on', p > 0.55 + i * 0.05); });
-  }
-
-  /* ---------- активный пункт меню ---------- */
-  var navTabs = $$('.nav-tab');
-  var sections = navTabs.map(function (t) { return document.getElementById(t.getAttribute('data-go')); });
-  function tickNav() {
-    var best = 0, bestTop = -Infinity;
-    sections.forEach(function (s, i) {
-      if (!s) return;
-      var top = s.getBoundingClientRect().top - window.innerHeight * 0.3;
-      if (top <= 0 && top > bestTop) { bestTop = top; best = i; }
-    });
-    navTabs.forEach(function (t, i) { t.classList.toggle('active', i === best); });
-  }
-
-  /* ---------- общий тик прокрутки ---------- */
-  var pending = false;
-  function onScroll() {
-    pending = false;
-    var doc = document.documentElement;
-    var max = doc.scrollHeight - window.innerHeight;
-    var y = window.pageYOffset || doc.scrollTop;
-    if (progress) progress.style.width = (max > 0 ? Math.min(100, (y / max) * 100) : 0) + '%';
-    if (header) header.classList.toggle('solid', y > window.innerHeight * 0.75);
-    tickOrbit();
-    tickStoryRail();
-    tickFinal();
-    tickNav();
-  }
-  function queue() { if (!pending) { pending = true; requestAnimationFrame(onScroll); } }
-  window.addEventListener('scroll', queue, { passive: true });
-  window.addEventListener('resize', queue);
-
-  /* ---------- меню, «назад», аккордеон, магнитные кнопки ---------- */
-  var nav = $('#nav');
-  var menuIcon = $('#menu-icon');
-  function closeMenu() { nav.classList.remove('open'); menuIcon.className = 'fa-solid fa-bars'; document.body.style.overflow = ''; }
-  $('#menu-btn').addEventListener('click', function () {
-    var open = nav.classList.toggle('open');
-    menuIcon.className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
-    document.body.style.overflow = open ? 'hidden' : '';
-  });
-  var navClose = $('#nav-close');
-  if (navClose) navClose.addEventListener('click', closeMenu);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
-  navTabs.forEach(function (t) {
-    t.addEventListener('click', function () {
-      var el = document.getElementById(t.getAttribute('data-go'));
-      closeMenu();
-      if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-    });
-  });
-  $$('[data-go-hero]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var el = document.getElementById(b.getAttribute('data-go-hero'));
-      if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-    });
-  });
-
-  var back = $('#back-btn');
-  if (back) back.addEventListener('click', function () {
-    if (document.referrer && history.length > 1) history.back(); else location.href = '/';
-  });
-  $$('.acc-btn').forEach(function (b) {
-    b.addEventListener('click', function () { b.parentElement.classList.toggle('open'); });
-  });
-  /* лёгкая «магнитность» кнопок — только на вебе и только с мышью */
-  if (mqDesk.matches && !reduce && matchMedia('(hover:hover)').matches) {
-    $$('.btn-primary').forEach(function (b) {
-      b.addEventListener('mousemove', function (e) {
-        var r = b.getBoundingClientRect();
-        b.style.transform = 'translate(' + ((e.clientX - r.left - r.width / 2) * 0.12).toFixed(1) + 'px,' +
-                            ((e.clientY - r.top - r.height / 2) * 0.18).toFixed(1) + 'px)';
-      });
-      b.addEventListener('mouseleave', function () { b.style.transform = ''; });
-    });
-  }
-
+  setPlaying(false);
   if (!mqDesk.matches) applyPos(savedPos());
-  onScroll();
+
+  paint();
 })();

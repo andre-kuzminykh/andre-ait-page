@@ -274,6 +274,27 @@ def test_top_fade_covers_text_under_the_header():
         assert '<div class="top-fade" aria-hidden="true"></div>' in html, lang
 
 
+def test_density_steps_survive_the_main_site_zoom():
+    """body{zoom} главной умножает вёрстку, а медиазапрос видит окно: без
+    поправки на масштаб плотные главы уезжали в прокрутку на 1600 и 1920."""
+    css = _read("assets/about.css")
+    for w, k in (("1600px", 1.15), ("1900px", 1.3), ("2300px", 1.5)):
+        assert "(min-width:%s) and (max-height:" % w in css, \
+            "нет ступени плотности с поправкой на масштаб " + w
+    # ступени должны стоять ПОСЛЕ акцентов, иначе базовые отступы .quote/.note
+    # перебивают их по порядку следования
+    assert css.index("===== Акценты") < css.index("На невысоких окнах"), \
+        "ступени плотности обязаны идти после акцентов"
+
+
+def test_frame_is_not_measured_in_vw():
+    """vw умножается на body{zoom} — рамку страницы меряем процентами."""
+    for rel in ("assets/about.css",):
+        css = _read(rel)
+        for m in re.finditer(r"(width|left|right): calc\([^)]*?\d+vw", css):
+            raise AssertionError(rel + ": рамка в vw — " + m.group(0))
+
+
 if __name__ == "__main__":
     import sys
     fails = 0
