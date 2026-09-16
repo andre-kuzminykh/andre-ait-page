@@ -33,6 +33,9 @@ STUB = ('    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer
         'font-medium max-w-3xl mx-auto">Слайд ещё верстается</p>\n        </div>\n    </div>\n')
 
 
+KEEP = set()
+
+
 def build_probe(name):
     # Недостающие слайды подменяем заглушкой: подгонка считает каждый слайд
     # отдельно, поэтому на замер соседей это не влияет, а колода собирается.
@@ -41,9 +44,18 @@ def build_probe(name):
     tmp = tempfile.mkdtemp(prefix="l4out-")
     have = set()
     for f in os.listdir(src):
-        if f.endswith(".html"):
+        if not f.endswith(".html"):
+            continue
+        i = int(re.search(r"slide-(\d+)", f).group(1))
+        # В пробник кладём ЦЕЛИКОМ только те слайды, которые меряем. Остальные —
+        # заглушками: подгонка считает каждый слайд отдельно, поэтому на замер
+        # это не влияет, а страница поднимается в несколько раз быстрее (иначе
+        # подгонщик на загрузке перебирает всю колоду).
+        if i in KEEP:
             shutil.copy(os.path.join(src, f), tmp)
-            have.add(int(re.search(r"slide-(\d+)", f).group(1)))
+        else:
+            io.open(os.path.join(tmp, f), "w", encoding="utf-8").write(STUB % (i, i))
+        have.add(i)
     for i in range(43):
         if i not in have:
             io.open(os.path.join(tmp, "slide-%02d.html" % i), "w",
@@ -67,6 +79,7 @@ def main():
     ids = [int(a) for a in sys.argv[1:]]
     if not ids:
         sys.exit(__doc__)
+    KEEP.update(ids)
     name = "_kegl_%d.html" % os.getpid()
     path = build_probe(name)
     from playwright.sync_api import sync_playwright
