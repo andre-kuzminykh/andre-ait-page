@@ -86,8 +86,8 @@ def test_head_is_draggable_on_mobile_and_clickable():
 
 # ── лендинг листается экранами, как биография ─────────────────────────────
 
-SCREEN_IDS = ["top", "problem", "numbers", "usecases", "solution",
-              "process", "learning", "pricing", "start"]
+SCREEN_IDS = ["top", "numbers", "usecases", "solution",
+              "learning", "pricing", "start"]
 
 
 def test_landing_is_a_deck_of_screens():
@@ -100,7 +100,7 @@ def test_landing_is_a_deck_of_screens():
     assert ".deck.leaving .screen.active" in css and ".deck.entering .screen.active" in css
     assert "@keyframes slideInScreen" in css
     for lang, html in _pages():
-        assert html.count('<section class="screen') == 15, lang + ": пятнадцать экранов"
+        assert html.count('<section class="screen') == 13, lang + ": тринадцать экранов"
         for sid in SCREEN_IDS:
             assert 'id="%s"' % sid in html, "%s: нет экрана %s" % (lang, sid)
 
@@ -113,40 +113,34 @@ def test_screens_switch_by_wheel_swipe_and_keys():
     assert re.search(r"now - lastWheel < \d+", js), "один жест = один экран"
 
 
-def test_menu_lists_seven_product_chapters():
-    nav = ["problem", "usecases", "solution", "process", "learning", "pricing", "start"]
+def test_menu_lists_six_product_chapters():
+    """Экран с вопросами удалён, первый пункт теперь «Solution» (правка владельца)."""
+    nav = ["solution", "usecases", "process", "learning", "pricing", "start"]
     for lang, html in _pages():
         header = html[html.index("<header>"):html.index("</header>")]
         for key in nav:
             assert 'data-go="%s"' % key in header, "%s: в меню нет раздела %s" % (lang, key)
-        assert header.count('class="nav-tab') == len(nav), lang + ": в меню семь разделов"
+        assert header.count('class="nav-tab') == len(nav), lang + ": в меню шесть разделов"
     assert ">Use Cases<" in _en(), "раздел называется Use Cases, а не Businesses"
-    assert ">Problem<" in _en(), "раздел называется Problem, а не The problem"
-    assert ">Solution<" in _en(), "раздел называется Solution"
+    assert ">Problem<" not in _en(), "пункта «Problem» в меню быть не должно"
+    assert ">Solution<" in _en(), "первый раздел называется Solution"
 
 
-def test_back_is_an_oval_pill_on_every_screen():
-    """Правка владельца: «← BACK» — овал ОТДЕЛЬНОЙ строкой над заголовком на
-    КАЖДОМ экране, и стрелка всегда перемещает на главную."""
+def test_home_icon_replaces_the_back_button():
+    """Правка владельца: «вместо кнопки BACK иконку домой рядом с меню»."""
     css = _read("assets/strategy.css")
-    back = re.search(r"\n\.back \{(.*?)\}", css, re.S).group(1)
-    assert "border-radius: 999px" in back, "кнопка «назад» — овал"
-    assert "display: flex" in back and "width: fit-content" in back, \
-        "овал занимает свою строку, а не встаёт рядом с надписью"
+    assert ".back {" not in css, "овала «назад» на странице больше нет"
+    home = re.search(r"\.nav-home \{(.*?)\}", css, re.S)
+    assert home, "нет стиля иконки дома"
     for lang, html in _pages():
-        screens = re.findall(r'<section class="screen[^"]*"[^>]*>(.*?)</section>', html, re.S)
-        assert len(screens) == 15, "%s: пятнадцать экранов (%d)" % (lang, len(screens))
-        for i, body in enumerate(screens):
-            m = re.search(r'<a class="back" href="/">', body)
-            assert m, "%s: на экране %d нет овала «назад»" % (lang, i)
-            head = re.search(r"<(h1|h2|p class=\"eyebrow|p class=\"step-n)", body)
-            if head:
-                assert m.start() < head.start(), \
-                    "%s: на экране %d «назад» должен стоять НАД заголовком" % (lang, i)
-        assert 'id="back-btn"' not in html, lang + ": кнопка-скрипт больше не нужна"
         header = html[html.index("<header>"):html.index("</header>")]
-        assert 'class="back"' not in header, lang + ": в шапке стрелки нет"
+        assert header.count('class="nav-home" href="/"') == 1, lang + ": одна иконка дома в шапке"
+        assert header.index('class="nav-home"') < header.index('class="nav-tab'), \
+            lang + ": иконка дома стоит ПЕРЕД пунктами меню"
+        assert 'class="back"' not in html, lang + ": кнопок «назад» на экранах больше нет"
         assert 'class="prod-name"' not in html, lang + ": у лого не пишем название продукта"
+    assert "location.href = '/'" not in _read("assets/strategy.js"), \
+        "иконка дома — обычная ссылка, скрипт тут не нужен"
 
 
 def test_header_matches_the_main_site():
@@ -205,17 +199,23 @@ def test_buttons_do_not_move_on_hover():
 
 # ── экран «Problem» и цифры рынка ─────────────────────────────────────────
 
-def test_six_questions_each_on_one_line_without_dots():
-    css = _read("assets/strategy.css")
-    q = re.search(r"\.q-item \{(.*?)\}", css, re.S).group(1)
-    assert "white-space: nowrap" in q, "каждый вопрос — в одну строку"
+def test_questions_screen_is_gone():
+    """Владелец убрал экран «The problem is no longer access to AI» целиком."""
     for lang, html in _pages():
-        items = re.findall(r'<li class="q-item">(.*?)</li>', html, re.S)
-        assert len(items) == 6, lang + ": шесть вопросов"
-        for it in items:
-            text = re.sub(r"<[^>]+>", "", it).strip()
-            assert not text.endswith("."), lang + ": точка в конце вопроса: " + text
-            assert "•" not in it and "list-style" not in it, lang + ": маркеров у вопросов нет"
+        assert 'class="q-item"' not in html, lang + ": экран с вопросами должен быть удалён"
+        for mark in ("The problem is no longer", "Проблема больше не в доступе",
+                     "That is exactly what AI Strategy", "Именно на эти вопросы"):
+            assert mark not in html, "%s: остался текст «%s»" % (lang, mark)
+    assert ".q-item" not in _read("assets/strategy.css"), "правила удалённого экрана убраны"
+
+
+def test_process_intro_screen_is_gone():
+    """«От „нам нужен ИИ“…» убран — сразу к зрелости."""
+    for lang, html in _pages():
+        for mark in ("here’s what to build", "вот что мы строим"):
+            assert mark not in html, "%s: вводный экран шагов должен быть удалён" % lang
+        first_step = html.index('data-step="1"')
+        assert html.index('id="usecases"') < first_step, lang + ": шаги идут после кейсов"
 
 
 def test_market_numbers_are_four_squares_without_hover_jump():
@@ -276,12 +276,16 @@ def test_six_steps_each_on_its_own_screen():
 def test_orange_blocks_fly_from_process_to_opportunities_to_ai_first():
     """Правка владельца: оранжевые блоки перелетают AS-IS → AI Opportunity → AI-First."""
     for lang, html in _pages():
-        keys = re.findall(r'data-flip="(o\d)"', html)
-        assert keys.count("o0") == 3 and keys.count("o1") == 3 and keys.count("o2") == 3, \
-            lang + ": три оранжевых блока связаны на всех трёх сценах"
+        keys = re.findall(r'data-flip="([a-zа-яё0-9-]+)"', html)
+        trio = [k for k in set(keys) if keys.count(k) == 3]
+        assert len(trio) == 3, \
+            "%s: три блока должны проходить все три сцены, нашлось %s" % (lang, sorted(trio))
         for cls in ("pnode human", "opnode", "fnode human"):
-            assert re.search(r'class="%s" data-seq data-flip="o0"' % cls, html), \
+            assert re.search(r'class="%s" data-seq data-flip="[a-zа-яё0-9-]+"' % cls, html), \
                 "%s: нет связанного блока на сцене «%s»" % (lang, cls)
+        # то, что забрал ИИ, пары не находит и просто гаснет
+        solo = [k for k in set(keys) if keys.count(k) == 1]
+        assert solo, lang + ": операции, ушедшие к ИИ, не должны иметь пары"
     js = _read("assets/strategy.js")
     assert "captureFlip" in js and "playFlip" in js, "перелёт блоков должен быть реализован"
     assert "offsetIn" in js, "позиции считаются через offset, чтобы transform не мешал"

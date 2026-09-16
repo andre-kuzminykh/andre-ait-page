@@ -153,25 +153,18 @@ def test_main_page_opens_the_screen_from_the_hash():
         "возврат «назад» меняет только хеш — нужен hashchange"
 
 
-def test_back_is_on_every_screen_and_leads_home():
-    """Правка владельца: овал «назад» стоит НАД заголовком на каждом экране и
-    стрелка всегда перемещает на главную."""
-    for lang, html in _pages():
-        screens = re.findall(r'<section class="screen[^"]*"[^>]*>(.*?)</section>', html, re.S)
-        assert len(screens) == 6, "%s: шесть экранов, стало %d" % (lang, len(screens))
-        for i, body in enumerate(screens):
-            m = re.search(r'<a class="back" href="/">', body)
-            assert m, "%s: на экране %d нет овала «назад»" % (lang, i)
-            head = re.search(r"<(h1|h2|p class=\"eyebrow)", body)
-            if head:
-                assert m.start() < head.start(), \
-                    "%s: на экране %d «назад» должен стоять НАД заголовком" % (lang, i)
-        assert 'id="back-btn"' not in html, lang + ": кнопка-скрипт больше не нужна"
+def test_home_icon_replaces_the_back_button():
+    """Правка владельца: «вместо кнопки BACK иконку домой рядом с меню»."""
     css = _css()
-    back = re.search(r"\n  \.back \{(.*?)\}", css, re.S).group(1)
-    assert "border-radius: 999px" in back, "«назад» — овал"
-    assert "margin-left: auto" in back and "margin-right: auto" in back, \
-        "овал «назад» выровнен по центру колонки"
+    assert ".back" not in css, "овала «назад» больше нет"
+    assert re.search(r"\.nav-home \{", css), "нет стиля иконки дома"
+    for lang, html in _pages():
+        assert html.count('class="nav-home" href="/"') == 1, lang + ": одна иконка дома"
+        nav = html[html.index('<nav class="nav"'):html.index("</nav>")]
+        assert nav.index('class="nav-home"') < nav.index('class="nav-tab'), \
+            lang + ": иконка дома стоит ПЕРЕД пунктами меню"
+        assert 'class="back"' not in html, lang + ": кнопок «назад» на экранах нет"
+        assert 'class="home-link"' not in html, lang + ": «Back to home» внизу убран"
 
 
 def test_logo_and_menu_are_present_on_both_pages():
@@ -357,13 +350,31 @@ def test_ecosystem_chapters_are_merged_into_one_screen():
         for mark in marks:
             assert mark in body, "%s: на объединённом экране нет «%s»" % (lang, mark)
     css = _css()
-    assert ".screen.dense { columns: 2;" in css, \
-        "объединённый экран на широких окнах — в две колонки, иначе он не помещается"
+    assert "columns: 2" not in css, \
+        "экран экосистемы должен выглядеть как остальные — в одну колонку"
 
 
 def test_data_engineer_is_bold():
     assert "<strong>Data Engineer</strong>" in _en()
     assert "<strong>инженера по данным</strong>" in _ru()
+
+
+def test_last_two_paragraphs_moved_to_the_mission():
+    """Правка владельца: «But technology alone is not enough…» и абзац про
+    университеты переехали в главу «миссия»."""
+    for lang, html in _pages():
+        mission = re.search(r'<section class="screen"[^>]*data-chapter="mission"[^>]*>(.*?)</section>',
+                            html, re.S)
+        assert mission, lang + ": нет экрана миссии"
+        body = mission.group(1)
+        marks = (("But technology alone is not enough", "I began collaborating with")
+                 if lang == "en" else
+                 ("Но одной технологии недостаточно", "начал сотрудничать"))
+        for mark in marks:
+            assert mark in body, "%s: в миссии нет «%s»" % (lang, mark)
+        dense = re.search(r'<section class="screen dense"[^>]*>(.*?)</section>', html, re.S).group(1)
+        for mark in marks:
+            assert mark not in dense, "%s: «%s» осталось на экране экосистемы" % (lang, mark)
 
 
 if __name__ == "__main__":

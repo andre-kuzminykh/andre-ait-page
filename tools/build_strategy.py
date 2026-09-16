@@ -9,24 +9,32 @@ assets/strategy.js, тексты — tools/strategy_copy.py. Точек в ко�
 """
 import math
 import os
+import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Разделы меню: id экрана + иконка для мобильного меню
 NAV = [
-    ("problem",    "fa-circle-question", "#8854F3"),
-    ("usecases",   "fa-city",            "#F97316"),
     ("solution",   "fa-cubes",           "#8854F3"),
-    ("process",    "fa-diagram-project", "#F97316"),
-    ("learning",   "fa-graduation-cap",  "#8854F3"),
-    ("pricing",    "fa-tag",             "#F97316"),
-    ("start",      "fa-rocket",          "#8854F3"),
+    ("usecases",   "fa-city",            "#F97316"),
+    ("process",    "fa-diagram-project", "#8854F3"),
+    ("learning",   "fa-graduation-cap",  "#F97316"),
+    ("pricing",    "fa-tag",             "#8854F3"),
+    ("start",      "fa-rocket",          "#F97316"),
 ]
 
 BIZ_ICONS = ["fa-briefcase", "fa-user-tie", "fa-bullhorn", "fa-pen-nib",
              "fa-headset", "fa-life-ring", "fa-palette", "fa-code"]
 OUT_ICONS = ["fa-gauge-high", "fa-diagram-project", "fa-brain", "fa-lightbulb",
              "fa-people-arrows", "fa-wand-magic-sparkles", "fa-robot", "fa-route"]
+
+
+def flip_key(name):
+    """Ключ перелёта — по НАЗВАНИЮ блока, а не по номеру: так «Meeting» летит
+    именно в «Meeting», а операция, которую забрал ИИ, пары не находит и
+    просто гаснет. Индексы такой смысловой связи не давали."""
+    key = re.sub(r"[^0-9a-zа-яё]+", "-", name.lower(), flags=re.U).strip("-")
+    return ' data-flip="%s"' % key
 
 
 def radar(values, dims):
@@ -87,13 +95,10 @@ def stages(t):
 
     # 03 — процессы связаны между собой, где люди — оранжевые
     proc = s["s3_cards"]
-    nodes, warm = [], 0
+    nodes = []
     for name, kind in proc:
         icon = "fa-user" if kind == "human" else "fa-database"
-        flip = ""
-        if kind == "human":
-            flip = ' data-flip="o%d"' % warm
-            warm += 1
+        flip = flip_key(name) if kind == "human" else ""
         nodes.append('<div class="pnode %s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
                      % ("human" if kind == "human" else "sys", flip, icon, name))
     # рядами по три: в одну строку шесть блоков не влезают, а сетка оставляла
@@ -113,12 +118,9 @@ def stages(t):
       </div>""".format(bar=s["s3_bar"], chain="".join(chain)))
 
     # 04 — что может забрать ИИ
-    ops_html, warm = [], 0
+    ops_html = []
     for name, can in s["s4_ops"]:
-        flip = ""
-        if not can:
-            flip = ' data-flip="o%d"' % warm
-            warm += 1
+        flip = "" if can else flip_key(name)
         ops_html.append('<div class="opnode%s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
                         % (" can" if can else "", flip, "fa-wand-magic-sparkles" if can else "fa-user", name))
     out.append("""
@@ -136,13 +138,10 @@ def stages(t):
     # 05 — AI-First модель: люди оранжевые, агенты фиолетовые
     # цепочка идёт рядами по три: в одну строку шесть блоков не помещаются,
     # а перенос флексом оставлял «висящую» стрелку в конце ряда
-    items, warm = [], 0
+    items = []
     for name, kind in s["s5_flow"]:
         icon = "fa-user" if kind == "human" else "fa-robot"
-        flip = ""
-        if kind == "human":
-            flip = ' data-flip="o%d"' % warm
-            warm += 1
+        flip = flip_key(name) if kind == "human" else ""
         items.append('<div class="fnode %s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
                      % (kind, flip, icon, name))
     ARROW = '<span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
@@ -178,7 +177,7 @@ def stages(t):
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
           <div class="hub">
-            <div class="hub-core"><i class="fa-solid fa-robot"></i><b>{name}</b></div>
+            <div class="hub-core" aria-label="{name}"><i class="fa-solid fa-robot"></i></div>
             {spokes}
           </div>
         </div>
@@ -199,11 +198,9 @@ def page(t, lang):
             id=sec, ic=icon, c=color, label=t["nav"][i], act=" active" if i == 0 else "")
         for i, (sec, icon, color) in enumerate(NAV))
 
-    # правка владельца: овал «назад» стоит над заголовком на каждом экране и
-    # всегда ведёт на главную, поэтому это обычная ссылка, а не кнопка
-    back = ('<a class="back" href="/"><i class="fa-solid fa-arrow-left"></i> {label}</a>').format(label=t["back"])
-
-    questions = "".join('<li class="q-item">%s</li>' % q for q in t["questions"])
+    # правка владельца: вместо кнопки «назад» — иконка дома рядом с меню
+    home = ('<a class="nav-home" href="/" aria-label="{label}" data-label="{label}">'
+            '<i class="fa-solid fa-house"></i></a>').format(label=t["home"])
 
     nums = "".join('<div class="num-card"><span class="num-val">{v}</span><p>{p}</p></div>'.format(v=v, p=p)
                    for v, p in t["numbers"])
@@ -211,8 +208,10 @@ def page(t, lang):
     biz = "".join("""
           <article class="biz">
             <span class="biz-ic"><i class="fa-solid {ic}"></i></span>
-            <h3>{name}</h3>
-            <span class="biz-metric"><b>{val}</b>{label}</span>
+            <div class="biz-body">
+              <h3>{name}</h3>
+              <p class="biz-metric"><b>{val}</b><span>{label}</span></p>
+            </div>
             <span class="biz-go"><span>{explore}</span> <i class="fa-solid fa-arrow-right"></i></span>
           </article>""".format(ic=BIZ_ICONS[i], name=b[0], val=b[1], label=b[2], explore=t["biz_explore"])
         for i, b in enumerate(t["businesses"]))
@@ -230,14 +229,13 @@ def page(t, lang):
       <section class="screen step-screen" data-chapter="process" data-step="{n}">
         <div class="wrap step-wrap">
           <article class="step-copy">
-            {back}
-            <p class="step-n">{n:02d} &mdash; {tag}</p>
+            <p class="step-n">{n:02d} &mdash; {chapter} &mdash; {tag}</p>
             <h2>{title}</h2>
             <p>{body}</p>
           </article>
           <div class="stage-card">{stage}</div>
         </div>
-      </section>""".format(n=i + 1, tag=st[0], title=st[1], body=st[2], stage=stage_html[i], back=back)
+      </section>""".format(n=i + 1, chapter=t["s_eyebrow"], tag=st[0], title=st[1], body=st[2], stage=stage_html[i])
         for i, st in enumerate(t["steps"]))
 
     roles = "".join('<span class="role"><i class="fa-solid %s"></i>%s</span>' % (ic, name) for name, ic in t["roles"])
@@ -321,7 +319,7 @@ def page(t, lang):
         <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="">
         <span>AI Strategy</span>
       </div>
-      {nav_html}
+      {home}{nav_html}
     </nav>
 
     <div class="header-right">
@@ -329,7 +327,7 @@ def page(t, lang):
         {lang_switch}
       </div>
       <button class="menu-btn" id="menu-btn" aria-label="{menu}"><i id="menu-icon" class="fa-solid fa-bars"></i></button>
-      <a class="btn btn-primary cta-head" href="{cta_href}" rel="noopener">{cta_top}</a>
+      <a class="btn btn-primary cta-head" href="{cta_href}" rel="noopener">{cta_top} <i class="fa-solid fa-arrow-right"></i></a>
     </div>
   </div>
 </header>
@@ -341,7 +339,6 @@ def page(t, lang):
   <!-- 1. Первый экран -->
   <section class="screen active" data-chapter="top" id="top">
     <div class="wrap">
-      {back}
       <p class="eyebrow">AI Strategy</p>
       <h1>{h1}</h1>
       <p class="lead">{hero_lead}</p>
@@ -352,20 +349,9 @@ def page(t, lang):
     </div>
   </section>
 
-  <!-- 2. Проблема -->
-  <section class="screen" data-chapter="problem" id="problem">
-    <div class="wrap center">
-      {back}
-      <h2>{q_head}</h2>
-      <ul class="qs">{questions}</ul>
-      <p class="q-final">{q_final}</p>
-    </div>
-  </section>
-
   <!-- 3. Рынок -->
-  <section class="screen" data-chapter="problem" id="numbers">
+  <section class="screen" data-chapter="solution" id="numbers">
     <div class="wrap center">
-      {back}
       <p class="eyebrow o">{n_eyebrow}</p>
       <h2 class="one-line">{n_head}</h2>
       <div class="nums">{nums}</div>
@@ -376,7 +362,6 @@ def page(t, lang):
   <!-- 4. Кейсы -->
   <section class="screen" data-chapter="usecases" id="usecases">
     <div class="wrap">
-      {back}
       <p class="eyebrow">{b_eyebrow}</p>
       <h2>{b_head}</h2>
       <div class="biz-grid">{biz}</div>
@@ -387,7 +372,6 @@ def page(t, lang):
   <!-- 5. Решение -->
   <section class="screen" data-chapter="solution" id="solution">
     <div class="wrap">
-      {back}
       <p class="eyebrow o">{d_eyebrow}</p>
       <h2>{d_head}</h2>
       <p class="lead">{d_sub}</p>
@@ -398,21 +382,11 @@ def page(t, lang):
     </div>
   </section>
 
-  <!-- 6. Как это работает -->
-  <section class="screen" data-chapter="process" id="process">
-    <div class="wrap center">
-      {back}
-      <p class="eyebrow">{s_eyebrow}</p>
-      <h2>{s_head}</h2>
-      <p class="lead">{s_sub}</p>
-    </div>
-  </section>
 {steps}
 
   <!-- 7. Обучение -->
   <section class="screen" data-chapter="learning" id="learning">
     <div class="wrap center">
-      {back}
       <p class="eyebrow o">{l_eyebrow}</p>
       <h2>{l_head}</h2>
       <p class="lead">{l_sub}</p>
@@ -426,7 +400,6 @@ def page(t, lang):
   <!-- 8. Тарифы -->
   <section class="screen" data-chapter="pricing" id="pricing">
     <div class="wrap">
-      {back}
       <p class="eyebrow">{pr_eyebrow}</p>
       <h2>{pr_head}</h2>
       <p class="lead">{pr_sub}</p>
@@ -438,8 +411,6 @@ def page(t, lang):
   <!-- 9. Финал -->
   <section class="screen final" data-chapter="start" id="start">
     <div class="wrap center">
-      {back}
-      <p class="eyebrow"><i class="fa-solid fa-arrow-right"></i>{f_eyebrow}</p>
       <h2 class="final-1">{f_1}</h2>
       <p class="final-2">{f_2}</p>
       <h2 class="final-3">{f_3}</h2>
@@ -467,20 +438,19 @@ def page(t, lang):
 """.format(
         lang=lang, title=t["title"], desc=t["meta_desc"], self_href=self_href, video=video,
         video_aria=t["video_aria"], role=t["role"], sections=t["sections"], close=t["close"], menu=t["menu"],
-        nav_html=nav_html, cta_href=t["cta_href"], cta_top=t["cta_top"], back=back,
+        nav_html=nav_html, cta_href=t["cta_href"], cta_top=t["cta_top"], home=home,
         lang_switch=('<span class="lang-opt active">EN</span><span class="lang-sep">|</span>'
                      '<a class="lang-opt" href="%s">RU</a>' % other_href) if lang == "en" else
                     ('<a class="lang-opt" href="%s">EN</a><span class="lang-sep">|</span>'
                      '<span class="lang-opt active">RU</span>' % other_href),
         h1=t["h1"], hero_lead=t["hero_lead"], cta_main=t["cta_main"], cta_how=t["cta_how"],
-        q_head=t["q_head"], questions=questions, q_final=t["q_final"],
         n_eyebrow=t["n_eyebrow"], n_head=t["n_head"], nums=nums, n_foot=t["n_foot"],
         b_eyebrow=t["b_eyebrow"], b_head=t["b_head"], biz=biz, b_all=t["b_all"],
         d_eyebrow=t["d_eyebrow"], d_head=t["d_head"], d_sub=t["d_sub"], outs=outs, d_hint=t["d_hint"],
-        s_eyebrow=t["s_eyebrow"], s_head=t["s_head"], s_sub=t["s_sub"], steps=steps,
+        steps=steps,
         l_eyebrow=t["l_eyebrow"], l_head=t["l_head"], l_sub=t["l_sub"], l_note=t["l_note"], roles=roles,
         pr_eyebrow=t["pr_eyebrow"], pr_head=t["pr_head"], pr_sub=t["pr_sub"], plans=plans, compare=compare,
-        f_eyebrow=t["f_eyebrow"], f_1=t["f_1"], f_2=t["f_2"], f_3=t["f_3"], f_cta=t["f_cta"],
+        f_1=t["f_1"], f_2=t["f_2"], f_3=t["f_3"], f_cta=t["f_cta"],
         company=t["company"], legal0=t["legal"][0], legal1=t["legal"][1],
     )
 

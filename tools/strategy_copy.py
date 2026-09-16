@@ -11,11 +11,12 @@ EN = {
     "video_aria": "Andre explains AI Strategy",
     "role": "AI Strategy",
     "back": "Back",
+    "home": "Home",
     "sections": "Sections",
     "close": "Close menu",
     "menu": "Menu",
     "steps_nav": "Steps",
-    "nav": ["Problem", "Use Cases", "Solution", "How it works", "Learning", "Pricing", "Start"],
+    "nav": ["Solution", "Use Cases", "How it works", "Learning", "Pricing", "Start"],
     "cta_href": "https://strategy.andre.technology/",
     "cta_top": "Start free",
     "cta_main": "Start for free",
@@ -25,18 +26,6 @@ EN = {
     "h1": ('<span class="l">Where should you start</span>'
            '<span class="l">with <span class="hl-p">AI</span> in your <span class="hl-o">business</span>?</span>'),
     "hero_lead": "AI Strategy shows how to transform your business with AI",
-
-    # ── 2. Проблема ──
-    "q_head": "The problem is no longer access to AI",
-    "questions": [
-        "Where should we start?",
-        "Which processes should we change first?",
-        "What can we delegate to AI?",
-        "What should remain with people?",
-        "Which AI agents do we actually need?",
-        "What should we implement first?",
-    ],
-    "q_final": "That is exactly what AI Strategy is designed to answer",
 
     # ── 3. Цифры ──
     "n_eyebrow": "The market today",
@@ -83,8 +72,6 @@ EN = {
 
     # ── 6. Как это работает ──
     "s_eyebrow": "How it works",
-    "s_head": "From “we need AI” to “here’s what to build”",
-    "s_sub": "Describe your business in your own words. Get your AI strategy",
     "steps": [
         ("AI Maturity", "Understand where you are today",
          "Assess your AI maturity and see what’s holding you back"),
@@ -105,21 +92,21 @@ EN = {
         "s1_score": "AI Maturity Index",
         "s2_bar": "Your words",
         "s2_quote": "“We get most leads through the website, then a manager qualifies them and books a call…”",
-        "s2_cards": ["Lead Generation", "Sales", "Onboarding"],
-        "s3_bar": "Your business as processes",
-        "s3_cards": [("Lead Generation", "human"), ("Sales", "human"), ("Onboarding", "human"),
-                     ("Delivery", "human"), ("Support", "human"), ("Billing", "sys")],
+        "s2_cards": ["Lead arrives", "Qualification", "Meeting"],
+        "s3_bar": "Sales process",
+        "s3_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human"),
+                     ("Meeting", "human"), ("Proposal", "human"), ("Follow-up", "human")],
         "s4_bar": "AI Opportunities",
-        "s4_ops": [("Lead arrives", 0), ("CRM update", 1), ("Qualification", 1), ("Document analysis", 1),
-                   ("Meeting", 0), ("Proposal", 0), ("Follow-up", 1), ("Reporting", 1)],
+        "s4_ops": [("Lead arrives", 0), ("CRM update", 1), ("Qualification", 1), ("Meeting", 0),
+                   ("Proposal", 1), ("Follow-up", 0), ("Document analysis", 1), ("Reporting", 1)],
         "s4_impact": "Potential impact · high",
         "s4_complexity": "Complexity · medium",
         "s5_bar": "AI-First Model",
-        "s5_flow": [("Lead", "human"), ("AI Qualification", "ai"), ("Meeting", "human"),
+        "s5_flow": [("Lead arrives", "human"), ("AI Qualification", "ai"), ("Meeting", "human"),
                     ("AI Proposal", "ai"), ("Follow-up", "human"), ("AI Reporting", "ai")],
         "s5_legend_h": "People",
         "s5_legend_a": "AI agents",
-        "s6_bar": "AI Agent",
+        "s6_bar": "AI Sales Qualification Agent",
         "s6_name": "AI Sales Qualification Agent",
         "s6_spokes": ["Functions", "Inputs", "Outputs", "Systems", "Rules", "Metrics", "Human role", "Instructions"],
     },
@@ -127,7 +114,8 @@ EN = {
     # ── 7. Обучение ──
     "l_eyebrow": "Learning",
     "l_head": "New business model. New roles",
-    "l_sub": "Free training helps your team learn how to work with AI and build agents themselves",
+    "l_sub": ("<span class=\"l\">Free training helps your team learn how to work with AI</span>"
+              "<span class=\"l\">and build agents themselves</span>"),
     "l_note": "For more complex cases, contact Andre AI Technologies",
     "roles": [
         ("AI Automation Engineer", "fa-robot"), ("AI Product Engineer", "fa-cubes"),
@@ -153,7 +141,6 @@ EN = {
                 ("Build your AI strategy yourself", False)],
 
     # ── 9. Финал ──
-    "f_eyebrow": "Start free",
     "f_1": "Where should you start with AI?",
     "f_2": "You don’t need to know",
     "f_3": "AI Strategy shows you",
@@ -168,11 +155,12 @@ RU = {
     "video_aria": "Андре рассказывает про AI Strategy",
     "role": "ИИ-стратегия",
     "back": "Назад",
+    "home": "На главную",
     "sections": "Разделы",
     "close": "Закрыть меню",
     "menu": "Меню",
     "steps_nav": "Шаги",
-    "nav": ["Проблема", "Кейсы", "Решение", "Как это работает", "Обучение", "Тарифы", "Начать"],
+    "nav": ["Решение", "Кейсы", "Как это работает", "Обучение", "Тарифы", "Начать"],
     "cta_href": "https://strategy.andre.technology/",
     "cta_top": "Начать бесплатно",
     "cta_main": "Начать бесплатно",
@@ -181,17 +169,6 @@ RU = {
     "h1": ('<span class="l">С чего начать внедрять <span class="hl-p">ИИ</span></span>'
            '<span class="l">в вашем <span class="hl-o">бизнесе</span>?</span>'),
     "hero_lead": "AI Strategy показывает, как трансформировать ваш бизнес с помощью ИИ",
-
-    "q_head": "Проблема больше не в доступе к ИИ",
-    "questions": [
-        "С чего начать?",
-        "Какие процессы менять первыми?",
-        "Что можно отдать ИИ?",
-        "Что должно остаться за людьми?",
-        "Какие ИИ-агенты нам действительно нужны?",
-        "Что внедрять в первую очередь?",
-    ],
-    "q_final": "Именно на эти вопросы и отвечает AI Strategy",
 
     "n_eyebrow": "Рынок сегодня",
     "n_head": "Пользоваться ИИ и быть AI-First — не одно и то же",
@@ -234,8 +211,6 @@ RU = {
     "d_hint": "Листайте карточки",
 
     "s_eyebrow": "Как это работает",
-    "s_head": "От «нам нужен ИИ» до «вот что мы строим»",
-    "s_sub": "Расскажите о бизнесе своими словами и получите ИИ-стратегию",
     "steps": [
         ("ИИ-зрелость", "Понять, где вы сейчас",
          "Оцените ИИ-зрелость и увидьте, что тормозит компанию"),
@@ -256,28 +231,29 @@ RU = {
         "s1_score": "Индекс ИИ-зрелости",
         "s2_bar": "Ваши слова",
         "s2_quote": "«Большинство заявок приходит с сайта, дальше менеджер квалифицирует их и назначает созвон…»",
-        "s2_cards": ["Привлечение лидов", "Продажи", "Онбординг"],
-        "s3_bar": "Ваш бизнес как процессы",
-        "s3_cards": [("Привлечение лидов", "human"), ("Продажи", "human"), ("Онбординг", "human"),
-                     ("Поставка", "human"), ("Поддержка", "human"), ("Счета", "sys")],
+        "s2_cards": ["Пришёл лид", "Квалификация", "Встреча"],
+        "s3_bar": "Процесс продаж",
+        "s3_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human"),
+                     ("Встреча", "human"), ("Предложение", "human"), ("Follow-up", "human")],
         "s4_bar": "Возможности ИИ",
-        "s4_ops": [("Пришёл лид", 0), ("Обновление CRM", 1), ("Квалификация", 1), ("Разбор документов", 1),
-                   ("Встреча", 0), ("Предложение", 0), ("Follow-up", 1), ("Отчётность", 1)],
+        "s4_ops": [("Пришёл лид", 0), ("Обновление CRM", 1), ("Квалификация", 1), ("Встреча", 0),
+                   ("Предложение", 1), ("Follow-up", 0), ("Разбор документов", 1), ("Отчётность", 1)],
         "s4_impact": "Эффект · высокий",
         "s4_complexity": "Сложность · средняя",
         "s5_bar": "AI-First модель",
-        "s5_flow": [("Лид", "human"), ("ИИ-квалификация", "ai"), ("Встреча", "human"),
+        "s5_flow": [("Пришёл лид", "human"), ("ИИ-квалификация", "ai"), ("Встреча", "human"),
                     ("ИИ-предложение", "ai"), ("Follow-up", "human"), ("ИИ-отчётность", "ai")],
         "s5_legend_h": "Люди",
         "s5_legend_a": "ИИ-агенты",
-        "s6_bar": "ИИ-агент",
+        "s6_bar": "ИИ-агент квалификации продаж",
         "s6_name": "ИИ-агент квалификации продаж",
         "s6_spokes": ["Функции", "Входы", "Выходы", "Системы", "Правила", "Метрики", "Роль человека", "Инструкции"],
     },
 
     "l_eyebrow": "Обучение",
     "l_head": "Новая бизнес-модель. Новые роли",
-    "l_sub": "Бесплатное обучение помогает команде научиться работать с ИИ и собирать агентов самостоятельно",
+    "l_sub": ("<span class=\"l\">Бесплатное обучение помогает команде работать с ИИ</span>"
+              "<span class=\"l\">и собирать агентов самостоятельно</span>"),
     "l_note": "Для более сложных задач — пишите в Andre AI Technologies",
     "roles": [
         ("AI Automation Engineer", "fa-robot"), ("AI Product Engineer", "fa-cubes"),
@@ -301,7 +277,6 @@ RU = {
     "compare": [("Консалтинговая компания — $100K+", True), ("ИИ-консультант — $10K+", True),
                 ("Собрать ИИ-стратегию самому", False)],
 
-    "f_eyebrow": "Начать бесплатно",
     "f_1": "С чего начать внедрять ИИ?",
     "f_2": "Вам не обязательно это знать",
     "f_3": "AI Strategy покажет",

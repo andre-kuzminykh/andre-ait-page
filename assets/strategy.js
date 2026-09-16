@@ -39,20 +39,38 @@
      h2.one-line и строки заголовка первого экрана набраны с nowrap. Кегль в
      vw их не спасает: ширина колонки зависит и от масштаба, и от языка, и на
      1280–1366px строка вылезала за экран. Подбираем кегль по факту. */
+  function shrinkToFit(els) {
+    /* сравнивать надо scrollWidth с clientWidth САМОГО элемента: у блочного
+       элемента scrollWidth никогда не меньше его ширины, поэтому проверка
+       против ширины колонки срабатывала всегда и кегль падал до минимума */
+    els.forEach(function (el) { el.style.fontSize = ''; });
+    var live = els.filter(function (el) { return el.clientWidth > 0; });
+    if (!live.length) return;                   /* экран ещё скрыт */
+    var size = parseFloat(getComputedStyle(live[0]).fontSize);
+    var min = size * 0.4;
+    function overflows() {
+      return live.some(function (el) { return el.scrollWidth > el.clientWidth; });
+    }
+    while (size > min && overflows()) {
+      size -= 0.5;
+      live.forEach(function (el) { el.style.fontSize = size + 'px'; });
+    }
+  }
   function fitHeadings(root) {
     if (!root || !root.querySelectorAll) root = document;
-    $$('h2.one-line, h1 .l', root).forEach(function (el) {
-      el.style.fontSize = '';
-      var box = el.closest('.wrap') || el.parentElement;
-      var room = box.clientWidth - 2;
-      if (room <= 0) return;
-      var size = parseFloat(getComputedStyle(el).fontSize);
-      var min = size * 0.55;
-      while (size > min && el.scrollWidth > room) {
-        size -= 0.5;
-        el.style.fontSize = size + 'px';
-      }
+    /* строки одного заголовка ужимаются ВМЕСТЕ — иначе вторая строка выходит
+       заметно мельче первой */
+    $$('h1', root).forEach(function (h) {
+      var lines = $$('.l', h);
+      shrinkToFit(lines.length ? lines : [h]);
     });
+    $$('h2.one-line', root).forEach(function (h) { shrinkToFit([h]); });
+    /* названия кейсов и подписи метрик держим в одну строку и ОДНОГО кегля:
+       иначе длинные русские подписи обрезались многоточием */
+    var titles = $$('.biz h3', root);
+    if (titles.length) shrinkToFit(titles);
+    var metrics = $$('.biz-metric', root);
+    if (metrics.length) shrinkToFit(metrics);
   }
   fitHeadings();
   window.addEventListener('resize', fitHeadings);

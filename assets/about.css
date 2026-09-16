@@ -202,8 +202,7 @@
     width: 100%; max-width: 54rem; margin-left: auto; margin-right: auto; }
   /* шапка главы, надзаголовок и «назад» — по центру колонки; абзацы остаются
      выключенными по левому краю, иначе длинный текст читать невозможно */
-  .screen > .back, .screen > .eyebrow, .screen > h1, .screen > h2 { text-align: center; }
-  .screen > .back { width: fit-content; }
+  .screen > .eyebrow, .screen > h1, .screen > h2 { text-align: center; }
   .screen > *:last-child { margin-bottom: 0; }
   /* уход и приход экрана — та же анимация, что на главной */
   .article.leaving .screen.active { opacity: 0; transform: translateY(-28px); transition: opacity 0.24s ease, transform 0.24s ease; }
@@ -233,13 +232,20 @@
   @media (min-width:1024px) and (max-width:1399px) { .wm { font-size: min(26vh, 13vw); } }
 
   /* кнопка «назад» — овал НАД надписью «About me» (правка владельца) */
-  .back { display: flex; align-items: center; gap: 0.45rem; margin: 0 0 0.6rem; padding: 0.34rem 0.8rem;
-    border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.03);
-    color: rgba(255,255,255,0.7); font-family: inherit; font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.12em; cursor: pointer; text-decoration: none;
-    width: fit-content; margin-left: auto; margin-right: auto; flex-shrink: 0;
-    transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease; }
-  @media (hover:hover) { .back:hover { color: #ffffff; border-color: rgba(136,84,243,0.6); background: rgba(136,84,243,0.12); } }
+  /* Иконка дома слева в пилюле меню — она заменила кнопку «назад»
+     (правка владельца: «вместо кнопки BACK иконку домой рядом с меню») */
+  .nav-home { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 1.9rem; height: 1.9rem; margin-right: 0.15rem; border-radius: 999px; color: rgba(255,255,255,0.65);
+    font-size: 14px; text-decoration: none; transition: color 0.3s ease, background 0.3s ease; }
+  @media (hover:hover) { .nav-home:hover { color: #ffffff; background: rgba(136,84,243,0.16); } }
+
+  /* в открытом меню на мобилке «домой» — такая же строка, как остальные пункты */
+  .nav.open .nav-home { width: 100%; height: auto; margin: 0; justify-content: center; gap: 0.7rem;
+    border-top: 1px solid rgba(255,255,255,0.14); border-radius: 0;
+    padding: clamp(0.7rem, 2.2vh, 1.4rem) 0.25rem; color: #ffffff;
+    font-size: clamp(16px, 2.3vh, 20px); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .nav.open .nav-home::after { content: attr(data-label); }
+  .nav.open .nav-home i { font-size: clamp(17px, 2.3vh, 21px); color: #8854F3; }
 
   .eyebrow { display: inline-flex; align-items: center; gap: 0.55rem; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.2em; color: #a071ff; margin: 0 0 0.7rem; }
@@ -320,6 +326,9 @@
   /* подвал колонки чтения */
   .foot { margin-top: auto; padding-top: 1.1rem; border-top: 1px solid rgba(255,255,255,0.08);
     display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+  /* на мобилке глава длиннее экрана: при отрицательном свободном месте
+     margin-top:auto ТЯНЕТ подвал ВВЕРХ и он налезает на финальный блок */
+  @media (max-width:1023px) { .foot { margin-top: 1.2rem; } }
 
   /* На невысоких окнах слайд ужимается ещё: владелец просил «поплотнее»,
      чтобы глава помещалась целиком, а не уезжала в прокрутку. Блок стоит
@@ -355,16 +364,6 @@
     .note, .stat, .cards, .finale { margin: 0.6rem 0 0.8rem; }
     .quote { margin: 0.6rem 0 0.8rem; padding-top: 0.7rem; padding-bottom: 0.7rem; }
   }
-  @media (min-width:1280px) {
-    /* заголовок и «назад» — на всю ширину, остальное течёт по двум колонкам */
-    .screen.dense.active { display: block; }
-    .screen.dense { columns: 2; column-gap: clamp(1.6rem, 3vw, 3rem); }
-    .screen.dense > *:not(.wm) { max-width: none; width: auto; break-inside: avoid; }
-    .screen.dense > .back, .screen.dense > h2 { column-span: all; }
-    .screen.dense > .back { width: fit-content; margin-left: auto; margin-right: auto; }
-    .screen.dense > h2 { justify-content: center; }
-  }
-
   /* ===== Очень плотный экран (глава «экосистема») =====
      Владелец свёл три слайда в один, поэтому на нём типографика и врезки
      ужаты ещё на шаг — иначе глава уезжает в прокрутку. */
