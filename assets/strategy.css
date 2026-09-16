@@ -236,7 +236,7 @@ strong { color: var(--w); font-weight: 700; }
 /* ===== Проблема: вопросы в одну строку каждый ===== */
 /* ===== Рынок: четыре квадрата, при наведении ничего не прыгает ===== */
 .nums { display: grid; gap: 0.7rem; grid-template-columns: repeat(2, minmax(0, 1fr));
-  max-width: 32rem; margin: 1.3rem auto 1.1rem; }
+  grid-auto-rows: 1fr; max-width: 32rem; margin: 1.3rem auto 1.1rem; }
 .num-card { aspect-ratio: 1 / 0.46; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;
   padding: 1rem; border-radius: 1.1rem; border: 1px solid var(--line); background: var(--card); text-align: center; }
 .num-card:nth-child(2n) { background: linear-gradient(165deg, rgba(249,115,22,0.08), rgba(255,255,255,0.01)); }
@@ -251,7 +251,7 @@ strong { color: var(--w); font-weight: 700; }
 .nums-foot { font-size: clamp(12px, 1.05vw, 15.5px); font-weight: 700; color: var(--o-l); }
 
 /* ===== Кейсы: восемь карточек на одном экране ===== */
-.biz-grid { display: grid; gap: 0.6rem; grid-template-columns: minmax(0, 1fr); margin: 1.2rem 0 1.1rem; }
+.biz-grid { display: grid; gap: 0.6rem; grid-template-columns: minmax(0, 1fr); margin: 1.2rem auto 1.1rem; }
 @media (min-width:620px) { .biz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* min-width:0 обязателен: иначе карточки не ужимаются до ячейки и вылезают вправо */
 .biz { display: flex; align-items: center; gap: 0.55rem; min-width: 0; min-height: 3.6rem; padding: 0.7rem 0.7rem; border-radius: 0.9rem;
@@ -274,10 +274,12 @@ strong { color: var(--w); font-weight: 700; }
   text-transform: uppercase; letter-spacing: 0.08em; color: var(--p-l); white-space: nowrap; }
 @media (max-width:1199px) { .biz-go { font-size: 8px; letter-spacing: 0.05em; } }
 @media (max-width:620px) {
-  .biz { min-height: 0; padding: 0.5rem 0.6rem; gap: 0.45rem; }
-  .biz-ic { width: 1.6rem; height: 1.6rem; font-size: 11px; }
-  .biz-grid { gap: 0.45rem; margin: 0.9rem 0 0.8rem; }
-  .biz-metric { max-width: 5.4rem; }
+  .biz { min-height: 0; padding: 0.42rem 0.55rem; gap: 0.4rem; }
+  .biz-ic { width: 1.5rem; height: 1.5rem; font-size: 10px; }
+  .biz-grid { gap: 0.35rem; margin: 0.8rem auto 0.7rem; }
+  .biz-body { gap: 0.1rem; }
+  .biz h3 { font-size: 10px; }
+  .biz-go { font-size: 8px; }
 }
 @media (hover:hover) { .biz:hover { border-color: rgba(136,84,243,0.45); background: rgba(136,84,243,0.07); } }
 .biz-all { display: flex; width: fit-content; margin-left: auto; align-items: center; gap: 0.5rem; font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -286,12 +288,14 @@ strong { color: var(--w); font-weight: 700; }
 
 /* ===== Решение: карточки лентой, края уходят в тёмный градиент ===== */
 .rail-wrap { position: relative; margin: 1.2rem 0 0.8rem; }
-.rail-wrap::before, .rail-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 3rem; z-index: 2; pointer-events: none; }
-.rail-wrap::before { left: 0; background: linear-gradient(to right, var(--bg), rgba(5,5,5,0));
+/* растушёвка должна ПЕРЕКРЫВАТЬ край карточки, а не просто темнеть: фон почти
+   чёрный, и мягкий градиент не прятал ни рамку, ни обрезанный текст */
+.rail-wrap::before, .rail-wrap::after { content: ''; position: absolute; top: -0.2rem; bottom: -0.2rem; width: 7rem; z-index: 3; pointer-events: none; }
+.rail-wrap::before { left: 0; background: linear-gradient(to right, var(--bg) 0%, var(--bg) 46%, rgba(5,5,5,0) 100%);
   opacity: 0; transition: opacity 0.3s ease; }
 .rail-wrap.scrolled::before { opacity: 1; }
 .rail-wrap.ended::after { opacity: 0; }
-.rail-wrap::after { right: 0; background: linear-gradient(to left, var(--bg), rgba(5,5,5,0));
+.rail-wrap::after { right: 0; background: linear-gradient(to left, var(--bg) 0%, var(--bg) 46%, rgba(5,5,5,0) 100%);
   transition: opacity 0.3s ease; }
 .rail { display: flex; gap: 0.7rem; padding: 0.2rem 0 0.8rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .rail::-webkit-scrollbar { height: 0; }
@@ -305,10 +309,22 @@ strong { color: var(--w); font-weight: 700; }
   text-transform: uppercase; color: var(--tx-d); }
 
 /* ===== Шаги: текст слева, сцена продукта справа ===== */
-.step-wrap { max-width: 50rem; display: grid; gap: clamp(0.9rem, 2vh, 1.4rem); }
+/* Шесть шагов обязаны выглядеть одинаково: шапка и панель имеют постоянную
+   высоту, иначе от шага к шагу они прыгали по вертикали на 100–150px, а высота
+   панели менялась втрое (жалоба владельца «чтобы ничего не скакало»). */
+.step-wrap { max-width: 50rem; display: grid; grid-template-rows: auto 1fr;
+  gap: clamp(0.9rem, 2vh, 1.4rem); align-content: start; }
+/* заголовок шага занимает две строки всегда — иначе шапка прыгает на 32px */
+.step-copy { min-height: 8.8rem; }
+.step-copy h2 { min-height: 2.5em; }
+.step-copy p { margin-bottom: 0; }
+/* высота панели ФИКСИРОВАНА: иначе она менялась от шага к шагу втрое */
+.stage-card { display: flex; flex-direction: column; justify-content: center;
+  height: min(52vh, 26rem); }
+.stage-card > .ui { width: 100%; }
 .step-n { font-size: 10px; font-weight: 700; letter-spacing: 0.2em; color: var(--o-l); margin-bottom: 0.6rem; }
 .step-copy h2 { font-size: clamp(1.1rem, 1.9vw, 1.55rem); margin-bottom: 0.7rem; }
-.step-copy p { max-width: 34rem; }
+.step-copy p { max-width: 38rem; }
 
 /* ===== Мини-интерфейс продукта ===== */
 .ui { position: relative; border-radius: 1rem; border: 1px solid var(--line);
@@ -345,10 +361,15 @@ strong { color: var(--w); font-weight: 700; }
 .caret { display: inline-block; width: 6px; height: 12px; background: var(--p-l); vertical-align: -2px; animation: caret 1s steps(2) infinite; }
 @keyframes caret { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 .flow-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.node { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.85rem; border-radius: 0.6rem; font-size: 11.5px;
+.node { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.62rem 0.95rem; border-radius: 0.7rem; font-size: 12px;
   border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); font-size: 10.5px; color: var(--w); }
-.node.ai { border-color: rgba(136,84,243,0.5); background: linear-gradient(135deg, rgba(136,84,243,0.16), rgba(249,115,22,0.10)); }
-.node.ai i { color: var(--p-l); font-size: 10px; }
+/* шаги процесса окрашены ОДИНАКОВО на всех сценах: люди оранжевые, системы
+   фиолетовые, ИИ-агенты фиолетово-оранжевым градиентом */
+.node.human, .fnode.human, .pnode.human { border: 1px solid rgba(249,115,22,0.55); background: rgba(249,115,22,0.12); }
+.node.sys, .fnode.sys, .pnode.sys { border: 1px solid rgba(136,84,243,0.6); background: rgba(136,84,243,0.16); }
+.node.human i, .fnode.human i, .pnode.human i { color: var(--o-l); }
+.node.sys i, .fnode.sys i, .pnode.sys i { color: var(--p-l); }
+.node i, .fnode i, .pnode i { font-size: 11px; }
 
 /* 03 — процессы связаны между собой */
 /* процессы: прямоугольники сеткой, связи — стрелками между ними */
@@ -401,7 +422,7 @@ strong { color: var(--w); font-weight: 700; }
 /* 06 — агент в центре, поля вокруг */
 /* круг обязан быть КРУГОМ: ширину задаём от высоты, иначе max-height
    сплющивал квадрат в эллипс и поля вокруг вставали неровно */
-.hub { position: relative; height: min(42vh, 24rem); aspect-ratio: 1 / 1; width: auto;
+.hub { position: relative; height: min(34vh, 19rem); aspect-ratio: 1 / 1; width: auto;
   max-width: 100%; margin: 0 auto; }
 /* агент — фиолетово-оранжевый: рамка градиентом по маске (border-image ломает
    радиус), свечение и подпись тоже переливаются из фиолетового в оранжевый */
@@ -417,7 +438,11 @@ strong { color: var(--w); font-weight: 700; }
 .hub-core i { font-size: 26px; background: linear-gradient(120deg, var(--p-l), var(--o-l));
   -webkit-background-clip: text; background-clip: text; color: transparent; }
 /* поля по кругу чередуются: фиолетовое — оранжевое */
-.spoke { position: absolute; transform: translate(-50%, -50%); padding: 0.38rem 0.75rem; border-radius: 999px; white-space: nowrap;
+/* центрируем СВОЙСТВОМ translate, а не transform: у .spoke есть data-seq, и
+   правило появления «.screen.active .stage-card [data-seq] { transform: none }»
+   имеет более высокую специфичность — оно стирало центрирование, и всё
+   кольцо съезжало вправо-вниз на половину размера ярлыка */
+.spoke { position: absolute; translate: -50% -50%; padding: 0.38rem 0.75rem; border-radius: 999px; white-space: nowrap;
   border: 1px solid rgba(136,84,243,0.4); background: rgba(10,10,16,0.94); font-size: 11px; color: var(--w); }
 .spoke:nth-of-type(even) { border-color: rgba(249,115,22,0.35); }
 /* ровная орбита, которая медленно крутится: половина фиолетовая, половина оранжевая */
@@ -502,4 +527,23 @@ strong { color: var(--w); font-weight: 700; }
   .screen, .stage-card, .stage-card [data-seq], .radar .shape {
     opacity: 1 !important; transform: none !important; transition: none !important; animation: none !important; }
   .ticker-row, .wave span, .caret { animation: none !important; }
+}
+
+/* На центрированных экранах карточки и ленты сохраняют левую выключку текста:
+   центрируется блок целиком, а не каждая строка внутри него. */
+.wrap.center .biz, .wrap.center .out, .wrap.center .plan, .wrap.center .ui { text-align: left; }
+.wrap.center .plan { text-align: center; }
+
+/* ===== Мобилка: цепочки процессов и паутина не должны вылезать за экран ===== */
+@media (max-width:620px) {
+  /* четыре блока в ряд не помещаются в 390px — разрешаем перенос */
+  .prow, .frow { flex-wrap: wrap; row-gap: 0.3rem; }
+  .pnode, .fnode, .node { padding: 0.45rem 0.6rem; font-size: 10.5px; gap: 0.35rem; }
+  .opnode { font-size: 10px; }
+  /* подписи осей паутины упираются в края — даём им запас */
+  .radar { max-height: 30vh; padding: 0 0.6rem; }
+  .hub { height: min(38vh, 15rem); }
+  .spoke { font-size: 9px; padding: 0.28rem 0.5rem; }
+  /* подпись метрики на узкой карточке переносится, а не мельчает */
+  .biz-metric { white-space: normal; }
 }

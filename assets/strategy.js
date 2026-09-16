@@ -47,13 +47,16 @@
     var live = els.filter(function (el) { return el.clientWidth > 0; });
     if (!live.length) return;                   /* экран ещё скрыт */
     var size = parseFloat(getComputedStyle(live[0]).fontSize);
-    var min = size * 0.4;
+    /* нижний предел в 9px: без него подпись метрики на узкой карточке ужималась
+       до 5.5px и читать её было нельзя */
+    var min = Math.max(size * 0.4, 9);
     function overflows() {
       return live.some(function (el) { return el.scrollWidth > el.clientWidth; });
     }
     while (size > min && overflows()) {
-      size -= 0.5;
+      size = Math.max(min, size - 0.5);
       live.forEach(function (el) { el.style.fontSize = size + 'px'; });
+      if (size <= min) break;
     }
   }
   function fitHeadings(root) {
@@ -76,18 +79,23 @@
   window.addEventListener('resize', fitHeadings);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeadings);
 
-  /* ---------- лента артефактов: левая растушёвка только после прокрутки ---------- */
-  $$('.rail-wrap').forEach(function (wrap) {
-    var rail = $('.rail', wrap);
-    if (!rail) return;
-    function paintFade() {
+  /* ---------- лента артефактов: растушёвка по краям ----------
+     Считать её можно только на ПОКАЗАННОМ экране: у скрытого clientWidth и
+     scrollWidth равны нулю, и «доскроллено до конца» срабатывало сразу — правая
+     растушёвка гасла, а карточка обрезалась голым краем. */
+  function paintFades(root) {
+    if (!root || !root.querySelectorAll) root = document;
+    $$('.rail-wrap', root).forEach(function (wrap) {
+      var rail = $('.rail', wrap);
+      if (!rail || !rail.clientWidth) return;
       wrap.classList.toggle('scrolled', rail.scrollLeft > 4);
       wrap.classList.toggle('ended', rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 4);
-    }
-    rail.addEventListener('scroll', paintFade, { passive: true });
-    window.addEventListener('resize', paintFade);
-    paintFade();
+    });
+  }
+  $$('.rail').forEach(function (rail) {
+    rail.addEventListener('scroll', function () { paintFades(rail.closest('.screen')); }, { passive: true });
   });
+  window.addEventListener('resize', function () { paintFades(screens[cur]); });
 
   /* ---------- перелёт оранжевых блоков между шагами 03 → 04 → 05 ----------
      Считаем позиции через offsetLeft/offsetTop: смещения не зависят от transform,
@@ -116,13 +124,13 @@
       if (!was) return;
       var now = offsetIn(el, screen);
       var dx = was.x - now.x, dy = was.y - now.y;
-      var sx = now.w ? was.w / now.w : 1, sy = now.h ? was.h / now.h : 1;
-      if (Math.abs(dx) < 2 && Math.abs(dy) < 2 && Math.abs(sx - 1) < 0.02 && Math.abs(sy - 1) < 0.02) return;
+      /* только перенос, без масштаба: блоки на всех сценах одного размера, а
+         scale() визуально «раздувал» их в полёте (жалоба владельца) */
+      if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
       el.style.transition = 'none';
       el.style.opacity = '1';
       el.style.transformOrigin = 'top left';
-      el.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) scale(' +
-        sx.toFixed(3) + ',' + sy.toFixed(3) + ')';
+      el.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)';
       el.style.zIndex = '3';
       el.classList.add('flying');
       moved.push(el);
@@ -158,6 +166,7 @@
     dots.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
     screens[cur].scrollTop = 0;
     fitHeadings(screens[cur]);
+    paintFades(screens[cur]);
     countUpIn(screens[cur]);
   }
   function go(i) {

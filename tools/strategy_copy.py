@@ -29,7 +29,7 @@ EN = {
 
     # ── 3. Цифры ──
     "n_eyebrow": "The market today",
-    "n_head": "Using AI is not the same as becoming AI-First",
+    "n_head": 'Using <span class="hl-p">AI</span> is not the same as becoming <span class="hl-p">AI-First</span>',
     "numbers": [
         ("76%", "use AI"),
         ("14%", "use it in core operations"),
@@ -40,7 +40,7 @@ EN = {
 
     # ── 4. Кейсы ──
     "b_eyebrow": "Use cases",
-    "b_head": "Built for the way your business actually works",
+    "b_head": 'Built for the way your <span class="hl-o">business</span> actually works',
     "biz_explore": "Explore",
     "businesses": [
         ("Consulting Business", "20% ↑", "Revenue growth"),
@@ -56,7 +56,7 @@ EN = {
 
     # ── 5. Решение ──
     "d_eyebrow": "Solution",
-    "d_head": "An AI-First operating model for your business",
+    "d_head": 'An <span class="hl-p">AI-First</span> operating model for your <span class="hl-o">business</span>',
     "d_sub": "Built around how your business actually works",
     "deliverables": [
         ("AI Maturity Index", "See where you stand — and what’s holding you back"),
@@ -92,7 +92,7 @@ EN = {
         "s1_score": "AI Maturity Index",
         "s2_bar": "Your words",
         "s2_quote": "“We get most leads through the website, then a manager qualifies them and books a call…”",
-        "s2_cards": ["Lead arrives", "Qualification", "Meeting"],
+        "s2_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human")],
         "s3_bar": "Sales process",
         "s3_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human"),
                      ("Meeting", "human"), ("Proposal", "human"), ("Follow-up", "human")],
@@ -102,8 +102,9 @@ EN = {
         "s4_impact": "Potential impact · high",
         "s4_complexity": "Complexity · medium",
         "s5_bar": "AI-First Model",
-        "s5_flow": [("Lead arrives", "human"), ("AI Qualification", "ai"), ("Meeting", "human"),
-                    ("AI Proposal", "ai"), ("Follow-up", "human"), ("AI Reporting", "ai")],
+        "s5_flow": [("Lead arrives", "human"), ("AI Qualification", "ai"), ("CRM update", "sys"),
+                    ("Meeting", "human"), ("AI Proposal", "ai"), ("Follow-up", "human"),
+                    ("AI Reporting", "ai")],
         "s5_legend_h": "People",
         "s5_legend_a": "AI agents",
         "s6_bar": "AI Sales Qualification Agent",
@@ -113,7 +114,7 @@ EN = {
 
     # ── 7. Обучение ──
     "l_eyebrow": "Learning",
-    "l_head": "New business model. New roles",
+    "l_head": 'New <span class="hl-o">business</span> model. New roles',
     "l_sub": ("<span class=\"l\">Free training helps your team learn how to work with AI</span>"
               "<span class=\"l\">and build agents themselves</span>"),
     "l_note": "For more complex cases, contact Andre AI Technologies",
@@ -128,7 +129,7 @@ EN = {
 
     # ── 8. Тарифы ──
     "pr_eyebrow": "Pricing",
-    "pr_head": "Start free. Scale when you need",
+    "pr_head": 'Start <span class="hl-p">free</span>. Scale when you <span class="hl-o">need</span>',
     "pr_sub": "One-time purchase. No subscription required",
     "plans": [
         ("", "Free", "$0", "1 process", "Start free"),
@@ -141,9 +142,9 @@ EN = {
                 ("Build your AI strategy yourself", False)],
 
     # ── 9. Финал ──
-    "f_1": "Where should you start with AI?",
+    "f_1": 'Where should you start with <span class="hl-p">AI</span>?',
     "f_2": "You don’t need to know",
-    "f_3": "AI Strategy shows you",
+    "f_3": 'AI Strategy shows <span class="hl-o">you</span>',
     "f_cta": "Start your AI transformation for free",
     "legal": ["Privacy Policy", "Terms of Use"],
     "company": "Andre AI Technologies",
@@ -171,7 +172,7 @@ RU = {
     "hero_lead": "AI Strategy показывает, как трансформировать ваш бизнес с помощью ИИ",
 
     "n_eyebrow": "Рынок сегодня",
-    "n_head": "Пользоваться ИИ и быть AI-First — не одно и то же",
+    "n_head": 'Пользоваться <span class="hl-p">ИИ</span> и быть <span class="hl-p">AI-First</span> — не одно и то же',
     "numbers": [
         ("76%", "используют ИИ"),
         ("14%", "встроили его в основную работу"),
@@ -181,7 +182,7 @@ RU = {
     "n_foot": "Не дайте конкурентам уйти вперёд с ИИ",
 
     "b_eyebrow": "Кейсы",
-    "b_head": "Собрано под то, как ваш бизнес работает на самом деле",
+    "b_head": 'Собрано под то, как ваш <span class="hl-o">бизнес</span> работает на самом деле',
     "biz_explore": "Открыть",
     "businesses": [
         ("Консалтинг", "20% ↑", "Рост выручки"),
@@ -196,7 +197,7 @@ RU = {
     "b_all": "Посмотреть все типы бизнеса",
 
     "d_eyebrow": "Решение",
-    "d_head": "AI-First операционная модель вашего бизнеса",
+    "d_head": '<span class="hl-p">AI-First</span> операционная модель вашего <span class="hl-o">бизнеса</span>',
     "d_sub": "Построена вокруг того, как ваш бизнес работает на самом деле",
     "deliverables": [
         ("Индекс ИИ-зрелости", "Где вы сейчас — и что вас тормозит"),
@@ -231,7 +232,7 @@ RU = {
         "s1_score": "Индекс ИИ-зрелости",
         "s2_bar": "Ваши слова",
         "s2_quote": "«Большинство заявок приходит с сайта, дальше менеджер квалифицирует их и назначает созвон…»",
-        "s2_cards": ["Пришёл лид", "Квалификация", "Встреча"],
+        "s2_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human")],
         "s3_bar": "Процесс продаж",
         "s3_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human"),
                      ("Встреча", "human"), ("Предложение", "human"), ("Follow-up", "human")],
@@ -241,8 +242,9 @@ RU = {
         "s4_impact": "Эффект · высокий",
         "s4_complexity": "Сложность · средняя",
         "s5_bar": "AI-First модель",
-        "s5_flow": [("Пришёл лид", "human"), ("ИИ-квалификация", "ai"), ("Встреча", "human"),
-                    ("ИИ-предложение", "ai"), ("Follow-up", "human"), ("ИИ-отчётность", "ai")],
+        "s5_flow": [("Пришёл лид", "human"), ("ИИ-квалификация", "ai"), ("Обновление CRM", "sys"),
+                    ("Встреча", "human"), ("ИИ-предложение", "ai"), ("Follow-up", "human"),
+                    ("ИИ-отчётность", "ai")],
         "s5_legend_h": "Люди",
         "s5_legend_a": "ИИ-агенты",
         "s6_bar": "ИИ-агент квалификации продаж",
@@ -251,7 +253,7 @@ RU = {
     },
 
     "l_eyebrow": "Обучение",
-    "l_head": "Новая бизнес-модель. Новые роли",
+    "l_head": 'Новая <span class="hl-o">бизнес</span>-модель. Новые роли',
     "l_sub": ("<span class=\"l\">Бесплатное обучение помогает команде работать с ИИ</span>"
               "<span class=\"l\">и собирать агентов самостоятельно</span>"),
     "l_note": "Для более сложных задач — пишите в Andre AI Technologies",
@@ -265,7 +267,7 @@ RU = {
     ],
 
     "pr_eyebrow": "Тарифы",
-    "pr_head": "Начните бесплатно. Масштабируйте, когда нужно",
+    "pr_head": 'Начните <span class="hl-p">бесплатно</span>. Масштабируйте, когда <span class="hl-o">нужно</span>',
     "pr_sub": "Разовая покупка. Без подписки",
     "plans": [
         ("", "Бесплатно", "$0", "1 процесс", "Начать бесплатно"),
@@ -277,9 +279,9 @@ RU = {
     "compare": [("Консалтинговая компания — $100K+", True), ("ИИ-консультант — $10K+", True),
                 ("Собрать ИИ-стратегию самому", False)],
 
-    "f_1": "С чего начать внедрять ИИ?",
+    "f_1": 'С чего начать внедрять <span class="hl-p">ИИ</span>?',
     "f_2": "Вам не обязательно это знать",
-    "f_3": "AI Strategy покажет",
+    "f_3": 'AI Strategy <span class="hl-o">покажет</span>',
     "f_cta": "Начать ИИ-трансформацию бесплатно",
     "legal": ["Политика конфиденциальности", "Условия использования"],
     "company": "Andre AI Technologies",

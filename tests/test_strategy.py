@@ -454,9 +454,16 @@ def test_final_screen_content_is_centred():
 
 
 def test_screens_never_clip_their_top_when_content_is_tall():
-    """safe center: иначе у длинного экрана срезался верх и до него не докрутить."""
-    for rel in ("assets/strategy.css", "assets/about.css"):
-        assert "justify-content: safe center" in _read(rel), rel + ": нет safe-центрирования"
+    """Верх длинного экрана обязан оставаться доступным: на лендинге это
+    `safe center`, в биографии — жёсткая привязка к верху (правка владельца:
+    заголовок главы не должен прыгать от слайда к слайду)."""
+    assert "justify-content: safe center" in _read("assets/strategy.css"), \
+        "на лендинге нет safe-центрирования"
+    about = _read("assets/about.css")
+    assert "justify-content: flex-start" in about, \
+        "в биографии экран прижат к постоянному верху"
+    assert "justify-content: safe center" not in about, \
+        "вертикального центрирования в биографии больше нет — оно двигало заголовок"
 
 
 if __name__ == "__main__":

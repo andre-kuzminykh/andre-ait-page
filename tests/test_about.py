@@ -377,6 +377,36 @@ def test_last_two_paragraphs_moved_to_the_mission():
             assert mark not in dense, "%s: «%s» осталось на экране экосистемы" % (lang, mark)
 
 
+def test_chapter_heading_never_jumps_between_slides():
+    """Правка владельца «чтобы ничего не скакало»: экран прижат к постоянному
+    верху, поэтому заголовок главы стоит на одной высоте на всех слайдах."""
+    css = _css()
+    screen = re.search(r"\n  \.screen \{(.*?)\}", css, re.S)
+    assert screen, "не найдено правило .screen"
+    body = screen.group(1)
+    assert "justify-content: flex-start" in body, "экран прижат к верху"
+    assert "safe center" not in body, \
+        "вертикального центрирования быть не должно — оно двигало заголовок"
+
+
+def test_dense_screen_is_typeset_like_the_others():
+    """Правка владельца: слайд «экосистема» не должен выглядеть мельче остальных."""
+    css = _css()
+    dense = re.findall(r"\.screen\.dense[^{]*\{([^}]*)\}", css)
+    assert dense, "нет правил плотного экрана"
+    for body in dense:
+        assert "font-size" not in body, \
+            "у плотного экрана не должно быть своего кегля: " + body.strip()[:70]
+
+
+def test_mobile_text_fades_out_behind_the_video_circle():
+    """На мобилке глава длиннее экрана и текст проезжает под кружком видео."""
+    css = _css()
+    assert ".bottom-fade" in css, "нет затемнения внизу колонки"
+    for lang, html in _pages():
+        assert 'class="bottom-fade"' in html, lang + ": нет элемента затемнения"
+
+
 if __name__ == "__main__":
     import sys
     fails = 0

@@ -90,8 +90,9 @@ def stages(t):
       </div>""".format(
         bar=s["s2_bar"], quote=s["s2_quote"],
         bars="".join('<span style="animation-delay:%.2fs"></span>' % (i * 0.08) for i in range(18)),
-        cards="".join('<div class="node ai" data-seq><i class="fa-solid fa-diagram-project"></i>%s</div>' % c
-                      for c in s["s2_cards"])))
+        cards="".join('<div class="node %s" data-seq><i class="fa-solid %s"></i>%s</div>'
+                      % (kind, "fa-user" if kind == "human" else "fa-database", name)
+                      for name, kind in s["s2_cards"])))
 
     # 03 — процессы связаны между собой, где люди — оранжевые
     proc = s["s3_cards"]
@@ -105,7 +106,8 @@ def stages(t):
     # висящую чёрточку в конце ряда и рвала связь между рядами
     PARROW = '<span class="parrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
     PDOWN = '<span class="pwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
-    rows = [nodes[i:i + 3] for i in range(0, len(nodes), 3)]
+    half = -(-len(nodes) // 2)          # два ряда поровну, длинный сверху
+    rows = [nodes[:half], nodes[half:]]
     chain = []
     for r, row in enumerate(rows):
         chain.append('<div class="prow">' + PARROW.join(row) + "</div>")
@@ -139,14 +141,16 @@ def stages(t):
     # цепочка идёт рядами по три: в одну строку шесть блоков не помещаются,
     # а перенос флексом оставлял «висящую» стрелку в конце ряда
     items = []
+    ICON5 = {"human": "fa-user", "ai": "fa-robot", "sys": "fa-database"}
     for name, kind in s["s5_flow"]:
-        icon = "fa-user" if kind == "human" else "fa-robot"
+        icon = ICON5[kind]
         flip = flip_key(name) if kind == "human" else ""
         items.append('<div class="fnode %s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
                      % (kind, flip, icon, name))
     ARROW = '<span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
     DOWN = '<span class="fwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
-    flow, rows = [], [items[i:i + 3] for i in range(0, len(items), 3)]
+    half = -(-len(items) // 2)
+    flow, rows = [], [items[:half], items[half:]]
     for r, row in enumerate(rows):
         flow.append('<div class="frow">' + ARROW.join(row) + "</div>")
         if r < len(rows) - 1:
@@ -338,7 +342,7 @@ def page(t, lang):
 
   <!-- 1. Первый экран -->
   <section class="screen active" data-chapter="top" id="top">
-    <div class="wrap">
+    <div class="wrap center">
       <p class="eyebrow">AI Strategy</p>
       <h1>{h1}</h1>
       <p class="lead">{hero_lead}</p>
@@ -361,7 +365,7 @@ def page(t, lang):
 
   <!-- 4. Кейсы -->
   <section class="screen" data-chapter="usecases" id="usecases">
-    <div class="wrap">
+    <div class="wrap center">
       <p class="eyebrow">{b_eyebrow}</p>
       <h2>{b_head}</h2>
       <div class="biz-grid">{biz}</div>
@@ -371,7 +375,7 @@ def page(t, lang):
 
   <!-- 5. Решение -->
   <section class="screen" data-chapter="solution" id="solution">
-    <div class="wrap">
+    <div class="wrap center">
       <p class="eyebrow o">{d_eyebrow}</p>
       <h2>{d_head}</h2>
       <p class="lead">{d_sub}</p>
@@ -399,7 +403,7 @@ def page(t, lang):
 
   <!-- 8. Тарифы -->
   <section class="screen" data-chapter="pricing" id="pricing">
-    <div class="wrap">
+    <div class="wrap center">
       <p class="eyebrow">{pr_eyebrow}</p>
       <h2>{pr_head}</h2>
       <p class="lead">{pr_sub}</p>
