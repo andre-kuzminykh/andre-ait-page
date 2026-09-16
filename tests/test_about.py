@@ -127,7 +127,7 @@ def test_menu_lists_biography_chapters():
             assert 'data-chapter="%s"' % key in html, "%s: в меню нет главы %s" % (lang, key)
         assert html.count('class="nav-tab') == len(CHAPTERS), lang + ": в меню шесть глав"
         screens = re.findall(r'<section class="screen[^"]*" data-i="(\d+)" data-chapter="([a-z]+)"', html)
-        assert len(screens) >= 12, lang + ": биография разложена по экранам"
+        assert len(screens) >= 6, lang + ": биография разложена по экранам"
         assert screens[0][1] == "childhood", lang + ": первый экран — про детство"
 
 
@@ -208,13 +208,37 @@ WM_ICONS = ["ic-tiger", "fa-graduation-cap", "fa-coins", "fa-rocket", "fa-microc
 def test_chapter_watermarks_alternate_sides():
     for lang, html in _pages():
         marks = re.findall(r'<div class="wm ([lr])"[^>]*>(.*?)</div>', html, re.S)
-        assert len(marks) >= 12, "%s: у экранов должны быть фоновые знаки, найдено %d" % (lang, len(marks))
+        assert len(marks) >= 5, "%s: у экранов должны быть фоновые знаки, найдено %d" % (lang, len(marks))
         sides = [side for side, _ in marks]
         assert sides == ["l" if i % 2 == 0 else "r" for i in range(len(sides))], \
             "%s: знаки идут по очереди слева и справа, получилось %s" % (lang, sides)
         bodies = " ".join(b for _, b in marks)
         for icon in WM_ICONS:
             assert icon in bodies, "%s: нет знака главы %s" % (lang, icon)
+
+
+def test_chapters_are_dense_slides():
+    """Правка владельца: детство целиком на первом слайде, образование на
+    втором и так далее — один слайд на главу, без пустых нарезок."""
+    for lang, html in _pages():
+        screens = re.findall(r'<section class="screen[^"]*" data-i="\d+" data-chapter="([a-z]+)"', html)
+        assert screens[:5] == ["childhood", "education", "career", "startups", "ecosystem"], \
+            "%s: порядок глав сбился: %s" % (lang, screens[:5])
+        first = re.search(r'<section class="screen active".*?</section>', html, re.S).group(0)
+        for mark in ("Intelligence creates possibilities", "Sometimes the strongest motivation") \
+                if lang == "en" else ("Интеллект открывает возможности", "Иногда самая сильная мотивация"):
+            assert mark in first, "%s: цитата должна быть на первом слайде" % lang
+        last = re.findall(r'<section class="screen"[^>]*>.*?</section>', html, re.S)[-1]
+        assert 'class="finale' in last and 'class="foot"' in last, \
+            "%s: финал и подвал с иконками — на последнем слайде" % lang
+
+
+def test_no_gradient_strip_above_headings():
+    """«Без градиентных полосок сверху»: ни линии над заголовком, ни полосы прогресса."""
+    css = _css()
+    assert "h2::before" not in css, "над заголовком главы полоски быть не должно"
+    for lang, html in _pages():
+        assert 'class="progress"' not in html, lang + ": верхняя полоса прогресса убрана"
 
 
 def test_biography_is_a_deck_of_screens():
@@ -227,7 +251,7 @@ def test_biography_is_a_deck_of_screens():
     assert ".article.leaving .screen.active" in css, "уходящий экран анимируется"
     for lang, html in _pages():
         screens = re.findall(r'<section class="screen"[^>]*>(.*?)</section>', html, re.S)
-        assert len(screens) >= 12, "%s: биография должна быть разложена по экранам (%d)" % (lang, len(screens))
+        assert len(screens) >= 6, "%s: биография должна быть разложена по экранам (%d)" % (lang, len(screens))
         for i, body in enumerate(screens):
             text = re.sub(r"<[^>]+>", " ", body).strip()
             assert len(text) > 40, "%s: экран %d почти пустой" % (lang, i + 1)
