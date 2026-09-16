@@ -42,6 +42,14 @@ import build_clean_lecture as clean  # noqa: E402
 
 FORM = {"width": 1380, "height": 864}
 
+# Лист печати описывает САМА страница: 1380x864 CSS-пикселя = 14.375x9 дюйма
+# при 96 dpi. Только так раскладка печати совпадает с экранной один в один —
+# см. комментарий у page.pdf ниже. Жёсткие размеры html/body гарантируют ровно
+# одну страницу на слайд.
+PAGE_CSS = ('<style id="pdf-page">@page{size:14.375in 9in;margin:0}'
+            'html,body{width:%dpx;height:%dpx;}</style>'
+            % (FORM["width"], FORM["height"]))
+
 
 def chromium_path():
     env = os.environ.get("CHROMIUM_PATH")
@@ -124,7 +132,19 @@ def build(lecture, out_path, theme):
     src = os.path.join(ROOT, "automation", str(lecture), "clean", "index.html")
     clean.build(lecture, src)
 
-    url = "file://%s?theme=%s" % (src, theme)
+    # Шрифт вшиваем В САМУ СТРАНИЦУ, до первой загрузки. Через add_style_tag
+    # после открытия — нельзя: подгонщик к тому моменту уже измерил колоду
+    # вариативным Montserrat, метрики статического чуть шире, и заголовок
+    # обложки вылезал за края страницы срезанным с обеих сторон. Пересчёт
+    # после подмены шрифта не происходит, потому что содержимое не менялось.
+    printable = os.path.join(ROOT, "build", "lecture-%d-print.html" % lecture)
+    html = open(src, encoding="utf-8").read()
+    html = html.replace("</head>", "<style id=\"pdf-fonts\">%s</style>%s</head>"
+                        % (static_montserrat_css(), PAGE_CSS), 1)
+    os.makedirs(os.path.dirname(printable), exist_ok=True)
+    open(printable, "w", encoding="utf-8").write(html)
+
+    url = "file://%s?theme=%s" % (printable, theme)
     writer, pages = PdfWriter(), 0
     with sync_playwright() as pw:
         br = pw.chromium.launch(executable_path=chromium_path(), args=["--no-sandbox"])
@@ -136,10 +156,22 @@ def build(lecture, out_path, theme):
         page.wait_for_timeout(5000)
         # Печать в режиме screen: под печать колода не размечена.
         page.emulate_media(media="screen")
-        # Статический Montserrat — ДО замера шрифта и до печати.
-        page.add_style_tag(content=static_montserrat_css())
-        page.wait_for_timeout(1200)
-        page.evaluate("() => document.fonts.ready")
+        # Начертания с data-ссылками браузер тянет ЛЕНИВО, по мере надобности,
+        # и document.fonts.ready успевает разрешиться раньше них. Подгонщик в
+        # этот момент меряет колоду ещё запасным шрифтом — на обложке заголовок
+        # от этого вылезал за края страницы срезанным с обеих сторон.
+        # Поэтому: догружаем ВСЕ начертания принудительно...
+        page.evaluate("""async () => {
+          await Promise.all([...document.fonts].map(f => f.load().catch(() => {})));
+          await document.fonts.ready;
+        }""")
+        # ...и заставляем пересчитать раскладку уже с ними. Полный пересчёт
+        # запускает только смена ФОРМЫ, поэтому уходим на телефонную и
+        # возвращаемся: ресайз внутри одной формы кегли не трогает.
+        page.set_viewport_size({"width": 390, "height": 844})
+        page.wait_for_timeout(1500)
+        page.set_viewport_size(dict(FORM))
+        page.wait_for_timeout(2500)
 
         actual = page.evaluate("() => document.documentElement.className || 'светлая'")
         rl.check_font(page, allow_fallback=False)      # Montserrat, а не системный
@@ -148,10 +180,12 @@ def build(lecture, out_path, theme):
 
         for i in range(total):
             page.wait_for_timeout(420)                 # дать подгонке встать
+            # Размер листа берётся ИЗ СТРАНИЦЫ (@page в PAGE_CSS), а не из
+            # аргументов. С width/height Chromium раскладывал печать сам и
+            # разъезжался с экраном: содержимое выходило шире листа, и обложку
+            # срезало с обеих сторон, а фон последних слайдов не доходил до краёв.
             writer.append(PdfReader(io.BytesIO(page.pdf(
-                width="%dpx" % FORM["width"], height="%dpx" % FORM["height"],
-                print_background=True, prefer_css_page_size=False,
-                margin={"top": "0", "right": "0", "bottom": "0", "left": "0"}))))
+                print_background=True, prefer_css_page_size=True))))
             pages += 1
             if i < total - 1:
                 page.evaluate("() => window.nextSlide && window.nextSlide()")
