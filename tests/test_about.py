@@ -298,6 +298,20 @@ def test_density_steps_survive_the_main_site_zoom():
         "ступени плотности обязаны идти после акцентов"
 
 
+def test_third_density_step_covers_very_short_windows():
+    """Окно высотой ~635px (владелец смотрит именно в таком): самые длинные
+    главы переливались на 60–105px и уезжали в прокрутку. Третья ступень
+    ужимает их целиком, включая сведённую главу «экосистема»."""
+    css = _read("assets/about.css")
+    for w, h in (("1024px", "730px"), ("1600px", "840px"), ("1900px", "949px"), ("2300px", "1095px")):
+        assert "(min-width:%s) and (max-height:%s)" % (w, h) in css, \
+            "нет третьей ступени плотности для %s/%s" % (w, h)
+    third = css[css.index("третья ступень"):]
+    third = third[:third.index("Очень плотный экран")]
+    assert ".screen.dense p {" in third, "сведённая глава ужимается на этой ступени тоже"
+    assert "padding-top: 5.1rem" in third, "шапка экрана прижата плотнее"
+
+
 def test_frame_is_not_measured_in_vw():
     """vw умножается на body{zoom} — рамку страницы меряем процентами."""
     for rel in ("assets/about.css",):

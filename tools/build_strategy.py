@@ -23,6 +23,10 @@ NAV = [
     ("start",      "fa-rocket",          "#F97316"),
 ]
 
+# Поля паспорта агента: порядок совпадает с s6_spokes в обоих языках
+SPOKE_ICONS = ["fa-bolt", "fa-arrow-right-to-bracket", "fa-arrow-right-from-bracket",
+               "fa-database", "fa-scale-balanced", "fa-chart-simple", "fa-user-gear", "fa-list-check"]
+
 BIZ_ICONS = ["fa-briefcase", "fa-user-tie", "fa-bullhorn", "fa-pen-nib",
              "fa-headset", "fa-life-ring", "fa-palette", "fa-code"]
 OUT_ICONS = ["fa-gauge-high", "fa-diagram-project", "fa-brain", "fa-lightbulb",
@@ -58,6 +62,30 @@ def radar(values, dims):
     return rings + axes + '<polygon class="shape" points="%s"/>' % pts(None, values)
 
 
+def chain_rows(items, arrow=None, down=None, cls="prow"):
+    """Цепочка двумя рядами со СКВОЗНОЙ нумерацией элементов.
+
+    Каждому блоку и стрелке проставляется --i: задержка появления считается
+    из него, поэтому каскад идёт через оба ряда одной волной и не начинается
+    заново на переносе (правка владельца: «анимация в слайдах с процессами
+    фиговая»)."""
+    half = -(-len(items) // 2)
+    rows, out, i = [items[:half], items[half:]], [], 0
+    for r, row in enumerate(rows):
+        cells = []
+        for k, node in enumerate(row):
+            if k and arrow:
+                cells.append(arrow.replace("<span ", '<span style="--i:%d" ' % i, 1))
+                i += 1
+            cells.append(node.replace("<div ", '<div style="--i:%d" ' % i, 1))
+            i += 1
+        out.append('<div class="%s">%s</div>' % (cls, "".join(cells)))
+        if r < len(rows) - 1 and down:
+            out.append(down.replace("<span ", '<span style="--i:%d" ' % i, 1))
+            i += 1
+    return "".join(out)
+
+
 def stages(t):
     """Шесть сцен продукта — по одной на шаг."""
     s = t["stage"]
@@ -76,10 +104,12 @@ def stages(t):
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
-          <div class="score"><b class="idx-val">2.4</b><span>/ 5</span></div>
           <div class="maturity">
             <svg class="radar" viewBox="0 0 200 200" role="img" aria-label="{bar}">{svg}</svg>
-            <div class="dims">{bars7}</div>
+            <div class="dimcol">
+              <div class="score"><b class="idx-val">2.4</b><span>/ 5</span></div>
+              <div class="dims">{bars7}</div>
+            </div>
           </div>
         </div>
       </div>""".format(bar=s["s1_bar"], svg=radar(vals, s["dims"]), bars7=bars7))
@@ -112,18 +142,12 @@ def stages(t):
     # висящую чёрточку в конце ряда и рвала связь между рядами
     PARROW = '<span class="parrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
     PDOWN = '<span class="pwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
-    half = -(-len(nodes) // 2)          # два ряда поровну, длинный сверху
-    rows = [nodes[:half], nodes[half:]]
-    chain = []
-    for r, row in enumerate(rows):
-        chain.append('<div class="prow">' + PARROW.join(row) + "</div>")
-        if r < len(rows) - 1:
-            chain.append(PDOWN)
+    chain = chain_rows(nodes, PARROW, PDOWN)
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot o"></span>{bar}</div>
         <div class="ui-body"><div class="pchain">{chain}</div></div>
-      </div>""".format(bar=s["s3_bar"], chain="".join(chain)))
+      </div>""".format(bar=s["s3_bar"], chain=chain))
 
     # 04 — что может забрать ИИ
     ops_html = []
@@ -135,11 +159,11 @@ def stages(t):
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
-          <div class="opgrid">{ops}</div>
+          <div class="pchain opchain">{ops}</div>
         </div>
       </div>""".format(
         bar=s["s4_bar"],
-        ops="".join(ops_html)))
+        ops=chain_rows(ops_html, cls="prow oprow")))
 
     # 05 — AI-First модель: люди оранжевые, агенты фиолетовые
     # цепочка идёт рядами по три: в одну строку шесть блоков не помещаются,
@@ -153,28 +177,30 @@ def stages(t):
                      % (kind, flip, icon, name))
     ARROW = '<span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
     DOWN = '<span class="fwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
-    half = -(-len(items) // 2)
-    flow, rows = [], [items[:half], items[half:]]
-    for r, row in enumerate(rows):
-        flow.append('<div class="frow">' + ARROW.join(row) + "</div>")
-        if r < len(rows) - 1:
-            flow.append(DOWN)
+    flow = chain_rows(items, ARROW, DOWN, cls="frow")
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>{bar}</div>
         <div class="ui-body">
           <div class="fflow">{flow}</div>
         </div>
-      </div>""".format(bar=s["s5_bar"], flow="".join(flow)))
+      </div>""".format(bar=s["s5_bar"], flow=flow))
 
     # 06 — паспорт агента: агент в центре, поля вокруг
     n = len(s["s6_spokes"])
     spokes = []
     for i, sp in enumerate(s["s6_spokes"]):
+        # Радиусы кольца заданы в CSS (--rx/--ry), а в вёрстку уходят только
+        # косинус и синус: на низком окне панель низкая, и поля, стоящие на
+        # окружности, налезали друг на друга сверху и снизу. Разводить их
+        # можно только по горизонтали — там запас есть, — поэтому кольцо
+        # полей эллиптическое, а сама орбита остаётся круглой.
         a = -math.pi / 2 + i * 2 * math.pi / n
-        x = 50 + math.cos(a) * 40
-        y = 50 + math.sin(a) * 40
-        spokes.append('<span class="spoke" data-seq style="left:%.1f%%; top:%.1f%%">%s</span>' % (x, y, sp))
+        cx = math.cos(a)
+        cy = math.sin(a)
+        ic = SPOKE_ICONS[i % len(SPOKE_ICONS)]
+        spokes.append('<span class="spoke" data-seq style="--cx:%.4f; --cy:%.4f; --i:%d">'
+                      '<i class="fa-solid %s"></i><span>%s</span></span>' % (cx, cy, i, ic, sp))
     spokes = "".join(spokes)
     out.append("""
       <div class="ui">
@@ -234,7 +260,7 @@ def page(t, lang):
         <div class="wrap step-wrap">
           <article class="step-copy">
             <p class="step-n">{n:02d} &mdash; {chapter} &mdash; {tag}</p>
-            <h2>{title}</h2>
+            <h2 class="one-line">{title}</h2>
             <p>{body}</p>
           </article>
           <div class="stage-card">{stage}</div>
@@ -363,17 +389,7 @@ def page(t, lang):
     </div>
   </section>
 
-  <!-- 4. Кейсы -->
-  <section class="screen" data-chapter="usecases" id="usecases">
-    <div class="wrap center">
-      <p class="eyebrow">{b_eyebrow}</p>
-      <h2>{b_head}</h2>
-      <div class="biz-grid">{biz}</div>
-      <a class="biz-all" href="{cta_href}" rel="noopener">{b_all} <i class="fa-solid fa-arrow-right"></i></a>
-    </div>
-  </section>
-
-  <!-- 5. Решение -->
+  <!-- 4. Решение -->
   <section class="screen" data-chapter="solution" id="solution">
     <div class="wrap center">
       <p class="eyebrow o">{d_eyebrow}</p>
@@ -383,6 +399,16 @@ def page(t, lang):
         <div class="rail">{outs}</div>
       </div>
       <p class="rail-hint"><i class="fa-solid fa-arrows-left-right"></i> {d_hint}</p>
+    </div>
+  </section>
+
+  <!-- 5. Кейсы -->
+  <section class="screen" data-chapter="usecases" id="usecases">
+    <div class="wrap center">
+      <p class="eyebrow">{b_eyebrow}</p>
+      <h2>{b_head}</h2>
+      <div class="biz-grid">{biz}</div>
+      <a class="biz-all" href="{cta_href}" rel="noopener">{b_all} <i class="fa-solid fa-arrow-right"></i></a>
     </div>
   </section>
 
@@ -415,6 +441,11 @@ def page(t, lang):
   <!-- 9. Финал -->
   <section class="screen final" data-chapter="start" id="start">
     <div class="wrap center">
+      <div class="final-mark" aria-hidden="true">
+        <span class="fm-ring"></span>
+        <i class="fa-solid fa-robot fm-bot"></i>
+        <span class="fm-coin"><i class="fa-solid fa-coins"></i></span>
+      </div>
       <h2 class="final-1">{f_1}</h2>
       <p class="final-2">{f_2}</p>
       <h2 class="final-3">{f_3}</h2>

@@ -81,9 +81,10 @@
     if (titles.length) shrinkToFit(titles);
     var metrics = $$('.biz-metric', root);
     if (metrics.length) shrinkToFit(metrics);
-    var ops = $$('.opnode', root);
-    if (ops.length) shrinkToFit(ops);
-    var chain = $$('.pnode, .fnode, .node', root);
+    /* блоки возможностей стоят такими же рядами, как цепочки на соседних
+       сценах, поэтому и кегль им подбирается вместе с ними — с проверкой
+       ширины всего ряда, а не каждого блока по отдельности */
+    var chain = $$('.pnode, .fnode, .node, .opnode', root);
     if (chain.length) {
       shrinkToFit(chain);
       /* ряд целиком тоже не должен вылезать за колонку: у блоков nowrap, и
@@ -92,12 +93,19 @@
       var rows = $$('.frow, .prow', root).filter(function (r) { return r.clientWidth > 0; });
       /* флекс-ряд не «прокручивается», поэтому переполнение ловим сравнением
          рамок ряда и панели, а не scrollWidth */
+      /* Считаем по СОДЕРЖИМОМУ панели и оставляем ещё воздух по краям:
+         сравнение с внешней рамкой разрешало ряду встать вплотную к ней и
+         даже залезть в её падинг — цепочка почти упиралась в края (жалоба
+         владельца «почти за края выходит»). */
+      var AIR = 14;
       function tooWide() {
         if (!box) return false;
-        var lim = box.getBoundingClientRect();
+        var lim = box.getBoundingClientRect(), cs = getComputedStyle(box);
+        var padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
+        var left = lim.left + padL + AIR, right = lim.right - padR - AIR;
         return rows.some(function (r) {
           var rr = r.getBoundingClientRect();
-          return rr.width > lim.width - 2 || rr.right > lim.right + 0.5 || rr.left < lim.left - 0.5;
+          return rr.width > right - left || rr.right > right || rr.left < left;
         });
       }
       var size = chain[0] ? parseFloat(getComputedStyle(chain[0]).fontSize) : 0;

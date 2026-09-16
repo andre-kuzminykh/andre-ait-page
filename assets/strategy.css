@@ -291,17 +291,23 @@ strong { color: var(--w); font-weight: 700; }
 @media (hover:hover) { .biz-all:hover { color: var(--w); } }
 
 /* ===== Решение: карточки лентой, края уходят в тёмный градиент ===== */
-.rail-wrap { position: relative; margin: 1.2rem 0 0.8rem; }
+/* Правка владельца: лента должна доходить ближе к краям экрана, а тёмная
+   растушёвка быть уже. Выходим за колонку .wrap на всю ширину экрана
+   (минус его боковые отступы) и сужаем градиент. */
+.rail-wrap { position: relative; margin: 1.2rem 0 0.8rem;
+  width: calc(100% + 2 * var(--rail-bleed, 0px));
+  margin-left: calc(-1 * var(--rail-bleed, 0px)); }
+@media (min-width:1024px) { .rail-wrap { --rail-bleed: clamp(1rem, 2.6vw, 2.6rem); } }
 /* растушёвка должна ПЕРЕКРЫВАТЬ край карточки, а не просто темнеть: фон почти
    чёрный, и мягкий градиент не прятал ни рамку, ни обрезанный текст */
-.rail-wrap::before, .rail-wrap::after { content: ''; position: absolute; top: -0.2rem; bottom: -0.2rem; width: 7rem; z-index: 3; pointer-events: none; }
-.rail-wrap::before { left: 0; background: linear-gradient(to right, var(--bg) 0%, var(--bg) 46%, rgba(5,5,5,0) 100%);
+.rail-wrap::before, .rail-wrap::after { content: ''; position: absolute; top: -0.2rem; bottom: -0.2rem; width: 3.4rem; z-index: 3; pointer-events: none; }
+.rail-wrap::before { left: 0; background: linear-gradient(to right, var(--bg) 0%, var(--bg) 30%, rgba(5,5,5,0) 100%);
   opacity: 0; transition: opacity 0.3s ease; }
 .rail-wrap.scrolled::before { opacity: 1; }
 .rail-wrap.ended::after { opacity: 0; }
-.rail-wrap::after { right: 0; background: linear-gradient(to left, var(--bg) 0%, var(--bg) 46%, rgba(5,5,5,0) 100%);
+.rail-wrap::after { right: 0; background: linear-gradient(to left, var(--bg) 0%, var(--bg) 30%, rgba(5,5,5,0) 100%);
   transition: opacity 0.3s ease; }
-.rail { display: flex; gap: 0.7rem; padding: 0.2rem 0 0.8rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.rail { display: flex; gap: 0.7rem; padding: 0.2rem var(--rail-bleed, 0px) 0.8rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .rail::-webkit-scrollbar { height: 0; }
 .out { flex: 0 0 auto; width: clamp(11rem, 17vw, 13rem); scroll-snap-align: start; padding: 0.9rem 1rem; border-radius: 0.9rem;
   border: 1px solid var(--line); background: var(--card); }
@@ -320,14 +326,14 @@ strong { color: var(--w); font-weight: 700; }
    блоки в одну строку на сцене возможностей растягивали весь шаг за экран */
 .step-wrap { max-width: 50rem; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr;
   gap: clamp(0.9rem, 2vh, 1.4rem); align-content: start; }
-/* заголовок шага занимает две строки всегда — иначе шапка прыгает на 32px */
-/* именно height, а не min-height: при трёхстрочном русском заголовке шапка
-   всё равно раздвигалась и панель уезжала вниз на 15px */
-.step-copy { height: 9.2rem; }
-/* высоту держит сам блок (.step-copy{height}), а не резерв под вторую
-   строку заголовка: иначе между заголовком и текстом зияла пустая строка */
+/* Постоянную высоту шапки держит ПОДЗАГОЛОВОК — резерв ровно в две строки, —
+   а не весь блок. Раньше на .step-copy стояла height: 9.2rem под худший
+   случай, и под текстом шага зияла пустота почти в 90px до панели (жалоба
+   владельца «текст поближе надо к карточке, и это во всех таких слайдах»).
+   Резерв на подзаголовке оставляет шапку одной высоты на всех шести шагах —
+   панель по-прежнему не скачет, — но пустоты под текстом больше нет. */
 .step-copy { display: flex; flex-direction: column; align-items: inherit; }
-.step-copy p { margin-bottom: 0; }
+.step-copy p { margin-bottom: 0; line-height: 1.6; min-height: 3.2em; }
 /* высота панели ФИКСИРОВАНА: иначе она менялась от шага к шагу втрое */
 .stage-card { display: flex; flex-direction: column; justify-content: center;
   height: min(52vh, 26rem); }
@@ -350,8 +356,11 @@ strong { color: var(--w); font-weight: 700; }
 .stage-card [data-seq] { opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s var(--ease); }
 .screen.active .stage-card [data-seq] { opacity: 1; transform: none; }
 
-/* 01 — зрелость: оценка НАД паутиной */
-.score { display: flex; align-items: baseline; justify-content: center; gap: 0.5rem; margin-bottom: 0.6rem; }
+/* 01 — зрелость: оценка стоит РОВНО НАД столбцом графиков (правка владельца
+   «оценку выровни с графиками чтобы над ними ровно была»), поэтому она живёт
+   в одной колонке с ними, а не по центру всей панели */
+.dimcol { display: flex; flex-direction: column; min-width: 0; }
+.score { display: flex; align-items: baseline; justify-content: flex-start; gap: 0.5rem; margin-bottom: 0.55rem; }
 .score b { font-size: clamp(1.4rem, 2.6vw, 2rem); line-height: 1; letter-spacing: -0.02em;
   background: linear-gradient(120deg, var(--p-l), var(--o-l)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .score span { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tx-d); }
@@ -384,7 +393,9 @@ strong { color: var(--w); font-weight: 700; }
 
 /* 03 — процессы связаны между собой */
 /* процессы: прямоугольники сеткой, связи — стрелками между ними */
-.pchain { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+/* ряды стоят чуть свободнее на высокой панели — иначе цепочка жмётся в
+   середину, а сверху и снизу зияет пустота */
+.pchain { display: flex; flex-direction: column; align-items: center; gap: clamp(0.3rem, 2vh, 0.9rem); }
 .prow { display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
 .pwrap { color: rgba(255,255,255,0.22); font-size: 10px; line-height: 1; }
 .parrow { color: rgba(255,255,255,0.25); font-size: 9px; }
@@ -399,16 +410,16 @@ strong { color: var(--w); font-weight: 700; }
 
 
 /* 04 — что может забрать ИИ */
-/* блоки естественной ширины и в одну строку: иначе тот же шаг был шире и
-   выше, чем на соседних сценах, и скачком менял размер в перелёте */
-/* minmax(0,1fr): у 1fr минимум равен min-content, и блок в одну строку с
-   длинной русской подписью раздвигал колонку за экран */
-.opgrid { display: grid; gap: 0.45rem; grid-template-columns: repeat(2, minmax(0, 1fr)); justify-items: center; }
-@media (min-width:560px) { .opgrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* Раскладка ровно как на соседних сценах — два ряда флексом, блоки своей
+   естественной ширины. Жёсткая сетка 4×2 давала колонку в четверть ширины
+   панели, и «Document analysis» не влезал в неё даже на минимальном кегле
+   (жалоба владельца «не вмещается документ анализ»). */
+.opchain { gap: 0.45rem; }
+.oprow { gap: 0.45rem; }
 /* тот же шаг процесса должен выглядеть так же, как на соседних сценах:
    иконка слева, строка в ряд — колоночная вёрстка делала блок в полтора
    раза крупнее и он скачком менял размер в перелёте */
-.opnode { display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-align: left; font-size: 11.5px;
+.opnode { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-align: left; font-size: 11.5px;
   padding: 0.55rem 0.35rem; border-radius: 0.6rem; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03);
   color: var(--w); }
 .opnode i { font-size: 12.5px; color: var(--tx-d); }
@@ -422,7 +433,7 @@ strong { color: var(--w); font-weight: 700; }
 .chip.o { border-color: rgba(249,115,22,0.45); color: var(--o-l); background: rgba(249,115,22,0.10); }
 
 /* 05 — AI-First модель: люди оранжевые, агенты фиолетовые */
-.fflow { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+.fflow { display: flex; flex-direction: column; align-items: center; gap: clamp(0.3rem, 2vh, 0.9rem); }
 .frow { display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
 .fnode { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.62rem 0.95rem; border-radius: 0.7rem; font-size: 12px; color: var(--w); }
 .fnode.human { border: 1px solid rgba(249,115,22,0.55); background: rgba(249,115,22,0.12); }
@@ -441,7 +452,7 @@ strong { color: var(--w); font-weight: 700; }
 /* круг обязан быть КРУГОМ: ширину задаём от высоты, иначе max-height
    сплющивал квадрат в эллипс и поля вокруг вставали неровно */
 .hub { position: relative; height: min(34vh, 19rem); aspect-ratio: 1 / 1; width: auto;
-  max-width: 100%; margin: 0 auto; }
+  max-width: 100%; margin: 0 auto; --rx: 50%; --ry: 40%; }
 /* агент — фиолетово-оранжевый: рамка градиентом по маске (border-image ломает
    радиус), свечение и подпись тоже переливаются из фиолетового в оранжевый */
 .hub-core { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; display: flex;
@@ -460,9 +471,17 @@ strong { color: var(--w); font-weight: 700; }
    правило появления «.screen.active .stage-card [data-seq] { transform: none }»
    имеет более высокую специфичность — оно стирало центрирование, и всё
    кольцо съезжало вправо-вниз на половину размера ярлыка */
-.spoke { position: absolute; translate: -50% -50%; padding: 0.38rem 0.75rem; border-radius: 999px; white-space: nowrap;
-  border: 1px solid rgba(136,84,243,0.4); background: rgba(10,10,16,0.94); font-size: 11px; color: var(--w); }
-.spoke:nth-of-type(even) { border-color: rgba(249,115,22,0.35); }
+/* поля паспорта — НЕПРОЗРАЧНЫЕ тёмные плашки с иконкой у каждой
+   (правка владельца): сквозь полупрозрачный фон просвечивала орбита */
+.spoke { position: absolute; left: calc(50% + var(--cx, 0) * var(--rx, 50%));
+  top: calc(50% + var(--cy, 0) * var(--ry, 40%));
+  translate: -50% -50%; display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.42rem 0.8rem; border-radius: 999px; white-space: nowrap;
+  border: 1px solid rgba(136,84,243,0.55); background: #0d0d14; font-size: 11px; color: var(--w);
+  box-shadow: 0 10px 26px -14px #000, 0 0 0 3px #050505; }
+.spoke i { font-size: 0.95em; color: var(--p-l); }
+.spoke:nth-of-type(even) { border-color: rgba(249,115,22,0.5); }
+.spoke:nth-of-type(even) i { color: var(--o-l); }
 /* ровная орбита, которая медленно крутится: половина фиолетовая, половина оранжевая */
 .hub::before, .hub::after { content: ''; position: absolute; left: 50%; top: 50%; width: 80%; height: 80%;
   border-radius: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%;
@@ -512,10 +531,37 @@ strong { color: var(--w); font-weight: 700; }
 .final .wrap { display: flex; flex-direction: column; align-items: center;
   flex: 1 1 auto; min-height: 0; justify-content: center; }
 .final .wrap > * { flex-shrink: 0; }
-.final-1 { margin-bottom: 0.7rem; }
-.final-2 { color: var(--tx-d); text-transform: uppercase; letter-spacing: 0.1em; font-size: clamp(11px, 0.9vw, 13px); }
+/* три строки финала стоят на ОДИНАКОВОМ расстоянии друг от друга: у абзаца
+   свой нижний отступ, и вместе с margin-top третьей строки разрыв снизу был
+   вдвое больше верхнего (правка владельца) */
+.final-1 { margin-bottom: 0.85rem; }
+.final-2 { margin-bottom: 0; color: var(--tx-d); text-transform: uppercase; letter-spacing: 0.1em; font-size: clamp(11px, 0.9vw, 13px); }
 /* правка владельца: «Strategy shows» — БЕЛЫМ, цвет несут только спаны */
-.final-3 { color: var(--w); margin: 0.5rem 0 1.4rem; }
+.final-3 { color: var(--w); margin: 0.85rem 0 1.5rem; }
+
+/* ===== Знак финала: фиолетовый робот с оранжевыми монетами ===== */
+.final-mark { position: relative; width: 5.4rem; height: 5.4rem; margin: 0 auto 1.3rem; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  background: radial-gradient(120% 120% at 30% 20%, rgba(136,84,243,0.26), rgba(249,115,22,0.12) 70%, rgba(5,5,5,0) 100%), #0a0a11;
+  box-shadow: 0 0 52px -12px rgba(136,84,243,0.8), 0 0 40px -16px rgba(249,115,22,0.7); }
+/* рамка градиентом по маске: border-image ломает радиус */
+.final-mark::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(140deg, var(--p), var(--o));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude; }
+.fm-ring { position: absolute; inset: -0.55rem; border-radius: 50%; border: 1px dashed rgba(136,84,243,0.38);
+  animation: markSpin 30s linear infinite; }
+@keyframes markSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.fm-ring::after { content: ''; position: absolute; inset: -1px; border-radius: 50%;
+  border: 1px dashed rgba(249,115,22,0.38); clip-path: inset(0 0 0 50%); }
+.fm-bot { font-size: 34px; line-height: 1; color: var(--p-l);
+  filter: drop-shadow(0 0 14px rgba(136,84,243,0.65)); }
+.fm-coin { position: absolute; right: -0.15rem; bottom: -0.15rem; display: flex; align-items: center; justify-content: center;
+  width: 2rem; height: 2rem; border-radius: 50%; background: #0a0a11; border: 1px solid rgba(249,115,22,0.6);
+  box-shadow: 0 0 22px -6px rgba(249,115,22,0.9); }
+.fm-coin i { font-size: 15px; color: var(--o-l); }
+@media (prefers-reduced-motion: reduce) { .fm-ring { animation: none; } }
 .final-cta { margin-top: 0.2rem; }
 .final footer { margin-top: auto; padding-top: 1.4rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
 .company { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--w); margin: 0; }
@@ -535,11 +581,12 @@ strong { color: var(--w); font-weight: 700; }
   .screen { padding-top: 6.2rem; padding-bottom: 1.6rem; }
   h1 { margin-bottom: 0.9rem; }
   h2 { margin-bottom: 0.7rem; }
-    .nums { margin: 1.2rem 0 1rem; gap: 0.7rem; }
-  .biz-grid { gap: 0.5rem; margin: 1rem 0 0.9rem; }
-  .plans { margin: 1rem 0 0.8rem; }
+  /* ВАЖНО: боковое auto сохраняем. Короткая запись «margin: 1.2rem 0 1rem»
+     обнуляла его, и сетки уезжали влево от центра экрана. */
+  .nums { margin: 1.2rem auto 1rem; gap: 0.7rem; }
+  .biz-grid { gap: 0.5rem; margin: 1rem auto 0.9rem; }
+  .plans { margin: 1rem auto 0.8rem; }
   .radar { max-height: 30vh; }
-  .hub { max-height: 32vh; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -574,7 +621,7 @@ strong { color: var(--w); font-weight: 700; }
    сценах и скачком менял размер прямо в перелёте. */
 .node, .pnode, .opnode, .fnode { font-size: 12px; line-height: 1.25; }
 .node, .pnode, .fnode { padding: 0.62rem 0.95rem; }
-.opnode { padding: 0.62rem 0.95rem; width: fit-content; max-width: 100%; white-space: nowrap; }
+.opnode { padding: 0.62rem 0.95rem; white-space: nowrap; }
 .node i, .pnode i, .opnode i, .fnode i { font-size: 11px; }
 
 /* Панель продукта имеет ПОСТОЯННУЮ высоту вместе с рамкой: фиксировать только
@@ -623,31 +670,68 @@ strong { color: var(--w); font-weight: 700; }
   transition: opacity 0.7s ease 0.1s, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s; }
 .screen.lit .radar .shape { opacity: 1; transform: none; }
 
-/* ===== Процессы: цепочка выстраивается по одному звену ===== */
-/* специфичность выше общего правила появления «.screen.active .stage-card
-   [data-seq]», иначе оно зажигало звенья сразу и цепочка не выстраивалась */
-.stage-card .prow > *, .stage-card .pwrap { opacity: 0; transform: translateY(8px);
-  transition: opacity 0.45s ease, transform 0.45s var(--ease); }
-.screen.active .stage-card .prow > *, .screen.active .stage-card .pwrap { opacity: 0; transform: translateY(8px); }
-.screen.lit .stage-card .prow > *, .screen.lit .stage-card .pwrap { opacity: 1; transform: none; }
-.prow > :nth-child(1) { transition-delay: 0.06s; }
-.prow > :nth-child(2) { transition-delay: 0.14s; }
-.prow > :nth-child(3) { transition-delay: 0.22s; }
-.prow > :nth-child(4) { transition-delay: 0.30s; }
-.prow > :nth-child(5) { transition-delay: 0.38s; }
-.prow > :nth-child(6) { transition-delay: 0.46s; }
-.prow > :nth-child(7) { transition-delay: 0.54s; }
-.pwrap { transition-delay: 0.5s; }
+/* ===== Процессы: цепочка выстраивается по одному звену =====
+   Каскад ОДИН на всех сценах с процессами (03 возможности 04 и модель 05) и
+   идёт сквозь оба ряда одной волной: номер элемента приходит из вёрстки в
+   --i, поэтому перенос строки его не сбрасывает. Раньше задержки висели на
+   :nth-child внутри ряда — второй ряд начинался заново, — а сцены 04 и 05
+   вообще не были подключены и вспыхивали целиком (жалоба владельца
+   «анимация во всех слайдах с процессами фиговая»).
+   Специфичность выше общего правила «.screen.active .stage-card [data-seq]»,
+   иначе оно зажигает звенья сразу и цепочка не выстраивается. */
+.stage-card .prow > *, .stage-card .frow > *, .stage-card .pwrap, .stage-card .fwrap {
+  opacity: 0; transform: translateY(16px) scale(0.94);
+  transition: opacity 0.42s ease, transform 0.56s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 0.055s); }
+.screen.active .stage-card .prow > *, .screen.active .stage-card .frow > *,
+.screen.active .stage-card .pwrap, .screen.active .stage-card .fwrap {
+  opacity: 0; transform: translateY(16px) scale(0.94); }
+.screen.lit .stage-card .prow > *, .screen.lit .stage-card .frow > *,
+.screen.lit .stage-card .pwrap, .screen.lit .stage-card .fwrap {
+  opacity: 1; transform: none; }
+/* стрелки — тоньше и позже: сначала встаёт звено, потом связь */
+.stage-card .parrow, .stage-card .farrow { transition-duration: 0.3s, 0.3s; }
+/* блок, который прилетел с прошлой сцены, каскад не ждёт */
+.stage-card .flying { opacity: 1 !important; transition-delay: 0s !important; }
 
 /* ===== Крупнее: блоки, паспорт агента, типографика ===== */
 .node, .pnode, .opnode, .fnode { font-size: 13px; }
 .node, .pnode, .fnode { padding: 0.72rem 1.1rem; }
 .opnode { padding: 0.72rem 1.1rem; }
 .node i, .pnode i, .opnode i, .fnode i { font-size: 12px; }
-.hub { height: min(38vh, 21rem); }
-.hub-core { width: 5rem; height: 5rem; }
-.hub-core i { font-size: 30px; }
-.spoke { font-size: 12px; padding: 0.42rem 0.85rem; }
+/* круг агента занимает панель по высоте целиком: 38vh оставляли треть
+   панели пустой и сам круг выглядел мелким (правка владельца «слишком
+   маленький круг получился»). min() с процентом берёт высоту содержимого
+   .ui-body — панель фиксированной высоты, поэтому процент разрешим. */
+.hub { height: min(100%, 23rem); }
+.hub-core { width: 6.6rem; height: 6.6rem; }
+.hub-core i { font-size: 38px; }
+.spoke { font-size: 12px; padding: 0.46rem 0.9rem; }
+/* Поля появляются по кругу одно за другим, как звенья цепочки на соседних
+   сценах. Конечное состояние — на .lit, а не на .active: переход не стартует
+   для элемента, который в этом же кадре был display:none, и поля просто
+   вспыхивали целиком. Специфичность равна общему правилу
+   «.screen.active .stage-card [data-seq]», поэтому решает порядок — эти
+   правила стоят ниже. */
+.stage-card .spoke { opacity: 0; transform: translateY(12px) scale(0.9);
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 0.055s); }
+.screen.active .stage-card .spoke { opacity: 0; transform: translateY(12px) scale(0.9); }
+.screen.lit .stage-card .spoke { opacity: 1; transform: none; }
+/* Низкая панель: поля на окружности налезают друг на друга сверху и снизу —
+   разводим кольцо шире по горизонтали, где место есть. */
+@media (max-height:799px) {
+  .hub { --rx: 60%; }
+  /* и сами плашки ниже: иначе верхнее поле цепляет соседние по диагонали */
+  .spoke { padding-top: 0.3rem; padding-bottom: 0.3rem; }
+}
+@media (max-width:620px) {
+  .hub { height: min(100%, 15rem); --rx: 44%; }
+  .hub-core { width: 4.4rem; height: 4.4rem; }
+  .hub-core i { font-size: 24px; }
+  /* мобильные размеры полей объявлены ВЫШЕ блока «Крупнее» и им перебивались */
+  .spoke { font-size: 10px; padding: 0.3rem 0.6rem; gap: 0.3rem; }
+}
 .ui-bar { font-size: 10.5px; }
 .out h3 { font-size: clamp(12px, 0.95vw, 14px); }
 .out p { font-size: clamp(11.5px, 0.88vw, 13px); }

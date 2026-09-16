@@ -23,7 +23,7 @@ EN = {
     "cta_how": "See how it works",
 
     # ── 1. Первый экран ──
-    "h1": ('<span class="l">Where should you start</span>'
+    "h1": ('<span class="l">Where should <span class="hl-o">you</span> start</span>'
            '<span class="l">with <span class="hl-p">AI</span> in your <span class="hl-o">business</span>?</span>'),
     "hero_lead": "AI Strategy shows how to transform your business with AI",
 
@@ -31,7 +31,7 @@ EN = {
     "n_eyebrow": "The market today",
     "n_head": 'Using <span class="hl-p">AI</span> is not the same as becoming <span class="hl-p">AI-First</span>',
     "numbers": [
-        ("76%", "use AI"),
+        ("76%", "SMBs use AI"),
         ("14%", "use it in core operations"),
         ("81%", "don’t know how to use it effectively"),
         ("73%", "need more support to implement AI"),
@@ -78,12 +78,12 @@ EN = {
         ("AI Maturity", "Understand where you are today",
          "Assess your AI maturity and see what’s holding you back"),
         ("Voice input", "Just talk",
-         "Describe how your business works. We turn your words into structured processes. Add your team and let employees add the details"),
-        ("Processes", "Your business as processes",
+         "Describe how your business works. I turn your words into structured processes. Add your team and let employees add the details"),
+        ("Processes", 'Your <span class="hl-o">business</span> as <span class="hl-p">processes</span>',
          "We map what we heard into processes"),
-        ("Opportunities", "See what AI can automate",
+        ("Opportunities", 'See what <span class="hl-p">AI</span> can <span class="hl-o">automate</span>',
          "Identify automatable operations by impact and complexity"),
-        ("AI-First Model", "See how your business should work with AI",
+        ("AI-First Model", 'How your <span class="hl-o">business</span> should work with <span class="hl-p">AI</span>',
          "We redesign your processes around AI — automating execution and moving people to approval and supervision"),
         ("AI Agents", "Know what to build",
          "Each AI agent becomes a build-ready specification"),
@@ -93,7 +93,9 @@ EN = {
         "s1_bar": "AI Maturity Index",
         "s1_score": "",
         "s2_bar": "Your words",
-        "s2_quote": "“We get most leads through the website, then a manager qualifies them and books a call…”",
+        "s2_quote": ("“We get most leads through the website. A manager qualifies them, "
+                     "books a call and sends a proposal. If the client goes quiet we follow "
+                     "up manually, and everything lands in the CRM by hand…”"),
         "s2_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human")],
         "s3_bar": "Sales process",
         "s3_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human"),
@@ -140,10 +142,10 @@ EN = {
                 ("Build your AI strategy yourself", False)],
 
     # ── 9. Финал ──
-    "f_1": 'Where should you start with <span class="hl-p">AI</span>?',
-    "f_2": "You don’t need to know",
+    "f_1": 'Where should <span class="hl-o">you</span> start with <span class="hl-p">AI</span>?',
+    "f_2": '<span class="hl-o">You</span> don’t need to know',
     "f_3": '<span class="hl-p">AI</span> Strategy shows <span class="hl-o">you</span>',
-    "f_cta": "Start your AI transformation for free",
+    "f_cta": "Start AI transformation for free",
     "legal": ["Privacy Policy", "Terms of Use"],
     "company": "Andre AI Technologies",
 }
@@ -172,7 +174,7 @@ RU = {
     "n_eyebrow": "Рынок сегодня",
     "n_head": 'Пользоваться <span class="hl-p">ИИ</span> и быть <span class="hl-p">AI-First</span> — не одно и то же',
     "numbers": [
-        ("76%", "используют ИИ"),
+        ("76%", "малых и средних компаний используют ИИ"),
         ("14%", "встроили его в основную работу"),
         ("81%", "не знают, как применять его эффективно"),
         ("73%", "нужна поддержка во внедрении"),
@@ -216,12 +218,12 @@ RU = {
         ("ИИ-зрелость", "Понять, где вы сейчас",
          "Оцените ИИ-зрелость и увидьте, что тормозит компанию"),
         ("Голос", "Просто расскажите",
-         "Расскажите, как работает бизнес. Мы превратим ваши слова в структурированные процессы. Подключите команду — сотрудники добавят детали"),
-        ("Процессы", "Ваш бизнес как процессы",
+         "Расскажите, как работает бизнес. Я превращу ваши слова в структурированные процессы, а команда добавит детали"),
+        ("Процессы", 'Ваш <span class="hl-o">бизнес</span> как <span class="hl-p">процессы</span>',
          "Мы раскладываем услышанное на процессы"),
-        ("Возможности", "Увидеть, что ИИ может автоматизировать",
+        ("Возможности", 'Что <span class="hl-p">ИИ</span> может <span class="hl-o">автоматизировать</span>',
          "Находим операции, посильные ИИ, по эффекту и сложности"),
-        ("AI-First модель", "Увидеть, как бизнес должен работать с ИИ",
+        ("AI-First модель", 'Как <span class="hl-o">бизнес</span> должен работать с <span class="hl-p">ИИ</span>',
          "Мы перестраиваем процессы вокруг ИИ: исполнение уходит агентам, люди — к утверждению и надзору"),
         ("ИИ-агенты", "Знать, что именно строить",
          "Каждый ИИ-агент превращается в готовую к сборке спецификацию"),
@@ -231,7 +233,9 @@ RU = {
         "s1_bar": "Индекс ИИ-зрелости",
         "s1_score": "",
         "s2_bar": "Ваши слова",
-        "s2_quote": "«Большинство заявок приходит с сайта, дальше менеджер квалифицирует их и назначает созвон…»",
+        "s2_quote": ("«Большинство заявок приходит с сайта. Менеджер квалифицирует их, "
+                     "назначает созвон и отправляет предложение. Если клиент замолчал — "
+                     "пишем вручную, и всё это руками заносится в CRM…»"),
         "s2_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human")],
         "s3_bar": "Процесс продаж",
         "s3_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human"),
@@ -276,7 +280,7 @@ RU = {
                 ("Собрать ИИ-стратегию самому", False)],
 
     "f_1": 'С чего начать внедрять <span class="hl-p">ИИ</span>?',
-    "f_2": "Вам не обязательно это знать",
+    "f_2": '<span class="hl-o">Вам</span> не обязательно это знать',
     "f_3": '<span class="hl-p">AI</span> Strategy <span class="hl-o">покажет</span>',
     "f_cta": "Начать ИИ-трансформацию бесплатно",
     "legal": ["Политика конфиденциальности", "Условия использования"],

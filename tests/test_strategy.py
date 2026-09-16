@@ -304,23 +304,56 @@ def test_people_are_orange_and_agents_are_purple():
     assert re.search(r"\.fnode\.ai \{[^}]*" + PURPLE, css), "агенты — фиолетовые"
 
 
-def test_maturity_scene_shows_score_above_the_radar():
+def test_maturity_score_stands_right_above_the_bars():
+    """Правка владельца: «оценку выровни с графиками чтобы над ними ровно была».
+
+    Значит оценка живёт в одной колонке с графиками, а не по центру всей
+    панели: раньше она стояла отдельным блоком над .maturity."""
+    css = _read("assets/strategy.css")
+    assert re.search(r"\.score \{[^}]*justify-content: flex-start", css), \
+        "оценка выключена по левому краю колонки графиков"
     for lang, html in _pages():
         card = html[html.index('data-step="1"'):html.index('data-step="2"')]
-        assert card.index('class="score"') < card.index('class="radar"'), \
-            lang + ": оценка стоит над паутиной"
+        col = card[card.index('class="dimcol"'):]
+        assert col.index('class="score"') < col.index('class="dims"'), \
+            lang + ": оценка стоит НАД графиками внутри их колонки"
+        assert card.index('class="radar"') < card.index('class="score"'), \
+            lang + ": паутина слева, колонка с оценкой и графиками справа"
     en = _en()
     for dim in ("Strategy", "People", "Infrastructure", "Data", "Models", "Implementation", "R&D"):
         assert ">%s<" % dim in en, "нет оси зрелости «%s»" % dim
 
 
 def test_agent_passport_fields_sit_around_the_agent():
-    """Иконка агента — в центре, поля вокруг (координаты считает сборщик)."""
+    """Иконка агента — в центре, поля вокруг. Радиусы кольца заданы в CSS
+    (--rx/--ry), в вёрстку уходят только косинус и синус: на низком окне поля
+    на окружности налезали друг на друга, и кольцо пришлось растянуть по
+    горизонтали, оставив саму орбиту круглой."""
+    css = _read("assets/strategy.css")
+    assert "var(--cx, 0) * var(--rx, 50%)" in css and "var(--cy, 0) * var(--ry, 40%)" in css, \
+        "положение поля считается из --cx/--cy и радиусов кольца"
+    assert re.search(r"@media \(max-height:799px\) \{[^}]*--rx", css, re.S), \
+        "на низком окне кольцо шире по горизонтали"
     for lang, html in _pages():
-        spokes = re.findall(r'<span class="spoke" data-seq style="left:([\d.]+)%; top:([\d.]+)%"', html)
+        spokes = re.findall(r'<span class="spoke" data-seq style="--cx:(-?[\d.]+); --cy:(-?[\d.]+);', html)
         assert len(spokes) == 8, lang + ": восемь полей паспорта агента"
         assert len(set(spokes)) == 8, lang + ": поля не должны слипаться в центре"
         assert 'class="hub-core"' in html, lang + ": агент в центре"
+
+
+def test_agent_passport_fields_are_opaque_and_have_icons():
+    """Правка владельца: «сделай чтобы не прозрачные были эти теги тёмные и
+    иконки у каждого тега»."""
+    css = _read("assets/strategy.css")
+    assert re.search(r"\.spoke \{[^}]*background: #0d0d14", css, re.S), \
+        "плашка поля непрозрачная, сквозь неё не просвечивает орбита"
+    assert ".spoke i { font-size: 0.95em; color: var(--p-l); }" in css, "иконка поля фиолетовая"
+    assert ".spoke:nth-of-type(even) i { color: var(--o-l); }" in css, "через одно — оранжевая"
+    for lang, html in _pages():
+        hub = html[html.index('class="hub"'):html.index('class="hub"') + 3000]
+        icons = re.findall(r'<span class="spoke"[^>]*><i class="fa-solid (fa-[a-z-]+)"></i>', hub)
+        assert len(icons) == 8, lang + ": иконка у каждого из восьми полей"
+        assert len(set(icons)) == 8, lang + ": иконки полей не повторяются"
 
 
 def test_company_model_and_team_blocks_are_gone():
@@ -482,9 +515,17 @@ def test_process_blocks_are_the_same_size_on_every_scene():
 
 
 def test_step_panel_geometry_is_fixed():
-    """Шесть шагов обязаны стоять на одном месте: фиксируем и шапку, и рамку."""
+    """Шесть шагов обязаны стоять на одном месте: фиксируем и шапку, и рамку.
+
+    Постоянную высоту шапки держит РЕЗЕРВ ПОДЗАГОЛОВОКА в две строки, а не
+    height на всём блоке: с фиксированной высотой под худший случай под
+    текстом шага зияла пустота почти в 90px до панели (правка владельца
+    «текст поближе надо к карточке, и это во всех таких слайдах»)."""
     css = _read("assets/strategy.css")
-    assert ".step-copy { height:" in css, "высота шапки шага фиксирована"
+    assert ".step-copy { height:" not in css, \
+        "фиксированной высоты у шапки шага нет — от неё пустота под текстом"
+    assert ".step-copy p { margin-bottom: 0; line-height: 1.6; min-height: 3.2em; }" in css, \
+        "высоту шапки держит резерв подзаголовка в две строки"
     assert re.search(r"\.stage-card \{[^}]*height: min\(", css, re.S), "высота панели фиксирована"
     assert ".stage-card > .ui { width: 100%; height: 100%;" in css, \
         "рамка тянется на всю панель, иначе она скакала со 152 до 414px"
@@ -573,6 +614,122 @@ def test_everything_is_centred_including_buttons():
     css = _read("assets/strategy.css")
     assert re.search(r"\.hero-cta \{[^}]*justify-content: center", css), "кнопки первого экрана по центру"
     assert re.search(r"\.biz-all \{[^}]*margin: 0 auto", css), "ссылка на все типы бизнеса по центру"
+
+
+def test_opportunities_use_the_same_rows_as_the_other_scenes():
+    """Жалоба владельца «не вмещается документ анализ»: жёсткая сетка 4×2
+    давала колонку в четверть ширины панели, и длинная подпись не влезала в
+    неё даже на минимальном кегле. Теперь сцена собрана такими же рядами,
+    как соседние, и блоки стоят своей естественной ширины."""
+    css = _read("assets/strategy.css")
+    assert ".opgrid" not in css, "жёсткой сетки возможностей больше нет"
+    assert re.search(r"\.opnode \{ display: inline-flex", css), "блок занимает свою ширину"
+    assert "width: fit-content; max-width: 100%" not in css, \
+        "ограничения по ширине колонки быть не должно — оно и обрезало подпись"
+    for lang, html in _pages():
+        card = html[html.index('data-step="4"'):html.index('data-step="5"')]
+        assert 'class="opgrid"' not in card, lang + ": сетки возможностей нет"
+        assert card.count('class="prow oprow"') == 2, lang + ": два ряда, как на соседних сценах"
+        assert card.count('class="opnode') == 8, lang + ": восемь операций"
+    assert "Document analysis" in _en() and "Разбор документов" in _ru(), \
+        "подпись операции сохранена целиком, а не урезана ради вёрстки"
+
+
+def test_process_cascade_runs_through_both_rows():
+    """Правка владельца «анимация во всех слайдах с процессами фиговая»:
+    задержки висели на :nth-child внутри ряда, поэтому второй ряд начинался
+    заново, а сцены возможностей и AI-First вообще не были подключены и
+    вспыхивали целиком."""
+    css = _read("assets/strategy.css")
+    assert "transition-delay: calc(var(--i, 0) * 0.055s)" in css, \
+        "задержка считается из сквозного номера элемента"
+    assert ".prow > :nth-child(1) { transition-delay" not in css, \
+        "порядковых задержек внутри ряда больше нет"
+    for sel in (".stage-card .prow > *", ".stage-card .frow > *", ".stage-card .pwrap", ".stage-card .fwrap"):
+        assert sel in css, "каскад не подключён к " + sel
+    assert ".screen.lit .stage-card .frow > *" in css, \
+        "конечное состояние на .lit: переход не стартует для скрытого в этом же кадре элемента"
+    assert ".stage-card .flying { opacity: 1 !important; transition-delay: 0s !important; }" in css, \
+        "прилетевший с прошлой сцены блок каскад не ждёт"
+    for lang, html in _pages():
+        for step in (3, 4, 5):
+            card = html[html.index('data-step="%d"' % step):html.index('data-step="%d"' % (step + 1))]
+            nums = [int(x) for x in re.findall(r'style="--i:(\d+)"', card)]
+            assert nums == list(range(len(nums))), \
+                "%s: шаг %d — сквозная нумерация без пропусков" % (lang, step)
+            assert len(nums) >= 8, "%s: шаг %d — пронумерованы и блоки, и связи" % (lang, step)
+
+
+def test_chain_keeps_air_at_the_panel_edges():
+    """Жалоба владельца «почти за края выходит»: подгонка сравнивала ряд с
+    внешней рамкой панели, и цепочка вставала вплотную к ней."""
+    js = _read("assets/strategy.js")
+    assert "var AIR = 14;" in js, "у ряда остаётся воздух по краям"
+    assert "paddingLeft" in js and "paddingRight" in js, \
+        "ширина считается по содержимому панели, а не по внешней рамке"
+    assert "$$('.pnode, .fnode, .node, .opnode', root)" in js, \
+        "кегль блокам возможностей подбирается вместе с остальными"
+
+
+def test_final_screen_has_the_robot_and_coins_mark():
+    """Правка владельца: «на последнем слайде сверху иконку классную сделай с
+    роботом и деньгами — фиолетово-оранжевое, робот фиолетовый, монетки
+    оранжевые»."""
+    css = _read("assets/strategy.css")
+    assert re.search(r"\.fm-bot \{[^}]*color: var\(--p-l\)", css), "робот фиолетовый"
+    assert re.search(r"\.fm-coin i \{[^}]*color: var\(--o-l\)", css), "монеты оранжевые"
+    assert "@keyframes markSpin" in css, "кольцо знака крутится своим кадром, без сдвига на половину"
+    for lang, html in _pages():
+        mark = html[html.index('class="final-mark"'):html.index('class="final-1"')]
+        assert "fa-robot" in mark and "fa-coins" in mark, lang + ": робот и монеты"
+        assert html.index('class="final-mark"') < html.index('class="final-1"'), \
+            lang + ": знак стоит НАД заголовком финала"
+
+
+def test_final_lines_are_evenly_spaced():
+    """Правка владельца: расстояние между тремя строками финала одинаковое.
+    У абзаца свой нижний отступ, и вместе с margin-top третьей строки разрыв
+    снизу был вдвое больше верхнего."""
+    css = _read("assets/strategy.css")
+    assert ".final-1 { margin-bottom: 0.85rem; }" in css
+    assert re.search(r"\.final-2 \{ margin-bottom: 0;", css), "у средней строки своего отступа нет"
+    assert re.search(r"\.final-3 \{[^}]*margin: 0.85rem 0", css), "сверху столько же, сколько снизу у первой"
+
+
+def test_titles_paint_ai_purple_and_business_orange():
+    """Правка владельца: «AI везде фиолетовый, automate — оранж, business —
+    оранж, processes — фиолетовый, you — оранж»."""
+    en, ru = _en(), _ru()
+    assert '<span class="hl-o">you</span> start with <span class="hl-p">AI</span>?' in en, \
+        "на финале you оранжевый, AI фиолетовый"
+    assert 'Where should <span class="hl-o">you</span> start' in en, "в шапке первого экрана you оранжевый"
+    assert 'can <span class="hl-o">automate</span>' in en, "automate оранжевый"
+    assert 'as <span class="hl-p">processes</span>' in en, "processes фиолетовый"
+    for html in (en, ru):
+        assert 'should work with <span class="hl-p">AI</span>' in html or \
+               'работать с <span class="hl-p">ИИ</span>' in html, "AI в заголовке фиолетовый"
+    assert ">See how your business" not in en, "из заголовка пятого шага убрано See"
+    assert "Start AI transformation for free" in en, "надпись кнопки финала"
+    assert "Start your AI transformation" not in en, "старой надписи кнопки нет"
+
+
+def test_use_cases_headline_breaks_before_actually_works():
+    """Правка владельца: «your business actually works» — перенос, works фиолетовым."""
+    assert 'class="l">actually <span class="hl-p">works</span></span>' in _en(), \
+        "перенос перед «actually works» и works фиолетовым"
+    assert "h2 .l { display: block; }" in _read("assets/strategy.css"), \
+        "спан .l в заголовке действительно переносит строку"
+
+
+def test_pricing_grid_stays_centred_in_dense_mode():
+    """Жалоба владельца «какого хуя всё не по середине»: короткая запись
+    margin: 1rem 0 0.8rem в плотном режиме обнуляла боковое auto."""
+    css = _read("assets/strategy.css")
+    dense = css[css.index("Плотнее на невысоких окнах"):]
+    dense = dense[:dense.index("@media (prefers-reduced-motion")]
+    for sel in (".nums", ".biz-grid", ".plans"):
+        m = re.search(re.escape(sel) + r" \{ (?:gap: [^;]+; )?margin: [^;]+;", dense)
+        assert m and " auto " in m.group(0), sel + ": боковое auto в плотном режиме сохранено"
 
 
 if __name__ == "__main__":
