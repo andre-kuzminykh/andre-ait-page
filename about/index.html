@@ -145,10 +145,10 @@
 
     <!-- ── Детство: знак тигра слева ─────────────────────────── -->
     <section class="chapter">
-      <div class="wm l" style="top: 4rem; transform: rotate(-8deg);" aria-hidden="true"><svg><use href="#ic-tiger"></use></svg></div>
+      <div class="wm l" style="top: 4rem; --rot: -8deg;" aria-hidden="true"><svg><use href="#ic-tiger"></use></svg></div>
 
-      <p class="eyebrow"><button class="back" id="back-btn" type="button" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>About Me</p>
-      <h1>I build an <span class="hl-p">AI-native ecosystem</span> for <span class="hl-o">human good</span></h1>
+      <p class="eyebrow hero-rise"><button class="back" id="back-btn" type="button" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>About Me</p>
+      <h1 class="hero-rise">I build an <span class="hl-p">AI-native ecosystem</span> for <span class="hl-o">human good</span></h1>
 
       <p class="lead reveal">I grew up in Ussuriysk, in the Russian Far East — home to the largest tigers on Earth.</p>
 
@@ -173,7 +173,7 @@
 
     <!-- ── Образование: шапочка справа ───────────────────────── -->
     <section class="chapter">
-      <div class="wm r" style="top: 6rem; transform: rotate(9deg); font-size: clamp(10rem, 17vw, 16rem);" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i></div>
+      <div class="wm r" style="top: 6rem; --rot: 9deg; font-size: clamp(10rem, 17vw, 16rem);" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i></div>
 
       <h2 class="reveal" style="--ic:#F97316;"><i class="fa-solid fa-graduation-cap"></i>From Education to AI</h2>
 
@@ -195,7 +195,7 @@
 
     <!-- ── Карьера: монеты слева ─────────────────────────────── -->
     <section class="chapter">
-      <div class="wm l" style="top: 9rem; transform: rotate(6deg); font-size: clamp(11rem, 19vw, 18rem);" aria-hidden="true"><i class="fa-solid fa-coins"></i></div>
+      <div class="wm l" style="top: 9rem; --rot: 6deg; font-size: clamp(11rem, 19vw, 18rem);" aria-hidden="true"><i class="fa-solid fa-coins"></i></div>
 
       <h2 class="reveal" style="--ic:#8854F3;"><i class="fa-solid fa-chart-line"></i>From Data to AI Transformation</h2>
 
@@ -223,7 +223,7 @@
 
     <!-- ── Стартапы: ракета справа ───────────────────────────── -->
     <section class="chapter">
-      <div class="wm r" style="top: 5rem; transform: rotate(14deg);" aria-hidden="true"><i class="fa-solid fa-rocket"></i></div>
+      <div class="wm r" style="top: 5rem; --rot: 14deg;" aria-hidden="true"><i class="fa-solid fa-rocket"></i></div>
 
       <h2 class="reveal" style="--ic:#F97316;"><i class="fa-solid fa-rocket"></i>Leaving the Corporate Path</h2>
 
@@ -258,7 +258,7 @@
 
     <!-- ── Экосистема: процессор слева ───────────────────────── -->
     <section class="chapter">
-      <div class="wm l" style="top: 7rem; transform: rotate(-11deg); font-size: clamp(11rem, 18vw, 17rem);" aria-hidden="true"><i class="fa-solid fa-microchip"></i></div>
+      <div class="wm l" style="top: 7rem; --rot: -11deg; font-size: clamp(11rem, 18vw, 17rem);" aria-hidden="true"><i class="fa-solid fa-microchip"></i></div>
 
       <h2 class="reveal" style="--ic:#8854F3;"><i class="fa-solid fa-microchip"></i>Building an AI-Native Ecosystem for Human Good</h2>
 
@@ -357,21 +357,73 @@
     var max = el.scrollHeight - (desk ? el.clientHeight : window.innerHeight);
     bar.style.width = (max > 0 ? Math.min(100, (top / max) * 100) : 0) + '%';
   }
-  read.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
+  function onScrollAll() { onScroll(); queueParallax(); }
+  read.addEventListener('scroll', onScrollAll, { passive: true });
+  window.addEventListener('scroll', onScrollAll, { passive: true });
+  window.addEventListener('resize', onScrollAll);
   onScroll();
 
-  /* ---- появление блоков и фоновых знаков глав ---- */
+  /* ---- появление блоков и фоновых знаков глав ----
+     Блоки, попавшие в экран одновременно, выходят каскадом: задержку держит
+     переменная --d. Через 0.9 с блок помечается .done — задержка обнуляется,
+     иначе наведение мышью «просыпалось» бы через весь каскад. */
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function countUp(el, delay) {
+    if (!el || reduceMotion) return;
+    var m = /^(\D*)(\d+)([\s\S]*)$/.exec(el.textContent.trim());
+    if (!m) return;
+    var pre = m[1], target = parseInt(m[2], 10), post = m[3];
+    if (!isFinite(target) || target < 2) return;
+    var t0 = 0, dur = 1100;
+    setTimeout(function () {
+      requestAnimationFrame(function step(ts) {
+        if (!t0) t0 = ts;
+        var p = Math.min(1, (ts - t0) / dur);
+        el.textContent = pre + Math.round(target * (1 - Math.pow(1 - p, 3))) + post;
+        if (p < 1) requestAnimationFrame(step);
+      });
+    }, delay + 140);
+  }
+
+  function reveal(el, delay) {
+    if (delay) el.style.setProperty('--d', delay + 'ms');
+    el.classList.add('in');
+    if (el.classList.contains('stat')) countUp(el.querySelector('.stat-num'), delay);
+    setTimeout(function () { el.style.removeProperty('--d'); el.classList.add('done'); }, 760 + delay);
+  }
+
   var targets = document.querySelectorAll('.reveal, .chapter');
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { root: mqDesktop.matches ? read : null, rootMargin: '0px 0px -8% 0px', threshold: 0.02 });
+      entries.filter(function (e) { return e.isIntersecting; })
+        .sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; })
+        .forEach(function (e, i) {
+          io.unobserve(e.target);
+          reveal(e.target, reduceMotion ? 0 : Math.min(i, 5) * 60);
+        });
+    }, { root: mqDesktop.matches ? read : null, rootMargin: '0px 0px -3% 0px', threshold: 0.01 });
     targets.forEach(function (el) { io.observe(el); });
   } else {
     targets.forEach(function (el) { el.classList.add('in'); });
   }
+
+  /* знаки глав чуть плывут относительно текста — глубина без пестроты */
+  var wms = Array.prototype.slice.call(document.querySelectorAll('.wm'));
+  var parallaxPending = false;
+  function parallax() {
+    parallaxPending = false;
+    if (reduceMotion || !mqDesktop.matches) return;
+    var vh = window.innerHeight;
+    wms.forEach(function (w) {
+      var r = w.getBoundingClientRect();
+      /* без ограничения знак у края документа уезжал на сотни пикселей */
+      var off = Math.max(-1, Math.min(1, ((r.top + r.height / 2) - vh / 2) / vh));
+      var node = w.firstElementChild;
+      if (node) node.style.setProperty('--py', (off * -34).toFixed(1) + 'px');
+    });
+  }
+  function queueParallax() { if (!parallaxPending) { parallaxPending = true; requestAnimationFrame(parallax); } }
 
   /* ---- меню ---- */
   function openMenu() { nav.classList.add('open'); menuIcon.className = 'fa-solid fa-xmark'; document.body.style.overflow = 'hidden'; }
@@ -398,6 +450,8 @@
   function toggle() { setMuted(!video.muted); var p = video.play && video.play(); if (p && p.catch) p.catch(function () {}); }
   document.getElementById('mic-btn').addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
   media.addEventListener('click', toggle);
+
+  queueParallax();
 })();
 </script>
 </body>

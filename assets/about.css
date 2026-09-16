@@ -189,8 +189,11 @@
      Еле заметные, серые, по очереди слева и справа, с разным наклоном и
      размером — «в разнобой». На мобилке их нет: там только текст и кружок. */
   .wm { position: absolute; z-index: 0; pointer-events: none; user-select: none; color: #ffffff; opacity: 0;
-    font-size: clamp(11rem, 20vw, 19rem); line-height: 1; transition: opacity 1.2s ease, transform 1.2s ease; transform: translateY(18px); }
-  .wm svg { width: 1em; height: 1em; display: block; }
+    font-size: clamp(11rem, 20vw, 19rem); line-height: 1; transform: translate3d(0, 26px, 0);
+    transition: opacity 1.3s ease, transform 1.3s cubic-bezier(0.22, 1, 0.36, 1); }
+  /* наклон и параллакс живут на вложенном знаке: .wm занят появлением главы */
+  .wm > svg, .wm > i { display: block; width: 1em; height: 1em;
+    transform: rotate(var(--rot, 0deg)) translate3d(0, var(--py, 0px), 0); transition: transform 0.35s linear; }
   .chapter.in .wm { opacity: 0.055; transform: none; }
   .wm.l { left: -3rem; }
   .wm.r { right: -3.5rem; }
@@ -276,12 +279,89 @@
   .foot { margin-top: 2.2rem; padding-top: 1.6rem; border-top: 1px solid rgba(255,255,255,0.08);
     display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 
-  /* появление блоков при прокрутке */
-  .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.6s ease, transform 0.6s ease; }
-  .reveal.in { opacity: 1; transform: none; }
+  /* ===== Появление при листании =====
+     Базовая подача — всплытие с уходящим размытием; --d задаёт JS, чтобы
+     блоки, попавшие в экран одновременно, выходили каскадом, а не скопом.
+     После появления вешается .done: задержка обнуляется и остаются только
+     наведения (иначе hover «просыпался» через задержку каскада). */
+  .reveal { opacity: 0; transform: translate3d(0, 20px, 0); filter: blur(5px);
+    transition: opacity 0.62s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms),
+                transform 0.62s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms),
+                filter 0.62s ease var(--d, 0ms); }
+  .reveal.in { opacity: 1; transform: none; filter: none; }
+  .reveal.done { transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease; transition-delay: 0s; }
+
+  /* цитата выходит крупнее абзаца, кавычка «впрыгивает» следом */
+  .quote.reveal { transform: translate3d(0, 26px, 0) scale(0.975); }
+  .quote::after { transform: scale(0.6); opacity: 0;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--d, 0ms) + 200ms),
+                opacity 0.5s ease calc(var(--d, 0ms) + 200ms); }
+  .quote.in::after { transform: none; opacity: 1; }
+
+  /* врезка приезжает от своей цветной полосы */
+  .note.reveal { transform: translate3d(-18px, 10px, 0); }
+
+  /* карточка с цифрой тяжелее: масштаб + «набегающее» число (счёт ведёт JS) */
+  .stat.reveal { transform: translate3d(0, 24px, 0) scale(0.98); }
+  .stat-num { display: inline-block; transform-origin: left center; }
+  .stat.in .stat-num { animation: numPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--d, 0ms) + 120ms) both; }
+  @keyframes numPop { 0% { transform: scale(0.84); } 62% { transform: scale(1.04); } 100% { transform: none; } }
+
+  /* заголовок главы: линия раскрывается слева направо, иконка подпрыгивает */
+  h2.reveal::before { transform: scaleX(0); transform-origin: left center;
+    transition: transform 0.95s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--d, 0ms) + 60ms); }
+  h2.reveal.in::before { transform: none; }
+  h2.reveal i { opacity: 0; transform: translateY(6px) scale(0.8);
+    transition: opacity 0.5s ease calc(var(--d, 0ms) + 240ms),
+                transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--d, 0ms) + 240ms); }
+  h2.reveal.in i { opacity: 1; transform: none; }
+
+  /* списки — построчным каскадом, карточки — навстречу друг другу */
+  .facts.reveal li { opacity: 0; transform: translate3d(-12px, 8px, 0);
+    transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+  .facts.reveal.in li { opacity: 1; transform: none; }
+  .facts.reveal.in li:nth-child(1) { transition-delay: 0.06s; }
+  .facts.reveal.in li:nth-child(2) { transition-delay: 0.17s; }
+  .facts.reveal.in li:nth-child(3) { transition-delay: 0.28s; }
+  .facts.reveal.in li:nth-child(4) { transition-delay: 0.39s; }
+  .facts.reveal.in li:nth-child(5) { transition-delay: 0.50s; }
+  .cards.reveal .card { opacity: 0; transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+  .cards.reveal .card:first-child { transform: translate3d(-24px, 12px, 0); }
+  .cards.reveal .card:last-child { transform: translate3d(24px, 12px, 0); transition-delay: 0.12s; }
+  .cards.reveal.in .card { opacity: 1; transform: none; }
+
+  /* финал: всплывает и один раз «вдыхает» фиолетовым */
+  .finale.reveal { transform: translate3d(0, 26px, 0) scale(0.98); }
+  .finale.in { animation: finaleGlow 2.8s ease-out calc(var(--d, 0ms) + 300ms) 1; }
+  @keyframes finaleGlow {
+    0% { box-shadow: 0 0 0 rgba(136,84,243,0); }
+    40% { box-shadow: 0 20px 60px -14px rgba(136,84,243,0.45); }
+    100% { box-shadow: 0 0 0 rgba(136,84,243,0); }
+  }
+
+  /* первый экран: шапка текста поднимается сразу при загрузке */
+  .hero-rise { opacity: 0; transform: translate3d(0, 18px, 0); animation: heroRise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .eyebrow.hero-rise { animation-delay: 0.12s; }
+  h1.hero-rise { animation-delay: 0.24s; }
+  @keyframes heroRise { to { opacity: 1; transform: none; } }
+  .media { animation: mediaIn 1.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes mediaIn { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+  @media (max-width:1023px) { @keyframes mediaIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: none; } } }
+
+  /* наведение — только после появления (класс .done), иначе ждало бы каскад */
+  @media (hover:hover) {
+    .stat.done:hover { transform: translateY(-2px); border-color: rgba(136,84,243,0.35); box-shadow: 0 16px 34px -20px rgba(136,84,243,0.7); }
+    .quote.done:hover { transform: translateY(-2px); }
+    .cards.done .card { transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease; transition-delay: 0s; }
+    .cards.done .card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px -20px rgba(136,84,243,0.6); }
+    .note.done:hover { transform: translateX(3px); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .reveal, .wm { opacity: 1; transform: none; transition: none; }
+    .reveal, .wm, .hero-rise, .media, .reveal .card, .facts.reveal li { opacity: 1; transform: none; filter: none; transition: none; animation: none; }
     .wm { opacity: 0.055; }
+    .quote::after { opacity: 1; transform: none; }
+    h2.reveal i { opacity: 1; transform: none; }
     .mic-wave::before, .mic-wave::after { animation: none; }
   }
 
