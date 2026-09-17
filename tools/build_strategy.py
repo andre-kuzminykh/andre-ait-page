@@ -548,7 +548,12 @@ def moved(to, lang):
     скрипты выключены. Ссылка в тексте — чтобы страница оставалась рабочей
     вообще без всего. Язык заглушки совпадает с языком страницы, на которую
     она уводит: русский посетитель со старого адреса не должен увидеть
-    английскую надпись."""
+    английскую надпись.
+
+    noindex здесь НЕ ставим. Мгновенный refresh вместе с canonical поисковик
+    и так читает как постоянный переезд, а noindex рядом с canonical — прямо
+    противопоказанная пара: сигналы склеиваются, и запрет на индексацию может
+    уехать на новый адрес вместе со склейкой."""
     title, lead = MOVED_TEXT[lang]
     return """<!DOCTYPE html>
 <!-- Собрано tools/build_strategy.py — править этот файл руками нельзя, сборка перезапишет -->
@@ -556,7 +561,6 @@ def moved(to, lang):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, follow">
 <title>{title}</title>
 <link rel="canonical" href="{site}{to}">
 <meta http-equiv="refresh" content="0; url={to}">
@@ -581,8 +585,8 @@ def build():
         ("ai-strategy/index.html", page(EN, "en")),
         ("ai-strategy/ru/index.html", page(RU, "ru")),
         # старые адреса: лендинг успел постоять на /strategy/
-        ("strategy/index.html", moved(PATH_EN, "en")),
-        ("strategy/ru/index.html", moved(PATH_RU, "ru")),
+        (OLD_PATH_EN.strip("/") + "/index.html", moved(PATH_EN, "en")),
+        (OLD_PATH_RU.strip("/") + "/index.html", moved(PATH_RU, "ru")),
     )
     for rel, html in pages:
         path = os.path.join(ROOT, rel)

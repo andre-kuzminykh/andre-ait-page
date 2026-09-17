@@ -884,12 +884,14 @@ def test_landing_lives_at_ai_strategy():
 
 def test_old_address_redirects_to_the_new_one():
     """Адрес /strategy/ успел постоять живым, поэтому со старого пути ведёт
-    страница-переезд: Pages не отдаёт 301, значит canonical + noindex +
-    переход скриптом и meta refresh как запасной вариант."""
+    страница-переезд: Pages не отдаёт 301, значит canonical + переход скриптом
+    и meta refresh как запасной вариант. noindex рядом с canonical не ставим —
+    запрет на индексацию может уехать на новый адрес вместе со склейкой."""
     for rel, to, lang in (("strategy/index.html", "/ai-strategy/", "en"),
                           ("strategy/ru/index.html", "/ai-strategy/ru/", "ru")):
         html = _read(rel)
-        assert 'name="robots" content="noindex, follow"' in html, rel + ": старый адрес не индексируем"
+        assert "noindex" not in html, \
+            rel + ": noindex рядом с canonical может утащить за собой новый адрес"
         assert '<link rel="canonical" href="https://andre.technology%s">' % to in html, rel
         assert 'content="0; url=%s"' % to in html, rel + ": meta refresh для выключенных скриптов"
         assert "location.replace('%s' + location.search + location.hash)" % to in html, \
@@ -908,16 +910,24 @@ def test_main_site_opens_the_landing_in_the_right_language():
     главная переставляет href из data-href-en / data-href-ru."""
     site = _site()
     assert "AI Transformation Cases" not in site, "старой подписи на главной нет"
-    m = re.search(r'<a class="sec-link"[^>]*data-i18n="strategy\.link"[^>]*>([^<]+)</a>', site, re.S)
+    # порядок атрибутов в теге значения не имеет — берём тег целиком и
+    # разбираем его по одному атрибуту, иначе тест ломает любая перестановка
+    m = re.search(r'<a\s[^>]*class="sec-link"[^>]*>([^<]+)</a>', site, re.S)
+    while m and 'data-i18n="strategy.link"' not in m.group(0):
+        m = re.search(r'<a\s[^>]*class="sec-link"[^>]*>([^<]+)</a>', site[m.end():], re.S)
     assert m, "ссылка раздела AI Strategy не найдена"
     assert m.group(1).strip() == "Where to start with AI", m.group(1)
     el = m.group(0)
-    assert 'href="https://andre.technology/ai-strategy/"' in el, el
-    assert 'data-href-en="https://andre.technology/ai-strategy/"' in el, el
-    assert 'data-href-ru="https://andre.technology/ai-strategy/ru/"' in el, el
+    for attr, value in (("href", "https://andre.technology/ai-strategy/"),
+                        ("data-href-en", "https://andre.technology/ai-strategy/"),
+                        ("data-href-ru", "https://andre.technology/ai-strategy/ru/")):
+        got = re.search(r'\b%s="([^"]*)"' % attr, el)
+        assert got and got.group(1) == value, "%s: ожидали %s, получили %s" % (attr, value, got and got.group(1))
     assert "querySelectorAll('[data-href-ru]')" in site, \
         "главная должна переставлять такие ссылки вместе с языком"
-    assert "'strategy.link': 'С чего начать внедрять ИИ'," in site, "русская подпись ссылки"
+    ru_dict = re.search(r"'strategy\.link':\s*'([^']*)'", site)
+    assert ru_dict and ru_dict.group(1) == "С чего начать внедрять ИИ", \
+        "русская подпись ссылки: " + str(ru_dict and ru_dict.group(1))
     # кнопка раздела по-прежнему ведёт в продукт, а не на лендинг
     assert 'class="btn-white" href="https://strategy.andre.technology/"' in site, \
         "кнопка «Get Your AI Strategy» ведёт в кабинет продукта"
