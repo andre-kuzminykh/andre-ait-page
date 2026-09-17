@@ -484,13 +484,33 @@ JS_PERENOS = JS_SCALE + r"""
     const anywhere = /overflow-wrap\s*:\s*anywhere/i.test(inline)
                   || st.overflowWrap === 'anywhere' || st.wordBreak === 'break-all';
     if (!anywhere) continue;
-    // Рвётся ли НА САМОМ ДЕЛЕ: слово длиннее строки, значит перенос внутри слова.
+    // Рвётся ли НА САМОМ ДЕЛЕ: слово длиннее строки, значит перенос внутри
+    // слова. НО перенос по мягкому переносу (&shy;) — это НЕ авария: слово
+    // ломается по слогу и с дефисом, ровно как задумал автор. Аварией
+    // считается разрыв в случайном месте («СОСТОЯН/ИЕ»), поэтому смотрим,
+    // какой символ стоит перед переходом на новую строку.
     const r = document.createRange();
     let torn = false;
     for (const n of el.childNodes) {
       if (n.nodeType !== 3) continue;
+      const txt = n.nodeValue;
+      if (/\s/.test(txt.trim())) continue;          // это не одно слово
       r.selectNodeContents(n);
-      if (r.getClientRects().length > 1 && !/\s/.test(n.nodeValue.trim())) torn = true;
+      if (r.getClientRects().length < 2) continue;   // умещается в строку
+      // Ищем ПЕРВЫЙ символ, который уехал на следующую строку.
+      let top0 = null;
+      for (let i = 0; i < txt.length; i++) {
+        r.setStart(n, i); r.setEnd(n, i + 1);
+        const rect = r.getBoundingClientRect();
+        if (!rect.width && !rect.height) continue;
+        if (top0 === null) { top0 = rect.top; continue; }
+        if (rect.top > top0 + 1) {
+          // перед переносом обязан стоять мягкий перенос
+          if (txt.charCodeAt(i - 1) !== 0x00AD) torn = true;
+          break;
+        }
+      }
+      r.selectNodeContents(n);
     }
     out.push({text: t.slice(0, 60), torn: torn,
               cls: (el.className || '').toString().slice(0, 80)});
