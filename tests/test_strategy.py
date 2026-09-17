@@ -80,6 +80,8 @@ def test_face_keeps_the_proportions_of_the_main_site():
     assert "--head-w: 56%;" in css, "колода начинается там же, где на главной кончается лицо"
     assert re.search(r"\.head \{ left: 0; top: 0; width: 67%;[^}]*z-index: 3", css), \
         "ролик шире отступа колоды и лежит ПОД ней — как 67% на главной"
+    assert ".head video { transform: translateX(-6%); }" in css, \
+        "кадр сдвинут влево ровно как на главной, иначе лицо жмётся к тексту"
     assert "50vw" not in css, "рамку страницы нельзя мерить в vw: body{zoom} их умножает"
     assert ".head.mini" not in css, "на вебе голова не сжимается в кружок"
     mob = [b for b in re.findall(r"@media \(max-width:1023px\) \{.*?\n\}", css, re.S) if ".head {" in b]

@@ -68,6 +68,11 @@ img, svg { max-width: 100%; }
      спрятать край кадра. Отсюда и z-index ниже колоды — иначе чёрный хвост
      ролика накрывает левый край экранов. */
   .head { left: 0; top: 0; width: 67%; height: 100%; border: 0; z-index: 3; }
+  /* Кадр сдвинут влево ровно как на главной (там #hero-video с
+     translateX(-6%)): иначе лицо стоит по центру колонки и жмётся к тексту,
+     а слева не остаётся тёмного края. Освободившаяся полоска справа лежит
+     внутри уже полностью чёрной части растушёвки, поэтому её не видно. */
+  .head video { transform: translateX(-6%); }
 }
 @media (max-width:1023px) {
   .head { left: clamp(0.8rem, 3.5vw, 1.2rem); bottom: calc(clamp(0.8rem, 3.5vw, 1.2rem) + env(safe-area-inset-bottom, 0px));
