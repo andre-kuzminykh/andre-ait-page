@@ -194,14 +194,24 @@ def test_hero_headline_is_two_lines_with_orange_business():
     assert 'class="hl-o">бизнес' in _ru()
 
 
-def test_hero_has_two_buttons_of_equal_size():
+def test_hero_has_a_button_and_a_grey_link_under_it():
+    """Правка владельца: «чтобы не было две кнопки на одной линии — Start for
+    free, а ниже How it works серым без овала, как на главной». Серая ссылка
+    под кнопкой героя — это приём главной (FR-SITE7, .about-link)."""
     css = _read("assets/strategy.css")
-    hero = re.search(r"\.hero-cta \.btn \{([^}]*)\}", css).group(1)
-    assert "width: 13.5rem" in hero and "flex: 0 0 13.5rem" in hero, \
-        "две кнопки первого экрана — ровно одного размера"
+    hero = re.search(r"\.hero-cta \{([^}]*)\}", css).group(1)
+    assert "flex-direction: column" in hero, "кнопка и ссылка стоят друг под другом"
+    how = re.search(r"\.hero-how \{([^}]*)\}", css, re.S).group(1)
+    assert "border: 0" in how and "background: none" in how, "у ссылки нет овала и заливки"
+    assert "color: rgba(255,255,255,0.5)" in how, "серая, как «About me» на главной"
+    assert "letter-spacing: 0.12em" in how and "text-transform: uppercase" in how, \
+        "трекинг и капитель — как у серых ссылок главной"
     for lang, html in _pages():
         hero = html[html.index('id="top"'):html.index("</section>", html.index('id="top"'))]
-        assert hero.count('class="btn btn-') == 2, lang + ": на первом экране ровно две кнопки"
+        assert hero.count('class="btn btn-') == 1, lang + ": на первом экране одна кнопка"
+        assert 'class="hero-how" data-go="process"' in hero, lang + ": под ней серая ссылка"
+    assert ">How it works<" in _en(), "надпись без «See»"
+    assert ">Как это работает<" in _ru()
 
 
 def test_buttons_do_not_move_on_hover():
@@ -626,7 +636,8 @@ def test_removed_labels_are_gone():
 
 def test_everything_is_centred_including_buttons():
     css = _read("assets/strategy.css")
-    assert re.search(r"\.hero-cta \{[^}]*justify-content: center", css), "кнопки первого экрана по центру"
+    assert re.search(r"\.hero-cta \{[^}]*align-items: center", css), \
+        "кнопка и ссылка первого экрана по центру колонки"
     assert re.search(r"\.biz-all \{[^}]*margin: 0 auto", css), "ссылка на все типы бизнеса по центру"
 
 

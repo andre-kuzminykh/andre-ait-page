@@ -416,7 +416,7 @@ def page(t, lang):
       <p class="lead">{hero_lead}</p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="{cta_href}" rel="noopener">{cta_main} <i class="fa-solid fa-arrow-right"></i></a>
-        <button class="btn btn-ghost" data-go="process" type="button">{cta_how}</button>
+        <button class="hero-how" data-go="process" type="button">{cta_how}</button>
       </div>
     </div>
   </section>
