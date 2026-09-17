@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Собирает лендинг AI Strategy на двух языках из одного шаблона.
 
-    python3 tools/build_strategy.py      # пишет strategy/index.html и strategy/ru/index.html
+    python3 tools/build_strategy.py      # пишет ai-strategy/index.html и ai-strategy/ru/index.html
 
 Страница листается ЭКРАНАМИ, как биография и главная: экраны сменяют друг
 друга анимацией, а не прокруткой. Вёрстка — assets/strategy.css, поведение —
@@ -12,6 +12,15 @@ import os
 import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SITE = "https://andre.technology"
+
+# Адрес лендинга на сайте. С главной на него ведёт ссылка «Where to start with
+# AI» под кнопкой раздела «AI Strategy» — отсюда и говорящий путь. Со старого
+# /strategy/ остаётся страница-редирект: адрес успел побывать живым.
+PATH_EN = "/ai-strategy/"
+PATH_RU = "/ai-strategy/ru/"
+OLD_PATH_EN = "/strategy/"
+OLD_PATH_RU = "/strategy/ru/"
 
 # Разделы меню: id экрана + иконка для мобильного меню
 NAV = [
@@ -247,8 +256,8 @@ def stages(t):
 
 
 def page(t, lang):
-    other_href = "/strategy/ru/" if lang == "en" else "/strategy/"
-    self_href = "/strategy/" if lang == "en" else "/strategy/ru/"
+    other_href = PATH_RU if lang == "en" else PATH_EN
+    self_href = PATH_EN if lang == "en" else PATH_RU
     video = "/assets/strategy_%s.mp4" % ("en" if lang == "en" else "ru")
 
     # разделители-палочки между пунктами — как в меню главной и биографии
@@ -330,15 +339,16 @@ def page(t, lang):
 <meta name="color-scheme" content="dark">
 <title>{title}</title>
 <meta name="description" content="{desc}">
-<link rel="canonical" href="https://andre.technology{self_href}">
-<link rel="alternate" hreflang="en" href="https://andre.technology/strategy/">
-<link rel="alternate" hreflang="ru" href="https://andre.technology/strategy/ru/">
+<link rel="canonical" href="{site}{self_href}">
+<link rel="alternate" hreflang="en" href="{site}{path_en}">
+<link rel="alternate" hreflang="ru" href="{site}{path_ru}">
+<link rel="alternate" hreflang="x-default" href="{site}{path_en}">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://andre.technology{self_href}">
+<meta property="og:url" content="{site}{self_href}">
 <meta property="og:site_name" content="Andre AI Technologies">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
@@ -503,6 +513,7 @@ def page(t, lang):
 </html>
 """.format(
         lang=lang, title=t["title"], desc=t["meta_desc"], self_href=self_href, video=video,
+        site=SITE, path_en=PATH_EN, path_ru=PATH_RU,
         video_aria=t["video_aria"], role=t["role"], sections=t["sections"], close=t["close"], menu=t["menu"],
         nav_html=nav_html, cta_href=t["cta_href"], cta_top=t["cta_top"], home=home,
         lang_switch=('<span class="lang-opt active">EN</span><span class="lang-sep">|</span>'
@@ -522,9 +533,58 @@ def page(t, lang):
     )
 
 
+MOVED_TEXT = {
+    "en": ("AI Strategy has moved", "This page has moved to"),
+    "ru": ("Страница AI Strategy переехала", "Страница переехала"),
+}
+
+
+def moved(to, lang):
+    """Страница-заглушка на старом адресе.
+
+    Pages не умеет отдавать 301, поэтому переезд оформлен так же, как это
+    делают статические сайты: canonical на новый адрес, noindex для старого,
+    мгновенный переход скриптом и meta refresh как запасной вариант, если
+    скрипты выключены. Ссылка в тексте — чтобы страница оставалась рабочей
+    вообще без всего. Язык заглушки совпадает с языком страницы, на которую
+    она уводит: русский посетитель со старого адреса не должен увидеть
+    английскую надпись."""
+    title, lead = MOVED_TEXT[lang]
+    return """<!DOCTYPE html>
+<!-- Собрано tools/build_strategy.py — править этот файл руками нельзя, сборка перезапишет -->
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, follow">
+<title>{title}</title>
+<link rel="canonical" href="{site}{to}">
+<meta http-equiv="refresh" content="0; url={to}">
+<script>location.replace({to!r} + location.search + location.hash);</script>
+<style>
+  html, body {{ height: 100%; }}
+  body {{ margin: 0; display: flex; align-items: center; justify-content: center;
+    background: #050505; color: #fff; font: 14px/1.6 "JetBrains Mono", ui-monospace, monospace; }}
+  a {{ color: #a071ff; }}
+</style>
+</head>
+<body>
+<p>{lead}: <a href="{to}">{site}{to}</a></p>
+</body>
+</html>
+""".format(site=SITE, to=to, title=title, lead=lead, lang=lang)
+
+
 def build():
     from strategy_copy import EN, RU
-    for rel, html in (("strategy/index.html", page(EN, "en")), ("strategy/ru/index.html", page(RU, "ru"))):
+    pages = (
+        ("ai-strategy/index.html", page(EN, "en")),
+        ("ai-strategy/ru/index.html", page(RU, "ru")),
+        # старые адреса: лендинг успел постоять на /strategy/
+        ("strategy/index.html", moved(PATH_EN, "en")),
+        ("strategy/ru/index.html", moved(PATH_RU, "ru")),
+    )
+    for rel, html in pages:
         path = os.path.join(ROOT, rel)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:

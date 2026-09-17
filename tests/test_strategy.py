@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""FR-SITE41 — лендинг AI Strategy (/strategy/ и /strategy/ru/).
+"""FR-SITE41 — лендинг AI Strategy (/ai-strategy/ и /ai-strategy/ru/).
 
 Страница листается экранами, как биография и главная. Без зависимостей:
 `python3 tests/test_strategy.py` или через pytest.
@@ -16,11 +16,11 @@ def _read(rel):
 
 
 def _en():
-    return _read("strategy/index.html")
+    return _read("ai-strategy/index.html")
 
 
 def _ru():
-    return _read("strategy/ru/index.html")
+    return _read("ai-strategy/ru/index.html")
 
 
 def _pages():
@@ -30,7 +30,7 @@ def _pages():
 # ── страницы, общая вёрстка, языки ────────────────────────────────────────
 
 def test_pages_and_shared_assets_exist():
-    for rel in ("strategy/index.html", "strategy/ru/index.html",
+    for rel in ("ai-strategy/index.html", "ai-strategy/ru/index.html",
                 "assets/strategy.css", "assets/strategy.js",
                 "tools/build_strategy.py", "tools/strategy_copy.py"):
         assert os.path.exists(os.path.join(_ROOT, rel)), "нет файла " + rel
@@ -45,8 +45,8 @@ def test_pages_share_css_and_js():
 def test_html_lang_and_cross_links():
     en, ru = _en(), _ru()
     assert '<html lang="en">' in en and '<html lang="ru">' in ru
-    assert '<a class="lang-opt" href="/strategy/ru/">RU</a>' in en
-    assert '<a class="lang-opt" href="/strategy/">EN</a>' in ru
+    assert '<a class="lang-opt" href="/ai-strategy/ru/">RU</a>' in en
+    assert '<a class="lang-opt" href="/ai-strategy/">EN</a>' in ru
     assert '<span class="lang-opt active">EN</span>' in en
     assert '<span class="lang-opt active">RU</span>' in ru
 
@@ -62,7 +62,7 @@ def test_language_is_stored_for_the_main_site():
 
 
 def test_pages_are_generated_not_hand_written():
-    """Править strategy/*.html руками нельзя — сборка перезапишет."""
+    """Править ai-strategy/*.html руками нельзя — сборка перезапишет."""
     for lang, html in _pages():
         assert "tools/build_strategy.py" in html, lang + ": в шапке файла нет отметки о сборке"
 
@@ -858,6 +858,69 @@ def test_step_subtitles_are_one_line_and_press_to_the_panel():
     css = _read("assets/strategy.css")
     assert "gap: clamp(0.5rem, 1.1vh, 0.85rem); align-content: start; }" in css, \
         "шапка шага стоит вплотную к панели"
+
+
+# ── адрес лендинга и вход с главной ───────────────────────────────────────
+
+def _site():
+    return _read("index.html")
+
+
+def test_landing_lives_at_ai_strategy():
+    """Правка владельца: лендинг — раздел сайта andre.technology/ai-strategy."""
+    import os
+    for rel in ("ai-strategy/index.html", "ai-strategy/ru/index.html"):
+        assert os.path.exists(os.path.join(_ROOT, rel)), "нет " + rel
+    assert '<link rel="canonical" href="https://andre.technology/ai-strategy/">' in _en()
+    assert '<link rel="canonical" href="https://andre.technology/ai-strategy/ru/">' in _ru()
+    for lang, html in _pages():
+        assert '<link rel="alternate" hreflang="en" href="https://andre.technology/ai-strategy/">' in html, lang
+        assert '<link rel="alternate" hreflang="ru" href="https://andre.technology/ai-strategy/ru/">' in html, lang
+        assert '<link rel="alternate" hreflang="x-default" href="https://andre.technology/ai-strategy/">' in html, lang
+        assert "andre.technology/strategy/" not in html, lang + ": старого адреса на странице не осталось"
+    assert '<meta property="og:url" content="https://andre.technology/ai-strategy/">' in _en()
+    assert '<meta property="og:url" content="https://andre.technology/ai-strategy/ru/">' in _ru()
+
+
+def test_old_address_redirects_to_the_new_one():
+    """Адрес /strategy/ успел постоять живым, поэтому со старого пути ведёт
+    страница-переезд: Pages не отдаёт 301, значит canonical + noindex +
+    переход скриптом и meta refresh как запасной вариант."""
+    for rel, to, lang in (("strategy/index.html", "/ai-strategy/", "en"),
+                          ("strategy/ru/index.html", "/ai-strategy/ru/", "ru")):
+        html = _read(rel)
+        assert 'name="robots" content="noindex, follow"' in html, rel + ": старый адрес не индексируем"
+        assert '<link rel="canonical" href="https://andre.technology%s">' % to in html, rel
+        assert 'content="0; url=%s"' % to in html, rel + ": meta refresh для выключенных скриптов"
+        assert "location.replace('%s' + location.search + location.hash)" % to in html, \
+            rel + ": переход скриптом сохраняет query и хеш"
+        assert '<a href="%s">' % to in html, rel + ": ссылка работает и без скриптов, и без refresh"
+        assert '<html lang="%s">' % lang in html, rel + ": язык заглушки совпадает с языком нового адреса"
+        assert "tools/build_strategy.py" in html, rel + ": заглушка тоже собирается, а не пишется руками"
+    # русского посетителя со старого адреса не встречает английская надпись
+    assert "Страница переехала" in _read("strategy/ru/index.html")
+    assert "This page has moved" in _read("strategy/index.html")
+
+
+def test_main_site_opens_the_landing_in_the_right_language():
+    """Под кнопкой раздела «AI Strategy» на главной — ссылка «Where to start
+    with AI» на лендинг. Ссылка языковая, как вход в курс и «About me»:
+    главная переставляет href из data-href-en / data-href-ru."""
+    site = _site()
+    assert "AI Transformation Cases" not in site, "старой подписи на главной нет"
+    m = re.search(r'<a class="sec-link"[^>]*data-i18n="strategy\.link"[^>]*>([^<]+)</a>', site, re.S)
+    assert m, "ссылка раздела AI Strategy не найдена"
+    assert m.group(1).strip() == "Where to start with AI", m.group(1)
+    el = m.group(0)
+    assert 'href="https://andre.technology/ai-strategy/"' in el, el
+    assert 'data-href-en="https://andre.technology/ai-strategy/"' in el, el
+    assert 'data-href-ru="https://andre.technology/ai-strategy/ru/"' in el, el
+    assert "querySelectorAll('[data-href-ru]')" in site, \
+        "главная должна переставлять такие ссылки вместе с языком"
+    assert "'strategy.link': 'С чего начать внедрять ИИ'," in site, "русская подпись ссылки"
+    # кнопка раздела по-прежнему ведёт в продукт, а не на лендинг
+    assert 'class="btn-white" href="https://strategy.andre.technology/"' in site, \
+        "кнопка «Get Your AI Strategy» ведёт в кабинет продукта"
 
 
 if __name__ == "__main__":
