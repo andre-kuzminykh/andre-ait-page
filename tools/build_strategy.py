@@ -62,6 +62,32 @@ def radar(values, dims):
     return rings + axes + '<polygon class="shape" points="%s"/>' % pts(None, values)
 
 
+def color_rows(groups, cls="prow", per=3):
+    """Ряды со сквозной нумерацией — для сцены возможностей.
+
+    На вход идут ГРУППЫ (сначала фиолетовые, что забирает ИИ, потом серые,
+    что остаётся человеку), и ряд никогда не смешивает группы: раньше
+    элементы резались подряд и в средний ряд попадали блоки обоих цветов
+    (правка владельца «сверху фиолетовое, снизу серое»). Ряд длиннее `per`
+    не бывает — иначе блоки мельчают и упираются в края панели."""
+    out, i = [], 0
+    for items in groups:
+        rows = -(-len(items) // per) or 1
+        size = -(-len(items) // rows)          # ряды одной группы одной длины
+        block = []
+        for k in range(0, len(items), size):
+            cells = []
+            for node in items[k:k + size]:
+                cells.append(node.replace("<div ", '<div style="--i:%d" ' % i, 1))
+                i += 1
+            block.append('<div class="%s">%s</div>' % (cls, "".join(cells)))
+        # Группа — отдельная обёртка: на телефоне ряды внутри неё схлопываются
+        # в один поток и переносятся по ширине, но фиолетовое с серым при этом
+        # не перемешивается.
+        out.append('<div class="opgroup">%s</div>' % "".join(block))
+    return "".join(out)
+
+
 def chain_rows(items, arrow=None, down=None, cls="prow"):
     """Цепочка двумя рядами со СКВОЗНОЙ нумерацией элементов.
 
@@ -153,8 +179,13 @@ def stages(t):
     ops_html = []
     for name, can in s["s4_ops"]:
         flip = "" if can else flip_key(name)
-        ops_html.append('<div class="opnode%s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
-                        % (" can" if can else "", flip, "fa-wand-magic-sparkles" if can else "fa-user", name))
+        ops_html.append((can, '<div class="opnode%s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
+                         % (" can" if can else "", flip, "fa-wand-magic-sparkles" if can else "fa-user", name)))
+    # Правка владельца: сверху фиолетовое (что забирает ИИ), снизу серое
+    # (что остаётся человеку) — рядами не больше трёх, чтобы блоки были
+    # крупные и ряд не упирался в края панели.
+    ops_groups = ([o for can, o in ops_html if can],
+                  [o for can, o in ops_html if not can])
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
@@ -163,7 +194,7 @@ def stages(t):
         </div>
       </div>""".format(
         bar=s["s4_bar"],
-        ops=chain_rows(ops_html, cls="prow oprow")))
+        ops=color_rows(ops_groups, cls="prow oprow")))
 
     # 05 — AI-First модель: люди оранжевые, агенты фиолетовые
     # цепочка идёт рядами по три: в одну строку шесть блоков не помещаются,
@@ -218,7 +249,7 @@ def stages(t):
 def page(t, lang):
     other_href = "/strategy/ru/" if lang == "en" else "/strategy/"
     self_href = "/strategy/" if lang == "en" else "/strategy/ru/"
-    video = "/assets/Andre_AIT_video_compressed%s.mp4" % ("" if lang == "en" else "_ru")
+    video = "/assets/strategy_%s.mp4" % ("en" if lang == "en" else "ru")
 
     # разделители-палочки между пунктами — как в меню главной и биографии
     nav_html = '<span class="nav-divider" aria-hidden="true">|</span>'.join(
@@ -249,10 +280,10 @@ def page(t, lang):
 
     outs = "".join("""
           <article class="out">
-            <span class="out-n">{n:02d}</span>
-            <h3><i class="fa-solid {ic}"></i>{name}</h3>
+            <span class="out-ic"><i class="fa-solid {ic}"></i></span>
+            <h3>{name}</h3>
             <p>{desc}</p>
-          </article>""".format(n=i + 1, ic=OUT_ICONS[i], name=o[0], desc=o[1])
+          </article>""".format(ic=OUT_ICONS[i], name=o[0], desc=o[1])
         for i, o in enumerate(t["deliverables"]))
 
     stage_html = stages(t)
@@ -432,7 +463,7 @@ def page(t, lang):
   <section class="screen" data-chapter="pricing" id="pricing">
     <div class="wrap center">
       <p class="eyebrow">{pr_eyebrow}</p>
-      <h2>{pr_head}</h2>
+      <h2 class="one-line">{pr_head}</h2>
       <p class="lead">{pr_sub}</p>
       <div class="plans">{plans}</div>
       <p class="compare">{compare}</p>

@@ -23,10 +23,12 @@ EN = {
     "cta_how": "See how it works",
 
     # ── 1. Первый экран ──
-    "h1": ('<span class="l">Where should <span class="hl-o">you</span> start</span>'
-           '<span class="l">with <span class="hl-p">AI</span> in your <span class="hl-o">business</span>?</span>'),
-    "hero_lead": ("Tell how your business works. Get an AI-First operating model, "
-                  "the AI agents you need, and an implementation roadmap"),
+    "h1": ('<span class="l"><span class="lm">Where should</span>'
+           '<span class="lm"><span class="hl-o">you</span> start</span></span>'
+           '<span class="l"><span class="lm">with <span class="hl-p">AI</span></span>'
+           '<span class="lm">in your <span class="hl-o">business</span>?</span></span>'),
+    "hero_lead": ('<span class="l">Tell how your business works. Get an AI-First operating model,</span>'
+                  '<span class="l">the AI agents you need, and an implementation roadmap</span>'),
 
     # ── 3. Цифры ──
     "n_eyebrow": "The market today",
@@ -35,7 +37,7 @@ EN = {
         ("76%", "SMBs use AI"),
         ("14%", "use it in core operations"),
         ("81%", "don’t know how to use it effectively"),
-        ("73%", "need more support to implement AI"),
+        ("73%", '<span class="l">need more support</span><span class="l">to implement AI</span>'),
     ],
     "n_foot": "Don’t let your competitors get ahead with AI",
 
@@ -46,13 +48,13 @@ EN = {
     "biz_explore": "",
     "businesses": [
         ("Consulting Business", "Revenue growth"),
-        ("Recruitment Agency", "Hiring time"),
+        ("Recruitment Agency", "Hiring speed"),
         ("Marketing Agency", "Return on marketing"),
         ("Content Agency", "Audience engagement"),
         ("Call Center", "Cost per call"),
         ("Customer Support", "Customer satisfaction"),
-        ("Design Agency", "Delivery time"),
-        ("Software Development", "Time to launch"),
+        ("Design Agency", "Delivery speed"),
+        ("Software Development", "Launch speed"),
     ],
     "b_all": "Explore all business types",
 
@@ -60,17 +62,20 @@ EN = {
     "d_eyebrow": "Solution",
     "d_head": ('<span class="l">An <span class="hl-p">AI-First</span> operating model</span>'
                '<span class="l">for your <span class="hl-o">business</span></span>'),
-    "d_sub": ('<span class="l">Built around how your business</span>'
-              '<span class="l">actually works</span>'),
+    "d_sub": "Built around how your business actually works",
     "deliverables": [
-        ("AI Maturity Index", "See where you stand — and what’s holding you back"),
-        ("Process Map", "Your business broken down into processes, in your own words"),
-        ("Cognitive Map", "How people think, decide, and use knowledge"),
+        ("AI Maturity Index", '<span class="l">See where you stand</span>'
+                              '<span class="l">— and what’s holding you back</span>'),
+        ("Process Map", '<span class="l">Your business broken down</span>'
+                         '<span class="l">into processes</span>'),
+        ("Cognitive Map", '<span class="l">How people think</span>'
+                           '<span class="l">and use knowledge</span>'),
         ("AI Opportunities", "Operations AI can take over, with potential impact"),
-        ("Human + AI", "Who does what — human or AI"),
+        ("Human + AI", '<span class="l">Who does what</span><span class="l">— human or AI</span>'),
         ("AI-First Model", "How your business should work with AI"),
-        ("AI Agents", "What each AI agent should do and how it should work"),
-        ("Roadmap", "What to implement — and in what order"),
+        ("AI Agents", '<span class="l">What each AI agent should do</span>'
+                       '<span class="l">and how it should work</span>'),
+        ("Roadmap", '<span class="l">What to implement</span><span class="l">— and in what order</span>'),
     ],
     "d_hint": "Scroll the cards",
 
@@ -80,14 +85,13 @@ EN = {
         ("AI Maturity", 'Understand where <span class="hl-o">you</span> are today',
          "Assess your AI maturity and see what’s holding you back"),
         ("Voice input", "Just talk",
-         "Describe how your business works. I turn your words into structured processes. Add your team and let employees add the details"),
+         "Describe how your business works"),
         ("Business Processes", 'Your <span class="hl-o">business</span> as <span class="hl-p">processes</span>',
-         "We map what we heard into processes"),
+         "I map what I heard into processes"),
         ("AI Opportunities", 'See what <span class="hl-p">AI</span> can <span class="hl-o">automate</span>',
-         "Identify automatable operations by impact and complexity"),
+         "Identify automatable operations by impact"),
         ("AI-First Model", 'How your <span class="hl-o">business</span> should work with <span class="hl-p">AI</span>',
-         '<span class="l">We redesign your processes around AI</span>'
-         '<span class="l">— automating execution and moving people to approval and supervision</span>'),
+         "I redesign your processes around AI"),
         ("AI Agents", 'Know <span class="hl-o">what</span> to build',
          "Each AI agent becomes a build-ready specification"),
     ],
@@ -99,7 +103,12 @@ EN = {
         "s2_quote": ("“We get most leads through the website. A manager qualifies them, "
                      "books a call and sends a proposal. If the client goes quiet we follow "
                      "up manually, and everything lands in the CRM by hand…”"),
-        "s2_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human")],
+        # Шесть блоков — ровно те же, что на следующем экране (правка владельца
+        # «тут можно ещё три блока, как на след. слайде»): панель на телефоне
+        # перестала выглядеть полупустой, а переход 02 → 03 читается как
+        # продолжение одной и той же цепочки.
+        "s2_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human"),
+                     ("Meeting", "human"), ("Proposal", "human"), ("Follow-up", "human")],
         "s3_bar": "Sales process",
         "s3_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human"),
                      ("Meeting", "human"), ("Proposal", "human"), ("Follow-up", "human")],
@@ -120,7 +129,7 @@ EN = {
     "l_head": 'New <span class="hl-o">business</span> model. New <span class="hl-p">roles</span>',
     "l_sub": ("<span class=\"l\">Free training helps your team learn how to work with AI</span>"
               "<span class=\"l\">and build agents themselves</span>"),
-    "l_note": "For more complex cases, contact Andre AI Technologies",
+    "l_note": "For more complex cases, write to me",
     "roles": [
         ("AI Automation Engineer", "fa-robot"), ("AI Product Engineer", "fa-cubes"),
         ("AI Product Manager", "fa-compass-drafting"), ("AI Engineer", "fa-microchip"),
@@ -132,7 +141,7 @@ EN = {
 
     # ── 8. Тарифы ──
     "pr_eyebrow": "Pricing",
-    "pr_head": 'Start <span class="hl-p">free</span>. Scale when you <span class="hl-o">need</span>',
+    "pr_head": 'Start <span class="hl-p">free</span>. Scale as you <span class="hl-o">grow</span>',
     "pr_sub": "One-time purchase. No subscription required",
     "plans": [
         ("", "Free", "$0", "1 process", "Start free"),
@@ -148,7 +157,7 @@ EN = {
     "f_1": 'Where should <span class="hl-o">you</span> start with <span class="hl-p">AI</span>?',
     "f_2": "You don’t need to know",
     "f_3": '<span class="hl-p">AI</span> Strategy shows <span class="hl-o">you</span>',
-    "f_cta": "Start AI transformation for free",
+    "f_cta": "Start AI transformation",
     "legal": ["Privacy Policy", "Terms of Use"],
     "company": "Andre AI Technologies",
 }
@@ -170,10 +179,12 @@ RU = {
     "cta_main": "Начать бесплатно",
     "cta_how": "Как это работает",
 
-    "h1": ('<span class="l">С чего начать внедрять <span class="hl-p">ИИ</span></span>'
-           '<span class="l">в вашем <span class="hl-o">бизнесе</span>?</span>'),
-    "hero_lead": ("Расскажите, как работает ваш бизнес. Получите AI-First операционную модель, "
-                  "нужных ИИ-агентов и дорожную карту внедрения"),
+    "h1": ('<span class="l"><span class="lm">С чего начать</span>'
+           '<span class="lm">внедрять</span></span>'
+           '<span class="l"><span class="lm"><span class="hl-p">ИИ</span> в вашем</span>'
+           '<span class="lm"><span class="hl-o">бизнесе</span>?</span></span>'),
+    "hero_lead": ('<span class="l">Расскажите, как работает ваш бизнес. Получите AI-First операционную модель,</span>'
+                  '<span class="l">нужных ИИ-агентов и дорожную карту внедрения</span>'),
 
     "n_eyebrow": "Рынок сегодня",
     "n_head": 'Пользоваться <span class="hl-p">ИИ</span> и быть <span class="hl-p">AI-First</span> — не одно и то же',
@@ -181,7 +192,7 @@ RU = {
         ("76%", "малых и средних компаний используют ИИ"),
         ("14%", "встроили его в основную работу"),
         ("81%", "не знают, как применять его эффективно"),
-        ("73%", "нужна поддержка во внедрении"),
+        ("73%", '<span class="l">нужна поддержка</span><span class="l">во внедрении</span>'),
     ],
     "n_foot": "Не дайте конкурентам уйти вперёд с ИИ",
 
@@ -191,48 +202,49 @@ RU = {
     "biz_explore": "",
     "businesses": [
         ("Консалтинг", "Рост выручки"),
-        ("Кадровое агентство", "Срок найма"),
+        ("Кадровое агентство", "Скорость найма"),
         ("Маркетинговое агентство", "Отдача от маркетинга"),
         ("Контент-агентство", "Вовлечённость аудитории"),
         ("Колл-центр", "Стоимость звонка"),
         ("Поддержка клиентов", "Удовлетворённость клиентов"),
-        ("Дизайн-агентство", "Срок поставки"),
-        ("Разработка ПО", "Срок запуска"),
+        ("Дизайн-агентство", "Скорость поставки"),
+        ("Разработка ПО", "Скорость запуска"),
     ],
     "b_all": "Посмотреть все типы бизнеса",
 
     "d_eyebrow": "Решение",
     "d_head": ('<span class="l"><span class="hl-p">AI-First</span> операционная модель</span>'
                '<span class="l">вашего <span class="hl-o">бизнеса</span></span>'),
-    "d_sub": ('<span class="l">Построена вокруг того, как ваш бизнес</span>'
-              '<span class="l">работает на самом деле</span>'),
+    "d_sub": "Построена вокруг того, как ваш бизнес работает на самом деле",
     "deliverables": [
-        ("Индекс ИИ-зрелости", "Где вы сейчас — и что вас тормозит"),
-        ("Карта процессов", "Ваш бизнес, разложенный на процессы вашими же словами"),
-        ("Когнитивная карта", "Как люди думают, решают и используют знания"),
+        ("Индекс ИИ-зрелости", '<span class="l">Где вы сейчас</span><span class="l">— и что вас тормозит</span>'),
+        ("Карта процессов", '<span class="l">Ваш бизнес, разложенный</span>'
+                             '<span class="l">на процессы</span>'),
+        ("Когнитивная карта", '<span class="l">Как люди думают</span>'
+                               '<span class="l">и используют знания</span>'),
         ("Возможности ИИ", "Операции, которые ИИ может взять на себя, с потенциальным эффектом"),
-        ("Человек + ИИ", "Кто что делает — человек или ИИ"),
+        ("Человек + ИИ", '<span class="l">Кто что делает</span><span class="l">— человек или ИИ</span>'),
         ("AI-First модель", "Как ваш бизнес должен работать с ИИ"),
-        ("ИИ-агенты", "Что должен делать каждый агент и как он должен работать"),
-        ("Дорожная карта", "Что внедрять — и в каком порядке"),
+        ("ИИ-агенты", '<span class="l">Что должен делать каждый агент</span>'
+                       '<span class="l">и как он должен работать</span>'),
+        ("Дорожная карта", '<span class="l">Что внедрять</span><span class="l">— и в каком порядке</span>'),
     ],
     "d_hint": "Листайте карточки",
 
     "s_eyebrow": "Как это работает",
     "steps": [
         ("ИИ-зрелость", 'Понять, где <span class="hl-o">вы</span> сейчас',
-         "Оцените ИИ-зрелость и увидьте, что тормозит компанию"),
+         "Оцените ИИ-зрелость, и вы увидите, что тормозит компанию"),
         ("Голос", "Просто расскажите",
-         "Расскажите, как работает бизнес. Я превращу ваши слова в структурированные процессы, а команда добавит детали"),
+         "Расскажите, как работает бизнес"),
         ("Бизнес-процессы", 'Ваш <span class="hl-o">бизнес</span> как <span class="hl-p">процессы</span>',
-         "Мы раскладываем услышанное на процессы"),
+         "Я разложу услышанное на бизнес-процессы"),
         ("Возможности ИИ", 'Что <span class="hl-p">ИИ</span> может <span class="hl-o">автоматизировать</span>',
-         "Находим операции, посильные ИИ, по эффекту и сложности"),
+         "Найду операции, которые ИИ возьмёт на себя"),
         ("AI-First модель", 'Как <span class="hl-o">бизнес</span> должен работать с <span class="hl-p">ИИ</span>',
-         '<span class="l">Мы перестраиваем процессы вокруг ИИ:</span>'
-         '<span class="l">исполнение уходит агентам, люди — к утверждению и надзору</span>'),
+         "Я перестрою процессы вокруг ИИ"),
         ("ИИ-агенты", 'Знать, <span class="hl-o">что</span> именно строить',
-         "Каждый ИИ-агент превращается в готовую к сборке спецификацию"),
+         "Каждый ИИ-агент превращается в готовую спецификацию к разработке"),
     ],
     "stage": {
         "dims": ["Стратегия", "Люди", "Инфраструктура", "Данные", "Модели", "Внедрение", "R&D"],
@@ -242,7 +254,8 @@ RU = {
         "s2_quote": ("«Большинство заявок приходит с сайта. Менеджер квалифицирует их, "
                      "назначает созвон и отправляет предложение. Если клиент замолчал — "
                      "пишем вручную, и всё это руками заносится в CRM…»"),
-        "s2_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human")],
+        "s2_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human"),
+                     ("Встреча", "human"), ("Предложение", "human"), ("Follow-up", "human")],
         "s3_bar": "Процесс продаж",
         "s3_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human"),
                      ("Встреча", "human"), ("Предложение", "human"), ("Follow-up", "human")],
@@ -262,7 +275,7 @@ RU = {
     "l_head": 'Новая <span class="hl-o">бизнес</span>-модель. Новые <span class="hl-p">роли</span>',
     "l_sub": ("<span class=\"l\">Бесплатное обучение помогает команде работать с ИИ</span>"
               "<span class=\"l\">и собирать агентов самостоятельно</span>"),
-    "l_note": "Для более сложных задач — пишите в Andre AI Technologies",
+    "l_note": "Для более сложных задач — пишите мне",
     "roles": [
         ("AI Automation Engineer", "fa-robot"), ("AI Product Engineer", "fa-cubes"),
         ("AI Product Manager", "fa-compass-drafting"), ("AI Engineer", "fa-microchip"),
@@ -273,7 +286,7 @@ RU = {
     ],
 
     "pr_eyebrow": "Тарифы",
-    "pr_head": 'Начните <span class="hl-p">бесплатно</span>. Масштабируйте, когда <span class="hl-o">нужно</span>',
+    "pr_head": 'Начните <span class="hl-p">бесплатно</span>. Масштабируйтесь по мере <span class="hl-o">роста</span>',
     "pr_sub": "Разовая покупка. Без подписки",
     "plans": [
         ("", "Бесплатно", "$0", "1 процесс", "Начать бесплатно"),
@@ -287,8 +300,8 @@ RU = {
 
     "f_1": 'С чего начать внедрять <span class="hl-p">ИИ</span>?',
     "f_2": "Вам не обязательно это знать",
-    "f_3": '<span class="hl-p">AI</span> Strategy <span class="hl-o">покажет</span>',
-    "f_cta": "Начать ИИ-трансформацию бесплатно",
+    "f_3": '<span class="hl-p">ИИ</span>-стратегия <span class="hl-o">покажет</span>',
+    "f_cta": "Начать ИИ-трансформацию",
     "legal": ["Политика конфиденциальности", "Условия использования"],
     "company": "Andre AI Technologies",
 }

@@ -52,8 +52,9 @@ def test_html_lang_and_cross_links():
 
 
 def test_each_page_uses_its_own_video():
-    assert 'src="/assets/Andre_AIT_video_compressed.mp4"' in _en()
-    assert 'src="/assets/Andre_AIT_video_compressed_ru.mp4"' in _ru()
+    """У лендинга свои ролики — владелец прислал их отдельно от главной."""
+    assert 'src="/assets/strategy_en.mp4"' in _en()
+    assert 'src="/assets/strategy_ru.mp4"' in _ru()
 
 
 def test_language_is_stored_for_the_main_site():
@@ -534,8 +535,8 @@ def test_step_panel_geometry_is_fixed():
     css = _read("assets/strategy.css")
     assert ".step-copy { height:" not in css, \
         "фиксированной высоты у шапки шага нет — от неё пустота под текстом"
-    assert ".step-copy p { margin-bottom: 0; line-height: 1.6; min-height: 3.2em; }" in css, \
-        "высоту шапки держит резерв подзаголовка в две строки"
+    assert ".step-copy p { margin-bottom: 0; line-height: 1.6; min-height: 1.6em; }" in css, \
+        "высоту шапки держит резерв подзаголовка в одну строку"
     assert re.search(r"\.stage-card \{[^}]*height: min\(", css, re.S), "высота панели фиксирована"
     assert ".stage-card > .ui { width: 100%; height: 100%;" in css, \
         "рамка тянется на всю панель, иначе она скакала со 152 до 414px"
@@ -639,8 +640,14 @@ def test_opportunities_use_the_same_rows_as_the_other_scenes():
     for lang, html in _pages():
         card = html[html.index('data-step="4"'):html.index('data-step="5"')]
         assert 'class="opgrid"' not in card, lang + ": сетки возможностей нет"
-        assert card.count('class="prow oprow"') == 2, lang + ": два ряда, как на соседних сценах"
+        assert card.count('class="opgroup"') == 2, lang + ": две группы — фиолетовая и серая"
+        assert card.count('class="prow oprow"') == 3, lang + ": ряды не длиннее трёх блоков"
         assert card.count('class="opnode') == 8, lang + ": восемь операций"
+        # правка владельца «сверху фиолетовое, снизу серое»: ряд никогда не
+        # смешивает группы, иначе в середине панели стояли блоки обоих цветов
+        first, second = card.split('class="opgroup"')[1:3]
+        assert second.count("opnode can") == 0, lang + ": во второй группе только серые"
+        assert first.count("opnode can") == 5, lang + ": в первой группе только фиолетовые"
     assert "Document analysis" in _en() and "Разбор документов" in _ru(), \
         "подпись операции сохранена целиком, а не урезана ради вёрстки"
 
@@ -726,8 +733,10 @@ def test_titles_paint_ai_purple_and_business_orange():
         assert 'should work with <span class="hl-p">AI</span>' in html or \
                'работать с <span class="hl-p">ИИ</span>' in html, "AI в заголовке фиолетовый"
     assert ">See how your business" not in en, "из заголовка пятого шага убрано See"
-    assert "Start AI transformation for free" in en, "надпись кнопки финала"
-    assert "Start your AI transformation" not in en, "старой надписи кнопки нет"
+    assert ">Start AI transformation <" in en, "надпись кнопки финала"
+    assert "Start AI transformation for free" not in en, \
+        "правка владельца: на кнопке финала «бесплатно» больше нет"
+    assert ">Начать ИИ-трансформацию <" in ru, "по-русски тоже без «бесплатно»"
 
 
 def test_use_cases_headline_breaks_before_actually_works():
@@ -747,6 +756,108 @@ def test_pricing_grid_stays_centred_in_dense_mode():
     for sel in (".nums", ".biz-grid", ".plans"):
         m = re.search(re.escape(sel) + r" \{ (?:gap: [^;]+; )?margin: [^;]+;", dense)
         assert m and " auto " in m.group(0), sel + ": боковое auto в плотном режиме сохранено"
+
+
+# ── мобильная вёрстка: вторая, самостоятельная ────────────────────────────
+
+def _mobile_block():
+    """Последний блок @media (max-width:1023px) — мобильная вёрстка целиком."""
+    css = _read("assets/strategy.css")
+    i = css.rindex("@media (max-width:1023px)")
+    return css[i:]
+
+
+def test_mobile_layout_is_a_second_layout_not_a_squeeze():
+    """Правило владельца: вёрстки ровно две — веб и мобилка, и адаптивен
+    только РАЗМЕР, а не формат. Поэтому подгонку кегля скриптом на телефоне
+    выключаем: она зажимала заголовки и подписи до 8–10px."""
+    js = _read("assets/strategy.js")
+    assert "if (!mqDesk.matches)" in js, "на телефоне fitHeadings выходит сразу"
+    mob = _mobile_block()
+    for sel, size in (("p {", "14px"), (".lead {", "15.5px"), (".biz h3 {", "15px")):
+        assert sel in mob, "мобильный размер задан явно: " + sel
+    assert "font-size: 14px" in mob and "font-size: 15.5px" in mob
+
+
+def test_mobile_hero_headline_breaks_into_four_lines():
+    """Правка владельца: «Where should / you start / with AI / in your
+    business?» — и по-русски так же."""
+    for lang, html in _pages():
+        h1 = html[html.index("<h1"):html.index("</h1>")]
+        assert h1.count('class="lm"') == 4, lang + ": четыре смысловых куска заголовка"
+    mob = _mobile_block()
+    assert "h1 .lm { display: block; }" in mob, "на телефоне каждый кусок — своя строка"
+
+
+def test_mobile_chain_is_one_flow_without_dangling_arrows():
+    """Правка владельца «видишь и стрелки, и мелкота»: ряды, посчитанные под
+    веб, на 390px ломались переносом и в конце строки повисала стрелка,
+    указывающая в пустоту. На телефоне связи убраны, а ряды схлопнуты в один
+    поток с переносом по ширине экрана."""
+    mob = _mobile_block()
+    assert ".parrow, .farrow, .pwrap, .fwrap { display: none; }" in mob
+    assert ".pchain .prow, .fflow .frow { display: contents; }" in mob
+    assert ".opgroup .oprow { display: contents; }" in mob, \
+        "на сцене возможностей поток свой у каждой группы"
+
+
+def test_mobile_maturity_scene_shows_all_seven_bars():
+    """Паутина занимает ВЕСЬ остаток панели и потому никогда её не распирает:
+    при квадратной svg во всю ширину колонки половина графиков уезжала за
+    нижний край панели и просто не показывалась."""
+    css = _read("assets/strategy.css")
+    assert ".stage-card > .ui > .ui-body { flex: 1; min-height: 0;" in css, \
+        "без min-height:0 тело панели растёт под содержимое и графики срезает рамка"
+    mob = _mobile_block()
+    assert ".maturity { flex: 1; min-height: 0; grid-template-rows: minmax(60px, 1fr) auto;" in mob
+    assert ".radar { width: 100%; height: 100%; min-height: 0; }" in mob
+
+
+def test_mobile_footer_stands_just_above_the_dots():
+    """Правка владельца: подвал «должен быть ещё ниже, чуть перед точками»."""
+    mob = _mobile_block()
+    assert ".final footer { margin-top: auto;" in mob, "подвал прижат к низу экрана"
+    assert "padding-left: calc(clamp(100px, 28vw, 128px)" in mob, \
+        "колонка подвала смещена правее круглого ролика"
+    assert ".legal { font-size: 12px;" in mob and "flex-wrap: wrap" in mob, \
+        "ссылки подвала переносятся целыми словами, а не по буквам"
+
+
+def test_mobile_header_button_keeps_its_own_size():
+    """Кнопка шапки не берёт мобильный размер обычных кнопок: с ним «Начать
+    бесплатно» распирало шапку и переключатель языка наезжал на логотип."""
+    mob = _mobile_block()
+    assert ".btn-primary:not(.cta-head), .btn-ghost {" in mob
+
+
+def test_quote_scene_carries_the_same_six_blocks_as_the_next_one():
+    """Правка владельца «тут можно ещё три блока, как на след. слайде»:
+    на экране диктовки те же шесть блоков, что и на карте процессов."""
+    for lang, html in _pages():
+        quote = html[html.index('data-step="2"'):html.index('data-step="3"')]
+        proc = html[html.index('data-step="3"'):html.index('data-step="4"')]
+        assert quote.count('class="node ') == 6, lang + ": шесть блоков на экране диктовки"
+        assert proc.count('class="pnode ') == 6, lang + ": столько же на карте процессов"
+
+
+def test_solution_cards_have_no_numbers_and_are_centred():
+    """Правка владельца: «чтобы внутри карточек чисел не было, а только по
+    середине всё внутри выровнено»."""
+    css = _read("assets/strategy.css")
+    assert ".out-n" not in css, "номера карточек убраны и из стилей"
+    assert ".out { text-align: center; }" in css
+    assert ".out-ic {" in css, "вместо номера — иконка над заголовком"
+    for lang, html in _pages():
+        rail = html[html.index('class="rail"'):html.index("</section>", html.index('class="rail"'))]
+        assert 'class="out-n"' not in rail, lang + ": в карточках решения чисел нет"
+        assert rail.count('class="out-ic"') == 8, lang + ": у каждой карточки своя иконка"
+
+
+def test_step_subtitles_are_one_line_and_press_to_the_panel():
+    """Правка владельца: «тайтл и подтайтл ещё ближе к интерфейсу»."""
+    css = _read("assets/strategy.css")
+    assert "gap: clamp(0.5rem, 1.1vh, 0.85rem); align-content: start; }" in css, \
+        "шапка шага стоит вплотную к панели"
 
 
 if __name__ == "__main__":
