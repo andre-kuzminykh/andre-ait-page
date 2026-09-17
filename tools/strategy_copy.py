@@ -23,16 +23,12 @@ EN = {
     "cta_how": "How it works",
 
     # ── 1. Первый экран ──
-    "h1": ('<span class="l"><span class="lm">Where should</span>'
-           '<span class="lm"><span class="hl-o">you</span> start</span></span>'
-           '<span class="l"><span class="lm">with <span class="hl-p">AI</span></span>'
-           '<span class="lm">in your <span class="hl-o">business</span>?</span></span>'),
-    # Первая фраза стоит отдельной строкой: одной строкой «Tell how… operating
-    # model,» требует 597px, а колонка текста рядом с роликом даёт 502–621.
-    # Перенос владельца перед «the AI agents…» сохранён.
-    "hero_lead": ('<span class="l">Tell how your business works.</span>'
-                  '<span class="l">Get an AI-First operating model,</span>'
-                  '<span class="l">the AI agents you need, and an implementation roadmap</span>'),
+    # Две строки и на вебе, и на телефоне (правка владельца). Раньше строка
+    # делилась ещё и на .lm, чтобы на телефоне получалось четыре.
+    "h1": ('<span class="l">Where should <span class="hl-o">you</span></span>'
+           '<span class="l">start with <span class="hl-p">AI</span>?</span>'),
+    "hero_lead": ('<span class="l">Tell me how your business works.</span>'
+                  '<span class="l">Get your AI-First model</span>'),
 
     # ── 3. Цифры ──
     "n_eyebrow": "The market today",
@@ -41,14 +37,16 @@ EN = {
         ("76%", "SMBs use AI"),
         ("14%", "use it in core operations"),
         ("81%", "don’t know how to use it effectively"),
-        ("73%", '<span class="l">need more support</span><span class="l">to implement AI</span>'),
+        # без ручного переноса: в узкой карточке «need more support» не влезало
+        # в строку и разъезжалось само — пусть текст переносится естественно
+        ("73%", "need more support to implement AI"),
     ],
     "n_foot": "Don’t let your competitors get ahead with AI",
 
     # ── 4. Кейсы ──
     "b_eyebrow": "Use cases",
-    "b_head": ('<span class="l">Built for the way your <span class="hl-o">business</span></span>'
-               '<span class="l">actually <span class="hl-p">works</span></span>'),
+    "b_head": ('<span class="l">Built for how your</span>'
+               '<span class="l"><span class="hl-o">business</span> <span class="hl-p">works</span></span>'),
     "biz_explore": "",
     "businesses": [
         ("Consulting Business", "Revenue growth"),
@@ -60,44 +58,42 @@ EN = {
         ("Design Agency", "Delivery speed"),
         ("Software Development", "Launch speed"),
     ],
-    "b_all": "Explore all business types",
+    "b_all": "View all business types",
 
     # ── 5. Решение ──
     "d_eyebrow": "Solution",
-    "d_head": ('<span class="l">An <span class="hl-p">AI-First</span> operating model</span>'
-               '<span class="l">for your <span class="hl-o">business</span></span>'),
-    "d_sub": "Built around how your business actually works",
+    "d_head": ('<span class="l">Your <span class="hl-p">AI-First</span></span>'
+               '<span class="l">operating model</span>'),
+    "d_sub": "Built around your business",
+    # Восемь карточек стоят СЕТКОЙ и видны целиком — лента с прокруткой убрана
+    # (правка владельца «внутри себя не листать»). Поэтому подпись у каждой —
+    # ровно одна короткая строка.
     "deliverables": [
-        ("AI Maturity Index", '<span class="l">See where you stand</span>'
-                              '<span class="l">— and what’s holding you back</span>'),
-        ("Process Map", '<span class="l">Your business broken down</span>'
-                         '<span class="l">into processes</span>'),
-        ("Cognitive Map", '<span class="l">How people think</span>'
-                           '<span class="l">and use knowledge</span>'),
-        ("AI Opportunities", "Operations AI can take over, with potential impact"),
-        ("Human + AI", '<span class="l">Who does what</span><span class="l">— human or AI</span>'),
-        ("AI-First Model", "How your business should work with AI"),
-        ("AI Agents", '<span class="l">What each AI agent should do</span>'
-                       '<span class="l">and how it should work</span>'),
-        ("Roadmap", '<span class="l">What to implement</span><span class="l">— and in what order</span>'),
+        ("AI Maturity Index", "Where you stand today"),
+        ("Process Map", "Your business as processes"),
+        ("Cognitive Map", "How people think and decide"),
+        ("AI Opportunities", "What AI can take over"),
+        ("Human + AI", "Who does what — human or AI"),
+        ("AI-First Model", "How it should work with AI"),
+        ("AI Agents", "What each agent does"),
+        ("Roadmap", "What to implement, and when"),
     ],
-    "d_hint": "Scroll the cards",
 
     # ── 6. Как это работает ──
     "s_eyebrow": "How it works",
     "steps": [
-        ("AI Maturity", 'Understand where <span class="hl-o">you</span> are today',
-         "Assess your AI maturity and see what’s holding you back"),
+        ("AI Maturity", 'See where <span class="hl-o">you</span> stand',
+         "Assess your AI maturity. Find the gaps"),
         ("Voice input", "Just talk",
          "Describe how your business works"),
         ("Business Processes", 'Your <span class="hl-o">business</span> as <span class="hl-p">processes</span>',
          "I map what I heard into processes"),
         ("AI Opportunities", 'See what <span class="hl-p">AI</span> can <span class="hl-o">automate</span>',
-         "Identify automatable operations by impact"),
+         "Operations AI can take over"),
         ("AI-First Model", 'How your <span class="hl-o">business</span> should work with <span class="hl-p">AI</span>',
          "I redesign your processes around AI"),
         ("AI Agents", 'Know <span class="hl-o">what</span> to build',
-         "Each AI agent becomes a build-ready specification"),
+         "Build-ready agent specifications"),
     ],
     "stage": {
         "dims": ["Strategy", "People", "Infrastructure", "Data", "Models", "Implementation", "R&D"],
@@ -130,9 +126,10 @@ EN = {
 
     # ── 7. Обучение ──
     "l_eyebrow": "Learning",
-    "l_head": 'New <span class="hl-o">business</span> model. New <span class="hl-p">roles</span>',
-    "l_sub": ("<span class=\"l\">Free training helps your team learn how to work with AI</span>"
-              "<span class=\"l\">and build agents themselves</span>"),
+    "l_head": ('<span class="l">New <span class="hl-o">business</span> model.</span>'
+               '<span class="l">New <span class="hl-p">human</span> roles</span>'),
+    "l_sub": ('<span class="l">Free training for your team</span>'
+              '<span class="l">Work with AI and build agents</span>'),
     "l_note": "For more complex cases, write to me",
     "roles": [
         ("AI Automation Engineer", "fa-robot"), ("AI Product Engineer", "fa-cubes"),
@@ -145,21 +142,21 @@ EN = {
 
     # ── 8. Тарифы ──
     "pr_eyebrow": "Pricing",
-    "pr_head": 'Start <span class="hl-p">free</span>. Scale as you <span class="hl-o">grow</span>',
-    "pr_sub": "One-time purchase. No subscription required",
+    "pr_head": ('<span class="l">Start <span class="hl-p">free</span>.</span>'
+                '<span class="l">Scale as you <span class="hl-o">grow</span></span>'),
+    "pr_sub": "One-time purchase. No subscription",
     "plans": [
-        ("", "Free", "$0", "1 process", "Start free"),
-        ("", "Startup", "$59", "60 operations", "Choose Startup"),
-        ("", "SMB", "$199", "300 operations", "Choose SMB"),
-        ("best", "Company", "$499", "1,000 operations", "Choose Company"),
+        ("", "Free", "$0", "1 process", "Start"),
+        ("", "Startup", "$59", "60 operations", "Start"),
+        ("", "SMB", "$199", "300 operations", "Start"),
+        ("best", "Company", "$499", "1,000 operations", "Start"),
     ],
     "best_value": "Best value",
     "compare": [("Consulting firm — $100K+", True), ("AI consultant — $10K+", True),
                 ("Build your AI strategy yourself", False)],
 
     # ── 9. Финал ──
-    "f_1": 'Where should <span class="hl-o">you</span> start with <span class="hl-p">AI</span>?',
-    "f_2": "You don’t need to know",
+    "f_1": 'Where to start with <span class="hl-p">AI</span>?',
     "f_3": '<span class="hl-p">AI</span> Strategy shows <span class="hl-o">you</span>',
     "f_cta": "Start AI transformation",
     "legal": ["Privacy Policy", "Terms of Use"],
@@ -183,13 +180,10 @@ RU = {
     "cta_main": "Начать бесплатно",
     "cta_how": "Как это работает",
 
-    "h1": ('<span class="l"><span class="lm">С чего начать</span>'
-           '<span class="lm">внедрять</span></span>'
-           '<span class="l"><span class="lm"><span class="hl-p">ИИ</span> в вашем</span>'
-           '<span class="lm"><span class="hl-o">бизнесе</span>?</span></span>'),
+    "h1": ('<span class="l">С чего начать</span>'
+           '<span class="l">внедрять <span class="hl-p">ИИ</span>?</span>'),
     "hero_lead": ('<span class="l">Расскажите, как работает ваш бизнес.</span>'
-                  '<span class="l">Получите AI-First операционную модель,</span>'
-                  '<span class="l">нужных ИИ-агентов и дорожную карту внедрения</span>'),
+                  '<span class="l">Получите свою AI-First модель</span>'),
 
     "n_eyebrow": "Рынок сегодня",
     "n_head": 'Пользоваться <span class="hl-p">ИИ</span> и быть <span class="hl-p">AI-First</span> — не одно и то же',
@@ -202,8 +196,8 @@ RU = {
     "n_foot": "Не дайте конкурентам уйти вперёд с ИИ",
 
     "b_eyebrow": "Кейсы",
-    "b_head": ('<span class="l">Собрано под то, как ваш <span class="hl-o">бизнес</span></span>'
-               '<span class="l"><span class="hl-p">работает</span> на самом деле</span>'),
+    "b_head": ('<span class="l">Собрано под ваш <span class="hl-o">бизнес</span></span>'
+               '<span class="l">и то, как он <span class="hl-p">работает</span></span>'),
     "biz_explore": "",
     "businesses": [
         ("Консалтинг", "Рост выручки"),
@@ -215,41 +209,37 @@ RU = {
         ("Дизайн-агентство", "Скорость поставки"),
         ("Разработка ПО", "Скорость запуска"),
     ],
-    "b_all": "Посмотреть все типы бизнеса",
+    "b_all": "Все типы бизнеса",
 
     "d_eyebrow": "Решение",
-    "d_head": ('<span class="l"><span class="hl-p">AI-First</span> операционная модель</span>'
-               '<span class="l">вашего <span class="hl-o">бизнеса</span></span>'),
-    "d_sub": "Построена вокруг того, как ваш бизнес работает на самом деле",
+    "d_head": ('<span class="l">Ваша <span class="hl-p">AI-First</span></span>'
+               '<span class="l">операционная модель</span>'),
+    "d_sub": "Построена вокруг вашего бизнеса",
     "deliverables": [
-        ("Индекс ИИ-зрелости", '<span class="l">Где вы сейчас</span><span class="l">— и что вас тормозит</span>'),
-        ("Карта процессов", '<span class="l">Ваш бизнес, разложенный</span>'
-                             '<span class="l">на процессы</span>'),
-        ("Когнитивная карта", '<span class="l">Как люди думают</span>'
-                               '<span class="l">и используют знания</span>'),
-        ("Возможности ИИ", "Операции, которые ИИ может взять на себя, с потенциальным эффектом"),
-        ("Человек + ИИ", '<span class="l">Кто что делает</span><span class="l">— человек или ИИ</span>'),
-        ("AI-First модель", "Как ваш бизнес должен работать с ИИ"),
-        ("ИИ-агенты", '<span class="l">Что должен делать каждый агент</span>'
-                       '<span class="l">и как он должен работать</span>'),
-        ("Дорожная карта", '<span class="l">Что внедрять</span><span class="l">— и в каком порядке</span>'),
+        ("Индекс ИИ-зрелости", "Где вы сейчас"),
+        ("Карта процессов", "Ваш бизнес как процессы"),
+        ("Когнитивная карта", "Как люди думают и решают"),
+        ("Возможности ИИ", "Что ИИ возьмёт на себя"),
+        ("Человек + ИИ", "Кто что делает — человек или ИИ"),
+        ("AI-First модель", "Как бизнесу работать с ИИ"),
+        ("ИИ-агенты", "Что делает каждый агент"),
+        ("Дорожная карта", "Что внедрять и когда"),
     ],
-    "d_hint": "Листайте карточки",
 
     "s_eyebrow": "Как это работает",
     "steps": [
-        ("ИИ-зрелость", 'Понять, где <span class="hl-o">вы</span> сейчас',
-         "Оцените ИИ-зрелость, и вы увидите, что тормозит компанию"),
+        ("ИИ-зрелость", 'Посмотрите, где <span class="hl-o">вы</span> сейчас',
+         "Оцените ИИ-зрелость. Найдите пробелы"),
         ("Голос", "Просто расскажите",
          "Расскажите, как работает бизнес"),
         ("Бизнес-процессы", 'Ваш <span class="hl-o">бизнес</span> как <span class="hl-p">процессы</span>',
-         "Я разложу услышанное на бизнес-процессы"),
+         "Разложу услышанное на процессы"),
         ("Возможности ИИ", 'Что <span class="hl-p">ИИ</span> может <span class="hl-o">автоматизировать</span>',
-         "Найду операции, которые ИИ возьмёт на себя"),
+         "Операции, которые заберёт ИИ"),
         ("AI-First модель", 'Как <span class="hl-o">бизнес</span> должен работать с <span class="hl-p">ИИ</span>',
-         "Я перестрою процессы вокруг ИИ"),
+         "Перестрою процессы вокруг ИИ"),
         ("ИИ-агенты", 'Знать, <span class="hl-o">что</span> именно строить',
-         "Каждый ИИ-агент превращается в готовую спецификацию к разработке"),
+         "Готовые спецификации ИИ-агентов"),
     ],
     "stage": {
         "dims": ["Стратегия", "Люди", "Инфраструктура", "Данные", "Модели", "Внедрение", "R&D"],
@@ -277,9 +267,10 @@ RU = {
     },
 
     "l_eyebrow": "Обучение",
-    "l_head": 'Новая <span class="hl-o">бизнес</span>-модель. Новые <span class="hl-p">роли</span>',
-    "l_sub": ("<span class=\"l\">Бесплатное обучение помогает команде работать с ИИ</span>"
-              "<span class=\"l\">и собирать агентов самостоятельно</span>"),
+    "l_head": ('<span class="l">Новая <span class="hl-o">бизнес</span>-модель.</span>'
+               '<span class="l">Новые <span class="hl-p">роли</span></span>'),
+    "l_sub": ('<span class="l">Бесплатное обучение для команды</span>'
+              '<span class="l">Работайте с ИИ и собирайте агентов</span>'),
     "l_note": "Для более сложных задач — пишите мне",
     "roles": [
         ("AI Automation Engineer", "fa-robot"), ("AI Product Engineer", "fa-cubes"),
@@ -291,20 +282,20 @@ RU = {
     ],
 
     "pr_eyebrow": "Тарифы",
-    "pr_head": 'Начните <span class="hl-p">бесплатно</span>. Масштабируйтесь по мере <span class="hl-o">роста</span>',
+    "pr_head": ('<span class="l">Начните <span class="hl-p">бесплатно</span>.</span>'
+                '<span class="l"><span class="hl-o">Масштабируйтесь</span> дальше</span>'),
     "pr_sub": "Разовая покупка. Без подписки",
     "plans": [
-        ("", "Бесплатно", "$0", "1 процесс", "Начать бесплатно"),
-        ("", "Стартап", "$59", "60 операций", "Выбрать «Стартап»"),
-        ("", "SMB", "$199", "300 операций", "Выбрать SMB"),
-        ("best", "Компания", "$499", "1 000 операций", "Выбрать «Компанию»"),
+        ("", "Бесплатно", "$0", "1 процесс", "Начать"),
+        ("", "Стартап", "$59", "60 операций", "Начать"),
+        ("", "SMB", "$199", "300 операций", "Начать"),
+        ("best", "Компания", "$499", "1 000 операций", "Начать"),
     ],
     "best_value": "Лучшее предложение",
     "compare": [("Консалтинговая компания — $100K+", True), ("ИИ-консультант — $10K+", True),
                 ("Собрать ИИ-стратегию самому", False)],
 
-    "f_1": 'С чего начать внедрять <span class="hl-p">ИИ</span>?',
-    "f_2": "Вам не обязательно это знать",
+    "f_1": 'С чего начать с <span class="hl-p">ИИ</span>?',
     "f_3": '<span class="hl-p">ИИ</span>-стратегия <span class="hl-o">покажет</span>',
     "f_cta": "Начать ИИ-трансформацию",
     "legal": ["Политика конфиденциальности", "Условия использования"],
