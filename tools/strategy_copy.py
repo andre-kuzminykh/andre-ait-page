@@ -25,7 +25,8 @@ EN = {
     # ── 1. Первый экран ──
     "h1": ('<span class="l">Where should <span class="hl-o">you</span> start</span>'
            '<span class="l">with <span class="hl-p">AI</span> in your <span class="hl-o">business</span>?</span>'),
-    "hero_lead": "AI Strategy shows how to transform your business with AI",
+    "hero_lead": ("Tell how your business works. Get an AI-First operating model, "
+                  "the AI agents you need, and an implementation roadmap"),
 
     # ── 3. Цифры ──
     "n_eyebrow": "The market today",
@@ -44,14 +45,14 @@ EN = {
                '<span class="l">actually <span class="hl-p">works</span></span>'),
     "biz_explore": "",
     "businesses": [
-        ("Consulting Business", "20% ↑", "Revenue growth"),
-        ("Recruitment Agency", "30% ↓", "Hiring time"),
-        ("Marketing Agency", "25% ↑", "Return on marketing"),
-        ("Content Agency", "20% ↑", "Audience engagement"),
-        ("Call Center", "30% ↓", "Cost per call"),
-        ("Customer Support", "15% ↑", "Customer satisfaction"),
-        ("Design Agency", "40% ↓", "Delivery time"),
-        ("Software Development", "30% ↓", "Time to launch"),
+        ("Consulting Business", "Revenue growth"),
+        ("Recruitment Agency", "Hiring time"),
+        ("Marketing Agency", "Return on marketing"),
+        ("Content Agency", "Audience engagement"),
+        ("Call Center", "Cost per call"),
+        ("Customer Support", "Customer satisfaction"),
+        ("Design Agency", "Delivery time"),
+        ("Software Development", "Time to launch"),
     ],
     "b_all": "Explore all business types",
 
@@ -171,7 +172,8 @@ RU = {
 
     "h1": ('<span class="l">С чего начать внедрять <span class="hl-p">ИИ</span></span>'
            '<span class="l">в вашем <span class="hl-o">бизнесе</span>?</span>'),
-    "hero_lead": "AI Strategy показывает, как трансформировать ваш бизнес с помощью ИИ",
+    "hero_lead": ("Расскажите, как работает ваш бизнес. Получите AI-First операционную модель, "
+                  "нужных ИИ-агентов и дорожную карту внедрения"),
 
     "n_eyebrow": "Рынок сегодня",
     "n_head": 'Пользоваться <span class="hl-p">ИИ</span> и быть <span class="hl-p">AI-First</span> — не одно и то же',
@@ -188,14 +190,14 @@ RU = {
                '<span class="l"><span class="hl-p">работает</span> на самом деле</span>'),
     "biz_explore": "",
     "businesses": [
-        ("Консалтинг", "20% ↑", "Рост выручки"),
-        ("Кадровое агентство", "30% ↓", "Срок найма"),
-        ("Маркетинговое агентство", "25% ↑", "Отдача от маркетинга"),
-        ("Контент-агентство", "20% ↑", "Вовлечённость аудитории"),
-        ("Колл-центр", "30% ↓", "Стоимость звонка"),
-        ("Поддержка клиентов", "15% ↑", "Удовлетворённость клиентов"),
-        ("Дизайн-агентство", "40% ↓", "Срок поставки"),
-        ("Разработка ПО", "30% ↓", "Срок запуска"),
+        ("Консалтинг", "Рост выручки"),
+        ("Кадровое агентство", "Срок найма"),
+        ("Маркетинговое агентство", "Отдача от маркетинга"),
+        ("Контент-агентство", "Вовлечённость аудитории"),
+        ("Колл-центр", "Стоимость звонка"),
+        ("Поддержка клиентов", "Удовлетворённость клиентов"),
+        ("Дизайн-агентство", "Срок поставки"),
+        ("Разработка ПО", "Срок запуска"),
     ],
     "b_all": "Посмотреть все типы бизнеса",
 

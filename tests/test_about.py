@@ -216,15 +216,17 @@ def test_accent_frames_are_purple_orange():
 WM_ICONS = ["ic-tiger", "fa-graduation-cap", "fa-coins", "fa-rocket", "fa-microchip"]
 
 
-def test_chapter_watermarks_alternate_sides():
-    """Знаки глав идут по очереди, но начинают СПРАВА: тигр первой главы стоит
-    справа (правка владельца), а не слева."""
+def test_chapter_watermarks_sit_bottom_right():
+    """Правка владельца: знаки глав — тигр, шапочка, ракета и прочие — у ВСЕХ
+    глав стоят справа внизу, а не по очереди слева и справа посередине."""
+    css = _css()
+    assert re.search(r"\.wm \{[^}]*right: 2.5rem; bottom: 1.6rem", css, re.S), \
+        "знак главы прижат к правому нижнему углу"
+    assert ".wm.l, .wm.r { left: auto; right: 2.5rem; }" in css, \
+        "классы .l/.r на положение больше не влияют"
     for lang, html in _pages():
         marks = re.findall(r'<div class="wm ([lr])"[^>]*>(.*?)</div>', html, re.S)
         assert len(marks) >= 5, "%s: у экранов должны быть фоновые знаки, найдено %d" % (lang, len(marks))
-        sides = [side for side, _ in marks]
-        assert sides == ["r" if i % 2 == 0 else "l" for i in range(len(sides))], \
-            "%s: знаки идут по очереди, начиная справа, получилось %s" % (lang, sides)
         bodies = " ".join(b for _, b in marks)
         for icon in WM_ICONS:
             assert icon in bodies, "%s: нет знака главы %s" % (lang, icon)
@@ -387,9 +389,9 @@ def test_last_two_paragraphs_moved_to_the_mission():
                             html, re.S)
         assert mission, lang + ": нет экрана миссии"
         body = mission.group(1)
-        marks = (("But technology alone is not enough", "I began collaborating with")
+        marks = (("But technology alone is not enough", "I collaborate with")
                  if lang == "en" else
-                 ("Но одной технологии недостаточно", "начал сотрудничать"))
+                 ("Но одной технологии недостаточно", "сотрудничаю с"))
         for mark in marks:
             assert mark in body, "%s: в миссии нет «%s»" % (lang, mark)
         dense = re.search(r'<section class="screen dense"[^>]*>(.*?)</section>', html, re.S).group(1)

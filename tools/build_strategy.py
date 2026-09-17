@@ -220,7 +220,8 @@ def page(t, lang):
     self_href = "/strategy/" if lang == "en" else "/strategy/ru/"
     video = "/assets/Andre_AIT_video_compressed%s.mp4" % ("" if lang == "en" else "_ru")
 
-    nav_html = "".join(
+    # разделители-палочки между пунктами — как в меню главной и биографии
+    nav_html = '<span class="nav-divider" aria-hidden="true">|</span>'.join(
         '<button class="nav-tab{act}" data-go="{id}" style="--ul:{c}; --hover:{c}; --ic:{c};">'
         '<span class="nav-ic"><i class="fa-solid {ic}"></i></span>'
         '<span class="nav-label">{label}</span>'
@@ -240,10 +241,10 @@ def page(t, lang):
             <span class="biz-ic"><i class="fa-solid {ic}"></i></span>
             <div class="biz-body">
               <h3>{name}</h3>
-              <p class="biz-metric"><b>{val}</b><span>{label}</span></p>
+              <p class="biz-metric"><span>{label}</span></p>
             </div>
             <span class="biz-go"><span>{explore}</span> <i class="fa-solid fa-arrow-right"></i></span>
-          </article>""".format(ic=BIZ_ICONS[i], name=b[0], val=b[1], label=b[2], explore=t["biz_explore"])
+          </article>""".format(ic=BIZ_ICONS[i], name=b[0], label=b[1], explore=t["biz_explore"])
         for i, b in enumerate(t["businesses"]))
 
     outs = "".join("""

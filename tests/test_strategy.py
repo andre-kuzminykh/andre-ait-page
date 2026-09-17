@@ -154,9 +154,15 @@ def test_header_matches_the_main_site():
     site = _read("index.html")
     for rule in ("width: clamp(2.85rem, 12vw, 3.7rem)",     # лого
                  "height: 2.85rem",                          # пилюля меню и кнопка
-                 "font-size: 14px; font-weight: 500",        # пункты меню
+                 "font-size: clamp(12.5px, 1.05vw, 14px); font-weight: 500",        # пункты меню
                  "padding: 0 1.4rem; font-size: 11.5px"):    # кнопка действия
         assert rule in css, "в шапке лендинга нет правила «%s» с главной" % rule
+    # палочки между пунктами — как на главной и в биографии
+    assert '.nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12px;' in css, \
+        "нет разделителей меню с главной"
+    for lang, html in _pages():
+        assert html.count('<span class="nav-divider" aria-hidden="true">|</span>') == 5, \
+            lang + ": палочка стоит между каждой парой из шести пунктов"
         assert rule in site or rule.replace("; ", ";\n") in site, "правило «%s» изменилось на главной" % rule
     assert "location.href = '/'" not in _read("assets/strategy.js"), \
         "«назад» — обычная ссылка на главную, скрипт тут не нужен"

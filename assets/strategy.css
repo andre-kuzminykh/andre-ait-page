@@ -89,11 +89,14 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
     transform: translate(-50%, -50%); height: 2.85rem; box-sizing: border-box;
     background: rgba(10,10,16,0.5); border: 1px solid var(--line); border-radius: 999px; padding: 0 1rem;
     -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 4px 30px rgba(0,0,0,0.3); pointer-events: auto; }
+  /* меню повторяет главную: тот же кегль, та же насыщенность, те же палочки
+     между пунктами */
   .nav-tab { background: none; border: 0; cursor: pointer; white-space: nowrap; color: #94a3b8; font: inherit;
-    font-size: 14px; font-weight: 500; letter-spacing: 0.015em; text-transform: uppercase; padding: 0.3rem 0.45rem;
-    transition: color 0.3s ease; }
+    font-size: clamp(12.5px, 1.05vw, 14px); font-weight: 500; letter-spacing: 0.015em; text-transform: uppercase;
+    padding: 0.3rem 0.45rem; transition: color 0.3s ease; }
   .nav-tab.active { color: var(--w); background: linear-gradient(var(--ul), var(--ul)) no-repeat bottom center / 70% 2px; }
   .nav-tab:hover { color: var(--hover, var(--p-l)); }
+  .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12px; padding: 0 0.06rem; user-select: none; }
   .nav-ic, .nav-go, .nav-brand, .nav-close { display: none !important; }
 }
 @media (min-width:1150px) and (max-width:1439px) {
@@ -108,6 +111,7 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
     border-top: 1px solid rgba(255,255,255,0.14); padding: clamp(0.7rem, 2.2vh, 1.4rem) 0.25rem; color: var(--w); font: inherit;
     font-size: clamp(16px, 2.3vh, 20px); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
   .nav.open .nav-tab:last-of-type { border-bottom: 1px solid rgba(255,255,255,0.14); }
+  .nav .nav-divider { display: none; }
   .nav.open .nav-ic { display: inline-flex; align-items: center; justify-content: center; width: 2rem; flex-shrink: 0;
     font-size: clamp(17px, 2.3vh, 21px); color: var(--ic, var(--p)); }
   .nav.open .nav-label { flex: 1; min-width: 0; }
