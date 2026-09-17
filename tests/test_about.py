@@ -217,12 +217,14 @@ WM_ICONS = ["ic-tiger", "fa-graduation-cap", "fa-coins", "fa-rocket", "fa-microc
 
 
 def test_chapter_watermarks_alternate_sides():
+    """Знаки глав идут по очереди, но начинают СПРАВА: тигр первой главы стоит
+    справа (правка владельца), а не слева."""
     for lang, html in _pages():
         marks = re.findall(r'<div class="wm ([lr])"[^>]*>(.*?)</div>', html, re.S)
         assert len(marks) >= 5, "%s: у экранов должны быть фоновые знаки, найдено %d" % (lang, len(marks))
         sides = [side for side, _ in marks]
-        assert sides == ["l" if i % 2 == 0 else "r" for i in range(len(sides))], \
-            "%s: знаки идут по очереди слева и справа, получилось %s" % (lang, sides)
+        assert sides == ["r" if i % 2 == 0 else "l" for i in range(len(sides))], \
+            "%s: знаки идут по очереди, начиная справа, получилось %s" % (lang, sides)
         bodies = " ".join(b for _, b in marks)
         for icon in WM_ICONS:
             assert icon in bodies, "%s: нет знака главы %s" % (lang, icon)
