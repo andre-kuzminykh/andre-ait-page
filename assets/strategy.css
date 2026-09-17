@@ -1,0 +1,941 @@
+/* ============================================================
+   FR-SITE41 — лендинг AI Strategy (/strategy/, RU в /strategy/ru/).
+   Страница листается ЭКРАНАМИ, как биография и главная: экраны сменяют друг
+   друга анимацией, прокрутки-простыни нет. Лицо всегда слева на полэкрана,
+   на мобилке — кружок внизу слева.
+   Масштабирование и размеры шапки повторяют главную (body{zoom} на больших
+   экранах, те же кегли и высоты кнопок).
+   ============================================================ */
+
+:root {
+  --p: #8854F3; --p-l: #a071ff; --o: #F97316; --o-l: #ff8a33;
+  --bg: #050505; --tx: #b9c2d0; --tx-d: #8a94a6; --w: #ffffff;
+  --line: rgba(255,255,255,0.10);
+  --card: rgba(255,255,255,0.025);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --head-w: 50%;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color-scheme: dark;
+  font-family: 'JetBrains Mono', monospace; color: var(--tx);
+  -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none; overflow: hidden; width: 100vw; height: 100vh; height: 100dvh; }
+a { color: inherit; text-decoration: none; }
+*:focus-visible { outline: 2px solid var(--p); outline-offset: 3px; }
+::selection { background: var(--p); color: var(--w); }
+img, svg { max-width: 100%; }
+/* как на главной: на больших экранах поднимаем весь макет целиком */
+@media (min-width:1600px) { body { zoom: 1.15; } }
+@media (min-width:1900px) { body { zoom: 1.3; } }
+@media (min-width:2300px) { body { zoom: 1.5; } }
+
+/* ===== Лицо ===== */
+.head { position: fixed; z-index: 45; overflow: hidden; background: #0a0a0f; cursor: pointer; touch-action: none;
+  border: 1px solid transparent; transition: border-color 0.4s ease, box-shadow 0.4s ease; }
+.head video { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Растушёвка — ровно как на главной (FR-SITE17): много стопов, лицо не
+   затемняется вовсе, чернота набирается только в хвосте колонки. Колонка при
+   этом ШИРЕ, чем отступ колоды, поэтому и шов кадра, и сам край видео уходят
+   под чёрное, и лицо остаётся чистым. */
+.head-shade { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to right, rgba(5,5,5,0) 35%, rgba(5,5,5,0.12) 46%, rgba(5,5,5,0.28) 55%,
+    rgba(5,5,5,0.5) 62%, rgba(5,5,5,0.7) 70%, rgba(5,5,5,0.86) 77%, rgba(5,5,5,0.96) 83%, var(--bg) 88%); }
+.head-play { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; pointer-events: none;
+  color: var(--w); font-size: 2rem; text-shadow: 0 4px 14px rgba(0,0,0,0.6); transition: opacity 0.3s ease; }
+.head.playing .head-play { opacity: 0; }
+@media (min-width:1024px) {
+  /* правило владельца: лицо ВСЕГДА на полэкрана.
+     border: 0 обязателен: прозрачная рамка в 1px не закрывается растушёвкой
+     (.head-shade считается от padding-box), и на шве светилась полоска сырого
+     видео шириной ровно в пиксель — именно её видел владелец. */
+  /* Ролик ШИРЕ отступа колоды (как 60% на главной при колонке текста 44%):
+     хвост градиента уходит ПОД колоду, поэтому лицо не приходится затемнять
+     ради того, чтобы спрятать край кадра. Отсюда и z-index ниже колоды —
+     иначе чёрный хвост ролика накрывает левый край экранов. */
+  .head { left: 0; top: 0; width: 60%; height: 100%; border: 0; z-index: 3; }
+}
+@media (max-width:1023px) {
+  .head { left: clamp(0.8rem, 3.5vw, 1.2rem); bottom: calc(clamp(0.8rem, 3.5vw, 1.2rem) + env(safe-area-inset-bottom, 0px));
+    width: clamp(100px, 28vw, 128px); height: clamp(100px, 28vw, 128px); border-radius: 50%;
+    border-color: rgba(255,255,255,0.18); box-shadow: 0 14px 34px rgba(0,0,0,0.55); }
+  .head .head-shade { display: none; }
+  .head .head-play { display: flex; }
+  .head video { object-position: center 18%; filter: blur(5px); transform: scale(1.08); transition: filter 0.3s ease, transform 0.3s ease; }
+  .head.playing video { filter: none; transform: none; }
+}
+.head-badge { position: fixed; z-index: 46; left: calc(var(--head-w) / 2); bottom: 3.2rem; transform: translateX(-50%);
+  display: none; align-items: center; gap: 0.5rem; padding: 0.35rem 0.35rem 0.35rem 0.85rem; border-radius: 999px;
+  background: rgba(0,0,0,0.45); border: 1px solid var(--line); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  white-space: nowrap; }
+@media (min-width:1024px) { .head-badge { display: flex; } }
+.head-badge b { color: var(--w); font-size: clamp(13px, 0.95vw, 14.5px); }
+.head-badge span { color: rgba(255,255,255,0.75); font-size: clamp(13px, 0.95vw, 14.5px); text-transform: uppercase; letter-spacing: 0.08em; }
+.head-badge i { display: flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 999px;
+  background: #000; color: var(--w); font-size: 10px; }
+
+/* ===== Шапка: один в один с главной ===== */
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events: none; padding: 1.1rem; }
+@media (min-width:1024px) { header { padding: 2rem; } }
+.header-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.header-left, .header-right { pointer-events: auto; display: flex; align-items: center; gap: 0.4rem; }
+.logo-btn { display: block; cursor: pointer; flex-shrink: 0; }
+.logo-img { width: clamp(2.85rem, 12vw, 3.7rem); height: clamp(2.85rem, 12vw, 3.7rem); object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+@media (min-width:1024px) { .logo-img { width: 3.6rem; height: 3.6rem; } }
+
+.nav { display: none; }
+@media (min-width:1150px) {
+  .nav { display: flex; align-items: center; gap: 0.3rem; position: absolute; left: calc(50% - 3.5rem); top: 50%;
+    transform: translate(-50%, -50%); height: 2.85rem; box-sizing: border-box;
+    background: rgba(10,10,16,0.5); border: 1px solid var(--line); border-radius: 999px; padding: 0 1rem;
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 4px 30px rgba(0,0,0,0.3); pointer-events: auto; }
+  /* меню повторяет главную: тот же кегль, та же насыщенность, те же палочки
+     между пунктами */
+  .nav-tab { background: none; border: 0; cursor: pointer; white-space: nowrap; color: #94a3b8; font: inherit;
+    font-size: clamp(12.5px, 1.05vw, 14px); font-weight: 500; letter-spacing: 0.015em; text-transform: uppercase;
+    padding: 0.3rem 0.45rem; transition: color 0.3s ease; }
+  .nav-tab.active { color: var(--w); background: linear-gradient(var(--ul), var(--ul)) no-repeat bottom center / 70% 2px; }
+  .nav-tab:hover { color: var(--hover, var(--p-l)); }
+  .nav-divider { display: inline; color: rgba(255,255,255,0.22); font-size: 12px; padding: 0 0.06rem; user-select: none; }
+  .nav-ic, .nav-go, .nav-brand, .nav-close { display: none !important; }
+}
+@media (min-width:1150px) and (max-width:1439px) {
+  .nav { left: calc(50% - 5rem); gap: 0.12rem; padding: 0 0.7rem; }
+  .nav-tab { font-size: clamp(12.5px, 1.05vw, 14px); letter-spacing: 0; padding: 0.3rem; }
+}
+@media (max-width:1149px) {
+  .nav.open { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0; padding: clamp(6rem, 12vh, 7.5rem) 1.75rem calc(6rem + env(safe-area-inset-bottom, 0px));
+    background: var(--bg); overflow-y: auto; pointer-events: auto; }
+  .nav.open .nav-tab { display: flex; align-items: center; gap: 1.15rem; width: 100%; max-width: 23rem; background: none; border: 0;
+    border-top: 1px solid rgba(255,255,255,0.14); padding: clamp(0.7rem, 2.2vh, 1.4rem) 0.25rem; color: var(--w); font: inherit;
+    font-size: clamp(16px, 2.3vh, 20px); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+  .nav.open .nav-tab:last-of-type { border-bottom: 1px solid rgba(255,255,255,0.14); }
+  .nav .nav-divider { display: none; }
+  .nav.open .nav-ic { display: inline-flex; align-items: center; justify-content: center; width: 2rem; flex-shrink: 0;
+    font-size: clamp(17px, 2.3vh, 21px); color: var(--ic, var(--p)); }
+  .nav.open .nav-label { flex: 1; min-width: 0; }
+  .nav.open .nav-go { display: inline-flex; width: 1.4rem; justify-content: center; font-size: 13px; color: rgba(255,255,255,0.45); }
+  .nav.open .nav-tab.active .nav-label, .nav.open .nav-tab.active .nav-go { color: var(--ic, var(--p)); }
+  .nav.open .nav-brand { display: flex; align-items: center; justify-content: center; gap: 0.7rem; position: absolute;
+    top: clamp(4.3rem, 8vh, 5rem); left: 1.1rem; right: 1.1rem; pointer-events: none; }
+  .nav.open .nav-brand img { width: clamp(2.6rem, 11.5vw, 3.4rem); height: clamp(2.6rem, 11.5vw, 3.4rem); object-fit: contain; }
+  .nav.open .nav-brand span { font-size: clamp(14px, 4.6vw, 19px); font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--w); white-space: nowrap; }
+  .nav.open .nav-close { display: flex; position: absolute; top: 1.35rem; right: 1.35rem; width: 2.6rem; height: 2.6rem;
+    align-items: center; justify-content: center; background: none; border: 0; color: var(--w); font-size: 26px; cursor: pointer; }
+  .nav-tab { display: none; }
+}
+@media (max-width:1149px) and (max-height:700px) { .nav.open .nav-tab { padding-top: 0.5rem; padding-bottom: 0.5rem; } }
+.menu-btn { display: flex; align-items: center; justify-content: center; width: clamp(2.5rem, 11vw, 3.3rem); height: clamp(2.5rem, 11vw, 3.3rem);
+  border-radius: 999px; background: rgba(10,10,16,0.55); border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--w); box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  cursor: pointer; flex-shrink: 0; }
+@media (min-width:1024px) { .menu-btn { width: 2.85rem; height: 2.85rem; } }
+@media (min-width:1150px) { .menu-btn { display: none; } }
+.lang-switch { display: flex; align-items: center; gap: 0.3rem; margin-right: clamp(0.5rem, 3.5vw, 1.4rem); flex-shrink: 0; }
+@media (max-width:1023px) { .header-right { flex: 1 0 auto; } .lang-switch { margin-left: clamp(0.5rem, 2.2vw, 1.5rem); margin-right: auto; } }
+.lang-opt { background: none; border: 0; padding: 0.2rem 0.05rem; cursor: pointer; font: inherit; font-size: 12px; font-weight: 500;
+  letter-spacing: 0.08em; color: rgba(255,255,255,0.45); transition: color 0.3s ease; }
+.lang-opt.active { color: var(--w); font-weight: 700; }
+.lang-sep { color: rgba(255,255,255,0.25); font-size: 10px; user-select: none; }
+@media (hover:hover) { .lang-opt:hover { color: var(--w); } }
+@media (min-width:1024px) { .lang-opt { font-size: 12px; } .lang-switch { margin-right: 2rem; } }
+@media (min-width:1024px) and (max-width:1319px) { .lang-switch { gap: 0.12rem; margin-right: 1rem; } .lang-opt { font-size: 11px; letter-spacing: 0; } }
+
+/* ===== Кнопки (без «магнитности»: кнопка не должна уезжать под курсором) ===== */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; border-radius: 999px; cursor: pointer;
+  font: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; }
+.btn-primary { background: var(--w); color: #050505; border: 1px solid rgba(255,255,255,0.1);
+  padding: clamp(0.8rem, 1vw, 1rem) clamp(1.3rem, 1.9vw, 2rem); font-size: clamp(10.5px, 0.8vw, 12.5px); }
+@media (hover:hover) { .btn-primary:hover { background: linear-gradient(100deg, var(--p) 0%, var(--o) 50%, var(--p) 100%);
+    background-size: 250% 250%; color: var(--w); border-color: transparent; box-shadow: 0 14px 34px -12px rgba(136,84,243,0.7);
+    animation: shimmer 4.5s ease infinite; } }
+@keyframes shimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.btn-ghost { background: rgba(255,255,255,0.03); color: var(--w); border: 1px solid var(--line);
+  padding: clamp(0.8rem, 1vw, 1rem) clamp(1.3rem, 1.9vw, 2rem); font-size: clamp(10.5px, 0.8vw, 12.5px); }
+@media (hover:hover) { .btn-ghost:hover { border-color: rgba(136,84,243,0.6); background: rgba(136,84,243,0.12); } }
+/* кнопки тарифов читаются наравне с остальными подписями: 9px были заметно
+   мельче всего на странице (правка владельца «и остальные тоже мелкие») */
+.btn-sm { padding: 0.62rem 0.75rem; font-size: clamp(10.5px, 0.78vw, 12px); letter-spacing: 0.06em; gap: 0.4rem; white-space: normal; text-align: center; }
+.cta-head { padding: clamp(0.62rem, 2.2vw, 0.95rem) clamp(0.85rem, 3.2vw, 1.35rem); font-size: clamp(9px, 3vw, 12.5px);
+  letter-spacing: clamp(0.06em, 0.4vw, 0.1em); gap: clamp(0.4rem, 1.2vw, 0.6rem); }
+@media (min-width:1024px) { .cta-head { height: 2.85rem; box-sizing: border-box; padding: 0 1.4rem; font-size: 11.5px; letter-spacing: 0.15em; gap: 0.55rem; } }
+@media (min-width:1024px) and (max-width:1319px) { .cta-head { padding: 0 0.95rem; font-size: clamp(10px, 0.85vw, 11px); letter-spacing: 0.08em; gap: 0.4rem; } }
+@media (max-width:380px) {
+  header { padding: 0.85rem 0.6rem; }
+  .header-right { flex: 0 0 auto; gap: 0.3rem; }
+  .lang-switch { margin-left: 0; margin-right: 0.25rem; gap: 0.12rem; }
+  .lang-opt { font-size: 10px; letter-spacing: 0.03em; }
+  .logo-img { width: 2.5rem; height: 2.5rem; }
+  .menu-btn { width: 2.3rem; height: 2.3rem; }
+  .cta-head { padding: 0.6rem 0.55rem; font-size: 8px; letter-spacing: 0.02em; }
+}
+
+/* Иконка дома слева в пилюле меню — она заменила кнопку «назад»
+   (правка владельца: «вместо кнопки BACK иконку домой рядом с меню») */
+.nav-home { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 1.9rem; height: 1.9rem; margin-right: 0.15rem; border-radius: 999px; color: rgba(255,255,255,0.65);
+  font-size: 14px; text-decoration: none; transition: color 0.3s ease, background 0.3s ease; }
+@media (hover:hover) { .nav-home:hover { color: var(--w); background: rgba(136,84,243,0.16); } }
+
+  /* в открытом меню на мобилке «домой» — такая же строка, как остальные пункты */
+  .nav.open .nav-home { width: 100%; height: auto; margin: 0; justify-content: center; gap: 0.7rem;
+    border-top: 1px solid rgba(255,255,255,0.14); border-radius: 0;
+    padding: clamp(0.7rem, 2.2vh, 1.4rem) 0.25rem; color: var(--w);
+    font-size: clamp(16px, 2.3vh, 20px); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .nav.open .nav-home::after { content: attr(data-label); }
+  .nav.open .nav-home i { font-size: clamp(17px, 2.3vh, 21px); color: var(--p); }
+
+/* ===== Экраны ===== */
+.deck { position: fixed; inset: 0; z-index: 6; overflow: hidden; }
+@media (min-width:1024px) { .deck { left: var(--head-w); } }
+.screen { position: absolute; inset: 0; display: none; flex-direction: column;
+  justify-content: center; justify-content: safe center;
+  padding: 6.2rem clamp(1.1rem, 4vw, 1.8rem) calc(clamp(100px, 28vw, 128px) + 1.4rem + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto; overflow-x: clip; scrollbar-width: none; }
+.screen::-webkit-scrollbar { width: 0; }
+@media (min-width:1024px) { .screen { padding: 7rem clamp(1.6rem, 3.2vw, 3rem) 2.5rem; } }
+.screen.active { display: flex; }
+.screen > * { flex-shrink: 0; }
+.deck.leaving .screen.active { opacity: 0; transform: translateY(-28px); transition: opacity 0.24s ease, transform 0.24s ease; }
+.deck.entering .screen.active { animation: slideInScreen 0.5s var(--ease); }
+/* Перелёт оранжевых блоков 03 → 04 → 05: экран не въезжает целиком —
+   переезжают сами блоки, поэтому карточка появляется мгновенно, а уходящий
+   экран только гаснет, не уезжая вверх. */
+.deck.leaving.morph-out .screen.active { transform: none; }
+.deck.morph .screen.active { animation: none; }
+.deck.morph .screen.active .stage-card { transition: none; opacity: 1; transform: none; }
+.deck.morph .screen.active .step-copy { animation: morphCopy 0.52s var(--ease); }
+
+@keyframes morphCopy { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes slideInScreen { from { opacity: 0; transform: translateY(44px); } to { opacity: 1; transform: none; } }
+.wrap { width: 100%; max-width: 46rem; margin: 0 auto; }
+.wrap.center { text-align: center; }
+.screen .wrap > * { flex-shrink: 0; }
+
+/* точки-индикаторы справа */
+.dots { position: fixed; z-index: 50; display: flex; gap: 0.4rem; }
+@media (min-width:1024px) { .dots { right: 1.1rem; top: 50%; transform: translateY(-50%); flex-direction: column; } }
+@media (max-width:1023px) { .dots { left: 50%; transform: translateX(-50%); bottom: calc(0.8rem + env(safe-area-inset-bottom, 0px)); } }
+.dot { width: 6px; height: 6px; border-radius: 999px; border: 0; padding: 0; cursor: pointer;
+  background: rgba(255,255,255,0.22); transition: background 0.3s ease, transform 0.3s ease; }
+.dot.on { background: linear-gradient(120deg, var(--p-l), var(--o-l)); transform: scale(1.5); }
+@media (hover:hover) { .dot:hover { background: rgba(255,255,255,0.5); } }
+
+/* ===== Типографика ===== */
+h1, h2, h3 { color: var(--w); margin: 0; }
+h1 { font-size: clamp(1.7rem, 5vw, 4.4rem); font-weight: 800; line-height: 1.16; letter-spacing: -0.025em; margin-bottom: 1.1rem; }
+h1 .l { display: block; white-space: nowrap; }
+/* .lm — половинки строки: на вебе идут в строку, на мобилке блоками,
+   чтобы заголовок первого экрана встал в четыре строки (правка владельца) */
+h1 .lm + .lm::before { content: " "; white-space: pre; }
+h2 .l { display: block; }
+@media (max-width:1023px) { h1 { font-size: clamp(1.05rem, 5.2vw, 1.9rem); } }
+h2 { font-size: clamp(1.15rem, 2.1vw, 1.75rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.015em; margin-bottom: 0.9rem; }
+h2.one-line { white-space: nowrap; font-size: clamp(0.95rem, 1.85vw, 1.5rem); }
+@media (max-width:1023px) { h2.one-line { white-space: normal; } }
+h3 { font-size: clamp(0.95rem, 1.1vw, 1.1rem); font-weight: 700; line-height: 1.3; }
+p { margin: 0 0 0.8rem; font-size: clamp(12.5px, 0.92vw, 14.5px); line-height: 1.7; }
+p:last-child { margin-bottom: 0; }
+strong { color: var(--w); font-weight: 700; }
+.lead { font-size: clamp(13.5px, 1.05vw, 16px); line-height: 1.6; color: #dfe4ec; }
+/* строки, которые владелец просил не склеивать в одну */
+.lead .l { display: block; }
+.eyebrow { display: inline-flex; align-items: center; gap: 0.55rem; margin: 0 0 0.8rem;
+  font-size: clamp(11.5px, 0.92vw, 13.5px); font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--p-l); }
+.eyebrow.o { color: var(--o-l); }
+.center .eyebrow { justify-content: center; }
+.hl-p { color: var(--p-l); }
+.hl-o { color: var(--o-l); }
+.hero-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.8rem; margin-top: 1.6rem; }
+.hero-cta .btn { flex: 0 0 13.5rem; width: 13.5rem; justify-content: center; }
+
+/* ===== Проблема: вопросы в одну строку каждый ===== */
+/* ===== Рынок: четыре квадрата, при наведении ничего не прыгает ===== */
+.nums { display: grid; gap: 0.7rem; grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr; max-width: 32rem; margin: 1.3rem auto 1.1rem; }
+/* высоту выравниваем min-height, а НЕ aspect-ratio: вместе с align-self:
+   stretch пропорция начинала считать ШИРИНУ от высоты, и карточки
+   вылезали из своих ячеек на 86px */
+.num-card { min-height: clamp(5.6rem, 11vh, 7.4rem); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;
+  padding: 1rem; border-radius: 1.1rem; border: 1px solid var(--line); background: var(--card); text-align: center; }
+.num-card:nth-child(2n) { background: linear-gradient(165deg, rgba(249,115,22,0.08), rgba(255,255,255,0.01)); }
+.num-card:nth-child(2n+1) { background: linear-gradient(165deg, rgba(136,84,243,0.08), rgba(255,255,255,0.01)); }
+.num-val { font-size: clamp(1.7rem, 3.2vw, 2.5rem); font-weight: 800; line-height: 1; letter-spacing: -0.03em;
+  background: linear-gradient(120deg, var(--p-l), var(--o-l)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.num-card p { margin: 0; font-size: clamp(11.5px, 1vw, 14.5px); line-height: 1.4; color: var(--w); }
+.num-card p .l, .out p .l { display: block; }
+@media (min-width:1024px) and (max-height:760px),
+         (min-width:1600px) and (max-height:874px),
+         (min-width:1900px) and (max-height:988px),
+         (min-width:2300px) and (max-height:1140px) { .num-card { min-height: 4.6rem; padding: 0.8rem; } }
+.nums-foot { font-size: clamp(12px, 1.05vw, 15.5px); font-weight: 700; color: var(--o-l); }
+
+/* ===== Кейсы: восемь карточек на одном экране ===== */
+.biz-grid { display: grid; gap: 0.6rem; grid-template-columns: minmax(0, 1fr); margin: 1.2rem auto 1.1rem; }
+@media (min-width:620px) { .biz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* min-width:0 обязателен: иначе карточки не ужимаются до ячейки и вылезают вправо */
+.biz { display: flex; align-items: center; gap: 0.55rem; min-width: 0; min-height: 3.6rem; padding: 0.7rem 0.7rem; border-radius: 0.9rem;
+  border: 1px solid var(--line); background: var(--card); transition: border-color 0.3s ease, background 0.3s ease; }
+.biz-ic { display: flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 0.6rem;
+  background: rgba(136,84,243,0.14); color: var(--p-l); font-size: 12px; flex-shrink: 0; }
+.biz:nth-child(even) .biz-ic { background: rgba(249,115,22,0.14); color: var(--o-l); }
+.biz-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.biz h3 { font-size: clamp(10.5px, 0.82vw, 12.5px); text-transform: uppercase; letter-spacing: 0.03em;
+  line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* метрика и её подпись — одной строкой под названием */
+/* кегль детей задан в em, чтобы подбор размера на .biz-metric ужимал строку
+   целиком: иначе длинные русские подписи обрезались многоточием */
+.biz-metric { display: flex; align-items: baseline; gap: 0.4rem; margin: 0; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; font-size: clamp(10px, 0.8vw, 12px); }
+.biz-metric b { font-size: 1.08em; color: var(--o-l); font-weight: 800; }
+.biz-metric span { font-size: 0.84em; color: var(--tx-d); text-transform: uppercase; letter-spacing: 0.03em; }
+
+.biz-go { display: inline-flex; align-items: center; gap: 0.25rem; flex-shrink: 0; margin-left: auto; font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--p-l); white-space: nowrap; }
+@media (max-width:1199px) { .biz-go { font-size: 8px; letter-spacing: 0.05em; } }
+@media (max-width:620px) {
+  .biz { min-height: 0; padding: 0.42rem 0.55rem; gap: 0.4rem; }
+  .biz-ic { width: 1.5rem; height: 1.5rem; font-size: 10px; }
+  .biz-grid { gap: 0.35rem; margin: 0.8rem auto 0.7rem; }
+  .biz-body { gap: 0.1rem; }
+  .biz h3 { font-size: 10px; }
+  .biz-go { font-size: 8px; }
+}
+@media (hover:hover) { .biz:hover { border-color: rgba(136,84,243,0.45); background: rgba(136,84,243,0.07); } }
+.biz-all { display: flex; width: fit-content; margin: 0 auto; align-items: center; gap: 0.5rem; font-size: clamp(11.5px, 0.85vw, 13px); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--tx); transition: color 0.3s ease; }
+@media (hover:hover) { .biz-all:hover { color: var(--w); } }
+
+/* ===== Решение: карточки лентой, края уходят в тёмный градиент ===== */
+/* Правка владельца: лента должна доходить ближе к краям экрана, а тёмная
+   растушёвка быть уже. Выходим за колонку .wrap на всю ширину экрана
+   (минус его боковые отступы) и сужаем градиент. */
+.rail-wrap { position: relative; margin: 1.2rem 0 0.8rem;
+  width: calc(100% + 2 * var(--rail-bleed, 0px));
+  margin-left: calc(-1 * var(--rail-bleed, 0px)); }
+@media (min-width:1024px) { .rail-wrap { --rail-bleed: clamp(1rem, 2.6vw, 2.6rem); } }
+/* растушёвка должна ПЕРЕКРЫВАТЬ край карточки, а не просто темнеть: фон почти
+   чёрный, и мягкий градиент не прятал ни рамку, ни обрезанный текст */
+.rail-wrap::before, .rail-wrap::after { content: ''; position: absolute; top: -0.2rem; bottom: -0.2rem; width: 3.4rem; z-index: 3; pointer-events: none; }
+.rail-wrap::before { left: 0; background: linear-gradient(to right, var(--bg) 0%, var(--bg) 30%, rgba(5,5,5,0) 100%);
+  opacity: 0; transition: opacity 0.3s ease; }
+.rail-wrap.scrolled::before { opacity: 1; }
+.rail-wrap.ended::after { opacity: 0; }
+.rail-wrap::after { right: 0; background: linear-gradient(to left, var(--bg) 0%, var(--bg) 30%, rgba(5,5,5,0) 100%);
+  transition: opacity 0.3s ease; }
+/* scroll-padding обязателен вместе с боковым падингом: без него прилипание
+   «start» тянет первую карточку к самому краю прокрутки, лента открывается
+   уже прокрученной на ширину падинга и слева наползает растушёвка — именно
+   этот сдвиг в первую секунду видел владелец */
+.rail { display: flex; gap: 0.7rem; padding: 0.2rem var(--rail-bleed, 0px) 0.8rem; overflow-x: auto;
+  scroll-snap-type: x mandatory; scroll-padding-inline: var(--rail-bleed, 0px); scrollbar-width: none; }
+.rail::-webkit-scrollbar { height: 0; }
+.out { flex: 0 0 auto; width: clamp(11rem, 17vw, 13rem); scroll-snap-align: start; padding: 0.9rem 1rem; border-radius: 0.9rem;
+  border: 1px solid var(--line); background: var(--card); }
+/* Правка владельца: в карточках решения нет чисел, всё внутри выключено
+   по центру — иконка сверху, под ней название и описание. */
+.out { text-align: center; }
+.out-ic { display: flex; align-items: center; justify-content: center; width: 2.3rem; height: 2.3rem;
+  margin: 0 auto 0.6rem; border-radius: 0.75rem; border: 1px solid rgba(136,84,243,0.32);
+  background: rgba(136,84,243,0.12); color: var(--p-l); font-size: 14px; }
+.out h3 { margin: 0 0 0.4rem; font-size: clamp(11px, 0.85vw, 13px); }
+.out p { margin: 0; font-size: clamp(10.5px, 0.8vw, 12px); line-height: 1.55; color: var(--tx-d); }
+.rail-hint { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: clamp(11px, 0.8vw, 12.5px); letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--tx-d); }
+
+/* ===== Шаги: текст слева, сцена продукта справа ===== */
+/* Шесть шагов обязаны выглядеть одинаково: шапка и панель имеют постоянную
+   высоту, иначе от шага к шагу они прыгали по вертикали на 100–150px, а высота
+   панели менялась втрое (жалоба владельца «чтобы ничего не скакало»). */
+/* minmax(0,1fr) обязателен: неявная колонка грида равна max-content, и
+   блоки в одну строку на сцене возможностей растягивали весь шаг за экран */
+.step-wrap { max-width: 50rem; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr;
+  gap: clamp(0.5rem, 1.1vh, 0.85rem); align-content: start; }
+/* Постоянную высоту шапки держит ПОДЗАГОЛОВОК — резерв ровно в две строки, —
+   а не весь блок. Раньше на .step-copy стояла height: 9.2rem под худший
+   случай, и под текстом шага зияла пустота почти в 90px до панели (жалоба
+   владельца «текст поближе надо к карточке, и это во всех таких слайдах»).
+   Резерв на подзаголовке оставляет шапку одной высоты на всех шести шагах —
+   панель по-прежнему не скачет, — но пустоты под текстом больше нет. */
+.step-copy { display: flex; flex-direction: column; align-items: inherit; }
+/* Резерв — ОДНА строка: подзаголовки шагов переписаны короткими, и
+   двухстрочный резерв снова отодвигал заголовок от панели (правка
+   владельца «тайтл и подтайтл ещё ближе к интерфейсу»). */
+.step-copy p { margin-bottom: 0; line-height: 1.6; min-height: 1.6em; }
+/* высота панели ФИКСИРОВАНА: иначе она менялась от шага к шагу втрое */
+.stage-card { display: flex; flex-direction: column; justify-content: center;
+  height: min(48vh, 24rem); }
+.stage-card > .ui { width: 100%; }
+/* правка владельца: номер, заголовок и текст шага стоят ПЛОТНЕЕ друг к другу */
+.step-n { font-size: clamp(11.5px, 0.92vw, 13.5px); font-weight: 700; letter-spacing: 0.18em; color: var(--o-l); margin-bottom: 0.3rem; }
+.step-copy h2 { font-size: clamp(1.25rem, 2.15vw, 1.8rem); margin-bottom: 0.3rem; }
+.step-copy p { max-width: min(38rem, 100%); }
+.step-copy p .l { display: block; }
+
+/* ===== Мини-интерфейс продукта ===== */
+.ui { position: relative; border-radius: 1rem; border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(18,18,26,0.95), rgba(8,8,12,0.95)); box-shadow: 0 24px 60px -40px rgba(0,0,0,0.9); overflow: hidden; }
+.ui-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.07);
+  font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tx-d); }
+.ui-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.18); }
+.ui-dot.p { background: var(--p); } .ui-dot.o { background: var(--o); }
+.ui-body { padding: clamp(0.8rem, 1.4vw, 1.2rem); }
+.stage-card { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease 0.15s, transform 0.7s var(--ease) 0.15s; }
+.screen.active .stage-card { opacity: 1; transform: none; }
+.stage-card [data-seq] { opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s var(--ease); }
+.screen.active .stage-card [data-seq] { opacity: 1; transform: none; }
+
+/* 01 — зрелость: оценка стоит РОВНО НАД столбцом графиков (правка владельца
+   «оценку выровни с графиками чтобы над ними ровно была»), поэтому она живёт
+   в одной колонке с ними, а не по центру всей панели */
+.dimcol { display: flex; flex-direction: column; min-width: 0; }
+.score { display: flex; align-items: baseline; justify-content: flex-start; gap: 0.5rem; margin-bottom: 0.55rem; }
+.score b { font-size: clamp(1.4rem, 2.6vw, 2rem); line-height: 1; letter-spacing: -0.02em;
+  background: linear-gradient(120deg, var(--p-l), var(--o-l)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.score span { font-size: clamp(11.5px, 0.85vw, 13px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--tx-d); }
+.radar { display: block; width: 100%; max-height: 34vh; height: auto; margin: 0 auto; }
+.radar .grid-l { stroke: rgba(255,255,255,0.10); fill: none; }
+.radar .axis { stroke: rgba(255,255,255,0.10); }
+.radar .shape { fill: rgba(136,84,243,0.22); stroke: var(--p-l); stroke-width: 1.5; opacity: 0;
+  transform: scale(0.2); transform-origin: 50% 50%; transition: opacity 0.6s ease 0.3s, transform 1s var(--ease) 0.3s; }
+.screen.lit .radar .shape { opacity: 1; transform: none; }
+.radar text { font-size: 7px; fill: var(--tx-d); font-family: 'JetBrains Mono', monospace; }
+
+/* 02 — голос */
+.wave { display: flex; align-items: center; gap: 3px; height: 2.2rem; }
+.wave span { flex: 1; border-radius: 999px; background: linear-gradient(180deg, var(--p-l), var(--p)); opacity: 0.85;
+  animation: waveMove 1.1s ease-in-out infinite; }
+@keyframes waveMove { 0%, 100% { height: 18%; } 50% { height: 100%; } }
+.typing { font-size: clamp(10.5px, 0.85vw, 12.5px); line-height: 1.7; color: var(--tx); margin: 0.8rem 0; }
+.caret { display: inline-block; width: 6px; height: 12px; background: var(--p-l); vertical-align: -2px; animation: caret 1s steps(2) infinite; }
+@keyframes caret { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+.flow-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.node { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.62rem 0.95rem; border-radius: 0.7rem; font-size: 12px;
+  border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); color: var(--w); }
+/* шаги процесса окрашены ОДИНАКОВО на всех сценах: люди оранжевые, системы
+   фиолетовые, ИИ-агенты фиолетово-оранжевым градиентом */
+.node.human, .fnode.human, .pnode.human { border: 1px solid rgba(249,115,22,0.55); background: rgba(249,115,22,0.12); }
+.node.sys, .fnode.sys, .pnode.sys { border: 1px solid rgba(136,84,243,0.6); background: rgba(136,84,243,0.16); }
+.node.human i, .fnode.human i, .pnode.human i { color: var(--o-l); }
+.node.sys i, .fnode.sys i, .pnode.sys i { color: var(--p-l); }
+.node i, .fnode i, .pnode i { font-size: 11px; }
+
+/* 03 — процессы связаны между собой */
+/* процессы: прямоугольники сеткой, связи — стрелками между ними */
+/* ряды стоят чуть свободнее на высокой панели — иначе цепочка жмётся в
+   середину, а сверху и снизу зияет пустота */
+.pchain { display: flex; flex-direction: column; align-items: center; gap: clamp(0.3rem, 1.4vh, 0.7rem); }
+.prow { display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
+.pwrap { color: rgba(255,255,255,0.22); font-size: 10px; line-height: 1; }
+.parrow { color: rgba(255,255,255,0.25); font-size: 9px; }
+.pnode { position: relative; display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-width: 0;
+  padding: 0.55rem 0.6rem; border-radius: 0.6rem; text-align: center;
+  border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.03); font-size: 10px; color: var(--w); }
+.pnode.human { border-color: rgba(249,115,22,0.5); background: rgba(249,115,22,0.10); }
+.pnode.human i { color: var(--o-l); }
+.pnode.sys { border-color: rgba(136,84,243,0.6); background: rgba(136,84,243,0.16); }
+.pnode.sys i { color: var(--p-l); }
+.pnode i { font-size: 10px; }
+
+
+/* 04 — что может забрать ИИ */
+/* Раскладка ровно как на соседних сценах — два ряда флексом, блоки своей
+   естественной ширины. Жёсткая сетка 4×2 давала колонку в четверть ширины
+   панели, и «Document analysis» не влезал в неё даже на минимальном кегле
+   (жалоба владельца «не вмещается документ анализ»). */
+.opchain { gap: 0.45rem; }
+.oprow { gap: 0.45rem; }
+/* Обёртка группы (фиолетовые / серые) на вебе прозрачна — ряды остаются
+   прямыми детьми колонки; на телефоне она превращается в самостоятельный
+   поток с переносом (см. мобильный блок в конце файла). */
+.opgroup { display: contents; }
+/* тот же шаг процесса должен выглядеть так же, как на соседних сценах:
+   иконка слева, строка в ряд — колоночная вёрстка делала блок в полтора
+   раза крупнее и он скачком менял размер в перелёте */
+.opnode { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-align: left; font-size: 11.5px;
+  padding: 0.55rem 0.35rem; border-radius: 0.6rem; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03);
+  color: var(--w); }
+.opnode i { font-size: 12.5px; color: var(--tx-d); }
+.opnode.can { border-color: rgba(136,84,243,0.65); background: linear-gradient(135deg, rgba(136,84,243,0.18), rgba(249,115,22,0.10));
+  box-shadow: 0 0 0 1px rgba(136,84,243,0.25), 0 0 22px -6px rgba(136,84,243,0.8); }
+.opnode.can i { color: var(--p-l); }
+.chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
+.chip { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.6rem; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14); font-size: 9.5px; letter-spacing: 0.06em; color: var(--tx); }
+.chip.p { border-color: rgba(136,84,243,0.45); color: var(--p-l); background: rgba(136,84,243,0.10); }
+.chip.o { border-color: rgba(249,115,22,0.45); color: var(--o-l); background: rgba(249,115,22,0.10); }
+
+/* 05 — AI-First модель: люди оранжевые, агенты фиолетовые */
+.fflow { display: flex; flex-direction: column; align-items: center; gap: clamp(0.3rem, 1.4vh, 0.7rem); }
+.frow { display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
+.fnode { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.62rem 0.95rem; border-radius: 0.7rem; font-size: 12px; color: var(--w); }
+.fnode.human { border: 1px solid rgba(249,115,22,0.55); background: rgba(249,115,22,0.12); }
+.fnode.human i { color: var(--o-l); }
+/* ИИ-агент — фиолетово-оранжевый ПО КОНТУРУ (правка владельца): border-image
+   ломает радиус, поэтому кольцо рисуется псевдоэлементом по маске. Рамка
+   остаётся в 1px, только прозрачная, — блок одного размера с соседями. */
+.fnode.ai { position: relative; border: 1px solid transparent;
+  background: linear-gradient(135deg, rgba(136,84,243,0.22), rgba(249,115,22,0.14)); }
+.fnode.ai::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(120deg, var(--p), var(--o));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude; }
+.fnode.ai i { color: var(--p-l); }
+.fnode i { font-size: 10px; }
+.farrow { color: rgba(255,255,255,0.25); font-size: 9px; }
+.fwrap { color: rgba(255,255,255,0.22); font-size: 10px; line-height: 1; }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1rem; margin-top: 0.8rem; font-size: 9px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--tx-d); }
+.legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 0.35rem; }
+
+/* 06 — агент в центре, поля вокруг */
+/* круг обязан быть КРУГОМ: ширину задаём от высоты, иначе max-height
+   сплющивал квадрат в эллипс и поля вокруг вставали неровно */
+.hub { position: relative; height: min(34vh, 19rem); aspect-ratio: 1 / 1; width: auto;
+  max-width: 100%; margin: 0 auto; --rx: 50%; --ry: 40%; }
+/* агент — фиолетово-оранжевый: рамка градиентом по маске (border-image ломает
+   радиус), свечение и подпись тоже переливаются из фиолетового в оранжевый */
+.hub-core { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; display: flex;
+  align-items: center; justify-content: center; width: 4.2rem; height: 4.2rem; border-radius: 50%;
+  border: 0; background: linear-gradient(140deg, rgba(136,84,243,0.20), rgba(249,115,22,0.18));
+  box-shadow: 0 0 44px -10px rgba(136,84,243,0.75), 0 0 34px -14px rgba(249,115,22,0.7); }
+.hub-core::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(140deg, var(--p), var(--o));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude; }
+.hub-core i { font-size: 26px; background: linear-gradient(120deg, var(--p-l), var(--o-l));
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+/* поля по кругу чередуются: фиолетовое — оранжевое */
+/* центрируем СВОЙСТВОМ translate, а не transform: у .spoke есть data-seq, и
+   правило появления «.screen.active .stage-card [data-seq] { transform: none }»
+   имеет более высокую специфичность — оно стирало центрирование, и всё
+   кольцо съезжало вправо-вниз на половину размера ярлыка */
+/* поля паспорта — НЕПРОЗРАЧНЫЕ тёмные плашки с иконкой у каждой
+   (правка владельца): сквозь полупрозрачный фон просвечивала орбита */
+/* z-index обязателен: ::after у .hub — последний ребёнок, и оранжевая половина
+   орбиты рисовалась ПОВЕРХ плашек, из-за чего пунктир шёл прямо по тексту и
+   плашки выглядели прозрачными (жалоба владельца «теги закрашенные чёрным») */
+.spoke { position: absolute; z-index: 2; left: calc(50% + var(--cx, 0) * var(--rx, 50%));
+  top: calc(50% + var(--cy, 0) * var(--ry, 40%));
+  translate: -50% -50%; display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.42rem 0.8rem; border-radius: 999px; white-space: nowrap;
+  border: 1px solid rgba(136,84,243,0.55); background: #060609; font-size: 11px; color: var(--w);
+  box-shadow: 0 10px 26px -14px #000, 0 0 0 3px #060609; }
+.spoke i { font-size: 0.95em; color: var(--p-l); }
+.spoke:nth-of-type(even) { border-color: rgba(249,115,22,0.5); }
+.spoke:nth-of-type(even) i { color: var(--o-l); }
+/* ровная орбита, которая медленно крутится: половина фиолетовая, половина оранжевая */
+.hub::before, .hub::after { content: ''; position: absolute; left: 50%; top: 50%; width: 80%; height: 80%;
+  border-radius: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%;
+  animation: hubSpin 44s linear infinite; }
+.hub::before { border: 1px dashed rgba(136,84,243,0.3); }
+.hub::after { border: 1px dashed rgba(249,115,22,0.28); clip-path: inset(0 0 0 50%); }
+@keyframes hubSpin { from { transform: translate(-50%, -50%) rotate(0deg); }
+                     to   { transform: translate(-50%, -50%) rotate(360deg); } }
+
+/* ===== Обучение ===== */
+.l-note { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; padding: 0.6rem 1rem; border-radius: 999px;
+  border: 1px solid rgba(136,84,243,0.35); background: rgba(136,84,243,0.10); color: var(--w);
+  font-size: clamp(10.5px, 0.85vw, 12.5px); }
+.l-note i { color: var(--p-l); }
+.ticker { position: relative; margin-top: 1.6rem; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.ticker-row { display: flex; gap: 0.5rem; width: max-content; animation: tick 38s linear infinite; }
+@keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.role { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.8rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--card); font-size: 10px; color: var(--w); white-space: nowrap; }
+.role i { color: var(--p-l); font-size: 11.5px; }
+.role:nth-child(even) i { color: var(--o-l); }
+
+/* ===== Тарифы ===== */
+.plans { display: grid; gap: 0.7rem; grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 34rem; margin: 1.2rem auto 1rem; }
+/* правка владельца: тарифы всегда 2 сверху и 2 снизу, а не в один ряд */
+.plan { position: relative; display: flex; flex-direction: column; gap: 0.45rem; min-width: 0; padding: 0.9rem 0.7rem; border-radius: 1rem;
+  border: 1px solid var(--line); background: var(--card); text-align: center; }
+.plan h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--tx-d); }
+.plan-price { font-size: clamp(1.3rem, 2.2vw, 1.8rem); font-weight: 800; letter-spacing: -0.02em; color: var(--w); line-height: 1; }
+.plan-scope { font-size: 10px; color: var(--p-l); font-weight: 700; letter-spacing: 0.04em; }
+.plan .btn { margin-top: auto; width: 100%; }
+.plan.best { border-color: rgba(136,84,243,0.55); background: linear-gradient(170deg, rgba(136,84,243,0.16), rgba(249,115,22,0.05)); }
+.plan-badge { position: absolute; top: -0.6rem; left: 50%; transform: translateX(-50%); padding: 0.18rem 0.6rem; border-radius: 999px;
+  background: linear-gradient(100deg, var(--p), var(--o)); color: var(--w); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
+.compare { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem 0.8rem; text-align: center;
+  font-size: clamp(10px, 0.82vw, 12px); }
+.compare .cmp.old { color: var(--tx-d); text-decoration: line-through; }
+.compare .cmp.now { color: var(--w); font-weight: 700; }
+.compare i { font-size: 3px; color: rgba(255,255,255,0.3); vertical-align: middle; }
+
+/* ===== Финал ===== */
+/* призыв — по центру экрана, подвал прижат к низу: раньше блок висел под самой
+   шапкой, а между кнопкой и подвалом зияла почти половина экрана */
+.final .wrap { display: flex; flex-direction: column; align-items: center;
+  flex: 1 1 auto; min-height: 0; justify-content: center; }
+.final .wrap > * { flex-shrink: 0; }
+/* три строки финала стоят на ОДИНАКОВОМ расстоянии друг от друга: у абзаца
+   свой нижний отступ, и вместе с margin-top третьей строки разрыв снизу был
+   вдвое больше верхнего (правка владельца) */
+.final-1 { margin-bottom: 0.85rem; }
+.final-2 { margin-bottom: 0; color: var(--tx-d); text-transform: uppercase; letter-spacing: 0.1em; font-size: clamp(11.5px, 0.95vw, 14px); }
+/* правка владельца: «Strategy shows» — БЕЛЫМ, цвет несут только спаны */
+.final-3 { color: var(--w); margin: 0.85rem 0 1.5rem; }
+
+/* ===== Знак финала: фиолетовый робот и оранжевые монеты фонтаном =====
+   Правка владельца: «просто иконка агента, а слева и справа монетки как
+   фонтан появляются и исчезают бесконечно». */
+.final-mark { position: relative; display: flex; align-items: center; justify-content: center;
+  width: clamp(12rem, 22vw, 16rem); height: clamp(5.4rem, 9vw, 7rem); margin: 0 auto 1.2rem; flex-shrink: 0; }
+.fm-bot { font-size: clamp(44px, 4.4vw, 68px); line-height: 1; color: var(--p-l);
+  filter: drop-shadow(0 0 22px rgba(136,84,243,0.6)); }
+.fm-side { position: absolute; top: 58%; width: 0; height: 0; }
+.fm-l { left: 38%; }
+.fm-r { right: 38%; }
+.fm-side i { position: absolute; top: 0; left: 0; font-size: clamp(15px, 1.35vw, 21px); color: var(--o-l);
+  opacity: 0; will-change: transform, opacity;
+  filter: drop-shadow(0 0 10px rgba(249,115,22,0.55));
+  animation: coinL 2.4s ease-out infinite; animation-delay: var(--d, 0s); }
+.fm-r i { animation-name: coinR; }
+/* монета взлетает по дуге и гаснет на спуске — получается непрерывный фонтан */
+@keyframes coinL {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(0.45); }
+  14%  { opacity: 1; }
+  50%  { transform: translate(-190%, -2.1rem) scale(1); }
+  82%  { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(-330%, 0.5rem) scale(0.75); }
+}
+@keyframes coinR {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(0.45); }
+  14%  { opacity: 1; }
+  50%  { transform: translate(90%, -2.1rem) scale(1); }
+  82%  { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(230%, 0.5rem) scale(0.75); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fm-side i { animation: none; opacity: 0.9; transform: translate(-50%, -1.2rem); }
+  .fm-side i:nth-child(2) { transform: translate(-190%, -0.2rem); }
+  .fm-side i:nth-child(3) { transform: translate(-330%, 0.8rem); }
+  .fm-r i { transform: translate(-50%, -1.2rem); }
+  .fm-r i:nth-child(2) { transform: translate(90%, -0.2rem); }
+  .fm-r i:nth-child(3) { transform: translate(230%, 0.8rem); }
+}
+.final-cta { margin-top: 0.2rem; }
+.final footer { margin-top: auto; padding-top: 1.4rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+.company { font-size: clamp(11.5px, 0.75vw, 13px); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--w); margin: 0; }
+.copy { margin: 0; font-size: clamp(10.5px, 0.68vw, 12.5px); letter-spacing: 0.1em; color: var(--tx-d); }
+.socials { display: flex; gap: 1rem; }
+.socials a { color: rgba(255,255,255,0.7); font-size: 15px; transition: color 0.3s ease; }
+@media (hover:hover) { .socials a:hover { color: var(--brand); } }
+.legal { display: flex; align-items: center; gap: 0.7rem; margin: 0; font-size: clamp(10.5px, 0.68vw, 12.5px); letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(255,255,255,0.45); }
+@media (hover:hover) { .legal a:hover { color: var(--w); } }
+
+/* ===== Плотнее на невысоких окнах ===== */
+@media (min-width:1024px) and (max-height:880px),
+         (min-width:1600px) and (max-height:1012px),
+         (min-width:1900px) and (max-height:1144px),
+         (min-width:2300px) and (max-height:1320px) {
+  .screen { padding-top: 6.2rem; padding-bottom: 1.6rem; }
+  h1 { margin-bottom: 0.9rem; }
+  h2 { margin-bottom: 0.7rem; }
+  /* ВАЖНО: боковое auto сохраняем. Короткая запись «margin: 1.2rem 0 1rem»
+     обнуляла его, и сетки уезжали влево от центра экрана. */
+  .nums { margin: 1.2rem auto 1rem; gap: 0.7rem; }
+  .biz-grid { gap: 0.5rem; margin: 1rem auto 0.9rem; }
+  .plans { margin: 1rem auto 0.8rem; }
+  .radar { max-height: 30vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen, .stage-card, .stage-card [data-seq], .radar .shape {
+    opacity: 1 !important; transform: none !important; transition: none !important; animation: none !important; }
+  .ticker-row, .wave span, .caret { animation: none !important; }
+}
+
+/* На центрированных экранах карточки и ленты сохраняют левую выключку текста:
+   центрируется блок целиком, а не каждая строка внутри него. */
+.wrap.center .biz, .wrap.center .plan, .wrap.center .ui { text-align: left; }
+.wrap.center .plan { text-align: center; }
+
+/* ===== Мобилка: цепочки процессов и паутина не должны вылезать за экран ===== */
+@media (max-width:620px) {
+  /* четыре блока в ряд не помещаются в 390px — разрешаем перенос */
+  .prow, .frow { flex-wrap: wrap; row-gap: 0.3rem; }
+  .pnode, .fnode, .node { padding: 0.45rem 0.6rem; font-size: 10.5px; gap: 0.35rem; }
+  .opnode { font-size: 10px; }
+  /* подписи осей паутины упираются в края — даём им запас */
+  .radar { max-height: 30vh; padding: 0 0.6rem; }
+  .hub { height: min(38vh, 15rem); }
+  .spoke { font-size: 9px; padding: 0.28rem 0.5rem; }
+  /* подпись метрики на узкой карточке переносится, а не мельчает */
+  .biz-metric { white-space: normal; }
+}
+
+/* ===== Один шаг процесса — один размер на всех сценах =====
+   В .node и .opnode было по ДВА объявления font-size, и более мелкое
+   перебивало крупное, поэтому «сделать покрупнее» ничего не меняло, а один и
+   тот же блок имел три разных размера (10 / 9.5 / 12px) на трёх соседних
+   сценах и скачком менял размер прямо в перелёте. */
+.node, .pnode, .opnode, .fnode { font-size: 12px; line-height: 1.25; }
+.node, .pnode, .fnode { padding: 0.62rem 0.95rem; }
+.opnode { padding: 0.62rem 0.95rem; white-space: nowrap; }
+.node i, .pnode i, .opnode i, .fnode i { font-size: 11px; }
+
+/* Панель продукта имеет ПОСТОЯННУЮ высоту вместе с рамкой: фиксировать только
+   контейнер было мало — видимая рамка .ui всё равно скакала со 152 до 414px. */
+.stage-card > .ui { width: 100%; height: 100%; display: flex; flex-direction: column; }
+/* Содержимое панели стоит ПО ЦЕНТРУ (правка владельца). Панель одной высоты
+   на всех шагах и задана самой высокой сценой, поэтому под короткой цепочкой
+   остаётся запас: при выключке вверх он весь собирался снизу и панель
+   выглядела полупустой. Саму панель заодно ужали с 52vh до 48vh, чтобы
+   заголовок шага не уезжал далеко от блоков. */
+.stage-card > .ui > .ui-body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+
+/* Квадраты рынка одной высоты: у грид-элемента с aspect-ratio выравнивание
+   normal работает как start, и карточка не растягивалась на высоту ряда. */
+.num-card { align-self: stretch; }
+
+/* На мобилке заголовок первого экрана должен быть ЗАМЕТНО крупнее заголовков
+   разделов: строки переносятся, поэтому кегль не зажат шириной колонки. */
+@media (max-width:1023px) {
+  h1 { font-size: clamp(1.9rem, 8.4vw, 2.6rem); line-height: 1.14; }
+  h1 .l { white-space: normal; }
+}
+
+/* ===== Зрелость: слева паутина, справа семь горизонтальных графиков =====
+   Правка владельца: «слева паутина, справа графики горизонтальные», и при
+   переходе на экран они оба должны оживать. */
+.maturity { display: grid; gap: clamp(0.8rem, 2vw, 1.6rem); align-items: center;
+  grid-template-columns: minmax(0, 1fr); }
+@media (min-width:700px) { .maturity { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); } }
+.dims { display: flex; flex-direction: column; gap: clamp(0.3rem, 0.9vh, 0.55rem); min-width: 0; }
+.dim { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center;
+  column-gap: 0.5rem; row-gap: 0.15rem; }
+.dim-name { font-size: clamp(11.5px, 0.88vw, 13px); color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dim-val { grid-column: 2; grid-row: 1 / span 2; font-size: clamp(12.5px, 0.95vw, 14px); font-weight: 800; color: var(--w);
+  font-variant-numeric: tabular-nums; }
+.dim-track { grid-column: 1; height: 5px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.dim-fill { display: block; height: 100%; width: 0; border-radius: inherit;
+  background: linear-gradient(90deg, var(--p), var(--o));
+  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1); }
+/* полосы разъезжаются каскадом, когда экран показан */
+.screen.lit .dim-fill { width: var(--v); }
+.dim:nth-child(1) .dim-fill { transition-delay: 0.05s; }
+.dim:nth-child(2) .dim-fill { transition-delay: 0.14s; }
+.dim:nth-child(3) .dim-fill { transition-delay: 0.23s; }
+.dim:nth-child(4) .dim-fill { transition-delay: 0.32s; }
+.dim:nth-child(5) .dim-fill { transition-delay: 0.41s; }
+.dim:nth-child(6) .dim-fill { transition-delay: 0.50s; }
+.dim:nth-child(7) .dim-fill { transition-delay: 0.59s; }
+/* паутина вычерчивается вместе с полосами */
+.radar .shape { opacity: 0; transform: scale(0.72); transform-origin: 50% 50%;
+  transition: opacity 0.7s ease 0.1s, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s; }
+.screen.lit .radar .shape { opacity: 1; transform: none; }
+
+/* ===== Процессы: цепочка выстраивается по одному звену =====
+   Каскад ОДИН на всех сценах с процессами (03 возможности 04 и модель 05) и
+   идёт сквозь оба ряда одной волной: номер элемента приходит из вёрстки в
+   --i, поэтому перенос строки его не сбрасывает. Раньше задержки висели на
+   :nth-child внутри ряда — второй ряд начинался заново, — а сцены 04 и 05
+   вообще не были подключены и вспыхивали целиком (жалоба владельца
+   «анимация во всех слайдах с процессами фиговая»).
+   Специфичность выше общего правила «.screen.active .stage-card [data-seq]»,
+   иначе оно зажигает звенья сразу и цепочка не выстраивается. */
+.stage-card .prow > *, .stage-card .frow > *, .stage-card .pwrap, .stage-card .fwrap {
+  opacity: 0; transform: translateY(16px) scale(0.94);
+  transition: opacity 0.42s ease, transform 0.56s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 0.055s); }
+.screen.active .stage-card .prow > *, .screen.active .stage-card .frow > *,
+.screen.active .stage-card .pwrap, .screen.active .stage-card .fwrap {
+  opacity: 0; transform: translateY(16px) scale(0.94); }
+.screen.lit .stage-card .prow > *, .screen.lit .stage-card .frow > *,
+.screen.lit .stage-card .pwrap, .screen.lit .stage-card .fwrap {
+  opacity: 1; transform: none; }
+/* стрелки — тоньше и позже: сначала встаёт звено, потом связь */
+.stage-card .parrow, .stage-card .farrow { transition-duration: 0.3s, 0.3s; }
+/* блок, который прилетел с прошлой сцены, каскад не ждёт */
+.stage-card .flying { opacity: 1 !important; transition-delay: 0s !important; }
+
+/* ===== Крупнее: блоки, паспорт агента, типографика ===== */
+.node, .pnode, .opnode, .fnode { font-size: 13.5px; }
+.node, .pnode, .fnode { padding: 0.85rem 1.25rem; }
+.opnode { padding: 0.85rem 1.25rem; }
+.node i, .pnode i, .opnode i, .fnode i { font-size: 12px; }
+/* круг агента занимает панель по высоте целиком: 38vh оставляли треть
+   панели пустой и сам круг выглядел мелким (правка владельца «слишком
+   маленький круг получился»). min() с процентом берёт высоту содержимого
+   .ui-body — панель фиксированной высоты, поэтому процент разрешим. */
+.hub { height: min(100%, 23rem); }
+.hub-core { width: 6.6rem; height: 6.6rem; }
+.hub-core i { font-size: 38px; }
+.spoke { font-size: 12px; padding: 0.46rem 0.9rem; }
+/* Поля появляются по кругу одно за другим, как звенья цепочки на соседних
+   сценах. Конечное состояние — на .lit, а не на .active: переход не стартует
+   для элемента, который в этом же кадре был display:none, и поля просто
+   вспыхивали целиком. Специфичность равна общему правилу
+   «.screen.active .stage-card [data-seq]», поэтому решает порядок — эти
+   правила стоят ниже. */
+.stage-card .spoke { opacity: 0; transform: translateY(12px) scale(0.9);
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 0.055s); }
+.screen.active .stage-card .spoke { opacity: 0; transform: translateY(12px) scale(0.9); }
+.screen.lit .stage-card .spoke { opacity: 1; transform: none; }
+/* Низкая панель: поля на окружности налезают друг на друга сверху и снизу —
+   разводим кольцо шире по горизонтали, где место есть. */
+@media (max-height:799px) {
+  .hub { --rx: 60%; --ry: 43%; }
+  /* и сами плашки ниже: иначе верхнее поле цепляет соседние по диагонали */
+  .spoke { padding-top: 0.24rem; padding-bottom: 0.24rem; }
+  .hub-core { width: 6.2rem; height: 6.2rem; }
+  .hub-core i { font-size: 36px; }
+}
+@media (max-width:620px) {
+  .hub { height: min(100%, 15rem); --rx: 44%; }
+  .hub-core { width: 4.4rem; height: 4.4rem; }
+  .hub-core i { font-size: 24px; }
+  /* мобильные размеры полей объявлены ВЫШЕ блока «Крупнее» и им перебивались */
+  .spoke { font-size: 10px; padding: 0.3rem 0.6rem; gap: 0.3rem; }
+}
+.ui-bar { font-size: clamp(11px, 0.85vw, 12.5px); }
+.out h3 { font-size: clamp(12.5px, 1vw, 14.5px); }
+.out p { font-size: clamp(11.5px, 0.88vw, 13px); }
+.role { font-size: clamp(11.5px, 0.85vw, 13px); }
+.plan h3 { font-size: clamp(11.5px, 0.85vw, 13px); }
+.plan-scope { font-size: clamp(11.5px, 0.85vw, 13px); }
+.typing { font-size: clamp(11.5px, 0.95vw, 14px); }
+
+/* Названия шагов не должны ломаться на две строки — блоки от этого выглядят
+   разной высоты. Если строка не влезает, кегль всей группы подбирает скрипт. */
+.node, .pnode, .fnode { white-space: nowrap; }
+
+/* =====================================================================
+   МОБИЛЬНАЯ ВЁРСТКА
+   Правило владельца: вёрстки ровно две — веб и мобилка. Адаптивен только
+   РАЗМЕР, а не формат. Поэтому здесь задан отдельный, крупный масштаб для
+   телефона: раньше страница просто ужималась — подгонка кегля зажимала
+   заголовки, блоки процессов и подписи кейсов до 8–10px, и всё выглядело
+   мелким. Подгонка на телефоне отключена в скрипте, строки переносятся,
+   а размеры задаёт этот блок. Он идёт последним и потому перебивает
+   настольные значения при равной специфичности.
+   ===================================================================== */
+@media (max-width:1023px) {
+  /* ── заголовок первого экрана: четыре строки ── */
+  h1 .lm { display: block; }
+  h1 .lm + .lm::before { content: none; }
+  h1 { font-size: clamp(1.9rem, 8.6vw, 2.7rem); line-height: 1.12; margin-bottom: 1rem; }
+
+  /* ── базовая типографика ── */
+  .eyebrow { font-size: 13px; letter-spacing: 0.16em; margin-bottom: 0.7rem; }
+  h2, h2.one-line { font-size: clamp(1.3rem, 6vw, 1.75rem); line-height: 1.2; margin-bottom: 0.8rem; }
+  p { font-size: 14px; line-height: 1.6; }
+  .lead { font-size: 15.5px; line-height: 1.55; }
+  /* Кнопку в шапке этот блок НЕ трогает: у неё свой мобильный размер
+     (иначе «Начать бесплатно» распирало шапку и переключатель языка
+     наезжал на логотип). */
+  .btn-primary:not(.cta-head), .btn-ghost { font-size: 12.5px; padding: 0.95rem 1.5rem; }
+  .biz-all { font-size: 13px; }
+  .rail-hint { font-size: 12px; }
+  .ui-bar { font-size: 12px; letter-spacing: 0.1em; padding: 0.6rem 0.8rem; }
+
+  /* ── рынок ── */
+  .num-card p { font-size: 13.5px; line-height: 1.35; }
+  .num-val { font-size: clamp(1.9rem, 9vw, 2.6rem); }
+  .n-foot { font-size: 13.5px; }
+
+  /* ── кейсы: карточка короче, а текст внутри крупнее ── */
+  .biz-grid { grid-template-columns: minmax(0, 1fr); gap: 0.32rem; margin: 0.7rem auto 0.7rem; }
+  .biz { padding: 0.42rem 0.65rem; gap: 0.55rem; }
+  .biz-body { gap: 0.1rem; }
+  .biz-ic { width: 1.95rem; height: 1.95rem; font-size: 13px; border-radius: 0.6rem; }
+  .biz h3 { font-size: 15px; letter-spacing: 0.01em; line-height: 1.2; }
+  .biz-metric { font-size: 13px; white-space: normal; line-height: 1.25; }
+  .biz-metric span { font-size: 1em; }
+  .biz-go { font-size: 14px; }
+
+  /* ── лента решения ── */
+  .out { width: 74vw; padding: 1rem 1.1rem; }
+  .out-ic { width: 2.6rem; height: 2.6rem; font-size: 16px; }
+  .out h3 { font-size: 15.5px; }
+  .out p { font-size: 13.5px; line-height: 1.5; }
+
+  /* ── шаги и сцены продукта ── */
+  .step-n { font-size: 13px; letter-spacing: 0.14em; }
+  .step-copy h2 { font-size: clamp(1.25rem, 5.8vw, 1.7rem); }
+  .step-copy p { font-size: 14px; min-height: 0; }
+  .typing { font-size: 14.5px; line-height: 1.6; margin: 0.6rem 0; }
+  .node, .pnode, .fnode, .opnode { font-size: 15px; padding: 0.62rem 0.85rem; gap: 0.45rem; }
+  .node i, .pnode i, .fnode i, .opnode i { font-size: 14px; }
+  /* Панель на телефоне ПЛОТНЕЕ по высоте: блоки внутри стали крупнее, и при
+     прежних 48vh/24rem половина панели оставалась пустой — схема на её фоне
+     выглядела мелкой (правка владельца «тут пздц мелко вся эта схема»).
+     Высота всё равно общая для всех шести шагов, иначе панель скачет. */
+  .stage-card { height: min(53vh, 28rem); }
+  .ui-body { padding: 0.75rem 0.6rem; }
+  /* Одна ВЁРСТКА цепочки на телефон: ряды схлопываются в общий поток и
+     переносятся по ширине экрана, а связи-стрелки убраны. Ряды, посчитанные
+     под веб, на 390px всё равно ломались переносом, и в конце строки повисала
+     стрелка, указывающая в пустоту (правка владельца «видишь и стрелки,
+     и мелкота»). */
+  .parrow, .farrow, .pwrap, .fwrap { display: none; }
+  .pchain, .fflow { flex-direction: row; flex-wrap: wrap; justify-content: center;
+    align-content: center; gap: 0.75rem 0.55rem; }
+  .pchain .prow, .fflow .frow { display: contents; }
+  /* На сцене возможностей поток свой у каждой группы: сверху фиолетовые,
+     снизу серые — они не должны перемешаться на переносе. */
+  .opchain { flex-direction: column; align-items: stretch; gap: 0.7rem; }
+  .opgroup { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+  .opgroup .oprow { display: contents; }
+  /* Зрелость на телефоне: паутина сверху, семь графиков снизу. Паутина
+     РАСТЯГИВАЕТСЯ на весь остаток панели и потому никогда её не распирает —
+     при квадратной svg во всю ширину колонки половина графиков уезжала за
+     нижний край панели и просто не показывалась. */
+  .maturity { flex: 1; min-height: 0; grid-template-rows: minmax(60px, 1fr) auto;
+    align-items: stretch; gap: 0.5rem; }
+  .radar { width: 100%; height: 100%; min-height: 0; }
+  .dims { gap: 0.3rem; }
+  .dim-name { font-size: 13px; }
+  .dim-val { font-size: 14px; }
+  .dim-track { height: 6px; }
+  .score b { font-size: clamp(1.7rem, 8vw, 2.2rem); }
+  .score span { font-size: 12.5px; }
+  .spoke { font-size: 12px; padding: 0.34rem 0.65rem; gap: 0.35rem; }
+  .role { font-size: 13px; padding: 0.5rem 0.9rem; }
+  .role i { font-size: 12px; }
+  .l-note { font-size: 13.5px; }
+
+  /* ── тарифы и сравнение ── */
+  .plans { gap: 0.55rem; margin: 0.8rem auto 0.7rem; }
+  .plan { padding: 0.8rem 0.75rem; gap: 0.45rem; }
+  .plan h3 { font-size: 12.5px; }
+  .plan-price { font-size: clamp(1.5rem, 7.4vw, 2rem); }
+  .plan-scope { font-size: 13px; }
+  .btn-sm { font-size: 12px; padding: 0.7rem 0.6rem; }
+  .plan-badge { font-size: 10.5px; }
+  .compare { font-size: 13px; line-height: 1.7; }
+
+  /* ── финал ── */
+  .final-1, .final-3 { font-size: clamp(1.45rem, 6.6vw, 1.9rem); }
+  .final-2 { font-size: 13px; }
+  .final-cta { font-size: 12.5px; }
+  .legal { font-size: 12px; gap: 0.6rem; }
+  .copy { font-size: 11.5px; }
+  .company { font-size: 12.5px; }
+  .socials a { font-size: 17px; }
+  /* Подвал стоит НИЖЕ — почти у самых точек (правка владельца). Чтобы он не
+     налезал на круглый ролик в левом нижнем углу, колонка подвала смещена
+     правее его, а строки не переносятся: с переносом «Privacy Policy» и
+     «Terms of Use» разъезжались на две строки каждая, а точка-разделитель
+     висела между ними. Поэтому здесь свой, более плотный трекинг. */
+  .final .wrap { flex: 0 1 auto; margin-top: auto; margin-bottom: auto; }
+  .final footer { margin-top: auto; padding-top: 0.9rem; gap: 0.45rem;
+    padding-left: calc(clamp(100px, 28vw, 128px) + 0.6rem); }
+  .legal { font-size: 12px; gap: 0.5rem; letter-spacing: 0.03em; flex-wrap: wrap; justify-content: center; }
+  .legal a { white-space: nowrap; }
+  .copy { font-size: 11.5px; letter-spacing: 0.01em; white-space: nowrap; }
+  .screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }
+}
