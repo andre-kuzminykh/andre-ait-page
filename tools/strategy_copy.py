@@ -20,7 +20,7 @@ EN = {
     "cta_href": "https://strategy.andre.technology/",
     "cta_top": "Start free",
     "cta_main": "Start for free",
-    "cta_how": "See how it works",
+    "cta_how": "How it works",
 
     # ── 1. Первый экран ──
     "h1": ('<span class="l"><span class="lm">Where should</span>'
