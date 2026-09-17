@@ -80,9 +80,9 @@ EN = {
          "Assess your AI maturity and see what’s holding you back"),
         ("Voice input", "Just talk",
          "Describe how your business works. I turn your words into structured processes. Add your team and let employees add the details"),
-        ("Processes", 'Your <span class="hl-o">business</span> as <span class="hl-p">processes</span>',
+        ("Business Processes", 'Your <span class="hl-o">business</span> as <span class="hl-p">processes</span>',
          "We map what we heard into processes"),
-        ("Opportunities", 'See what <span class="hl-p">AI</span> can <span class="hl-o">automate</span>',
+        ("AI Opportunities", 'See what <span class="hl-p">AI</span> can <span class="hl-o">automate</span>',
          "Identify automatable operations by impact and complexity"),
         ("AI-First Model", 'How your <span class="hl-o">business</span> should work with <span class="hl-p">AI</span>',
          '<span class="l">We redesign your processes around AI</span>'
@@ -222,9 +222,9 @@ RU = {
          "Оцените ИИ-зрелость и увидьте, что тормозит компанию"),
         ("Голос", "Просто расскажите",
          "Расскажите, как работает бизнес. Я превращу ваши слова в структурированные процессы, а команда добавит детали"),
-        ("Процессы", 'Ваш <span class="hl-o">бизнес</span> как <span class="hl-p">процессы</span>',
+        ("Бизнес-процессы", 'Ваш <span class="hl-o">бизнес</span> как <span class="hl-p">процессы</span>',
          "Мы раскладываем услышанное на процессы"),
-        ("Возможности", 'Что <span class="hl-p">ИИ</span> может <span class="hl-o">автоматизировать</span>',
+        ("Возможности ИИ", 'Что <span class="hl-p">ИИ</span> может <span class="hl-o">автоматизировать</span>',
          "Находим операции, посильные ИИ, по эффекту и сложности"),
         ("AI-First модель", 'Как <span class="hl-o">бизнес</span> должен работать с <span class="hl-p">ИИ</span>',
          '<span class="l">Мы перестраиваем процессы вокруг ИИ:</span>'

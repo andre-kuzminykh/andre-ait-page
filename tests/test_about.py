@@ -88,8 +88,8 @@ def test_each_page_uses_its_own_video():
 
 def test_desktop_splits_video_and_reading_column():
     css = _css()
-    assert re.search(r"\.media \{ position: fixed;[^}]*width: calc\(44% \+ 2px\)", css), \
-        "на десктопе ролик — фиксированная колонка на 44% (плюс 2px, чтобы не было шва)"
+    assert re.search(r"\.media \{ position: fixed;[^}]*width: 54%", css), \
+        "ролик ШИРЕ колонки текста — хвост растушёвки уходит под текст, как на главной"
     assert "@media (min-width:1024px) { .read { left: 44%; } }" in css, \
         "экраны с текстом занимают правую часть рядом с роликом"
 
@@ -97,13 +97,13 @@ def test_desktop_splits_video_and_reading_column():
 def test_seam_between_video_and_text_has_no_bright_line():
     """Жалоба владельца: на стыке ролика и чёрного блестела полоска."""
     css = _css()
-    assert "width: calc(44% + 2px)" in css, "ролик заходит под колонку текста"
+    assert "width: 54%" in css, "ролик заходит под колонку текста"
     shade = re.search(r"\.media-shadow \{[^}]*\}", css, re.S).group(0)
-    assert "#050505 87%" in shade, "чёрное в градиенте начинается до самого края"
-    # в самой съёмке подсвеченный фон обрывается примерно на 84% ширины колонки —
-    # к этому месту растушёвка обязана быть уже почти непрозрачной, иначе
-    # вертикальный шов кадра просвечивает (жалоба владельца «полоса»)
-    assert "rgba(5,5,5,0.95) 80%" in shade, "шов кадра должен быть закрыт до 84%"
+    # та же кривая, что на главной (FR-SITE17): лицо не затемняется вовсе,
+    # чернота набирается в хвосте колонки, который уходит под текст
+    assert "#050505 88%" in shade, "чёрное в градиенте начинается до самого края"
+    assert "rgba(5,5,5,0) 35%" in shade, "лицо не затемняется"
+    assert shade.count("rgba(5,5,5,") >= 7, "много стопов — переход мягкий, без полосы"
 
 
 def test_mobile_turns_the_video_into_a_round_head():

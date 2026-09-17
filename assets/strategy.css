@@ -33,13 +33,13 @@ img, svg { max-width: 100%; }
 .head { position: fixed; z-index: 45; overflow: hidden; background: #0a0a0f; cursor: pointer; touch-action: none;
   border: 1px solid transparent; transition: border-color 0.4s ease, box-shadow 0.4s ease; }
 .head video { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* Растушёвка ГАСИТ правый край КАДРА, а не только край колонки: в самой съёмке
-   подсвеченный фон обрывается примерно на 76% ширины, и этот вертикальный шов
-   просвечивал сквозь мягкий градиент (жалоба владельца «полоса»). Кривая
-   держит лицо светлым до ~60% и добирает до чёрного раньше шва. */
+/* Растушёвка — ровно как на главной (FR-SITE17): много стопов, лицо не
+   затемняется вовсе, чернота набирается только в хвосте колонки. Колонка при
+   этом ШИРЕ, чем отступ колоды, поэтому и шов кадра, и сам край видео уходят
+   под чёрное, и лицо остаётся чистым. */
 .head-shade { position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to right, rgba(5,5,5,0.35) 0%, rgba(5,5,5,0.02) 42%, rgba(5,5,5,0.12) 58%,
-    rgba(5,5,5,0.58) 69%, rgba(5,5,5,0.95) 78%, var(--bg) 86%, var(--bg) 100%); }
+  background: linear-gradient(to right, rgba(5,5,5,0) 35%, rgba(5,5,5,0.12) 46%, rgba(5,5,5,0.28) 55%,
+    rgba(5,5,5,0.5) 62%, rgba(5,5,5,0.7) 70%, rgba(5,5,5,0.86) 77%, rgba(5,5,5,0.96) 83%, var(--bg) 88%); }
 .head-play { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; pointer-events: none;
   color: var(--w); font-size: 2rem; text-shadow: 0 4px 14px rgba(0,0,0,0.6); transition: opacity 0.3s ease; }
 .head.playing .head-play { opacity: 0; }
@@ -48,7 +48,11 @@ img, svg { max-width: 100%; }
      border: 0 обязателен: прозрачная рамка в 1px не закрывается растушёвкой
      (.head-shade считается от padding-box), и на шве светилась полоска сырого
      видео шириной ровно в пиксель — именно её видел владелец. */
-  .head { left: 0; top: 0; width: calc(var(--head-w) + 2px); height: 100%; border: 0; }
+  /* Ролик ШИРЕ отступа колоды (как 60% на главной при колонке текста 44%):
+     хвост градиента уходит ПОД колоду, поэтому лицо не приходится затемнять
+     ради того, чтобы спрятать край кадра. Отсюда и z-index ниже колоды —
+     иначе чёрный хвост ролика накрывает левый край экранов. */
+  .head { left: 0; top: 0; width: 60%; height: 100%; border: 0; z-index: 3; }
 }
 @media (max-width:1023px) {
   .head { left: clamp(0.8rem, 3.5vw, 1.2rem); bottom: calc(clamp(0.8rem, 3.5vw, 1.2rem) + env(safe-area-inset-bottom, 0px));
@@ -408,7 +412,7 @@ strong { color: var(--w); font-weight: 700; }
 /* процессы: прямоугольники сеткой, связи — стрелками между ними */
 /* ряды стоят чуть свободнее на высокой панели — иначе цепочка жмётся в
    середину, а сверху и снизу зияет пустота */
-.pchain { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: space-evenly; gap: clamp(0.3rem, 2vh, 0.9rem); }
+.pchain { display: flex; flex-direction: column; align-items: center; gap: clamp(0.3rem, 1.4vh, 0.7rem); }
 .prow { display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
 .pwrap { color: rgba(255,255,255,0.22); font-size: 10px; line-height: 1; }
 .parrow { color: rgba(255,255,255,0.25); font-size: 9px; }
@@ -446,13 +450,21 @@ strong { color: var(--w); font-weight: 700; }
 .chip.o { border-color: rgba(249,115,22,0.45); color: var(--o-l); background: rgba(249,115,22,0.10); }
 
 /* 05 — AI-First модель: люди оранжевые, агенты фиолетовые */
-.fflow { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: space-evenly; gap: clamp(0.3rem, 2vh, 0.9rem); }
+.fflow { display: flex; flex-direction: column; align-items: center; gap: clamp(0.3rem, 1.4vh, 0.7rem); }
 .frow { display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
 .fnode { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.62rem 0.95rem; border-radius: 0.7rem; font-size: 12px; color: var(--w); }
 .fnode.human { border: 1px solid rgba(249,115,22,0.55); background: rgba(249,115,22,0.12); }
 .fnode.human i { color: var(--o-l); }
-/* ИИ-агент — фиолетово-оранжевый градиент, система — фиолетовая (правка владельца) */
-.fnode.ai { border: 1px solid rgba(136,84,243,0.6); background: linear-gradient(135deg, rgba(136,84,243,0.20), rgba(249,115,22,0.12)); }
+/* ИИ-агент — фиолетово-оранжевый ПО КОНТУРУ (правка владельца): border-image
+   ломает радиус, поэтому кольцо рисуется псевдоэлементом по маске. Рамка
+   остаётся в 1px, только прозрачная, — блок одного размера с соседями. */
+.fnode.ai { position: relative; border: 1px solid transparent;
+  background: linear-gradient(135deg, rgba(136,84,243,0.22), rgba(249,115,22,0.14)); }
+.fnode.ai::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(120deg, var(--p), var(--o));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude; }
 .fnode.ai i { color: var(--p-l); }
 .fnode i { font-size: 10px; }
 .farrow { color: rgba(255,255,255,0.25); font-size: 9px; }
@@ -486,12 +498,15 @@ strong { color: var(--w); font-weight: 700; }
    кольцо съезжало вправо-вниз на половину размера ярлыка */
 /* поля паспорта — НЕПРОЗРАЧНЫЕ тёмные плашки с иконкой у каждой
    (правка владельца): сквозь полупрозрачный фон просвечивала орбита */
-.spoke { position: absolute; left: calc(50% + var(--cx, 0) * var(--rx, 50%));
+/* z-index обязателен: ::after у .hub — последний ребёнок, и оранжевая половина
+   орбиты рисовалась ПОВЕРХ плашек, из-за чего пунктир шёл прямо по тексту и
+   плашки выглядели прозрачными (жалоба владельца «теги закрашенные чёрным») */
+.spoke { position: absolute; z-index: 2; left: calc(50% + var(--cx, 0) * var(--rx, 50%));
   top: calc(50% + var(--cy, 0) * var(--ry, 40%));
   translate: -50% -50%; display: inline-flex; align-items: center; gap: 0.4rem;
   padding: 0.42rem 0.8rem; border-radius: 999px; white-space: nowrap;
-  border: 1px solid rgba(136,84,243,0.55); background: #0d0d14; font-size: 11px; color: var(--w);
-  box-shadow: 0 10px 26px -14px #000, 0 0 0 3px #050505; }
+  border: 1px solid rgba(136,84,243,0.55); background: #060609; font-size: 11px; color: var(--w);
+  box-shadow: 0 10px 26px -14px #000, 0 0 0 3px #060609; }
 .spoke i { font-size: 0.95em; color: var(--p-l); }
 .spoke:nth-of-type(even) { border-color: rgba(249,115,22,0.5); }
 .spoke:nth-of-type(even) i { color: var(--o-l); }

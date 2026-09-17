@@ -69,8 +69,13 @@ def test_pages_are_generated_not_hand_written():
 # ── FR-SITE41: лицо слева на полэкрана, кружок только на мобилке ──────────
 
 def test_face_is_always_half_the_screen_on_web():
+    """Колода начинается с половины экрана, а сам ролик ШИРЕ — как на главной
+    (там 60% при колонке текста 44%): хвост растушёвки уходит под колоду, и
+    лицо не приходится затемнять, чтобы спрятать край кадра."""
     css = _read("assets/strategy.css")
     assert "--head-w: 50%;" in css, "лицо занимает половину экрана"
+    assert re.search(r"\.head \{ left: 0; top: 0; width: 60%;[^}]*z-index: 3", css), \
+        "ролик шире отступа колоды и лежит ПОД ней"
     assert "50vw" not in css, "рамку страницы нельзя мерить в vw: body{zoom} их умножает"
     assert ".head.mini" not in css, "на вебе голова не сжимается в кружок"
     mob = [b for b in re.findall(r"@media \(max-width:1023px\) \{.*?\n\}", css, re.S) if ".head {" in b]
@@ -345,8 +350,10 @@ def test_agent_passport_fields_are_opaque_and_have_icons():
     """Правка владельца: «сделай чтобы не прозрачные были эти теги тёмные и
     иконки у каждого тега»."""
     css = _read("assets/strategy.css")
-    assert re.search(r"\.spoke \{[^}]*background: #0d0d14", css, re.S), \
-        "плашка поля непрозрачная, сквозь неё не просвечивает орбита"
+    assert re.search(r"\.spoke \{[^}]*background: #060609", css, re.S), \
+        "плашка поля закрашена чёрным, а не полупрозрачная"
+    assert re.search(r"\.spoke \{[^}]*z-index: 2", css, re.S), \
+        "плашка выше орбиты: ::after у .hub — последний ребёнок и рисовался поверх текста"
     assert ".spoke i { font-size: 0.95em; color: var(--p-l); }" in css, "иконка поля фиолетовая"
     assert ".spoke:nth-of-type(even) i { color: var(--o-l); }" in css, "через одно — оранжевая"
     for lang, html in _pages():
