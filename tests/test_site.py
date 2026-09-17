@@ -201,7 +201,7 @@ def test_product_buttons_link_out():
 def test_sec_links_under_buttons():
     """FR-SITE24: под кнопкой каждого экрана — серая текстовая ссылка."""
     html = _html()
-    for label in ("AI Transformation Cases", "Learn More", "Project History",
+    for label in ("Where to start with AI", "Learn More", "Project History",
                   "Manifesto", "Skill Map", "Top Stories"):
         m = re.search(r'<a class="sec-link"[^>]*>' + re.escape(label) + r'</a>', html)
         assert m, "нужна серая ссылка «%s» (class=sec-link)" % label
