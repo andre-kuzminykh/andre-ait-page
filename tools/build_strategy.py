@@ -437,10 +437,7 @@ def page(t, lang):
       <p class="eyebrow o">{d_eyebrow}</p>
       <h2>{d_head}</h2>
       <p class="lead">{d_sub}</p>
-      <div class="rail-wrap">
-        <div class="rail">{outs}</div>
-      </div>
-      <p class="rail-hint"><i class="fa-solid fa-arrows-left-right"></i> {d_hint}</p>
+      <div class="outs">{outs}</div>
     </div>
   </section>
 
@@ -489,7 +486,6 @@ def page(t, lang):
         <span class="fm-side fm-r">{coins}</span>
       </div>
       <h2 class="final-1">{f_1}</h2>
-      <p class="final-2">{f_2}</p>
       <h2 class="final-3">{f_3}</h2>
       <a class="btn btn-primary final-cta" href="{cta_href}" rel="noopener">{f_cta} <i class="fa-solid fa-arrow-right"></i></a>
     </div>
@@ -523,12 +519,12 @@ def page(t, lang):
         h1=t["h1"], hero_lead=t["hero_lead"], cta_main=t["cta_main"], cta_how=t["cta_how"],
         n_eyebrow=t["n_eyebrow"], n_head=t["n_head"], nums=nums, n_foot=t["n_foot"],
         b_eyebrow=t["b_eyebrow"], b_head=t["b_head"], biz=biz, b_all=t["b_all"],
-        d_eyebrow=t["d_eyebrow"], d_head=t["d_head"], d_sub=t["d_sub"], outs=outs, d_hint=t["d_hint"],
+        d_eyebrow=t["d_eyebrow"], d_head=t["d_head"], d_sub=t["d_sub"], outs=outs,
         steps=steps,
         l_eyebrow=t["l_eyebrow"], l_head=t["l_head"], l_sub=t["l_sub"], l_note=t["l_note"], roles=roles,
         pr_eyebrow=t["pr_eyebrow"], pr_head=t["pr_head"], pr_sub=t["pr_sub"], plans=plans, compare=compare,
         coins="".join('<i class="fa-solid fa-coins" style="--d:%.2fs"></i>' % (k * 0.8) for k in range(3)),
-        f_1=t["f_1"], f_2=t["f_2"], f_3=t["f_3"], f_cta=t["f_cta"],
+        f_1=t["f_1"], f_3=t["f_3"], f_cta=t["f_cta"],
         company=t["company"], legal0=t["legal"][0], legal1=t["legal"][1],
     )
 

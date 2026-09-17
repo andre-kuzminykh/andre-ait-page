@@ -105,8 +105,11 @@ def test_landing_is_a_deck_of_screens():
     """Не простыня и не scroll-snap: экраны сменяют друг друга анимацией."""
     css = _read("assets/strategy.css")
     assert "scroll-snap-type: y" not in css, "вертикальной прокрутки страницы нет — только смена экранов"
-    assert "scroll-snap-type: x mandatory" in css, "горизонтальная лента артефактов прилипает по-прежнему"
+    assert "scroll-snap-type" not in css, \
+        "лент с прокруткой на странице не осталось — листаем только экранами"
     assert re.search(r"html, body \{.*?overflow: hidden", css, re.S), "страница сама не прокручивается"
+    assert "overflow: hidden; scrollbar-width: none; }" in css, \
+        "и внутри экрана прокрутки нет: правка владельца «не листать, только по блокам»"
     assert ".screen.active { display: flex; }" in css
     assert ".deck.leaving .screen.active" in css and ".deck.entering .screen.active" in css
     assert "@keyframes slideInScreen" in css
@@ -186,14 +189,18 @@ def test_page_scales_like_the_main_site():
 
 # ── первый экран ──────────────────────────────────────────────────────────
 
-def test_hero_headline_is_two_lines_with_orange_business():
+def test_hero_headline_is_two_lines():
+    """Правка владельца: «Where should you start with AI?» — в две строки и на
+    вебе, и на телефоне. Прежние .lm (четыре строки на телефоне) убраны."""
+    css = _read("assets/strategy.css")
+    assert ".lm" not in css, "механика половинок строки больше не нужна"
     for lang, html in _pages():
-        h1 = re.search(r"<h1>(.*?)</h1>", html, re.S).group(1)
-        assert h1.count('<span class="l">') == 2, lang + ": заголовок ровно в две строки"
-        assert 'class="hl-o">' in h1, lang + ": «бизнес» — оранжевым"
-    assert "AI Strategy shows how to transform your business with AI" in _en()
-    assert 'class="hl-o">business<' in _en()
-    assert 'class="hl-o">бизнес' in _ru()
+        h1 = html[html.index("<h1"):html.index("</h1>")]
+        assert h1.count('<span class="l">') == 2, lang + ": ровно две строки заголовка"
+        assert 'class="lm"' not in h1, lang + ": половинок строки нет"
+    assert 'Where should <span class="hl-o">you</span>' in _en(), "you оранжевым"
+    assert 'start with <span class="hl-p">AI</span>?' in _en(), "AI фиолетовым"
+    assert 'внедрять <span class="hl-p">ИИ</span>?' in _ru()
 
 
 def test_hero_has_a_button_and_a_grey_link_under_it():
@@ -270,8 +277,8 @@ def test_use_cases_fit_one_screen_with_one_metric_each():
         assert 'class="biz-all"' in html, lang + ": простая ссылка на все типы бизнеса"
     css = _read("assets/strategy.css")
     assert re.search(r"\.biz-grid \{[^}]*minmax\(0, ?1fr\)", css), "карточки не вылезают за экран"
-    assert ".rail-wrap::before" in css and ".rail-wrap::after" in css, \
-        "края ленты уходят в тёмный градиент"
+    assert "View all business types" in _en() and "Все типы бизнеса" in _ru(), \
+        "ссылка под списком названа коротко (правка владельца)"
 
 
 # ── Solution: восемь артефактов с новыми названиями ───────────────────────
@@ -492,13 +499,18 @@ def test_one_line_headings_are_fitted_by_script():
         "resize передаёт событие — его нельзя принимать за узел"
 
 
-def test_rail_left_fade_only_after_scrolling():
-    """Растушёвка слева гасила первую карточку в покое."""
-    css = _read("assets/strategy.css")
-    assert ".rail-wrap.scrolled::before { opacity: 1; }" in css
-    assert re.search(r"\.rail-wrap::before \{[^}]*opacity: 0", css, re.S), \
-        "в покое левой растушёвки нет"
-    assert "classList.toggle('scrolled'" in _read("assets/strategy.js")
+def test_nothing_scrolls_inside_a_screen():
+    """Правка владельца: «никакие эти страницы внутри себя не листались — не
+    листать! только по блокам листать». Горизонтальная лента карточек решения
+    убрана, вместе с ней — растушёвка краёв и подсказка «листайте карточки»."""
+    css, js = _read("assets/strategy.css"), _read("assets/strategy.js")
+    for gone in (".rail", ".rail-wrap", ".rail-hint", "scroll-padding-inline", "scroll-snap-align"):
+        assert gone not in css, "остатки ленты в стилях: " + gone
+    for gone in ("paintFades", "rail"):
+        assert gone not in js, "остатки ленты в скрипте: " + gone
+    for lang, html in _pages():
+        assert 'class="rail' not in html, lang + ": ленты в разметке нет"
+        assert 'class="outs"' in html, lang + ": карточки решения стоят сеткой"
 
 
 def test_explore_label_survives_on_mobile():
@@ -726,25 +738,32 @@ def test_final_screen_has_the_robot_and_coins_mark():
             lang + ": знак стоит НАД заголовком финала"
 
 
-def test_final_lines_are_evenly_spaced():
-    """Правка владельца: расстояние между тремя строками финала одинаковое.
-    У абзаца свой нижний отступ, и вместе с margin-top третьей строки разрыв
-    снизу был вдвое больше верхнего."""
+def test_final_screen_is_a_question_and_an_answer():
+    """Правка владельца: «в конце „Where to start with AI?“ в одну строчку и
+    ниже „AI Strategy shows you“, а „You don't need to know“ не надо»."""
     css = _read("assets/strategy.css")
-    assert ".final-1 { margin-bottom: 0.85rem; }" in css
-    assert re.search(r"\.final-2 \{ margin-bottom: 0;", css), "у средней строки своего отступа нет"
-    assert re.search(r"\.final-3 \{[^}]*margin: 0.85rem 0", css), "сверху столько же, сколько снизу у первой"
+    assert ".final-2" not in css, "средней строки финала больше нет и в стилях"
+    assert ".final-1 { margin-bottom: 0.85rem; }" in css, "расстояние держит пара строк"
+    for lang, html in _pages():
+        final = html[html.index('class="final'):]
+        assert 'class="final-2"' not in final, lang + ": средняя строка убрана"
+        assert final.count('class="final-1"') == 1 and final.count('class="final-3"') == 1, lang
+    assert "You don’t need to know" not in _en() and "Вам не обязательно" not in _ru(), \
+        "убранная строка не осталась в тексте"
+    assert 'Where to start with <span class="hl-p">AI</span>?' in _en()
+    assert '<span class="hl-p">AI</span> Strategy shows <span class="hl-o">you</span>' in _en()
 
 
 def test_titles_paint_ai_purple_and_business_orange():
     """Правка владельца: «AI везде фиолетовый, automate — оранж, business —
     оранж, processes — фиолетовый, you — оранж»."""
     en, ru = _en(), _ru()
-    assert '<span class="hl-o">you</span> start with <span class="hl-p">AI</span>?' in en, \
-        "на финале you оранжевый, AI фиолетовый"
-    assert 'Where should <span class="hl-o">you</span> start' in en, "в шапке первого экрана you оранжевый"
+    assert 'Where to start with <span class="hl-p">AI</span>?' in en, "на финале AI фиолетовый"
+    assert 'Where should <span class="hl-o">you</span>' in en, "в шапке первого экрана you оранжевый"
     assert 'can <span class="hl-o">automate</span>' in en, "automate оранжевый"
     assert 'as <span class="hl-p">processes</span>' in en, "processes фиолетовый"
+    assert 'New <span class="hl-p">human</span> roles' in en, \
+        "правка владельца: human фиолетовым и второй строкой"
     for html in (en, ru):
         assert 'should work with <span class="hl-p">AI</span>' in html or \
                'работать с <span class="hl-p">ИИ</span>' in html, "AI в заголовке фиолетовый"
@@ -755,12 +774,13 @@ def test_titles_paint_ai_purple_and_business_orange():
     assert ">Начать ИИ-трансформацию <" in ru, "по-русски тоже без «бесплатно»"
 
 
-def test_use_cases_headline_breaks_before_actually_works():
-    """Правка владельца: «your business actually works» — перенос, works фиолетовым."""
-    assert 'class="l">actually <span class="hl-p">works</span></span>' in _en(), \
-        "перенос перед «actually works» и works фиолетовым"
-    assert "h2 .l { display: block; }" in _read("assets/strategy.css"), \
-        "спан .l в заголовке действительно переносит строку"
+def test_use_cases_headline_is_two_short_lines():
+    """Правка владельца: вместо «Built for the way your business actually
+    works» — «Built for how your / business works», смысл тот же, но чище."""
+    assert '<span class="l">Built for how your</span>' in _en()
+    assert '<span class="l"><span class="hl-o">business</span> <span class="hl-p">works</span></span>' in _en()
+    assert '<span class="l">Собрано под ваш <span class="hl-o">бизнес</span></span>' in _ru()
+    assert "actually" not in _en(), "старой формулировки не осталось"
 
 
 def test_pricing_grid_stays_centred_in_dense_mode():
@@ -790,19 +810,10 @@ def test_mobile_layout_is_a_second_layout_not_a_squeeze():
     js = _read("assets/strategy.js")
     assert "if (!mqDesk.matches)" in js, "на телефоне fitHeadings выходит сразу"
     mob = _mobile_block()
-    for sel, size in (("p {", "14px"), (".lead {", "15.5px"), (".biz h3 {", "15px")):
+    for sel, size in (("p {", "14px"), (".lead {", "15.5px"), (".biz h3 {", "15px")):  # noqa: B007
         assert sel in mob, "мобильный размер задан явно: " + sel
-    assert "font-size: 14px" in mob and "font-size: 15.5px" in mob
-
-
-def test_mobile_hero_headline_breaks_into_four_lines():
-    """Правка владельца: «Where should / you start / with AI / in your
-    business?» — и по-русски так же."""
-    for lang, html in _pages():
-        h1 = html[html.index("<h1"):html.index("</h1>")]
-        assert h1.count('class="lm"') == 4, lang + ": четыре смысловых куска заголовка"
-    mob = _mobile_block()
-    assert "h1 .lm { display: block; }" in mob, "на телефоне каждый кусок — своя строка"
+    assert "font-size: 14px" in mob and "clamp(13.5px, 4vw, 15.5px)" in mob, \
+        "лид на узком телефоне ужимается, чтобы строка не разъезжалась"
 
 
 def test_mobile_chain_is_one_flow_without_dangling_arrows():
@@ -833,10 +844,11 @@ def test_mobile_footer_stands_just_above_the_dots():
     """Правка владельца: подвал «должен быть ещё ниже, чуть перед точками»."""
     mob = _mobile_block()
     assert ".final footer { margin-top: auto;" in mob, "подвал прижат к низу экрана"
-    assert "padding-left: calc(clamp(100px, 28vw, 128px)" in mob, \
-        "колонка подвала смещена правее круглого ролика"
     assert ".legal { font-size: 12px;" in mob and "flex-wrap: wrap" in mob, \
         "ссылки подвала переносятся целыми словами, а не по буквам"
+    # правка владельца: подвал по центру, кружку разрешено его перекрывать
+    assert "padding-left" not in mob.split(".final footer")[1][:160], \
+        "колонка подвала больше не смещена правее ролика"
 
 
 def test_mobile_header_button_keeps_its_own_size():
@@ -856,17 +868,20 @@ def test_quote_scene_carries_the_same_six_blocks_as_the_next_one():
         assert proc.count('class="pnode ') == 6, lang + ": столько же на карте процессов"
 
 
-def test_solution_cards_have_no_numbers_and_are_centred():
-    """Правка владельца: «чтобы внутри карточек чисел не было, а только по
-    середине всё внутри выровнено»."""
+def test_solution_cards_are_a_grid_without_numbers():
+    """Правки владельца: в карточках нет чисел и всё внутри по центру, а сами
+    восемь карточек стоят СЕТКОЙ и видны целиком — без прокрутки."""
     css = _read("assets/strategy.css")
     assert ".out-n" not in css, "номера карточек убраны и из стилей"
     assert ".out { text-align: center; }" in css
     assert ".out-ic {" in css, "вместо номера — иконка над заголовком"
+    assert "grid-template-columns: repeat(2, minmax(0, 1fr))" in \
+        re.search(r"\.outs \{[^}]*\}", css, re.S).group(0), "сетка в два столбца"
     for lang, html in _pages():
-        rail = html[html.index('class="rail"'):html.index("</section>", html.index('class="rail"'))]
-        assert 'class="out-n"' not in rail, lang + ": в карточках решения чисел нет"
-        assert rail.count('class="out-ic"') == 8, lang + ": у каждой карточки своя иконка"
+        outs = html[html.index('class="outs"'):html.index("</section>", html.index('class="outs"'))]
+        assert 'class="out-n"' not in outs, lang + ": в карточках решения чисел нет"
+        assert outs.count('class="out-ic"') == 8, lang + ": у каждой карточки своя иконка"
+        assert outs.count('class="l"') == 0, lang + ": подпись карточки — одна короткая строка"
 
 
 def test_step_subtitles_are_one_line_and_press_to_the_panel():
@@ -970,19 +985,79 @@ def test_face_is_not_buried_under_the_shade():
         "полная чернота ровно на левом крае колоды (0.56 * 1.493 = 0.836 ширины ролика)"
 
 
-def test_hero_lead_keeps_its_line_breaks_in_the_column():
-    """Лид первого экрана разбит по границам предложений: одной строкой
-    «Tell how… operating model,» требует 597px, а колонка рядом с роликом даёт
-    502–621px, и строка разъезжалась. Перенос владельца перед «the AI agents…»
-    сохранён."""
+def test_hero_lead_is_two_short_lines():
+    """Правка владельца: «Tell me how your business works. / Get your AI-First
+    model» — в две строки, и по-русски так же коротко."""
     for lang, html in _pages():
         lead = html[html.index('class="lead"'):html.index("</p>", html.index('class="lead"'))]
-        assert lead.count('<span class="l">') == 3, lang + ": лид в три строки"
-    assert "<span class=\"l\">Tell how your business works.</span>" in _en()
-    assert "<span class=\"l\">the AI agents you need, and an implementation roadmap</span>" in _en(), \
-        "перенос владельца перед «the AI agents…» на месте"
-    assert "<span class=\"l\">Расскажите, как работает ваш бизнес.</span>" in _ru()
-    assert "<span class=\"l\">нужных ИИ-агентов и дорожную карту внедрения</span>" in _ru()
+        assert lead.count('<span class="l">') == 2, lang + ": лид в две строки"
+    assert '<span class="l">Tell me how your business works.</span>' in _en()
+    assert '<span class="l">Get your AI-First model</span>' in _en()
+    assert '<span class="l">Расскажите, как работает ваш бизнес.</span>' in _ru()
+    assert '<span class="l">Получите свою AI-First модель</span>' in _ru()
+
+
+def test_every_step_subtitle_is_one_short_line():
+    """Правка владельца: «подзаголовки везде в одну строку — можно назвать
+    по-другому, но чтобы на мобиле и в вебе одинаково». На телефоне колонка
+    даёт ~41 знак при кегле 14px, поэтому длину сторожим прямо в тексте."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from strategy_copy import EN, RU
+    for lang, t in (("en", EN), ("ru", RU)):
+        for tag, title, sub in t["steps"]:
+            assert "<span" not in sub, "%s: подзаголовок «%s» без переносов" % (lang, tag)
+            assert len(sub) <= 41, "%s: подзаголовок «%s» длиннее строки: %d знаков" % (lang, tag, len(sub))
+    assert EN["steps"][0][2] == "Assess your AI maturity. Find the gaps"
+    assert EN["steps"][5][2] == "Build-ready agent specifications"
+
+
+def test_pricing_buttons_all_say_start():
+    """Правка владельца: «вместо choose везде start, просто, без SMB/Стартап»."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from strategy_copy import EN, RU
+    assert {p[4] for p in EN["plans"]} == {"Start"}, "по-английски все кнопки — Start"
+    assert {p[4] for p in RU["plans"]} == {"Начать"}, "по-русски все кнопки — Начать"
+    for lang, html in _pages():
+        assert "Choose" not in html and "Выбрать" not in html, lang + ": старых надписей нет"
+
+
+def test_pricing_and_learning_headings_break_in_two():
+    """Правки владельца: «Scale as you grow» — на вторую строку; «New human
+    roles» — второй строкой, human фиолетовым."""
+    for lang, html in _pages():
+        for key in ("pricing", "learning"):
+            sec = html[html.index('id="%s"' % key):html.index("</section>", html.index('id="%s"' % key))]
+            h2 = sec[sec.index("<h2"):sec.index("</h2>")]
+            assert h2.count('<span class="l">') == 2, "%s: заголовок %s в две строки" % (lang, key)
+    assert '<span class="l">Scale as you <span class="hl-o">grow</span></span>' in _en()
+
+
+def test_video_circle_is_bigger_and_may_overlap():
+    """Правка владельца: «размер кружка давай побольше — он может элементы
+    закрывать, это ок». Нижнее поле экранов считается от того же диаметра,
+    но с коэффициентом: иначе высокие экраны срезались бы краем, ведь
+    прокрутки внутри экранов больше нет."""
+    css = _read("assets/strategy.css")
+    assert "--vid-d: clamp(128px, 36vw, 168px);" in css, "кружок заметно крупнее прежних 100–128px"
+    assert "calc(var(--vid-d) * 0.82 + 1.1rem + env(safe-area-inset-bottom, 0px))" in css, \
+        "нижнее поле меньше диаметра — кружку разрешено перекрывать"
+    mob = _mobile_block()
+    assert "padding-left" not in mob.split(".final footer")[1][:160], \
+        "подвал финала больше не смещён правее кружка — он по центру"
+
+
+def test_agent_ring_is_bigger_on_mobile():
+    """Правка владельца: «надо больше круг делать на мобиле». Радиусы и кегль
+    полей подобраны замером: на 360/390/414 в обоих языках нет ни вылета за
+    панель, ни нахлёста на ядро."""
+    css = _read("assets/strategy.css")
+    assert ".hub { height: min(100%, 20.5rem); --rx: 33%; --ry: 43%; }" in css, \
+        "кольцо крупнее прежних 15rem, но радиус по горизонтали ужат под ширину панели"
+    mob = _mobile_block()
+    assert ".spoke { font-size: 11px; padding: 0.26rem 0.48rem; gap: 0.3rem; }" in mob, \
+        "размер полей объявлен в ПОСЛЕДНЕМ мобильном блоке, иначе его перебивает блок выше"
 
 
 if __name__ == "__main__":

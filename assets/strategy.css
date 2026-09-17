@@ -14,6 +14,8 @@
   --card: rgba(255,255,255,0.025);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --head-w: 56%;
+  /* диаметр кружка с роликом на телефоне: от него считается нижнее поле экранов */
+  --vid-d: clamp(128px, 36vw, 168px);
 }
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: var(--bg); color-scheme: dark;
@@ -76,7 +78,7 @@ img, svg { max-width: 100%; }
 }
 @media (max-width:1023px) {
   .head { left: clamp(0.8rem, 3.5vw, 1.2rem); bottom: calc(clamp(0.8rem, 3.5vw, 1.2rem) + env(safe-area-inset-bottom, 0px));
-    width: clamp(100px, 28vw, 128px); height: clamp(100px, 28vw, 128px); border-radius: 50%;
+    width: var(--vid-d); height: var(--vid-d); border-radius: 50%;
     border-color: rgba(255,255,255,0.18); box-shadow: 0 14px 34px rgba(0,0,0,0.55); }
   .head .head-shade { display: none; }
   .head .head-play { display: flex; }
@@ -213,8 +215,11 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
 @media (min-width:1024px) { .deck { left: var(--head-w); } }
 .screen { position: absolute; inset: 0; display: none; flex-direction: column;
   justify-content: center; justify-content: safe center;
-  padding: 6.2rem clamp(1.1rem, 4vw, 1.8rem) calc(clamp(100px, 28vw, 128px) + 1.4rem + env(safe-area-inset-bottom, 0px));
-  overflow-y: auto; overflow-x: clip; scrollbar-width: none; }
+  /* Нижнее поле меньше диаметра кружка: владелец разрешил ему перекрывать
+     элементы, а прокрутки внутри экранов больше нет — высокие экраны иначе
+     срезались бы краем. */
+  padding: 6.2rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 + 1.1rem + env(safe-area-inset-bottom, 0px));
+  overflow: hidden; scrollbar-width: none; }
 .screen::-webkit-scrollbar { width: 0; }
 @media (min-width:1024px) { .screen { padding: 7rem clamp(1.4rem, 2.4vw, 2.6rem) 2.5rem; } }
 .screen.active { display: flex; }
@@ -248,10 +253,8 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
 h1, h2, h3 { color: var(--w); margin: 0; }
 h1 { font-size: clamp(1.7rem, 5vw, 4.4rem); font-weight: 800; line-height: 1.16; letter-spacing: -0.025em; margin-bottom: 1.1rem; }
 h1 .l { display: block; white-space: nowrap; }
-/* .lm — половинки строки: на вебе идут в строку, на мобилке блоками,
-   чтобы заголовок первого экрана встал в четыре строки (правка владельца) */
-h1 .lm + .lm::before { content: " "; white-space: pre; }
 h2 .l { display: block; }
+@media (min-width:1024px) { h2 .l { white-space: nowrap; } }
 @media (max-width:1023px) { h1 { font-size: clamp(1.05rem, 5.2vw, 1.9rem); } }
 h2 { font-size: clamp(1.15rem, 2.1vw, 1.75rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.015em; margin-bottom: 0.9rem; }
 h2.one-line { white-space: nowrap; font-size: clamp(0.95rem, 1.85vw, 1.5rem); }
@@ -340,38 +343,37 @@ strong { color: var(--w); font-weight: 700; }
 /* Правка владельца: лента должна доходить ближе к краям экрана, а тёмная
    растушёвка быть уже. Выходим за колонку .wrap на всю ширину экрана
    (минус его боковые отступы) и сужаем градиент. */
-.rail-wrap { position: relative; margin: 1.2rem 0 0.8rem;
-  width: calc(100% + 2 * var(--rail-bleed, 0px));
-  margin-left: calc(-1 * var(--rail-bleed, 0px)); }
-@media (min-width:1024px) { .rail-wrap { --rail-bleed: clamp(1rem, 2.6vw, 2.6rem); } }
-/* растушёвка должна ПЕРЕКРЫВАТЬ край карточки, а не просто темнеть: фон почти
-   чёрный, и мягкий градиент не прятал ни рамку, ни обрезанный текст */
-.rail-wrap::before, .rail-wrap::after { content: ''; position: absolute; top: -0.2rem; bottom: -0.2rem; width: 3.4rem; z-index: 3; pointer-events: none; }
-.rail-wrap::before { left: 0; background: linear-gradient(to right, var(--bg) 0%, var(--bg) 30%, rgba(5,5,5,0) 100%);
-  opacity: 0; transition: opacity 0.3s ease; }
-.rail-wrap.scrolled::before { opacity: 1; }
-.rail-wrap.ended::after { opacity: 0; }
-.rail-wrap::after { right: 0; background: linear-gradient(to left, var(--bg) 0%, var(--bg) 30%, rgba(5,5,5,0) 100%);
-  transition: opacity 0.3s ease; }
-/* scroll-padding обязателен вместе с боковым падингом: без него прилипание
-   «start» тянет первую карточку к самому краю прокрутки, лента открывается
-   уже прокрученной на ширину падинга и слева наползает растушёвка — именно
-   этот сдвиг в первую секунду видел владелец */
-.rail { display: flex; gap: 0.7rem; padding: 0.2rem var(--rail-bleed, 0px) 0.8rem; overflow-x: auto;
-  scroll-snap-type: x mandatory; scroll-padding-inline: var(--rail-bleed, 0px); scrollbar-width: none; }
-.rail::-webkit-scrollbar { height: 0; }
-.out { flex: 0 0 auto; width: clamp(11rem, 17vw, 13rem); scroll-snap-align: start; padding: 0.9rem 1rem; border-radius: 0.9rem;
+/* Восемь карточек решения стоят СЕТКОЙ 2×4 и видны целиком: горизонтальная
+   лента с прокруткой убрана — правка владельца «внутри себя не листать,
+   листать только по блокам». Сетка обязана влезать в самое низкое окно
+   владельца (1496×635: под карточки остаётся 372px), поэтому карточка
+   компактная, а подпись у неё ровно одна строка. */
+.outs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.3rem, 0.85vh, 0.6rem); margin: clamp(0.45rem, 1.2vh, 0.9rem) auto 0; width: 100%; }
+.out { padding: clamp(0.35rem, 1vh, 0.75rem) 0.7rem; border-radius: 0.8rem;
   border: 1px solid var(--line); background: var(--card); }
 /* Правка владельца: в карточках решения нет чисел, всё внутри выключено
    по центру — иконка сверху, под ней название и описание. */
 .out { text-align: center; }
-.out-ic { display: flex; align-items: center; justify-content: center; width: 2.3rem; height: 2.3rem;
-  margin: 0 auto 0.6rem; border-radius: 0.75rem; border: 1px solid rgba(136,84,243,0.32);
-  background: rgba(136,84,243,0.12); color: var(--p-l); font-size: 14px; }
-.out h3 { margin: 0 0 0.4rem; font-size: clamp(11px, 0.85vw, 13px); }
-.out p { margin: 0; font-size: clamp(10.5px, 0.8vw, 12px); line-height: 1.55; color: var(--tx-d); }
-.rail-hint { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: clamp(11px, 0.8vw, 12.5px); letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--tx-d); }
+.out-ic { display: flex; align-items: center; justify-content: center;
+  width: clamp(1.6rem, 3.4vh, 2.1rem); height: clamp(1.6rem, 3.4vh, 2.1rem);
+  margin: 0 auto clamp(0.2rem, 0.7vh, 0.45rem); border-radius: 0.7rem;
+  border: 1px solid rgba(136,84,243,0.32); background: rgba(136,84,243,0.12);
+  color: var(--p-l); font-size: clamp(11px, 1.6vh, 14px); }
+.out h3 { margin: 0 0 0.2rem; font-size: clamp(11px, 0.85vw, 13px); }
+/* Низкое окно (владелец смотрит сайт в 1496×635): сетка решения там впритык,
+   поэтому отдельная ступень плотности — иначе нижний ряд срезался бы краем
+   экрана, ведь прокрутки внутри экранов больше нет. */
+@media (min-width:1024px) and (max-height:700px),
+       (min-width:1600px) and (max-height:805px),
+       (min-width:1900px) and (max-height:910px),
+       (min-width:2300px) and (max-height:1050px) {
+  .outs { gap: 0.3rem; margin-top: 0.4rem; }
+  .out { padding: 0.3rem 0.6rem; }
+  .out-ic { margin-bottom: 0.15rem; }
+}
+
+.out p { margin: 0; font-size: clamp(10px, 0.78vw, 11.5px); line-height: 1.4; color: var(--tx-d); }
 
 /* ===== Шаги: текст слева, сцена продукта справа ===== */
 /* Шесть шагов обязаны выглядеть одинаково: шапка и панель имеют постоянную
@@ -605,11 +607,9 @@ strong { color: var(--w); font-weight: 700; }
 .final .wrap { display: flex; flex-direction: column; align-items: center;
   flex: 1 1 auto; min-height: 0; justify-content: center; }
 .final .wrap > * { flex-shrink: 0; }
-/* три строки финала стоят на ОДИНАКОВОМ расстоянии друг от друга: у абзаца
-   свой нижний отступ, и вместе с margin-top третьей строки разрыв снизу был
-   вдвое больше верхнего (правка владельца) */
+/* На финале две строки: вопрос и ответ. Средняя строка («You don’t need to
+   know») убрана владельцем, поэтому расстояние держит только эта пара. */
 .final-1 { margin-bottom: 0.85rem; }
-.final-2 { margin-bottom: 0; color: var(--tx-d); text-transform: uppercase; letter-spacing: 0.1em; font-size: clamp(11.5px, 0.95vw, 14px); }
 /* правка владельца: «Strategy shows» — БЕЛЫМ, цвет несут только спаны */
 .final-3 { color: var(--w); margin: 0.85rem 0 1.5rem; }
 
@@ -676,6 +676,17 @@ strong { color: var(--w); font-weight: 700; }
   .biz-grid { gap: 0.5rem; margin: 1rem auto 0.9rem; }
   .plans { margin: 1rem auto 0.8rem; }
   .radar { max-height: 30vh; }
+}
+
+/* Заголовок тарифов стал двухстрочным (правка владельца «Scale as you grow» на
+   вторую строку), и на низком окне сетка переставала влезать. Блок стоит ПОСЛЕ
+   общего правила плотности — иначе оно перебивало бы эти значения. */
+@media (min-width:1024px) and (max-height:700px),
+       (min-width:1600px) and (max-height:805px),
+       (min-width:1900px) and (max-height:910px),
+       (min-width:2300px) and (max-height:1050px) {
+  .plans { gap: 0.5rem; margin: 0.55rem auto 0.45rem; }
+  .plan { padding: 0.6rem 0.6rem; gap: 0.3rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -822,9 +833,15 @@ strong { color: var(--w); font-weight: 700; }
   .hub-core i { font-size: 36px; }
 }
 @media (max-width:620px) {
-  .hub { height: min(100%, 15rem); --rx: 44%; }
-  .hub-core { width: 4.4rem; height: 4.4rem; }
-  .hub-core i { font-size: 24px; }
+  /* Правка владельца: «надо больше круг делать на мобиле». Круг занимал
+     меньше половины высоты панели, поля стояли тесным кольцом в середине. */
+  /* Кольцо заметно крупнее (было 15rem), но --rx считается от ШИРИНЫ круга,
+     а не панели: при большом радиусе крайние поля («Роль человека»,
+     «Outputs») выезжали за края панели. Значения подобраны замером — чисто
+     на 360/390/414 в обоих языках: нет ни вылета, ни нахлёста на ядро. */
+  .hub { height: min(100%, 20.5rem); --rx: 33%; --ry: 43%; }
+  .hub-core { width: 4.8rem; height: 4.8rem; }
+  .hub-core i { font-size: 27px; }
   /* мобильные размеры полей объявлены ВЫШЕ блока «Крупнее» и им перебивались */
   .spoke { font-size: 10px; padding: 0.3rem 0.6rem; gap: 0.3rem; }
 }
@@ -851,22 +868,19 @@ strong { color: var(--w); font-weight: 700; }
    настольные значения при равной специфичности.
    ===================================================================== */
 @media (max-width:1023px) {
-  /* ── заголовок первого экрана: четыре строки ── */
-  h1 .lm { display: block; }
-  h1 .lm + .lm::before { content: none; }
+  /* ── заголовок первого экрана: те же две строки, что и на вебе ── */
   h1 { font-size: clamp(1.9rem, 8.6vw, 2.7rem); line-height: 1.12; margin-bottom: 1rem; }
 
   /* ── базовая типографика ── */
   .eyebrow { font-size: 13px; letter-spacing: 0.16em; margin-bottom: 0.7rem; }
   h2, h2.one-line { font-size: clamp(1.3rem, 6vw, 1.75rem); line-height: 1.2; margin-bottom: 0.8rem; }
   p { font-size: 14px; line-height: 1.6; }
-  .lead { font-size: 15.5px; line-height: 1.55; }
+  .lead { font-size: clamp(13.5px, 4vw, 15.5px); line-height: 1.55; }
   /* Кнопку в шапке этот блок НЕ трогает: у неё свой мобильный размер
      (иначе «Начать бесплатно» распирало шапку и переключатель языка
      наезжал на логотип). */
   .btn-primary:not(.cta-head), .btn-ghost { font-size: 12.5px; padding: 0.95rem 1.5rem; }
   .biz-all { font-size: 13px; }
-  .rail-hint { font-size: 12px; }
   .ui-bar { font-size: 12px; letter-spacing: 0.1em; padding: 0.6rem 0.8rem; }
 
   /* ── рынок ── */
@@ -884,11 +898,12 @@ strong { color: var(--w); font-weight: 700; }
   .biz-metric span { font-size: 1em; }
   .biz-go { font-size: 14px; }
 
-  /* ── лента решения ── */
-  .out { width: 74vw; padding: 1rem 1.1rem; }
-  .out-ic { width: 2.6rem; height: 2.6rem; font-size: 16px; }
-  .out h3 { font-size: 15.5px; }
-  .out p { font-size: 13.5px; line-height: 1.5; }
+  /* ── решение: сетка 2×4, карточки целиком на экране ── */
+  .outs { gap: 0.4rem; margin-top: 0.55rem; }
+  .out { padding: 0.45rem 0.45rem; }
+  .out-ic { width: 1.9rem; height: 1.9rem; font-size: 13px; margin-bottom: 0.25rem; }
+  .out h3 { font-size: 12.5px; line-height: 1.2; }
+  .out p { font-size: 11px; line-height: 1.25; }
 
   /* ── шаги и сцены продукта ── */
   .step-n { font-size: 13px; letter-spacing: 0.14em; }
@@ -930,7 +945,10 @@ strong { color: var(--w); font-weight: 700; }
   .dim-track { height: 6px; }
   .score b { font-size: clamp(1.7rem, 8vw, 2.2rem); }
   .score span { font-size: 12.5px; }
-  .spoke { font-size: 12px; padding: 0.34rem 0.65rem; gap: 0.35rem; }
+  /* Размер полей паспорта объявлен ЗДЕСЬ: блок про круг стоит выше по файлу
+     и при равной специфичности его перебивал бы этот. Значения подобраны
+     замером вместе с радиусами кольца. */
+  .spoke { font-size: 11px; padding: 0.26rem 0.48rem; gap: 0.3rem; }
   .role { font-size: 13px; padding: 0.5rem 0.9rem; }
   .role i { font-size: 12px; }
   .l-note { font-size: 13.5px; }
@@ -943,26 +961,23 @@ strong { color: var(--w); font-weight: 700; }
   .plan-scope { font-size: 13px; }
   .btn-sm { font-size: 12px; padding: 0.7rem 0.6rem; }
   .plan-badge { font-size: 10.5px; }
-  .compare { font-size: 13px; line-height: 1.7; }
+  .compare { font-size: 13px; line-height: 1.55; flex-direction: column; gap: 0.3rem; }
+  .compare i { display: none; }
 
   /* ── финал ── */
   .final-1, .final-3 { font-size: clamp(1.45rem, 6.6vw, 1.9rem); }
-  .final-2 { font-size: 13px; }
   .final-cta { font-size: 12.5px; }
   .legal { font-size: 12px; gap: 0.6rem; }
   .copy { font-size: 11.5px; }
   .company { font-size: 12.5px; }
   .socials a { font-size: 17px; }
-  /* Подвал стоит НИЖЕ — почти у самых точек (правка владельца). Чтобы он не
-     налезал на круглый ролик в левом нижнем углу, колонка подвала смещена
-     правее его, а строки не переносятся: с переносом «Privacy Policy» и
-     «Terms of Use» разъезжались на две строки каждая, а точка-разделитель
-     висела между ними. Поэтому здесь свой, более плотный трекинг. */
+  /* Подвал стоит НИЖЕ — почти у самых точек, и по ЦЕНТРУ экрана во всю
+     ширину: владелец разрешил кружку с роликом его перекрывать, поэтому
+     смещать колонку правее круга больше не нужно. */
   .final .wrap { flex: 0 1 auto; margin-top: auto; margin-bottom: auto; }
-  .final footer { margin-top: auto; padding-top: 0.9rem; gap: 0.45rem;
-    padding-left: calc(clamp(100px, 28vw, 128px) + 0.6rem); }
-  .legal { font-size: 12px; gap: 0.5rem; letter-spacing: 0.03em; flex-wrap: wrap; justify-content: center; }
+  .final footer { margin-top: auto; padding-top: 0.9rem; gap: 0.45rem; }
+  .legal { font-size: 12px; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
   .legal a { white-space: nowrap; }
-  .copy { font-size: 11.5px; letter-spacing: 0.01em; white-space: nowrap; }
+  .copy { font-size: 11.5px; }
   .screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }
 }

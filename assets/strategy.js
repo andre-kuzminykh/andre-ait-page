@@ -67,7 +67,7 @@
        блоки процессов и подписи кейсов до 8–10px, и всё выглядело мелким.
        На телефоне строки просто переносятся, а размеры задаёт CSS. */
     if (!mqDesk.matches) {
-      $$('h1, h1 .l, h2, .biz h3, .biz-metric, .opnode, .pnode, .fnode, .node', root)
+      $$('h1, h1 .l, h2, h2 .l, .biz h3, .biz-metric, .opnode, .pnode, .fnode, .node', root)
         .forEach(function (el) { el.style.fontSize = ''; });
       return;
     }
@@ -169,24 +169,6 @@
     });
   }
 
-  /* ---------- лента артефактов: растушёвка по краям ----------
-     Считать её можно только на ПОКАЗАННОМ экране: у скрытого clientWidth и
-     scrollWidth равны нулю, и «доскроллено до конца» срабатывало сразу — правая
-     растушёвка гасла, а карточка обрезалась голым краем. */
-  function paintFades(root) {
-    if (!root || !root.querySelectorAll) root = document;
-    $$('.rail-wrap', root).forEach(function (wrap) {
-      var rail = $('.rail', wrap);
-      if (!rail || !rail.clientWidth) return;
-      wrap.classList.toggle('scrolled', rail.scrollLeft > 4);
-      wrap.classList.toggle('ended', rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 4);
-    });
-  }
-  $$('.rail').forEach(function (rail) {
-    rail.addEventListener('scroll', function () { paintFades(rail.closest('.screen')); }, { passive: true });
-  });
-  window.addEventListener('resize', function () { paintFades(screens[cur]); });
-
   /* ---------- перелёт оранжевых блоков между шагами 03 → 04 → 05 ----------
      Считаем позиции через offsetLeft/offsetTop: смещения не зависят от transform,
      которым экран въезжает, поэтому FLIP получается точным. Ключ data-flip="oN"
@@ -256,7 +238,6 @@
     dots.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
     screens[cur].scrollTop = 0;
     fitHeadings(screens[cur]);
-    paintFades(screens[cur]);
     sceneIn(screens[cur]);
     typeIn(screens[cur]);
     countUpIn(screens[cur]);
