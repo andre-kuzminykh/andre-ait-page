@@ -27,7 +27,11 @@ EN = {
            '<span class="lm"><span class="hl-o">you</span> start</span></span>'
            '<span class="l"><span class="lm">with <span class="hl-p">AI</span></span>'
            '<span class="lm">in your <span class="hl-o">business</span>?</span></span>'),
-    "hero_lead": ('<span class="l">Tell how your business works. Get an AI-First operating model,</span>'
+    # Первая фраза стоит отдельной строкой: одной строкой «Tell how… operating
+    # model,» требует 597px, а колонка текста рядом с роликом даёт 502–621.
+    # Перенос владельца перед «the AI agents…» сохранён.
+    "hero_lead": ('<span class="l">Tell how your business works.</span>'
+                  '<span class="l">Get an AI-First operating model,</span>'
                   '<span class="l">the AI agents you need, and an implementation roadmap</span>'),
 
     # ── 3. Цифры ──
@@ -183,7 +187,8 @@ RU = {
            '<span class="lm">внедрять</span></span>'
            '<span class="l"><span class="lm"><span class="hl-p">ИИ</span> в вашем</span>'
            '<span class="lm"><span class="hl-o">бизнесе</span>?</span></span>'),
-    "hero_lead": ('<span class="l">Расскажите, как работает ваш бизнес. Получите AI-First операционную модель,</span>'
+    "hero_lead": ('<span class="l">Расскажите, как работает ваш бизнес.</span>'
+                  '<span class="l">Получите AI-First операционную модель,</span>'
                   '<span class="l">нужных ИИ-агентов и дорожную карту внедрения</span>'),
 
     "n_eyebrow": "Рынок сегодня",

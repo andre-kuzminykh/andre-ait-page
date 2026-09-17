@@ -69,14 +69,17 @@ def test_pages_are_generated_not_hand_written():
 
 # ── FR-SITE41: лицо слева на полэкрана, кружок только на мобилке ──────────
 
-def test_face_is_always_half_the_screen_on_web():
-    """Колода начинается с половины экрана, а сам ролик ШИРЕ — как на главной
-    (там 60% при колонке текста 44%): хвост растушёвки уходит под колоду, и
-    лицо не приходится затемнять, чтобы спрятать край кадра."""
+def test_face_keeps_the_proportions_of_the_main_site():
+    """Пропорции как на главной в вебе: ролик 67%, колонка текста 44%.
+
+    Правка владельца «сильно скрыл за чёрным»: раньше ролик был 60% при колоде
+    с 50%, а растушёвка была скопирована из ЛАНДШАФТНОГО мобильного правила
+    главной и начинала гасить лицо почти с середины экрана. Замер по столбцам
+    яркости: на 40% ширины было 53 при 104 у главной."""
     css = _read("assets/strategy.css")
-    assert "--head-w: 50%;" in css, "лицо занимает половину экрана"
-    assert re.search(r"\.head \{ left: 0; top: 0; width: 60%;[^}]*z-index: 3", css), \
-        "ролик шире отступа колоды и лежит ПОД ней"
+    assert "--head-w: 56%;" in css, "колода начинается там же, где на главной кончается лицо"
+    assert re.search(r"\.head \{ left: 0; top: 0; width: 67%;[^}]*z-index: 3", css), \
+        "ролик шире отступа колоды и лежит ПОД ней — как 67% на главной"
     assert "50vw" not in css, "рамку страницы нельзя мерить в vw: body{zoom} их умножает"
     assert ".head.mini" not in css, "на вебе голова не сжимается в кружок"
     mob = [b for b in re.findall(r"@media \(max-width:1023px\) \{.*?\n\}", css, re.S) if ".head {" in b]
@@ -931,6 +934,42 @@ def test_main_site_opens_the_landing_in_the_right_language():
     # кнопка раздела по-прежнему ведёт в продукт, а не на лендинг
     assert 'class="btn-white" href="https://strategy.andre.technology/"' in site, \
         "кнопка «Get Your AI Strategy» ведёт в кабинет продукта"
+
+
+def test_face_is_not_buried_under_the_shade():
+    """Растушёвка отсчитывается от ЛЕВОГО КРАЯ КОЛОДЫ, а не от края колонки.
+
+    Так чернота всегда набирается ровно к тексту: лицо остаётся светлым до
+    самого края колоды, а текст всегда стоит на чёрном — при любой ширине
+    колонки. Прежние стопы (35% … 88% ширины колонки) были привязаны к колонке
+    и при её изменении либо гасили лицо, либо не докрывали край кадра."""
+    css = _read("assets/strategy.css")
+    shade = re.search(r"\.head-shade \{[^}]*\}", css, re.S)
+    assert shade, "растушёвка ролика на месте"
+    body = shade.group(0)
+    assert "35%" not in body and "88%" not in body, \
+        "старые стопы от края колонки — они и хоронили лицо под чёрным"
+    assert body.count("calc(var(--head-w)") >= 7, \
+        "все стопы считаются от отступа колоды, а не от ширины колонки"
+    assert "rgba(5,5,5,0)    calc(var(--head-w) * 0.746)" in body, \
+        "до половины пути к колоде затемнения нет вовсе"
+    assert "var(--bg)        calc(var(--head-w) * 1.493)" in body, \
+        "полная чернота ровно на левом крае колоды (0.56 * 1.493 = 0.836 ширины ролика)"
+
+
+def test_hero_lead_keeps_its_line_breaks_in_the_column():
+    """Лид первого экрана разбит по границам предложений: одной строкой
+    «Tell how… operating model,» требует 597px, а колонка рядом с роликом даёт
+    502–621px, и строка разъезжалась. Перенос владельца перед «the AI agents…»
+    сохранён."""
+    for lang, html in _pages():
+        lead = html[html.index('class="lead"'):html.index("</p>", html.index('class="lead"'))]
+        assert lead.count('<span class="l">') == 3, lang + ": лид в три строки"
+    assert "<span class=\"l\">Tell how your business works.</span>" in _en()
+    assert "<span class=\"l\">the AI agents you need, and an implementation roadmap</span>" in _en(), \
+        "перенос владельца перед «the AI agents…» на месте"
+    assert "<span class=\"l\">Расскажите, как работает ваш бизнес.</span>" in _ru()
+    assert "<span class=\"l\">нужных ИИ-агентов и дорожную карту внедрения</span>" in _ru()
 
 
 if __name__ == "__main__":
