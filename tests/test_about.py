@@ -344,9 +344,9 @@ def test_headline_breaks_where_the_owner_wants():
     css = _css()
     assert "h1 .l { display: block; }" in css, "строки заголовка — отдельными блоками"
     en, ru = _en(), _ru()
-    assert '<span class="l">I build an <span class="hl-p">AI-native ecosystem</span></span>' in en
+    assert '<span class="l">I build an <span class="hl-p"><span class="nb">AI-native</span> ecosystem</span></span>' in en
     assert '<span class="l">for <span class="hl-o">human good</span></span>' in en
-    assert '<span class="l">Я строю <span class="hl-p">AI-Native экосистему</span></span>' in ru
+    assert '<span class="l">Я строю <span class="hl-p"><span class="nb">AI-Native</span> экосистему</span></span>' in ru
     for lang, html in _pages():
         assert "querySelectorAll('h1 .l, h2')" in html, \
             lang + ": кегль подгоняется построчно, перенос не ломается"
@@ -359,6 +359,80 @@ def test_chapter_stands_in_the_middle_of_the_screen():
         "блок главы выключен по центру, но не обрезается сверху"
     assert ".finale { margin-top: auto; }" not in css, \
         "финальный экран короткий — финал стоит по центру, а не прижат к низу"
+
+
+def test_footer_stands_at_the_bottom_of_the_last_screen():
+    """Правка владельца: «2026 © Andre AI Technologies LTD — это должно быть
+    внизу и иконки». Финал стоит по центру свободного места, подвал — у
+    нижнего края; на телефоне нижнее поле поднимает подвал НАД кружком с
+    роликом, иначе кружок накрывал левый край копирайта."""
+    css = _css()
+    assert ".screen.final { justify-content: flex-start; }" in css
+    assert ".screen.final .finale { margin-top: auto; margin-bottom: auto; }" in css, \
+        "два auto-отступа делят свободное место поровну — подвал уходит вниз"
+    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem" in css, \
+        "на телефоне подвал стоит выше кружка"
+    for lang, html in _pages():
+        last = _screens(html)[-1][1]
+        assert last.index('class="finale') < last.index('class="foot"'), lang
+
+
+def test_layouts_are_only_web_and_mobile():
+    """Правило владельца: «надо чтобы было только веб и мобила, а остальное
+    всё адаптировалось». Значит вёрстку переключает ОДИН порог — 1024px (плюс
+    1150px на меню, как на главной), а всё между ними просто масштабируется."""
+    css = _css()
+    # раскладка колонок меняется только на веб-пороге
+    assert "@media (min-width:1024px) { .cards { grid-template-columns: 1fr 1fr; } }" in css, \
+        "две карточки — признак веб-вёрстки"
+    assert "min-width:640px" not in css, "промежуточной «планшетной» раскладки нет"
+    assert "max-width:420px" not in css, "и отдельной раскладки для узких телефонов тоже"
+    mob = [b for b in _mobile_blocks() if "max-width: 32rem" in b]
+    assert mob, "на мобильной вёрстке колонка чтения не растягивается шире 32rem"
+    # какие пороги вообще остались
+    import re as _re
+    widths = sorted(set(int(w) for w in _re.findall(r"(?:min|max)-width:\s*(\d+)px", css)))
+    # 1023/1024 — сама вёрстка, 1149/1150 — меню (как на главной), 1319/1399/1439 —
+    # плотность шапки, 380 — узкий телефон, 1600/1900/2300 — зум главной
+    assert widths == [380, 1023, 1024, 1149, 1150, 1319, 1399, 1439, 1600, 1900, 2300], \
+        "лишний порог вёрстки: %s" % widths
+
+
+def test_chapter_heading_wraps_as_a_whole():
+    """Жалоба владельца по скриншоту окна ~498px: заголовок переносился, а
+    иконка главы оставалась одна у левого края — h2 был флексом. Теперь
+    иконка идёт строкой вместе с текстом, а строки делятся ровно."""
+    css = _css()
+    head = re.search(r"\n  h2 \{[^}]*\}", css, re.S).group(0)
+    assert "display: block" in head and "text-wrap: balance" in head, \
+        "заголовок — обычный блок с ровным переносом"
+    assert "display: flex" not in head, "иконка больше не отдельный флекс-элемент"
+    assert re.search(r"h2 i \{[^}]*margin-right: 0\.6rem", css), "иконка стоит в строке"
+
+
+def test_ai_native_never_splits_on_the_hyphen():
+    """На 768px заголовок первого экрана рвался посреди слова: «AI- / native»."""
+    assert ".nb { white-space: nowrap; }" in _css()
+    assert '<span class="nb">AI-native</span>' in _en()
+    assert '<span class="nb">AI-Native</span>' in _ru()
+
+
+def test_ai_employee_areas_cover_ten_roles():
+    """Правка владельца: «после менеджмента HR, после маркетинга SMM, потом
+    после Sales — Support, Analytics, Design, Development и Engineering»."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from about_copy import EN, RU
+    assert [t for _i, t in EN["x4_facts"]] == [
+        "Management", "HR", "Marketing", "SMM", "Sales",
+        "Support", "Analytics", "Design", "Development", "Engineering"]
+    assert [t for _i, t in RU["x4_facts"]] == [
+        "Управление", "HR", "Маркетинг", "SMM", "Продажи",
+        "Поддержка", "Аналитика", "Дизайн", "Разработка", "Инжиниринг"]
+    assert len(set(i for i, _t in EN["x4_facts"])) == 10, "у каждой роли своя иконка"
+    css = _css()
+    assert ".facts.grid { display: grid; grid-template-columns: 1fr 1fr;" in css, \
+        "десять ролей стоят в две колонки на любой ширине"
 
 
 def test_no_gradient_strip_above_headings():
