@@ -370,8 +370,8 @@ def test_footer_stands_at_the_bottom_of_the_last_screen():
     assert ".screen.final { justify-content: flex-start; }" in css
     assert ".screen.final .finale { margin-top: auto; margin-bottom: auto; }" in css, \
         "два auto-отступа делят свободное место поровну — подвал уходит вниз"
-    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem" in css, \
-        "на телефоне подвал стоит выше кружка"
+    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem" not in css, \
+        "подвал стоит у самого низа: кружку разрешено его перекрывать"
     for lang, html in _pages():
         last = _screens(html)[-1][1]
         assert last.index('class="finale') < last.index('class="foot"'), lang
