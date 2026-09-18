@@ -97,15 +97,24 @@ def color_rows(groups, cls="prow", per=3):
     return "".join(out)
 
 
-def chain_rows(items, arrow=None, down=None, cls="prow"):
+def chain_rows(items, arrow=None, down=None, cls="prow", rows=2):
     """Цепочка двумя рядами со СКВОЗНОЙ нумерацией элементов.
 
     Каждому блоку и стрелке проставляется --i: задержка появления считается
     из него, поэтому каскад идёт через оба ряда одной волной и не начинается
     заново на переносе (правка владельца: «анимация в слайдах с процессами
     фиговая»)."""
-    half = -(-len(items) // 2)
-    rows, out, i = [items[:half], items[half:]], [], 0
+    # ряды набираются как можно ровнее: 7 блоков в три ряда — это 3 + 2 + 2,
+    # а не 3 + 3 + 1. Ряд из четырёх блоков не влезал в панель на 1280 и 1366
+    # (замер: 548px против 500px панели), поэтому цепочка AI-First идёт тремя
+    # рядами (правка владельца «первый экран не вмещается»).
+    n, cut = len(items), []
+    start = 0
+    for r in range(rows):
+        size = -(-(n - start) // (rows - r))
+        cut.append(items[start:start + size])
+        start += size
+    rows, out, i = cut, [], 0
     for r, row in enumerate(rows):
         cells = []
         for k, node in enumerate(row):
@@ -141,10 +150,8 @@ def stages(t):
         <div class="ui-body">
           <div class="maturity">
             <svg class="radar" viewBox="0 0 200 200" role="img" aria-label="{bar}">{svg}</svg>
-            <div class="dimcol">
-              <div class="score"><b class="idx-val">2.4</b><span>/ 5</span></div>
-              <div class="dims">{bars7}</div>
-            </div>
+            <div class="score"><b class="idx-val">2.4</b><span>/ 5</span></div>
+            <div class="dims">{bars7}</div>
           </div>
         </div>
       </div>""".format(bar=s["s1_bar"], svg=radar(vals, s["dims"]), bars7=bars7))
@@ -217,7 +224,7 @@ def stages(t):
                      % (kind, flip, icon, name))
     ARROW = '<span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
     DOWN = '<span class="fwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
-    flow = chain_rows(items, ARROW, DOWN, cls="frow")
+    flow = chain_rows(items, ARROW, DOWN, cls="frow", rows=3)
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>{bar}</div>
@@ -281,10 +288,11 @@ def page(t, lang):
             <span class="biz-ic"><i class="fa-solid {ic}"></i></span>
             <div class="biz-body">
               <h3>{name}</h3>
-              <p class="biz-metric"><span>{label}</span></p>
+              <p class="biz-metric"><i class="biz-dir {dir_ic} fa-solid {dir_fa}" aria-hidden="true"></i><span>{label}</span></p>
             </div>
             <span class="biz-go"><span>{explore}</span> <i class="fa-solid fa-arrow-right"></i></span>
-          </article>""".format(ic=BIZ_ICONS[i], name=b[0], label=b[1], explore=t["biz_explore"])
+          </article>""".format(ic=BIZ_ICONS[i], name=b[0], label=b[1], explore=t["biz_explore"],
+                 dir_ic=b[2], dir_fa="fa-arrow-trend-up" if b[2] == "up" else "fa-arrow-trend-down")
         for i, b in enumerate(t["businesses"]))
 
     outs = "".join("""
@@ -324,9 +332,14 @@ def page(t, lang):
         style="primary" if p[0] == "best" else "ghost", href=t["cta_href"])
         for p in t["plans"])
 
+    # Разделитель ставится ТОЛЬКО между зачёркнутыми ценами: строка
+    # переносилась по ширине колонки, и точка повисала в конце первой строки
+    # (правка владельца «убери точку после 10к»). Последний пункт всегда
+    # начинает новую строку — см. .cmp.now в CSS.
     compare = "".join(
-        '<span class="cmp%s">%s</span>%s' % (" old" if old else " now", txt,
-                                             '<i class="fa-solid fa-circle"></i>' if i < len(t["compare"]) - 1 else "")
+        '<span class="cmp%s">%s</span>%s' % (
+            " old" if old else " now", txt,
+            '<i class="fa-solid fa-circle"></i>' if old and t["compare"][i + 1][1] else "")
         for i, (txt, old) in enumerate(t["compare"]))
 
     return """<!DOCTYPE html>
