@@ -866,10 +866,16 @@ def test_final_screen_is_a_question_and_an_answer():
         assert final.count('class="final-1"') == 1 and final.count('class="final-3"') == 1, lang
     assert "You don’t need to know" not in _en() and "Вам не обязательно" not in _ru(), \
         "убранная строка не осталась в тексте"
-    # правка владельца: «старт оранжевым»
+    # правка владельца: «старт оранжевым», по-русски — «внедрять оранжевым,
+    # а не начать»; русская строка длиннее английской, поэтому перенос в ней
+    # задан руками, как в шапке, и не зависит от ширины окна
     assert 'Where to <span class="hl-o">start</span> with <span class="hl-p">AI</span>?' in _en()
-    assert 'С чего <span class="hl-o">начать</span> с <span class="hl-p">ИИ</span>?' in _ru()
+    assert ('<span class="l">С чего начать</span>'
+            '<span class="l"><span class="hl-o">внедрять</span> '
+            '<span class="hl-p">ИИ</span>?</span>') in _ru()
     assert '<span class="hl-p">AI</span> Strategy shows <span class="hl-o">you</span>' in _en()
+    # и в шапке по-русски «начать» тоже оранжевым
+    assert '<span class="l">С чего <span class="hl-o">начать</span></span>' in _ru()
 
 
 def test_titles_paint_ai_purple_and_business_orange():
@@ -1285,3 +1291,24 @@ def test_mobile_maturity_bars_stand_in_two_columns():
         "подписи тянутся по ширине окна: на 320px «Инфраструктура» влезает целиком"
     assert ".step-copy h2 { font-size: clamp(1.05rem, 5.8vw, 1.7rem); }" in mob, \
         "и заголовок шага тянется, а не ломает панель на узком телефоне"
+
+
+def test_web_type_is_bigger_without_new_line_breaks():
+    """Правка владельца: «можешь ещё побольше весь текст сделать? на компе всё
+    мелко — но чтобы не переходить на след строчки, а оставить как щас».
+    Кегль веб-шкалы поднят на 10–20%, и каждое место замерено до и после:
+    число строк у всех текстов на 13 экранах × 11 размеров × два языка
+    осталось прежним. Отдельно названы владельцем: финал, сравнение цен,
+    подписи шагов и подзаголовок обучения."""
+    css = _read("assets/strategy.css")
+    assert "p { margin: 0 0 0.8rem; font-size: clamp(13.5px, 1.08vw, 17px);" in css, \
+        "общий текст крупнее: от него живут подписи шагов"
+    assert ".lead { font-size: clamp(14.5px, 1.25vw, 19px);" in css, \
+        "подзаголовки экранов крупнее — «Работайте с ИИ и собирайте агентов»"
+    assert "  font-size: clamp(11.5px, 1.05vw, 15px); }" in css, \
+        "сравнение цен крупнее: «Консалтинговая компания — $100K+»"
+    assert ".final-1, .final-3 { font-size: clamp(1.45rem, 2.25vw, 2.2rem); line-height: 1.2; }" in css, \
+        "финал набран крупнее общих заголовков и всё ещё влезает в строку"
+    assert ".step-copy h2 { font-size: clamp(1.3rem, 2.3vw, 1.95rem);" in css
+    assert ".node, .pnode, .opnode, .fnode { font-size: 14.5px; }" in css, \
+        "блоки процессов крупнее"

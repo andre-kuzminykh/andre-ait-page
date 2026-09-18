@@ -182,7 +182,7 @@ RU = {
     "cta_main": "Начать бесплатно",
     "cta_how": "Как это работает",
 
-    "h1": ('<span class="l">С чего начать</span>'
+    "h1": ('<span class="l">С чего <span class="hl-o">начать</span></span>'
            '<span class="l">внедрять <span class="hl-p">ИИ</span>?</span>'),
     "hero_lead": ('<span class="l">Расскажите, как работает ваш бизнес.</span>'
                   '<span class="l">Получите свою AI-First модель</span>'),
@@ -296,7 +296,10 @@ RU = {
     "compare": [("Консалтинговая компания — $100K+", True), ("ИИ-консультант — $10K+", True),
                 ("Собрать ИИ-стратегию самому", False)],
 
-    "f_1": 'С чего <span class="hl-o">начать</span> с <span class="hl-p">ИИ</span>?',
+    # перенос задан руками, как в шапке: строка длиннее английской и на
+    # телефоне ломалась сама в разных местах
+    "f_1": ('<span class="l">С чего начать</span>'
+            '<span class="l"><span class="hl-o">внедрять</span> <span class="hl-p">ИИ</span>?</span>'),
     "f_3": '<span class="hl-p">ИИ</span>-стратегия <span class="hl-o">покажет</span>',
     "f_cta": "Начать ИИ-трансформацию",
     "legal": ["Политика конфиденциальности", "Условия использования"],
