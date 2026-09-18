@@ -990,14 +990,18 @@ def test_mobile_header_button_keeps_its_own_size():
     assert ".btn-primary:not(.cta-head), .btn-ghost {" in mob
 
 
-def test_quote_scene_carries_the_same_six_blocks_as_the_next_one():
-    """Правка владельца «тут можно ещё три блока, как на след. слайде»:
-    на экране диктовки те же шесть блоков, что и на карте процессов."""
+def test_quote_scene_shows_only_the_speech():
+    """Правка владельца: блоки процессов с экрана диктовки убраны — они
+    принадлежат следующему шагу, где из услышанного собирается цепочка, а
+    здесь просто повторялись раньше времени."""
     for lang, html in _pages():
         quote = html[html.index('data-step="2"'):html.index('data-step="3"')]
         proc = html[html.index('data-step="3"'):html.index('data-step="4"')]
-        assert quote.count('class="node ') == 6, lang + ": шесть блоков на экране диктовки"
-        assert proc.count('class="pnode ') == 6, lang + ": столько же на карте процессов"
+        assert 'class="flow-row"' not in quote, lang + ": на экране диктовки только речь"
+        assert quote.count('class="node ') == 0, lang + ": блоков процессов здесь нет"
+        assert 'class="typing"' in quote and 'class="wave"' in quote, \
+            lang + ": остаются цитата и звуковая дорожка"
+        assert proc.count('class="pnode ') == 6, lang + ": цепочка процессов — на следующем шаге"
 
 
 def test_solution_cards_are_a_grid_without_numbers():

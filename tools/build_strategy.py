@@ -156,21 +156,19 @@ def stages(t):
         </div>
       </div>""".format(bar=s["s1_bar"], svg=radar(vals, s["dims"]), bars7=bars7))
 
-    # 02 — голос превращается в процессы
+    # 02 — голос: на этой сцене ТОЛЬКО речь. Блоки процессов отсюда убраны
+    # (правка владельца): они принадлежат следующему шагу, где из услышанного
+    # собирается цепочка, и здесь только повторялись раньше времени.
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
           <div class="wave">{bars}</div>
           <p class="typing" data-type="{quote}"><span class="typed"></span><span class="caret"></span></p>
-          <div class="flow-row">{cards}</div>
         </div>
       </div>""".format(
         bar=s["s2_bar"], quote=s["s2_quote"],
-        bars="".join('<span style="animation-delay:%.2fs"></span>' % (i * 0.08) for i in range(18)),
-        cards="".join('<div class="node %s" data-seq><i class="fa-solid %s"></i>%s</div>'
-                      % (kind, "fa-user" if kind == "human" else "fa-database", name)
-                      for name, kind in s["s2_cards"])))
+        bars="".join('<span style="animation-delay:%.2fs"></span>' % (i * 0.08) for i in range(18))))
 
     # 03 — процессы связаны между собой, где люди — оранжевые
     proc = s["s3_cards"]

@@ -110,8 +110,6 @@ EN = {
         # «тут можно ещё три блока, как на след. слайде»): панель на телефоне
         # перестала выглядеть полупустой, а переход 02 → 03 читается как
         # продолжение одной и той же цепочки.
-        "s2_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human"),
-                     ("Meeting", "human"), ("Proposal", "human"), ("Follow-up", "human")],
         "s3_bar": "Sales process",
         "s3_cards": [("Lead arrives", "human"), ("CRM update", "sys"), ("Qualification", "human"),
                      ("Meeting", "human"), ("Proposal", "human"), ("Follow-up", "human")],
@@ -252,8 +250,6 @@ RU = {
         "s2_quote": ("«Большинство заявок приходит с сайта. Менеджер квалифицирует их, "
                      "назначает созвон и отправляет предложение. Если клиент замолчал — "
                      "пишем вручную, и всё это руками заносится в CRM…»"),
-        "s2_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human"),
-                     ("Встреча", "human"), ("Предложение", "human"), ("Follow-up", "human")],
         "s3_bar": "Процесс продаж",
         "s3_cards": [("Пришёл лид", "human"), ("Обновление CRM", "sys"), ("Квалификация", "human"),
                      ("Встреча", "human"), ("Предложение", "human"), ("Follow-up", "human")],
