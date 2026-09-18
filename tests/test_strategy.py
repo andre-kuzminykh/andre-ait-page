@@ -764,9 +764,13 @@ def test_titles_paint_ai_purple_and_business_orange():
     assert 'as <span class="hl-p">processes</span>' in en, "processes фиолетовый"
     assert 'New <span class="hl-p">human</span> roles' in en, \
         "правка владельца: human фиолетовым и второй строкой"
-    for html in (en, ru):
-        assert 'should work with <span class="hl-p">AI</span>' in html or \
-               'работать с <span class="hl-p">ИИ</span>' in html, "AI в заголовке фиолетовый"
+    # правка владельца: вместо «How your business should work with AI» —
+    # короче и по-человечески: «How AI fits your business»
+    assert 'How <span class="hl-p">AI</span> fits your <span class="hl-o">business</span>' in en, \
+        "заголовок пятого шага: AI фиолетовый, business оранжевый"
+    assert 'Как <span class="hl-p">ИИ</span> встроится в <span class="hl-o">бизнес</span>' in ru, \
+        "по-русски тот же смысл"
+    assert "should work with" not in en, "старая формулировка убрана"
     assert ">See how your business" not in en, "из заголовка пятого шага убрано See"
     assert ">Start AI transformation <" in en, "надпись кнопки финала"
     assert "Start AI transformation for free" not in en, \
@@ -1034,13 +1038,18 @@ def test_pricing_and_learning_headings_break_in_two():
     assert '<span class="l">Scale as you <span class="hl-o">grow</span></span>' in _en()
 
 
-def test_video_circle_is_bigger_and_may_overlap():
+def test_video_circle_scales_with_the_window():
     """Правка владельца: «размер кружка давай побольше — он может элементы
-    закрывать, это ок». Нижнее поле экранов считается от того же диаметра,
-    но с коэффициентом: иначе высокие экраны срезались бы краем, ведь
-    прокрутки внутри экранов больше нет."""
+    закрывать, это ок», и следом: «когда на компе сжимаю, голова не должна
+    заходить за рамки — подтягивайся под размер экрана». Поэтому диаметр
+    считается от МЕНЬШЕЙ стороны окна: 34vw на узком, 18vh на низком.
+    Нижнее поле экранов считается от того же диаметра, но с коэффициентом:
+    иначе высокие экраны срезались бы краем, ведь прокрутки внутри
+    экранов больше нет."""
     css = _read("assets/strategy.css")
-    assert "--vid-d: clamp(128px, 36vw, 168px);" in css, "кружок заметно крупнее прежних 100–128px"
+    assert "--vid-d: clamp(88px, min(34vw, 18vh), 168px);" in css, \
+        "диаметр кружка тянется за меньшей стороной окна"
+    assert "36vw" not in css.split("--vid-d")[1][:80], "ширина больше не решает одна"
     assert "calc(var(--vid-d) * 0.82 + 1.1rem + env(safe-area-inset-bottom, 0px))" in css, \
         "нижнее поле меньше диаметра — кружку разрешено перекрывать"
     mob = _mobile_block()

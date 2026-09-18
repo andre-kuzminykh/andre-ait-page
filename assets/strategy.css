@@ -15,7 +15,12 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --head-w: 56%;
   /* диаметр кружка с роликом на телефоне: от него считается нижнее поле экранов */
-  --vid-d: clamp(128px, 36vw, 168px);
+  /* Диаметр кружка с роликом. Считается от МЕНЬШЕЙ стороны окна: на
+     сжатом окне (узком или низком) 36vw давали круг почти в треть
+     высоты, он упирался в край и накрывал подвал (правка владельца:
+     «голова должна подтягиваться под размер экрана, а не заходить за
+     рамки»). */
+  --vid-d: clamp(88px, min(34vw, 18vh), 168px);
 }
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: var(--bg); color-scheme: dark;
@@ -974,7 +979,10 @@ strong { color: var(--w); font-weight: 700; }
   /* Подвал стоит НИЖЕ — почти у самых точек, и по ЦЕНТРУ экрана во всю
      ширину: владелец разрешил кружку с роликом его перекрывать, поэтому
      смещать колонку правее круга больше не нужно. */
-  .final .wrap { flex: 0 1 auto; margin-top: auto; margin-bottom: auto; }
+  /* Три элемента финала стоят ровно по центру экрана (правка владельца
+     «по середине по центру»): три конкурирующих auto-отступа поднимали
+     их в верхнюю треть. */
+  .final .wrap { flex: 1 1 auto; margin: 0; }
   .final footer { margin-top: auto; padding-top: 0.9rem; gap: 0.45rem; }
   .legal { font-size: 12px; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
   .legal a { white-space: nowrap; }
