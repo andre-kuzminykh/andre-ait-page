@@ -402,13 +402,18 @@ def test_company_model_and_team_blocks_are_gone():
 
 # ── Learning ──────────────────────────────────────────────────────────────
 
-def test_learning_has_an_endless_roles_ticker():
+def test_learning_shows_all_roles_at_once():
+    """Раньше роли ехали бегущей строкой. Это ровно то, что владелец запретил
+    («внутри экрана не листать»), и на узком окне первая и последняя плашки
+    были разрезаны краем маски. Теперь двенадцать ролей стоят статично и
+    переносятся по ширине."""
     css = _read("assets/strategy.css")
-    assert "@keyframes tick" in css and "translateX(-50%)" in css, "лента ролей крутится без конца"
+    assert "@keyframes tick" not in css and ".ticker" not in css, "бегущей строки больше нет"
+    assert ".roles { display: flex; flex-wrap: wrap;" in css, "роли переносятся по ширине"
     for lang, html in _pages():
-        assert html.count('class="role"') == 24, lang + ": 12 ролей, продублированных для бесшовной ленты"
-        roles = html[html.index('class="ticker"'):]
-        assert roles.count("fa-solid") >= 24, lang + ": у каждой роли своя иконка"
+        assert html.count('class="role"') == 12, lang + ": двенадцать ролей, без дублей для ленты"
+        roles = html[html.index('class="roles"'):]
+        assert roles.count("fa-solid") >= 12, lang + ": у каждой роли своя иконка"
 
 
 # ── Pricing ───────────────────────────────────────────────────────────────
@@ -492,6 +497,21 @@ def test_process_chain_has_no_dangling_connectors():
         # цепочка AI-First разложена тремя рядами — 3 + 2 + 2.
         assert html.count('class="frow"') == 3, lang + ": AI-First идёт тремя рядами"
         assert html.count('class="fwrap"') == 2, lang + ": две стрелки переноса"
+
+
+def test_dragged_circle_never_leaves_the_window():
+    """Жалоба владельца «и где кружок?»: кружок можно перетащить, и его место
+    запоминается в localStorage. Окно потом меняет размер — сохранённая точка
+    с широкого окна на узком оказывалась за краем экрана, и кружок пропадал
+    совсем. Теперь любая точка прижимается к окну, а на вебе inline-координаты
+    сбрасываются: там у ролика своя колонка."""
+    js = _read("assets/strategy.js")
+    assert "function clampPos(p)" in js, "точка прижимается к окну"
+    assert "window.innerWidth - w - 8" in js and "window.innerHeight - h - 8" in js
+    assert "function clearPos()" in js and "if (mqDesk.matches) { clearPos(); return; }" in js, \
+        "на вебе inline-координаты сбрасываются"
+    assert "window.addEventListener('resize', function () { applyPos(savedPos()); });" in js, \
+        "при смене размера окна кружок пересчитывается"
 
 
 def test_solution_heading_is_one_line_on_the_web():
@@ -930,7 +950,17 @@ def test_mobile_maturity_scene_shows_all_seven_bars():
     assert ".maturity { flex: 1; min-height: 0; grid-template-rows: minmax(84px, 1fr) auto;" in mob
     assert "grid-template-columns: auto minmax(0, 1fr)" in mob, \
         "верхний ряд: слева оценка, справа паутина"
-    assert ".radar { width: 100%; height: 100%; min-height: 0; max-height: none;" in mob
+    # Правки владельца: «почему 5 внизу — должно быть на одной линии»,
+    # «паутина всё равно маленькая, сделай её ещё правее».
+    assert ".radar { width: auto; height: 100%; aspect-ratio: 1 / 1;" in mob, \
+        "паутина — квадрат во всю высоту ряда, а не по ширине ячейки"
+    assert "justify-self: end;" in mob, "паутина прижата к правому краю"
+    assert ".score { align-items: baseline; gap: 0.4rem; margin-bottom: 0; }" in mob, \
+        "«2.4 / 5» стоит одной строкой"
+    assert "flex-direction: column" not in mob.split(".score {")[1][:120], \
+        "оценка больше не столбиком"
+    assert ".stage-card { height: min(58vh, 30rem); }" in mob, \
+        "панель выше — паутине не хватало высоты ряда"
     css_areas = _read("assets/strategy.css")
     assert 'grid-template-areas: "score radar" "dims dims";' in css_areas, \
         "на телефоне оценка слева, паутина справа, графики под ними"
@@ -944,6 +974,10 @@ def test_mobile_footer_stands_just_above_the_dots():
     assert ".final footer { margin-top: auto;" in mob, "подвал прижат к низу экрана"
     assert ".legal { font-size: 12px;" in mob and "flex-wrap: wrap" in mob, \
         "ссылки подвала переносятся целыми словами, а не по буквам"
+    # Подвал финала стоит НАД кружком: «Privacy Policy» и копирайт читались
+    # как «…ACY POLICY» — левый край съедал кружок с роликом.
+    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem" in mob, \
+        "нижнее поле финала считается от диаметра кружка"
     # правка владельца: подвал по центру, кружку разрешено его перекрывать
     assert "padding-left" not in mob.split(".final footer")[1][:160], \
         "колонка подвала больше не смещена правее ролика"
@@ -956,14 +990,18 @@ def test_mobile_header_button_keeps_its_own_size():
     assert ".btn-primary:not(.cta-head), .btn-ghost {" in mob
 
 
-def test_quote_scene_carries_the_same_six_blocks_as_the_next_one():
-    """Правка владельца «тут можно ещё три блока, как на след. слайде»:
-    на экране диктовки те же шесть блоков, что и на карте процессов."""
+def test_quote_scene_shows_only_the_speech():
+    """Правка владельца: блоки процессов с экрана диктовки убраны — они
+    принадлежат следующему шагу, где из услышанного собирается цепочка, а
+    здесь просто повторялись раньше времени."""
     for lang, html in _pages():
         quote = html[html.index('data-step="2"'):html.index('data-step="3"')]
         proc = html[html.index('data-step="3"'):html.index('data-step="4"')]
-        assert quote.count('class="node ') == 6, lang + ": шесть блоков на экране диктовки"
-        assert proc.count('class="pnode ') == 6, lang + ": столько же на карте процессов"
+        assert 'class="flow-row"' not in quote, lang + ": на экране диктовки только речь"
+        assert quote.count('class="node ') == 0, lang + ": блоков процессов здесь нет"
+        assert 'class="typing"' in quote and 'class="wave"' in quote, \
+            lang + ": остаются цитата и звуковая дорожка"
+        assert proc.count('class="pnode ') == 6, lang + ": цепочка процессов — на следующем шаге"
 
 
 def test_solution_cards_are_a_grid_without_numbers():

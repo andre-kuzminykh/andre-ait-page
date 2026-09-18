@@ -454,7 +454,7 @@ strong { color: var(--w); font-weight: 700; }
 .radar text { font-size: 7px; fill: var(--tx-d); font-family: 'JetBrains Mono', monospace; }
 
 /* 02 — голос */
-.wave { display: flex; align-items: center; gap: 3px; height: 2.2rem; }
+.wave { display: flex; align-items: center; gap: 3px; height: clamp(2.2rem, 5vh, 3.2rem); }
 .wave span { flex: 1; border-radius: 999px; background: linear-gradient(180deg, var(--p-l), var(--p)); opacity: 0.85;
   animation: waveMove 1.1s ease-in-out infinite; }
 @keyframes waveMove { 0%, 100% { height: 18%; } 50% { height: 100%; } }
@@ -596,10 +596,11 @@ strong { color: var(--w); font-weight: 700; }
   border: 1px solid rgba(136,84,243,0.35); background: rgba(136,84,243,0.10); color: var(--w);
   font-size: clamp(10.5px, 0.85vw, 12.5px); }
 .l-note i { color: var(--p-l); }
-.ticker { position: relative; margin-top: 1.6rem; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
-.ticker-row { display: flex; gap: 0.5rem; width: max-content; animation: tick 38s linear infinite; }
-@keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+/* Роли стоят СТАТИЧНО и целиком: бегущая строка ехала сама (правило
+   владельца «внутри экрана не листать») и обрезалась по краям — на узком
+   окне первая и последняя плашки были разрезаны пополам. */
+.roles { display: flex; flex-wrap: wrap; align-content: center; justify-content: center;
+  gap: 0.45rem 0.5rem; width: 100%; max-width: 44rem; margin: clamp(0.9rem, 2.6vh, 1.6rem) auto 0; }
 .role { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.8rem; border-radius: 999px;
   border: 1px solid var(--line); background: var(--card); font-size: 10px; color: var(--w); white-space: nowrap; }
 .role i { color: var(--p-l); font-size: 11.5px; }
@@ -718,7 +719,7 @@ strong { color: var(--w); font-weight: 700; }
 @media (prefers-reduced-motion: reduce) {
   .screen, .stage-card, .stage-card [data-seq], .radar .shape {
     opacity: 1 !important; transform: none !important; transition: none !important; animation: none !important; }
-  .ticker-row, .wave span, .caret { animation: none !important; }
+  .wave span, .caret { animation: none !important; }
 }
 
 /* На центрированных экранах карточки и ленты сохраняют левую выключку текста:
@@ -895,7 +896,7 @@ strong { color: var(--w); font-weight: 700; }
 .role { font-size: clamp(11.5px, 0.85vw, 13px); }
 .plan h3 { font-size: clamp(11.5px, 0.85vw, 13px); }
 .plan-scope { font-size: clamp(11.5px, 0.85vw, 13px); }
-.typing { font-size: clamp(11.5px, 0.95vw, 14px); }
+.typing { font-size: clamp(15px, 1.4vw, 21px); }
 
 /* Названия шагов не должны ломаться на две строки — блоки от этого выглядят
    разной высоты. Если строка не влезает, кегль всей группы подбирает скрипт. */
@@ -953,14 +954,17 @@ strong { color: var(--w); font-weight: 700; }
   .step-n { font-size: 13px; letter-spacing: 0.14em; }
   .step-copy h2 { font-size: clamp(1.25rem, 5.8vw, 1.7rem); }
   .step-copy p { font-size: 14px; min-height: 0; }
-  .typing { font-size: 14.5px; line-height: 1.6; margin: 0.6rem 0; }
+  .typing { font-size: 19px; line-height: 1.62; margin: 1rem 0; }
   .node, .pnode, .fnode, .opnode { font-size: 15px; padding: 0.62rem 0.85rem; gap: 0.45rem; }
   .node i, .pnode i, .fnode i, .opnode i { font-size: 14px; }
   /* Панель на телефоне ПЛОТНЕЕ по высоте: блоки внутри стали крупнее, и при
      прежних 48vh/24rem половина панели оставалась пустой — схема на её фоне
      выглядела мелкой (правка владельца «тут пздц мелко вся эта схема»).
      Высота всё равно общая для всех шести шагов, иначе панель скачет. */
-  .stage-card { height: min(53vh, 28rem); }
+  /* Панель выше: у сцены зрелости паутина упирается в высоту ряда, а не
+     в ширину (правка владельца «паутина всё равно маленькая»). Высота
+     общая для всех шести шагов, иначе панель скачет при листании. */
+  .stage-card { height: min(58vh, 30rem); }
   .ui-body { padding: 0.75rem 0.6rem; }
   /* Одна ВЁРСТКА цепочки на телефон: ряды схлопываются в общий поток и
      переносятся по ширине экрана, а связи-стрелки убраны. Ряды, посчитанные
@@ -981,13 +985,19 @@ strong { color: var(--w); font-weight: 700; }
      можно справа паутинку, а слева 2.4 / 5»). Паутина растягивается на
      остаток верхнего ряда и потому не распирает панель. */
   .maturity { flex: 1; min-height: 0; grid-template-rows: minmax(84px, 1fr) auto;
-    grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.5rem 0.9rem; }
-  .radar { width: 100%; height: 100%; min-height: 0; max-height: none; align-self: stretch; }
-  .score { flex-direction: column; align-items: flex-start; gap: 0.1rem; margin-bottom: 0; }
-  .dims { gap: 0.3rem; }
+    grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.4rem 0.7rem; }
+  /* Паутина — КВАДРАТ во всю высоту ряда и прижата к правому краю: при
+     width:100% она рисовалась по центру широкой ячейки и половина места
+     пропадала (правка владельца «паутина маленькая, сделай её ещё правее»). */
+  .radar { width: auto; height: 100%; aspect-ratio: 1 / 1; max-width: 100%; max-height: none;
+    min-height: 0; align-self: stretch; justify-self: end; margin: 0; }
+  /* «2.4 / 5» — ОДНОЙ строкой (правка владельца «почему 5 внизу») */
+  .score { align-items: baseline; gap: 0.4rem; margin-bottom: 0; }
+  .dims { gap: 0.22rem; }
+  .dim { row-gap: 0.08rem; }
   .dim-name { font-size: 13px; }
   .dim-val { font-size: 14px; }
-  .dim-track { height: 6px; }
+  .dim-track { height: 5px; }
   .score b { font-size: clamp(1.7rem, 8vw, 2.2rem); }
   .score span { font-size: 12.5px; }
   /* Размер полей паспорта объявлен ЗДЕСЬ: блок про круг стоит выше по файлу
@@ -1027,5 +1037,8 @@ strong { color: var(--w); font-weight: 700; }
   .legal { font-size: 12px; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
   .legal a { white-space: nowrap; }
   .copy { font-size: 11.5px; }
-  .screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }
+  /* Подвал финала стоит НАД кружком: иконки, «Privacy Policy» и копирайт
+     по центру, а кружок слева внизу — при прежнем поле он накрывал их
+     левый край, и строка читалась как «…ACY POLICY». */
+  .screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem + env(safe-area-inset-bottom, 0px)); }
 }
