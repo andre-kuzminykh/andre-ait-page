@@ -402,13 +402,18 @@ def test_company_model_and_team_blocks_are_gone():
 
 # ── Learning ──────────────────────────────────────────────────────────────
 
-def test_learning_has_an_endless_roles_ticker():
+def test_learning_shows_all_roles_at_once():
+    """Раньше роли ехали бегущей строкой. Это ровно то, что владелец запретил
+    («внутри экрана не листать»), и на узком окне первая и последняя плашки
+    были разрезаны краем маски. Теперь двенадцать ролей стоят статично и
+    переносятся по ширине."""
     css = _read("assets/strategy.css")
-    assert "@keyframes tick" in css and "translateX(-50%)" in css, "лента ролей крутится без конца"
+    assert "@keyframes tick" not in css and ".ticker" not in css, "бегущей строки больше нет"
+    assert ".roles { display: flex; flex-wrap: wrap;" in css, "роли переносятся по ширине"
     for lang, html in _pages():
-        assert html.count('class="role"') == 24, lang + ": 12 ролей, продублированных для бесшовной ленты"
-        roles = html[html.index('class="ticker"'):]
-        assert roles.count("fa-solid") >= 24, lang + ": у каждой роли своя иконка"
+        assert html.count('class="role"') == 12, lang + ": двенадцать ролей, без дублей для ленты"
+        roles = html[html.index('class="roles"'):]
+        assert roles.count("fa-solid") >= 12, lang + ": у каждой роли своя иконка"
 
 
 # ── Pricing ───────────────────────────────────────────────────────────────
@@ -492,6 +497,21 @@ def test_process_chain_has_no_dangling_connectors():
         # цепочка AI-First разложена тремя рядами — 3 + 2 + 2.
         assert html.count('class="frow"') == 3, lang + ": AI-First идёт тремя рядами"
         assert html.count('class="fwrap"') == 2, lang + ": две стрелки переноса"
+
+
+def test_dragged_circle_never_leaves_the_window():
+    """Жалоба владельца «и где кружок?»: кружок можно перетащить, и его место
+    запоминается в localStorage. Окно потом меняет размер — сохранённая точка
+    с широкого окна на узком оказывалась за краем экрана, и кружок пропадал
+    совсем. Теперь любая точка прижимается к окну, а на вебе inline-координаты
+    сбрасываются: там у ролика своя колонка."""
+    js = _read("assets/strategy.js")
+    assert "function clampPos(p)" in js, "точка прижимается к окну"
+    assert "window.innerWidth - w - 8" in js and "window.innerHeight - h - 8" in js
+    assert "function clearPos()" in js and "if (mqDesk.matches) { clearPos(); return; }" in js, \
+        "на вебе inline-координаты сбрасываются"
+    assert "window.addEventListener('resize', function () { applyPos(savedPos()); });" in js, \
+        "при смене размера окна кружок пересчитывается"
 
 
 def test_solution_heading_is_one_line_on_the_web():
@@ -944,6 +964,10 @@ def test_mobile_footer_stands_just_above_the_dots():
     assert ".final footer { margin-top: auto;" in mob, "подвал прижат к низу экрана"
     assert ".legal { font-size: 12px;" in mob and "flex-wrap: wrap" in mob, \
         "ссылки подвала переносятся целыми словами, а не по буквам"
+    # Подвал финала стоит НАД кружком: «Privacy Policy» и копирайт читались
+    # как «…ACY POLICY» — левый край съедал кружок с роликом.
+    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem" in mob, \
+        "нижнее поле финала считается от диаметра кружка"
     # правка владельца: подвал по центру, кружку разрешено его перекрывать
     assert "padding-left" not in mob.split(".final footer")[1][:160], \
         "колонка подвала больше не смещена правее ролика"

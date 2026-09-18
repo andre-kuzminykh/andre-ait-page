@@ -378,8 +378,21 @@
   }
   var POS_KEY = 'ait_strategy_head';
   var drag = null;
+  /* Кружок можно перетащить, и его место запоминается. Но окно потом меняет
+     размер: сохранённая точка с широкого окна на узком оказывалась ЗА краем
+     экрана, и кружок просто пропадал (жалоба владельца «и где кружок?»).
+     Поэтому любая точка — и сохранённая, и текущая — прижимается к окну. */
+  function clampPos(p) {
+    if (!p || typeof p.x !== 'number' || typeof p.y !== 'number') return null;
+    var w = head.offsetWidth || 120, h = head.offsetHeight || 120;
+    return { x: Math.min(Math.max(8, window.innerWidth - w - 8), Math.max(8, p.x)),
+             y: Math.min(Math.max(8, window.innerHeight - h - 8), Math.max(8, p.y)) };
+  }
+  function clearPos() { head.style.left = ''; head.style.top = ''; head.style.bottom = ''; }
   function applyPos(p) {
-    if (!p || mqDesk.matches) return;
+    if (mqDesk.matches) { clearPos(); return; }
+    p = clampPos(p);
+    if (!p) return;
     head.style.left = p.x + 'px';
     head.style.top = p.y + 'px';
     head.style.bottom = 'auto';
@@ -412,6 +425,10 @@
   }
   setPlaying(false);
   if (!mqDesk.matches) applyPos(savedPos());
+  /* при смене размера окна кружок пересчитывается: на вебе у него своя
+     колонка и никаких inline-координат быть не должно, на телефоне он
+     возвращается в окно, если сохранённая точка осталась за краем */
+  window.addEventListener('resize', function () { applyPos(savedPos()); });
 
   paint();
 })();

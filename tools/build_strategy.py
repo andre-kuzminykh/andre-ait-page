@@ -474,9 +474,7 @@ def page(t, lang):
       <p class="lead">{l_sub}</p>
       <p class="l-note"><i class="fa-solid fa-circle-nodes"></i>{l_note}</p>
     </div>
-    <div class="ticker" aria-hidden="true">
-      <div class="ticker-row">{roles}{roles}</div>
-    </div>
+    <div class="roles">{roles}</div>
   </section>
 
   <!-- 8. Тарифы -->
