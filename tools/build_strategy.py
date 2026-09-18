@@ -414,7 +414,7 @@ def page(t, lang):
       <button class="nav-close" id="nav-close" aria-label="{close}"><i class="fa-solid fa-xmark"></i></button>
       <div class="nav-brand" aria-hidden="true">
         <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="">
-        <span>AI Strategy</span>
+        <span>{brand}</span>
       </div>
       {home}{nav_html}
     </nav>
@@ -436,7 +436,7 @@ def page(t, lang):
   <!-- 1. Первый экран -->
   <section class="screen active" data-chapter="top" id="top">
     <div class="wrap center">
-      <p class="eyebrow">AI Strategy</p>
+      <p class="eyebrow">{brand}</p>
       <h1>{h1}</h1>
       <p class="lead">{hero_lead}</p>
       <div class="hero-cta">
@@ -535,7 +535,7 @@ def page(t, lang):
 """.format(
         lang=lang, title=t["title"], desc=t["meta_desc"], self_href=self_href, video=video,
         site=SITE, path_en=PATH_EN, path_ru=PATH_RU,
-        video_aria=t["video_aria"], role=t["role"], sections=t["sections"], close=t["close"], menu=t["menu"],
+        video_aria=t["video_aria"], role=t["role"], brand=t["brand"], sections=t["sections"], close=t["close"], menu=t["menu"],
         nav_html=nav_html, cta_href=t["cta_href"], cta_top=t["cta_top"], home=home,
         lang_switch=('<span class="lang-opt active">EN</span><span class="lang-sep">|</span>'
                      '<a class="lang-opt" href="%s">RU</a>' % other_href) if lang == "en" else
@@ -556,7 +556,7 @@ def page(t, lang):
 
 MOVED_TEXT = {
     "en": ("AI Strategy has moved", "This page has moved to"),
-    "ru": ("Страница AI Strategy переехала", "Страница переехала"),
+    "ru": ("Страница ИИ-стратегии переехала", "Страница переехала"),
 }
 
 

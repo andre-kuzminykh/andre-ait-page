@@ -928,7 +928,9 @@ def test_pricing_grid_stays_centred_in_dense_mode():
 def _mobile_block():
     """Последний блок @media (max-width:1023px) — мобильная вёрстка целиком."""
     css = _read("assets/strategy.css")
-    i = css.rindex("@media (max-width:1023px)")
+    # именно ПОЛНОЕ условие: ниже по файлу есть ещё блок телефона в горизонте
+    # «@media (max-width:1023px) and (min-width:600px) and (max-height:520px)»
+    i = css.rindex("@media (max-width:1023px) {")
     return css[i:]
 
 
@@ -1312,3 +1314,25 @@ def test_web_type_is_bigger_without_new_line_breaks():
     assert ".step-copy h2 { font-size: clamp(1.3rem, 2.3vw, 1.95rem);" in css
     assert ".node, .pnode, .opnode, .fnode { font-size: 14.5px; }" in css, \
         "блоки процессов крупнее"
+
+
+def test_phone_in_landscape_fits_without_scrolling():
+    """Правка владельца: «видишь, как фигово, когда переворачиваешь экран на
+    мобилке — я не должен ничего листать, и круг должен быть не такой мелкий»,
+    с примером главной. Это не третья вёрстка: та же мобильная в других
+    пропорциях — места много по ширине и мало по высоте, поэтому кружок уходит
+    влево, содержимое встаёт правее него, сетки разворачиваются в четыре
+    колонки, а кегль считается от высоты окна."""
+    css = _read("assets/strategy.css")
+    i = css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)")
+    block = css[i:]
+    assert ".screen { padding: 3.5rem 1.4rem 1.4rem calc(var(--vid-d) + 1.8rem); }" in block, \
+        "содержимое стоит правее кружка, как ролик и текст на главной"
+    assert "--vid-d: clamp(96px, min(20vw, 30vh), 150px);" in block, \
+        "кружок крупнее прежних 88px: 18vh упирались в нижнюю границу clamp"
+    assert ".nums, .outs, .plans, .biz-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }" in block, \
+        "сетки разворачиваются в ширину, иначе они не влезают по высоте"
+    assert "h1 { font-size: clamp(1.35rem, 7.4vh, 2.2rem)" in block, \
+        "кегль считается от ВЫСОТЫ окна: по 8.6vw заголовок вырастал до 78px"
+    assert ".stage-card { height: clamp(7rem, calc(100dvh - 10.5rem), 20rem); }" in block, \
+        "панель шага тоже от высоты окна, запас под кружок снизу не нужен"

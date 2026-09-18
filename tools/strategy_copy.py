@@ -10,6 +10,7 @@ EN = {
     "meta_desc": "AI Strategy shows how to transform your business with AI: describe how your company works and get an AI-First operating model, AI agent specifications and a roadmap",
     "video_aria": "Andre explains AI Strategy",
     "role": "AI Strategy",
+    "brand": "AI Strategy",
     "back": "Back",
     "home": "Home",
     "sections": "Sections",
@@ -166,10 +167,11 @@ EN = {
 }
 
 RU = {
-    "title": "AI Strategy | С чего начать внедрять ИИ в вашем бизнесе?",
-    "meta_desc": "AI Strategy показывает, как трансформировать бизнес с помощью ИИ: расскажите, как работает компания, и получите AI-First операционную модель, спецификации ИИ-агентов и дорожную карту",
-    "video_aria": "Андре рассказывает про AI Strategy",
+    "title": "ИИ-стратегия | С чего начать внедрять ИИ в вашем бизнесе?",
+    "meta_desc": "ИИ-стратегия показывает, как трансформировать бизнес с помощью ИИ: расскажите, как работает компания, и получите AI-First операционную модель, спецификации ИИ-агентов и дорожную карту",
+    "video_aria": "Андре рассказывает про ИИ-стратегию",
     "role": "ИИ-стратегия",
+    "brand": "ИИ-стратегия",
     "back": "Назад",
     "home": "На главную",
     "sections": "Разделы",

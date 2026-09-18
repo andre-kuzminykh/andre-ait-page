@@ -393,8 +393,10 @@ def test_layouts_are_only_web_and_mobile():
     import re as _re
     widths = sorted(set(int(w) for w in _re.findall(r"(?:min|max)-width:\s*(\d+)px", css)))
     # 1023/1024 — сама вёрстка, 1149/1150 — меню (как на главной), 1319/1399/1439 —
-    # плотность шапки, 380 — узкий телефон, 1600/1900/2300 — зум главной
-    assert widths == [380, 1023, 1024, 1149, 1150, 1319, 1399, 1439, 1600, 1900, 2300], \
+    # плотность шапки, 380 — узкий телефон, 1600/1900/2300 — зум главной,
+    # 600 — нижняя граница телефона В ГОРИЗОНТЕ (вместе с max-height:520px):
+    # это не третья вёрстка, а та же мобильная в других пропорциях окна
+    assert widths == [380, 600, 1023, 1024, 1149, 1150, 1319, 1399, 1439, 1600, 1900, 2300], \
         "лишний порог вёрстки: %s" % widths
 
 
@@ -512,3 +514,28 @@ if __name__ == "__main__":
                 print("FAIL", name + ":", err)
     print("ПРОВАЛЕНО:", fails) if fails else print("ВСЕ ТЕСТЫ БИОГРАФИИ ПРОЙДЕНЫ")
     sys.exit(1 if fails else 0)
+
+
+def test_phone_in_landscape_fits_without_scrolling():
+    """Правка владельца: «в about чтобы всё тоже чётко было и при
+    переворачивании в горизонталь тоже». Та же мобильная вёрстка в других
+    пропорциях: кружок с роликом слева, текст правее него, кегль от высоты
+    окна, блоки главы разворачиваются в ширину."""
+    css = _read("assets/about.css")
+    i = css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)")
+    block = css[i:]
+    assert ".screen { padding: 3.5rem 1.4rem 1.4rem calc(var(--vid-d) + 1.8rem); }" in block, \
+        "текст встаёт правее кружка"
+    assert "--vid-d: clamp(96px, min(20vw, 30vh), 150px);" in block, "кружок не мельчает"
+    assert "h1 { font-size: clamp(1.3rem, 7vh, 2.1rem)" in block, "кегль от высоты окна"
+    assert ".facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));" in block, \
+        "список ролей разворачивается в три колонки"
+
+
+def test_chapter_text_is_left_aligned_everywhere():
+    """Правка владельца: «ты по середине сделал оглавление, надо везде слева».
+    Заголовок главы стоял по центру, а надзаголовок и абзацы — слева."""
+    css = _read("assets/about.css")
+    assert ".screen > .eyebrow, .screen > h1, .screen > h2 { text-align: left; }" in css, \
+        "надзаголовок, заголовок главы и текст выключены по левому краю"
+    assert ".screen > .eyebrow, .screen > h1, .screen > h2 { text-align: center; }" not in css
