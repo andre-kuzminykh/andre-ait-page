@@ -376,59 +376,24 @@
     var p = video.play && video.play();
     if (p && p.catch) p.catch(function () {});
   }
-  var POS_KEY = 'ait_strategy_head';
-  var drag = null;
-  /* Кружок можно перетащить, и его место запоминается. Но окно потом меняет
-     размер: сохранённая точка с широкого окна на узком оказывалась ЗА краем
-     экрана, и кружок просто пропадал (жалоба владельца «и где кружок?»).
-     Поэтому любая точка — и сохранённая, и текущая — прижимается к окну. */
-  function clampPos(p) {
-    if (!p || typeof p.x !== 'number' || typeof p.y !== 'number') return null;
-    var w = head.offsetWidth || 120, h = head.offsetHeight || 120;
-    return { x: Math.min(Math.max(8, window.innerWidth - w - 8), Math.max(8, p.x)),
-             y: Math.min(Math.max(8, window.innerHeight - h - 8), Math.max(8, p.y)) };
-  }
-  function clearPos() { head.style.left = ''; head.style.top = ''; head.style.bottom = ''; }
-  function applyPos(p) {
-    if (mqDesk.matches) { clearPos(); return; }
-    p = clampPos(p);
-    if (!p) return;
-    head.style.left = p.x + 'px';
-    head.style.top = p.y + 'px';
-    head.style.bottom = 'auto';
-  }
-  function savedPos() { try { return JSON.parse(localStorage.getItem(POS_KEY)); } catch (e) { return null; } }
+  /* Кружок с роликом стоит СЛЕВА ВНИЗУ и никуда не двигается: место задано
+     только в CSS (жалоба владельца «почему я захожу на сайт с мобилки и
+     голова вообще тут, она должна быть слева внизу»).
+     Раньше его можно было перетащить, а точка запоминалась в localStorage и
+     подставлялась инлайном как `top` в координатах ВИДИМОЙ области окна.
+     На телефоне это ломалось дважды: тап пальцем почти всегда набирал
+     несколько пикселей дрожания и сохранялся как перетаскивание, а у
+     мобильного браузера при показе адресной строки видимая область и система
+     координат position:fixed расходятся — кружок всплывал на середину экрана.
+     Заодно подчищаем старую точку, чтобы телефоны с ней починились сами. */
+  try { localStorage.removeItem('ait_strategy_head'); } catch (e) {}
   if (head) {
-    head.addEventListener('pointerdown', function (e) {
-      if (mqDesk.matches) return;
-      var r = head.getBoundingClientRect();
-      drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: 0, w: r.width, h: r.height };
-      head.setPointerCapture(e.pointerId);
-    });
-    head.addEventListener('pointermove', function (e) {
-      if (!drag) return;
-      var x = Math.min(window.innerWidth - drag.w - 8, Math.max(8, e.clientX - drag.dx));
-      var y = Math.min(window.innerHeight - drag.h - 8, Math.max(8, e.clientY - drag.dy));
-      drag.moved += Math.abs(e.movementX) + Math.abs(e.movementY);
-      applyPos({ x: x, y: y });
-      drag.last = { x: x, y: y };
-    });
-    head.addEventListener('pointerup', function () {
-      if (drag && drag.moved < 6) setPlaying(video.muted);
-      else if (drag && drag.last) { try { localStorage.setItem(POS_KEY, JSON.stringify(drag.last)); } catch (err) {} }
-      drag = null;
-    });
-    head.addEventListener('click', function () { if (mqDesk.matches) setPlaying(video.muted); });
+    head.addEventListener('click', function () { setPlaying(video.muted); });
     head.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPlaying(video.muted); }
     });
   }
   setPlaying(false);
-  if (!mqDesk.matches) applyPos(savedPos());
-  /* при смене размера окна кружок пересчитывается: на вебе у него своя
-     колонка и никаких inline-координат быть не должно, на телефоне он
-     возвращается в окно, если сохранённая точка осталась за краем */
-  window.addEventListener('resize', function () { applyPos(savedPos()); });
 
   paint();
 })();

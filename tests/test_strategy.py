@@ -88,11 +88,25 @@ def test_face_keeps_the_proportions_of_the_main_site():
     assert mob and "border-radius: 50%" in mob[0], "на мобилке голова — кружок"
 
 
-def test_head_is_draggable_on_mobile_and_clickable():
+def test_head_stands_in_the_bottom_left_corner_and_is_clickable():
+    """Жалоба владельца: «почему я захожу на сайт с мобилки и голова вообще
+    тут, она должна быть слева внизу». Кружок больше НЕ таскают: место задано
+    только в CSS. Инлайновые координаты из localStorage ставились как `top`
+    в координатах видимой области, а у мобильного браузера при показе адресной
+    строки она расходится с системой координат position:fixed — кружок всплывал
+    на середину экрана. Плюс тап пальцем набирал пиксели дрожания и сохранялся
+    как перетаскивание."""
     js = _read("assets/strategy.js")
-    assert "pointerdown" in js and "pointermove" in js, "кружок на мобилке должен перетаскиваться"
-    assert "if (mqDesk.matches) return;" in js, "на вебе лицо — колонка, двигать нечего"
-    assert "ait_strategy_head" in js, "место кружка запоминается"
+    for dead in ("pointerdown", "pointermove", "setPointerCapture", "clampPos", "applyPos"):
+        assert dead not in js, "перетаскивания кружка больше нет: " + dead
+    assert "localStorage.removeItem('ait_strategy_head')" in js, \
+        "старая сохранённая точка подчищается — телефоны чинятся сами"
+    assert "head.addEventListener('click', function () { setPlaying(video.muted); });" in js, \
+        "тап по кружку включает и выключает звук на любом размере"
+    css = _read("assets/strategy.css")
+    mob = css[css.index("@media (max-width:1023px)"):]
+    assert ".head { left: clamp(" in mob and "bottom: calc(clamp(" in mob, \
+        "на телефоне кружок прижат к левому нижнему углу средствами CSS"
 
 
 # ── лендинг листается экранами, как биография ─────────────────────────────
@@ -360,15 +374,11 @@ def test_maturity_score_stands_right_above_the_bars():
 
 
 def test_agent_passport_fields_sit_around_the_agent():
-    """Иконка агента — в центре, поля вокруг. Радиусы кольца заданы в CSS
-    (--rx/--ry), в вёрстку уходят только косинус и синус: на низком окне поля
-    на окружности налезали друг на друга, и кольцо пришлось растянуть по
-    горизонтали, оставив саму орбиту круглой."""
+    """Иконка агента — в центре, поля вокруг. Радиус кольца ОДИН на обе оси,
+    в вёрстку уходят только косинус и синус."""
     css = _read("assets/strategy.css")
-    assert "var(--cx, 0) * var(--rx, 50%)" in css and "var(--cy, 0) * var(--ry, 40%)" in css, \
-        "положение поля считается из --cx/--cy и радиусов кольца"
-    assert re.search(r"@media \(max-height:799px\) \{[^}]*--rx", css, re.S), \
-        "на низком окне кольцо шире по горизонтали"
+    assert "var(--cx, 0) * var(--r)" in css and "var(--cy, 0) * var(--r)" in css, \
+        "положение поля считается из --cx/--cy и одного радиуса"
     for lang, html in _pages():
         spokes = re.findall(r'<span class="spoke" data-seq style="--cx:(-?[\d.]+); --cy:(-?[\d.]+);', html)
         assert len(spokes) == 8, lang + ": восемь полей паспорта агента"
@@ -499,19 +509,14 @@ def test_process_chain_has_no_dangling_connectors():
         assert html.count('class="fwrap"') == 2, lang + ": две стрелки переноса"
 
 
-def test_dragged_circle_never_leaves_the_window():
-    """Жалоба владельца «и где кружок?»: кружок можно перетащить, и его место
-    запоминается в localStorage. Окно потом меняет размер — сохранённая точка
-    с широкого окна на узком оказывалась за краем экрана, и кружок пропадал
-    совсем. Теперь любая точка прижимается к окну, а на вебе inline-координаты
-    сбрасываются: там у ролика своя колонка."""
+def test_circle_never_leaves_its_corner():
+    """Жалоба владельца «и где кружок?», а потом «голова должна быть слева
+    внизу»: обе от сохранённой точки. Никаких inline-координат у кружка нет —
+    ни из скрипта, ни из хранилища, поэтому потеряться ему негде."""
     js = _read("assets/strategy.js")
-    assert "function clampPos(p)" in js, "точка прижимается к окну"
-    assert "window.innerWidth - w - 8" in js and "window.innerHeight - h - 8" in js
-    assert "function clearPos()" in js and "if (mqDesk.matches) { clearPos(); return; }" in js, \
-        "на вебе inline-координаты сбрасываются"
-    assert "window.addEventListener('resize', function () { applyPos(savedPos()); });" in js, \
-        "при смене размера окна кружок пересчитывается"
+    for dead in ("head.style.left", "head.style.top", "head.style.bottom", "savedPos"):
+        assert dead not in js, "скрипт не задаёт кружку координаты: " + dead
+    assert "localStorage.setItem('ait_strategy_head'" not in js, "и ничего не запоминает"
 
 
 def test_solution_heading_is_one_line_on_the_web():
@@ -537,20 +542,24 @@ def test_solution_heading_is_one_line_on_the_web():
         assert '<h2 class="d-head">' in html, lang
 
 
-def test_agent_fields_sit_on_the_orbit():
-    """Правка владельца: «на круг не заходит, а на мобиле ок». Плашки стояли
-    по эллипсу 50%/40%, а пунктир был кругом 40% — кольцо и орбита разошлись.
-    Теперь орбита считается от тех же --rx/--ry, что и плашки."""
+def test_agent_orbit_is_a_circle_at_every_size():
+    """Правка владельца: «какого хуя на мобиле овал». У круга агента было ПЯТЬ
+    разных геометрий — по ширине (620px), по высоте (799px) и внутри мобильного
+    блока, — и в двух радиусы по осям были разные (33%/43% и 60%/43%), то есть
+    кольцо становилось эллипсом. Осталась одна геометрия: радиус один на обе
+    оси, размеры — в долях контейнера, поэтому она просто масштабируется."""
     css = _read("assets/strategy.css")
-    assert "--rx: 44%; --ry: 44%; }" in css, "в вебе кольцо полей — круг"
-    assert "width: calc(var(--rx) * 2); height: calc(var(--ry) * 2);" in css, \
-        "орбита считается от радиусов кольца, а не от своих 80%"
-    # там, где кольцо остаётся эллипсом (низкое окно, телефон), вращать его
-    # нельзя: эллипс на вращении «болтается»
-    for radii in ("--rx: 60%; --ry: 43%;", "--rx: 33%; --ry: 43%;"):
-        tail = css[css.index(radii):css.index(radii) + 400]
-        assert ".hub::before, .hub::after { animation: none; }" in tail, \
-            "эллиптическая орбита не крутится: " + radii
+    assert "--rx" not in css and "--ry" not in css, "разных радиусов по осям больше нет"
+    assert "width: calc(var(--r) * 2); height: calc(var(--r) * 2);" in css, \
+        "орбита — окружность того же радиуса, что и кольцо полей"
+    assert "--r: min(50cqw - var(--gut), 50cqh - 5.5cqmin);" in css, \
+        "радиус: по ширине с запасом под плашку, по высоте — под её высоту, берём меньшее"
+    assert "container-type: size;" in css, "размеры внутри круга считаются от самого круга"
+    assert re.search(r"\.hub \{[^}]*container-type", css, re.S), "контейнер — сам .hub"
+    assert "@media (max-height:799px)" not in css, "отдельной вёрстки под низкое окно больше нет"
+    hub = css[css.index(".hub { position: relative;"):]
+    hub = hub[:hub.index("@keyframes hubSpin")]
+    assert "animation: none" not in hub, "орбита теперь круглая и крутится всегда"
 
 
 def test_use_case_metrics_carry_a_direction_arrow():
@@ -1201,16 +1210,34 @@ def test_video_circle_scales_with_the_window():
         "подвал финала больше не смещён правее кружка — он по центру"
 
 
-def test_agent_ring_is_bigger_on_mobile():
-    """Правка владельца: «надо больше круг делать на мобиле». Радиусы и кегль
-    полей подобраны замером: на 360/390/414 в обоих языках нет ни вылета за
-    панель, ни нахлёста на ядро."""
+def test_agent_ring_scales_instead_of_switching_layouts():
+    """Правило владельца: «только два вида: веб и мобилка, остальное
+    масштабируется». У круга агента нет ни одной точки перелома: и кольцо, и
+    плашки, и ядро заданы в долях контейнера и тянутся вместе с панелью."""
     css = _read("assets/strategy.css")
-    assert ".hub { height: min(100%, 20.5rem); --rx: 33%; --ry: 43%; }" in css, \
-        "кольцо крупнее прежних 15rem, но радиус по горизонтали ужат под ширину панели"
+    assert "font-size: clamp(9px, 3.4cqmin, 13.5px);" in css, "кегль полей тянется за кругом"
+    assert "padding: 0.36em 0.72em;" in css, "поля плашки заданы в em — тянутся за кеглем"
+    assert "width: clamp(2.8rem, 22cqmin, 6.6rem); height: clamp(2.8rem, 22cqmin, 6.6rem);" in css, \
+        "ядро агента — тоже доля круга"
+    for dead in (".hub { height: min(38vh, 15rem); }", ".hub { height: min(100%, 23rem); }",
+                 ".spoke { font-size: 9px;", ".spoke { font-size: 12px;", ".spoke { font-size: 10px;",
+                 ".spoke { font-size: 11px;"):
+        assert dead not in css, "ступенчатых размеров круга не осталось: " + dead
     mob = _mobile_block()
-    assert ".spoke { font-size: 11px; padding: 0.26rem 0.48rem; gap: 0.3rem; }" in mob, \
-        "размер полей объявлен в ПОСЛЕДНЕМ мобильном блоке, иначе его перебивает блок выше"
+    assert ".hub" not in mob, "у круга агента нет отдельной мобильной вёрстки"
+
+
+def test_maturity_switches_only_at_the_one_site_wide_breakpoint():
+    """Та же правка: у зрелости была СВОЯ граница 700px, и между 700 и 1023
+    стояла третья вёрстка. Граница одна на весь сайт — 1024px."""
+    css = _read("assets/strategy.css")
+    assert "@media (min-width:700px)" not in css and "@media (max-width:699px)" not in css, \
+        "своей границы 700px у зрелости больше нет"
+    assert "@media (max-width:359px)" not in css, \
+        "и отдельной вёрстки под узкий телефон тоже"
+    web = css[css.index('grid-template-areas: "radar score" "radar dims";') - 400:]
+    web = web[:web.index('grid-template-areas: "radar score" "radar dims";')]
+    assert "@media (min-width:1024px)" in web, "веб-раскладка зрелости включается с 1024px"
 
 
 if __name__ == "__main__":
@@ -1251,12 +1278,10 @@ def test_mobile_maturity_bars_stand_in_two_columns():
     """Семь графиков столбиком съедали высоту ряда, и паутина упиралась
     в неё: на 360px она была 147px, на сжатом окне 503px — 204px. В два
     столбца графики занимают четыре ряда, и паутина вырастает."""
-    css = _read("assets/strategy.css")
-    block = css.split("@media (max-width:699px) {")[1].split("}")[0]
-    assert "grid-template-columns: 1fr 1fr" in block, \
+    mob = _mobile_block()
+    assert ".dims { display: grid; grid-template-columns: 1fr 1fr;" in mob, \
         "на телефоне графики зрелости стоят в два столбца"
-    narrow = css.split("@media (max-width:359px) {")[1].split("\n}")[0]
-    assert ".dim-name { font-size: 11.5px; }" in narrow, \
-        "на 320px подписи ужаты, чтобы «Инфраструктура» помещалась целиком"
-    assert "calc(100dvh - 17.5rem - var(--vid-d))" in narrow, \
-        "на 320px заголовок шага на строку выше — панели отдано меньше"
+    assert ".dim-name { font-size: clamp(10px, 3.3vw, 13px); }" in mob, \
+        "подписи тянутся по ширине окна: на 320px «Инфраструктура» влезает целиком"
+    assert ".step-copy h2 { font-size: clamp(1.05rem, 5.8vw, 1.7rem); }" in mob, \
+        "и заголовок шага тянется, а не ломает панель на узком телефоне"
