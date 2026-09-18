@@ -53,7 +53,12 @@ def flip_key(name):
 def radar(values, dims):
     """Паутина зрелости: семь осей, оценка живёт НАД схемой."""
     cx = cy = 100
-    r = 68
+    # Радиус почти во всю картинку: подписей на осях нет (они у графиков
+    # справа), и прежние r=68 оставляли треть картинки пустым полем — сама
+    # паутина выходила заметно меньше своего места (правка владельца:
+    # «паутина всё равно небольшая — надо побольше»). 95 из 100 оставляют
+    # запас только под обводку контура (stroke-width 1.5).
+    r = 95
     def pts(k, vals=None):
         out = []
         for i in range(len(dims)):
@@ -189,17 +194,26 @@ def stages(t):
         <div class="ui-body"><div class="pchain">{chain}</div></div>
       </div>""".format(bar=s["s3_bar"], chain=chain))
 
-    # 04 — что может забрать ИИ
+    # 04 — что может забрать ИИ.
+    # Цвета те же, что на соседних сценах (правка владельца «где оранжевые
+    # были — пусть будут, где фиолетовые — пусть будут»): человек оранжевый,
+    # система фиолетовая, а операция, которую забирает ИИ, — агент:
+    # фиолетово-оранжевая рамка и КРУГЛЫЙ значок робота, а не овал.
+    OP_ICON = {"human": "fa-user", "sys": "fa-database", "ai": "fa-robot"}
     ops_html = []
-    for name, can in s["s4_ops"]:
-        flip = "" if can else flip_key(name)
-        ops_html.append((can, '<div class="opnode%s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
-                         % (" can" if can else "", flip, "fa-wand-magic-sparkles" if can else "fa-user", name)))
+    for name, kind in s["s4_ops"]:
+        ai = kind == "ai"
+        flip = "" if ai else flip_key(name)
+        mark = ('<span class="op-ic"><i class="fa-solid fa-robot"></i></span>' if ai
+                else '<i class="fa-solid %s"></i>' % OP_ICON[kind])
+        ops_html.append((ai, '<div class="opnode %s" data-seq%s>%s<span>%s</span></div>'
+                         % (kind, flip, mark, name)))
     # Правка владельца: сверху фиолетовое (что забирает ИИ), снизу серое
     # (что остаётся человеку) — рядами не больше трёх, чтобы блоки были
     # крупные и ряд не упирался в края панели.
-    ops_groups = ([o for can, o in ops_html if can],
-                  [o for can, o in ops_html if not can])
+    # сверху — операции, которые забирает ИИ; снизу — то, что остаётся как было
+    ops_groups = ([o for ai, o in ops_html if ai],
+                  [o for ai, o in ops_html if not ai])
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
@@ -472,7 +486,9 @@ def page(t, lang):
       <p class="lead">{l_sub}</p>
       <p class="l-note"><i class="fa-solid fa-circle-nodes"></i>{l_note}</p>
     </div>
-    <div class="roles">{roles}</div>
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-row">{roles}{roles}</div>
+    </div>
   </section>
 
   <!-- 8. Тарифы -->

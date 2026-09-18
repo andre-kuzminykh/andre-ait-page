@@ -314,7 +314,7 @@ def test_orange_blocks_fly_from_process_to_opportunities_to_ai_first():
         trio = [k for k in set(keys) if keys.count(k) == 3]
         assert len(trio) == 3, \
             "%s: три блока должны проходить все три сцены, нашлось %s" % (lang, sorted(trio))
-        for cls in ("pnode human", "opnode", "fnode human"):
+        for cls in ("pnode human", "opnode human", "fnode human"):
             assert re.search(r'class="%s" data-seq data-flip="[a-zа-яё0-9-]+"' % cls, html), \
                 "%s: нет связанного блока на сцене «%s»" % (lang, cls)
         # то, что забрал ИИ, пары не находит и просто гаснет
@@ -402,18 +402,18 @@ def test_company_model_and_team_blocks_are_gone():
 
 # ── Learning ──────────────────────────────────────────────────────────────
 
-def test_learning_shows_all_roles_at_once():
-    """Раньше роли ехали бегущей строкой. Это ровно то, что владелец запретил
-    («внутри экрана не листать»), и на узком окне первая и последняя плашки
-    были разрезаны краем маски. Теперь двенадцать ролей стоят статично и
-    переносятся по ширине."""
+def test_learning_has_an_endless_roles_ticker():
+    """Правка владельца: «почему не листается как было — там в одну линию
+    нужно». Роли идут одной бесконечной лентой, а растушёвка по краям шире
+    прежней: при маске 12%/88% плашка обрывалась резко."""
     css = _read("assets/strategy.css")
-    assert "@keyframes tick" not in css and ".ticker" not in css, "бегущей строки больше нет"
-    assert ".roles { display: flex; flex-wrap: wrap;" in css, "роли переносятся по ширине"
+    assert "@keyframes tick" in css and "translateX(-50%)" in css, "лента ролей крутится без конца"
+    assert "linear-gradient(90deg, transparent 0, #000 18%, #000 82%, transparent 100%)" in css, \
+        "края ленты растворяются, а не обрезаются"
     for lang, html in _pages():
-        assert html.count('class="role"') == 12, lang + ": двенадцать ролей, без дублей для ленты"
-        roles = html[html.index('class="roles"'):]
-        assert roles.count("fa-solid") >= 12, lang + ": у каждой роли своя иконка"
+        assert html.count('class="role"') == 24, lang + ": 12 ролей, продублированных для бесшовной ленты"
+        roles = html[html.index('class="ticker"'):]
+        assert roles.count("fa-solid") >= 24, lang + ": у каждой роли своя иконка"
 
 
 # ── Pricing ───────────────────────────────────────────────────────────────
@@ -769,14 +769,18 @@ def test_opportunities_use_the_same_rows_as_the_other_scenes():
     for lang, html in _pages():
         card = html[html.index('data-step="4"'):html.index('data-step="5"')]
         assert 'class="opgrid"' not in card, lang + ": сетки возможностей нет"
-        assert card.count('class="opgroup"') == 2, lang + ": две группы — фиолетовая и серая"
-        assert card.count('class="prow oprow"') == 3, lang + ": ряды не длиннее трёх блоков"
+        assert card.count('class="opgroup"') == 2, lang + ": две группы — что забирает ИИ и что остаётся"
+        assert card.count('class="prow oprow"') == 4, lang + ": ряды не длиннее трёх блоков (4+4 = 2+2 ряда)"
         assert card.count('class="opnode') == 8, lang + ": восемь операций"
-        # правка владельца «сверху фиолетовое, снизу серое»: ряд никогда не
-        # смешивает группы, иначе в середине панели стояли блоки обоих цветов
+        # правка владельца: ряд никогда не смешивает группы — сверху то, что
+        # забирает ИИ, снизу то, что остаётся как было
         first, second = card.split('class="opgroup"')[1:3]
-        assert second.count("opnode can") == 0, lang + ": во второй группе только серые"
-        assert first.count("opnode can") == 5, lang + ": в первой группе только фиолетовые"
+        assert first.count("opnode ai") == 4, lang + ": сверху четыре операции для ИИ"
+        assert second.count("opnode ai") == 0, lang + ": снизу агентов нет"
+        assert second.count("opnode human") == 3 and second.count("opnode sys") == 1, \
+            lang + ": снизу три человеческих шага и один системный"
+        # цвета соседних сцен сохранены, а у агента круглый значок
+        assert card.count('class="op-ic"') == 4, lang + ": у каждого агента круглый значок"
     assert "Document analysis" in _en() and "Разбор документов" in _ru(), \
         "подпись операции сохранена целиком, а не урезана ради вёрстки"
 
@@ -959,8 +963,11 @@ def test_mobile_maturity_scene_shows_all_seven_bars():
         "«2.4 / 5» стоит одной строкой"
     assert "flex-direction: column" not in mob.split(".score {")[1][:120], \
         "оценка больше не столбиком"
-    assert ".stage-card { height: min(58vh, 30rem); }" in mob, \
-        "панель выше — паутине не хватало высоты ряда"
+    # Высота панели считается от окна за вычетом шапки, заголовка шага и
+    # кружка с роликом: фиксированные 64vh заезжали под кружок, и он закрывал
+    # два последних графика зрелости.
+    assert ".stage-card { height: clamp(14rem, calc(100dvh - 16rem - var(--vid-d)), 32rem); }" in mob, \
+        "высота панели выведена из окна, а не задана долей высоты"
     css_areas = _read("assets/strategy.css")
     assert 'grid-template-areas: "score radar" "dims dims";' in css_areas, \
         "на телефоне оценка слева, паутина справа, графики под ними"
@@ -974,10 +981,10 @@ def test_mobile_footer_stands_just_above_the_dots():
     assert ".final footer { margin-top: auto;" in mob, "подвал прижат к низу экрана"
     assert ".legal { font-size: 12px;" in mob and "flex-wrap: wrap" in mob, \
         "ссылки подвала переносятся целыми словами, а не по буквам"
-    # Подвал финала стоит НАД кружком: «Privacy Policy» и копирайт читались
-    # как «…ACY POLICY» — левый край съедал кружок с роликом.
-    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem" in mob, \
-        "нижнее поле финала считается от диаметра кружка"
+    # Правка владельца: подвал стоит у самого низа, кружку разрешено его
+    # перекрывать — «надо внизу делать как и было».
+    assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in mob, \
+        "подвал финала прижат к низу экрана"
     # правка владельца: подвал по центру, кружку разрешено его перекрывать
     assert "padding-left" not in mob.split(".final footer")[1][:160], \
         "колонка подвала больше не смещена правее ролика"
@@ -1222,3 +1229,34 @@ if __name__ == "__main__":
                 print("ERR  " + name + ": " + type(e).__name__ + ": " + str(e))
     print("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if not fails else "ПРОВАЛЕНО: %d" % fails)
     sys.exit(1 if fails else 0)
+
+
+def test_maturity_web_fills_its_picture():
+    """Паутина занимает почти всю свою картинку: при r=68 из 100 треть svg
+    была пустым полем, и схема выглядела мелкой при большом элементе
+    (правка владельца «паутина всё равно небольшая — надо побольше»).
+    Подписей на осях нет — названия стоят у графиков, поле под них не нужно."""
+    src = _read("tools/build_strategy.py")
+    assert re.search(r"^    r = 95$", src, re.M), "радиус паутины почти во всю картинку"
+    for page in ("ai-strategy/index.html", "ai-strategy/ru/index.html"):
+        html = _read(page)
+        svg = html[html.index('<svg class="radar"'):]
+        svg = svg[:svg.index("</svg>")]
+        assert 'viewBox="0 0 200 200"' in svg, "система координат картинки — 200x200"
+        nums = [float(v) for v in re.findall(r"[-\d.]+(?=[,\s\"])", svg.split("points=")[1][:200])]
+        assert max(nums) > 180, page + ": внешнее кольцо почти у края картинки"
+
+
+def test_mobile_maturity_bars_stand_in_two_columns():
+    """Семь графиков столбиком съедали высоту ряда, и паутина упиралась
+    в неё: на 360px она была 147px, на сжатом окне 503px — 204px. В два
+    столбца графики занимают четыре ряда, и паутина вырастает."""
+    css = _read("assets/strategy.css")
+    block = css.split("@media (max-width:699px) {")[1].split("}")[0]
+    assert "grid-template-columns: 1fr 1fr" in block, \
+        "на телефоне графики зрелости стоят в два столбца"
+    narrow = css.split("@media (max-width:359px) {")[1].split("\n}")[0]
+    assert ".dim-name { font-size: 11.5px; }" in narrow, \
+        "на 320px подписи ужаты, чтобы «Инфраструктура» помещалась целиком"
+    assert "calc(100dvh - 17.5rem - var(--vid-d))" in narrow, \
+        "на 320px заголовок шага на строку выше — панели отдано меньше"

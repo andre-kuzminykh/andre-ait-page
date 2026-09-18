@@ -508,9 +508,27 @@ strong { color: var(--w); font-weight: 700; }
   padding: 0.55rem 0.35rem; border-radius: 0.6rem; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03);
   color: var(--w); }
 .opnode i { font-size: 12.5px; color: var(--tx-d); }
-.opnode.can { border-color: rgba(136,84,243,0.65); background: linear-gradient(135deg, rgba(136,84,243,0.18), rgba(249,115,22,0.10));
-  box-shadow: 0 0 0 1px rgba(136,84,243,0.25), 0 0 22px -6px rgba(136,84,243,0.8); }
-.opnode.can i { color: var(--p-l); }
+/* Цвета ровно те же, что на соседних сценах: человек оранжевый, система
+   фиолетовая (правка владельца «где оранжевые были — пусть будут»). */
+.opnode.human { border: 1px solid rgba(249,115,22,0.55); background: rgba(249,115,22,0.12); }
+.opnode.human i { color: var(--o-l); }
+.opnode.sys { border: 1px solid rgba(136,84,243,0.6); background: rgba(136,84,243,0.16); }
+.opnode.sys i { color: var(--p-l); }
+/* Операция, которую забирает ИИ, — агент: фиолетово-оранжевая рамка
+   градиентом по маске и КРУГЛЫЙ значок робота, а не овал. */
+.opnode.ai { position: relative; border: 1px solid transparent;
+  background: linear-gradient(135deg, rgba(136,84,243,0.18), rgba(249,115,22,0.12));
+  box-shadow: 0 0 22px -8px rgba(136,84,243,0.75); }
+.opnode.ai::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(120deg, var(--p), var(--o));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude; }
+.op-ic { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 1.65em; height: 1.65em; border-radius: 50%; aspect-ratio: 1 / 1;
+  background: linear-gradient(140deg, rgba(136,84,243,0.30), rgba(249,115,22,0.24));
+  border: 1px solid rgba(255,255,255,0.14); }
+.op-ic i { font-size: 0.85em; color: var(--p-l); }
 .chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
 .chip { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.6rem; border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.14); font-size: 9.5px; letter-spacing: 0.06em; color: var(--tx); }
@@ -596,11 +614,14 @@ strong { color: var(--w); font-weight: 700; }
   border: 1px solid rgba(136,84,243,0.35); background: rgba(136,84,243,0.10); color: var(--w);
   font-size: clamp(10.5px, 0.85vw, 12.5px); }
 .l-note i { color: var(--p-l); }
-/* Роли стоят СТАТИЧНО и целиком: бегущая строка ехала сама (правило
-   владельца «внутри экрана не листать») и обрезалась по краям — на узком
-   окне первая и последняя плашки были разрезаны пополам. */
-.roles { display: flex; flex-wrap: wrap; align-content: center; justify-content: center;
-  gap: 0.45rem 0.5rem; width: 100%; max-width: 44rem; margin: clamp(0.9rem, 2.6vh, 1.6rem) auto 0; }
+/* Роли идут ОДНОЙ бегущей строкой (правка владельца: «почему не листается
+   как было — там в одну линию нужно»). Растушёвка по краям шире прежней:
+   при маске 12%/88% плашка обрывалась резко и выглядела разрезанной. */
+.ticker { position: relative; margin-top: clamp(0.9rem, 2.6vh, 1.6rem); overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18%, #000 82%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 18%, #000 82%, transparent 100%); }
+.ticker-row { display: flex; gap: 0.5rem; width: max-content; animation: tick 38s linear infinite; }
+@keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .role { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.8rem; border-radius: 999px;
   border: 1px solid var(--line); background: var(--card); font-size: 10px; color: var(--w); white-space: nowrap; }
 .role i { color: var(--p-l); font-size: 11.5px; }
@@ -719,7 +740,7 @@ strong { color: var(--w); font-weight: 700; }
 @media (prefers-reduced-motion: reduce) {
   .screen, .stage-card, .stage-card [data-seq], .radar .shape {
     opacity: 1 !important; transform: none !important; transition: none !important; animation: none !important; }
-  .wave span, .caret { animation: none !important; }
+  .ticker-row, .wave span, .caret { animation: none !important; }
 }
 
 /* На центрированных экранах карточки и ленты сохраняют левую выключку текста:
@@ -760,6 +781,10 @@ strong { color: var(--w); font-weight: 700; }
    выглядела полупустой. Саму панель заодно ужали с 52vh до 48vh, чтобы
    заголовок шага не уезжал далеко от блоков. */
 .stage-card > .ui > .ui-body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+/* На сцене диктовки содержимое прижато к ВЕРХУ: дорожка звука остаётся на
+   месте, а строка печатается под ней. При центрировании всей группы волна
+   ползла вверх с каждой новой строкой. */
+.stage-card > .ui > .ui-body:has(> .typing) { justify-content: flex-start; padding-top: clamp(1.2rem, 4vh, 2.4rem); }
 
 /* Квадраты рынка одной высоты: у грид-элемента с aspect-ratio выравнивание
    normal работает как start, и карточка не растягивалась на высоту ряда. */
@@ -964,7 +989,16 @@ strong { color: var(--w); font-weight: 700; }
   /* Панель выше: у сцены зрелости паутина упирается в высоту ряда, а не
      в ширину (правка владельца «паутина всё равно маленькая»). Высота
      общая для всех шести шагов, иначе панель скачет при листании. */
-  .stage-card { height: min(58vh, 30rem); }
+  /* Высота панели считается от ОКНА за вычетом того, что занято всегда:
+     шапка, заголовок шага с подписью и кружок с роликом. Фиксированные
+     53vh/58vh либо оставляли пустоту, либо панель заезжала под кружок и он
+     закрывал два последних графика зрелости — данные прятать нельзя.
+     Высота общая для всех шести шагов, иначе панель скачет при листании. */
+  .stage-card { height: clamp(14rem, calc(100dvh - 16rem - var(--vid-d)), 32rem); }
+  /* у экранов С ПАНЕЛЬЮ низ считается от полного диаметра кружка: на
+     остальных (и на финале с подвалом) кружку по-прежнему разрешено
+     перекрывать содержимое */
+  .screen:has(.stage-card) { padding-bottom: calc(var(--vid-d) + 1rem + env(safe-area-inset-bottom, 0px)); }
   .ui-body { padding: 0.75rem 0.6rem; }
   /* Одна ВЁРСТКА цепочки на телефон: ряды схлопываются в общий поток и
      переносятся по ширине экрана, а связи-стрелки убраны. Ряды, посчитанные
@@ -993,8 +1027,8 @@ strong { color: var(--w); font-weight: 700; }
     min-height: 0; align-self: stretch; justify-self: end; margin: 0; }
   /* «2.4 / 5» — ОДНОЙ строкой (правка владельца «почему 5 внизу») */
   .score { align-items: baseline; gap: 0.4rem; margin-bottom: 0; }
-  .dims { gap: 0.22rem; }
-  .dim { row-gap: 0.08rem; }
+  .dims { gap: 0.18rem; }
+  .dim { row-gap: 0.06rem; }
   .dim-name { font-size: 13px; }
   .dim-val { font-size: 14px; }
   .dim-track { height: 5px; }
@@ -1037,8 +1071,31 @@ strong { color: var(--w); font-weight: 700; }
   .legal { font-size: 12px; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
   .legal a { white-space: nowrap; }
   .copy { font-size: 11.5px; }
-  /* Подвал финала стоит НАД кружком: иконки, «Privacy Policy» и копирайт
-     по центру, а кружок слева внизу — при прежнем поле он накрывал их
-     левый край, и строка читалась как «…ACY POLICY». */
-  .screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem + env(safe-area-inset-bottom, 0px)); }
+  /* Подвал стоит у самого низа экрана (правка владельца: «надо внизу делать
+     как и было, то что кружок заходит — это ок»). */
+  .screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ── Зрелость на телефоне: семь графиков в ДВА столбца ──────────────────────
+   Паутина здесь квадрат, и её сторона равна меньшему из двух: ширина колонки
+   и остаток высоты ряда. На узком окне (360px) и на сжатом десктопном (503px)
+   упиралась именно высота: столбик из семи графиков съедал 164px, и паутина
+   оставалась 147–204px при свободном месте справа. В два столбца графики
+   занимают четыре ряда вместо семи, и паутина вырастает до 208–275px
+   (правка владельца: «паутина всё равно небольшая — надо побольше»).
+   Названия короткие («Инфраструктура» — самое длинное), в половину ширины
+   помещаются целиком. Граница 699px — та же, что и у веб-раскладки зрелости
+   (min-width:700px), новой точки перелома не добавляет. */
+@media (max-width:699px) {
+  .dims { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 0.9rem; align-content: center; }
+}
+/* Самые узкие телефоны (320px): заголовок шага переносится на строку больше,
+   и панель прежней высоты вылезала за экран — кружок закрывал нижний график.
+   Здесь панели отдано меньше, а подписи графиков ужаты, чтобы в половину
+   ширины помещалось «Инфраструктура» целиком, без многоточия. */
+@media (max-width:359px) {
+  .stage-card { height: clamp(12rem, calc(100dvh - 17.5rem - var(--vid-d)), 32rem); }
+  .dims { gap: 0.26rem 0.6rem; }
+  .dim-name { font-size: 11.5px; }
+  .dim-val { font-size: 12.5px; }
 }
