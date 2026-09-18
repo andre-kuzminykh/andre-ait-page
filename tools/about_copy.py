@@ -32,7 +32,7 @@ EN = {
 
     # ── детство ──────────────────────────────────────────────────────────
     "eyebrow": "About Me",
-    "h1": ('<span class="l">I build an <span class="hl-p">AI-native ecosystem</span></span>'
+    "h1": ('<span class="l">I build an <span class="hl-p"><span class="nb">AI-native</span> ecosystem</span></span>'
            '<span class="l">for <span class="hl-o">human good</span></span>'),
     "c1_lead": "I grew up in Ussuriysk, in the Russian Far East — home to the largest tigers on Earth.",
     "c1_p1": ("My grandfather gave me my first computer when I was three, and artificial intelligence "
@@ -158,11 +158,19 @@ EN = {
     "x4_head": "An AI Operating System",
     "x4_p1": ("Now I am building an <strong>AI operating system for business</strong>, powered by "
               "hundreds of specialized AI employees that work across the company:"),
+    # Состав ролей — правка владельца: после менеджмента HR, после маркетинга
+    # SMM, затем поддержка, аналитика, дизайн, разработка и инженерия.
     "x4_facts": [
         ("fa-sitemap", "Management"),
+        ("fa-user-group", "HR"),
         ("fa-bullhorn", "Marketing"),
+        ("fa-hashtag", "SMM"),
         ("fa-handshake", "Sales"),
-        ("fa-cubes", "Product development"),
+        ("fa-headset", "Support"),
+        ("fa-chart-simple", "Analytics"),
+        ("fa-palette", "Design"),
+        ("fa-code", "Development"),
+        ("fa-gears", "Engineering"),
     ],
 
     # ── миссия ───────────────────────────────────────────────────────────
@@ -211,7 +219,7 @@ RU = {
     },
 
     "eyebrow": "Обо мне",
-    "h1": ('<span class="l">Я строю <span class="hl-p">AI-Native экосистему</span></span>'
+    "h1": ('<span class="l">Я строю <span class="hl-p"><span class="nb">AI-Native</span> экосистему</span></span>'
            '<span class="l">во <span class="hl-o">благо людей</span></span>'),
     "c1_lead": ("Я родился и вырос в Уссурийске, на Дальнем Востоке — там, где живут самые крупные "
                 "тигры на планете."),
@@ -332,9 +340,15 @@ RU = {
               "— сотни специализированных ИИ-сотрудников:"),
     "x4_facts": [
         ("fa-sitemap", "Управление"),
+        ("fa-user-group", "HR"),
         ("fa-bullhorn", "Маркетинг"),
+        ("fa-hashtag", "SMM"),
         ("fa-handshake", "Продажи"),
-        ("fa-cubes", "Разработка продуктов"),
+        ("fa-headset", "Поддержка"),
+        ("fa-chart-simple", "Аналитика"),
+        ("fa-palette", "Дизайн"),
+        ("fa-code", "Разработка"),
+        ("fa-gears", "Инжиниринг"),
     ],
 
     "m1_head": "Новые навыки и роли",
