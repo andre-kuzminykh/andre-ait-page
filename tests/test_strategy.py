@@ -950,7 +950,17 @@ def test_mobile_maturity_scene_shows_all_seven_bars():
     assert ".maturity { flex: 1; min-height: 0; grid-template-rows: minmax(84px, 1fr) auto;" in mob
     assert "grid-template-columns: auto minmax(0, 1fr)" in mob, \
         "верхний ряд: слева оценка, справа паутина"
-    assert ".radar { width: 100%; height: 100%; min-height: 0; max-height: none;" in mob
+    # Правки владельца: «почему 5 внизу — должно быть на одной линии»,
+    # «паутина всё равно маленькая, сделай её ещё правее».
+    assert ".radar { width: auto; height: 100%; aspect-ratio: 1 / 1;" in mob, \
+        "паутина — квадрат во всю высоту ряда, а не по ширине ячейки"
+    assert "justify-self: end;" in mob, "паутина прижата к правому краю"
+    assert ".score { align-items: baseline; gap: 0.4rem; margin-bottom: 0; }" in mob, \
+        "«2.4 / 5» стоит одной строкой"
+    assert "flex-direction: column" not in mob.split(".score {")[1][:120], \
+        "оценка больше не столбиком"
+    assert ".stage-card { height: min(58vh, 30rem); }" in mob, \
+        "панель выше — паутине не хватало высоты ряда"
     css_areas = _read("assets/strategy.css")
     assert 'grid-template-areas: "score radar" "dims dims";' in css_areas, \
         "на телефоне оценка слева, паутина справа, графики под ними"

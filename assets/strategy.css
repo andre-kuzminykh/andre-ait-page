@@ -961,7 +961,10 @@ strong { color: var(--w); font-weight: 700; }
      прежних 48vh/24rem половина панели оставалась пустой — схема на её фоне
      выглядела мелкой (правка владельца «тут пздц мелко вся эта схема»).
      Высота всё равно общая для всех шести шагов, иначе панель скачет. */
-  .stage-card { height: min(53vh, 28rem); }
+  /* Панель выше: у сцены зрелости паутина упирается в высоту ряда, а не
+     в ширину (правка владельца «паутина всё равно маленькая»). Высота
+     общая для всех шести шагов, иначе панель скачет при листании. */
+  .stage-card { height: min(58vh, 30rem); }
   .ui-body { padding: 0.75rem 0.6rem; }
   /* Одна ВЁРСТКА цепочки на телефон: ряды схлопываются в общий поток и
      переносятся по ширине экрана, а связи-стрелки убраны. Ряды, посчитанные
@@ -982,13 +985,19 @@ strong { color: var(--w); font-weight: 700; }
      можно справа паутинку, а слева 2.4 / 5»). Паутина растягивается на
      остаток верхнего ряда и потому не распирает панель. */
   .maturity { flex: 1; min-height: 0; grid-template-rows: minmax(84px, 1fr) auto;
-    grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.5rem 0.9rem; }
-  .radar { width: 100%; height: 100%; min-height: 0; max-height: none; align-self: stretch; }
-  .score { flex-direction: column; align-items: flex-start; gap: 0.1rem; margin-bottom: 0; }
-  .dims { gap: 0.3rem; }
+    grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.4rem 0.7rem; }
+  /* Паутина — КВАДРАТ во всю высоту ряда и прижата к правому краю: при
+     width:100% она рисовалась по центру широкой ячейки и половина места
+     пропадала (правка владельца «паутина маленькая, сделай её ещё правее»). */
+  .radar { width: auto; height: 100%; aspect-ratio: 1 / 1; max-width: 100%; max-height: none;
+    min-height: 0; align-self: stretch; justify-self: end; margin: 0; }
+  /* «2.4 / 5» — ОДНОЙ строкой (правка владельца «почему 5 внизу») */
+  .score { align-items: baseline; gap: 0.4rem; margin-bottom: 0; }
+  .dims { gap: 0.22rem; }
+  .dim { row-gap: 0.08rem; }
   .dim-name { font-size: 13px; }
   .dim-val { font-size: 14px; }
-  .dim-track { height: 6px; }
+  .dim-track { height: 5px; }
   .score b { font-size: clamp(1.7rem, 8vw, 2.2rem); }
   .score span { font-size: 12.5px; }
   /* Размер полей паспорта объявлен ЗДЕСЬ: блок про круг стоит выше по файлу
