@@ -494,6 +494,29 @@ def test_process_chain_has_no_dangling_connectors():
         assert html.count('class="fwrap"') == 2, lang + ": две стрелки переноса"
 
 
+def test_solution_heading_is_one_line_on_the_web():
+    """Правка владельца: «model оранжевым и можно в одну строку?». В вебе обе
+    строки заголовка встают в одну (кегль подбирает скрипт), на телефоне
+    29 знаков — по-русски 34 — в строку не лезут, там остаётся авторский
+    перенос по .l. Замер: одна строка на 1280…2560 в обоих языках."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from strategy_copy import EN, RU
+    assert '<span class="l">operating <span class="hl-o">model</span></span>' in EN["d_head"], \
+        "model оранжевый"
+    assert '<span class="l">операционная <span class="hl-o">модель</span></span>' in RU["d_head"], \
+        "по-русски «модель» оранжевая"
+    css = _read("assets/strategy.css")
+    assert "h2.d-head { white-space: nowrap; }" in css and "h2.d-head .l { display: inline; }" in css, \
+        "в вебе строки заголовка становятся одной"
+    assert 'h2.d-head .l + .l::before { content: " "; white-space: pre; }' in css, \
+        "между строками нужен пробел — в разметке его нет"
+    js = _read("assets/strategy.js")
+    assert "$$('h2.one-line, h2.d-head', root)" in js, "кегль этого заголовка тоже подбирается"
+    for lang, html in _pages():
+        assert '<h2 class="d-head">' in html, lang
+
+
 def test_agent_fields_sit_on_the_orbit():
     """Правка владельца: «на круг не заходит, а на мобиле ок». Плашки стояли
     по эллипсу 50%/40%, а пунктир был кругом 40% — кольцо и орбита разошлись.

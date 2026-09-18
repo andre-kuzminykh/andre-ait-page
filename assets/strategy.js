@@ -84,7 +84,7 @@
       }
       shrinkToFit(lines.length ? lines : [h]);
     });
-    $$('h2.one-line', root).forEach(function (h) { shrinkToFit([h]); });
+    $$('h2.one-line, h2.d-head', root).forEach(function (h) { shrinkToFit([h]); });
     /* названия кейсов и подписи метрик держим в одну строку и ОДНОГО кегля:
        иначе длинные русские подписи обрезались многоточием */
     var titles = $$('.biz h3', root);

@@ -66,7 +66,7 @@ EN = {
     # ── 5. Решение ──
     "d_eyebrow": "Solution",
     "d_head": ('<span class="l">Your <span class="hl-p">AI-First</span></span>'
-               '<span class="l">operating model</span>'),
+               '<span class="l">operating <span class="hl-o">model</span></span>'),
     "d_sub": "Built around your business",
     # Восемь карточек стоят СЕТКОЙ и видны целиком — лента с прокруткой убрана
     # (правка владельца «внутри себя не листать»). Поэтому подпись у каждой —
@@ -216,7 +216,7 @@ RU = {
 
     "d_eyebrow": "Решение",
     "d_head": ('<span class="l">Ваша <span class="hl-p">AI-First</span></span>'
-               '<span class="l">операционная модель</span>'),
+               '<span class="l">операционная <span class="hl-o">модель</span></span>'),
     "d_sub": "Построена вокруг вашего бизнеса",
     "deliverables": [
         ("Индекс ИИ-зрелости", "Где вы сейчас"),

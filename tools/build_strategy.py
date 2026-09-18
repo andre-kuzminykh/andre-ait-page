@@ -448,7 +448,7 @@ def page(t, lang):
   <section class="screen" data-chapter="solution" id="solution">
     <div class="wrap center">
       <p class="eyebrow o">{d_eyebrow}</p>
-      <h2>{d_head}</h2>
+      <h2 class="d-head">{d_head}</h2>
       <p class="lead">{d_sub}</p>
       <div class="outs">{outs}</div>
     </div>
