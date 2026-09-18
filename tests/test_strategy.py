@@ -342,17 +342,18 @@ def test_maturity_score_stands_right_above_the_bars():
     """Правка владельца: «оценку выровни с графиками чтобы над ними ровно была».
 
     Значит оценка живёт в одной колонке с графиками, а не по центру всей
-    панели: раньше она стояла отдельным блоком над .maturity."""
+    панели. Колонку держит сетка .maturity (области), а не лишняя обёртка:
+    на телефоне та же сетка ставит оценку СЛЕВА от паутины."""
     css = _read("assets/strategy.css")
     assert re.search(r"\.score \{[^}]*justify-content: flex-start", css), \
         "оценка выключена по левому краю колонки графиков"
+    assert ".dimcol" not in css, "обёртки-колонки больше нет: раскладку держит сетка"
     for lang, html in _pages():
         card = html[html.index('data-step="1"'):html.index('data-step="2"')]
-        col = card[card.index('class="dimcol"'):]
-        assert col.index('class="score"') < col.index('class="dims"'), \
-            lang + ": оценка стоит НАД графиками внутри их колонки"
+        assert card.index('class="score"') < card.index('class="dims"'), \
+            lang + ": оценка стоит НАД графиками"
         assert card.index('class="radar"') < card.index('class="score"'), \
-            lang + ": паутина слева, колонка с оценкой и графиками справа"
+            lang + ": паутина слева, оценка и графики справа"
     en = _en()
     for dim in ("Strategy", "People", "Infrastructure", "Data", "Models", "Implementation", "R&D"):
         assert ">%s<" % dim in en, "нет оси зрелости «%s»" % dim
@@ -486,7 +487,87 @@ def test_process_chain_has_no_dangling_connectors():
     for lang, html in _pages():
         assert html.count('class="prow"') == 2, lang + ": два ряда процессов"
         assert html.count('class="pwrap"') == 1, lang + ": одна стрелка переноса"
-        assert html.count('class="frow"') == 2, lang + ": AI-First тоже рядами"
+        # Правка владельца «первый экран не вмещается»: ряд из четырёх блоков
+        # на 1280 и 1366 выходил за панель (замер: 548px против 500px), и
+        # цепочка AI-First разложена тремя рядами — 3 + 2 + 2.
+        assert html.count('class="frow"') == 3, lang + ": AI-First идёт тремя рядами"
+        assert html.count('class="fwrap"') == 2, lang + ": две стрелки переноса"
+
+
+def test_solution_heading_is_one_line_on_the_web():
+    """Правка владельца: «model оранжевым и можно в одну строку?». В вебе обе
+    строки заголовка встают в одну (кегль подбирает скрипт), на телефоне
+    29 знаков — по-русски 34 — в строку не лезут, там остаётся авторский
+    перенос по .l. Замер: одна строка на 1280…2560 в обоих языках."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from strategy_copy import EN, RU
+    assert '<span class="l">operating <span class="hl-o">model</span></span>' in EN["d_head"], \
+        "model оранжевый"
+    assert '<span class="l">операционная <span class="hl-o">модель</span></span>' in RU["d_head"], \
+        "по-русски «модель» оранжевая"
+    css = _read("assets/strategy.css")
+    assert "h2.d-head { white-space: nowrap; }" in css and "h2.d-head .l { display: inline; }" in css, \
+        "в вебе строки заголовка становятся одной"
+    assert 'h2.d-head .l + .l::before { content: " "; white-space: pre; }' in css, \
+        "между строками нужен пробел — в разметке его нет"
+    js = _read("assets/strategy.js")
+    assert "$$('h2.one-line, h2.d-head', root)" in js, "кегль этого заголовка тоже подбирается"
+    for lang, html in _pages():
+        assert '<h2 class="d-head">' in html, lang
+
+
+def test_agent_fields_sit_on_the_orbit():
+    """Правка владельца: «на круг не заходит, а на мобиле ок». Плашки стояли
+    по эллипсу 50%/40%, а пунктир был кругом 40% — кольцо и орбита разошлись.
+    Теперь орбита считается от тех же --rx/--ry, что и плашки."""
+    css = _read("assets/strategy.css")
+    assert "--rx: 44%; --ry: 44%; }" in css, "в вебе кольцо полей — круг"
+    assert "width: calc(var(--rx) * 2); height: calc(var(--ry) * 2);" in css, \
+        "орбита считается от радиусов кольца, а не от своих 80%"
+    # там, где кольцо остаётся эллипсом (низкое окно, телефон), вращать его
+    # нельзя: эллипс на вращении «болтается»
+    for radii in ("--rx: 60%; --ry: 43%;", "--rx: 33%; --ry: 43%;"):
+        tail = css[css.index(radii):css.index(radii) + 400]
+        assert ".hub::before, .hub::after { animation: none; }" in tail, \
+            "эллиптическая орбита не крутится: " + radii
+
+
+def test_use_case_metrics_carry_a_direction_arrow():
+    """Правка владельца: «стрелки поставь перед hiring speed, launch speed и
+    всех других — вверх или вниз в зависимости от смысла»."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from strategy_copy import EN, RU
+    for lang, t in (("en", EN), ("ru", RU)):
+        for row in t["businesses"]:
+            assert len(row) == 3 and row[2] in ("up", "down"), \
+                "%s: у метрики «%s» нет направления" % (lang, row[0])
+    assert dict((b[0], b[2]) for b in EN["businesses"])["Call Center"] == "down", \
+        "стоимость звонка падает — стрелка вниз"
+    assert dict((b[0], b[2]) for b in EN["businesses"])["Software Development"] == "up", \
+        "скорость запуска растёт — стрелка вверх"
+    css = _read("assets/strategy.css")
+    assert ".biz-dir.up { color: var(--p-l); }" in css and ".biz-dir.down { color: var(--o-l); }" in css
+    for lang, html in _pages():
+        assert html.count('class="biz-dir up fa-solid fa-arrow-trend-up"') == 7, lang
+        assert html.count('class="biz-dir down fa-solid fa-arrow-trend-down"') == 1, lang
+        # стрелка стоит ПЕРЕД подписью
+        m = re.search(r'<p class="biz-metric">(.*?)</p>', html, re.S).group(1)
+        assert m.index("biz-dir") < m.index("<span>"), lang + ": стрелка перед текстом"
+
+
+def test_price_comparison_has_no_dangling_dot():
+    """Правка владельца «убери точку после 10к»: строка переносилась по
+    ширине колонки, и разделитель повисал в конце первой строки."""
+    css = _read("assets/strategy.css")
+    assert ".compare .cmp.now { color: var(--w); font-weight: 700; flex-basis: 100%; }" in css, \
+        "последний пункт всегда начинает новую строку"
+    for lang, html in _pages():
+        line = re.search(r'<p class="compare">(.*?)</p>', html, re.S).group(1)
+        assert line.count("fa-circle") == 1, lang + ": разделитель только между ценами"
+        assert line.index("fa-circle") < line.index('class="cmp now"'), \
+            lang + ": после последней цены разделителя нет"
 
 
 def test_one_line_headings_are_fitted_by_script():
@@ -743,14 +824,18 @@ def test_final_screen_is_a_question_and_an_answer():
     ниже „AI Strategy shows you“, а „You don't need to know“ не надо»."""
     css = _read("assets/strategy.css")
     assert ".final-2" not in css, "средней строки финала больше нет и в стилях"
-    assert ".final-1 { margin-bottom: 0.85rem; }" in css, "расстояние держит пара строк"
+    # правка владельца «поближе друг к другу»: было 0.85rem с каждой стороны
+    assert ".final-1 { margin-bottom: 0.3rem; }" in css, "вопрос и ответ стоят рядом"
+    assert ".final-3 { color: var(--w); margin: 0.3rem 0 1.5rem; }" in css
     for lang, html in _pages():
         final = html[html.index('class="final'):]
         assert 'class="final-2"' not in final, lang + ": средняя строка убрана"
         assert final.count('class="final-1"') == 1 and final.count('class="final-3"') == 1, lang
     assert "You don’t need to know" not in _en() and "Вам не обязательно" not in _ru(), \
         "убранная строка не осталась в тексте"
-    assert 'Where to start with <span class="hl-p">AI</span>?' in _en()
+    # правка владельца: «старт оранжевым»
+    assert 'Where to <span class="hl-o">start</span> with <span class="hl-p">AI</span>?' in _en()
+    assert 'С чего <span class="hl-o">начать</span> с <span class="hl-p">ИИ</span>?' in _ru()
     assert '<span class="hl-p">AI</span> Strategy shows <span class="hl-o">you</span>' in _en()
 
 
@@ -758,15 +843,20 @@ def test_titles_paint_ai_purple_and_business_orange():
     """Правка владельца: «AI везде фиолетовый, automate — оранж, business —
     оранж, processes — фиолетовый, you — оранж»."""
     en, ru = _en(), _ru()
-    assert 'Where to start with <span class="hl-p">AI</span>?' in en, "на финале AI фиолетовый"
+    assert 'Where to <span class="hl-o">start</span> with <span class="hl-p">AI</span>?' in en, \
+        "на финале start оранжевый, AI фиолетовый"
     assert 'Where should <span class="hl-o">you</span>' in en, "в шапке первого экрана you оранжевый"
     assert 'can <span class="hl-o">automate</span>' in en, "automate оранжевый"
     assert 'as <span class="hl-p">processes</span>' in en, "processes фиолетовый"
     assert 'New <span class="hl-p">human</span> roles' in en, \
         "правка владельца: human фиолетовым и второй строкой"
-    for html in (en, ru):
-        assert 'should work with <span class="hl-p">AI</span>' in html or \
-               'работать с <span class="hl-p">ИИ</span>' in html, "AI в заголовке фиолетовый"
+    # правка владельца: вместо «How your business should work with AI» —
+    # короче и по-человечески: «How AI fits your business»
+    assert 'How <span class="hl-p">AI</span> fits your <span class="hl-o">business</span>' in en, \
+        "заголовок пятого шага: AI фиолетовый, business оранжевый"
+    assert 'Как <span class="hl-p">ИИ</span> встроится в <span class="hl-o">бизнес</span>' in ru, \
+        "по-русски тот же смысл"
+    assert "should work with" not in en, "старая формулировка убрана"
     assert ">See how your business" not in en, "из заголовка пятого шага убрано See"
     assert ">Start AI transformation <" in en, "надпись кнопки финала"
     assert "Start AI transformation for free" not in en, \
@@ -829,15 +919,23 @@ def test_mobile_chain_is_one_flow_without_dangling_arrows():
 
 
 def test_mobile_maturity_scene_shows_all_seven_bars():
-    """Паутина занимает ВЕСЬ остаток панели и потому никогда её не распирает:
-    при квадратной svg во всю ширину колонки половина графиков уезжала за
-    нижний край панели и просто не показывалась."""
+    """Паутина занимает ВЕСЬ остаток верхнего ряда и потому не распирает
+    панель: при квадратной svg во всю ширину колонки половина графиков
+    уезжала за нижний край панели. Правка владельца: «какая маленькая
+    паутинка на мобиле — можно справа паутинку, а слева 2.4 / 5»."""
     css = _read("assets/strategy.css")
     assert ".stage-card > .ui > .ui-body { flex: 1; min-height: 0;" in css, \
         "без min-height:0 тело панели растёт под содержимое и графики срезает рамка"
     mob = _mobile_block()
-    assert ".maturity { flex: 1; min-height: 0; grid-template-rows: minmax(60px, 1fr) auto;" in mob
-    assert ".radar { width: 100%; height: 100%; min-height: 0; }" in mob
+    assert ".maturity { flex: 1; min-height: 0; grid-template-rows: minmax(84px, 1fr) auto;" in mob
+    assert "grid-template-columns: auto minmax(0, 1fr)" in mob, \
+        "верхний ряд: слева оценка, справа паутина"
+    assert ".radar { width: 100%; height: 100%; min-height: 0; max-height: none;" in mob
+    css_areas = _read("assets/strategy.css")
+    assert 'grid-template-areas: "score radar" "dims dims";' in css_areas, \
+        "на телефоне оценка слева, паутина справа, графики под ними"
+    assert 'grid-template-areas: "radar score" "radar dims";' in css_areas, \
+        "в вебе паутина слева во всю высоту"
 
 
 def test_mobile_footer_stands_just_above_the_dots():
@@ -1000,16 +1098,21 @@ def test_hero_lead_is_two_short_lines():
 def test_every_step_subtitle_is_one_short_line():
     """Правка владельца: «подзаголовки везде в одну строку — можно назвать
     по-другому, но чтобы на мобиле и в вебе одинаково». На телефоне колонка
-    даёт ~41 знак при кегле 14px, поэтому длину сторожим прямо в тексте."""
+    даёт ~42 знака при кегле 14px, поэтому длину сторожим прямо в тексте.
+    Порог проверен замером в браузере: «I map what I heard into business
+    processes» (42 знака) на 360×740 и 390×844 стоит одной строкой."""
     import sys, os
     sys.path.insert(0, os.path.join(_ROOT, "tools"))
     from strategy_copy import EN, RU
     for lang, t in (("en", EN), ("ru", RU)):
         for tag, title, sub in t["steps"]:
             assert "<span" not in sub, "%s: подзаголовок «%s» без переносов" % (lang, tag)
-            assert len(sub) <= 41, "%s: подзаголовок «%s» длиннее строки: %d знаков" % (lang, tag, len(sub))
+            assert len(sub) <= 42, "%s: подзаголовок «%s» длиннее строки: %d знаков" % (lang, tag, len(sub))
     assert EN["steps"][0][2] == "Assess your AI maturity. Find the gaps"
     assert EN["steps"][5][2] == "Build-ready agent specifications"
+    # правка владельца: «I map what I heard into business processes»
+    assert EN["steps"][2][2] == "I map what I heard into business processes"
+    assert RU["steps"][2][2] == "Разложу услышанное на бизнес-процессы"
 
 
 def test_pricing_buttons_all_say_start():
@@ -1034,13 +1137,18 @@ def test_pricing_and_learning_headings_break_in_two():
     assert '<span class="l">Scale as you <span class="hl-o">grow</span></span>' in _en()
 
 
-def test_video_circle_is_bigger_and_may_overlap():
+def test_video_circle_scales_with_the_window():
     """Правка владельца: «размер кружка давай побольше — он может элементы
-    закрывать, это ок». Нижнее поле экранов считается от того же диаметра,
-    но с коэффициентом: иначе высокие экраны срезались бы краем, ведь
-    прокрутки внутри экранов больше нет."""
+    закрывать, это ок», и следом: «когда на компе сжимаю, голова не должна
+    заходить за рамки — подтягивайся под размер экрана». Поэтому диаметр
+    считается от МЕНЬШЕЙ стороны окна: 34vw на узком, 18vh на низком.
+    Нижнее поле экранов считается от того же диаметра, но с коэффициентом:
+    иначе высокие экраны срезались бы краем, ведь прокрутки внутри
+    экранов больше нет."""
     css = _read("assets/strategy.css")
-    assert "--vid-d: clamp(128px, 36vw, 168px);" in css, "кружок заметно крупнее прежних 100–128px"
+    assert "--vid-d: clamp(88px, min(34vw, 18vh), 168px);" in css, \
+        "диаметр кружка тянется за меньшей стороной окна"
+    assert "36vw" not in css.split("--vid-d")[1][:80], "ширина больше не решает одна"
     assert "calc(var(--vid-d) * 0.82 + 1.1rem + env(safe-area-inset-bottom, 0px))" in css, \
         "нижнее поле меньше диаметра — кружку разрешено перекрывать"
     mob = _mobile_block()
