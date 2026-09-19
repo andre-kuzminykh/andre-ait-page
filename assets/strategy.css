@@ -1105,26 +1105,28 @@ strong { color: var(--w); font-weight: 700; }
      на угол: его можно отодвинуть пальцем. */
   /* поля СИММЕТРИЧНЫЕ и равны кружку: содержимое стоит ровно по центру
      экрана и при этом не заезжает на кружок слева и на точки справа */
-  .screen { padding: 3.5rem calc(var(--vid-d) + 1.6rem) 1.4rem; }
+  /* поля сверху и снизу ОДИНАКОВЫЕ, как на главной: содержимое стояло на
+     17px ниже середины окна (замер 222 при центре 206) */
+  .screen { padding: 3.5rem calc(var(--vid-d) + 1.6rem); }
   .dots { left: auto; right: 0.7rem; top: 50%; bottom: auto;
     transform: translateY(-50%); flex-direction: column; }
   .screen > *:not(.wm) { max-width: 34rem; margin-left: auto; margin-right: auto; }
   /* кегль от ВЫСОТЫ окна */
-  h1 { font-size: clamp(1.35rem, 7.4vh, 2.2rem); line-height: 1.14; margin-bottom: 0.6rem; }
-  h2, h2.one-line { font-size: clamp(1.05rem, 5.4vh, 1.6rem); margin-bottom: 0.5rem; }
-  .lead { font-size: clamp(12.5px, 3.6vh, 15px); line-height: 1.5; }
-  p { font-size: clamp(12px, 3.3vh, 14px); line-height: 1.5; }
-  .eyebrow { font-size: clamp(10px, 2.8vh, 12.5px); margin-bottom: 0.4rem; }
+  h1 { font-size: clamp(1.45rem, 8.4vh, 2.4rem); line-height: 1.14; margin-bottom: 0.6rem; }
+  h2, h2.one-line { font-size: clamp(1.1rem, 6.2vh, 1.85rem); margin-bottom: 0.45rem; }
+  .lead { font-size: clamp(13px, 4vh, 16.5px); line-height: 1.45; }
+  p { font-size: clamp(12.5px, 3.6vh, 15px); line-height: 1.45; }
+  .eyebrow { font-size: clamp(10.5px, 3vh, 13.5px); margin-bottom: 0.4rem; }
   .hero-how { font-size: clamp(10px, 2.6vh, 12px); }
   .num-val { font-size: clamp(1.3rem, 6.4vh, 2rem); }
   .num-card p { font-size: clamp(10.5px, 2.8vh, 12.5px); }
   .nums-foot { font-size: clamp(11px, 3vh, 13.5px); }
-  .step-n { font-size: clamp(10px, 2.7vh, 12.5px); }
-  .step-copy h2 { font-size: clamp(1.05rem, 5.2vh, 1.55rem); }
-  .step-copy p { font-size: clamp(11px, 3vh, 13px); }
+  .step-n { font-size: clamp(10.5px, 3vh, 13.5px); }
+  .step-copy h2 { font-size: clamp(1.1rem, 5.8vh, 1.75rem); }
+  .step-copy p { font-size: clamp(11.5px, 3.3vh, 14px); }
   .score b { font-size: clamp(1.3rem, 6.4vh, 2rem); }
-  .plan-price { font-size: clamp(1.2rem, 6vh, 1.8rem); }
-  .final-1, .final-3 { font-size: clamp(1.2rem, 6vh, 1.8rem); }
+  .plan-price { font-size: clamp(1.05rem, 5.2vh, 1.6rem); }
+  .final-1, .final-3 { font-size: clamp(1.3rem, 7vh, 2rem); }
   .typing { font-size: clamp(13px, 3.6vh, 17px); }
   .node, .pnode, .opnode, .fnode { font-size: clamp(10px, 2.8vh, 12.5px); padding: 0.4rem 0.6rem; }
   .biz h3 { font-size: clamp(9.5px, 2.6vh, 11.5px); }
@@ -1136,20 +1138,20 @@ strong { color: var(--w); font-weight: 700; }
   .wrap { max-width: none; }
   .screen > *:not(.wm) { max-width: none; }
   .nums, .outs, .plans, .biz-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .nums, .plans { margin: 0.5rem auto 0.45rem; gap: 0.45rem; }
-  .outs { gap: 0.4rem; }
+  .nums, .plans { margin: 0.4rem auto 0.35rem; gap: 0.36rem; }
+  .outs { gap: 0.32rem; margin-top: 0.2rem; }
   /* содержимое карточек ужимается вместе с сеткой: восемь карточек в две
      строки иначе не укладывались в 360px высоты */
-  .out { padding: 0.3rem 0.42rem; gap: 0.2rem; }
-  .out-ic { width: 1.25rem; height: 1.25rem; font-size: 9px; margin-bottom: 0.08rem; }
-  .out h3 { font-size: clamp(9.5px, 2.5vh, 11.5px); margin-bottom: 0.05rem; }
-  .out p { font-size: clamp(8.5px, 2.2vh, 10.5px); line-height: 1.25; }
-  .plan { padding: 0.5rem 0.55rem; gap: 0.25rem; }
-  .plan h3 { font-size: clamp(9.5px, 2.5vh, 11.5px); }
-  .plan-scope { font-size: clamp(9.5px, 2.5vh, 11.5px); }
-  .btn-sm { padding: 0.42rem 0.5rem; font-size: clamp(9px, 2.4vh, 11px); }
+  .out { padding: 0.2rem 0.36rem; gap: 0.12rem; }
+  .out-ic { width: 1.1rem; height: 1.1rem; font-size: 8px; margin-bottom: 0.05rem; }
+  .out h3 { font-size: clamp(9px, 2.3vh, 11px); margin-bottom: 0.04rem; }
+  .out p { font-size: clamp(8px, 2vh, 10px); line-height: 1.2; }
+  .plan { padding: 0.42rem 0.5rem; gap: 0.2rem; }
+  .plan h3 { font-size: clamp(9px, 2.3vh, 11px); }
+  .plan-scope { font-size: clamp(9px, 2.3vh, 11px); }
+  .btn-sm { padding: 0.34rem 0.45rem; font-size: clamp(8.5px, 2.2vh, 10.5px); }
   .plan-badge { font-size: 7.5px; padding: 0.12rem 0.4rem; }
-  .compare { font-size: clamp(9.5px, 2.5vh, 11.5px); line-height: 1.4; }
+  .compare { font-size: clamp(9px, 2.3vh, 11px); line-height: 1.35; }
   .biz-grid { gap: 0.4rem; margin: 0.5rem auto 0.45rem; }
   .compare { flex-direction: row; gap: 0.3rem 0.7rem; }
   .compare .cmp.now { flex-basis: auto; }
@@ -1158,21 +1160,38 @@ strong { color: var(--w); font-weight: 700; }
      графики под ней) на 412px высоты паутина сжималась до 90px, а графики
      уезжали под нижний край (правка владельца: «паутина нормальная, и там
      не влезают под паутиной все линии»). */
+  /* ряды по СОДЕРЖИМОМУ и вся сетка по центру: при minmax(0,1fr) графики не
+     влезали в свой ряд и с align-items:center вылезали вверх, наезжая на
+     оценку (замер: нахлёст 9px на 915x412 и 26px на 740x360) */
   .maturity { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-    grid-template-areas: "score radar" "dims radar"; align-items: center; gap: 0.3rem 0.8rem; }
+    grid-template-rows: auto auto; align-content: center;
+    grid-template-areas: "score radar" "dims radar"; align-items: center; gap: 0.35rem 0.8rem; }
+  .maturity .score { align-self: end; }
+  .ui-body { padding: 0.5rem 0.55rem; }
+  .dim-track { height: 3px; }
+  .dims { gap: 0.14rem; }
+  .dim { row-gap: 0.12rem; }
+  .score b { font-size: clamp(0.95rem, 4.4vh, 1.5rem); }
   .maturity .radar { width: auto; height: 100%; max-height: 100%; aspect-ratio: 1 / 1;
     justify-self: center; align-self: center; }
   .dims { grid-template-columns: minmax(0, 1fr); gap: 0.12rem; align-content: center; }
-  .dim-name { font-size: clamp(9px, 2.5vh, 12px); }
-  .dim-val { font-size: clamp(9.5px, 2.6vh, 12.5px); }
+  .dim-name { font-size: clamp(8px, 2.2vh, 11.5px); }
+  .dim-val { font-size: clamp(8.5px, 2.3vh, 12px); }
   .score b { font-size: clamp(1.1rem, 5.4vh, 1.7rem); }
   .score span { font-size: clamp(9px, 2.4vh, 11px); }
   /* панель шага считается от высоты окна: кружок теперь сбоку, а не снизу,
      и запас под него больше не нужен */
-  .stage-card { height: clamp(7rem, calc(100dvh - 10.5rem), 20rem); }
-  .screen:has(.stage-card) { padding-bottom: 1.5rem; }
-  .screen.final { padding-bottom: 1.5rem; }
-  .final footer { padding-top: 0.5rem; gap: 0.3rem; }
+  /* поля стали симметричными (7rem вместо 4.9rem) — панель пересчитана,
+     иначе экран шага вылезал на 11–20px */
+  .stage-card { height: clamp(6.5rem, calc(100dvh - 13.4rem), 20rem); }
+  /* поля у экранов с панелью и у финала ЯВНО симметричные: без этого
+     действуют портретные правила (запас снизу под кружок), и экран стоял
+     на 16–20px ниже середины, а без них вовсе разъезжался на 120px */
+  .screen:has(.stage-card), .screen.final { padding: 3.5rem calc(var(--vid-d) + 1.6rem); }
+  /* подвал финала прижат к низу абсолютом: с margin-top:auto он занимал
+     место в потоке, и вопрос с кнопкой вставал выше середины экрана */
+  .final footer { position: absolute; left: 0; right: 0; bottom: 0.7rem;
+    margin-top: 0; padding-top: 0; gap: 0.3rem; }
+  .final .wrap { flex: 1 1 auto; justify-content: center; }
   .ticker { margin-top: 0.6rem; }
 }
