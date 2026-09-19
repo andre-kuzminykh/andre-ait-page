@@ -405,12 +405,16 @@
   head.addEventListener('pointerdown', function (e) {
     if (mqDesk.matches) return;
     var r = head.getBoundingClientRect();
-    drag = { dx: e.clientX - r.left, dy: r.bottom - e.clientY, moved: 0, w: r.width, h: r.height };
+    drag = { dx: e.clientX - r.left, dy: r.bottom - e.clientY, moved: 0,
+             sx: e.clientX, sy: e.clientY, w: r.width, h: r.height };
     head.setPointerCapture(e.pointerId);
   });
   head.addEventListener('pointermove', function (e) {
     if (!drag) return;
-    drag.moved += Math.abs(e.movementX) + Math.abs(e.movementY);
+    /* путь считаем ОТ ТОЧКИ КАСАНИЯ, а не по movementX: у событий пальца
+       movementX всегда 0, поэтому жест не засчитывался и кружок стоял на
+       месте (жалоба владельца «кружочки нихуя не двигаются») */
+    drag.moved = Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy);
     if (drag.moved < 8) return;
     drag.last = { l: e.clientX - drag.dx, b: window.innerHeight - e.clientY - drag.dy };
     applyPos(drag.last);

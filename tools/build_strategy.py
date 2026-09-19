@@ -604,9 +604,13 @@ def moved(to, lang):
 
 def build():
     from strategy_copy import EN, RU
+    # правило переносов — общее на весь сайт (tools/typo.py): служебное слово
+    # уезжает на следующую строку вместе со своим («don't use it / effectively»
+    # владельцу режет глаз так же, как и в биографии)
+    from typo import bind_copy
     pages = (
-        ("ai-strategy/index.html", page(EN, "en")),
-        ("ai-strategy/ru/index.html", page(RU, "ru")),
+        ("ai-strategy/index.html", page(bind_copy(EN, "en"), "en")),
+        ("ai-strategy/ru/index.html", page(bind_copy(RU, "ru"), "ru")),
         # старые адреса: лендинг успел постоять на /strategy/
         (OLD_PATH_EN.strip("/") + "/index.html", moved(PATH_EN, "en")),
         (OLD_PATH_RU.strip("/") + "/index.html", moved(PATH_RU, "ru")),

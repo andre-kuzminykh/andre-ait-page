@@ -10,9 +10,19 @@ import re
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def _read(rel):
+def _raw(rel):
     with open(os.path.join(_ROOT, rel), encoding="utf-8") as f:
         return f.read()
+
+
+def _read(rel):
+    """Страница с обычными пробелами вместо неразрывных.
+
+    Генератор клеит служебные слова со следующим неразрывным пробелом
+    (FR-SITE42, tools/typo.py), а проверки ниже про текст, а не про перенос:
+    без нормализации каждая такая проверка падала бы на \u00a0. Сам перенос
+    проверяется отдельно — по сырому файлу через _raw()."""
+    return _raw(rel).replace(u"\u00a0", " ")
 
 
 def _en():
@@ -1254,24 +1264,6 @@ def test_maturity_switches_only_at_the_one_site_wide_breakpoint():
     assert "@media (min-width:1024px)" in web, "веб-раскладка зрелости включается с 1024px"
 
 
-if __name__ == "__main__":
-    import sys
-    fails = 0
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            try:
-                fn()
-                print("ok   " + name)
-            except AssertionError as e:
-                fails += 1
-                print("FAIL " + name + ": " + str(e))
-            except Exception as e:
-                fails += 1
-                print("ERR  " + name + ": " + type(e).__name__ + ": " + str(e))
-    print("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if not fails else "ПРОВАЛЕНО: %d" % fails)
-    sys.exit(1 if fails else 0)
-
-
 def test_maturity_web_fills_its_picture():
     """Паутина занимает почти всю свою картинку: при r=68 из 100 треть svg
     была пустым полем, и схема выглядела мелкой при большом элементе
@@ -1284,7 +1276,10 @@ def test_maturity_web_fills_its_picture():
         svg = html[html.index('<svg class="radar"'):]
         svg = svg[:svg.index("</svg>")]
         assert 'viewBox="0 0 200 200"' in svg, "система координат картинки — 200x200"
-        nums = [float(v) for v in re.findall(r"[-\d.]+(?=[,\s\"])", svg.split("points=")[1][:200])]
+        # колец три, и смотреть надо на САМОЕ внешнее: первый points= — это
+        # внутреннее кольцо, по нему радиус не проверишь
+        nums = [float(v) for ring in re.findall(r'points="([^"]+)"', svg)
+                for v in ring.replace(",", " ").split()]
         assert max(nums) > 180, page + ": внешнее кольцо почти у края картинки"
 
 
@@ -1332,16 +1327,20 @@ def test_phone_in_landscape_fits_without_scrolling():
     css = _read("assets/strategy.css")
     i = css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)")
     block = css[i:]
-    assert ".screen { padding: 3.5rem 1.4rem 1.4rem calc(var(--vid-d) + 1.8rem); }" in block, \
-        "содержимое стоит правее кружка, как ролик и текст на главной"
-    assert "--vid-d: clamp(96px, min(20vw, 30vh), 150px);" in block, \
-        "кружок крупнее прежних 88px: 18vh упирались в нижнюю границу clamp"
+    # поля СИММЕТРИЧНЫЕ и равны ширине кружка: владелец потребовал «пусть всё
+    # будет по середине по центру по горизонтали», а кружок стоит слева
+    assert ".screen { padding: 3.5rem calc(var(--vid-d) + 1.6rem); }" in block, \
+        "содержимое стоит по центру между кружком и точками"
+    assert ".screen:has(.stage-card), .screen.final { padding: 3.5rem calc(var(--vid-d) + 1.6rem); }" in block, \
+        "экраны шагов и финал считаются по тому же правилу, иначе включались портретные поля"
+    assert "--vid-d: clamp(104px, 34vh, 150px);" in block, \
+        "кружок такой же, как в портрете: владелец мерил его на глаз по вертикалке"
     assert ".nums, .outs, .plans, .biz-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }" in block, \
         "сетки разворачиваются в ширину, иначе они не влезают по высоте"
-    assert "h1 { font-size: clamp(1.35rem, 7.4vh, 2.2rem)" in block, \
+    assert "h1 { font-size: clamp(1.45rem, 8.4vh, 2.4rem)" in block, \
         "кегль считается от ВЫСОТЫ окна: по 8.6vw заголовок вырастал до 78px"
-    assert ".stage-card { height: clamp(7rem, calc(100dvh - 10.5rem), 20rem); }" in block, \
-        "панель шага тоже от высоты окна, запас под кружок снизу не нужен"
+    assert ".stage-card { height: clamp(6.5rem, calc(100dvh - 13.4rem), 20rem); }" in block, \
+        "панель шага тоже от высоты окна, с запасом под заголовок и подпись"
 
 
 def test_owner_batch_of_short_copy_and_card_sizes():
@@ -1372,3 +1371,61 @@ def test_owner_batch_of_short_copy_and_card_sizes():
         "карточки кейсов выше"
     assert ".biz-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.32rem; }" in css, \
         "между названием компании и метрикой чуть больше воздуха"
+
+
+# ── девятнадцатый проход: переносы и палец ───────────────────────────────
+
+def test_function_words_are_bound_to_the_next_word():
+    """FR-SITE42. То же правило переносов, что и в биографии: служебное слово
+    не остаётся в конце строки, оно уезжает вместе со своим. Ставит общий
+    модуль tools/typo.py при сборке — словари текстов остаются чистыми."""
+    nb = u"\u00a0"
+    gen = _read("tools/build_strategy.py")
+    assert "from typo import bind_copy" in gen, "правило общее на весь сайт, а не своя копия"
+    assert 'bind_copy(EN, "en")' in gen and 'bind_copy(RU, "ru")' in gen
+    src = _read("tools/strategy_copy.py")
+    assert nb not in src, "в словаре текстов неразрывных пробелов нет — их ставит сборка"
+    # места, где строки рвались по скриншотам владельца
+    for probe in (u"it" + nb + u"effectively", u"to" + nb + u"implement", u"A" + nb + u"manager"):
+        assert probe in _raw("ai-strategy/index.html"), "EN: не склеено «%s»" % probe.replace(nb, " ")
+    assert u"в" + nb + u"основную" in _raw("ai-strategy/ru/index.html"), "RU: не склеено «в основную»"
+
+
+def test_circle_follows_a_finger():
+    """FR-SITE44. «КРУЖОЧКИ НИХУЯ НЕ ДВИГАЮТСЯ»: мышью кружок таскался, а
+    пальцем нет. touch-action: manipulation отдавал жест браузеру, а путь
+    считался по movementX, который у тач-событий ВСЕГДА 0."""
+    css = _read("assets/strategy.css")
+    assert re.search(r"\.head \{[^}]*touch-action: none;", css), \
+        "с manipulation браузер съедает жест и pointermove не приходит"
+    js = _read("assets/strategy.js")
+    assert "e.movementX" not in js, "у тач-событий movementX всегда 0"
+    assert "drag.sx" in js and "drag.sy" in js, "путь считается от точки касания"
+    assert "head.style.bottom" in js, "кружок держится за левый нижний угол"
+
+
+def test_runner_stands_at_the_end_of_the_file():
+    """Блок запуска исполняется В МОМЕНТ, когда до него дошёл разбор файла,
+    поэтому тесты, дописанные ПОСЛЕ него, молча не выполнялись — так мимо
+    прогона прошли пять проверок сразу. Он должен быть последним в файле."""
+    src = _raw("tests/test_strategy.py")
+    tail = src[src.index('if __name__ == "__main__":'):]
+    assert "\ndef test_" not in tail, "тесты после блока запуска не запускаются"
+
+
+if __name__ == "__main__":
+    import sys
+    fails = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("ok   " + name)
+            except AssertionError as e:
+                fails += 1
+                print("FAIL " + name + ": " + str(e))
+            except Exception as e:
+                fails += 1
+                print("ERR  " + name + ": " + type(e).__name__ + ": " + str(e))
+    print("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if not fails else "ПРОВАЛЕНО: %d" % fails)
+    sys.exit(1 if fails else 0)

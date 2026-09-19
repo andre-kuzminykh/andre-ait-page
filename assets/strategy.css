@@ -37,9 +37,11 @@ img, svg { max-width: 100%; }
 @media (min-width:2300px) { body { zoom: 1.5; } }
 
 /* ===== Лицо ===== */
-/* touch-action: manipulation, а не none: кружок больше не таскают, и смахивание
-   пальцем по нему должно листать экраны, как и везде */
-.head { position: fixed; z-index: 45; overflow: hidden; background: #0a0a0f; cursor: pointer; touch-action: manipulation;
+/* touch-action: none ОБЯЗАТЕЛЕН: кружок таскают пальцем, а при manipulation
+   браузер забирает жест себе под прокрутку и события pointermove до элемента
+   не доходят — на телефоне кружок не двигался вообще (жалоба владельца
+   «кружочки нихуя не двигаются»). */
+.head { position: fixed; z-index: 45; overflow: hidden; background: #0a0a0f; cursor: pointer; touch-action: none;
   border: 1px solid transparent; transition: border-color 0.4s ease, box-shadow 0.4s ease; }
 .head video { width: 100%; height: 100%; object-fit: cover; display: block; }
 /* Растушёвка отсчитывается от ЛЕВОГО КРАЯ КОЛОДЫ, а не от края колонки.

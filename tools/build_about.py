@@ -11,6 +11,7 @@
 Вёрстка — assets/about.css, тексты — tools/about_copy.py.
 """
 import os
+import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = "https://andre.technology"
@@ -396,12 +397,13 @@ JS = r"""
   media.addEventListener('pointerdown', function (e) {
     if (mqDesktop.matches) return;
     var r = media.getBoundingClientRect();
-    drag = { dx: e.clientX - r.left, dy: r.bottom - e.clientY, moved: 0 };
+    drag = { dx: e.clientX - r.left, dy: r.bottom - e.clientY, moved: 0, sx: e.clientX, sy: e.clientY };
     media.setPointerCapture(e.pointerId);
   });
   media.addEventListener('pointermove', function (e) {
     if (!drag) return;
-    drag.moved += Math.abs(e.movementX) + Math.abs(e.movementY);
+    /* путь считаем от точки касания: у событий пальца movementX всегда 0 */
+    drag.moved = Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy);
     if (drag.moved < 8) return;
     drag.last = { l: e.clientX - drag.dx, b: window.innerHeight - e.clientY - drag.dy };
     applyPos(drag.last);
@@ -594,7 +596,11 @@ def page(c):
 
 def build():
     from about_copy import EN, RU
-    pages = (("about/index.html", page(EN)), ("about/ru/index.html", page(RU)))
+    # правило переносов — общее на весь сайт (tools/typo.py): служебное слово
+    # уезжает на следующую строку вместе со своим
+    from typo import bind_copy
+    pages = (("about/index.html", page(bind_copy(EN, "en"))),
+             ("about/ru/index.html", page(bind_copy(RU, "ru"))))
     for rel, html in pages:
         path = os.path.join(ROOT, rel)
         os.makedirs(os.path.dirname(path), exist_ok=True)
