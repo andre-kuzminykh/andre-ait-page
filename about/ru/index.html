@@ -520,7 +520,50 @@
   setMuted(true);
   function toggle() { setMuted(!video.muted); var p = video.play && video.play(); if (p && p.catch) p.catch(function () {}); }
   document.getElementById('mic-btn').addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
-  media.addEventListener('click', toggle);
+
+  /* Кружок с роликом можно ТАСКАТЬ — как на лендинге (правка владельца).
+     Точка хранится как отступы от ЛЕВОГО-НИЖНЕГО угла, а не как `top`: у
+     мобильного браузера при показе адресной строки видимая область и
+     координаты position:fixed расходятся, и сохранённый `top` выбрасывал
+     кружок на середину экрана. Любая точка прижимается к окну. */
+  var POS_KEY = 'ait_about_head';
+  var drag = null;
+  function clampPos(p) {
+    if (!p || typeof p.l !== 'number' || typeof p.b !== 'number') return null;
+    var w = media.offsetWidth || 120, h = media.offsetHeight || 120;
+    return { l: Math.min(Math.max(8, window.innerWidth - w - 8), Math.max(8, p.l)),
+             b: Math.min(Math.max(8, window.innerHeight - h - 8), Math.max(8, p.b)) };
+  }
+  function applyPos(p) {
+    if (mqDesktop.matches) { media.style.left = ''; media.style.bottom = ''; media.style.top = ''; return; }
+    p = clampPos(p);
+    if (!p) return;
+    media.style.left = p.l + 'px';
+    media.style.bottom = p.b + 'px';
+    media.style.top = 'auto';
+  }
+  function savedPos() { try { return JSON.parse(localStorage.getItem(POS_KEY)); } catch (e) { return null; } }
+  media.addEventListener('pointerdown', function (e) {
+    if (mqDesktop.matches) return;
+    var r = media.getBoundingClientRect();
+    drag = { dx: e.clientX - r.left, dy: r.bottom - e.clientY, moved: 0 };
+    media.setPointerCapture(e.pointerId);
+  });
+  media.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    drag.moved += Math.abs(e.movementX) + Math.abs(e.movementY);
+    if (drag.moved < 8) return;
+    drag.last = { l: e.clientX - drag.dx, b: window.innerHeight - e.clientY - drag.dy };
+    applyPos(drag.last);
+  });
+  media.addEventListener('pointerup', function () {
+    if (drag && drag.moved < 8) toggle();
+    else if (drag && drag.last) { try { localStorage.setItem(POS_KEY, JSON.stringify(clampPos(drag.last))); } catch (err) {} }
+    drag = null;
+  });
+  media.addEventListener('click', function (e) { if (mqDesktop.matches) toggle(); });
+  if (!mqDesktop.matches) applyPos(savedPos());
+  window.addEventListener('resize', function () { applyPos(savedPos()); });
 
   paint();
 })();

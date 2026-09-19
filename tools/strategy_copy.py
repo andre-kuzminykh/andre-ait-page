@@ -33,16 +33,17 @@ EN = {
 
     # ── 3. Цифры ──
     "n_eyebrow": "The market today",
-    "n_head": 'Using <span class="hl-p">AI</span> is not the same as becoming <span class="hl-p">AI-First</span>',
+    "n_head": ('<span class="l">Using <span class="hl-p">AI</span> is not the same</span>'
+               '<span class="l">as becoming <span class="hl-p nb">AI-First</span></span>'),
     "numbers": [
-        ("76%", "SMBs use AI"),
+        ("76%", "companies use AI"),
         ("14%", "use it in core operations"),
-        ("81%", "don’t know how to use it effectively"),
+        ("81%", "don’t use it effectively"),
         # без ручного переноса: в узкой карточке «need more support» не влезало
         # в строку и разъезжалось само — пусть текст переносится естественно
         ("73%", "need more support to implement AI"),
     ],
-    "n_foot": "Don’t let your competitors get ahead with AI",
+    "n_foot": '<span class="nb">Don’t let your competitors get ahead with AI</span>',
 
     # ── 4. Кейсы ──
     "b_eyebrow": "Use cases",
@@ -74,11 +75,11 @@ EN = {
     # ровно одна короткая строка.
     "deliverables": [
         ("AI Maturity Index", "Where you stand today"),
-        ("Process Map", "Your business as processes"),
-        ("Cognitive Map", "How people think and decide"),
+        ("Process Map", "Your business processes"),
+        ("Cognitive Map", "How people think"),
         ("AI Opportunities", "What AI can take over"),
-        ("Human + AI", "Who does what — human or AI"),
-        ("AI-First Model", "How AI fits your business"),
+        ("Human + AI", "Who does what"),
+        ("AI-First Model", "AI for your business"),
         ("AI Agents", "What each agent does"),
         ("Roadmap", "What to implement, and when"),
     ],
@@ -94,7 +95,7 @@ EN = {
          "I map what I heard into business processes"),
         ("AI Opportunities", 'See what <span class="hl-p">AI</span> can <span class="hl-o">automate</span>',
          "Operations AI can take over"),
-        ("AI-First Model", 'How <span class="hl-p">AI</span> fits your <span class="hl-o">business</span>',
+        ("AI-First Model", '<span class="hl-p">AI</span> for your <span class="hl-o">business</span>',
          "I redesign your processes around AI"),
         ("AI Agents", 'Know <span class="hl-o">what</span> to build',
          "Build-ready agent specifications"),
@@ -129,10 +130,10 @@ EN = {
 
     # ── 7. Обучение ──
     "l_eyebrow": "Learning",
-    "l_head": ('<span class="l">New <span class="hl-o">business</span> model.</span>'
+    "l_head": ('<span class="l">New <span class="hl-o">business</span> model</span>'
                '<span class="l">New <span class="hl-p">human</span> roles</span>'),
     "l_sub": ('<span class="l">Free training for your team</span>'
-              '<span class="l">Work with AI and build agents</span>'),
+              '<span class="l">Develop AI agents yourself</span>'),
     "l_note": "For more complex cases, write to me",
     "roles": [
         ("AI Automation Engineer", "fa-robot"), ("AI Product Engineer", "fa-cubes"),
@@ -145,7 +146,7 @@ EN = {
 
     # ── 8. Тарифы ──
     "pr_eyebrow": "Pricing",
-    "pr_head": ('<span class="l">Start <span class="hl-p">free</span>.</span>'
+    "pr_head": ('<span class="l">Start <span class="hl-p">free</span></span>'
                 '<span class="l">Scale as you <span class="hl-o">grow</span></span>'),
     "pr_sub": "One-time purchase. No subscription",
     "plans": [
@@ -190,14 +191,15 @@ RU = {
                   '<span class="l">Получите свою AI-First модель</span>'),
 
     "n_eyebrow": "Рынок сегодня",
-    "n_head": 'Пользоваться <span class="hl-p">ИИ</span> и быть <span class="hl-p">AI-First</span> — не одно и то же',
+    "n_head": ('<span class="l">Пользоваться <span class="hl-p">ИИ</span> и быть <span class="hl-p nb">AI-First</span></span>'
+               '<span class="l">— не одно и то же</span>'),
     "numbers": [
-        ("76%", "малых и средних компаний используют ИИ"),
+        ("76%", "компаний используют ИИ"),
         ("14%", "встроили его в основную работу"),
-        ("81%", "не знают, как применять его эффективно"),
+        ("81%", "не применяют эффективно"),
         ("73%", '<span class="l">нужна поддержка</span><span class="l">во внедрении</span>'),
     ],
-    "n_foot": "Не дайте конкурентам уйти вперёд с ИИ",
+    "n_foot": '<span class="nb">Не дайте конкурентам уйти вперёд с ИИ</span>',
 
     "b_eyebrow": "Кейсы",
     "b_head": ('<span class="l">Собрано под ваш <span class="hl-o">бизнес</span></span>'
@@ -221,11 +223,11 @@ RU = {
     "d_sub": "Построена вокруг вашего бизнеса",
     "deliverables": [
         ("Индекс ИИ-зрелости", "Где вы сейчас"),
-        ("Карта процессов", "Ваш бизнес как процессы"),
-        ("Когнитивная карта", "Как люди думают и решают"),
+        ("Карта процессов", "Ваши бизнес-процессы"),
+        ("Когнитивная карта", "Как люди думают"),
         ("Возможности ИИ", "Что ИИ возьмёт на себя"),
-        ("Человек + ИИ", "Кто что делает — человек или ИИ"),
-        ("AI-First модель", "Как ИИ встроится в бизнес"),
+        ("Человек + ИИ", "Кто что делает"),
+        ("AI-First модель", "ИИ для вашего бизнеса"),
         ("ИИ-агенты", "Что делает каждый агент"),
         ("Дорожная карта", "Что внедрять и когда"),
     ],
@@ -238,11 +240,11 @@ RU = {
          "Расскажите, как работает бизнес"),
         ("Бизнес-процессы", 'Ваш <span class="hl-o">бизнес</span> как <span class="hl-p">процессы</span>',
          "Разложу услышанное на бизнес-процессы"),
-        ("Возможности ИИ", 'Что <span class="hl-p">ИИ</span> может <span class="hl-o">автоматизировать</span>',
+        ("Возможности ИИ", 'Что <span class="hl-o">автоматизировать</span> с <span class="hl-p">ИИ</span>',
          "Операции, которые заберёт ИИ"),
-        ("AI-First модель", 'Как <span class="hl-p">ИИ</span> встроится в <span class="hl-o">бизнес</span>',
+        ("AI-First модель", '<span class="hl-p">ИИ</span> для вашего <span class="hl-o">бизнеса</span>',
          "Перестрою процессы вокруг ИИ"),
-        ("ИИ-агенты", 'Знать, <span class="hl-o">что</span> именно строить',
+        ("ИИ-агенты", '<span class="hl-o">Что</span> именно разрабатывать',
          "Готовые спецификации ИИ-агентов"),
     ],
     "stage": {
@@ -270,11 +272,11 @@ RU = {
     },
 
     "l_eyebrow": "Обучение",
-    "l_head": ('<span class="l">Новая <span class="hl-o">бизнес</span>-модель.</span>'
+    "l_head": ('<span class="l">Новая <span class="hl-o">бизнес</span>-модель</span>'
                '<span class="l">Новые <span class="hl-p">роли</span></span>'),
     "l_sub": ('<span class="l">Бесплатное обучение для команды</span>'
-              '<span class="l">Работайте с ИИ и собирайте агентов</span>'),
-    "l_note": "Для более сложных задач — пишите мне",
+              '<span class="l">Разработайте ИИ-агентов сами</span>'),
+    "l_note": "Для более сложных кейсов — пишите мне",
     "roles": [
         ("AI Automation Engineer", "fa-robot"), ("AI Product Engineer", "fa-cubes"),
         ("AI Product Manager", "fa-compass-drafting"), ("AI Engineer", "fa-microchip"),
@@ -285,7 +287,7 @@ RU = {
     ],
 
     "pr_eyebrow": "Тарифы",
-    "pr_head": ('<span class="l">Начните <span class="hl-p">бесплатно</span>.</span>'
+    "pr_head": ('<span class="l">Начните <span class="hl-p">бесплатно</span></span>'
                 '<span class="l"><span class="hl-o">Масштабируйтесь</span> дальше</span>'),
     "pr_sub": "Разовая покупка. Без подписки",
     "plans": [
