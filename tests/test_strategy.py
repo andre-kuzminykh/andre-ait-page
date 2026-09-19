@@ -88,25 +88,26 @@ def test_face_keeps_the_proportions_of_the_main_site():
     assert mob and "border-radius: 50%" in mob[0], "на мобилке голова — кружок"
 
 
-def test_head_stands_in_the_bottom_left_corner_and_is_clickable():
-    """Жалоба владельца: «почему я захожу на сайт с мобилки и голова вообще
-    тут, она должна быть слева внизу». Кружок больше НЕ таскают: место задано
-    только в CSS. Инлайновые координаты из localStorage ставились как `top`
-    в координатах видимой области, а у мобильного браузера при показе адресной
-    строки она расходится с системой координат position:fixed — кружок всплывал
-    на середину экрана. Плюс тап пальцем набирал пиксели дрожания и сохранялся
-    как перетаскивание."""
+def test_head_can_be_dragged_and_keeps_its_corner():
+    """Правка владельца: «с хуя ли я не могу кружок двигать». Кружок таскают
+    снова, но точка хранится как отступы от ЛЕВОГО-НИЖНЕГО угла, а не как
+    `top`: у мобильного браузера при показе адресной строки видимая область и
+    координаты position:fixed расходятся, и сохранённый `top` выбрасывал
+    кружок на середину экрана."""
     js = _read("assets/strategy.js")
-    for dead in ("pointerdown", "pointermove", "setPointerCapture", "clampPos", "applyPos"):
-        assert dead not in js, "перетаскивания кружка больше нет: " + dead
-    assert "localStorage.removeItem('ait_strategy_head')" in js, \
-        "старая сохранённая точка подчищается — телефоны чинятся сами"
-    assert "head.addEventListener('click', function () { setPlaying(video.muted); });" in js, \
-        "тап по кружку включает и выключает звук на любом размере"
+    assert "pointerdown" in js and "pointermove" in js, "кружок перетаскивается"
+    assert "head.style.bottom = p.b + 'px';" in js and "head.style.top = 'auto';" in js, \
+        "точка считается от нижнего края, а не от верхнего"
+    assert "b: window.innerHeight - e.clientY - drag.dy" in js, \
+        "и при перетаскивании тоже"
+    assert "function clampPos(p)" in js and "window.innerHeight - h - 8" in js, \
+        "любая точка прижимается к окну — кружок не теряется"
+    assert "if (drag && drag.moved < 8)" in js, \
+        "тап с дрожанием пальца не считается перетаскиванием"
     css = _read("assets/strategy.css")
     mob = css[css.index("@media (max-width:1023px)"):]
     assert ".head { left: clamp(" in mob and "bottom: calc(clamp(" in mob, \
-        "на телефоне кружок прижат к левому нижнему углу средствами CSS"
+        "исходное место кружка — левый нижний угол, задано в CSS"
 
 
 # ── лендинг листается экранами, как биография ─────────────────────────────
@@ -509,14 +510,13 @@ def test_process_chain_has_no_dangling_connectors():
         assert html.count('class="fwrap"') == 2, lang + ": две стрелки переноса"
 
 
-def test_circle_never_leaves_its_corner():
-    """Жалоба владельца «и где кружок?», а потом «голова должна быть слева
-    внизу»: обе от сохранённой точки. Никаких inline-координат у кружка нет —
-    ни из скрипта, ни из хранилища, поэтому потеряться ему негде."""
+def test_dragged_circle_never_leaves_the_window():
+    """Жалоба владельца «и где кружок?»: сохранённая точка с широкого окна на
+    узком оказывалась за краем экрана. Любая точка прижимается к окну, на
+    вебе inline-координаты сбрасываются — там у ролика своя колонка."""
     js = _read("assets/strategy.js")
-    for dead in ("head.style.left", "head.style.top", "head.style.bottom", "savedPos"):
-        assert dead not in js, "скрипт не задаёт кружку координаты: " + dead
-    assert "localStorage.setItem('ait_strategy_head'" not in js, "и ничего не запоминает"
+    assert "function clearPos()" in js and "if (mqDesk.matches) { clearPos(); return; }" in js
+    assert "window.addEventListener('resize', function () { applyPos(savedPos()); });" in js
 
 
 def test_solution_heading_is_one_line_on_the_web():
@@ -889,11 +889,10 @@ def test_titles_paint_ai_purple_and_business_orange():
     assert 'as <span class="hl-p">processes</span>' in en, "processes фиолетовый"
     assert 'New <span class="hl-p">human</span> roles' in en, \
         "правка владельца: human фиолетовым и второй строкой"
-    # правка владельца: вместо «How your business should work with AI» —
-    # короче и по-человечески: «How AI fits your business»
-    assert 'How <span class="hl-p">AI</span> fits your <span class="hl-o">business</span>' in en, \
+    # правка владельца: «AI for Your Business» вместо «How AI fits your business»
+    assert '<span class="hl-p">AI</span> for your <span class="hl-o">business</span>' in en, \
         "заголовок пятого шага: AI фиолетовый, business оранжевый"
-    assert 'Как <span class="hl-p">ИИ</span> встроится в <span class="hl-o">бизнес</span>' in ru, \
+    assert '<span class="hl-p">ИИ</span> для вашего <span class="hl-o">бизнеса</span>' in ru, \
         "по-русски тот же смысл"
     assert "should work with" not in en, "старая формулировка убрана"
     assert ">See how your business" not in en, "из заголовка пятого шага убрано See"
@@ -947,14 +946,21 @@ def test_mobile_layout_is_a_second_layout_not_a_squeeze():
         "лид на узком телефоне ужимается, чтобы строка не разъезжалась"
 
 
-def test_mobile_chain_is_one_flow_without_dangling_arrows():
-    """Правка владельца «видишь и стрелки, и мелкота»: ряды, посчитанные под
-    веб, на 390px ломались переносом и в конце строки повисала стрелка,
-    указывающая в пустоту. На телефоне связи убраны, а ряды схлопнуты в один
-    поток с переносом по ширине экрана."""
+def test_mobile_chain_runs_top_down_with_arrows():
+    """Правка владельца: «стрелки проебал и тут, и где AI fits». Ряд из трёх
+    блоков со стрелками в 306px ширины не помещается никак, поэтому на
+    телефоне цепочка идёт СВЕРХУ ВНИЗ: между двумя блоками всегда стрелка и ни
+    одна не повисает в конце строки. Размеры звеньев считаются от высоты
+    окна — на 640px высоты панель всего 233px."""
     mob = _mobile_block()
-    assert ".parrow, .farrow, .pwrap, .fwrap { display: none; }" in mob
-    assert ".pchain .prow, .fflow .frow { display: contents; }" in mob
+    assert ".parrow, .farrow, .pwrap, .fwrap { display: none; }" not in mob, \
+        "стрелки на телефоне видны"
+    assert ".parrow, .farrow { display: block; transform: rotate(90deg);" in mob, \
+        "стрелка развёрнута вниз"
+    assert ".pchain .prow, .fflow .frow { display: flex; flex-direction: column;" in mob, \
+        "ряды идут колонкой"
+    assert ".node, .pnode, .fnode { font-size: clamp(8.5px, 1.75vh, 15px);" in mob, \
+        "звенья считаются от высоты окна"
     assert ".opgroup .oprow { display: contents; }" in mob, \
         "на сцене возможностей поток свой у каждой группы"
 
@@ -1336,3 +1342,33 @@ def test_phone_in_landscape_fits_without_scrolling():
         "кегль считается от ВЫСОТЫ окна: по 8.6vw заголовок вырастал до 78px"
     assert ".stage-card { height: clamp(7rem, calc(100dvh - 10.5rem), 20rem); }" in block, \
         "панель шага тоже от высоты окна, запас под кружок снизу не нужен"
+
+
+def test_owner_batch_of_short_copy_and_card_sizes():
+    """Правки владельца одним списком: короткие подписи карточек решения,
+    «Что автоматизировать с ИИ» и «Что именно разрабатывать» по-русски,
+    вторая строка обучения про самостоятельную разработку агентов, точки
+    после «business model» и «Start free» убраны, в подвале нет точки-
+    разделителя, кнопка тарифа одинаковая у всех четырёх."""
+    en, ru = _en(), _ru()
+    for page in (en, ru):
+        assert "&middot;" not in page.split('class="legal"')[1][:200], \
+            "в подвале между ссылками нет точки"
+        assert page.count('class="btn btn-ghost btn-sm"') == 4, \
+            "кнопка «Старт» одинаковая у всех четырёх тарифов"
+    assert "Who does what</p>" in en and "Кто что делает</p>" in ru, "без «человек или ИИ»"
+    assert "Your business processes</p>" in en and "Ваши бизнес-процессы</p>" in ru
+    assert "How people think</p>" in en and "Как люди думают</p>" in ru
+    assert "AI for your business</p>" in en and "ИИ для вашего бизнеса</p>" in ru
+    assert '<span class="hl-o">автоматизировать</span> с <span class="hl-p">ИИ</span>' in ru
+    assert '<span class="hl-o">Что</span> именно разрабатывать' in ru
+    assert "Develop AI agents yourself" in en and "Разработайте ИИ-агентов сами" in ru
+    assert "более сложных кейсов" in ru, "«кейсов», а не «задач»"
+    assert "model.</span>" not in en and "модель.</span>" not in ru, "точки после модели нет"
+    assert "free</span>.</span>" not in en and "бесплатно</span>.</span>" not in ru
+    css = _read("assets/strategy.css")
+    assert ".fm-bot { font-size: clamp(58px, 6vw, 92px);" in css, "знак финала крупнее"
+    assert ".biz { display: flex; align-items: center; gap: 0.65rem; min-width: 0; min-height: 4.1rem;" in css, \
+        "карточки кейсов выше"
+    assert ".biz-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.32rem; }" in css, \
+        "между названием компании и метрикой чуть больше воздуха"

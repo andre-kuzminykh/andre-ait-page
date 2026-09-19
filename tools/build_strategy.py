@@ -341,7 +341,9 @@ def page(t, lang):
           </article>""".format(
         best=" best" if p[0] == "best" else "", name=p[1], price=p[2], scope=p[3], cta=p[4],
         badge='<span class="plan-badge">%s</span>' % t["best_value"] if p[0] == "best" else "",
-        style="primary" if p[0] == "best" else "ghost", href=t["cta_href"])
+        # кнопка одинаковая у всех четырёх: у «Компании» она была белой, а
+        # владелец просил «как в первых трёх»
+        style="ghost", href=t["cta_href"])
         for p in t["plans"])
 
     # Разделитель ставится ТОЛЬКО между зачёркнутыми ценами: строка
@@ -522,7 +524,7 @@ def page(t, lang):
         <a href="https://www.linkedin.com/in/andre-kuzminykh/" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2"><i class="fa-brands fa-linkedin"></i></a>
         <a href="mailto:admin@andre.technology" aria-label="Email" style="--brand:#F97316"><i class="fa-solid fa-envelope"></i></a>
       </div>
-      <p class="legal"><a href="/">{legal0}</a><span>&middot;</span><a href="/">{legal1}</a></p>
+      <p class="legal"><a href="/">{legal0}</a><a href="/">{legal1}</a></p>
       <p class="copy">2026 &copy; Andre AI Technologies LTD</p>
     </footer>
   </section>
