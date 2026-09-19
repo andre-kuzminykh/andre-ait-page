@@ -385,10 +385,13 @@
     background: linear-gradient(120deg, #8854F3 0%, #F97316 50%, #8854F3 100%);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude; pointer-events: none; }
-  /* Приветствие финала крупнее: это последний экран и на нём всего
-     несколько строк (правка владельца «сделай БОЛЬШЕ размером»). Разбивка по
-     строкам задана вручную (.l), поэтому формат не меняется. */
-  .finale p { margin: 0 0 1rem; font-size: clamp(15px, min(1.35vw, 3.1vh), 21px); line-height: 1.55; color: #ffffff; font-weight: 500; }
+  /* Кегль прощания в ВЕБЕ остался прежним, и это замер, а не лень: строки
+     здесь уже стояли на пределе колонки. На 1280 по-русски предел равен
+     старому кеглю (14.72px при 14.72px), на 1366/1440 запас — четверть
+     пиксела. Владелец просил крупнее, но с тем же форматом; на компе эти два
+     требования несовместимы, поэтому крупнее стало там, где запас есть, —
+     на телефоне и в горизонте. */
+  .finale p { margin: 0 0 1rem; font-size: clamp(14px, min(1.15vw, 2.6vh), 18px); line-height: 1.55; color: #ffffff; font-weight: 500; }
   .finale .btn-white { padding: 0.85rem 1.7rem; letter-spacing: 0.15em; font-size: clamp(11px, 0.9vw, 14px); gap: 0.75rem; max-width: 100%; white-space: normal; text-align: center; }
   .home-link { display: block; width: fit-content; margin: 0.9rem auto 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255,255,255,0.45); transition: color 0.3s ease; }
   @media (hover:hover) { .home-link:hover { color: #ffffff; } }
@@ -558,7 +561,10 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
     .stat p, .card p { font-size: 13px; line-height: 1.5; }
     .stat-num { font-size: clamp(1.5rem, 7vw, 2rem); }
     .card h3 { font-size: 12px; }
+    /* Крупнее ровно настолько, насколько позволяет колонка: предел без новой
+       строки — 20px по-английски и 16.25px по-русски на 390px (замер). */
     .finale p { font-size: 17px; }
+    html[lang="ru"] .finale p { font-size: 16px; }
     .finale .btn-white { font-size: 12.5px; padding: 0.85rem 1.4rem; }
     /* Подвал финала — к САМОМУ низу, прямо над точками (правка владельца:
        «оно же блять должно быть внизу, прям перед точками»). Общий нижний
@@ -572,6 +578,10 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
      к строке 40px. Ужимаем разрядку и поля — надпись встаёт в строку. */
   @media (max-width:380px) {
     .finale .btn-white { font-size: 12px; letter-spacing: 0.08em; padding: 0.8rem 1rem; gap: 0.55rem; }
+    /* на 320–375px прощание уже впритык: предел 15.5px по-английски и
+       14.5px по-русски — ровно столько и ставим */
+    .finale p { font-size: 15px; }
+    html[lang="ru"] .finale p { font-size: 14.5px; }
   }
 
   /* ===== Телефон в ГОРИЗОНТЕ ============================================
@@ -608,7 +618,11 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
     .stat p, .card p { font-size: clamp(11.5px, 3.2vh, 13.5px); line-height: 1.4; }
     .stat-num { font-size: clamp(1.3rem, 6.4vh, 2rem); }
     .card h3 { font-size: clamp(10px, 2.7vh, 11.5px); }
-    .finale p { font-size: clamp(13.5px, 4vh, 17px); }
+    /* в горизонте запас есть, но на 740x360 по-русски предел 13.85px —
+       отсюда 3.8vh вместо 4vh. Русский селектор повторён намеренно: у
+       портретного правила html[lang="ru"] .finale p вес выше, и без этого
+       оно перебивало горизонт (замер: 16px вместо 13.7px на 740x360). */
+    .finale p, html[lang="ru"] .finale p { font-size: clamp(13px, 3.8vh, 17px); }
     .finale .btn-white { font-size: clamp(10px, 2.7vh, 12px); padding: 0.6rem 1.1rem; }
     /* блоки главы разворачиваются в ширину — там, где есть место */
     .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.32rem; margin: 0.35rem 0 0.4rem; }

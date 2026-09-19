@@ -608,10 +608,15 @@ def test_finale_sits_in_the_middle_and_the_footer_at_the_bottom():
         "два auto-отступа делят свободное место поровну: финал по центру, подвал внизу"
     assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in css, \
         "на телефоне нижний запас под кружок финалу не нужен — подвал прижат к точкам"
-    assert ".finale p { margin: 0 0 1rem; font-size: clamp(15px, min(1.35vw, 3.1vh), 21px);" in css, \
-        "прощание в вебе крупнее (было 13–17px)"
-    assert ".finale p { font-size: 17px; }" in css, "на телефоне 17px (было 15px)"
-    assert ".finale p { font-size: clamp(13.5px, 4vh, 17px); }" in css, "в горизонте 16–17px (было 14px)"
+    # Крупнее — ровно там, где колонка это позволяет. Кегли подобраны замером
+    # предела, за которым появляется лишняя строка (см. FR-SITE43):
+    assert ".finale p { font-size: 17px; }" in css, "телефон, английский: 14.5px → 17px (предел 20px)"
+    assert 'html[lang="ru"] .finale p { font-size: 16px; }' in css, \
+        "телефон, русский: 14.5px → 16px (предел 16.25px на 390px)"
+    assert ".finale p, html[lang=\"ru\"] .finale p { font-size: clamp(13px, 3.8vh, 17px); }" in css, \
+        "горизонт: 12.6–14.4px → 13.7–15.7px; русский селектор повторён, иначе портретное правило перебивает"
+    assert ".finale p { margin: 0 0 1rem; font-size: clamp(14px, min(1.15vw, 2.6vh), 18px);" in css, \
+        "в вебе кегль прежний: на 1280 по-русски предел равен старому размеру"
 
 
 def test_circle_follows_a_finger():
