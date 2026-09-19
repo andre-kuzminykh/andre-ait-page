@@ -674,10 +674,14 @@
   @media (max-width:1023px) and (orientation: landscape) {
     /* video fills the left side, full height; its right edge fades into the black content side */
     #hero-video { width: 60%; height: 100vh; height: 100dvh; transform: none; }
-    /* тот же масштаб, больше стопов — мягче переход (FR-SITE17) */
+    /* Затемнение начинается ПРАВЕЕ лица. Замер: лицо занимает 51..331px из
+       915, а прежний градиент начинал гасить уже с 35% ширины ролика (192px) —
+       ровно по середине лица, и правая половина уходила в тень (правка
+       владельца «видишь, тень закрывает»). Теперь чисто до 58% (318px), а
+       дальше плавный уход в чёрное. */
     .video-shadow { width: 60%; height: 100vh; height: 100dvh;
-      background: linear-gradient(to right, rgba(5,5,5,0) 35%, rgba(5,5,5,0.12) 46%, rgba(5,5,5,0.28) 55%,
-        rgba(5,5,5,0.5) 62%, rgba(5,5,5,0.7) 70%, rgba(5,5,5,0.86) 77%, rgba(5,5,5,0.96) 83%, #050505 88%); }
+      background: linear-gradient(to right, rgba(5,5,5,0) 58%, rgba(5,5,5,0.18) 68%, rgba(5,5,5,0.45) 77%,
+        rgba(5,5,5,0.72) 85%, rgba(5,5,5,0.9) 91%, #050505 97%); }
 
     /* шапка в горизонте НИЖЕ: её размеры считались от ширины окна (11vw), и
        на 740px ширины бургер вырастал до 81px, а вся шапка — до 113px; текст
@@ -692,7 +696,7 @@
        где начинается затемнение, накрывал его (правка владельца «чтобы чёрным
        не заходило на лицо»). Показываем больше правой части кадра — лицо
        уезжает влево, на светлую половину. */
-    #hero-video { object-position: 64% center; }
+    #hero-video { object-position: 72% center; }
 
     /* содержимое колонки — ПО ЦЕНТРУ по вертикали и без прокрутки: раньше оно
        прижималось к верху и заголовок заезжал под кнопки шапки (правка
@@ -700,11 +704,27 @@
        Верхнее поле оставлено под шапку, центрируем внутри него. */
     .content-layer { justify-content: center; }
     .panel { width: 44%; height: auto; margin-left: auto; padding: 0 1.4rem; display: block; }
+    /* поля сверху и снизу ОДИНАКОВЫЕ: содержимое стоит ровно по центру экрана
+       (замер: было 230 при центре окна 206) и при этом не лезет под шапку */
     .scroll { max-height: 100dvh; height: 100dvh; justify-content: center;
-      padding: 4.2rem 0.25rem 1.2rem; overflow: hidden; }
-    /* зазоры между заголовком, подзаголовком и кнопкой — как в вертикали */
-    .sec, .sec-wide, .group { gap: clamp(0.45rem, 1.5vh, 0.9rem); }
-    .screen { gap: clamp(0.5rem, 1.7vh, 1rem) !important; }
+      padding: 4.2rem 0.25rem; overflow: hidden; }
+    /* Ритм один на все экраны: подзаголовок прижат К ЗАГОЛОВКУ, а перед
+       кнопкой воздух больше (правка владельца: «подтайтл должен быть под
+       тайтлом, а то у тебя над кнопкой сразу подтайтл»). */
+    .sec, .sec-wide, .group { gap: clamp(0.7rem, 2.4vh, 1.25rem); }
+    .screen { gap: clamp(0.7rem, 2.4vh, 1.25rem) !important; }
+    /* !important обязателен: у подзаголовка героя margin задан ИНЛАЙНОМ,
+       и без него правило не срабатывало — замер показал 19px против 5px
+       у секций */
+    .screen .desc { margin-top: calc(-1 * clamp(0.4rem, 1.6vh, 0.85rem)) !important; }
+    /* ссылка под кнопкой налезала на неё: −0.65rem из вертикальной вёрстки
+       при плотном ритме давал нахлёст в 2px (замер) */
+    .about-link, .sec-link { margin-top: 0; }
+    /* у героя и контакта свои контейнеры — ритм задаём им тем же шагом */
+    .contact-hero { gap: clamp(0.7rem, 2.4vh, 1.25rem); }
+    /* подзаголовок героя набран крупнее, и у заголовка есть интерлиньяж:
+       подтягиваем сильнее, чтобы он читался как часть заголовка */
+    .desc.hero-sub { margin-top: calc(-1 * clamp(0.75rem, 2.6vh, 1.3rem)) !important; }
     /* юридические ссылки на телефоне живут ТОЛЬКО в меню (правка владельца):
        на экране остаются иконки и копирайт */
     .contact-legal { display: none !important; }
@@ -720,12 +740,15 @@
     /* FR-SITE36: кегль растёт с ВЫСОТОЙ окна (vh) — раньше он был телефонный
        (фикс ~12px) и в ландшафтном окне в пол-экрана выглядел крошечным;
        min() дополнительно не даёт nowrap-строкам вылезти за узкую (44%) панель */
-    .hero-size { font-size: min(clamp(1.2rem, 6vh, 2.6rem), calc((44vw - 45px) / 9.9)); }
-    .h2-size  { font-size: min(clamp(1.25rem, 5.6vh, 2.5rem), calc((44vw - 45px) / 8.4)); }
+    .hero-size { font-size: min(clamp(1.35rem, 7.6vh, 2.6rem), calc((44vw - 45px) / 9.9)); }
+    .h2-size  { font-size: min(clamp(1.3rem, 7.2vh, 2.5rem), calc((44vw - 45px) / 8.4)); }
     .rm-title { font-size: clamp(1.25rem, 2.5vw, 1.8rem); }
-    .contact-title { font-size: min(clamp(1.3rem, 5.6vh, 2.5rem), calc((44vw - 45px) / 10.9)); }
-    .desc { font-size: min(clamp(11px, 2.1vh, 17px), calc((44vw - 45px) / 22.2)); line-height: 1.4; }
-    .desc.hero-sub { font-size: clamp(8px, calc((44vw - 48px) / 26.5), 14.5px); }
+    .contact-title { font-size: min(clamp(1.3rem, 7.2vh, 2.5rem), calc((44vw - 45px) / 10.9)); }
+    .desc { font-size: min(clamp(12.5px, 3.4vh, 18px), calc((44vw - 45px) / 19.5)); line-height: 1.45; }
+    /* подзаголовок героя набран В СТРОКУ (nowrap): 43 знака моноширинного
+       шрифта, поэтому кегль считается от ширины панели — при /23 строка
+       вылезала за панель и обрезалась с обеих сторон (замер на скрине) */
+    .desc.hero-sub { font-size: clamp(10.5px, calc((44vw - 48px) / 26.5), 16px); }
 
     /* кнопки экранов НИКОГДА не шире узкой (44%) панели: как FR-SITE4 для
        верхней CTA — ужимаем ТОЛЬКО по горизонтали (padding/шрифт/трекинг).
@@ -735,9 +758,9 @@
       padding-bottom: clamp(0.55rem, 1.9vh, 1.1rem) !important;
       padding-left: clamp(0.9rem, 2.6vh, 2rem) !important;
       padding-right: clamp(0.9rem, 2.6vh, 2rem) !important;
-      font-size: clamp(9.5px, 1.7vh, 14px) !important;
+      font-size: clamp(11px, 2.6vh, 15px) !important;
       letter-spacing: clamp(0.05em, 0.28vw, 0.15em) !important; }
-    .about-link, .sec-link { font-size: clamp(10px, 1.5vh, 13px); }
+    .about-link, .sec-link { font-size: clamp(11px, 2.2vh, 14px); }
 
     /* cards stack vertically inside the panel (no full-bleed horizontal rail) */
     .rail { flex-direction: column; align-items: stretch; gap: 0.5rem; width: 100%; max-width: 100%;
@@ -764,8 +787,12 @@
     .panel:has(.contact-screen.active) { height: 100%; }
     .scroll:has(.contact-screen.active) { max-height: 100%; height: 100%; padding: 0; }
     .contact-screen { min-height: 100%; transform: none; }
+    /* герой контакта центрируется во ВСЮ высоту экрана, а футер с иконками
+       прижат к низу абсолютом — иначе герой центрировался в остатке над
+       футером и визуально стоял выше середины (правка владельца «не по
+       центру нихуя») */
     .contact-hero { top: 0; margin: auto 0; }
-    .contact-footer { padding-bottom: 1.1rem; }
+    .contact-footer { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: 0.9rem; }
   }
 
   /* ===== FR-SITE37: НЕВЫСОКИЕ телефоны в портрете (SE, компактные Android) =====

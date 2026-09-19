@@ -622,11 +622,26 @@ def test_landscape_type_scales_with_height():
     html = _html()
     block = html.split("@media (max-width:1023px) and (orientation: landscape) {", 1)[1] \
                 .split("/* FR-SITE36: рослый ландшафт")[0]
-    assert "min(clamp(1.2rem, 6vh, 2.6rem)" in block, "hero-кегль ландшафта — от vh"
-    assert "min(clamp(1.25rem, 5.6vh, 2.5rem)" in block, "h2-кегль ландшафта — от vh"
-    assert "min(clamp(11px, 2.1vh, 17px)" in block, "desc-кегль ландшафта — от vh"
-    assert "font-size: clamp(9.5px, 1.7vh, 14px) !important" in block, \
+    # Правка владельца: «всё очень мелко блять везде, не надо так мелко» —
+    # кегли подняты, но по-прежнему считаются от ВЫСОТЫ окна, а min() держит
+    # nowrap-строки внутри узкой панели.
+    assert "min(clamp(1.35rem, 7.6vh, 2.6rem)" in block, "hero-кегль ландшафта — от vh"
+    assert "min(clamp(1.3rem, 7.2vh, 2.5rem)" in block, "h2-кегль ландшафта — от vh"
+    assert "min(clamp(12.5px, 3.4vh, 18px)" in block, "desc-кегль ландшафта — от vh"
+    assert "font-size: clamp(11px, 2.6vh, 15px) !important" in block, \
         "кегль кнопок ландшафта — от vh"
+    # Ритм: подзаголовок прижат к заголовку, перед кнопкой воздуха больше
+    # (правка владельца «подтайтл должен быть под тайтлом»). Замер: 5–7px
+    # против 11px.
+    assert ".screen .desc { margin-top: calc(-1 * clamp(0.4rem, 1.6vh, 0.85rem)) !important; }" in block
+    assert ".about-link, .sec-link { margin-top: 0; }" in block, \
+        "ссылка под кнопкой больше не налезает на неё"
+    # Содержимое ровно по центру экрана: поля сверху и снизу одинаковые
+    assert "padding: 4.2rem 0.25rem; overflow: hidden;" in block, \
+        "контент по центру и без прокрутки"
+    # Затемнение ролика начинается ПРАВЕЕ лица (замер: лицо 51..331 из 915)
+    assert "rgba(5,5,5,0) 58%" in block, "тень не заходит на лицо"
+    assert "object-position: 72% center" in block, "голова сдвинута левее"
     assert re.search(r"@media \(max-width:1023px\) and \(orientation: landscape\) and \(min-height:520px\)", html), \
         "рослый ландшафт возвращает плиткам нормальный масштаб"
 
