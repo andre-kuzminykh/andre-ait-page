@@ -13,9 +13,19 @@ import re
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def _read(rel):
+def _raw(rel):
     with open(os.path.join(_ROOT, rel), encoding="utf-8") as f:
         return f.read()
+
+
+def _read(rel):
+    """Страница с обычными пробелами вместо неразрывных.
+
+    Генератор клеит служебные слова со следующим неразрывным пробелом
+    (FR-SITE42, tools/typo.py), а проверки ниже про текст, а не про перенос:
+    без нормализации каждая такая проверка падала бы на \u00a0. Сам перенос
+    проверяется отдельно — по сырому файлу через _raw()."""
+    return _raw(rel).replace(u"\u00a0", " ")
 
 
 def _en():
@@ -331,7 +341,9 @@ def test_desktop_and_mobile_share_one_large_scale():
     assert mob, "нужен отдельный мобильный масштаб типографики"
     block = mob[0]
     for rule in ("p { font-size: 14px",
-                 "h1 { font-size: clamp(1.75rem, 7.6vw, 2.4rem)",
+                 # нижняя граница 1.55rem — чтобы на 320px «AI-Native
+                 # экосистему» влезало одной строкой и не срезалось
+                 "h1 { font-size: clamp(1.55rem, 7.6vw, 2.4rem)",
                  "h2 { font-size: clamp(1.15rem, 5.2vw, 1.55rem)"):
         assert rule in block, "мобильный кегль: " + rule
     # и на вебе основной текст не мельче 13.5px
@@ -346,7 +358,8 @@ def test_headline_breaks_where_the_owner_wants():
     en, ru = _en(), _ru()
     assert '<span class="l">I build an <span class="hl-p"><span class="nb">AI-native</span> ecosystem</span></span>' in en
     assert '<span class="l">for <span class="hl-o">human good</span></span>' in en
-    assert '<span class="l">Я строю <span class="hl-p"><span class="nb">AI-Native</span> экосистему</span></span>' in ru
+    assert '<span class="l">Я строю <span class="hl-p nb">AI-Native экосистему</span></span>' in ru, \
+        "«AI-Native экосистему» стоит одной строкой: на телефоне это вторая строка героя"
     for lang, html in _pages():
         assert "querySelectorAll('h1 .l, h2')" in html, \
             lang + ": кегль подгоняется построчно, перенос не ломается"
@@ -416,7 +429,9 @@ def test_ai_native_never_splits_on_the_hyphen():
     """На 768px заголовок первого экрана рвался посреди слова: «AI- / native»."""
     assert ".nb { white-space: nowrap; }" in _css()
     assert '<span class="nb">AI-native</span>' in _en()
-    assert '<span class="nb">AI-Native</span>' in _ru()
+    # по-русски неразрывен уже весь оборот: правка владельца «„AI-Native
+    # экосистему“ перенос» — термин уезжает на строку вместе с существительным
+    assert '<span class="hl-p nb">AI-Native экосистему</span>' in _ru()
 
 
 def test_ai_employee_areas_cover_ten_roles():
@@ -501,6 +516,136 @@ def test_data_engineer_is_bold():
     assert "<strong>инженера по данным</strong>" in _ru()
 
 
+def test_phone_in_landscape_fits_without_scrolling():
+    """Правка владельца: «в about чтобы всё тоже чётко было и при
+    переворачивании в горизонталь тоже». Та же мобильная вёрстка в других
+    пропорциях: кружок с роликом слева, текст правее него, кегль от высоты
+    окна, блоки главы разворачиваются в ширину."""
+    css = _read("assets/about.css")
+    i = css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)")
+    block = css[i:]
+    # поля симметричные: «пусть всё будет по середине по центру по горизонтали»
+    assert ".screen { padding: 3.3rem calc(var(--vid-d) + 1.6rem); }" in block, \
+        "текст стоит по центру между кружком и точками"
+    assert "--vid-d: clamp(104px, 34vh, 150px);" in block, "кружок такой же, как в портрете"
+    assert "h1 { font-size: clamp(1.4rem, 8vh, 2.3rem)" in block, "кегль от высоты окна"
+    assert ".facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));" in block, \
+        "список ролей разворачивается в три колонки"
+
+
+def test_chapter_text_is_left_aligned_everywhere():
+    """Правка владельца: «ты по середине сделал оглавление, надо везде слева».
+    Заголовок главы стоял по центру, а надзаголовок и абзацы — слева."""
+    css = _read("assets/about.css")
+    assert ".screen > .eyebrow, .screen > h1, .screen > h2 { text-align: left; }" in css, \
+        "надзаголовок, заголовок главы и текст выключены по левому краю"
+    assert ".screen > .eyebrow, .screen > h1, .screen > h2 { text-align: center; }" not in css
+
+# ── девятнадцатый проход: переносы, подвал, палец, сироты ─────────────────
+
+def test_function_words_are_bound_to_the_next_word():
+    """FR-SITE42. Правило владельца: «ты видишь, по какому принципу я переношу
+    предлоги?» — предлог, союз, частица и артикль не остаются в конце строки,
+    они уезжают ВМЕСТЕ со своим словом. Технически это неразрывный пробел,
+    который ставит генератор (tools/typo.py), а не правка руками."""
+    nb = u"\u00a0"
+    gen = _read("tools/build_about.py")
+    assert "from typo import bind_copy" in gen, "переносы ставит общий модуль, а не копипаста"
+    assert 'bind_copy(EN, "en")' in gen and 'bind_copy(RU, "ru")' in gen, \
+        "прогоняются оба языка"
+    # именно те места, которые владелец выписал по скриншотам
+    for probe in (u"a" + nb + u"decade", u"that" + nb + u"still", u"but" + nb + u"discipline",
+                  u"to" + nb + u"Moscow", u"of" + nb + u"Business", u"and" + nb + u"turn",
+                  u"the" + nb + u"most", u"I" + nb + u"am" + nb + u"building"):
+        assert probe in _raw("about/index.html"), "EN: не склеено «%s»" % probe.replace(nb, " ")
+    for probe in (u"я" + nb + u"прошёл", u"в" + nb + u"разных", u"не" + nb + u"каждую",
+                  u"в" + nb + u"систему", u"и" + nb + u"делать",
+                  # притяжательные — из той же серии, нашлись замером
+                  u"моё" + nb + u"представление"):
+        assert probe in _raw("about/ru/index.html"), "RU: не склеено «%s»" % probe.replace(nb, " ")
+
+
+def test_owner_named_line_breaks_that_are_not_prepositions():
+    """Два места, где служебных слов нет, а строка всё равно разваливалась.
+    «AI-Native экосистему» — термин едет на строку вместе с существительным;
+    «Один вместо команды» — заголовок главы был на 27 знаков и всегда стоял
+    в две строки (нужно 380px при колонке 355px)."""
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from about_copy import RU
+    assert RU["s3_head"] == "Один вместо команды", "заголовок владельца, влезает от 320px"
+    assert '<span class="hl-p nb">AI-Native экосистему</span>' in _ru()
+    css = _css()
+    assert "h1 { font-size: clamp(1.55rem, 7.6vw, 2.4rem); line-height: 1.14; }" in css, \
+        "на 320px оборот целиком влезает только при нижней границе 1.55rem"
+
+
+def test_binder_never_touches_tags_and_metadata():
+    """Неразрывный пробел нужен только в видимом тексте. Внутри тегов он ломал
+    бы классы иконок и ссылки, в title — заголовок вкладки."""
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from typo import bind_short_words, bind_copy
+    nb = u"\u00a0"
+    assert bind_short_words('<i class="fa-solid fa-user"></i> a dog', "en") == \
+        '<i class="fa-solid fa-user"></i> a' + nb + 'dog'
+    # служебное слово на стыке с тегом — именно там рвалось «an / AI-native»
+    assert bind_short_words('I build an <span>AI-native</span> world', "en") == \
+        'I' + nb + 'build an' + nb + '<span>AI-native</span> world'
+    src = {"title": "AI and me", "meta_desc": "a page", "lead": "a page"}
+    out = bind_copy(src, "en")
+    assert out["title"] == "AI and me" and out["meta_desc"] == "a page", "метаданные не трогаем"
+    assert out["lead"] == "a" + nb + "page", "видимый текст склеен"
+
+
+def test_finale_sits_in_the_middle_and_the_footer_at_the_bottom():
+    """FR-SITE43. Правка владельца: «иконки и Andre AI Technologies должно быть
+    внизу, прям перед точками, а „добро пожаловать в новую экономику“ по
+    середине» — и само прощание крупнее."""
+    css = _css()
+    assert ".screen.final { justify-content: flex-start; }" in css
+    assert ".screen.final .finale { margin-top: auto; margin-bottom: auto; }" in css, \
+        "два auto-отступа делят свободное место поровну: финал по центру, подвал внизу"
+    assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in css, \
+        "на телефоне нижний запас под кружок финалу не нужен — подвал прижат к точкам"
+    assert ".finale p { margin: 0 0 1rem; font-size: clamp(15px, min(1.35vw, 3.1vh), 21px);" in css, \
+        "прощание в вебе крупнее (было 13–17px)"
+    assert ".finale p { font-size: 17px; }" in css, "на телефоне 17px (было 15px)"
+    assert ".finale p { font-size: clamp(13.5px, 4vh, 17px); }" in css, "в горизонте 16–17px (было 14px)"
+
+
+def test_circle_follows_a_finger():
+    """FR-SITE44. «КРУЖОЧКИ НИХУЯ НЕ ДВИГАЮТСЯ». Мышью двигались, пальцем нет:
+    жест забирал браузер, а путь считался по movementX, который у тача 0."""
+    css = _css()
+    assert ".media { touch-action: none;" in css, \
+        "с manipulation браузер съедает жест и pointermove не приходит"
+    js = _read("about/index.html")
+    assert "e.movementX" not in js, "у тач-событий movementX всегда 0"
+    assert "drag.sx" in js and "drag.sy" in js, "путь считается от точки касания"
+
+
+def test_landscape_grids_have_no_orphan_row():
+    """FR-SITE45. «Чтобы не торчал отдельно четвёртый пункт — значит надо два
+    сверху и два снизу»: число колонок подбирается под число пунктов."""
+    css = _css()
+    i = css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)")
+    block = css[i:]
+    assert ".facts:has(li:nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }" in block, \
+        "четыре пункта — два ряда по два"
+    assert ".facts:has(li:nth-child(7):last-child) { grid-template-columns: repeat(4, minmax(0, 1fr)); }" in block
+    assert ".facts:has(li:nth-child(10):last-child) { grid-template-columns: repeat(5, minmax(0, 1fr)); }" in block
+
+
+def test_runner_stands_at_the_end_of_the_file():
+    """Блок запуска исполняется В МОМЕНТ, когда до него дошёл разбор файла,
+    поэтому тесты, дописанные ПОСЛЕ него, молча не выполнялись — так мимо
+    прогона прошли пять проверок сразу. Он должен быть последним в файле."""
+    src = _raw("tests/test_about.py")
+    tail = src[src.index('if __name__ == "__main__":'):]
+    assert "\ndef test_" not in tail, "тесты после блока запуска не запускаются"
+
+
 if __name__ == "__main__":
     import sys
     fails = 0
@@ -514,28 +659,3 @@ if __name__ == "__main__":
                 print("FAIL", name + ":", err)
     print("ПРОВАЛЕНО:", fails) if fails else print("ВСЕ ТЕСТЫ БИОГРАФИИ ПРОЙДЕНЫ")
     sys.exit(1 if fails else 0)
-
-
-def test_phone_in_landscape_fits_without_scrolling():
-    """Правка владельца: «в about чтобы всё тоже чётко было и при
-    переворачивании в горизонталь тоже». Та же мобильная вёрстка в других
-    пропорциях: кружок с роликом слева, текст правее него, кегль от высоты
-    окна, блоки главы разворачиваются в ширину."""
-    css = _read("assets/about.css")
-    i = css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)")
-    block = css[i:]
-    assert ".screen { padding: 3.5rem 1.4rem 1.4rem calc(var(--vid-d) + 1.8rem); }" in block, \
-        "текст встаёт правее кружка"
-    assert "--vid-d: clamp(96px, min(20vw, 30vh), 150px);" in block, "кружок не мельчает"
-    assert "h1 { font-size: clamp(1.3rem, 7vh, 2.1rem)" in block, "кегль от высоты окна"
-    assert ".facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));" in block, \
-        "список ролей разворачивается в три колонки"
-
-
-def test_chapter_text_is_left_aligned_everywhere():
-    """Правка владельца: «ты по середине сделал оглавление, надо везде слева».
-    Заголовок главы стоял по центру, а надзаголовок и абзацы — слева."""
-    css = _read("assets/about.css")
-    assert ".screen > .eyebrow, .screen > h1, .screen > h2 { text-align: left; }" in css, \
-        "надзаголовок, заголовок главы и текст выключены по левому краю"
-    assert ".screen > .eyebrow, .screen > h1, .screen > h2 { text-align: center; }" not in css
