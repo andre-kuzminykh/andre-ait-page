@@ -641,7 +641,13 @@ def test_landscape_type_scales_with_height():
         "контент по центру и без прокрутки"
     # Затемнение ролика начинается ПРАВЕЕ лица (замер: лицо 51..331 из 915)
     assert "rgba(5,5,5,0) 58%" in block, "тень не заходит на лицо"
-    assert "object-position: 72% center" in block, "голова сдвинута левее"
+    # Кадр вертикальный, а ниша широкая: обрезка идёт только по высоте, и
+    # object-position по горизонтали ничего не двигает (замер: 64 → 72 → 90%
+    # — картинка на месте). Лицо сдвигает сам элемент.
+    assert "#hero-video { width: 60%; height: 100vh; height: 100dvh; transform: translateX(-7%); }" in block, \
+        "голова сдвинута левее самим элементом"
+    assert "#050505 90%" in block, \
+        "затемнение добирает до чёрного раньше правого края ролика — шва не видно"
     assert re.search(r"@media \(max-width:1023px\) and \(orientation: landscape\) and \(min-height:520px\)", html), \
         "рослый ландшафт возвращает плиткам нормальный масштаб"
 
