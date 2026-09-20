@@ -1020,12 +1020,11 @@ def test_mobile_footer_stands_just_above_the_dots():
     assert ".final footer { margin-top: auto;" in mob, "подвал прижат к низу экрана"
     assert ".legal { font-size: 12px;" in mob and "flex-wrap: wrap" in mob, \
         "ссылки подвала переносятся целыми словами, а не по буквам"
-    # Подвал по-прежнему у самого низа, но ВЫШЕ кружка (FR-SITE55): прежние
-    # 2.4rem разрешали кружку его перекрывать, и на скрине 390x844 под ним
-    # оказывались иконки, обе юридические ссылки и копирайт (подвал 706…806,
-    # кружок 698…830). Ниже кружка ставить некуда — там точки переходов.
-    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.5rem + env(safe-area-inset-bottom, 0px)); }" in mob, \
-        "подвал финала прижат к низу, но не заезжает под кружок"
+    # Правка владельца: подвал стоит у самого низа, кружку разрешено его
+    # перекрывать — «кружок можно перемещать, поэтому пофигу что он там
+    # закрывает» (FR-SITE55).
+    assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in mob, \
+        "подвал финала прижат к низу экрана"
     # правка владельца: подвал по центру, кружку разрешено его перекрывать
     assert "padding-left" not in mob.split(".final footer")[1][:160], \
         "колонка подвала больше не смещена правее ролика"
@@ -1472,11 +1471,10 @@ def test_legal_links_are_separated_by_a_dot():
     assert ".legal a + a::before { content: '\\00b7';" in css
 
 
-def test_finale_footer_clears_the_video_circle():
-    """FR-SITE55: в портрете подвал финала стоит НАД кружком, а не под ним."""
+def test_landscape_finale_has_symmetric_padding():
+    """FR-SITE55: в ГОРИЗОНТЕ поля финала симметричны и заданы явно —
+    портретное `.screen.final` иначе перебивает ландшафтное `.screen`."""
     css = _read("assets/strategy.css")
-    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.5rem + env(safe-area-inset-bottom, 0px)); }" in css, \
-        "нижний запас финала = кружок плюс воздух"
     land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
     assert ".screen:has(.stage-card), .screen.final { padding: 3.5rem calc(var(--vid-d) + 1.6rem); }" in land, \
         "в горизонте запас свой: кружок стоит слева, а не снизу"
