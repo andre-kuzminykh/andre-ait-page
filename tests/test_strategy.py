@@ -1493,6 +1493,34 @@ def test_learning_badge_icon_sits_on_the_first_line():
 
 
 
+
+def test_finale_button_does_not_cover_the_footer():
+    """FR-SITE63: подвал финала в горизонте прижат абсолютом к низу и НЕ
+    занимает места в потоке. Содержимое, центрируясь во всю высоту, ложилось
+    на него: белая кнопка CTA накрывала ряд иконок соцсетей целиком (замер:
+    перекрытие 148×20px при высоте иконки 20px) и юридические ссылки."""
+    css = _read("assets/strategy.css")
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".final .wrap { flex: 1 1 auto; justify-content: center; padding-bottom: 5.6rem; }" in land, \
+        "содержимое финала центрируется НАД подвалом, а не поверх него"
+
+
+def test_case_card_labels_stay_inside_their_card():
+    """FR-SITE63: overflow:visible снял обрезку многоточием, и длинные слова
+    стали вылезать за карточку на соседнюю (замер на 740×360:
+    «Удовлетворённость» наружу 29px).
+
+    min-width:0 обязателен: .biz-metric — флекс, а у флекс-элемента min-width
+    по умолчанию auto, то есть он не ужимается уже своего min-content, и
+    никакой break-word не срабатывает."""
+    css = _read("assets/strategy.css")
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert "overflow-wrap: break-word; }" in land, "длинное слово ломается, а не вылезает"
+    assert ".biz-metric > * { min-width: 0; }" in land, \
+        "флекс-элемент должен уметь ужаться уже своего min-content"
+
+
+
 if __name__ == "__main__":
     import sys
     fails = 0

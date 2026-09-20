@@ -1244,7 +1244,13 @@ strong { color: var(--w); font-weight: 700; }
      место в потоке, и вопрос с кнопкой вставал выше середины экрана */
   .final footer { position: absolute; left: 0; right: 0; bottom: 0.7rem;
     margin-top: 0; padding-top: 0; gap: 0.3rem; }
-  .final .wrap { flex: 1 1 auto; justify-content: center; }
+  /* Подвал финала здесь прижат абсолютом к низу, поэтому он НЕ занимает
+     места в потоке — и содержимое, центрируясь во всю высоту, наезжало на
+     него: белая кнопка CTA ложилась прямо на ряд иконок соцсетей (замер:
+     перекрытие 148×20px, то есть иконки целиком внутри кнопки) и на
+     юридические ссылки (10px на 740×360). Запас снизу равен высоте подвала,
+     и содержимое центрируется НАД ним. */
+  .final .wrap { flex: 1 1 auto; justify-content: center; padding-bottom: 5.6rem; }
   .ticker { margin-top: 0.6rem; }
   /* Бегущая строка ролей: .screen > *:not(.wm){max-width:none} снял с неё
      ограничение, и коробка выросла до ширины ленты (замер: 158…3833px) —
@@ -1260,9 +1266,21 @@ strong { color: var(--w); font-weight: 700; }
   .biz-ic { width: 1.45rem; height: 1.45rem; font-size: 9px; border-radius: 0.45rem; }
   .biz-go { display: none; }
   .biz-body { gap: 0.1rem; }
-  .biz h3 { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.15; }
+  /* overflow:visible снял обрезку многоточием — и длинные слова, которым не
+     хватает колонки, стали ВЫЛЕЗАТЬ за карточку на соседнюю (замер на
+     740×360: «Удовлетворённость» наружу 29px, «Отдача от маркетинга» 6px).
+     break-word ломает только то слово, которое не влезает в строку целиком;
+     остальной текст не трогает. */
+  .biz h3 { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.15;
+    overflow-wrap: break-word; }
   .biz-metric { white-space: normal; overflow: visible; text-overflow: clip;
-    flex-wrap: wrap; line-height: 1.15; row-gap: 0; }
+    flex-wrap: wrap; line-height: 1.15; row-gap: 0; overflow-wrap: break-word; }
+  /* min-width:0 обязателен: .biz-metric — флекс, а у флекс-элемента
+     min-width по умолчанию auto, то есть он не ужимается уже своего
+     min-content. Длинное слово («Удовлетворённость») распирало элемент, и
+     никакой break-word не срабатывал — подпись вылезала за карточку на
+     6–29px (замер на 740×360). */
+  .biz-metric > * { min-width: 0; }
 
   /* Цепочки процессов — В РЯД, как на вебе. Мобильное правило ставит узлы
      столбиком (в портрете панель узкая и высокая); в горизонте панель ровно
