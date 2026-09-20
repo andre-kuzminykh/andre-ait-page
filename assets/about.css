@@ -592,6 +592,14 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
        одной линии. Ширина колонки значков = кегль значка + отступ. */
     .screen > p, .screen > .lead { padding-left: 1.85rem; }
     .facts i { width: 1.15rem; }
+    /* Заголовок главы встаёт на ТУ ЖЕ левую линию. Значок главы инлайновый,
+       и ширина его глифа гуляет: Font Awesome квантует её по 0.125em, что при
+       кегле 20.3px даёт шаг ровно 2.53px — текст заголовка плясал в пределах
+       43…53px, тогда как абзацы и пункты стоят намертво на 47.2px. Выносим
+       значок в такую же фиксированную колонку, как у пунктов списка. */
+    h2 { padding-left: 1.85rem; position: relative; }
+    h2 i { position: absolute; left: 0; top: 0; width: 1.15rem; margin-right: 0;
+      text-align: center; }
     .quote p { font-size: 14px; }
     .stat p, .card p { font-size: 13px; line-height: 1.5; }
     .stat-num { font-size: clamp(1.5rem, 7vw, 2rem); }
@@ -679,11 +687,19 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
     .screen > .eyebrow, .screen > h1, .screen > h2, .screen > p, .screen > .lead,
     .note p, .quote p, .stat p, .card h3, .card p {
       text-align: center; padding-left: 0; }
+    /* колонка значка из вертикали здесь не нужна: заголовок стоит по центру,
+       и значок возвращается В СТРОКУ рядом с текстом */
+    h2 { position: static; }
+    h2 i { position: static; width: auto; margin-right: 0.6rem; }
     /* Надзаголовок — не просто текст, а inline-flex (подпись плюс черта
        градиентом), и text-align на него не действует: содержимое флекса
        пакуется к flex-start. Замер на 844×390: «Обо мне» стояло в [158…231]
-       при колонке до 686 — на 227px левее центра. */
-    .screen > .eyebrow { justify-content: center; }
+       при колонке до 686 — на 227px левее центра.
+       Та же ловушка у заголовка карточки: .card h3 тоже display:flex, и
+       добавленный выше text-align:center его НЕ исправил — замер показал
+       чернила заголовка вплотную к левому краю карточки (зазор ровно 0.0px)
+       и смещение до −90.6px от центра на 915×412. */
+    .screen > .eyebrow, .card h3 { justify-content: center; }
     /* ИСКЛЮЧЕНИЕ, не забыть при следующей правке: пункты списка (.facts li)
        остаются выключенными ВЛЕВО внутри своих ячеек. Владелец просил
        «выровни текст под иконки» (FR-SITE51) — значки соседних строк должны
