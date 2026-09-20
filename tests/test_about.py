@@ -607,11 +607,10 @@ def test_finale_sits_in_the_middle_and_the_footer_at_the_bottom():
     assert ".screen.final { justify-content: flex-start; }" in css
     assert ".screen.final .finale { margin-top: auto; margin-bottom: auto; }" in css, \
         "два auto-отступа делят свободное место поровну: финал по центру, подвал внизу"
-    # Подвал остался внизу, но ВЫШЕ кружка (FR-SITE55): прежние 2.4rem
-    # разрешали кружку накрыть копирайт (замер 390x844: строка 83…307,
-    # кружок 16…148). Ниже кружка места нет — там точки переходов.
-    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.5rem + env(safe-area-inset-bottom, 0px)); }" in css, \
-        "подвал финала внизу, но не заезжает под кружок"
+    # Подвал у самого низа, кружку разрешено его перекрывать (FR-SITE55):
+    # «кружок можно перемещать, поэтому пофигу что он там закрывает».
+    assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in css, \
+        "на телефоне нижний запас под кружок финалу не нужен — подвал прижат к точкам"
     # Крупнее — ровно там, где колонка это позволяет. Кегли подобраны замером
     # предела, за которым появляется лишняя строка (см. FR-SITE43):
     assert ".finale p { font-size: 17px; }" in css, "телефон, английский: 14.5px → 17px (предел 20px)"
@@ -730,16 +729,16 @@ def test_compound_words_never_break_at_the_hyphen():
 
 
 
-def test_finale_footer_clears_the_video_circle():
-    """FR-SITE55: в портрете подвал финала стоит НАД кружком, а не под ним.
+def test_landscape_finale_has_symmetric_padding():
+    """FR-SITE55: в ГОРИЗОНТЕ у финала поля сверху и снизу одинаковые.
 
-    Замер на 390x844: копирайт занимал 83…307, кружок — 16…148, начало строки
-    не читалось. В ГОРИЗОНТЕ запас свой: там кружок слева, подвал правее."""
+    Портретное правило (`.screen.final`, вес 0,2,0) перебивает ландшафтное
+    `.screen` (0,1,0), поэтому запас снизу приходится задавать явно — иначе
+    глава стоит на 14px ниже середины окна."""
     css = _css()
-    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.5rem + env(safe-area-inset-bottom, 0px)); }" in css
     land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
     assert ".screen.final { padding-bottom: 3.3rem; }" in land, \
-        "в горизонте вес .screen.final съедал бы 157px из 360 высоты"
+        "в горизонте запас снизу равен верхнему (3.3rem)"
 
 
 def test_ten_roles_fit_five_columns_in_landscape():
