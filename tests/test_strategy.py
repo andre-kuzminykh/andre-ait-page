@@ -1346,7 +1346,12 @@ def test_phone_in_landscape_fits_without_scrolling():
         "сетки разворачиваются в ширину, иначе они не влезают по высоте"
     assert "h1 { font-size: clamp(1.45rem, 8.4vh, 2.4rem)" in block, \
         "кегль считается от ВЫСОТЫ окна: по 8.6vw заголовок вырастал до 78px"
-    assert ".stage-card { height: clamp(6.5rem, calc(100dvh - 13.4rem), 20rem); }" in block, \
+    # 13.4rem оставляли панели 144px при 360px высоты, а содержимому нужно до
+    # 156px: у «Зрелости» срезало нижнюю строку и край паутины, у «Голоса» —
+    # последнюю строку цитаты, у «AI-First модели» — нижний ряд цепочки.
+    # 12.3rem, наоборот, распирали экран на 915×412 и 932×430: у паутины
+    # aspect-ratio 1/1, она растёт вместе с панелью. 12.8rem — середина.
+    assert ".stage-card { height: clamp(6.5rem, calc(100dvh - 12.8rem), 20rem); }" in block, \
         "панель шага тоже от высоты окна, с запасом под заголовок и подпись"
 
 
@@ -1518,6 +1523,16 @@ def test_case_card_labels_stay_inside_their_card():
     assert "overflow-wrap: break-word; }" in land, "длинное слово ломается, а не вылезает"
     assert ".biz-metric > * { min-width: 0; }" in land, \
         "флекс-элемент должен уметь ужаться уже своего min-content"
+
+
+
+
+def test_use_case_cards_fit_short_phones():
+    """FR-SITE64: восемь карточек в одну колонку не помещались на коротких
+    телефонах — экран вылезал на 7px при 360×780 и на 13px при 375×780, и низ
+    срезался (у экрана overflow:hidden). Зазоры сетки и её поля ужаты."""
+    css = _read("assets/strategy.css")
+    assert ".biz-grid { grid-template-columns: minmax(0, 1fr); gap: 0.2rem; margin: 0.5rem auto 0.5rem; }" in css
 
 
 
