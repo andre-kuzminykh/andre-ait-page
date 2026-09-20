@@ -549,10 +549,28 @@
   .desc.hero-sub { white-space: nowrap; max-width: none; font-size: clamp(9px, 3.35vw, 14.5px); }
   /* Подзаголовок стоит ближе к заголовку (правка владельца «чуть поближе
      поставь подтайтл к тайтлу»). У экрана один gap на всех детей, поэтому
-     подтягиваем именно подзаголовок — кнопка и ссылка под ним не двигаются. */
-  .screen .desc { margin-top: -0.55rem; }
-  .desc.hero-sub { margin-top: -0.85rem; }
-  @media (min-width:1024px) { .screen .desc { margin-top: -0.7rem; } .desc.hero-sub { margin-top: -1rem; } }
+     подтягиваем именно подзаголовок — кнопка и ссылка под ним не двигаются.
+
+     !important ОБЯЗАТЕЛЕН: у подзаголовка ГЕРОЯ и у подзаголовка КОНТАКТОВ
+     margin задан ИНЛАЙНОМ (`style="margin: 0"`), а инлайн перебивает любой
+     селектор без !important. Без него правка молча не применялась ровно на
+     тех двух экранах, ради которых её и просили — замер: зазор оставался
+     28px у героя и 23–24px у контактов против 4.8–10.4px на остальных
+     шести. В ландшафтном блоке ниже !important стоял с самого начала, из-за
+     чего горизонт работал, а веб и вертикаль — нет.
+
+     Кегль отступа у героя и контактов свой: у героя флекс-щель экрана
+     1.75rem, у контактов — своя у .contact-hero, поэтому «естественный»
+     зазор там больше. Значения подобраны замером так, чтобы итоговый зазор
+     совпал с секциями: 10.4px в вебе и 4.8px в вертикали. */
+  .screen .desc { margin-top: -0.55rem !important; }
+  .desc.hero-sub { margin-top: -1.45rem !important; }
+  .contact-hero .desc { margin-top: -1.2rem !important; }
+  @media (min-width:1024px) {
+    .screen .desc { margin-top: -0.7rem !important; }
+    .desc.hero-sub { margin-top: -1.1rem !important; }
+    .contact-hero .desc { margin-top: -0.79rem !important; }
+  }
   @media (min-width:1024px) {
     .desc.hero-sub { font-size: clamp(10px, 1.45vw - 2px, 19px); }
   }
@@ -819,6 +837,15 @@
     .desc { font-size: 13px; line-height: 1.45; }
     .about-link, .sec-link { font-size: 11px; }
     .screen .btn-white { padding-top: 0.72rem !important; padding-bottom: 0.72rem !important; font-size: 10.5px !important; }
+    /* Подтяг подзаголовка пересчитан под УЖАТЫЕ здесь щели: у героя gap
+       падает с 1.75rem до 1.05rem, у секций с 1.75 до 0.6rem, у контакта
+       с 1.4 до 0.85rem. Фиксированный подтяг «как на большом телефоне»
+       оказывался больше самой щели, и строки наезжали друг на друга
+       (замер на 360×568: −9.6px у героя и у контакта). Цель везде одна —
+       зазор около 4.8px, как на остальных экранах. */
+    .screen .desc { margin-top: -0.3rem !important; }
+    .desc.hero-sub { margin-top: -0.75rem !important; }
+    .contact-hero .desc { margin-top: -0.55rem !important; }
     /* контакт: герой + футер с иконками целиком в экране */
     .contact-screen { transform: translateY(1.2rem); min-height: 34dvh; }
     .contact-hero { gap: 0.85rem; top: 0.5rem; }
@@ -833,6 +860,10 @@
     .screen[data-screen="overview"] { gap: 0.85rem !important; }
     .h2-size { font-size: 1.2rem; }
     .desc { font-size: 12px; }
+    /* щели ужаты ещё раз — подтяг тоже (см. комментарий блоком выше) */
+    .screen .desc { margin-top: -0.2rem !important; }
+    .desc.hero-sub { margin-top: -0.55rem !important; }
+    .contact-hero .desc { margin-top: -0.3rem !important; }
     .contact-title { font-size: 1.5rem; }
     /* сдвиг героя контакта здесь наезжал бы на футер с иконками */
     .contact-hero { gap: 0.6rem; top: 0; }

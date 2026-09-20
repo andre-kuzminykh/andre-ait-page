@@ -556,10 +556,10 @@ def test_function_words_are_bound_to_the_next_word():
         "прогоняются оба языка"
     # именно те места, которые владелец выписал по скриншотам
     for probe in (u"a" + nb + u"decade", u"that" + nb + u"still", u"but" + nb + u"discipline",
-                  u"to" + nb + u"Moscow", u"of" + nb + u"Business", u"and" + nb + u"turn",
+                  u"and" + nb + u"turn",
                   u"the" + nb + u"most", u"I" + nb + u"am" + nb + u"building"):
         assert probe in _raw("about/index.html"), "EN: не склеено «%s»" % probe.replace(nb, " ")
-    for probe in (u"я" + nb + u"прошёл", u"в" + nb + u"разных", u"не" + nb + u"каждую",
+    for probe in (u"я" + nb + u"прошёл", u"не" + nb + u"каждую",
                   u"в" + nb + u"систему", u"и" + nb + u"делать",
                   # притяжательные — из той же серии, нашлись замером
                   u"моё" + nb + u"представление"):
@@ -672,9 +672,14 @@ def test_chapter_marks_are_visible_on_phone():
     css = _css()
     assert "@media (max-width:1023px) { .wm { display: none; } }" not in css, \
         "знаки глав больше не прячутся на телефоне"
-    assert ".wm { right: 1rem; bottom: 1.2rem; font-size: min(44vw, 30vh); }" in css, \
-        "размер знака считается от меньшей стороны окна"
+    assert ".wm { right: 1rem; bottom: calc(var(--vid-d) * 0.9 + 2rem); font-size: min(44vw, 30vh); }" in css, \
+        "в портрете знак поднят НАД нижней растушёвкой и не закрашивается ею"
     assert ".screen.active .wm { opacity: 0.075; }" in css
+    # в горизонте растушёвки нет вовсе — там она накрывала знак целиком
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".bottom-fade { display: none; }" in land, \
+        "в горизонте полоса 145px из 390 гасила знак целиком (замер: знак 254…371, полоса 245…390)"
+    assert ".wm { bottom: 1.2rem; }" in land, "в горизонте знак стоит у нижнего края"
 
 
 def test_circle_in_landscape_is_as_big_as_in_portrait():
@@ -690,8 +695,21 @@ def test_landscape_text_is_centred_and_breathes():
     css = _css()
     block = css[css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
     assert "text-align: center; padding-left: 0; }" in block, "в горизонте текст по центру"
-    assert "gap: 0.42rem 1.1rem;" in block, "ряды списка не слипаются (было 0.04rem)"
-    assert ".facts li { line-height: 1.38; gap: 0.45rem; }" in block
+    # FR-SITE61: правило покрывает не только прямых потомков экрана —
+    # врезки, цитаты, подписи к числам и карточки тоже выключены по центру
+    assert ".note p, .quote p, .stat p, .card h3, .card p {" in block, \
+        "текст внутри врезок, цитат и карточек тоже по центру"
+    # надзаголовок — inline-flex, text-align на него не действует
+    assert ".screen > .eyebrow { justify-content: center; }" in block, \
+        "надзаголовок центрируется свойством флекса, а не выключкой текста"
+    assert ".top-fade { height: 3.4rem; }" in block, \
+        "верхняя растушёвка ужата под шапку горизонта, иначе она гасит заголовок главы"
+    # зазор между колонками ужат с 1.1rem: колонки были слишком узкие для
+    # длинных слов, см. test_list_items_do_not_glue_prepositions
+    assert "gap: 0.42rem 0.55rem;" in block, "ряды списка не слипаются (было 0.04rem)"
+    assert ".facts li { line-height: 1.38; gap: 0.3rem; }" in block
+    assert ".facts li { overflow-wrap: break-word; }" in block, \
+        "страховка: слово длиннее колонки переломится, а не заедет на соседа"
 
 
 def test_icon_sits_on_the_first_line_of_its_item():
@@ -749,6 +767,30 @@ def test_ten_roles_fit_five_columns_in_landscape():
     assert ".facts:has(li:nth-child(10):last-child) { gap: 0.3rem 0.5rem; }" in land
     assert ".facts:has(li:nth-child(10):last-child) li { font-size: clamp(9px, 2.4vh, 11.5px); gap: 0.28rem; }" in land
     assert ".facts:has(li:nth-child(10):last-child) i { width: 0.9rem; }" in land
+
+
+
+def test_list_items_do_not_glue_prepositions():
+    """FR-SITE42 намеренно НЕ действует внутри пунктов списков (*_facts).
+
+    Пункт списка — не проза, а ячейка узкой сетки: в горизонте телефона на
+    него приходится 121px. Склейка предлога со следующим словом давала там
+    неразрывный кусок шире ячейки целиком — «по\u00a0бизнес\u2011информатике»
+    занимало 139px, и текст заезжал в соседнюю колонку на 18–28px (замер на
+    740×360). Неразрывный дефис (FR-SITE52) при этом остаётся."""
+    nb = u"\u00a0"
+    ru = _raw("about/ru/index.html")
+    en = _raw("about/index.html")
+    assert u"Бакалавр по бизнес\u2011информатике" in ru, \
+        "в пункте списка предлог отделён обычным пробелом, а дефис остался неразрывным"
+    # привязываемся к самому пункту: «по бизнес-информатике» встречается и в
+    # прозе (олимпиада), и там склейка как раз нужна — проверяем именно ячейку
+    assert u"Бакалавр по" + nb not in ru, "предлог в пункте списка не склеен"
+    assert u"after moving to Moscow" in en, "EN: пункт списка без склейки"
+    assert u"moving" + nb + u"to" not in en, "EN: предлог в пункте списка не склеен"
+    # а в прозе — склеен, как и просил владелец
+    assert u"я" + nb + u"прошёл" in ru, "в прозе склейка предлогов осталась"
+
 
 
 if __name__ == "__main__":
