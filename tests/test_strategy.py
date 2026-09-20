@@ -22,7 +22,7 @@ def _read(rel):
     (FR-SITE42, tools/typo.py), а проверки ниже про текст, а не про перенос:
     без нормализации каждая такая проверка падала бы на \u00a0. Сам перенос
     проверяется отдельно — по сырому файлу через _raw()."""
-    return _raw(rel).replace(u"\u00a0", " ")
+    return _raw(rel).replace(u"\u00a0", " ").replace(u"\u2011", "-")
 
 
 def _en():
@@ -940,7 +940,13 @@ def _mobile_block():
     # именно ПОЛНОЕ условие: ниже по файлу есть ещё блок телефона в горизонте
     # «@media (max-width:1023px) and (min-width:600px) and (max-height:520px)»
     i = css.rindex("@media (max-width:1023px) {")
-    return css[i:]
+    # ...и обрезаем ПЕРЕД ним: горизонт телефона — не «третья вёрстка», а та же
+    # мобильная, только перевёрнутая; в ней высота падает до ~360px и круг
+    # агента физически не влезает (замер: коробка кольца 93–145px), поэтому там
+    # своя раскладка-паспорт. Правило «только веб и мобилка» проверяем на
+    # ВЕРТИКАЛЬНОЙ мобилке.
+    j = css.find("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)", i)
+    return css[i:j] if j > i else css[i:]
 
 
 def test_mobile_layout_is_a_second_layout_not_a_squeeze():
@@ -1014,10 +1020,12 @@ def test_mobile_footer_stands_just_above_the_dots():
     assert ".final footer { margin-top: auto;" in mob, "подвал прижат к низу экрана"
     assert ".legal { font-size: 12px;" in mob and "flex-wrap: wrap" in mob, \
         "ссылки подвала переносятся целыми словами, а не по буквам"
-    # Правка владельца: подвал стоит у самого низа, кружку разрешено его
-    # перекрывать — «надо внизу делать как и было».
-    assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in mob, \
-        "подвал финала прижат к низу экрана"
+    # Подвал по-прежнему у самого низа, но ВЫШЕ кружка (FR-SITE55): прежние
+    # 2.4rem разрешали кружку его перекрывать, и на скрине 390x844 под ним
+    # оказывались иконки, обе юридические ссылки и копирайт (подвал 706…806,
+    # кружок 698…830). Ниже кружка ставить некуда — там точки переходов.
+    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.5rem + env(safe-area-inset-bottom, 0px)); }" in mob, \
+        "подвал финала прижат к низу, но не заезжает под кружок"
     # правка владельца: подвал по центру, кружку разрешено его перекрывать
     assert "padding-left" not in mob.split(".final footer")[1][:160], \
         "колонка подвала больше не смещена правее ролика"
@@ -1409,8 +1417,69 @@ def test_runner_stands_at_the_end_of_the_file():
     поэтому тесты, дописанные ПОСЛЕ него, молча не выполнялись — так мимо
     прогона прошли пять проверок сразу. Он должен быть последним в файле."""
     src = _raw("tests/test_strategy.py")
-    tail = src[src.index('if __name__ == "__main__":'):]
+    tail = src[src.rindex('\nif __name__ == "__main__":'):]
     assert "\ndef test_" not in tail, "тесты после блока запуска не запускаются"
+
+
+
+def test_agent_passport_has_no_stray_oval_in_landscape():
+    """FR-SITE54.1: у ядра агента есть ::before с inset:0. Пока ядро стоит
+    static, этот ::before считается от .hub и рисует овал во всю панель, а
+    проценты left/top уносят само ядро на плашку «Инструкции»."""
+    css = _read("assets/strategy.css")
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".hub-core { position: relative; transform: none; left: auto; top: auto;" in land, \
+        "ядро паспорта: relative и обнулённые left/top"
+    assert ".hub::before, .hub::after { display: none; }" in land, "пунктирная орбита в горизонте не рисуется"
+
+
+def test_landscape_chains_run_in_a_row():
+    """FR-SITE54.3: в горизонте панель 175px высоты при 526px ширины —
+    столбик из шести узлов туда не влезает."""
+    css = _read("assets/strategy.css")
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".pchain .prow, .fflow .frow { flex-direction: row;" in land
+
+
+def test_landscape_case_cards_show_their_whole_name():
+    """FR-SITE54.2: в колонке 127px значок, поля и стрелка съедали 100px."""
+    css = _read("assets/strategy.css")
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".biz-go { display: none; }" in land, "стрелка «ВСЕ ТИПЫ →» в горизонте лишняя"
+    assert ".biz h3 { white-space: normal; overflow: visible; text-overflow: clip;" in land, \
+        "название кейса не обрезается многоточием"
+
+
+def test_landscape_roles_ticker_stays_in_the_column():
+    """FR-SITE54.4: без ограничения коробка бегущей строки росла до 3833px,
+    и растушёвка по краям уезжала за экран."""
+    css = _read("assets/strategy.css")
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".ticker { width: 100%; max-width: 100%; }" in land
+
+
+def test_landscape_step_copy_is_centred():
+    """FR-SITE50: в горизонте колонка одна, шапка шага не висит слева."""
+    css = _read("assets/strategy.css")
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".step-copy, .step-copy h2, .step-copy p, .step-n { text-align: center; }" in land
+
+
+def test_legal_links_are_separated_by_a_dot():
+    """FR-SITE54.6: «ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ» и «УСЛОВИЯ ИСПОЛЬЗОВАНИЯ»
+    читались как одна строка."""
+    css = _read("assets/strategy.css")
+    assert ".legal a + a::before { content: '\\00b7';" in css
+
+
+def test_finale_footer_clears_the_video_circle():
+    """FR-SITE55: в портрете подвал финала стоит НАД кружком, а не под ним."""
+    css = _read("assets/strategy.css")
+    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.5rem + env(safe-area-inset-bottom, 0px)); }" in css, \
+        "нижний запас финала = кружок плюс воздух"
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".screen:has(.stage-card), .screen.final { padding: 3.5rem calc(var(--vid-d) + 1.6rem); }" in land, \
+        "в горизонте запас свой: кружок стоит слева, а не снизу"
 
 
 if __name__ == "__main__":

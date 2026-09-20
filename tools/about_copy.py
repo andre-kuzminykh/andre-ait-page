@@ -97,7 +97,7 @@ EN = {
     "k3_quote": "Status, salary and career success do not necessarily make a person free.",
 
     # ── стартапы ─────────────────────────────────────────────────────────
-    "s1_head": "Leaving the Corporate Path",
+    "s1_head": "Startup Studio",
     "s1_p1": ("I wanted to create products that could be useful to people around the world. So I "
               "left my corporate career, left postgraduate studies and moved to Cyprus."),
     "s1_p2": ("There, I became <strong>CTO of an AI startup studio</strong>, building technology "
@@ -279,7 +279,7 @@ RU = {
     "k3_p3": "А достижение позиции топ-менеджера помогло понять кое-что ещё более важное:",
     "k3_quote": "Статус, высокая зарплата и карьерный успех сами по себе не делают человека свободным.",
 
-    "s1_head": "Уход из корпоративного мира",
+    "s1_head": "Стартап-студия",
     "s1_p1": ("Я хотел создавать продукты, которые могли бы приносить пользу людям по всему миру. "
               "Поэтому я оставил корпоративную карьеру, ушёл из аспирантуры и переехал на Кипр."),
     "s1_p2": ("Там я стал <strong>CTO ИИ-стартап-студии</strong> и начал создавать технологии в "

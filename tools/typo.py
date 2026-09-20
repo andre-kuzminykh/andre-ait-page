@@ -49,6 +49,35 @@ def bind_short_words(text, lang):
     return "".join(parts)
 
 
+_NB_HYPHEN = u"\u2011"
+# Дефис ВНУТРИ слова делаем неразрывным: «топ-менеджменту», «ИИ-зрелость»,
+# «бизнес-анализа» рвались по дефису и выглядели как две половинки (правка
+# владельца). В JetBrains Mono U+2011 той же ширины, что обычный дефис, —
+# замер показал 105.97px против 105.97px, так что строки не сдвигаются.
+_RX_HYPHEN = re.compile(u"(?<=[0-9A-Za-z\u0400-\u04ff])-(?=[0-9A-Za-z\u0400-\u04ff])")
+
+
+# Строка из одних строчных латинских букв, цифр, пробелов, дефисов и
+# подчёркиваний — это НЕ текст, а идентификатор: имя класса иконки
+# («fa-solid fa-pen-nib»), ключ, техническое значение. Неразрывный дефис там
+# ломает всё: Font Awesome перестаёт находить класс и значки исчезают.
+_RX_TECH = re.compile(r"^[a-z0-9 _-]+$")
+
+
+def keep_hyphen(text):
+    """Неразрывный дефис в составных словах. Не трогаем ни куски между < и >,
+    ни строки-идентификаторы целиком (классы иконок приходят отдельными
+    значениями словаря, а не внутри тега)."""
+    if _RX_TECH.match(text):
+        return text
+    parts = re.split(r"(<[^>]+>)", text)
+    for i, part in enumerate(parts):
+        if part.startswith("<"):
+            continue
+        parts[i] = _RX_HYPHEN.sub(_NB_HYPHEN, part)
+    return "".join(parts)
+
+
 def bind_copy(obj, lang, key=""):
     """Тот же проход по всему словарю текстов. Метаданные и ссылки пропускаем:
     неразрывные пробелы там не нужны."""
@@ -58,7 +87,10 @@ def bind_copy(obj, lang, key=""):
                "cta_href", "video_aria"):
         return obj
     if isinstance(obj, str):
-        return bind_short_words(obj, lang) if " " in obj and "://" not in obj else obj
+        if "://" in obj:
+            return obj
+        out = bind_short_words(obj, lang) if " " in obj else obj
+        return keep_hyphen(out)
     if isinstance(obj, list):
         return [bind_copy(x, lang, key) for x in obj]
     if isinstance(obj, tuple):

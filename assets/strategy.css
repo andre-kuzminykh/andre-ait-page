@@ -261,12 +261,13 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
 /* ===== Типографика ===== */
 h1, h2, h3 { color: var(--w); margin: 0; }
 .nb { white-space: nowrap; }
-h1 { font-size: clamp(1.7rem, 5vw, 4.4rem); font-weight: 800; line-height: 1.16; letter-spacing: -0.025em; margin-bottom: 1.1rem; }
+/* подзаголовок ближе к заголовку (правка владельца) */
+h1 { font-size: clamp(1.7rem, 5vw, 4.4rem); font-weight: 800; line-height: 1.16; letter-spacing: -0.025em; margin-bottom: 0.7rem; }
 h1 .l { display: block; white-space: nowrap; }
 h2 .l { display: block; }
 @media (min-width:1024px) { h2 .l { white-space: nowrap; } }
 @media (max-width:1023px) { h1 { font-size: clamp(1.05rem, 5.2vw, 1.9rem); } }
-h2 { font-size: clamp(1.2rem, 2.25vw, 1.9rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.015em; margin-bottom: 0.9rem; }
+h2 { font-size: clamp(1.2rem, 2.25vw, 1.9rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.015em; margin-bottom: 0.6rem; }
 h2.one-line { white-space: nowrap; font-size: clamp(1rem, 2vw, 1.65rem); }
 /* Заголовок экрана «Решение»: правка владельца «model оранжевым и можно в
    одну строку?». В вебе — да: обе строки встают в одну, а кегль под колонку
@@ -738,8 +739,8 @@ strong { color: var(--w); font-weight: 700; }
          (min-width:1900px) and (max-height:1144px),
          (min-width:2300px) and (max-height:1320px) {
   .screen { padding-top: 6.2rem; padding-bottom: 1.6rem; }
-  h1 { margin-bottom: 0.9rem; }
-  h2 { margin-bottom: 0.7rem; }
+  h1 { margin-bottom: 0.6rem; }
+  h2 { margin-bottom: 0.48rem; }
   /* ВАЖНО: боковое auto сохраняем. Короткая запись «margin: 1.2rem 0 1rem»
      обнуляла его, и сетки уезжали влево от центра экрана. */
   .nums { margin: 1.2rem auto 1rem; gap: 0.7rem; }
@@ -928,7 +929,7 @@ strong { color: var(--w); font-weight: 700; }
    ===================================================================== */
 @media (max-width:1023px) {
   /* ── заголовок первого экрана: те же две строки, что и на вебе ── */
-  h1 { font-size: clamp(1.9rem, 8.6vw, 2.7rem); line-height: 1.12; margin-bottom: 1rem; }
+  h1 { font-size: clamp(1.9rem, 8.6vw, 2.7rem); line-height: 1.12; margin-bottom: 0.62rem; }
 
   /* ── базовая типографика ── */
   .eyebrow { font-size: 13px; letter-spacing: 0.16em; margin-bottom: 0.7rem; }
@@ -1076,7 +1077,10 @@ strong { color: var(--w); font-weight: 700; }
   .copy { font-size: 11.5px; }
   /* Подвал стоит у самого низа экрана (правка владельца: «надо внизу делать
      как и было, то что кружок заходит — это ок»). */
-  .screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }
+  /* Подвал финала стоит над кружком с роликом, а не под ним: при запасе
+     2.4rem кружок накрывал и иконки, и обе юридические ссылки, и копирайт
+     (замер на 390×844: подвал 706…806, кружок 698…830). */
+  .screen.final { padding-bottom: calc(var(--vid-d) + 1.5rem + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ===== Телефон в ГОРИЗОНТЕ ===============================================
@@ -1144,10 +1148,13 @@ strong { color: var(--w); font-weight: 700; }
   .outs { gap: 0.32rem; margin-top: 0.2rem; }
   /* содержимое карточек ужимается вместе с сеткой: восемь карточек в две
      строки иначе не укладывались в 360px высоты */
-  .out { padding: 0.2rem 0.36rem; gap: 0.12rem; }
+  .out { padding: 0.18rem 0.34rem; gap: 0.1rem; }
   .out-ic { width: 1.1rem; height: 1.1rem; font-size: 8px; margin-bottom: 0.05rem; }
-  .out h3 { font-size: clamp(9px, 2.3vh, 11px); margin-bottom: 0.04rem; }
-  .out p { font-size: clamp(8px, 2vh, 10px); line-height: 1.2; }
+  /* «Решение»: подписи карточек были 8–9px — мельче всего на сайте, хотя по
+     высоте у этого экрана запас (сетка занимает ~80px из 390). Кегль поднят
+     до 10/9.5px, подписи в две строки разрешены. */
+  .out h3 { font-size: clamp(9.5px, 2.75vh, 12px); margin-bottom: 0.05rem; }
+  .out p { font-size: clamp(9px, 2.45vh, 11px); line-height: 1.22; }
   .plan { padding: 0.42rem 0.5rem; gap: 0.2rem; }
   .plan h3 { font-size: clamp(9px, 2.3vh, 11px); }
   .plan-scope { font-size: clamp(9px, 2.3vh, 11px); }
@@ -1186,6 +1193,44 @@ strong { color: var(--w); font-weight: 700; }
   /* поля стали симметричными (7rem вместо 4.9rem) — панель пересчитана,
      иначе экран шага вылезал на 11–20px */
   .stage-card { height: clamp(6.5rem, calc(100dvh - 13.4rem), 20rem); }
+
+  /* ===== Паспорт агента в ГОРИЗОНТЕ =====
+     Восемь подписей вокруг круга здесь не помещаются: на кольцо остаётся
+     93–145px высоты, и замер показал, что подписи наезжают на ядро (при
+     740×360 — шесть из восьми) и друг на друга (до шести пар). Круг в такой
+     коробке нечестен, поэтому в горизонте те же восемь подписей встают двумя
+     колонками по бокам от ядра: смысл тот же — «агент в центре, вокруг его
+     паспорт», — а читается без единого нахлёста. Пунктирные кольца тут не
+     нужны, они рисовали овал. */
+  .hub { display: grid; grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: repeat(4, auto); align-items: center;
+    column-gap: clamp(0.5rem, 2.2vw, 1.3rem); row-gap: clamp(0.18rem, 1vh, 0.4rem); }
+  .hub::before, .hub::after { display: none; }
+  /* position:relative, а НЕ static: у ядра есть ::before с inset:0 (кольцо
+     градиентом по маске). При static он считается от .hub и растягивался
+     в овал во всю панель — замер: 508×123px с border-radius:50% (жалоба
+     владельца на «овал» в горизонте). */
+  /* left/top обнуляются вместе с transform: у вебовой раскладки ядро стоит
+     на left:50%/top:50% с обратным сдвигом; при relative сдвиг transform
+     убран, а проценты остались — ядро уезжало вправо-вниз на пол-панели и
+     садилось на плашку «Инструкции». */
+  .hub-core { position: relative; transform: none; left: auto; top: auto;
+    grid-column: 2; grid-row: 1 / span 4;
+    align-self: center; justify-self: center;
+    width: clamp(2.6rem, 13vh, 4.4rem); height: clamp(2.6rem, 13vh, 4.4rem); }
+  .hub-core i { font-size: clamp(16px, 6.5vh, 26px); }
+  .spoke { position: static; left: auto; top: auto; translate: none;
+    font-size: clamp(9.5px, 2.9vh, 12.5px); padding: 0.3em 0.62em; }
+  .spoke:nth-of-type(1) { grid-area: 1 / 1; }
+  .spoke:nth-of-type(2) { grid-area: 2 / 1; }
+  .spoke:nth-of-type(3) { grid-area: 3 / 1; }
+  .spoke:nth-of-type(4) { grid-area: 4 / 1; }
+  .spoke:nth-of-type(5) { grid-area: 1 / 3; }
+  .spoke:nth-of-type(6) { grid-area: 2 / 3; }
+  .spoke:nth-of-type(7) { grid-area: 3 / 3; }
+  .spoke:nth-of-type(8) { grid-area: 4 / 3; }
+  .spoke:nth-of-type(-n+4) { justify-self: end; }
+  .spoke:nth-of-type(n+5) { justify-self: start; }
   /* поля у экранов с панелью и у финала ЯВНО симметричные: без этого
      действуют портретные правила (запас снизу под кружок), и экран стоял
      на 16–20px ниже середины, а без них вовсе разъезжался на 120px */
@@ -1196,4 +1241,43 @@ strong { color: var(--w); font-weight: 700; }
     margin-top: 0; padding-top: 0; gap: 0.3rem; }
   .final .wrap { flex: 1 1 auto; justify-content: center; }
   .ticker { margin-top: 0.6rem; }
+  /* Бегущая строка ролей: .screen > *:not(.wm){max-width:none} снял с неё
+     ограничение, и коробка выросла до ширины ленты (замер: 158…3833px) —
+     растушёвка на 82% уезжала за экран, и плашки обрывались по краю окна.
+     Возвращаем её в колонку: маска снова попадает на видимые края. */
+  .ticker { width: 100%; max-width: 100%; }
+
+  /* Кейсы: четыре колонки по 127px, из которых 100 съедали иконка, поля и
+     слово «ВСЕ ТИПЫ →». На текст оставалось 25px, и все восемь названий
+     обрывались многоточием («КОНСА…», «КАДРО…»). В горизонте стрелку
+     убираем, значок ужимаем, а подпись метрики пускаем в две строки. */
+  .biz { padding: 0.42rem 0.5rem; gap: 0.38rem; min-height: 0; }
+  .biz-ic { width: 1.45rem; height: 1.45rem; font-size: 9px; border-radius: 0.45rem; }
+  .biz-go { display: none; }
+  .biz-body { gap: 0.1rem; }
+  .biz h3 { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.15; }
+  .biz-metric { white-space: normal; overflow: visible; text-overflow: clip;
+    flex-wrap: wrap; line-height: 1.15; row-gap: 0; }
+
+  /* Цепочки процессов — В РЯД, как на вебе. Мобильное правило ставит узлы
+     столбиком (в портрете панель узкая и высокая); в горизонте панель ровно
+     наоборот — 175px высоты при 526px ширины, и шесть узлов подряд уезжали
+     под нижний край (замер на 844×390: хвост цепочки срезан). */
+  .pchain, .fflow { flex-direction: column; gap: clamp(0.15rem, 0.9vh, 0.4rem); }
+  .pchain .prow, .fflow .frow { flex-direction: row; gap: 0.3rem; }
+  .pwrap { font-size: 9px; }
+  .opchain { gap: 0.3rem; }
+  .opgroup { gap: 0.3rem; }
+
+  /* «Как это работает»: в горизонте колонка одна, и шапка шага, прижатая
+     влево, висела над панелью во всю ширину. Правило владельца — «на
+     горизонталке весь текст по центру». */
+  .step-copy, .step-copy h2, .step-copy p, .step-n { text-align: center; }
+  .step-copy .step-n { justify-content: center; }
+
+  /* «·» между юридическими ссылками: при gap 0.7rem и разрядке 0.1em
+     «ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ» и «УСЛОВИЯ ИСПОЛЬЗОВАНИЯ» читались
+     как одна строка */
+  .legal { gap: 0.55rem; }
+  .legal a + a::before { content: '\00b7'; margin-right: 0.55rem; color: rgba(255,255,255,0.3); }
 }
