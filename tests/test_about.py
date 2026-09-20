@@ -700,8 +700,14 @@ def test_landscape_text_is_centred_and_breathes():
     assert ".note p, .quote p, .stat p, .card h3, .card p {" in block, \
         "текст внутри врезок, цитат и карточек тоже по центру"
     # надзаголовок — inline-flex, text-align на него не действует
-    assert ".screen > .eyebrow { justify-content: center; }" in block, \
-        "надзаголовок центрируется свойством флекса, а не выключкой текста"
+    # .eyebrow и .card h3 — оба display:flex, и text-align на них НЕ действует:
+    # содержимое флекса пакуется к flex-start. Замер: «Обо мне» стояло на 227px
+    # левее центра, заголовки карточек — вплотную к левому краю (зазор 0.0px,
+    # смещение до −90.6px на 915×412), хотя text-align им уже был задан.
+    assert ".screen > .eyebrow, .card h3 { justify-content: center; }" in block, \
+        "надзаголовок и заголовок карточки центрируются свойством флекса"
+    # в горизонте заголовок главы по центру, поэтому значок возвращается в строку
+    assert "h2 i { position: static; width: auto; margin-right: 0.6rem; }" in block
     assert ".top-fade { height: 3.4rem; }" in block, \
         "верхняя растушёвка ужата под шапку горизонта, иначе она гасит заголовок главы"
     # зазор между колонками ужат с 1.1rem: колонки были слишком узкие для
@@ -790,6 +796,25 @@ def test_list_items_do_not_glue_prepositions():
     assert u"moving" + nb + u"to" not in en, "EN: предлог в пункте списка не склеен"
     # а в прозе — склеен, как и просил владелец
     assert u"я" + nb + u"прошёл" in ru, "в прозе склейка предлогов осталась"
+
+
+
+
+def test_chapter_title_sits_on_the_common_left_edge():
+    """FR-SITE66. Правка владельца «выровни текст под иконки»: в ВЕРТИКАЛИ
+    заголовок главы, абзац и пункты начинаются от одной линии.
+
+    Значок главы инлайновый, и ширина его глифа гуляет: Font Awesome квантует
+    её по 0.125em, что при кегле 20.3px даёт шаг ровно 2.53px. Текст заголовка
+    плясал в пределах 43…53px, тогда как абзацы и пункты стоят намертво на
+    47.2px. Замер после правки: разброс 0px на трёх размерах вертикали и обоих
+    языках."""
+    css = _css()
+    mob = css[css.index("@media (max-width:1023px) {"):]
+    assert "h2 { padding-left: 1.85rem; position: relative; }" in mob, \
+        "у заголовка та же колонка значка, что у пунктов списка"
+    assert "h2 i { position: absolute; left: 0; top: 0; width: 1.15rem; margin-right: 0;" in mob, \
+        "значок вынесен в фиксированную колонку, и ширина глифа больше ни на что не влияет"
 
 
 
