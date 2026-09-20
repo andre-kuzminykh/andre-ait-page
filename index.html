@@ -127,7 +127,6 @@
   @keyframes floatY { 0% { transform: translateY(0); } 50% { transform: translateY(-9px); } 100% { transform: translateY(0); } }
   @keyframes pulseGlow { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
   @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-  @keyframes auraPulse { 0%, 100% { opacity: 0.45; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.12); } }
 
   /* ===== Background video ===== */
   .scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #050505; }
@@ -507,9 +506,6 @@
   .rm-title { font-size: 1.5rem; white-space: nowrap; }
   @media (min-width:1024px) { .rm-title { font-size: clamp(1.5rem, 1.9vw, 2.5rem); } }
 
-  .overview-aura { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); width: min(85%, 32rem); height: 15rem;
-    background: radial-gradient(closest-side, rgba(136,84,243,0.4), rgba(249,115,22,0.14), transparent 72%); filter: blur(34px); z-index: 0; pointer-events: none; animation: auraPulse 5.5s ease-in-out infinite; }
-
   /* «About me» под CTA героя: не кнопка, а серая текстовая ссылка (FR-SITE7) */
   .about-link { position: relative; z-index: 1; margin-top: -0.65rem; font-size: 12px; font-weight: 500; text-transform: uppercase;
     letter-spacing: 0.12em; color: rgba(255,255,255,0.5); transition: color 0.3s ease; }
@@ -551,6 +547,12 @@
      кегль: EN 44 знака, RU 43 — длины сравнялись, кегль ЕДИНЫЙ для обоих языков.
      Специфичность .desc.hero-sub перебивает и десктопный, и ландшафтный кламп .desc. */
   .desc.hero-sub { white-space: nowrap; max-width: none; font-size: clamp(9px, 3.35vw, 14.5px); }
+  /* Подзаголовок стоит ближе к заголовку (правка владельца «чуть поближе
+     поставь подтайтл к тайтлу»). У экрана один gap на всех детей, поэтому
+     подтягиваем именно подзаголовок — кнопка и ссылка под ним не двигаются. */
+  .screen .desc { margin-top: -0.55rem; }
+  .desc.hero-sub { margin-top: -0.85rem; }
+  @media (min-width:1024px) { .screen .desc { margin-top: -0.7rem; } .desc.hero-sub { margin-top: -1rem; } }
   @media (min-width:1024px) {
     .desc.hero-sub { font-size: clamp(10px, 1.45vw - 2px, 19px); }
   }
@@ -1035,10 +1037,9 @@
 
         <!-- OVERVIEW -->
         <section class="screen active" data-screen="overview" style="position: relative; gap: 1.75rem; max-width: 38rem; text-align: center;">
-          <div class="overview-aura" aria-hidden="true"></div>
           <h1 class="hero-size" style="position: relative; z-index: 1; margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.12; color: #ffffff; animation: floatSlow 6s ease-in-out infinite;">
-            <span style="display: block; white-space: nowrap;" data-i18n="hero.l1"><span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">AI</span> <span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">Transformation</span></span>
-            <span style="display: block; white-space: nowrap;" data-i18n="hero.l2">of your <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">Business</span></span>
+            <span style="display: block; white-space: nowrap;" data-i18n="hero.l1"><span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">AI</span> <span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">Transformation</span></span>
+            <span style="display: block; white-space: nowrap;" data-i18n="hero.l2">of your <span style="color: #ff8a33; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">Business</span></span>
           </h1>
           <p class="desc hero-sub" data-i18n="hero.sub" style="position: relative; z-index: 1; margin: 0; text-shadow: 0 1px 6px rgba(0,0,0,0.6);">I Help Companies Adapt to the New AI Economy</p>
           <!-- Первый шаг воронки — бесплатная диагностика ИИ-зрелости (maturity.) -->
@@ -1499,8 +1500,8 @@
     'nav.contact': 'Контакты',
     'cta.diagnostic': 'ИИ-диагностика <i class="fa-solid fa-arrow-right"></i>',
     'speaker.role': 'ИИ-консультант',
-    'hero.l1': '<span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">ИИ</span><span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">-трансформация</span>',
-    'hero.l2': 'вашего <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">бизнеса</span>',
+    'hero.l1': '<span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">ИИ</span><span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">-трансформация</span>',
+    'hero.l2': 'вашего <span style="color: #ff8a33; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">бизнеса</span>',
     'hero.sub': 'Помогаю адаптироваться к новой ИИ-экономике',
     'overview.cta': 'Начать ИИ-трансформацию <i class="fa-solid fa-arrow-right"></i>',
     'overview.about': 'Обо мне',

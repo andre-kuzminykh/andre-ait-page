@@ -25,7 +25,7 @@ def _read(rel):
     (FR-SITE42, tools/typo.py), а проверки ниже про текст, а не про перенос:
     без нормализации каждая такая проверка падала бы на \u00a0. Сам перенос
     проверяется отдельно — по сырому файлу через _raw()."""
-    return _raw(rel).replace(u"\u00a0", " ")
+    return _raw(rel).replace(u"\u00a0", " ").replace(u"\u2011", "-")
 
 
 def _en():
@@ -280,12 +280,13 @@ def test_chapter_watermarks_sit_bottom_right():
             assert icon in bodies, "%s: нет знака главы %s" % (lang, icon)
 
 
-def test_watermarks_are_faint_and_hidden_on_mobile():
+def test_watermarks_are_faint():
+    """Знаки глав еле заметные. Прятать их на телефоне больше не нужно —
+    владелец попросил вернуть («на мобилках нет больших иконок, а на вебе
+    есть»), поэтому видимость проверяет test_chapter_marks_are_visible_on_phone."""
     css = _css()
     assert re.search(r"\.screen\.active \.wm \{ opacity: 0\.0\d+;", css), \
         "знаки глав — еле заметные"
-    assert "@media (max-width:1023px) { .wm { display: none; } }" in css, \
-        "на мобилке фоновых знаков нет: только текст и кружок"
 
 
 # ── FR-SITE40·9: только по блокам, внутри экрана не листается ─────────────
@@ -606,8 +607,11 @@ def test_finale_sits_in_the_middle_and_the_footer_at_the_bottom():
     assert ".screen.final { justify-content: flex-start; }" in css
     assert ".screen.final .finale { margin-top: auto; margin-bottom: auto; }" in css, \
         "два auto-отступа делят свободное место поровну: финал по центру, подвал внизу"
-    assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in css, \
-        "на телефоне нижний запас под кружок финалу не нужен — подвал прижат к точкам"
+    # Подвал остался внизу, но ВЫШЕ кружка (FR-SITE55): прежние 2.4rem
+    # разрешали кружку накрыть копирайт (замер 390x844: строка 83…307,
+    # кружок 16…148). Ниже кружка места нет — там точки переходов.
+    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.5rem + env(safe-area-inset-bottom, 0px)); }" in css, \
+        "подвал финала внизу, но не заезжает под кружок"
     # Крупнее — ровно там, где колонка это позволяет. Кегли подобраны замером
     # предела, за которым появляется лишняя строка (см. FR-SITE43):
     assert ".finale p { font-size: 17px; }" in css, "телефон, английский: 14.5px → 17px (предел 20px)"
@@ -647,8 +651,105 @@ def test_runner_stands_at_the_end_of_the_file():
     поэтому тесты, дописанные ПОСЛЕ него, молча не выполнялись — так мимо
     прогона прошли пять проверок сразу. Он должен быть последним в файле."""
     src = _raw("tests/test_about.py")
-    tail = src[src.index('if __name__ == "__main__":'):]
+    tail = src[src.rindex('\nif __name__ == "__main__":'):]
     assert "\ndef test_" not in tail, "тесты после блока запуска не запускаются"
+
+
+def test_no_coloured_glow_around_text():
+    """Правка владельца: «убери это странное свечение везде». Цвет слова
+    остаётся, цветной ореол вокруг букв снят."""
+    css = _css()
+    assert ".hl-p { color: #a071ff; }" in css and ".hl-o { color: #ff8a33; }" in css, \
+        "у выделенных слов больше нет text-shadow"
+    for rel in ("assets/about.css", "index.html"):
+        src = _raw(rel)
+        assert "text-shadow: 0 0 22px rgba(136,84,243" not in src, rel + ": остался фиолетовый ореол"
+        assert "text-shadow: 0 0 22px rgba(249,115,22" not in src, rel + ": остался оранжевый ореол"
+
+
+def test_chapter_marks_are_visible_on_phone():
+    """Правка владельца: «на мобилках снизу внизу нет больших иконок, а на
+    вебе есть». Знак главы виден и на телефоне — крупный, но еле заметный."""
+    css = _css()
+    assert "@media (max-width:1023px) { .wm { display: none; } }" not in css, \
+        "знаки глав больше не прячутся на телефоне"
+    assert ".wm { right: 1rem; bottom: 1.2rem; font-size: min(44vw, 30vh); }" in css, \
+        "размер знака считается от меньшей стороны окна"
+    assert ".screen.active .wm { opacity: 0.075; }" in css
+
+
+def test_circle_in_landscape_is_as_big_as_in_portrait():
+    """Жалоба владельца «кружок на горизонталке схуяли такой маленький».
+    Причина: --vid-d объявлен у `html, body`, а переопределялся только у
+    `:root` — body оставался со старым значением, кружок наследовал 88px."""
+    assert ":root, body { --vid-d: clamp(104px, 34vh, 150px); }" in _css()
+
+
+def test_landscape_text_is_centred_and_breathes():
+    """Правки владельца: «на горизонталке весь текст по середине по центру»
+    и «всё налипает друг на друга»."""
+    css = _css()
+    block = css[css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert "text-align: center; padding-left: 0; }" in block, "в горизонте текст по центру"
+    assert "gap: 0.42rem 1.1rem;" in block, "ряды списка не слипаются (было 0.04rem)"
+    assert ".facts li { line-height: 1.38; gap: 0.45rem; }" in block
+
+
+def test_icon_sits_on_the_first_line_of_its_item():
+    """«Выровни текст под иконки»: значок пункта стоит строкой той же высоты,
+    что и текст, а не опускается на 0.4rem вниз."""
+    css = _css()
+    assert ".facts i { color: #8854F3; font-size: 1em; line-height: inherit;" in css
+    assert "margin-top: 0.4rem" not in css.split(".facts i")[1][:200]
+
+
+def test_one_left_edge_on_the_phone():
+    """«Выровни текст под иконки»: в вертикали заголовок, абзацы и пункты
+    начинаются от одной линии, значки висят слева от неё."""
+    assert ".screen > p, .screen > .lead { padding-left: 1.85rem; }" in _css()
+
+
+def test_startup_studio_chapter_is_renamed():
+    """Правка владельца: не «Уход из корпоративного мира», а «Стартап-студия»."""
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from about_copy import EN, RU
+    assert RU["s1_head"] == "Стартап-студия"
+    assert EN["s1_head"] == "Startup Studio"
+    assert "Уход из корпоративного мира" not in _ru()
+
+
+def test_compound_words_never_break_at_the_hyphen():
+    """Правка владельца: «топ-менеджменту» рвалось по дефису. В составных
+    словах стоит неразрывный дефис U+2011 — в JetBrains Mono он той же
+    ширины, что обычный, поэтому строки не сдвигаются."""
+    nb = u"\u2011"
+    for rel in ("about/index.html", "about/ru/index.html",
+                "ai-strategy/index.html", "ai-strategy/ru/index.html"):
+        assert nb in _raw(rel), rel + ": неразрывных дефисов нет"
+
+
+
+def test_finale_footer_clears_the_video_circle():
+    """FR-SITE55: в портрете подвал финала стоит НАД кружком, а не под ним.
+
+    Замер на 390x844: копирайт занимал 83…307, кружок — 16…148, начало строки
+    не читалось. В ГОРИЗОНТЕ запас свой: там кружок слева, подвал правее."""
+    css = _css()
+    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.5rem + env(safe-area-inset-bottom, 0px)); }" in css
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".screen.final { padding-bottom: 3.3rem; }" in land, \
+        "в горизонте вес .screen.final съедал бы 157px из 360 высоты"
+
+
+def test_ten_roles_fit_five_columns_in_landscape():
+    """FR-SITE54.5: пять колонок по 83px — «Разработка» и «Engineering» не
+    влезали и наезжали на значок соседа (замер: 6px)."""
+    css = _css()
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".facts:has(li:nth-child(10):last-child) { gap: 0.3rem 0.5rem; }" in land
+    assert ".facts:has(li:nth-child(10):last-child) li { font-size: clamp(9px, 2.4vh, 11.5px); gap: 0.28rem; }" in land
+    assert ".facts:has(li:nth-child(10):last-child) i { width: 0.9rem; }" in land
 
 
 if __name__ == "__main__":
