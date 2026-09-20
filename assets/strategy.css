@@ -1170,7 +1170,7 @@ strong { color: var(--w); font-weight: 700; }
   .btn-sm { padding: 0.34rem 0.45rem; font-size: clamp(8.5px, 2.2vh, 10.5px); }
   .plan-badge { font-size: 7.5px; padding: 0.12rem 0.4rem; }
   .compare { font-size: clamp(9px, 2.3vh, 11px); line-height: 1.35; }
-  .biz-grid { gap: 0.4rem; margin: 0.5rem auto 0.45rem; }
+  .biz-grid { gap: 0.25rem; margin: 0.5rem auto 0.45rem; }
   .compare { flex-direction: row; gap: 0.3rem 0.7rem; }
   .compare .cmp.now { flex-basis: auto; }
   /* Зрелость в горизонте: паутина справа во всю высоту панели, слева оценка
@@ -1277,8 +1277,11 @@ strong { color: var(--w); font-weight: 700; }
      слово «ВСЕ ТИПЫ →». На текст оставалось 25px, и все восемь названий
      обрывались многоточием («КОНСА…», «КАДРО…»). В горизонте стрелку
      убираем, значок ужимаем, а подпись метрики пускаем в две строки. */
-  .biz { padding: 0.42rem 0.5rem; gap: 0.38rem; min-height: 0; }
-  .biz-ic { width: 1.45rem; height: 1.45rem; font-size: 9px; border-radius: 0.45rem; }
+  /* Каждый пиксель ширины идёт тексту: русские подписи длинные
+     («Маркетинговое» — 81px при колонке 80), и не хватало буквально
+     единиц. Значок, поля и зазоры ужаты — колонка выросла с 80 до 94px. */
+  .biz { padding: 0.3rem 0.36rem; gap: 0.25rem; min-height: 0; }
+  .biz-ic { width: 1.05rem; height: 1.05rem; font-size: 8px; border-radius: 0.35rem; }
   .biz-go { display: none; }
   .biz-body { gap: 0.1rem; }
   /* overflow:visible снял обрезку многоточием — и длинные слова, которым не

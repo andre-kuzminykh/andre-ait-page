@@ -99,6 +99,15 @@ def bind_copy(obj, lang, key=""):
         out = obj
         if " " in obj and not key.endswith("_facts"):
             out = bind_short_words(obj, lang)
+        # Названия кейсов (`businesses`) — подписи в колонке шириной 59–80px
+        # в горизонте телефона. «Контент‑агентство» с НЕРАЗРЫВНЫМ дефисом —
+        # одно слово в 93–105px, оно не влезает никак, и страховка
+        # overflow-wrap ломала его посреди слова: «КОНТЕНТ‑АГ / ЕНТСТВО».
+        # С обычным дефисом перенос идёт ПО ДЕФИСУ — «Контент- / агентство»,
+        # то есть ровно так, как и положено по-русски. Правило владельца про
+        # «топ-менеджменту» — про прозу, а не про подпись в 59px.
+        if key == "businesses":
+            return out
         return keep_hyphen(out)
     if isinstance(obj, list):
         return [bind_copy(x, lang, key) for x in obj]
