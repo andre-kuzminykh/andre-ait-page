@@ -735,6 +735,46 @@ def test_video_per_language_with_poster():
     assert "hero-poster.jpg" not in html, "ссылок на старый постер быть не должно"
 
 
+
+def test_subtitle_hugs_the_title_on_every_screen():
+    """FR-SITE56. Правка владельца «чуть поближе поставь подтайтл к тайтлу».
+
+    !important обязателен: у подзаголовка героя и у подзаголовка контактов
+    margin задан ИНЛАЙНОМ, и без него правка молча не применялась ровно на
+    тех двух экранах, ради которых её просили (замер: зазор 28px и 23–24px
+    против 4.8–10.4px на остальных шести).
+
+    Подтяг пересчитан под каждую высотную ступень: на коротких телефонах
+    щели экрана ужимаются (1.75rem → 1.05rem → 0.85rem), и фиксированный
+    подтяг оказывался БОЛЬШЕ самой щели — строки наезжали друг на друга
+    (замер на 360×568: −9.6px). Цель везде одна: зазор около 4.8px."""
+    html = _html()
+    # базовая вертикаль
+    assert ".screen .desc { margin-top: -0.55rem !important; }" in html
+    assert ".desc.hero-sub { margin-top: -1.45rem !important; }" in html
+    assert ".contact-hero .desc { margin-top: -1.2rem !important; }" in html
+    # веб
+    assert ".screen .desc { margin-top: -0.7rem !important; }" in html
+    assert ".desc.hero-sub { margin-top: -1.1rem !important; }" in html
+    assert ".contact-hero .desc { margin-top: -0.79rem !important; }" in html
+    # короткие телефоны: ≤700px и ≤600px
+    assert ".screen .desc { margin-top: -0.3rem !important; }" in html
+    assert ".desc.hero-sub { margin-top: -0.75rem !important; }" in html
+    assert ".contact-hero .desc { margin-top: -0.55rem !important; }" in html
+    assert ".screen .desc { margin-top: -0.2rem !important; }" in html
+    assert ".desc.hero-sub { margin-top: -0.55rem !important; }" in html
+    assert ".contact-hero .desc { margin-top: -0.3rem !important; }" in html
+
+
+def test_hero_has_no_glowing_blob_behind_it():
+    """FR-SITE46: «убери это странное свечение везде» — кроме цветных теней
+    у букв убран и размытый фиолетово-оранжевый блоб под героем."""
+    html = _html()
+    assert "overview-aura" not in html, "блоб под героем удалён вместе с разметкой"
+    assert "auraPulse" not in html, "и его анимация тоже"
+
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:

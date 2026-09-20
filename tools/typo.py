@@ -89,7 +89,16 @@ def bind_copy(obj, lang, key=""):
     if isinstance(obj, str):
         if "://" in obj:
             return obj
-        out = bind_short_words(obj, lang) if " " in obj else obj
+        # Пункты списков (*_facts) — НЕ проза, а ячейки узкой сетки: в горизонте
+        # телефона на пункт приходится 121px. Склейка предлога со следующим
+        # словом даёт там неразрывный кусок, который шире ячейки целиком:
+        # «по\u00a0бизнес\u2011информатике» — 139px, и текст заезжал в соседнюю
+        # колонку на 18–28px (замер на 740×360). Предлог в двухстрочной ячейке
+        # списка владельцу не важен, а нахлёст — как раз то, на что он ругался.
+        # Неразрывный дефис (FR-SITE52) при этом остаётся: он не так длинен.
+        out = obj
+        if " " in obj and not key.endswith("_facts"):
+            out = bind_short_words(obj, lang)
         return keep_hyphen(out)
     if isinstance(obj, list):
         return [bind_copy(x, lang, key) for x in obj]

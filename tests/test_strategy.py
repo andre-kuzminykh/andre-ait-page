@@ -1480,6 +1480,19 @@ def test_landscape_finale_has_symmetric_padding():
         "в горизонте запас свой: кружок стоит слева, а не снизу"
 
 
+
+def test_learning_badge_icon_sits_on_the_first_line():
+    """FR-SITE51: на телефоне надпись плашки «Для более сложных кейсов»
+    переносится на две строки, и при align-items:center значок повисал
+    ПОСЕРЕДИНЕ между ними — замер: +12px от центра первой строки."""
+    css = _read("assets/strategy.css")
+    assert ".l-note { display: inline-flex; align-items: flex-start;" in css, \
+        "значок плашки равняется по первой строке, а не по середине блока"
+    assert ".l-note i { color: var(--p-l); font-size: 1em; line-height: inherit; flex-shrink: 0; }" in css, \
+        "у значка кегль и интерлиньяж текста — тогда его строка совпадает с первой строкой надписи"
+
+
+
 if __name__ == "__main__":
     import sys
     fails = 0

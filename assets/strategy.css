@@ -630,10 +630,15 @@ strong { color: var(--w); font-weight: 700; }
                      to   { transform: translate(-50%, -50%) rotate(360deg); } }
 
 /* ===== Обучение ===== */
-.l-note { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; padding: 0.6rem 1rem; border-radius: 999px;
+/* align-items:flex-start, а не center: на телефоне надпись переносится на две
+   строки, и при центрировании значок повисал ПОСЕРЕДИНЕ между ними — замер:
+   +12px от центра первой строки (правка владельца «выровни текст под иконки»).
+   Рецепт тот же, что у пунктов списка: у значка кегль и интерлиньяж текста,
+   поэтому его строчная коробка совпадает с первой строкой надписи. */
+.l-note { display: inline-flex; align-items: flex-start; gap: 0.5rem; margin-top: 1rem; padding: 0.6rem 1rem; border-radius: 999px;
   border: 1px solid rgba(136,84,243,0.35); background: rgba(136,84,243,0.10); color: var(--w);
   font-size: clamp(11.5px, 1vw, 14.5px); }
-.l-note i { color: var(--p-l); }
+.l-note i { color: var(--p-l); font-size: 1em; line-height: inherit; flex-shrink: 0; }
 /* Роли идут ОДНОЙ бегущей строкой (правка владельца: «почему не листается
    как было — там в одну линию нужно»). Растушёвка по краям шире прежней:
    при маске 12%/88% плашка обрывалась резко и выглядела разрезанной. */
