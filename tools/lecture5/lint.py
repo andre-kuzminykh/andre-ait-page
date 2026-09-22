@@ -6,8 +6,10 @@
 """
 import io, os, re, sys
 
+# L5_DIR — каталог колоды внутри build/: у второй версии лекции (l5v2) свои
+# слайды и свой словарь иконок.
 HERE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))), "build", "l5")
+    os.path.abspath(__file__)))), "build", os.environ.get("L5_DIR", "l5"))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 ICONS = set(io.open(os.path.join(HERE, "icons.txt"), encoding="utf-8").read().split())
 

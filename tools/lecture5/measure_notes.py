@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import io, json, glob, os, sys
 
-NOTES = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))), 'build', 'l5', 'notes')
+# Каталог статей задаётся аргументом: у второй колоды (build/l5v2) свой набор.
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+NOTES = os.path.join(ROOT, sys.argv[1]) if len(sys.argv) > 1 else \
+    os.path.join(ROOT, 'build', 'l5', 'notes')
 def text(n):
     s = n['title']
     for b in n['blocks']:
