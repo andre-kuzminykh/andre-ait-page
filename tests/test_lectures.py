@@ -957,3 +957,52 @@ def test_lecture5_v2_owns_its_css():
     body = open(css, encoding="utf-8").read()
     medias = set(m.strip() for m in re.findall(r"@media[^{]+", body))
     assert all("768px" in m for m in medias), "в CSS второй колоды чужие брейкпоинты: %s" % medias
+
+
+# ── FR-SITE68: автономный HTML колоды ─────────────────────────────────────
+
+def test_standalone_builder_leaves_no_external_refs():
+    """Собранный файл обязан быть самодостаточным: ни одной ссылки наружу.
+
+    Именно внешняя ссылка и была причиной жалобы «вот что я вижу в html»:
+    `/assets/lecture-5-v2.css` с диска отдаёт 404, и колода остаётся без
+    Tailwind. Заодно стережём снятую обвязку: шапку, стрелки, кнопку теста.
+    """
+    import subprocess
+    import tempfile
+    page = os.path.join(_ROOT, "automation/5/v2/index.html")
+    css = os.path.join(_ROOT, "assets/lecture-5-v2.css")
+    builder = os.path.join(_ROOT, "tools/lecture5/standalone.py")
+    if not (os.path.exists(page) and os.path.exists(css) and os.path.exists(builder)):
+        return
+    if not os.path.isdir(os.path.join(_ROOT, "vendor")):
+        return  # шрифты и значки кэшируются отдельно, в репозитории их нет
+    with tempfile.TemporaryDirectory() as tmp:
+        out = os.path.join(tmp, "standalone.html")
+        r = subprocess.run(["python3", builder, "automation/5/v2/index.html",
+                            "assets/lecture-5-v2.css", os.path.relpath(out, _ROOT)],
+                           cwd=_ROOT, capture_output=True)
+        # Путь назначения вне репозитория — собираем рядом и переносим
+        if r.returncode != 0:
+            out = os.path.join(_ROOT, "_standalone_test.html")
+            r = subprocess.run(["python3", builder, "automation/5/v2/index.html",
+                                "assets/lecture-5-v2.css", "_standalone_test.html"],
+                               cwd=_ROOT, capture_output=True)
+            assert r.returncode == 0, r.stderr.decode("utf-8", "replace")[-500:]
+        try:
+            html = open(out, encoding="utf-8").read()
+        finally:
+            if out.startswith(_ROOT) and os.path.exists(out) and "_standalone_test" in out:
+                os.remove(out)
+    for bad in ("https://unpkg.com", "https://fonts.googleapis.com",
+                "https://fonts.gstatic.com", '"/assets/', "url(/assets/"):
+        assert bad not in html, "в автономном файле осталась внешняя ссылка: " + bad
+    for gone, what in (('id="lecture-header"', "шапка"),
+                       ('id="nav-prev"', "стрелка назад"),
+                       ('id="nav-next"', "стрелка вперёд"),
+                       ('id="open-quiz-btn"', "кнопка теста")):
+        assert gone not in html, "обвязка не снята: " + what
+    # Панель второго слоя обязана пережить снятие кнопки
+    assert 'id="notes-toggle"' in html, "кнопка панели нужна скрытой — на ней инициализация"
+    assert 'id="slide-notes"' in html, "статьи панели пропали"
+    assert html.count('class="slide-container') == 43
