@@ -12,7 +12,7 @@ radial-fig, notes-panel-*) обязаны совпадать побайтово 
 import io, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-L5 = os.path.join(ROOT, "build", "l5")
+L5 = os.path.join(ROOT, "build", os.environ.get("L5_DIR", "l5"))
 SRC = os.path.join(ROOT, "automation", "4", "index.html")
 DST = os.path.join(ROOT, "automation", "5", "index.html")
 
@@ -51,9 +51,9 @@ def main():
     html = html.replace(old_desc, DESC)
     html = html.replace("Модуль 4 — От одного агента к системе агентов", TITLE)
     html = html.replace('content="https://andre.technology/automation/4/"',
-                        'content="https://andre.technology/automation/5/"', 1)
+                        'content="%s"' % os.environ.get("L5_URL", "https://andre.technology/automation/5/"), 1)
     html = html.replace('<link rel="stylesheet" href="/assets/lecture-4.css">',
-                        '<link rel="stylesheet" href="/assets/lecture-5.css">', 1)
+                        '<link rel="stylesheet" href="%s">' % os.environ.get("L5_CSS", "/assets/lecture-5.css"), 1)
 
     # ── 2. Слайды ────────────────────────────────────────────────────────
     start = html.index('    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-100')
