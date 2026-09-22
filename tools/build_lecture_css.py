@@ -42,10 +42,15 @@ module.exports = {
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1
-    page = os.path.join(ROOT, "automation/%d/index.html" % n)
+    # Необязательные аргументы: своя страница и своё имя CSS. Нужны, когда у
+    # лекции есть вторая колода (например automation/5/v2) — у неё свой набор
+    # классов, и общий lecture-<N>.css её не покрывает.
+    page = os.path.join(ROOT, sys.argv[2]) if len(sys.argv) > 2 else \
+        os.path.join(ROOT, "automation/%d/index.html" % n)
     if not os.path.exists(page):
         sys.exit("нет %s" % page)
-    out = os.path.join(ROOT, "assets/lecture-%d.css" % n)
+    out = os.path.join(ROOT, sys.argv[3]) if len(sys.argv) > 3 else \
+        os.path.join(ROOT, "assets/lecture-%d.css" % n)
     with tempfile.TemporaryDirectory() as tmp:
         open(os.path.join(tmp, "tailwind.config.js"), "w").write(
             CONFIG % {"content": page})
