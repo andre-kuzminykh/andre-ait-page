@@ -126,7 +126,11 @@ class Stand:
         if self.vendor:
             self.ctx.route("**/*", rl.vendor_route(self.vendor))
         self.page = self.ctx.new_page()
-        self.page.goto("http://127.0.0.1:%d/automation/%d/" % (rl.PORT, self.lecture),
+        # LECTURE_PATH — адрес колоды вместо /automation/<N>/. Нужен, когда у
+        # лекции есть вторая версия (/automation/5/v2/): сканеры должны уметь
+        # ходить по ней, иначе её никто не проверяет.
+        path = os.environ.get("LECTURE_PATH") or "/automation/%d/" % self.lecture
+        self.page.goto("http://127.0.0.1:%d%s" % (rl.PORT, path),
                        wait_until="load", timeout=120000)
         self.page.wait_for_timeout(3500)
         # Стартовый оверлей перекрывает слайд целиком — снимаем, иначе меряем чёрный экран.

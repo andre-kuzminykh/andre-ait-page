@@ -91,15 +91,20 @@ def main():
     ap = argparse.ArgumentParser(description="Замер __FLOOR колоды.")
     ap.add_argument("lecture", type=int)
     ap.add_argument("--write", action="store_true", help="вписать в lecture-floor")
+    # У лекции может быть вторая колода (automation/5/v2) — у неё свой общий
+    # кегль, и мерить его надо по её странице, а не по прод-версии.
+    ap.add_argument("--page", help="страница колоды вместо automation/<N>/index.html")
+    ap.add_argument("--json", help="куда положить floor.json")
     a = ap.parse_args()
     lc.must_run_from_root()
 
-    src = os.path.join(ROOT, "automation", str(a.lecture), "index.html")
+    src = os.path.join(ROOT, a.page) if a.page else \
+        os.path.join(ROOT, "automation", str(a.lecture), "index.html")
     html = io.open(src, encoding="utf-8").read()
-    probe = os.path.join(ROOT, "automation", str(a.lecture), "_floor_probe.html")
+    probe = os.path.join(os.path.dirname(src), "_floor_probe.html")
     io.open(probe, "w", encoding="utf-8").write(
         re.sub(r"window\.__FLOOR = \{[^}]*\};", "window.__FLOOR = {pc:0,mob:0};", html, count=1))
-    rel = "automation/%d/_floor_probe.html" % a.lecture
+    rel = os.path.relpath(probe, ROOT)
     try:
         got = {}
         for name, vp in (("pc", PC), ("mob", MOB)):
@@ -107,6 +112,10 @@ def main():
             got[name] = round(worst[1], 4)
             print("%s: %.4f  (самый узкий слайд — %d; всего замерено %d)"
                   % (name, worst[1], worst[0], len(vals)))
+            # Общий кегль тянет вниз ОДИН перегруженный слайд, поэтому важно
+            # видеть не только худший, а хвост: разгружать надо их все.
+            for i, v in sorted(vals, key=lambda v: v[1])[:6]:
+                print("    слайд %2d: %.4f" % (i, v))
     finally:
         os.remove(probe)
 
@@ -117,7 +126,8 @@ def main():
                       "window.__FLOOR = {pc:%s,mob:%s};" % (got["pc"], got["mob"]),
                       html, count=1)
         io.open(src, "w", encoding="utf-8").write(html)
-        json.dump(got, io.open(os.path.join(ROOT, "build", "l4", "floor.json"), "w",
+        json.dump(got, io.open(os.path.join(ROOT, a.json) if a.json else
+                               os.path.join(ROOT, "build", "l4", "floor.json"), "w",
                                encoding="utf-8"))
         print("вписано в %s" % src)
     return 0

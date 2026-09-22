@@ -914,3 +914,46 @@ if __name__ == "__main__":
                 failed += 1
                 print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
     raise SystemExit(1 if failed else 0)
+
+
+# ── FR-SITE67: у лекции 5 две колоды — прод и теоретическая ───────────────
+
+_V2 = "automation/5/v2/index.html"
+
+
+def test_lecture5_has_two_decks():
+    """Вторая колода — та же лекция другой подачей: 43 слайда, своя нумерация.
+
+    Прод-колода при этом обязана остаться на месте и отдельно: владелец
+    сравнивает их рядом, поэтому склеивать или подменять одну другой нельзя.
+    """
+    prod = os.path.join(_ROOT, "automation/5/index.html")
+    v2 = os.path.join(_ROOT, _V2)
+    if not os.path.exists(v2):
+        return  # второй колоды может не быть — это не ошибка
+    assert os.path.exists(prod), "прод-колода лекции 5 пропала"
+    a = open(prod, encoding="utf-8").read()
+    b = open(v2, encoding="utf-8").read()
+    for rel, html in (("automation/5/index.html", a), (_V2, b)):
+        n = html.count('class="slide-container')
+        assert n == 43, "%s: слайдов %d, а должно быть 43" % (rel, n)
+        assert "totalSlides = 43" in html, rel + ": счётчик слайдов разошёлся с разметкой"
+    assert a != b, "колоды совпали — второй подачи нет"
+
+
+def test_lecture5_v2_owns_its_css():
+    """Свой CSS: Tailwind собирается по странице, чужой файл её не покроет.
+
+    Подсунутый lecture-5.css не отрисовал бы новые классы второй колоды —
+    молча, без ошибки в консоли, поэтому проверяем именно адрес файла.
+    """
+    v2 = os.path.join(_ROOT, _V2)
+    if not os.path.exists(v2):
+        return
+    html = open(v2, encoding="utf-8").read()
+    assert '/assets/lecture-5-v2.css' in html, "вторая колода ссылается на чужой CSS"
+    css = os.path.join(_ROOT, "assets/lecture-5-v2.css")
+    assert os.path.exists(css), "assets/lecture-5-v2.css не собран"
+    body = open(css, encoding="utf-8").read()
+    medias = set(m.strip() for m in re.findall(r"@media[^{]+", body))
+    assert all("768px" in m for m in medias), "в CSS второй колоды чужие брейкпоинты: %s" % medias
