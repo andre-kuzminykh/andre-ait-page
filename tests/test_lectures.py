@@ -17,9 +17,9 @@ _ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
 # Проверки идут по фактически опубликованным лекциям, так что вернувшийся
 # модуль автоматически попадает под весь набор тестов — без правки списка.
 _LECTURES = tuple(r for r in _ALL_LECTURES if os.path.exists(os.path.join(_ROOT, r)))
-# Лекция 5 осталась архивной (голова с Vimeo). Лекции 3 и 4 пересобраны
-# на общем каноне: свой плеер и ролики со своего домена, как у 1 и 2.
-_VIMEO = ("automation/5/index.html",)
+# Лекции 3-5 пересобраны на общем каноне: свой плеер и ролики со своего
+# домена, как у 1 и 2. Архив с головами на Vimeo остался в теге
+# lectures-2-8-archive. Лекции 6-8 ещё играют головы с CDN.
 _NATIVE_CDN = {
     "automation/6/index.html": "corp/6/videos",
     "automation/7/index.html": "corp/7/videos",
@@ -69,8 +69,14 @@ def test_slider_api_and_swipe():
 # ── FR-SITE13: видео-кружок — источники видео корректны ───────────────────
 
 def test_video_sources():
-    for rel, html in _pages(_VIMEO):
-        assert "player.vimeo.com/api/player.js" in html, rel + ": лекции 3-5 играют головы с Vimeo"
+    # Лекции на общем каноне играют головы своим плеером со своего домена
+    # (см. LECTURE-GUIDE §6): хот-линк с raw.githubusercontent.com резал по
+    # лимитам и ронял ролики на проде. Пустой videoIds — законное состояние
+    # колоды, к которой роликов ещё не записали: кружок просто не показывается.
+    for rel, html in _pages():
+        if rel in _NATIVE_CDN:
+            continue
+        assert "player.vimeo.com" not in html, rel + ": голова должна играть своим плеером, не с Vimeo"
     for rel, html in _pages(tuple(_NATIVE_CDN)):
         path = _NATIVE_CDN[rel]
         assert "raw.githubusercontent.com/andre-kuzminykh/automation/" in html and path in html, \
@@ -713,17 +719,17 @@ def _published_pages():
 
 
 def test_locked_modules_closed():
-    """Открыты модули 1 и 2. Модули 3 и 4 выложены как превью по просьбе
+    """Открыты модули 1 и 2. Модули 3, 4 и 5 выложены как превью по просьбе
     владельца: он хочет смотреть колоду на живом сайте, пока записывает
     озвучку. На дорожной карте они по-прежнему заперты и ниоткуда не связаны,
     то есть попасть туда можно только прямой ссылкой, которую владелец даёт
-    сам. Модулей 5-8 в репозитории нет: по их адресам отдаётся 404, контент
+    сам. Модулей 6-8 в репозитории нет: по их адресам отдаётся 404, контент
     недоступен даже прямой ссылкой. Архив контента — тег lectures-2-8-archive.
     """
     for n in (1, 2):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
             "модуль %d открыт и должен быть опубликован" % n
-    for n in range(5, 9):
+    for n in range(6, 9):
         assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
             "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
 
@@ -732,16 +738,17 @@ def test_no_links_to_locked_modules():
     """Ни одна опубликованная страница не ведёт на закрытый модуль — на сайте
     нет ссылок, которые упирались бы в 404.
 
-    Модули 3 и 4 выложены как превью (см. test_locked_modules_closed): попасть
-    туда можно только прямой ссылкой от владельца, и с дорожной карты, входа в
-    курс и остальных страниц на них по-прежнему не ведёт ничего. Собственные
-    адреса внутри самих лекций 3 и 4 (og:url, ссылки на их же практику) под
-    правило не попадают — это не путь с сайта, а их собственная разметка.
+    Модули 3, 4 и 5 выложены как превью (см. test_locked_modules_closed):
+    попасть туда можно только прямой ссылкой от владельца, и с дорожной карты,
+    входа в курс и остальных страниц на них по-прежнему не ведёт ничего.
+    Собственные адреса внутри самих лекций 3-5 (og:url, ссылки на их же
+    практику) под правило не попадают — это не путь с сайта, а их собственная
+    разметка.
     """
     link = re.compile(r"automation/[3-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
-        for n in ("3", "4"):
+        for n in ("3", "4", "5"):
             if rel.startswith("automation/%s/" % n):
                 hits = [h for h in hits if h != "automation/%s" % n]
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
