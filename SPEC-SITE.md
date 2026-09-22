@@ -326,7 +326,9 @@ test_landscape_resets_mobile_offsets.
   стиле: палитра `solar #8B5CF6` + оранжевый `#F97316` (мяты не осталось),
   портальные блоки `portal-deck`/`portal-dark`/`lecture-chrome`/`portal-theme`/
   `portal-autostart`/`portal-fit`, шапка `lecture-header`, свайп-навигация.
-- Видео-головы: лекции 3–5 — Vimeo (id в `videoIds`); лекции 6–8 — mp4 c CDN
+- Видео-головы: лекции 3–5 пересобраны на общем каноне (свой плеер и ролики
+  со своего домена, как у 1–2); пока роликов нет, `videoIds` пустой и кружок с
+  головой не показывается. Лекции 6–8 — mp4 c CDN
   `raw.githubusercontent.com/andre-kuzminykh/automation/<sha>/corp/<N>/videos/`
   (ветка `ai-agents-corp-videos`, видео пережаты до 640×640).
 - Число слайдов в разметке сходится с `totalSlides` (константа или подсчёт DOM).
