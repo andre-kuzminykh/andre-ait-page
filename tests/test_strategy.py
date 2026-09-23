@@ -1536,6 +1536,17 @@ def test_use_case_cards_fit_short_phones():
 
 
 
+
+def test_agent_passport_labels_are_bigger_on_the_web():
+    """FR-SITE68: «сделай больше размер шрифта тут, но чтобы друг на друга не
+    наслаивалось и не выходило за пределы». На вебе подписи ≈16px вместо
+    ≈10.5px; замер 1024…2560px — зазоры ≥7px, за панель ничего не выходит."""
+    css = _read("assets/strategy.css")
+    assert "@media (min-width:1024px) { .spoke { font-size: clamp(12px, 5.2cqmin, 18px); } }" in css
+    # базовое правило (телефон) прежнее — там запаса нет
+    assert "font-size: clamp(9px, 3.4cqmin, 13.5px);" in css
+
+
 if __name__ == "__main__":
     import sys
     fails = 0
