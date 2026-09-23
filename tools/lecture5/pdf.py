@@ -215,6 +215,46 @@ GRADIENT_TEXT_JS = """(idx) => {
 }"""
 
 
+# Размытая тень (`box-shadow` с blur, `filter: blur/drop-shadow`,
+# `backdrop-filter`) Chromium пишет в PDF через мягкую маску (/SMask
+# /Luminosity). pdfium её честно размывает, а просмотрщик владельца
+# (2026-09-23, скрин обложки белой версии) маску не отработал и нарисовал за
+# карточкой «Разработка» плоский фиолетовый прямоугольник до низа листа.
+# Поэтому в печати размытых теней нет: у box-shadow остаются только слои без
+# размытия (обводки вида «0 0 0 1px»), размытые фильтры снимаются, чисто
+# декоративный размытый элемент прячется. На раскладку это не влияет.
+PRINT_SAFE_JS = """() => {
+  let n = 0;
+  const split = (v) => { const out = []; let d = 0, cur = '';
+    for (const ch of v) { if (ch === '(') d++; if (ch === ')') d--;
+      if (ch === ',' && !d) { out.push(cur.trim()); cur = ''; } else cur += ch; }
+    if (cur.trim()) out.push(cur.trim()); return out; };
+  const blurOf = (layer) => { const px = layer.replace(/rgba?\\([^)]*\\)/g, ' ')
+      .trim().split(/\\s+/).filter(t => /px$/.test(t)).map(parseFloat);
+    return px.length >= 3 ? px[2] : 0; };
+  document.querySelectorAll('body, body *').forEach(el => {
+    const c = getComputedStyle(el);
+    if (c.boxShadow && c.boxShadow !== 'none') {
+      const parts = split(c.boxShadow), keep = parts.filter(l => !(blurOf(l) > 0));
+      if (keep.length !== parts.length) {
+        el.style.setProperty('box-shadow', keep.length ? keep.join(', ') : 'none', 'important'); n++; }
+    }
+    if (c.textShadow && c.textShadow !== 'none') { el.style.setProperty('text-shadow', 'none', 'important'); n++; }
+    const f = c.filter || '';
+    if (/drop-shadow|blur/.test(f)) {
+      const b = /blur\\(([\\d.]+)px\\)/.exec(f);
+      el.style.setProperty('filter', 'none', 'important'); n++;
+      if (b && parseFloat(b[1]) > 0.5 && !(el.textContent || '').trim())
+        el.style.setProperty('visibility', 'hidden', 'important');
+    }
+    const bf = c.backdropFilter || c.webkitBackdropFilter || 'none';
+    if (bf !== 'none') { el.style.setProperty('backdrop-filter', 'none', 'important');
+      el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); n++; }
+  });
+  return n;
+}"""
+
+
 def build(deck, theme):
     from playwright.sync_api import sync_playwright
     from pypdf import PdfReader, PdfWriter
@@ -242,6 +282,8 @@ def build(deck, theme):
         pg.goto("file://%s?theme=%s" % (printable, theme), wait_until="load", timeout=180000)
         pg.wait_for_timeout(3000)
         pg.emulate_media(media="screen")
+        safe = pg.evaluate(PRINT_SAFE_JS)
+        print("   размытых теней и фильтров снято: %d" % safe)
         pg.evaluate("""async () => {
           await Promise.all([...document.fonts].map(f => f.load().catch(() => {})));
           await document.fonts.ready; }""")
@@ -304,6 +346,19 @@ def verify(path, total):
     foreign = sorted(f for f in fonts if not re.match(r"(Montserrat|Phosphor)", f.lstrip("/")))
     if foreign:
         problems.append("чужие шрифты: %s" % foreign)
+    # мягкие маски (/SMask в ExtGState) — след размытых теней: не каждый
+    # просмотрщик их отрабатывает, и тень становится плоским прямоугольником
+    masked = []
+    for i, p in enumerate(rd.pages):
+        gs = ((p.get("/Resources") or {}).get("/ExtGState") or {})
+        gs = gs.get_object() if hasattr(gs, "get_object") else gs
+        for v in gs.values():
+            m = v.get_object().get("/SMask")
+            if m is not None and str(m) != "/None":
+                masked.append(i + 1)
+                break
+    if masked:
+        problems.append("мягкие маски (размытые тени) на листах: %s" % masked[:10])
 
     doc = pdfium.PdfDocument(path)
     edge_bad = []
