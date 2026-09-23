@@ -559,7 +559,7 @@ def test_function_words_are_bound_to_the_next_word():
                   u"and" + nb + u"turn",
                   u"the" + nb + u"most", u"I" + nb + u"am" + nb + u"building"):
         assert probe in _raw("about/index.html"), "EN: не склеено «%s»" % probe.replace(nb, " ")
-    for probe in (u"я" + nb + u"прошёл", u"не" + nb + u"каждую",
+    for probe in (u"я" + nb + u"прошёл", u"не" + nb + u"могу",
                   u"в" + nb + u"систему", u"и" + nb + u"делать",
                   # притяжательные — из той же серии, нашлись замером
                   u"моё" + nb + u"представление"):
@@ -815,6 +815,28 @@ def test_chapter_title_sits_on_the_common_left_edge():
         "у заголовка та же колонка значка, что у пунктов списка"
     assert "h2 i { position: absolute; left: 0; top: 0; width: 1.15rem; margin-right: 0;" in mob, \
         "значок вынесен в фиксированную колонку, и ширина глифа больше ни на что не влияет"
+
+
+
+
+def test_owner_copy_checklist_2026_09_23():
+    """FR-SITE67. Чеклист владельца по биографии: глава «Путь не был прямым»
+    убрана, тексты заменены, строки разбиты там, где он сказал."""
+    ru, en = _raw("about/ru/index.html"), _raw("about/index.html")
+    for dead in (u"Путь не был прямым", u"компьютерного журнала", u"Not a Straight Line", u"computer magazine",
+                 u"способом двигаться вперёд", u"картой движения", u"Могли двигаться невероятно быстро",
+                 u"Could move incredibly fast"):
+        assert dead not in ru and dead not in en, u"старый текст убран: " + dead
+    for want in (u"Образование помогало мне расти.", u"дорожной картой",
+                 u"Двигались очень быстро, но ресурсов хватало не на все идеи."):
+        assert want in ru.replace(u"\u00a0", u" ").replace(u"\u2011", u"-"), want
+    assert u"Move fast, but limited resources constrain execution." in en.replace(u"\u00a0", u" ")
+    # разбивка строк — блочными .l: каждая начинается с новой строки
+    assert u'<span class="l">— Дальневосточный' in ru and u'<span class="l">— Far Eastern' in en
+    assert u'<span class="l">и\u00a0анализа данных' in ru or u'<span class="l">и анализа данных' in ru
+    css = _css()
+    assert ".screen p .l, .screen li .l { display: block; }" in css
+    assert ru.count('class="screen') == en.count('class="screen') == 18, "экранов стало 18"
 
 
 

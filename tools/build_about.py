@@ -54,8 +54,6 @@ SCREENS = [
         ("eyebrow", "eyebrow"), ("h1", "h1"), ("lead", "c1_lead"), ("p", "c1_p1")]),
     dict(ch="childhood", wm=("fa-chess-knight", "8deg"), ic="fa-chess-knight", blocks=[
         ("h2", "c2_head"), ("p", "c2_p1"), ("p", "c2_p2"), ("quote", "c2_quote")]),
-    dict(ch="childhood", wm=("fa-helmet-safety", "-5deg"), ic="fa-road", blocks=[
-        ("h2", "c3_head"), ("p", "c3_p1"), ("facts", "c3_facts")]),
     # ── образование ──
     dict(ch="education", wm=("fa-graduation-cap", "8deg"), ic="fa-graduation-cap", blocks=[
         ("h2", "e1_head"), ("lead", "e1_lead"), ("facts", "e1_facts")]),
