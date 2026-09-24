@@ -2827,3 +2827,17 @@ Story: скрин окна теста — «на скрине в тестах р
 Тест: `test_lectures.test_quiz_header_sits_close_to_the_question`,
 `test_quiz_soon_is_one_line`, `test_lectures_1_3_lead_to_practice_after_the_test`,
 `test_lecture3_every_day_pill_does_not_blink`.
+
+### FR-SITE73 — лекции 1–2 на каноне лекций 3–6: холст телефона и анимации
+
+Story: «проверь ещё первую и вторую лекцию по всем тем же признакам… на
+мобилках чтобы ок было… подкрути может анимации какие получше».
+
+Требование:
+- Лекция 1 получает тот же холст телефона, что лекции 2–6:
+  `window.__FIT = { mob: { bottom: 72 }, tightW: true }` в `lecture-floor`.
+  Без снятого накопительного запаса (LECTURE-GUIDE §3.2) слайд стоял в 0.83
+  от свободного места, и на телефоне 41 слайд из 42 был ниже 10px (минимум
+  8.25px). С ним — все слайды не ниже 10.25px (`lecture_check.py kegl 1`).
+
+Тест: `test_lectures.test_every_lecture_has_the_phone_canvas_of_the_canon`.

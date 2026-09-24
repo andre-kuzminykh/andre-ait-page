@@ -1230,6 +1230,17 @@ def test_lecture3_every_day_pill_does_not_blink():
     assert "a-pulse" not in pill.split(">", 1)[0], "пилюля «работает каждый день» мигает"
 
 
+
+# ── FR-SITE73: лекции 1–2 на каноне лекций 3–6 ────────────────────────────
+
+def test_every_lecture_has_the_phone_canvas_of_the_canon():
+    """Без tightW запас 0.97 копился шесть раз, и на телефоне мелкими были ВСЕ
+    слайды сразу (LECTURE-GUIDE §3.2) — так было у лекции 1."""
+    for rel, html in _pages():
+        floor = re.search(r'<script id="lecture-floor">(.*?)</script>', html, re.S).group(1)
+        assert "window.__FIT = { mob: { bottom: 72 }, tightW: true };" in floor, rel
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
