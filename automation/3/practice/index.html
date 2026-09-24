@@ -640,7 +640,13 @@
      гибрид», здесь — четыре способа из задания, со своим цветом каждый. */
   .modes .m-rule{ background:var(--c-rule); } .modes .m-ai{ background:var(--c-ai); }
   .modes .m-tool{ background:var(--c-tool); } .modes .m-human{ background:var(--c-human); }
-  .modes .ops-line{ display:block; margin-top:.35rem; color:var(--fg); font-weight:700; font-size:clamp(.74rem,2.4vw,.84rem); }
+  /* Список ИИ-операций в легенде «ИИ-модель» убран: он живёт только на шаге 3
+     карточками (правка владельца: «не пиши это в блоке с ИИ-моделью»). */
+
+  /* Четыре признака — ровная сетка 2×2. В практике лекции 2 признаков пять, и
+     её правило растягивает последний на всю строку; у нас их четыре (правка
+     владельца: «пусть там будет 4 условия в два столбца»). */
+  @media (min-width:768px){ .criteria li:last-child{ grid-column:auto; } }
 
   /* Шесть ИИ-операций */
   .ops{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
@@ -1067,11 +1073,10 @@
       <div class="sec-head rv-item">
         <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span>
         <h2>Какого агента <span class="accent">взять</span></h2>
-        <p>Из TO‑BE берём один участок — тот, где агенту действительно есть что решать. Проверьте его по пяти признакам.</p>
+        <p>Из TO‑BE берём один участок — тот, где агенту действительно есть что решать. Проверьте его по четырём признакам.</p>
       </div>
       <ul class="criteria">
         <li class="rv-item"><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-brain" xlink:href="#i-brain"></use></svg></span> нужна смысловая интерпретация, а не правило «если — то»</li>
-        <li class="rv-item"><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-path" xlink:href="#i-path"></use></svg></span> следующий шаг нельзя полностью задать заранее</li>
         <li class="rv-item"><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg></span> у участка понятный вход и проверяемый результат</li>
         <li class="rv-item"><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg></span> хватает нескольких узких инструментов</li>
         <li class="rv-item"><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-warning" xlink:href="#i-warning"></use></svg></span> если задачу решает один вызов модели — агент не нужен: хватит ИИ‑функции</li>
@@ -1125,7 +1130,7 @@
           </li>
           <li>
             <span class="mi m-ai"><svg class="ic" aria-hidden="true"><use href="#i-brain" xlink:href="#i-brain"></use></svg></span>
-            <div><b>ИИ‑модель</b><span>Нужна смысловая интерпретация: понять текст, разобраться в неполных данных, выбрать решение.</span><span class="ops-line">классификация · извлечение · суммаризация · генерация · выбор&nbsp;решения · планирование</span></div>
+            <div><b>ИИ‑модель</b><span>Нужна смысловая интерпретация: понять текст, разобраться в неполных данных, выбрать решение.</span></div>
           </li>
           <li>
             <span class="mi m-tool"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg></span>

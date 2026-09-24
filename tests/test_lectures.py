@@ -1102,6 +1102,14 @@ def test_practice3_agent_architectures():
     ref = open(os.path.join(_ROOT, "automation/1/practice/index.html"), encoding="utf-8").read()
     assert bubble(html) == bubble(ref), "кружок практики лекции 3 разъехался с эталоном лекции 1"
     assert "bubble-ready" not in html, "кружок не прячется до загрузки ролика"
+    # «Какого агента взять» — четыре признака сеткой 2×2, без «следующий шаг
+    # нельзя полностью задать заранее»; ИИ-операции — только на шаге 3, в
+    # легенде «ИИ-модель» их нет (правки владельца).
+    crit = re.search(r'<ul class="criteria">(.*?)</ul>', html, re.S).group(1)
+    assert crit.count("<li") == 4, "признаков выбора участка — четыре"
+    assert "нельзя полностью задать заранее" not in crit
+    assert "по четырём признакам" in html
+    assert "ops-line" not in html, "список операций живёт только на шаге 3"
     # На мониторах от 1600px у body zoom 1.15–1.5: без контейнера-мерки с
     # обратным zoom mermaid мерил подписи увеличенными — блоки узлов шире
     # текста, длинная подпись в одну строку и срезана (приёмка 1920×1080).
