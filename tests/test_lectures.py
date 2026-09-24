@@ -1090,6 +1090,12 @@ def test_practice3_agent_architectures():
     assert 'href="/automation/3/"' in html, "обратная ссылка на лекцию"
     assert 'href="/automation/2/practice/"' in html, "ссылка на TO-BE из практики лекции 2"
     assert "/assets/video_l3/practice.mp4" in html, "кружок с головой ждёт ролик практики"
+    # На мониторах от 1600px у body zoom 1.15–1.5: без контейнера-мерки с
+    # обратным zoom mermaid мерил подписи увеличенными — блоки узлов шире
+    # текста, длинная подпись в одну строку и срезана (приёмка 1920×1080).
+    assert re.search(r"mermaid\.render\(.*,\s*measure\)", html), \
+        "граф рисуется через скрытый контейнер-мерку, а не прямо в body"
+    assert "inverseZoom" in html, "обратный zoom мерки подобран до ровной единицы"
     body = re.sub(r"<pre[^>]*>.*?</pre>", " ", html, flags=re.S)
     assert "промпт" not in body and "Промпт" not in body, "владелец пишет «промт»"
 
