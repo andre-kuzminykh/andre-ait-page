@@ -1245,6 +1245,44 @@ def test_every_lecture_has_the_phone_canvas_of_the_canon():
         assert "window.__FIT = { mob: { bottom: 72 }, tightW: true };" in floor, rel
 
 
+
+def test_text_never_blinks():
+    """Правка владельца «работает каждый день — пусть не мигает»: a-pulse мигает
+    прозрачностью вместе со словами, поэтому он стоит только на значках и
+    кольцах без текста. Живой акцент блока со словами — дышащая рамка a-glow."""
+    from html.parser import HTMLParser
+
+    class Blink(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.stack, self.bad = [], []
+
+        def handle_starttag(self, tag, attrs):
+            if tag not in ("br", "img", "input", "meta", "link"):
+                self.stack.append([tag, dict(attrs).get("class") or "", ""])
+
+        def handle_endtag(self, tag):
+            while self.stack:
+                t, cls, txt = self.stack.pop()
+                if "a-pulse" in cls.split() and txt.strip():
+                    self.bad.append(txt.strip()[:40])
+                if self.stack:
+                    self.stack[-1][2] += txt
+                if t == tag:
+                    break
+
+        def handle_data(self, d):
+            if self.stack:
+                self.stack[-1][2] += d
+
+    for n in (1, 2, 3):
+        html = open(os.path.join(_ROOT, "automation/%d/index.html" % n), encoding="utf-8").read()
+        body = html[html.index('id="slide-0"'):html.index("<!-- Модальное окно теста -->")]
+        p = Blink()
+        p.feed(re.sub(r"<!--.*?-->", "", body, flags=re.S))
+        assert not p.bad, "лекция %d: мигает текст %s" % (n, p.bad[:5])
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

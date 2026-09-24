@@ -11371,9 +11371,16 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 }
 @keyframes aFlowY{ to{ background-position:0 14px; } }
 
-/* мягкое дыхание акцентного узла */
+/* мягкое дыхание акцентного узла — только для значков и колец БЕЗ текста:
+   прозрачность мигает вместе со словами (правка владельца про «работает
+   каждый день»: «пусть не мигает») */
 .a-pulse{ animation:aPulse 2.6s ease-in-out infinite; }
 @keyframes aPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
+
+/* дыхание рамки для блоков со словами: акцент живой, а текст не мигает.
+   box-shadow не влияет на поток — подгонщик его не видит */
+.a-glow{ animation:aGlow 2.6s ease-in-out infinite; }
+@keyframes aGlow{ 0%,100%{ box-shadow:0 0 0 0 rgba(139,92,246,0); } 50%{ box-shadow:0 0 0 5px rgba(139,92,246,.28); } }
 
 /* медленное вращение кольца вокруг центра */
 .a-orbit{ animation:aOrbit 18s linear infinite; }
@@ -11401,7 +11408,7 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 @keyframes aIn{ from{ opacity:0; scale:.94; } to{ opacity:1; scale:1; } }
 
 @media (prefers-reduced-motion:reduce){
-  .a-flow,.a-flow-y,.a-pulse,.a-orbit,.a-step,.a-draw,.a-in{ animation:none !important; }
+  .a-flow,.a-flow-y,.a-pulse,.a-glow,.a-orbit,.a-step,.a-draw,.a-in{ animation:none !important; }
 }
 </style>
 <style id="lecture-mobile">

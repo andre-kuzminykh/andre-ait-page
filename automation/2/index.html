@@ -7546,6 +7546,70 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   align-self:auto !important;
 }
 </style>
+<style id="lecture-anim">
+/* ── АНИМАЦИИ ЭТОЙ ЛЕКЦИИ ─────────────────────────────────────────────────
+   Правило одно: движение не имеет права менять раскладку. Подгонщик меряет
+   слайд по геометрии, и если анимация двигает коробки, замер уплывает.
+   Поэтому здесь только прозрачность, transform, background-position и
+   stroke-dashoffset — свойства, которые не влияют на поток.
+   При выключенной анимации в системе всё замирает в конечном состоянии. */
+
+/* поток по соединительной линии: бегущий пунктир */
+.a-flow{
+  background-image:linear-gradient(90deg,currentColor 0 55%,transparent 55% 100%);
+  background-size:14px 100%; background-repeat:repeat-x;
+  animation:aFlow 1.1s linear infinite;
+}
+@keyframes aFlow{ to{ background-position:14px 0; } }
+
+/* вертикальный поток — тот же приём для колонки */
+.a-flow-y{
+  background-image:linear-gradient(180deg,currentColor 0 55%,transparent 55% 100%);
+  background-size:100% 14px; background-repeat:repeat-y;
+  animation:aFlowY 1.1s linear infinite;
+}
+@keyframes aFlowY{ to{ background-position:0 14px; } }
+
+/* мягкое дыхание акцентного узла — только для значков и колец БЕЗ текста:
+   прозрачность мигает вместе со словами (правка владельца про «работает
+   каждый день»: «пусть не мигает») */
+.a-pulse{ animation:aPulse 2.6s ease-in-out infinite; }
+@keyframes aPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
+
+/* дыхание рамки для блоков со словами: акцент живой, а текст не мигает.
+   box-shadow не влияет на поток — подгонщик его не видит */
+.a-glow{ animation:aGlow 2.6s ease-in-out infinite; }
+@keyframes aGlow{ 0%,100%{ box-shadow:0 0 0 0 rgba(139,92,246,0); } 50%{ box-shadow:0 0 0 5px rgba(139,92,246,.28); } }
+
+/* медленное вращение кольца вокруг центра */
+.a-orbit{ animation:aOrbit 18s linear infinite; }
+@keyframes aOrbit{ to{ transform:rotate(360deg); } }
+
+/* очередь подсветки: три узла цикла загораются по очереди */
+.a-step{ animation:aStep 3.6s ease-in-out infinite; }
+.a-step-2{ animation-delay:1.2s; }
+.a-step-3{ animation-delay:2.4s; }
+@keyframes aStep{ 0%,22%{ opacity:1; } 40%,100%{ opacity:.42; } }
+
+/* прочерчивание линии в схеме */
+.a-draw{ stroke-dasharray:6 6; animation:aDraw 1.4s linear infinite; }
+@keyframes aDraw{ to{ stroke-dashoffset:-24; } }
+
+/* появление элемента при показе слайда, без сдвига соседей */
+.a-in{ animation:aIn .5s ease both; }
+.a-in-2{ animation-delay:.09s; } .a-in-3{ animation-delay:.18s; }
+.a-in-4{ animation-delay:.27s; } .a-in-5{ animation-delay:.36s; }
+.a-in-6{ animation-delay:.45s; }
+/* scale, а не transform: независимое свойство КОМПОНУЕТСЯ со статическим
+   transform элемента, а не стирает его. С transform:none в конечном кадре
+   и fill-mode both анимация навсегда затирала -translate-x-1/2 у карточек
+   радиальной схемы — они висели углом на точке вместо центра. */
+@keyframes aIn{ from{ opacity:0; scale:.94; } to{ opacity:1; scale:1; } }
+
+@media (prefers-reduced-motion:reduce){
+  .a-flow,.a-flow-y,.a-pulse,.a-glow,.a-orbit,.a-step,.a-draw,.a-in{ animation:none !important; }
+}
+</style>
 
 <style id="lecture-mobile">
 /* ── ТЕЛЕФОН ЭТОЙ ЛЕКЦИИ ──────────────────────────────────────────────────
