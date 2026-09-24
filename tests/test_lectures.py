@@ -1066,6 +1066,22 @@ def test_lecture3_leads_to_its_practice():
     assert 'id="open-quiz-btn"' in html
 
 
+def test_lecture3_quiz_result_names_its_own_topics():
+    """Экран результата теста — тексты лекции 3. Каркас лекции 4 нёс тексты
+    лекции 2, и «что перечитать» отправляло не в ту лекцию (правка владельца:
+    «там, где ошибки делаются, что перечитать — проверь»)."""
+    html = _l3()
+    descs = re.findall(r"\n                desc = '([^']+)';", html)
+    assert len(descs) == 4, "четыре уровня результата"
+    text = " ".join(descs)
+    for foreign in ("ограничение потока", "реестр точек", "Ценность — Сложность", "H0–H3",
+                    "Вы мыслите процессами", "точки решений"):
+        assert foreign not in text, "на экране результата текст лекции 2: «%s»" % foreign
+    for topic in ("среду исполнения", "обвязку", "граф навыков", "вызов функций",
+                  "спецификация ИИ-агента", "воркфлоу"):
+        assert topic in text, "«что перечитать» называет темы слайдов лекции 3: «%s»" % topic
+
+
 def test_lecture3_uses_owner_vocabulary():
     """Слова владельца: «промт» (не «промпт»), «воркфлоу» кириллицей, «запуск»."""
     html = _l3()
@@ -1209,6 +1225,46 @@ def test_quiz_soon_is_one_line():
     for rel, html in _pages():
         rule = re.search(r"\.quiz-soon\{[^}]*\}", html).group(0)
         assert "white-space:nowrap" in rule and "max-width:24rem" not in rule, rel
+
+
+def test_quiz_result_header_says_result():
+    """Над итогом теста — «Результат», а не «Вопрос 10 из 10»: у лекций 2–6
+    счётчик на экране итога заменён, у лекции 1 он оставался (приёмка тестов
+    лекций 1–3: «проверь вообще ещё раз хорошо эти три лекции»)."""
+    for rel, html in _pages():
+        show = html[html.index("function showResults()"):]
+        show = show[:show.index("const score = quizScore;")]
+        assert "quizProgress.textContent = 'Результат';" in show, rel
+
+
+def _quiz(html):
+    """[(варианты, индекс верного)] из const quizQuestions: строки в одинарных
+    (лекции 1–2) или двойных (лекция 3, собрана из quiz.json) кавычках."""
+    block = re.search(r"const quizQuestions = \[(.*?)\n        \];", html, re.S).group(1)
+    lit = r"'((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\""
+    out = []
+    for opts, correct in re.findall(r"options: \[(.*?)\],\s*correct: (\d+)", block, re.S):
+        out.append(([a or b for a, b in re.findall(lit, opts)], int(correct)))
+    return out
+
+
+def test_quiz_answer_is_not_given_away():
+    """Приёмка тестов лекций 1–3: верный ответ был самым длинным почти в каждом
+    вопросе, а в лекции 1 стоял только на B и C — тест проходился правилом
+    «выбирай самый длинный». Теперь длина и позиция ответ не подсказывают."""
+    for n in (1, 2, 3):
+        html = open(os.path.join(_ROOT, "automation/%d/index.html" % n), encoding="utf-8").read()
+        quiz = _quiz(html)
+        assert len(quiz) == 10 and all(len(o) == 4 for o, _ in quiz), "лекция %d: 10 вопросов по 4 варианта" % n
+        longest = 0
+        for i, (opts, c) in enumerate(quiz, 1):
+            rest = max(len(o) for j, o in enumerate(opts) if j != c)
+            assert len(opts[c]) - rest <= 5, \
+                "лекция %d, вопрос %d: верный вариант длиннее остальных на %d знаков" % (n, i, len(opts[c]) - rest)
+            longest += len(opts[c]) > rest
+        assert longest <= 5, "лекция %d: верный вариант самый длинный в %d вопросах из 10" % (n, longest)
+        letters = {c for _, c in quiz}
+        assert len(letters) >= 3, "лекция %d: верные ответы только на %s" % (n, sorted("ABCD"[c] for c in letters))
 
 
 def test_lectures_1_3_lead_to_practice_after_the_test():
