@@ -1,0 +1,105 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-15">
+        <div class="content-z max-w-7xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Выбор инструментов <span class="text-solar">и динамические аргументы</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Чем универсальнее инструмент, тем хуже он работает</p>
+
+            <!-- Две полосы по тексту: сверху то, что задаём заранее (вместо одной огромной
+                 функции — узкие навыки), снизу то, что агент делает сам во время работы
+                 (выбор из разрешённых и параметры из контекста). Колонки общие, поэтому
+                 левый и правый блоки обеих полос стоят на одном уровне.
+                 Телефон: огромная функция и навыки — на всю ширину, агент — рядом со своей
+                 рамкой, иначе высота вырастает и кегль падает ниже 10px.
+                 max-w-7xl и высота схемы держат зум в окне 0.95–1.07: длинный заголовок
+                 владельца в max-w-6xl или при зуме выше 1.07 ломается на две строки -->
+
+            <div class="grid grid-cols-[72px_16px_1fr] md:grid-cols-[236px_56px_1fr] gap-y-3 md:gap-y-6 items-stretch w-full">
+
+                <!-- Одна огромная функция: туманная и перечёркнутая, агенту непонятно назначение -->
+                <div class="col-span-3 md:col-span-1 bg-grayBase/30 border border-grayBase rounded-[16px] md:rounded-[22px] px-3 py-1.5 md:p-3.5 flex flex-row md:flex-col items-center justify-center gap-2.5 md:gap-0 text-center h-full a-in">
+                    <i class="ph-fill ph-question text-2xl md:text-4xl text-black/30 md:mb-1.5 shrink-0"></i>
+                    <div class="min-w-0">
+                        <h3 class="font-black text-[12px] md:text-xl text-black/45 leading-tight m-0 mb-0.5 md:mb-1.5 line-through decoration-solar decoration-2 whitespace-nowrap">«Управлять CRM»</h3>
+                        <p class="text-[10px] md:text-base text-black/50 leading-tight m-0">агенту сложно <br>понять назначение</p>
+                    </div>
+                </div>
+
+                <div class="col-span-3 md:col-span-1 flex flex-col md:flex-row items-center justify-center mb-1 md:mb-0 md:px-1.5">
+                    <div class="w-[2px] h-1 md:h-[2px] md:w-auto md:flex-1 text-solar/40 a-flow"></div>
+                    <i class="ph-bold ph-arrows-split rotate-180 md:rotate-90 text-solar text-base md:text-3xl shrink-0"></i>
+                </div>
+
+                <!-- Пространство действий: четыре узких навыка из текста, рамка — его граница -->
+                <div class="col-span-3 md:col-span-1 relative border-2 border-dashed border-solar/40 rounded-[16px] md:rounded-[24px] px-2 pt-3.5 pb-2 md:px-4 md:pt-5 md:pb-3.5 flex flex-col a-in">
+                    <span class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 bg-white border border-grayBase rounded-full px-2.5 py-0.5 md:px-4 md:py-1 text-[10px] md:text-sm font-medium text-black/70 whitespace-nowrap"><i class="ph-fill ph-lock text-solar"></i> задаём заранее</span>
+                    <div class="flex-1 grid grid-cols-2 md:grid-cols-4 gap-1.5 md:gap-3 items-stretch w-full">
+                        <div class="bg-white border border-grayBase rounded-[12px] md:rounded-[18px] px-1.5 py-1.5 md:px-2.5 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-2">
+                            <i class="ph-fill ph-magnifying-glass text-lg md:text-4xl text-solar mb-0.5 md:mb-1.5"></i>
+                            <h3 class="font-black text-[11px] md:text-[17px] text-black leading-tight m-0 whitespace-nowrap">Найти клиента</h3>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-[12px] md:rounded-[18px] px-1.5 py-1.5 md:px-2.5 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-3">
+                            <i class="ph-fill ph-clock-counter-clockwise text-lg md:text-4xl text-solar mb-0.5 md:mb-1.5"></i>
+                            <h3 class="font-black text-[11px] md:text-[17px] text-black leading-tight m-0 whitespace-nowrap">Получить <br>историю заказов</h3>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-[12px] md:rounded-[18px] px-1.5 py-1.5 md:px-2.5 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-4">
+                            <i class="ph-fill ph-note-pencil text-lg md:text-4xl text-solar mb-0.5 md:mb-1.5"></i>
+                            <h3 class="font-black text-[11px] md:text-[17px] text-black leading-tight m-0 whitespace-nowrap">Создать задачу</h3>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-[12px] md:rounded-[18px] px-1.5 py-1.5 md:px-2.5 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-5">
+                            <i class="ph-fill ph-receipt text-lg md:text-4xl text-solar mb-0.5 md:mb-1.5"></i>
+                            <h3 class="font-black text-[11px] md:text-[17px] text-black leading-tight m-0 whitespace-nowrap">Получить <br>список транзакций</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Агент: во время работы решает две задачи, они — справа по порядку -->
+                <div class="flex items-center justify-center">
+                    <div class="relative w-[72px] h-[72px] md:w-40 md:h-40 shrink-0 flex items-center justify-center">
+                        <div class="absolute inset-0 rounded-full border-2 border-dashed border-solar/40 a-orbit"></div>
+                        <div class="w-14 h-14 md:w-32 md:h-32 rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center a-pulse">
+                            <i class="ph-fill ph-robot text-xl md:text-5xl text-solar"></i>
+                            <span class="text-[10px] md:text-lg font-black text-white leading-none mt-0.5">агент</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-row items-center justify-center md:px-1.5">
+                    <div class="h-[2px] w-1 md:w-auto md:flex-1 text-solar/40 a-flow"></div>
+                    <i class="ph-bold ph-arrow-right text-solar text-xs md:text-2xl shrink-0"></i>
+                </div>
+
+                <!-- Что формируется динамически: выбор из разрешённых, затем параметры из контекста -->
+                <div class="relative border-2 border-dashed border-solar/40 rounded-[16px] md:rounded-[24px] px-2 pt-3.5 pb-2 md:px-4 md:pt-5 md:pb-3.5 flex flex-col md:flex-row items-stretch gap-0.5 md:gap-2 min-w-0 a-in a-in-4">
+                    <span class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 bg-solar rounded-full px-2.5 py-0.5 md:px-4 md:py-1 text-[10px] md:text-sm font-medium whitespace-nowrap" style="color:#111;-webkit-text-fill-color:#111"><i class="ph-fill ph-lightning"></i> динамически</span>
+
+                    <!-- Выбор: агент перебирает разрешённые навыки и берёт один -->
+                    <div class="flex-1 min-w-0 bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2 py-1.5 md:p-3.5 flex flex-col items-center justify-center text-center">
+                        <h3 class="font-black text-[11px] md:text-xl text-black leading-tight m-0 mb-1 md:mb-2.5 whitespace-nowrap">Выбор из разрешённых</h3>
+                        <div class="js-keep flex flex-row items-center justify-center gap-1.5 md:gap-2.5">
+                            <span class="w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-grayBase/30 border border-grayBase flex items-center justify-center a-step"><i class="ph-fill ph-magnifying-glass text-sm md:text-2xl text-black/35"></i></span>
+                            <span class="w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-grayBase/30 border border-grayBase flex items-center justify-center a-step a-step-2"><i class="ph-fill ph-clock-counter-clockwise text-sm md:text-2xl text-black/35"></i></span>
+                            <span class="w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-grayBase/30 border border-grayBase flex items-center justify-center a-step a-step-3"><i class="ph-fill ph-note-pencil text-sm md:text-2xl text-black/35"></i></span>
+                            <span class="w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-black border-2 border-solar flex items-center justify-center a-pulse"><i class="ph-fill ph-receipt text-sm md:text-2xl text-solar"></i></span>
+                        </div>
+                        <p class="text-[10px] md:text-lg font-medium text-black leading-tight m-0 mt-1 md:mt-2.5 whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar"></i> Получить список транзакций</p>
+                    </div>
+
+                    <i class="ph-bold ph-arrow-right rotate-90 md:rotate-0 text-solar text-xs md:text-2xl self-center shrink-0"></i>
+
+                    <!-- Параметры: клиента и период агент берёт из текущего контекста, значения появляются по очереди -->
+                    <div class="flex-1 min-w-0 bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] px-2 py-1.5 md:p-3.5 flex flex-col items-center justify-center text-center">
+                        <h3 class="font-black text-[11px] md:text-xl text-solar leading-tight m-0 mb-1 md:mb-2.5 whitespace-nowrap">Параметры из контекста</h3>
+                        <div class="grid grid-cols-[auto_auto] justify-center items-center gap-x-2 gap-y-1 md:gap-x-3 md:gap-y-2">
+                            <span class="text-[10px] md:text-base text-white/60 leading-tight whitespace-nowrap text-left"><i class="ph-fill ph-user text-solar"></i> клиент</span>
+                            <span class="bg-white/10 border border-white/25 rounded-md md:rounded-lg px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base text-white leading-tight whitespace-nowrap text-left a-in a-in-5">Анна Петрова</span>
+                            <span class="text-[10px] md:text-base text-white/60 leading-tight whitespace-nowrap text-left"><i class="ph-fill ph-calendar-blank text-solar"></i> период</span>
+                            <span class="bg-white/10 border border-white/25 rounded-md md:rounded-lg px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base text-white leading-tight whitespace-nowrap text-left a-in a-in-6">последний квартал</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Узкий — <span class="whitespace-nowrap">чтобы ограничить опасную свободу,</span> <br><span class="font-black">понятный — <span class="whitespace-nowrap">чтобы агент знал,</span> <span class="whitespace-nowrap">когда его использовать</span></span></p>
+            </div>
+        </div>
+    </div>

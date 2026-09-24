@@ -901,22 +901,6 @@ def test_content_breakpoints_live_on_the_form_boundary():
             rel + ": в собранном CSS появился брейкпоинт вне границы формы 768"
 
 
-if __name__ == "__main__":
-    failed = 0
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            try:
-                fn()
-                print("ok   %s" % name)
-            except ModuleNotFoundError as e:
-                # Запускалка задумана как «нужен только python3»: тест, которому
-                # нужна необязательная библиотека (Pillow для размеров превью),
-                # пропускается, а не валит прогон. Под pytest он идёт как обычно.
-                print("skip %s: нет модуля %s" % (name, e.name))
-            except Exception as e:  # AssertionError и любые сбои разбора
-                failed += 1
-                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
-    raise SystemExit(1 if failed else 0)
 
 
 # ── FR-SITE67: у лекции 5 две колоды — прод и теоретическая ───────────────
@@ -1009,3 +993,97 @@ def test_standalone_builder_leaves_no_external_refs():
     assert 'id="notes-toggle"' in html, "кнопка панели нужна скрытой — на ней инициализация"
     assert 'id="slide-notes"' in html, "статьи панели пропали"
     assert html.count('class="slide-container') == 43
+
+
+# ── FR-SITE69: лекция 3 пересобрана по новому тексту владельца ───────────
+
+# Заголовки слайдов 1–40 — дословно из текста владельца (его прямая просьба:
+# «заголовки возьми как я тебе скинул в тексте»). Стрелки в заголовке второго
+# слайда рисуются иконкой: глифа «→» в Montserrat нет.
+_L3_TITLES = (
+    "AS-IS и TO-BE", "Триггер Обработка Действие", "Правила или ИИ-автоматизация",
+    "Воркфлоу или агент", "ИИ-приложение и ИИ-платформа", "Четыре слоя ИИ-платформы",
+    "Среда исполнения агента", "Компоненты ИИ-платформы", "LLM-функция или ИИ-агент",
+    "Спецификация ИИ-агента", "Границы автономности ИИ-агента", "Граф навыков ИИ-агента",
+    "Типовые ИИ-операции", "Вызов функций и схема инструментов",
+    "Выбор инструментов и динамические аргументы", "API и внешние системы",
+    "Потоки данных", "Трансформация данных", "Маршрутизация данных", "Управление воркфлоу",
+    "Инженерия промтов", "Из чего состоит хороший промт", "Структурированный вывод",
+    "Автоматическая генерация и улучшение промтов", "Отличие промта от контекста",
+    "Инженерия контекста", "Состояние и память", "Выбор контекста",
+    "Что такое обвязка ИИ-агентов", "Из чего состоит обвязка ИИ-агента", "Права ИИ-агентов",
+    "Контроль и восстановление", "Цикл работы ИИ-агента", "Как правильно тестировать ИИ-агента",
+    "Метрики для тестирования", "Инженерия циклов", "Полная архитектура рабочего ИИ-агента",
+    "Жизненный цикл ИИ-агента", "Наблюдаемость и отладка", "Надежность и постоянное улучшение",
+)
+
+
+def _l3():
+    return open(os.path.join(_ROOT, "automation/3/index.html"), encoding="utf-8").read()
+
+
+def _plain(s):
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", s.replace("&shy;", ""))).strip()
+
+
+def test_lecture3_titles_follow_owner_text():
+    html = _l3()
+    heads = re.findall(r'id="slide-(\d+)">.*?<h([12])[^>]*>(.*?)</h\2>', html, re.S)
+    got = {int(n): _plain(t) for n, _, t in heads}
+    for k, want in enumerate(_L3_TITLES, start=1):
+        assert got.get(k) == want, "слайд %d: заголовок %r, а у владельца %r" % (k, got.get(k), want)
+    assert got.get(41) == "Выводы", "последний слайд — «Выводы», как в остальных лекциях"
+    assert "Лекция 3: Разработка агента" in html, "бейдж обложки — правка владельца"
+
+
+def test_lecture3_slides_match_videos_one_to_one():
+    """42 слайда = 42 ролика озвучки: введение, 40 слайдов текста и финал.
+    Ролик слайда k лежит в /assets/video_l3/<k+1>.mp4 (LECTURE-GUIDE §6)."""
+    html = _l3()
+    assert html.count('class="slide-container') == 42
+    assert "const totalSlides = 42;" in html
+    vids = re.findall(r"'/assets/video_l3/(\d+)\.mp4'",
+                      re.search(r"const videoIds = \[(.*?)\];", html, re.S).group(1))
+    assert [int(v) for v in vids] == list(range(1, 43)), "ролики идут один к одному со слайдами"
+
+
+def test_lecture3_leads_to_its_practice():
+    html = _l3()
+    practice = "https://andre.technology/automation/3/practice/"
+    assert re.search(r'class="lec-ctrl lec-task" href="%s"' % re.escape(practice), html), \
+        "кнопка «Задание» в шапке ведёт на практику лекции 3"
+    assert '<a class="quiz-next" href="%s">' % practice in html, \
+        "экран результата теста ведёт на практику, как у лекции 2"
+    assert os.path.exists(os.path.join(_ROOT, "automation/3/practice/index.html"))
+    quiz = re.search(r"const quizQuestions = \[(.*?)\n        \];", html, re.S).group(1)
+    assert quiz.count("correct:") == 10, "в тесте десять вопросов"
+    last = re.search(r'<div class="slide-container[^"]*" id="slide-41">', html).group(0)
+    assert "bg-black text-white" in last, "последний слайд фиолетовый, как в других лекциях"
+    assert 'id="open-quiz-btn"' in html
+
+
+def test_lecture3_uses_owner_vocabulary():
+    """Слова владельца: «промт» (не «промпт»), «воркфлоу» кириллицей, «запуск»."""
+    html = _l3()
+    body = html[html.index('id="slide-0"'):html.index("<!-- Модальное окно теста -->")]
+    text = _plain(re.sub(r"<!--.*?-->", " ", body, flags=re.S))
+    for bad in ("промпт", "Промпт", "workflow", "Workflow"):
+        assert bad not in text, "на слайдах осталось «%s»" % bad
+
+
+if __name__ == "__main__":
+    failed = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("ok   %s" % name)
+            except ModuleNotFoundError as e:
+                # Запускалка задумана как «нужен только python3»: тест, которому
+                # нужна необязательная библиотека (Pillow для размеров превью),
+                # пропускается, а не валит прогон. Под pytest он идёт как обычно.
+                print("skip %s: нет модуля %s" % (name, e.name))
+            except Exception as e:  # AssertionError и любые сбои разбора
+                failed += 1
+                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
+    raise SystemExit(1 if failed else 0)

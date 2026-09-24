@@ -1,0 +1,124 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-33">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Цикл работы <span class="text-solar">ИИ-агента</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Полный маршрут заранее знать необязательно</p>
+
+            <!-- ПК: пример по кругу | кольцо цикла | когда остановиться.
+                 Телефон: пример и кольцо рядом (кольцо в столбик удвоило бы высоту), под ними — остановка -->
+            <div class="grid grid-cols-[1fr_190px] md:grid-cols-[310px_350px_1fr] gap-x-3 gap-y-3 md:gap-x-6 md:gap-y-0 items-stretch w-full">
+
+                <!-- Пример: один проход по кругу на проверке клиента. Иконки шагов —
+                     те же, что у узлов кольца, и идут по кольцу по часовой без пропусков:
+                     решает (данных мало) → действует → наблюдает → снова решает -->
+                <div class="flex flex-col items-stretch justify-between w-full min-w-0">
+                    <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-2 py-1.5 md:px-3 md:py-3.5 text-center a-in">
+                        <p class="text-[10px] md:text-base font-medium text-black leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-brain text-solar"></i> не хватает</span> <span class="whitespace-nowrap">данных о клиенте</span></p>
+                    </div>
+                    <div class="w-[2px] flex-1 min-h-3 md:min-h-8 mx-auto text-solar/40 a-flow-y"></div>
+                    <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-2 py-1.5 md:px-3 md:py-3.5 text-center a-in a-in-2">
+                        <p class="text-[10px] md:text-base font-medium text-black leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-lightning text-solar"></i> запросил</span> <span class="whitespace-nowrap">историю транзакций</span></p>
+                    </div>
+                    <div class="w-[2px] flex-1 min-h-3 md:min-h-8 mx-auto text-solar/40 a-flow-y"></div>
+                    <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-2 py-1.5 md:px-3 md:py-3.5 text-center a-in a-in-3">
+                        <p class="text-[10px] md:text-base font-medium text-black leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-eye text-solar"></i> изменилось</span> <span class="whitespace-nowrap">состояние задачи</span></p>
+                    </div>
+                    <div class="w-[2px] flex-1 min-h-3 md:min-h-8 mx-auto text-solar/40 a-flow-y"></div>
+                    <div class="bg-black border-2 border-solar rounded-xl md:rounded-2xl px-2 py-1.5 md:px-3 md:py-3.5 text-center a-in a-in-4">
+                        <p class="text-[10px] md:text-base font-medium text-white leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-brain text-solar"></i> решение</span> <span class="whitespace-nowrap">на новых данных</span></p>
+                    </div>
+                </div>
+
+                <!-- Кольцо: наблюдает → решает → действует → снова наблюдает. Кольцо
+                     вращается, узлы загораются по очереди, под кольцом — цена отсутствия лимитов -->
+                <div class="flex flex-col items-center justify-center gap-1.5 md:gap-3 w-full min-w-0">
+                    <!-- Обёртка держит диаметр: FR-LECTURE-24 задаёт самому aspect-square
+                         max-width:440px !important, и класс ширины на нём не работает.
+                     Боковые узлы на телефоне — точно на окружности (19/81 %): при 17/83 %
+                     «Действует» вставал вплотную к карточке примера слева -->
+                    <div class="w-full max-w-[190px] md:max-w-[340px] mx-auto">
+                    <div class="relative w-full aspect-square mx-auto">
+                        <div class="absolute inset-[14%] rounded-full border-2 border-dashed border-solar/40 a-orbit"></div>
+
+                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[32%] h-[32%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center a-pulse">
+                            <i class="ph-fill ph-robot text-xl md:text-4xl text-solar"></i>
+                            <span class="text-[10px] md:text-base font-black text-white leading-tight">агент</span>
+                        </div>
+
+                        <div class="absolute left-1/2 top-[12%] -translate-x-1/2 -translate-y-1/2 w-[42%] md:w-[38%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step">
+                            <i class="ph-fill ph-eye text-base md:text-3xl text-solar block"></i>
+                            <p class="text-[9px] md:text-base font-black text-black leading-tight m-0">Наблюдает</p>
+                        </div>
+                        <div class="absolute left-[81%] md:left-[83%] top-[69%] -translate-x-1/2 -translate-y-1/2 w-[42%] md:w-[38%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step a-step-2">
+                            <i class="ph-fill ph-brain text-base md:text-3xl text-solar block"></i>
+                            <p class="text-[9px] md:text-base font-black text-black leading-tight m-0">Решает</p>
+                        </div>
+                        <div class="absolute left-[19%] md:left-[17%] top-[69%] -translate-x-1/2 -translate-y-1/2 w-[42%] md:w-[38%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step a-step-3">
+                            <i class="ph-fill ph-lightning text-base md:text-3xl text-solar block"></i>
+                            <p class="text-[9px] md:text-base font-black text-black leading-tight m-0">Действует</p>
+                        </div>
+
+                        <i class="ph-bold ph-arrow-right absolute left-[81%] top-[32%] -translate-x-1/2 -translate-y-1/2 rotate-[60deg] text-solar text-sm md:text-2xl"></i>
+                        <i class="ph-bold ph-arrow-right absolute left-1/2 top-[86%] -translate-x-1/2 -translate-y-1/2 rotate-180 text-solar text-sm md:text-2xl"></i>
+                        <i class="ph-bold ph-arrow-right absolute left-[19%] top-[32%] -translate-x-1/2 -translate-y-1/2 rotate-[300deg] text-solar text-sm md:text-2xl"></i>
+                    </div>
+                    </div>
+
+                    <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-2 py-1 md:px-3 md:py-1.5 text-center a-in a-in-5">
+                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-bold ph-infinity text-black/40"></i> без лимитов —</span> <span class="whitespace-nowrap">почти бесконечный цикл</span></p>
+                    </div>
+                </div>
+
+                <!-- Когда остановиться: смысловое условие завершения и технические лимиты -->
+                <div class="col-span-2 md:col-span-1 flex flex-col gap-2 md:gap-4 w-full min-w-0">
+
+                    <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2.5 md:p-5 flex flex-col items-center text-center a-in a-in-2">
+                        <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 mb-1.5 md:mb-3"><span class="whitespace-nowrap"><i class="ph-fill ph-flag-checkered text-solar"></i> Условие завершения</span></h3>
+                        <div class="flex flex-col items-start gap-1 md:gap-2 mx-auto text-left">
+                            <p class="text-[10px] md:text-base text-black/70 leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar"></i> получены все обязательные данные</span></p>
+                            <p class="text-[10px] md:text-base text-black/70 leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar"></i> выполнены нужные подзадачи</span></p>
+                            <p class="text-[10px] md:text-base text-black/70 leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar"></i> итоговый результат прошёл проверку</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Лимиты — шкалы: ресурс бежит к упору, упор обрывает цикл -->
+                    <div class="bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] p-2.5 md:p-5 flex flex-col items-center text-center a-in a-in-3">
+                        <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0 mb-1.5 md:mb-3"><span class="whitespace-nowrap"><i class="ph-fill ph-gauge"></i> Технические лимиты</span></h3>
+                        <div class="grid grid-cols-2 md:grid-cols-1 gap-x-3 gap-y-2 w-full">
+                            <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 min-w-0">
+                                <p class="md:w-[210px] shrink-0 text-center md:text-left text-[10px] md:text-base text-white leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-repeat text-solar"></i> итерации</span></p>
+                                <div class="flex items-center w-full min-w-0">
+                                    <div class="flex-1 h-1.5 md:h-2 rounded-l-full bg-white/15 overflow-hidden"><div class="h-full w-[74%] bg-solar/30 text-solar a-flow"></div></div>
+                                    <div class="w-[3px] h-3 md:h-4 bg-solar rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 min-w-0">
+                                <p class="md:w-[210px] shrink-0 text-center md:text-left text-[10px] md:text-base text-white leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-wrench text-solar"></i> вызовы инструментов</span></p>
+                                <div class="flex items-center w-full min-w-0">
+                                    <div class="flex-1 h-1.5 md:h-2 rounded-l-full bg-white/15 overflow-hidden"><div class="h-full w-[58%] bg-solar/30 text-solar a-flow"></div></div>
+                                    <div class="w-[3px] h-3 md:h-4 bg-solar rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 min-w-0">
+                                <p class="md:w-[210px] shrink-0 text-center md:text-left text-[10px] md:text-base text-white leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-timer text-solar"></i> время</span></p>
+                                <div class="flex items-center w-full min-w-0">
+                                    <div class="flex-1 h-1.5 md:h-2 rounded-l-full bg-white/15 overflow-hidden"><div class="h-full w-[86%] bg-solar/30 text-solar a-flow"></div></div>
+                                    <div class="w-[3px] h-3 md:h-4 bg-solar rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 min-w-0">
+                                <p class="md:w-[210px] shrink-0 text-center md:text-left text-[10px] md:text-base text-white leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-coins text-solar"></i> стоимость</span></p>
+                                <div class="flex items-center w-full min-w-0">
+                                    <div class="flex-1 h-1.5 md:h-2 rounded-l-full bg-white/15 overflow-hidden"><div class="h-full w-[46%] bg-solar/30 text-solar a-flow"></div></div>
+                                    <div class="w-[3px] h-3 md:h-4 bg-solar rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-4xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Хороший агент не работает бесконечно — <br><span class="font-black">он достигает цели с приемлемыми затратами <span class="whitespace-nowrap">и надёжно завершает работу</span></span></p>
+            </div>
+        </div>
+    </div>

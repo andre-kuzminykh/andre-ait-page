@@ -1,0 +1,148 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-24">
+        <div class="content-z max-w-7xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Автоматическая генерация <span class="text-solar">и улучшение промтов</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Тестируем десятки вариантов вместо ручного подбора</p>
+
+            <!-- ПК: круг цикла слева, справа один его оборот — от промта через общий
+                 набор тестов к выбору. Телефон: круг сверху, оборот под ним.
+                 md:pl-7 — левый узел круга выступает за квадрат, отступ ставит
+                 чернила схемы по центру, на одну ось с заголовком -->
+            <div class="grid grid-cols-1 md:grid-cols-[396px_1fr] items-center gap-y-1.5 md:gap-x-12 md:pl-7 w-full">
+
+                <!-- Круг: спецификация → генерация → тест → оценка → улучшение; кольцо
+                     вращается, шаги оборота загораются по очереди, в центре — сам промт.
+                     Фаз a-step три, узлов пять: фазы 1-2-3-1-2 по кругу — огонь бежит
+                     по часовой, и ни один узел не горит постоянно.
+                     Телефон: у мелкого квадрата «Спецификация» упиралась в рамку узла —
+                     диаметр 264px, а не 248px.
+                     Обёртка держит диаметр: FR-LECTURE-24 задаёт самому aspect-square
+                     max-width:440px !important, и класс ширины на нём не работает.
+                     Правые узлы стоят через right, без translate-x: подгонщик меряет
+                     размах чернил по offset-боксам, которые сдвиг не учитывают, и
+                     узел «вылезал» за экран — телефонный слайд ужимался на 10%.
+                     Верх и низ квадрата пусты (пятиугольник узлов): отрицательные
+                     поля срезают пустые полосы, чтобы круг по чернилам стоял на одном
+                     уровне с правой частью, а не раздувал ряд своей коробкой -->
+                <div class="w-full max-w-[264px] md:max-w-[396px] mx-auto -mb-4 md:-mt-3 md:-mb-11">
+                <div class="relative w-full aspect-square mx-auto a-in">
+                    <div class="absolute inset-[12%] rounded-full border-2 border-dashed border-solar/40 a-orbit"></div>
+
+                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center a-pulse">
+                        <i class="ph-fill ph-file-text text-xl md:text-4xl text-solar"></i>
+                        <span class="text-[10px] md:text-base font-black text-white leading-tight mt-0.5">промт</span>
+                    </div>
+
+                    <div class="absolute left-1/2 top-[10%] -translate-x-1/2 -translate-y-1/2 w-[43%] md:w-[36%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step">
+                        <i class="ph-fill ph-clipboard-text text-base md:text-2xl text-solar block"></i>
+                        <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Спецификация</p>
+                    </div>
+                    <div class="absolute -right-[9.5%] md:-right-[6%] top-[37.6%] -translate-y-1/2 w-[43%] md:w-[36%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step a-step-2">
+                        <i class="ph-fill ph-magic-wand text-base md:text-2xl text-solar block"></i>
+                        <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Генерация</p>
+                    </div>
+                    <div class="absolute right-[3.5%] md:right-[8.5%] top-[82.4%] -translate-y-1/2 w-[43%] md:w-[36%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step a-step-3">
+                        <i class="ph-fill ph-list-checks text-base md:text-2xl text-solar block"></i>
+                        <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Тест</p>
+                    </div>
+                    <div class="absolute left-[25%] md:left-[26.5%] top-[82.4%] -translate-x-1/2 -translate-y-1/2 w-[43%] md:w-[36%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step">
+                        <i class="ph-fill ph-scales text-base md:text-2xl text-solar block"></i>
+                        <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Оценка</p>
+                    </div>
+                    <div class="absolute left-[12%] top-[37.6%] -translate-x-1/2 -translate-y-1/2 w-[43%] md:w-[36%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step a-step-2">
+                        <i class="ph-fill ph-trend-up text-base md:text-2xl text-solar block"></i>
+                        <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Улучшение</p>
+                    </div>
+
+                    <i class="ph-bold ph-arrow-right absolute left-[73.4%] top-[20.1%] -translate-x-1/2 -translate-y-1/2 rotate-[38deg] text-solar text-sm md:text-xl"></i>
+                    <i class="ph-bold ph-arrow-right absolute left-[86.1%] top-[61.7%] -translate-x-1/2 -translate-y-1/2 rotate-[108deg] text-solar text-sm md:text-xl"></i>
+                    <i class="ph-bold ph-arrow-right absolute left-1/2 top-[88%] -translate-x-1/2 -translate-y-1/2 rotate-180 text-solar text-sm md:text-xl"></i>
+                    <i class="ph-bold ph-arrow-right absolute left-[13.9%] top-[61.7%] -translate-x-1/2 -translate-y-1/2 rotate-[252deg] text-solar text-sm md:text-xl"></i>
+                    <i class="ph-bold ph-arrow-right absolute left-[26.6%] top-[20.1%] -translate-x-1/2 -translate-y-1/2 rotate-[322deg] text-solar text-sm md:text-xl"></i>
+                </div>
+                </div>
+
+                <!-- Один оборот: из спецификации — промт, противоречия и варианты;
+                     варианты веером идут на общий набор тестов и сходятся в выбор -->
+                <div class="flex flex-col items-center w-full min-w-0">
+
+                    <!-- Средняя плашка — строго по оси колонки: под ней стоит линия к набору
+                         тестов. Боковые плашки разной ширины («промт» короче «вариантов»),
+                         и в простом flex-ряду линия выходила из «противоречий» не по центру.
+                         Сетка 1fr|auto|1fr ставит середину ряда ровно на ось -->
+                    <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-1 md:gap-2 w-full a-in">
+                        <div class="js-keep flex flex-row items-center justify-end gap-1 md:gap-2 min-w-0">
+                            <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1.5 text-[9px] md:text-base font-medium text-black whitespace-nowrap"><i class="ph-fill ph-file-text text-solar"></i> промт</span>
+                            <div class="h-[2px] w-3 md:w-8 shrink-0 text-solar/40 a-flow"></div>
+                        </div>
+                        <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1.5 text-[9px] md:text-base font-medium text-black whitespace-nowrap"><i class="ph-fill ph-magnifying-glass text-solar"></i> противоречия</span>
+                        <div class="js-keep flex flex-row items-center justify-start gap-1 md:gap-2 min-w-0">
+                            <div class="h-[2px] w-3 md:w-8 shrink-0 text-solar/40 a-flow"></div>
+                            <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1.5 text-[9px] md:text-base font-medium text-black whitespace-nowrap"><i class="ph-fill ph-copy text-solar"></i> варианты</span>
+                        </div>
+                    </div>
+
+                    <div class="w-[2px] h-1.5 md:h-3 text-solar/40 a-flow-y"></div>
+                    <span class="bg-black border border-solar rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1.5 text-[9px] md:text-base font-medium text-white whitespace-nowrap a-in a-in-2"><i class="ph-fill ph-list-checks text-solar"></i> один набор тестов</span>
+                    <div class="w-[2px] h-1.5 md:h-2 text-solar/40 a-flow-y"></div>
+
+                    <!-- Скобка разводит набор тестов на три колонки: бока скобки стоят
+                         ровно по центрам колонок, поэтому у сетки карточек нет зазора.
+                         На телефоне варианты идут строками, скобка схлопывается.
+                         «точнее, но дороже» влезает в одну строку — и стоит в одну
+                         (канон переносов); карточки прижаты к верху, чтобы иконки ряда
+                         стояли на одном уровне, а auto-rows-fr держит строки телефона
+                         одной высоты -->
+                    <div class="w-full px-[16.667%]">
+                        <div class="h-0 md:h-3 border-0 md:border-x-2 md:border-t-2 border-dashed border-solar/40 rounded-t-lg"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 auto-rows-fr gap-y-1 md:gap-y-0 items-stretch w-full">
+                        <div class="flex flex-col items-center md:px-2 a-in a-in-3">
+                            <div class="w-[2px] h-0 md:h-2 text-solar/40 a-flow-y"></div>
+                            <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2.5 py-1 md:px-4 md:py-3 flex flex-row md:flex-col items-center justify-start gap-2 md:gap-0 text-left md:text-center w-full flex-1">
+                                <i class="ph-fill ph-target text-xl md:text-3xl text-solar shrink-0 md:mb-1.5"></i>
+                                <h3 class="w-[98px] md:w-auto shrink-0 font-black text-[11px] md:text-lg text-black leading-tight m-0">Точный</h3>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 md:mt-1">точнее, но дороже</p>
+                            </div>
+                            <div class="w-[2px] h-0 md:h-2 text-solar/40 a-flow-y"></div>
+                        </div>
+                        <div class="flex flex-col items-center md:px-2 a-in a-in-4">
+                            <div class="w-[2px] h-0 md:h-2 text-solar/40 a-flow-y"></div>
+                            <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2.5 py-1 md:px-4 md:py-3 flex flex-row md:flex-col items-center justify-start gap-2 md:gap-0 text-left md:text-center w-full flex-1">
+                                <i class="ph-fill ph-lightning text-xl md:text-3xl text-solar shrink-0 md:mb-1.5"></i>
+                                <h3 class="w-[98px] md:w-auto shrink-0 font-black text-[11px] md:text-lg text-black leading-tight m-0">Быстрый</h3>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 md:mt-1">быстрее, но хуже <br>на редких случаях</p>
+                            </div>
+                            <div class="w-[2px] h-0 md:h-2 text-solar/40 a-flow-y"></div>
+                        </div>
+                        <div class="flex flex-col items-center md:px-2 a-in a-in-5">
+                            <div class="w-[2px] h-0 md:h-2 text-solar/40 a-flow-y"></div>
+                            <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2.5 py-1 md:px-4 md:py-3 flex flex-row md:flex-col items-center justify-start gap-2 md:gap-0 text-left md:text-center w-full flex-1">
+                                <i class="ph-fill ph-hand text-xl md:text-3xl text-solar shrink-0 md:mb-1.5"></i>
+                                <h3 class="w-[98px] md:w-auto shrink-0 font-black text-[11px] md:text-lg text-black leading-tight m-0">Осторожный</h3>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 md:mt-1">чаще передаёт человеку — <br>меньше опасных ошибок</p>
+                            </div>
+                            <div class="w-[2px] h-0 md:h-2 text-solar/40 a-flow-y"></div>
+                        </div>
+                    </div>
+
+                    <div class="w-full px-[16.667%]">
+                        <div class="h-0 md:h-3 border-0 md:border-x-2 md:border-b-2 border-dashed border-solar/40 rounded-b-lg"></div>
+                    </div>
+                    <div class="w-[2px] h-1.5 md:h-3 text-solar/40 a-flow-y"></div>
+
+                    <!-- Выбор: не «звучит лучше», а цифры прогона -->
+                    <div class="a-in a-in-6">
+                        <div class="bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] px-3 py-1 md:px-6 md:py-2.5 flex flex-col items-center justify-center text-center a-pulse">
+                            <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-ranking"></i> Выбор по измеримым результатам</h3>
+                            <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0 mt-0.5">а не потому, что «звучит лучше»</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-4xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0"><span class="whitespace-nowrap">Человек отвечает за качество требований,</span> <span class="whitespace-nowrap">тестовых сценариев и критериев оценки,</span> <br><span class="font-black">а промт — версионируемый инженерный артефакт</span></p>
+            </div>
+        </div>
+    </div>

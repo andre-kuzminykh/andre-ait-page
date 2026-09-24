@@ -1,0 +1,113 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-37">
+        <div class="content-z max-w-6xl w-full wide-cards">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Полная архитектура <span class="text-solar">рабочего ИИ-агента</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Для работы в бизнесе одной модели недостаточно</p>
+
+            <!-- ПК: слева — что проектируем, по порядку текста (станции на бегущей линии),
+                 стрелка — в обвязку, внутри которой идёт рабочий цикл. Телефон: то же столбиком -->
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-y-2 md:gap-x-4 items-stretch w-full">
+
+                <!-- Станции проектирования по порядку текста: процесс → агент → ИИ-операции →
+                     воркфлоу, данные, промт и контекст. Станции на бегущей линии появляются по очереди -->
+                <div class="relative flex flex-col justify-between gap-2.5 md:gap-5 w-full min-w-0">
+                    <div class="absolute left-[15px] md:left-[27px] top-4 bottom-4 md:top-7 md:bottom-7 w-[2px] text-solar/40 a-flow-y"></div>
+
+                    <div class="relative flex flex-row items-center gap-2.5 md:gap-4 a-in">
+                        <div class="w-8 h-8 md:w-14 md:h-14 rounded-full bg-white border-2 border-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-tree-structure text-base md:text-2xl text-solar"></i></div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Разбираем процесс</h3>
+                            <p class="text-[9px] md:text-base text-black/60 leading-tight m-0 mt-0.5 md:mt-1"><span class="whitespace-nowrap">как сейчас <i class="ph-bold ph-arrow-right text-solar"></i> как должно быть</span></p>
+                        </div>
+                    </div>
+
+                    <div class="relative flex flex-row items-center gap-2.5 md:gap-4 a-in a-in-2">
+                        <div class="w-8 h-8 md:w-14 md:h-14 rounded-full bg-white border-2 border-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-identification-card text-base md:text-2xl text-solar"></i></div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Описываем агента</h3>
+                            <p class="text-[9px] md:text-base text-black/60 leading-tight m-0 mt-0.5 md:mt-1">роль, цель, данные, полномочия, инструменты, <br>ограничения, передача человеку, формат</p>
+                        </div>
+                    </div>
+
+                    <!-- Шкала операций: заливка растёт от правила к агенту, который сам выбирает шаги -->
+                    <div class="relative flex flex-row items-center gap-2.5 md:gap-4 a-in a-in-3">
+                        <div class="w-8 h-8 md:w-14 md:h-14 rounded-full bg-white border-2 border-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-cpu text-base md:text-2xl text-solar"></i></div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Определяем ИИ-операции</h3>
+                            <div class="flex flex-wrap items-center gap-0.5 md:gap-1 mt-1 md:mt-1.5">
+                                <span class="bg-solar/10 border border-solar/30 rounded-l-md md:rounded-l-lg px-1.5 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-black whitespace-nowrap">правило</span>
+                                <span class="bg-solar/25 border border-solar/40 px-1.5 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-black whitespace-nowrap">вызов модели</span>
+                                <span class="bg-solar/45 border border-solar/60 rounded-r-md md:rounded-r-lg px-1.5 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-black whitespace-nowrap">агент сам выбирает</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative flex flex-row items-center gap-2.5 md:gap-4 a-in a-in-4">
+                        <div class="w-8 h-8 md:w-14 md:h-14 rounded-full bg-white border-2 border-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-flow-arrow text-base md:text-2xl text-solar"></i></div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Проектируем воркфлоу</h3>
+                            <p class="text-[9px] md:text-base text-black/60 leading-tight m-0 mt-0.5 md:mt-1">движение данных, промт и контекст</p>
+                        </div>
+                    </div>
+                </div>
+
+                <i class="ph-bold ph-arrow-right text-solar text-lg md:text-3xl self-center justify-self-center rotate-90 md:rotate-0 a-in a-in-5"></i>
+
+                <!-- Обвязка и среда исполнения связывают всё: внутри — рабочий цикл.
+                     Модель выбирает → среда проверяет и выполняет → результат меняет состояние,
+                     дальше развилка; петля «продолжить» возвращает к модели -->
+                <div class="bg-black border-2 border-solar rounded-[16px] md:rounded-[24px] p-2.5 md:p-5 flex flex-col items-center justify-center w-full min-w-0 a-in a-in-5">
+                    <h3 class="font-black text-[12px] md:text-xl text-solar leading-tight m-0 mb-2 md:mb-4 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-plugs-connected"></i> Обвязка и среда исполнения</span></h3>
+
+                    <div class="flex flex-col w-full">
+                        <div class="flex flex-row items-stretch gap-1.5 md:gap-2.5 w-full">
+                            <!-- Петля «продолжить»: пунктир поднимается из плашки «продолжить» обратно к модели.
+                                 Ряд исходов идёт под петлёй во всю ширину: сбоку от него на телефоне
+                                 «продолжить» не влезал в плашку (текст шире рамки) -->
+                            <div class="relative w-5 md:w-6 shrink-0 mt-[22px] md:mt-7">
+                                <div class="absolute left-[9px] md:left-[13px] top-0 bottom-0 w-[2px] text-solar/70 a-flow-y rotate-180"></div>
+                                <div class="absolute left-[9px] md:left-[13px] right-0 top-0 h-[2px] text-solar/70 a-flow"></div>
+                                <i class="ph-fill ph-caret-right absolute right-0 top-0 translate-x-1/2 -translate-y-1/2 text-solar text-xs md:text-base"></i>
+                            </div>
+
+                            <div class="flex-1 min-w-0 flex flex-col">
+                                <div class="js-keep h-11 md:h-14 bg-white/10 border border-white/20 rounded-xl md:rounded-2xl px-2 md:px-4 flex flex-row items-center gap-2 md:gap-3 a-step">
+                                    <i class="ph-fill ph-brain text-lg md:text-3xl text-solar shrink-0"></i>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-black text-[10px] md:text-base text-white leading-tight m-0">Модель</h3>
+                                        <p class="text-[9px] md:text-base text-white/70 leading-tight m-0 mt-0.5">выбирает разрешённый инструмент</p>
+                                    </div>
+                                </div>
+                                <div class="w-[2px] h-2 md:h-3 mx-auto text-solar/50 a-flow-y"></div>
+                                <div class="js-keep h-11 md:h-14 bg-white/10 border border-white/20 rounded-xl md:rounded-2xl px-2 md:px-4 flex flex-row items-center gap-2 md:gap-3 a-step a-step-2">
+                                    <i class="ph-fill ph-shield-check text-lg md:text-3xl text-solar shrink-0"></i>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-black text-[10px] md:text-base text-white leading-tight m-0">Среда исполнения</h3>
+                                        <p class="text-[9px] md:text-base text-white/70 leading-tight m-0 mt-0.5">проверяет вызов и выполняет действие</p>
+                                    </div>
+                                </div>
+                                <div class="w-[2px] h-2 md:h-3 mx-auto text-solar/50 a-flow-y"></div>
+                                <div class="js-keep h-11 md:h-14 bg-white/10 border border-white/20 rounded-xl md:rounded-2xl px-2 md:px-4 flex flex-row items-center gap-2 md:gap-3 a-step a-step-3">
+                                    <i class="ph-fill ph-database text-lg md:text-3xl text-solar shrink-0"></i>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-black text-[10px] md:text-base text-white leading-tight m-0">Результат</h3>
+                                        <p class="text-[9px] md:text-base text-white/70 leading-tight m-0 mt-0.5">меняет состояние задачи</p>
+                                    </div>
+                                </div>
+                                <div class="w-[2px] h-2 md:h-3 mx-auto text-solar/50 a-flow-y"></div>
+                            </div>
+                        </div>
+                        <!-- flex-auto делит запас поровну: у каждой плашки свои поля, а не у одной -->
+                        <div class="js-keep flex flex-row gap-1 md:gap-2 w-full">
+                            <span class="flex-auto h-8 md:h-10 bg-white/10 border border-white/20 rounded-lg md:rounded-xl px-1 md:px-1.5 flex items-center justify-center text-[9px] md:text-sm font-medium text-white whitespace-nowrap"><i class="ph-bold ph-arrows-clockwise text-solar"></i>&nbsp;продолжить</span>
+                            <span class="flex-auto h-8 md:h-10 bg-white/10 border border-white/20 rounded-lg md:rounded-xl px-1 md:px-1.5 flex items-center justify-center text-[9px] md:text-sm font-medium text-white whitespace-nowrap"><i class="ph-fill ph-flag-checkered text-solar"></i>&nbsp;завершить</span>
+                            <span class="flex-auto h-8 md:h-10 bg-solar border border-solar rounded-lg md:rounded-xl px-1 md:px-1.5 flex items-center justify-center text-[9px] md:text-sm font-medium whitespace-nowrap a-pulse" style="color:#111;-webkit-text-fill-color:#111"><i class="ph-fill ph-hand"></i>&nbsp;передать человеку</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Работающий агент — это <span class="font-black whitespace-nowrap">целая инженерная система</span></p>
+            </div>
+        </div>
+    </div>

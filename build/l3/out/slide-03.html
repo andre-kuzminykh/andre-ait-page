@@ -1,0 +1,83 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-3">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Правила или <span class="text-solar">ИИ-автоматизация</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Главный критерий — формализуемость</p>
+
+            <!-- Развилка: вопрос о формализуемости сверху, от него две ветки.
+                 ПК — дерево в две колонки; телефон — те же ветки одна под другой
+                 (перекладина дерева на телефоне нулевой высоты: колонки стоят
+                 столбиком и связаны вертикальным потоком) -->
+            <div class="flex justify-center a-in">
+                <div class="bg-black border-2 border-solar rounded-2xl md:rounded-3xl px-3 py-1.5 md:px-6 md:py-2.5 flex items-center justify-center gap-2 md:gap-3 a-pulse">
+                    <i class="ph-fill ph-arrows-split text-lg md:text-3xl text-solar shrink-0"></i>
+                    <p class="text-[11px] md:text-xl font-black text-white leading-tight m-0 text-center"><span class="whitespace-nowrap">Решение надёжно</span> <span class="whitespace-nowrap">описывается правилом?</span></p>
+                </div>
+            </div>
+            <div class="w-[2px] h-2 md:h-5 mx-auto text-solar/40 a-flow-y"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-1.5 md:gap-x-6 w-full items-stretch">
+
+                <!-- Ветка «да»: правило на живом примере и цена ИИ на его месте -->
+                <div class="flex flex-col items-center w-full min-w-0">
+                    <!-- Левая половина перекладины: от середины колонки до середины зазора, поток бежит от центра наружу.
+                         На ПК плашка «да» сидит на перекладине и не занимает высоты; на телефоне перекладины нет,
+                         и плашка стоит в потоке над своей карточкой.
+                         Значок и слово обёрнуты в span: правило каркаса «[bg-white] > i:only-child — color:inherit»
+                         иначе красило галочку и крестик в цвет текста, акцент ветки пропадал в обеих темах -->
+                    <div class="relative self-stretch flex justify-center md:h-[2px]">
+                        <div class="absolute top-0 left-1/2 -right-3 h-0 md:h-[2px] text-solar/40 a-flow -scale-x-100"></div>
+                        <span class="relative md:absolute md:left-[75%] md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1 text-[10px] md:text-sm font-medium text-black whitespace-nowrap"><span class="whitespace-nowrap"><i class="ph-bold ph-check text-solar"></i> да</span></span>
+                    </div>
+                    <div class="w-[2px] h-1.5 md:h-5 text-solar/40 a-flow-y"></div>
+
+                    <div class="w-full flex-1 flex flex-col gap-1.5 md:gap-2.5">
+                        <div class="flex-1 bg-white border border-grayBase rounded-[16px] md:rounded-3xl p-3 md:p-4 flex flex-col items-center justify-between text-center a-in a-in-2">
+                            <h3 class="font-black text-[13px] md:text-2xl text-black leading-tight m-0 mb-1.5 md:mb-2"><span class="whitespace-nowrap"><i class="ph-fill ph-code text-solar"></i> Правило</span></h3>
+                            <!-- Условие и действие: на ПК столбиком, на телефоне строкой (стрелка поворачивается вниз только на ПК) -->
+                            <div class="js-keep flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-0">
+                                <p class="text-[15px] md:text-4xl font-black text-black leading-none m-0 whitespace-nowrap">платёж <i class="ph-bold ph-greater-than text-solar"></i> 10&nbsp;000&nbsp;$</p>
+                                <i class="ph-bold ph-arrow-right md:rotate-90 text-black/25 text-sm md:text-2xl md:my-0.5"></i>
+                                <span class="bg-solar rounded-lg md:rounded-xl px-2 py-1 md:px-4 md:py-2 text-[10px] md:text-lg font-medium whitespace-nowrap" style="color:#111;-webkit-text-fill-color:#111"><i class="ph-fill ph-stamp"></i> на согласование</span>
+                            </div>
+                            <p class="text-[10px] md:text-sm text-black/55 leading-tight m-0 mt-1.5 md:mt-2"><span class="whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar"></i> смысловой неопределённости нет</span></p>
+                        </div>
+                        <div class="bg-grayBase/30 border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-2 md:px-4 md:py-2 flex flex-col items-center justify-center gap-1 md:gap-1.5 text-center a-in a-in-3">
+                            <p class="text-[10px] md:text-base text-black/60 font-medium leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-robot text-black/40"></i> ИИ вместо правила</span></p>
+                            <div class="js-keep flex flex-row flex-wrap items-center justify-center gap-1 md:gap-2">
+                                <span class="bg-white border border-grayBase rounded-md md:rounded-lg px-1.5 py-0.5 md:px-2.5 md:py-1 text-[10px] md:text-sm text-black/60 whitespace-nowrap a-step"><i class="ph-bold ph-plus text-black/40"></i> стоимость</span>
+                                <span class="bg-white border border-grayBase rounded-md md:rounded-lg px-1.5 py-0.5 md:px-2.5 md:py-1 text-[10px] md:text-sm text-black/60 whitespace-nowrap a-step a-step-2"><i class="ph-bold ph-plus text-black/40"></i> задержка</span>
+                                <span class="bg-white border border-grayBase rounded-md md:rounded-lg px-1.5 py-0.5 md:px-2.5 md:py-1 text-[10px] md:text-sm text-black/60 whitespace-nowrap a-step a-step-3"><i class="ph-bold ph-plus text-black/40"></i> вероятность ошибки</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ветка «нет»: неоднозначность, где без ИИ не обойтись -->
+                <div class="flex flex-col items-center w-full min-w-0">
+                    <!-- Правая половина перекладины: от середины зазора до середины колонки -->
+                    <div class="relative self-stretch flex justify-center md:h-[2px]">
+                        <div class="absolute top-0 -left-3 right-1/2 h-0 md:h-[2px] text-solar/40 a-flow"></div>
+                        <span class="relative md:absolute md:left-[25%] md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1 text-[10px] md:text-sm font-medium text-black whitespace-nowrap"><span class="whitespace-nowrap"><i class="ph-bold ph-x text-solar"></i> нет</span></span>
+                    </div>
+                    <div class="w-[2px] h-1.5 md:h-5 text-solar/40 a-flow-y"></div>
+
+                    <div class="w-full flex-1 bg-black border-2 border-solar rounded-[16px] md:rounded-3xl p-3 md:p-4 flex flex-col items-center justify-between text-center a-in a-in-2">
+                        <h3 class="font-black text-[13px] md:text-2xl text-solar leading-tight m-0 mb-1.5 md:mb-2"><span class="whitespace-nowrap"><i class="ph-fill ph-brain"></i> ИИ</span></h3>
+                        <!-- Пять случаев неоднозначности: на ПК сетка 2+2+1 одинаковой ширины, на телефоне — перенос по ширине -->
+                        <div class="js-keep flex flex-row flex-wrap md:grid md:grid-cols-2 items-center justify-center gap-1.5 md:gap-2.5">
+                            <span class="bg-white/10 border border-white/25 rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-2 text-[10px] md:text-base font-medium text-white text-center whitespace-nowrap a-in a-in-2"><i class="ph-fill ph-envelope-open text-solar"></i> содержание письма</span>
+                            <span class="bg-white/10 border border-white/25 rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-2 text-[10px] md:text-base font-medium text-white text-center whitespace-nowrap a-in a-in-3"><i class="ph-fill ph-user-focus text-solar"></i> намерение клиента</span>
+                            <span class="bg-white/10 border border-white/25 rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-2 text-[10px] md:text-base font-medium text-white text-center whitespace-nowrap a-in a-in-4"><i class="ph-fill ph-tag text-solar"></i> классификация текста</span>
+                            <span class="bg-white/10 border border-white/25 rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-2 text-[10px] md:text-base font-medium text-white text-center whitespace-nowrap a-in a-in-5"><i class="ph-fill ph-puzzle-piece text-solar"></i> неполная информация</span>
+                            <span class="md:col-span-2 md:justify-self-center md:w-[calc(50%-0.3125rem)] bg-white/10 border border-white/25 rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-2 text-[10px] md:text-base font-medium text-white text-center whitespace-nowrap a-in a-in-6"><i class="ph-fill ph-sliders-horizontal text-solar"></i> нечёткие факторы</span>
+                        </div>
+                        <p class="text-[10px] md:text-sm text-white/55 leading-tight m-0 mt-1.5 md:mt-2"><span class="whitespace-nowrap"><i class="ph-fill ph-question text-solar"></i> нужна интерпретация смысла</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8 a-in a-in-6">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0"><span class="whitespace-nowrap">Хорошая AI-First архитектура</span> <span class="whitespace-nowrap">использует интеллект избирательно:</span> <br><span class="font-black">всё детерминированное остаётся детерминированным</span></p>
+            </div>
+        </div>
+    </div>

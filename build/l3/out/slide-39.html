@@ -1,0 +1,135 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-39">
+        <div class="content-z max-w-7xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Наблюдаемость <span class="text-solar">и отладка</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Если агент сделал не то — нужен весь путь до ошибки</p>
+
+            <!-- Три глубины видимости по тексту владельца: журнал → «часто этого мало» →
+                 трассировка → «если результат неправильный» → отладка. На ПК в ряд одной
+                 высоты, крайние карточки равной ширины, трассировка в центре шире — иначе
+                 полосы водопада сжимались в точки; на телефоне столбиком со стрелками вниз -->
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1.25fr_auto_1fr] gap-1.5 md:gap-2 w-full items-stretch">
+
+                <!-- Журнал выполнения: компактная лента из четырёх вопросов, по ней бежит поток.
+                     Кружки — rounded-[50%], а не rounded-full: тёмная тема делает белые
+                     rounded-full полупрозрачными, и пунктир ленты просвечивал сквозь иконки.
+                     На телефоне 2×2 по ширине содержимого и по центру — иначе справа пустая полоса -->
+                <div class="a-in bg-white border border-grayBase rounded-[16px] md:rounded-[24px] p-2.5 md:p-4 flex flex-col h-full">
+                    <div class="flex items-center justify-center gap-2 md:gap-2.5 mb-2 md:mb-4">
+                        <i class="ph-fill ph-clipboard-text text-solar text-lg md:text-3xl shrink-0"></i>
+                        <h3 class="font-black text-[12px] md:text-lg text-black leading-tight m-0 whitespace-nowrap">Журнал выполнения</h3>
+                    </div>
+                    <div class="relative flex-1 grid grid-cols-[auto_auto] justify-center gap-x-6 gap-y-1.5 md:flex md:flex-col md:justify-between md:gap-2 md:self-center">
+                        <div class="absolute top-3 bottom-3 left-[11px] md:left-[17px] w-0 md:w-[2px] text-solar/40 a-flow-y"></div>
+                        <div class="relative flex items-center gap-2 md:gap-3">
+                            <span class="w-5 h-5 md:w-9 md:h-9 rounded-[50%] bg-white border-2 border-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-lightning text-solar text-xs md:text-lg"></i></span>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 whitespace-nowrap">Что запустило</p>
+                        </div>
+                        <div class="relative flex items-center gap-2 md:gap-3">
+                            <span class="w-5 h-5 md:w-9 md:h-9 rounded-[50%] bg-white border-2 border-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-list-checks text-solar text-xs md:text-lg"></i></span>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 whitespace-nowrap">Какие шаги прошли</p>
+                        </div>
+                        <div class="relative flex items-center gap-2 md:gap-3">
+                            <span class="w-5 h-5 md:w-9 md:h-9 rounded-[50%] bg-white border-2 border-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-sign-in text-solar text-xs md:text-lg"></i></span>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 whitespace-nowrap">Что пришло на вход</p>
+                        </div>
+                        <div class="relative flex items-center gap-2 md:gap-3">
+                            <span class="w-5 h-5 md:w-9 md:h-9 rounded-[50%] bg-white border-2 border-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-flag-checkered text-solar text-xs md:text-lg"></i></span>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 whitespace-nowrap">Чем закончилось</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- «Часто этого мало» — спуск глубже -->
+                <div class="a-in a-in-2 flex flex-row md:flex-col items-center justify-center gap-1 md:gap-1.5 self-center">
+                    <i class="ph-fill ph-magnifying-glass-plus text-solar text-sm md:text-2xl"></i>
+                    <i class="ph-bold ph-arrow-right text-black/25 text-lg md:text-2xl rotate-90 md:rotate-0"></i>
+                </div>
+
+                <!-- Трассировка: водопад пути решения, каждая полоса начинается там, где кончилась прошлая;
+                     подсветка бежит волной сверху вниз -->
+                <div class="a-in a-in-3 bg-black border-2 border-solar rounded-[16px] md:rounded-[24px] p-2.5 md:p-4 flex flex-col h-full">
+                    <div class="flex items-center justify-center gap-2 md:gap-2.5 mb-2 md:mb-4">
+                        <i class="ph-fill ph-path text-solar text-lg md:text-3xl shrink-0"></i>
+                        <h3 class="font-black text-[12px] md:text-lg text-solar leading-tight m-0 whitespace-nowrap">Трассировка</h3>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between gap-1 md:gap-2">
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <p class="w-[112px] md:w-[140px] shrink-0 text-[10px] md:text-[15px] text-white leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-stack text-solar"></i> Контекст</p>
+                            <div class="flex-1 min-w-0 h-2 md:h-3.5 rounded-full bg-white/10"><div class="w-[15%] h-full rounded-full bg-solar a-step"></div></div>
+                        </div>
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <p class="w-[112px] md:w-[140px] shrink-0 text-[10px] md:text-[15px] text-white leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-git-commit text-solar"></i> Версия</p>
+                            <div class="flex-1 min-w-0 h-2 md:h-3.5 rounded-full bg-white/10"><div class="ml-[15%] w-[12%] h-full rounded-full bg-solar a-step a-step-2"></div></div>
+                        </div>
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <p class="w-[112px] md:w-[140px] shrink-0 text-[10px] md:text-[15px] text-white leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-chat-circle-text text-solar"></i> Ответ модели</p>
+                            <div class="flex-1 min-w-0 h-2 md:h-3.5 rounded-full bg-white/10"><div class="ml-[27%] w-[18%] h-full rounded-full bg-solar a-step a-step-3"></div></div>
+                        </div>
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <p class="w-[112px] md:w-[140px] shrink-0 text-[10px] md:text-[15px] text-white leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-wrench text-solar"></i> Инструмент</p>
+                            <div class="flex-1 min-w-0 h-2 md:h-3.5 rounded-full bg-white/10"><div class="ml-[45%] w-[13%] h-full rounded-full bg-solar a-step"></div></div>
+                        </div>
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <p class="w-[112px] md:w-[140px] shrink-0 text-[10px] md:text-[15px] text-white leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-sliders-horizontal text-solar"></i> Параметры</p>
+                            <div class="flex-1 min-w-0 h-2 md:h-3.5 rounded-full bg-white/10"><div class="ml-[58%] w-[12%] h-full rounded-full bg-solar a-step a-step-2"></div></div>
+                        </div>
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <p class="w-[112px] md:w-[140px] shrink-0 text-[10px] md:text-[15px] text-white leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-plugs-connected text-solar"></i> Ответ сервиса</p>
+                            <div class="flex-1 min-w-0 h-2 md:h-3.5 rounded-full bg-white/10"><div class="ml-[70%] w-[16%] h-full rounded-full bg-solar a-step a-step-3"></div></div>
+                        </div>
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <p class="w-[112px] md:w-[140px] shrink-0 text-[10px] md:text-[15px] text-white leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-arrow-bend-down-right text-solar"></i> Куда дальше</p>
+                            <div class="flex-1 min-w-0 h-2 md:h-3.5 rounded-full bg-white/10"><div class="ml-[86%] w-[14%] h-full rounded-full bg-solar a-step"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- «Если результат неправильный» — начинается отладка -->
+                <div class="a-in a-in-4 flex flex-row md:flex-col items-center justify-center gap-1 md:gap-1.5 self-center">
+                    <i class="ph-fill ph-warning text-solar text-sm md:text-2xl a-pulse"></i>
+                    <i class="ph-bold ph-arrow-right text-black/25 text-lg md:text-2xl rotate-90 md:rotate-0"></i>
+                </div>
+
+                <!-- Отладка: шесть подозреваемых, лупа обходит их по очереди.
+                     На телефоне — кирпичная кладка по ширине слов (flex-wrap + grow): в сетке
+                     2×2 «Неоднозначная инструкция» ломалась в две строки и лупа отрывалась от слова -->
+                <div class="a-in a-in-5 bg-white border border-grayBase rounded-[16px] md:rounded-[24px] p-2.5 md:p-4 flex flex-col h-full">
+                    <div class="flex items-center justify-center gap-2 md:gap-2.5 mb-2 md:mb-4">
+                        <i class="ph-fill ph-bug text-solar text-lg md:text-3xl shrink-0"></i>
+                        <h3 class="font-black text-[12px] md:text-lg text-black leading-tight m-0 whitespace-nowrap">Отладка</h3>
+                    </div>
+                    <div class="flex-1 flex flex-wrap justify-center gap-1 md:flex-col md:flex-nowrap md:gap-2">
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step"></i>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Входные данные</p>
+                        </div>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step a-step-2"></i>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Устаревший контекст</p>
+                        </div>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step a-step-3"></i>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Неоднозначная инструкция</p>
+                        </div>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step"></i>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Ответ сервиса</p>
+                        </div>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step a-step-2"></i>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Преобразование данных</p>
+                        </div>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step a-step-3"></i>
+                            <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Маршрутизация</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ударная строка без «Поэтому»: с ним на телефоне «работы» повисало четвёртой строкой -->
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0"><span class="whitespace-nowrap">Пока агент — чёрный ящик,</span> <span class="whitespace-nowrap">понять причину почти невозможно.</span> <br><span class="font-black">Наблюдаемость — обязательная часть работы</span></p>
+            </div>
+        </div>
+    </div>

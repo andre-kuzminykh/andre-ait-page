@@ -1,0 +1,146 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-16">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">API <span class="text-solar">и внешние системы</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Инструменты агента часто работают через API</p>
+
+            <!-- Аналогия из текста владельца: гость — официант — кухня, под каждым узлом
+                 его технический двойник. Слева слова аналогии («передаёте заказ… возвращает
+                 результат»), справа — техника («клиент отправляет запрос… получает ответ»):
+                 официант и есть переводчик заказа в запрос. Ряд остаётся рядом и на телефоне
+                 (сетка, а не flex-row: annotate её не складывает) -->
+            <div class="grid grid-cols-[1fr_52px_1fr_52px_1fr] md:grid-cols-[1fr_150px_1.15fr_150px_1fr] items-stretch w-full">
+                <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-1 py-2 md:px-4 md:py-2.5 flex flex-col items-center justify-center text-center h-full a-in">
+                    <i class="ph-fill ph-user text-2xl md:text-4xl text-solar mb-0.5 md:mb-1.5 a-step"></i>
+                    <h3 class="font-black text-[11px] md:text-xl text-black leading-tight m-0">Гость</h3>
+                    <span class="mt-1 md:mt-2 bg-grayBase/40 border border-grayBase rounded-md md:rounded-lg px-1.5 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-black/70 whitespace-nowrap">клиент</span>
+                </div>
+
+                <div class="flex flex-col justify-center gap-1 md:gap-2.5 min-w-0 px-0 md:px-3">
+                    <p class="text-[9px] md:text-sm text-black/60 leading-none m-0 text-center whitespace-nowrap">заказ</p>
+                    <div class="flex items-center w-full">
+                        <div class="h-[2px] flex-1 text-solar/60 a-flow"></div>
+                        <i class="ph-bold ph-caret-right text-solar text-[10px] md:text-lg -ml-1"></i>
+                    </div>
+                    <div class="flex items-center w-full">
+                        <i class="ph-bold ph-caret-left text-solar text-[10px] md:text-lg -mr-1"></i>
+                        <div class="h-[2px] flex-1 text-solar/60 a-flow rotate-180"></div>
+                    </div>
+                    <p class="text-[9px] md:text-sm text-black/60 leading-none m-0 text-center whitespace-nowrap">блюдо</p>
+                </div>
+
+                <div class="bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] px-1 py-2 md:px-4 md:py-2.5 flex flex-col items-center justify-center text-center h-full a-in a-in-2">
+                    <i class="ph-fill ph-call-bell text-2xl md:text-4xl text-solar mb-0.5 md:mb-1.5 a-step a-step-2"></i>
+                    <h3 class="font-black text-[11px] md:text-xl text-solar leading-tight m-0">Официант</h3>
+                    <span class="mt-1 md:mt-2 bg-white/10 border border-white/25 rounded-md md:rounded-lg px-1.5 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-white whitespace-nowrap">API</span>
+                </div>
+
+                <div class="flex flex-col justify-center gap-1 md:gap-2.5 min-w-0 px-0 md:px-3">
+                    <p class="text-[9px] md:text-sm text-black/60 leading-none m-0 text-center whitespace-nowrap">запрос</p>
+                    <div class="flex items-center w-full">
+                        <div class="h-[2px] flex-1 text-solar/60 a-flow"></div>
+                        <i class="ph-bold ph-caret-right text-solar text-[10px] md:text-lg -ml-1"></i>
+                    </div>
+                    <div class="flex items-center w-full">
+                        <i class="ph-bold ph-caret-left text-solar text-[10px] md:text-lg -mr-1"></i>
+                        <div class="h-[2px] flex-1 text-solar/60 a-flow rotate-180"></div>
+                    </div>
+                    <p class="text-[9px] md:text-sm text-black/60 leading-none m-0 text-center whitespace-nowrap">ответ</p>
+                </div>
+
+                <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-1 py-2 md:px-4 md:py-2.5 flex flex-col items-center justify-center text-center h-full a-in a-in-3">
+                    <i class="ph-fill ph-chef-hat text-2xl md:text-4xl text-solar mb-0.5 md:mb-1.5 a-step a-step-3"></i>
+                    <h3 class="font-black text-[11px] md:text-xl text-black leading-tight m-0">Кухня</h3>
+                    <span class="mt-1 md:mt-2 bg-grayBase/40 border border-grayBase rounded-md md:rounded-lg px-1.5 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-black/70 whitespace-nowrap">сервер</span>
+                </div>
+
+                <!-- Меню официанта = документация API: висит ровно под средним узлом -->
+                <div class="col-span-5 md:col-start-2 md:col-span-3 flex flex-col items-center a-in a-in-4">
+                    <div class="w-[2px] h-2.5 md:h-3.5 text-solar/50 a-flow-y"></div>
+                    <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-2.5 py-1 md:px-4 md:py-2 flex flex-col md:flex-row items-center gap-0 md:gap-2 text-center">
+                        <p class="text-[10px] md:text-base font-medium text-black leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-book-open-text text-solar"></i> Меню — документация:</p>
+                        <p class="text-[9px] md:text-base text-black/60 leading-tight m-0 whitespace-nowrap">действия · параметры · что вернётся</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Что внутри обмена: запрос, ответ и вебхук — обратное направление, когда система звонит сама.
+                 Заголовки панелей стоят на одной линии по верху, содержимое центрируется под ними -->
+            <div class="grid grid-cols-2 md:grid-cols-[1.6fr_1fr_1fr] gap-2 md:gap-4 items-stretch w-full mt-3 md:mt-4">
+
+                <!-- Запрос: из чего состоит, четыре метода с нарастающей силой, доступ -->
+                <div class="col-span-2 md:col-span-1 bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2 md:p-3.5 flex flex-col gap-1.5 md:gap-2.5 h-full a-in a-in-3">
+                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-paper-plane-tilt text-solar"></i> Запрос</span></h3>
+                    <div class="flex-1 flex flex-col justify-center gap-1.5 md:gap-2.5">
+                        <div class="grid grid-cols-2 md:flex border border-grayBase rounded-lg md:rounded-xl overflow-hidden">
+                            <p class="md:flex-auto bg-grayBase/30 text-[10px] md:text-sm text-black leading-tight m-0 px-1 md:px-2 py-1 md:py-1.5 text-center whitespace-nowrap"><i class="ph-fill ph-link text-solar"></i> адрес</p>
+                            <p class="md:flex-auto bg-grayBase/30 border-l border-grayBase text-[10px] md:text-sm text-black leading-tight m-0 px-1 md:px-2 py-1 md:py-1.5 text-center whitespace-nowrap"><i class="ph-fill ph-sliders-horizontal text-solar"></i> параметры</p>
+                            <p class="md:flex-auto bg-grayBase/30 border-t md:border-t-0 md:border-l border-grayBase text-[10px] md:text-sm text-black leading-tight m-0 px-1 md:px-2 py-1 md:py-1.5 text-center whitespace-nowrap"><i class="ph-fill ph-list-bullets text-solar"></i> заголовки</p>
+                            <p class="md:flex-auto border-t md:border-t-0 border-l border-dashed border-grayBase text-[10px] md:text-sm text-black/50 leading-tight m-0 px-1 md:px-2 py-1 md:py-1.5 text-center whitespace-nowrap"><i class="ph-fill ph-brackets-curly text-black/40"></i> иногда тело</p>
+                        </div>
+                        <div class="grid grid-cols-4 md:grid-cols-4 gap-1 md:gap-2">
+                            <div class="bg-white border border-grayBase rounded-lg md:rounded-xl px-0.5 py-1 md:py-1.5 flex flex-col items-center justify-center text-center">
+                                <h3 class="font-black text-[10px] md:text-base text-black leading-tight m-0">GET</h3>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">получить</p>
+                            </div>
+                            <div class="bg-solar/15 border border-solar/30 rounded-lg md:rounded-xl px-0.5 py-1 md:py-1.5 flex flex-col items-center justify-center text-center">
+                                <h3 class="font-black text-[10px] md:text-base text-black leading-tight m-0">POST</h3>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">создать</p>
+                            </div>
+                            <div class="bg-solar/35 border border-solar/50 rounded-lg md:rounded-xl px-0.5 py-1 md:py-1.5 flex flex-col items-center justify-center text-center">
+                                <h3 class="font-black text-[10px] md:text-base text-black leading-tight m-0">PATCH</h3>
+                                <p class="text-[9px] md:text-sm text-black/70 leading-tight m-0">изменить</p>
+                            </div>
+                            <div class="bg-black border border-solar rounded-lg md:rounded-xl px-0.5 py-1 md:py-1.5 flex flex-col items-center justify-center text-center">
+                                <h3 class="font-black text-[10px] md:text-base text-solar leading-tight m-0">DELETE</h3>
+                                <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0">удалить</p>
+                            </div>
+                        </div>
+                        <p class="text-[10px] md:text-sm text-black/60 leading-tight m-0 text-center">доступ: <span class="whitespace-nowrap"><i class="ph-fill ph-key text-solar"></i> ключи</span> · <span class="whitespace-nowrap"><i class="ph-fill ph-identification-card text-solar"></i> токены</span> · <span class="whitespace-nowrap"><i class="ph-fill ph-lock-key text-solar"></i> OAuth</span></p>
+                    </div>
+                </div>
+
+                <!-- Ответ: «начинается на 2 — успех, иначе — ошибка». Первая цифра яркая, хвост
+                     приглушён; в ошибке две разные первые цифры — это и есть «иначе», а не один 500.
+                     Огни мигают по очереди. Коды прижаты к своим огням слева: по центру колонки
+                     «200» уезжал под ширину «400 · 500», и галочка висела отдельно от кода -->
+                <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2 md:p-3.5 flex flex-col gap-1.5 md:gap-2.5 h-full a-in a-in-4">
+                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-arrow-bend-up-left text-solar"></i> Ответ</span></h3>
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="grid grid-cols-[auto_auto] items-center gap-x-2 gap-y-2 md:gap-x-3.5 md:gap-y-4 w-fit mx-auto">
+                            <span class="w-7 h-7 md:w-11 md:h-11 rounded-full bg-solar flex items-center justify-center a-step" style="color:#111;-webkit-text-fill-color:#111"><i class="ph-bold ph-check text-sm md:text-2xl"></i></span>
+                            <div class="flex flex-col items-start text-left">
+                                <p class="text-[15px] md:text-4xl font-black text-black leading-none m-0 whitespace-nowrap">2<span class="text-black/25">00</span></p>
+                                <p class="text-[10px] md:text-base text-black/70 leading-tight m-0 mt-0.5 md:mt-1">успех</p>
+                            </div>
+                            <span class="w-7 h-7 md:w-11 md:h-11 rounded-full bg-grayBase flex items-center justify-center a-step a-step-2"><i class="ph-bold ph-x text-sm md:text-2xl text-black/60"></i></span>
+                            <div class="flex flex-col items-start text-left">
+                                <p class="text-[15px] md:text-4xl font-black text-black leading-none m-0 whitespace-nowrap">4<span class="text-black/25">00</span> <span class="text-black/25">·</span> 5<span class="text-black/25">00</span></p>
+                                <p class="text-[10px] md:text-base text-black/70 leading-tight m-0 mt-0.5 md:mt-1">ошибка</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вебхук: «вместо постоянных проверок» — проверки зачёркнуты, а не стоят шагом
+                     перед звонком (стрелка без зачёркивания читалась как «сначала проверки, потом…») -->
+                <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2 md:p-3.5 flex flex-col gap-1.5 md:gap-2.5 h-full a-in a-in-5">
+                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-webhooks-logo text-solar"></i> Вебхук</span></h3>
+                    <div class="flex-1 flex flex-col justify-center gap-1 md:gap-1.5">
+                        <div class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-2 flex items-center justify-center gap-1.5 md:gap-2">
+                            <i class="ph-bold ph-arrows-clockwise text-sm md:text-xl text-black/40 shrink-0 a-orbit"></i>
+                            <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 line-through decoration-solar decoration-2"><span class="whitespace-nowrap">постоянные</span> <span class="whitespace-nowrap">проверки</span></p>
+                        </div>
+                        <i class="ph-bold ph-arrow-down text-black/25 text-xs md:text-lg self-center"></i>
+                        <div class="bg-black border-2 border-solar rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-2 flex items-center justify-center gap-1.5 md:gap-2 a-pulse">
+                            <i class="ph-fill ph-bell-ringing text-sm md:text-xl text-solar shrink-0"></i>
+                            <p class="text-[9px] md:text-sm text-white/80 leading-tight m-0"><span class="whitespace-nowrap">сама сообщает</span> <span class="whitespace-nowrap">о событии</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0"><span class="whitespace-nowrap">API — язык, через который решение агента</span> <span class="font-black whitespace-nowrap">превращается в реальное действие</span></p>
+            </div>
+        </div>
+    </div>
