@@ -12,7 +12,8 @@ from playwright.sync_api import sync_playwright
 ROOT = "/home/user/andre-ait-page"
 SHOTS = os.path.join(ROOT, "build/l3/practice-shots")
 KEYS = ["consult", "hr", "marketing", "callcenter", "design", "software"]
-SIZES = [("1440", 1440, 900), ("1024", 1024, 768), ("390", 390, 844), ("360", 360, 740)]
+# 1920: у body zoom 1.3 (большие мониторы) — на нём ломалась мерка подписей mermaid
+SIZES = [("1920", 1920, 1080), ("1440", 1440, 900), ("1024", 1024, 768), ("390", 390, 844), ("360", 360, 740)]
 args = sys.argv[1:]
 SHOT = "--shots" in args
 PAGE = "3"
@@ -77,6 +78,9 @@ GRAPH = r"""(k) => {
   document.querySelectorAll('#v-layer foreignObject').forEach(fo => {
     const d = fo.firstElementChild; if (!d) return;
     if (d.scrollWidth > fo.width.baseVal.value + 1.5 || d.scrollHeight > fo.height.baseVal.value + 1.5) clipped.push(d.textContent.slice(0, 40));
+    // блок подписи не совпал с текстом (мерка под zoom страницы) или текст
+    // вылез из своего блока — подпись съехала или срезана
+    else if (Math.abs(d.offsetWidth - fo.width.baseVal.value) > 1.5 || d.scrollWidth > d.offsetWidth + 1) clipped.push('≠ ' + d.textContent.slice(0, 36));
     d.querySelectorAll('*').forEach(x => { const r = x.getBoundingClientRect(); if (r.height) {} });
   });
   // реальный кегль подписи узла на экране

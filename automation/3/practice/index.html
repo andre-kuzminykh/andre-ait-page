@@ -715,6 +715,15 @@
      иначе в нём помещалась бы четверть графа. */
   .v-stage{ height:clamp(22rem,70vh,44rem); }
   @media (max-width:759px){ .v-stage{ height:clamp(20rem,64vh,36rem); } }
+  /* На больших мониторах у body zoom (1.15/1.3/1.5), и vh растягивается вместе
+     с ним: 70vh на 1920×1080 рисовались как 91% высоты экрана, кнопки масштаба
+     и выгрузки уходили под нижний край (приёмка 1920). Делим на тот же zoom —
+     окно снова 70% экрана. */
+  @media (min-width:1600px){ .v-stage{ height:clamp(22rem,calc(70vh / 1.15),44rem); } }
+  @media (min-width:1900px){ .v-stage{ height:clamp(22rem,calc(70vh / 1.3),44rem); } }
+  @media (min-width:2300px){ .v-stage{ height:clamp(22rem,calc(70vh / 1.5),44rem); } }
+  /* Телефон боком: экран ниже 22rem окна — граф не должен занимать его целиком */
+  @media (max-height:520px) and (min-width:760px){ .v-stage{ height:clamp(12rem,52vh,22rem); } }
   /* Палец, попавший на граф, застревал в нём: сцена — две трети экрана
      телефона, а overscroll-behavior:contain не отдавал прокрутку странице
      даже в самом конце графа (приёмка 390: шесть свайпов по графу — страница
@@ -1538,7 +1547,7 @@
           <span class="v-fade-b" aria-hidden="true"></span>
           <div class="v-tools">
             <button class="v-btn" type="button" data-zoom="out" aria-label="Мельче"><span class="v-sign" aria-hidden="true">−</span></button>
-            <button class="v-btn v-level" type="button" data-zoom="fit" title="Показать схему целиком"><svg class="ic" aria-hidden="true"><use href="#i-corners-out" xlink:href="#i-corners-out"></use></svg><span id="v-level">100%</span></button>
+            <button class="v-btn v-level" type="button" data-zoom="fit" title="Показать схему целиком"><svg class="ic" aria-hidden="true"><use href="#i-corners-out" xlink:href="#i-corners-out"></use></svg><span id="v-level">—</span></button>
             <button class="v-btn" type="button" data-zoom="in" aria-label="Крупнее"><span class="v-sign" aria-hidden="true">+</span></button>
           </div>
           <div class="v-save">
@@ -2881,9 +2890,26 @@ try {
   measure.setAttribute('aria-hidden', 'true');
   measure.style.cssText = 'position:absolute;left:-10000px;top:0;width:1600px;visibility:hidden;pointer-events:none';
   document.body.appendChild(measure);
+  // Обратный zoom подбирается так, чтобы итоговый масштаб был РОВНО 1 в той
+  // арифметике, которой его считают браузеры (float32: 1.15 × c). У простого
+  // 1/1.15 произведение выходит 0.99999994: ширина 200px становится
+  // 199.984px, строгое равенство в mermaid (ширина === 200) промахивается,
+  // и подпись снова встаёт в одну строку. Поэтому берём соседние float32
+  // около 1/z и выбираем тот, что даёт единицу без остатка.
+  const f32 = new Float32Array(1), i32 = new Int32Array(f32.buffer);
+  function inverseZoom(z){
+    const zf = Math.fround(z);
+    f32[0] = 1 / z;
+    const base = i32[0];
+    for (const d of [0, 1, -1, 2, -2, 3, -3]) {
+      i32[0] = base + d;
+      if (Math.fround(zf * f32[0]) === 1) return f32[0];
+    }
+    return 1 / z;
+  }
   function syncMeasureZoom(){
     const z = parseFloat(getComputedStyle(document.body).zoom) || 1;
-    measure.style.zoom = z === 1 ? '' : String(1 / z);
+    measure.style.zoom = z === 1 ? '' : String(inverseZoom(z));
   }
 
   function init(){
