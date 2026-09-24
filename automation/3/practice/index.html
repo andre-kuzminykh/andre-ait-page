@@ -2865,20 +2865,26 @@ try {
   const [mod] = await Promise.all([import('/assets/mermaid/11.17.2/mermaid.esm.min.js'), fontsReady()]);
   const mermaid = mod.default;
 
-  // Черновик схемы рисуется в скрытом контейнере ВНЕ <body>. Подписи узлов
-  // mermaid меряет в момент отрисовки через getBoundingClientRect, а на
+  // Черновик схемы рисуется в скрытом контейнере с обратным zoom. Подписи
+  // узлов mermaid меряет в момент отрисовки через getBoundingClientRect, а на
   // мониторах от 1600px у body стоит zoom 1.15–1.5: мерка выходила
   // увеличенной, блоки подписей — шире текста (подписи съезжали влево), а
   // проверка «упёрлась ли подпись в 200px» не срабатывала — длинная подпись
   // вставала в одну строку и срезалась краем узла (приёмка 1920×1080:
-  // «Триггер: сделка перешла в этап «»). У <html> zoom нет — мерка точная,
-  // и готовый SVG верен при любом масштабе страницы. Текстовые свойства
-  // у html и body совпадают, шрифт и кегль задаёт сама схема.
+  // «Триггер: сделка перешла в этап «»). В контейнере zoom обратный, итоговый
+  // масштаб — ровно 1: мерка точная, и готовый SVG верен при любом масштабе
+  // страницы. Вынести контейнер за пределы <body> нельзя — отрисовщик
+  // flowchart ищет свой черновик именно в body. Контейнер — прямой потомок
+  // body: у разделов страницы бывает transform (появление при прокрутке).
   const measure = document.createElement('div');
   measure.id = 'v-measure';
   measure.setAttribute('aria-hidden', 'true');
   measure.style.cssText = 'position:absolute;left:-10000px;top:0;width:1600px;visibility:hidden;pointer-events:none';
-  document.documentElement.appendChild(measure);
+  document.body.appendChild(measure);
+  function syncMeasureZoom(){
+    const z = parseFloat(getComputedStyle(document.body).zoom) || 1;
+    measure.style.zoom = z === 1 ? '' : String(1 / z);
+  }
 
   function init(){
     mermaid.initialize({
@@ -2927,6 +2933,7 @@ try {
     const code = (input.value || '').trim();
     if(!code){ showError('Пусто: вставьте код схемы — первой строкой идёт тип схемы, например flowchart TD'); return; }
     init();                                   // тема могла смениться
+    syncMeasureZoom();                        // масштаб страницы мог смениться
     const mine = ++seq;
     try {
       // parse() бросает исключение с текстом и номером строки — его и
