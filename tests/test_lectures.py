@@ -20,8 +20,9 @@ _LECTURES = tuple(r for r in _ALL_LECTURES if os.path.exists(os.path.join(_ROOT,
 # Лекция 5 осталась архивной (голова с Vimeo). Лекции 3 и 4 пересобраны
 # на общем каноне: свой плеер и ролики со своего домена, как у 1 и 2.
 _VIMEO = ("automation/5/index.html",)
+# Лекция 6 пересобрана заново (превью, как 3 и 4) и роликов пока не имеет —
+# videoIds у неё пустой, CDN-источник архивной версии к ней не относится.
 _NATIVE_CDN = {
-    "automation/6/index.html": "corp/6/videos",
     "automation/7/index.html": "corp/7/videos",
     "automation/8/index.html": "corp/8/videos",
 }
@@ -202,13 +203,15 @@ _TERM_KEEP = (
     "Retrieval-Augmented Generation", "Custom n8n Workflow Tool",
     "MCP Server Trigger", "MCP Client Tool",
     "идеальный путь (happy path)", "(touch time)", "(lead time)",
+    # Лекция 6: владелец прямо попросил писать эти два термина латиницей.
+    "AI Governance", "Data Governance",
 )
 
 # «AI» остаётся только там, где это часть имени.
 _AI_KEEP = (
     "AI-First", "AI-first", "AI-Native", "AI-native", "AI-Driven", "AI-driven",
     "AI-powered", "AI Maturity", "Chief AI Officer", "AI Product",
-    "AI Automation Engineer", "AI Agent",
+    "AI Automation Engineer", "AI Agent", "AI Governance",
 )
 
 
@@ -713,17 +716,17 @@ def _published_pages():
 
 
 def test_locked_modules_closed():
-    """Открыты модули 1 и 2. Модули 3 и 4 выложены как превью по просьбе
+    """Открыты модули 1 и 2. Модули 3, 4 и 6 выложены как превью по просьбе
     владельца: он хочет смотреть колоду на живом сайте, пока записывает
     озвучку. На дорожной карте они по-прежнему заперты и ниоткуда не связаны,
     то есть попасть туда можно только прямой ссылкой, которую владелец даёт
-    сам. Модулей 5-8 в репозитории нет: по их адресам отдаётся 404, контент
+    сам. Модулей 5, 7 и 8 в репозитории нет: по их адресам отдаётся 404, контент
     недоступен даже прямой ссылкой. Архив контента — тег lectures-2-8-archive.
     """
     for n in (1, 2):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
             "модуль %d открыт и должен быть опубликован" % n
-    for n in range(5, 9):
+    for n in (5, 7, 8):
         assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
             "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
 
@@ -732,16 +735,16 @@ def test_no_links_to_locked_modules():
     """Ни одна опубликованная страница не ведёт на закрытый модуль — на сайте
     нет ссылок, которые упирались бы в 404.
 
-    Модули 3 и 4 выложены как превью (см. test_locked_modules_closed): попасть
+    Модули 3, 4 и 6 выложены как превью (см. test_locked_modules_closed): попасть
     туда можно только прямой ссылкой от владельца, и с дорожной карты, входа в
     курс и остальных страниц на них по-прежнему не ведёт ничего. Собственные
-    адреса внутри самих лекций 3 и 4 (og:url, ссылки на их же практику) под
+    адреса внутри самих лекций 3, 4 и 6 (og:url, ссылки на их же практику) под
     правило не попадают — это не путь с сайта, а их собственная разметка.
     """
     link = re.compile(r"automation/[3-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
-        for n in ("3", "4"):
+        for n in ("3", "4", "6"):
             if rel.startswith("automation/%s/" % n):
                 hits = [h for h in hits if h != "automation/%s" % n]
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
