@@ -7,7 +7,7 @@ sys.path.insert(0, HERE)
 from cases import CASES, CLASSDEFS
 from prompts import PROMPTS
 
-ROOT = "/home/user/andre-ait-page"
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 P2 = open(os.path.join(ROOT, "automation/2/practice/index.html"), encoding="utf-8").read()
 OUT = os.path.join(ROOT, "automation/3/practice/index.html")
 tpl = open(os.path.join(HERE, "template.html"), encoding="utf-8").read()

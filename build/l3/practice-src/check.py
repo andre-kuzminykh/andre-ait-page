@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import start, chromium, route_ctx
 from playwright.sync_api import sync_playwright
 
-ROOT = "/home/user/andre-ait-page"
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 SHOTS = os.path.join(ROOT, "build/l3/practice-shots")
 os.makedirs(SHOTS, exist_ok=True)
 KEYS = ["consult", "hr", "marketing", "callcenter", "design", "software"]
@@ -99,7 +99,7 @@ with sync_playwright() as p:
             }""")
             if over:
                 problems.append("%s %s: элементы за краем: %s" % (theme, tag, over))
-            bub = pg.evaluate("() => [getComputedStyle(document.getElementById('bubble')).display, document.documentElement.classList.contains('bubble-ready')]")
+            bub = pg.evaluate("() => [getComputedStyle(document.getElementById('bubble')).display]")
             print("   bubble:", bub, "| console errors:", errs, "| 4xx:", len(net404))
             if errs:
                 problems.append("%s %s: ошибки JS: %s" % (theme, tag, errs))

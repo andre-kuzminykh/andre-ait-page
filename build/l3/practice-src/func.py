@@ -3,7 +3,7 @@ sys.path.insert(0, '.')
 from harness import start, chromium, route_ctx
 import harness
 from playwright.sync_api import sync_playwright
-ROOT='/home/user/andre-ait-page'
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 srv, port = start()
 URL = "http://127.0.0.1:%d/automation/3/practice/" % port
 with sync_playwright() as p:
@@ -25,7 +25,7 @@ with sync_playwright() as p:
     webm = base64.b64decode(b64); ctx.close()
     print('webm bytes', len(webm))
 
-    # 2) кружок появляется после loadeddata
+    # 2) кружок виден сразу, с обложкой (как у лекций 1 и 2, FR-SITE71)
     ctx = b.new_context(viewport={'width': 1440, 'height': 900})
     vendor_h = None
     def h(route):
@@ -41,7 +41,7 @@ with sync_playwright() as p:
     pg.on('console', lambda m: errs.append(m.text) if m.type == 'error' else None)
     pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto(URL); pg.wait_for_timeout(2500)
-    print('bubble with video:', pg.evaluate("() => [document.documentElement.classList.contains('bubble-ready'), getComputedStyle(document.getElementById('bubble')).display]"), 'errors:', errs)
+    print('bubble with video:', pg.evaluate("() => [getComputedStyle(document.getElementById('bubble')).display]"), 'errors:', errs)
     pg.screenshot(path=ROOT + '/build/l3/practice-shots/desk-dark-bubble-when-video.png')
 
     # 3) функции окна

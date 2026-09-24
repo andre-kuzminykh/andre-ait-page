@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import start, chromium, route_ctx
 from playwright.sync_api import sync_playwright
 
-ROOT = "/home/user/andre-ait-page"
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 SHOTS = os.path.join(ROOT, "build/l3/practice-shots")
 KEYS = ["consult", "hr", "marketing", "callcenter", "design", "software"]
 # 1920: у body zoom 1.3 (большие мониторы) — на нём ломалась мерка подписей mermaid
