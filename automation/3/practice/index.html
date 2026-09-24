@@ -682,9 +682,22 @@
   .scen span{ display:block; margin-top:.2rem; color:var(--muted); font-weight:500; font-size:clamp(.78rem,2.5vw,.9rem); line-height:1.5; }
   .s-ok{ --c:#8B5CF6; } .s-amb{ --c:#F97316; } .s-miss{ --c:#0EA5E9; } .s-err{ --c:#E11D48; }
 
-  /* Каркас структурированного вывода — только показать, без кнопки копирования */
-  pre.code.bare{ padding-top:clamp(.9rem,2.6vw,1.15rem); margin-top:clamp(1rem,3vw,1.4rem); }
+  /* Каркас структурированного вывода — только показать, без кнопки копирования.
+     Строка со статусами длиннее экрана телефона: без переноса её хвост
+     («awaiting_approval | handoff») уезжал за край карточки (приёмка 390/360). */
+  pre.code.bare{ padding-top:clamp(.9rem,2.6vw,1.15rem); margin-top:clamp(1rem,3vw,1.4rem); white-space:pre-wrap; overflow-wrap:anywhere; }
   pre.code .k{ color:var(--code-fg); }
+
+  /* Промт читают, прежде чем копировать. Без переноса строки в сотни знаков
+     уходили в прокрутку вбок, и абзац приходилось листать построчно (приёмка:
+     строка до 2600px в окне 860px на компьютере, до 2300px в 356px на
+     телефоне). Перенос только экранный: копируется textContent, переводы
+     строк в нём те же, что в тексте промта. */
+  .src pre.code{ white-space:pre-wrap; overflow-wrap:anywhere; }
+
+  /* Пять инструментов в две колонки оставляли дыру справа внизу. Последний
+     нечётный пункт — во всю ширину, как в сетках практики лекции 2. */
+  @media (min-width:768px){ .tools li:last-child:nth-child(odd){ grid-column:1 / -1; } }
 
   /* Легенда прямо в окне: цвет узла расшифровывается там же, где его видно */
   .v-legend{
@@ -702,6 +715,22 @@
      иначе в нём помещалась бы четверть графа. */
   .v-stage{ height:clamp(22rem,70vh,44rem); }
   @media (max-width:759px){ .v-stage{ height:clamp(20rem,64vh,36rem); } }
+  /* Палец, попавший на граф, застревал в нём: сцена — две трети экрана
+     телефона, а overscroll-behavior:contain не отдавал прокрутку странице
+     даже в самом конце графа (приёмка 390: шесть свайпов по графу — страница
+     не сдвинулась). Теперь по вертикали граф дочитывается до конца, и
+     следующий жест листает страницу; вбок — по-прежнему contain, чтобы
+     жест «назад» браузера не срабатывал случайно. */
+  .v-stage{ overscroll-behavior-x:contain; overscroll-behavior-y:auto; }
+  /* Пока грузится библиотека (около 800 КБ), окно не стоит пустым — на
+     медленной сети это несколько секунд чёрного прямоугольника. */
+  .v-wait{
+    display:flex; align-items:center; justify-content:center; gap:.55rem;
+    color:var(--muted); font-weight:700; font-size:clamp(.8rem,2.6vw,.92rem); text-align:center;
+  }
+  .v-wait .ic{ color:#8B5CF6; font-size:1.35em; }
+  @keyframes v-wait{ from{ opacity:.4; } to{ opacity:1; } }
+  @media (prefers-reduced-motion:no-preference){ .v-wait{ animation:v-wait 1.1s ease-in-out infinite alternate; } }
   .viewer{ scroll-margin-top:clamp(5rem,12vh,7rem); }
   /* На телефоне ручные переносы лида только рвут строки посередине */
   @media (max-width:767px){ .hero p.wide br{ display:none; } }
@@ -1501,7 +1530,7 @@
              поэтому кнопки и растушёвка краёв остаются на месте. -->
         <div class="v-shell">
           <div class="v-stage" id="v-stage">
-            <div class="v-layer" id="v-layer"></div>
+            <div class="v-layer" id="v-layer"><p class="v-wait" role="status"><svg class="ic" aria-hidden="true"><use href="#i-tree-structure" xlink:href="#i-tree-structure"></use></svg> Рисуем граф навыков…</p></div>
           </div>
           <span class="v-fade-t" aria-hidden="true"></span>
           <span class="v-fade v-fade-l" aria-hidden="true"></span>
@@ -2501,6 +2530,11 @@ let k = 1, natW = 0, natH = 0;
 const K_MIN = 0.2, K_MAX = 3;
 
 function svgEl(){ return layer.querySelector('svg'); }
+// Большие мониторы масштабируют страницу целиком (body{zoom:1.15/1.3/1.5},
+// как в практике лекции 2): координаты мыши и getBoundingClientRect — с учётом
+// zoom, а прокрутка и размеры сцены — без него. Без поправки перетаскивание
+// уводило граф быстрее курсора, а точка под курсором при Ctrl+колесе уезжала.
+function zf(){ const r = stage.getBoundingClientRect(); return (r.width && stage.offsetWidth) ? r.width / stage.offsetWidth : 1; }
 function pads(){
   const cs = getComputedStyle(layer);
   return { x: (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight)  || 0),
@@ -2535,8 +2569,11 @@ function fitAll(){                      // «целиком»: вся схема
 }
 function startView(){
   // Граф навыков вертикальный: по ШИРИНЕ он входит в окно целиком, длина
-  // уходит в прокрутку вниз. На компьютере — не крупнее 85%: так в окне видно
-  // полграфа, а не три узла.
+  // уходит в прокрутку вниз. На компьютере — до 100%: при прежнем потолке
+  // 85% подписи выходили 12.7px, а граф стоял узкой колонкой посреди
+  // полупустого окна 860px (приёмка 1440/1024). Самый широкий граф
+  // (маркетинг) и на 100% входит по ширине; видно столько же узлов — ромбы
+  // решений всё равно занимают бо́льшую часть высоты окна.
   // На телефоне главное — чтобы подписи узлов читались. Раньше граф целиком
   // влезал по ширине ценой масштаба 45–60%, и подписи выходили 7–9px —
   // прочитать нельзя (приёмка 390/360). Теперь на телефоне граф собирается
@@ -2547,7 +2584,7 @@ function startView(){
   if(!natW) return;
   const narrow = isNarrow();
   const kW = room().w / natW;
-  sizeTo(narrow ? Math.min(Math.max(kW, 0.8), 1) : Math.min(Math.max(kW, 0.5), 0.85));
+  sizeTo(narrow ? Math.min(Math.max(kW, 0.8), 1) : Math.min(Math.max(kW, 0.5), 1));
   stage.scrollTop = 0;
   stage.scrollLeft = 0;
   if (stage.scrollWidth > stage.clientWidth + 2) {
@@ -2560,7 +2597,7 @@ function startView(){
       const r = n.getBoundingClientRect();
       if (r.width && (!top || r.top < top.top - 1)) top = r;
     });
-    const cx = top ? (top.left + top.width / 2 - stR.left) : stage.scrollWidth / 2;
+    const cx = top ? (top.left + top.width / 2 - stR.left) / zf() : stage.scrollWidth / 2;
     stage.scrollLeft = Math.max(0, stage.scrollLeft + cx - stage.clientWidth / 2);
   }
   edges(); syncHint();
@@ -2604,8 +2641,8 @@ stage.addEventListener('wheel', e => {
   if(!natW) return;
   if(e.ctrlKey || e.metaKey){
     e.preventDefault();
-    const r = stage.getBoundingClientRect();
-    sizeTo(k * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX - r.left, e.clientY - r.top);
+    const r = stage.getBoundingClientRect(), z = zf();
+    sizeTo(k * (e.deltaY < 0 ? 1.1 : 1 / 1.1), (e.clientX - r.left) / z, (e.clientY - r.top) / z);
     return;
   }
   // Схема выше окна — колесо листает вниз, как обычно. Если по вертикали
@@ -2626,13 +2663,13 @@ let grab = null;
 stage.addEventListener('pointerdown', e => {
   if(e.pointerType === 'touch' || !natW) return;
   if(e.target.closest('.v-btn, .v-tools, .v-save')) return;
-  grab = { x: e.clientX, y: e.clientY, left: stage.scrollLeft, top: stage.scrollTop };
+  grab = { x: e.clientX, y: e.clientY, left: stage.scrollLeft, top: stage.scrollTop, z: zf() };
   stage.classList.add('dragging');
 });
 window.addEventListener('pointermove', e => {
   if(!grab) return;
-  stage.scrollLeft = grab.left - (e.clientX - grab.x);
-  stage.scrollTop  = grab.top  - (e.clientY - grab.y);
+  stage.scrollLeft = grab.left - (e.clientX - grab.x) / grab.z;
+  stage.scrollTop  = grab.top  - (e.clientY - grab.y) / grab.z;
 });
 window.addEventListener('pointerup', () => { grab = null; stage.classList.remove('dragging'); });
 stage.addEventListener('dblclick', fitAll);
@@ -2828,9 +2865,25 @@ try {
   const [mod] = await Promise.all([import('/assets/mermaid/11.17.2/mermaid.esm.min.js'), fontsReady()]);
   const mermaid = mod.default;
 
+  // Черновик схемы рисуется в скрытом контейнере ВНЕ <body>. Подписи узлов
+  // mermaid меряет в момент отрисовки через getBoundingClientRect, а на
+  // мониторах от 1600px у body стоит zoom 1.15–1.5: мерка выходила
+  // увеличенной, блоки подписей — шире текста (подписи съезжали влево), а
+  // проверка «упёрлась ли подпись в 200px» не срабатывала — длинная подпись
+  // вставала в одну строку и срезалась краем узла (приёмка 1920×1080:
+  // «Триггер: сделка перешла в этап «»). У <html> zoom нет — мерка точная,
+  // и готовый SVG верен при любом масштабе страницы. Текстовые свойства
+  // у html и body совпадают, шрифт и кегль задаёт сама схема.
+  const measure = document.createElement('div');
+  measure.id = 'v-measure';
+  measure.setAttribute('aria-hidden', 'true');
+  measure.style.cssText = 'position:absolute;left:-10000px;top:0;width:1600px;visibility:hidden;pointer-events:none';
+  document.documentElement.appendChild(measure);
+
   function init(){
     mermaid.initialize({
       startOnLoad: false, securityLevel: 'strict', theme: 'base',
+      fontFamily: 'Montserrat, sans-serif',
       themeVariables: themeVars(),
       themeCSS: `
         .node rect, .node polygon, .node circle, .node path { stroke-width: 1.5px; }
@@ -2880,7 +2933,7 @@ try {
       // показываем; разбираем ИМЕННО код из поля, чтобы в тексте ошибки
       // была строка человека, а не наша оформленная.
       await mermaid.parse(code);
-      const { svg } = await mermaid.render('v-svg-' + Date.now(), prettify(code));
+      const { svg } = await mermaid.render('v-svg-' + Date.now(), prettify(code), measure);
       if(mine !== seq) return;                // пока рисовали, выбрали другую схему
       const keepLeft = stage.scrollLeft, keepTop = stage.scrollTop, keepK = k,
             prevW = natW, prevH = natH;
