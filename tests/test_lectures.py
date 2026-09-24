@@ -1187,6 +1187,49 @@ def test_lecture3_clips_are_uploaded_square_and_faststart():
         assert f.read(3) == b"\xff\xd8\xff", "обложка практики — jpg с первым кадром ролика"
 
 
+
+# ── FR-SITE72: тест и финал — вопрос ближе к шапке, путь к практике ───────
+
+def test_quiz_header_sits_close_to_the_question():
+    """Скрин владельца «в тестах расстояние большое»: под шапкой и под полосой
+    прогресса было по 2.5rem, вопрос стоял далеко от «Вопрос N из 10»."""
+    for rel, html in _pages():
+        modal = html[html.index('id="quiz-modal"'):]
+        assert '<div class="flex items-center justify-between mb-4 md:mb-6 shrink-0">' in modal, rel
+        assert 'overflow-hidden mb-5 md:mb-8">' in modal, rel
+        assert "mb-6 md:mb-10 shrink-0" not in modal, rel
+
+
+def test_quiz_soon_is_one_line():
+    """«Следующая лекция будет доступна на следующей неделе» — в одну строку."""
+    for rel, html in _pages():
+        rule = re.search(r"\.quiz-soon\{[^}]*\}", html).group(0)
+        assert "white-space:nowrap" in rule and "max-width:24rem" not in rule, rel
+
+
+def test_lectures_1_3_lead_to_practice_after_the_test():
+    """Правка владельца: рядом с «Пройти тест» — кнопка «Практика», и после
+    теста — тоже «Практика» (а не «Буткемп» и не «Практическое задание»)."""
+    for n in (1, 2, 3):
+        html = open(os.path.join(_ROOT, "automation/%d/index.html" % n), encoding="utf-8").read()
+        url = "https://andre.technology/automation/%d/practice/" % n
+        m = re.search(r'<a class="quiz-next" href="([^"]+)">\s*([^<]+?)\s*<i', html)
+        assert m and m.group(1) == url and m.group(2) == "Практика", \
+            "лекция %d: после теста — кнопка «Практика»" % n
+        final = html[html.index('id="open-quiz-btn"'):html.index("<!-- Модальное окно теста -->")]
+        assert re.search(r'<a href="%s" class="lec-practice-btn[^"]*">\s*<i[^>]*></i>\s*Практика\s*</a>'
+                         % re.escape(url), final), "лекция %d: рядом с тестом — «Практика»" % n
+
+
+def test_lecture3_every_day_pill_does_not_blink():
+    """Слайд 0 лекции 3: пилюля «работает каждый день» не дышит (правка
+    владельца «пусть не мигает»); крутятся только стрелки цикла."""
+    html = _l3()
+    pill = re.search(r'<div class="bg-solar rounded-xl md:rounded-full[^"]*"[^>]*>\s*'
+                     r'<i class="ph-bold ph-arrows-clockwise[^"]*"></i>\s*<p[^>]*>.*?каждый день', html, re.S).group(0)
+    assert "a-pulse" not in pill.split(">", 1)[0], "пилюля «работает каждый день» мигает"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

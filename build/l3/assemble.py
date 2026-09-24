@@ -78,8 +78,9 @@ def main():
                         "];   // ролик слайда k — /assets/video_l3/<k+1>.mp4 (FR-SITE71)", 1)
 
     # ── экран результата теста ведёт на практику ─────────────────────────
-    html = html.replace('<a class="quiz-next" href="/automation/bootcamp/">',
-                        '<a class="quiz-next" href="https://andre.technology/automation/3/practice/">', 1)
+    html = html.replace('<a class="quiz-next" href="/automation/bootcamp/">\n                        Буткемп',
+                        '<a class="quiz-next" href="https://andre.technology/automation/3/practice/">\n'
+                        '                        Практика', 1)
 
     # ── тест ─────────────────────────────────────────────────────────────
     quiz_path = os.path.join(L3, "quiz.json")

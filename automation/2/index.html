@@ -4100,10 +4100,21 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     уводил её левее, чтобы кружок с говорящей головой не накрывал
                     правый край, — владелец это отменил: «кружок вообще забудь,
                     если он что-то закрывает, человек его сам уберёт». -->
-                <button id="open-quiz-btn" type="button" class="mt-6 md:mt-8 inline-flex items-center justify-center gap-2 md:gap-3 bg-solar font-black text-sm md:text-xl px-6 md:px-10 py-3 md:py-5 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.4)] uppercase tracking-widest max-w-full" style="color:#111;-webkit-text-fill-color:#111">
-                    <i class="ph-fill ph-graduation-cap text-lg md:text-2xl"></i>
-                    Пройти тест
-                </button>
+                <!-- Кнопки теста и практики — рядом, по центру (правка владельца: «там где
+                     тест — там ещё кнопка практика»). Практика — вторичная пилюля того
+                     же размера: полупрозрачная с белой рамкой (сплошной белый кружок
+                     тёмная тема сайта перекрашивает в полупрозрачный — правило 18
+                     slide-polish); рамка 2px съедает высоту — поля py на 2px меньше. -->
+                <div class="mt-6 md:mt-8 flex flex-row flex-wrap items-center justify-center gap-2 md:gap-4">
+                    <button id="open-quiz-btn" type="button" class="inline-flex items-center justify-center gap-2 md:gap-3 bg-solar font-black text-sm md:text-xl px-4 md:px-10 py-3 md:py-5 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.4)] uppercase tracking-widest max-w-full" style="color:#111;-webkit-text-fill-color:#111">
+                        <i class="ph-fill ph-graduation-cap text-lg md:text-2xl"></i>
+                        Пройти тест
+                    </button>
+                    <a href="https://andre.technology/automation/2/practice/" class="lec-practice-btn inline-flex items-center justify-center gap-2 md:gap-3 bg-white/10 border-2 border-white/50 text-white font-black text-sm md:text-xl px-4 md:px-10 py-[10px] md:py-[18px] rounded-full uppercase tracking-widest max-w-full">
+                        <i class="ph-fill ph-wrench text-lg md:text-2xl"></i>
+                        Практика
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -4111,8 +4122,10 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
     <!-- Модальное окно теста -->
     <div id="quiz-modal" class="fixed inset-0 z-[10001] bg-black text-white hidden flex-col overflow-y-auto">
         <div class="w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-10 py-8 md:py-14 flex flex-col min-h-full">
-            <!-- Шапка -->
-            <div class="flex items-center justify-between mb-6 md:mb-10 shrink-0">
+            <!-- Шапка. Отступы под шапкой и под полосой прогресса ужаты (было
+                 по 2.5rem на ПК): вопрос стоял слишком далеко от «Вопрос N из 10»
+                 — правка владельца по скрину «в тестах расстояние большое» -->
+            <div class="flex items-center justify-between mb-4 md:mb-6 shrink-0">
                 <div class="flex items-center gap-2 md:gap-3">
                     <div class="w-9 h-9 md:w-12 md:h-12 bg-solar rounded-full flex items-center justify-center shadow-md"><i class="ph-fill ph-graduation-cap text-lg md:text-2xl text-black"></i></div>
                     <div>
@@ -4124,7 +4137,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
             </div>
 
             <!-- Прогресс-бар -->
-            <div class="w-full h-1 md:h-1.5 bg-white/10 rounded-full overflow-hidden mb-6 md:mb-10">
+            <div class="w-full h-1 md:h-1.5 bg-white/10 rounded-full overflow-hidden mb-5 md:mb-8">
                 <div id="quiz-progress-bar" class="h-full bg-solar rounded-full transition-all duration-300" style="width: 10%;"></div>
             </div>
 
@@ -4163,7 +4176,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <i class="ph-bold ph-arrow-clockwise mr-1"></i> Пройти ещё раз
                     </button>
                     <a class="quiz-next" href="https://andre.technology/automation/2/practice/">
-                        Практическое задание <i class="ph-bold ph-arrow-right"></i>
+                        Практика <i class="ph-bold ph-arrow-right"></i>
                     </a>
                     <p class="quiz-soon"><i class="ph-fill ph-lock-simple"></i> Следующая лекция будет доступна на следующей неделе</p>
                 </div>
@@ -7460,10 +7473,16 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 }
 
 /* 27. Подпись под «Практическим заданием» на экране результата теста. */
+/* «Следующая лекция будет доступна на следующей неделе» — одной строкой
+   (правка владельца). Прежний max-width:24rem ломал фразу на две строки;
+   кегль на телефоне идёт от ширины экрана, чтобы строка влезала и в 360px. */
 .quiz-soon{
-  margin:0 auto; display:block; max-width:24rem;
-  font-size:.78rem; font-weight:600; letter-spacing:.02em; color:rgba(255,255,255,.55);
+  margin:0 auto; display:block; max-width:none; white-space:nowrap;
+  font-size:clamp(.6rem, 2.75vw, .78rem); font-weight:600; letter-spacing:.02em; color:rgba(255,255,255,.55);
 }
+/* Уже 340px строка не влезает и при самом мелком кегле — там пусть лучше
+   перенесётся, чем уедет за край экрана. */
+@media (max-width:340px){ .quiz-soon{ white-space:normal; } }
 .quiz-soon i{ color:#F97316; margin-right:.4rem; }
 
 /* 29. Бейдж («ЯДРО», «МОЗГ») висит на верхнем крае карточки абсолютом. Своей
