@@ -31,7 +31,10 @@ module.exports = {
 """
 
 
-def build(dst, content):
+def build(dst, content, strict=True):
+    """strict: ровно один @media 768 (лекции 3–6). У лекций 1–2 есть max-md:,
+    это второй запрос на той же границе — tools/deck_probe.py зовёт strict=False
+    и проверяет, как канонический tools/build_lecture_css.py: все запросы на 768px."""
     with tempfile.TemporaryDirectory() as tmp:
         cfg = os.path.join(tmp, "tailwind.config.js")
         open(cfg, "w").write(CONFIG % ", ".join(repr(c) for c in content))
@@ -44,8 +47,10 @@ def build(dst, content):
             sys.exit(r.stderr[-800:])
         css = open(out, encoding="utf-8").read()
         medias = set(m.strip() for m in re.findall(r"@media[^{]+", css))
-        if medias != {"@media (min-width:768px)"}:
+        if strict and medias != {"@media (min-width:768px)"}:
             sys.exit("в CSS не один брейкпоинт 768: %s" % medias)
+        if [m for m in medias if "768px" not in m]:
+            sys.exit("в CSS чужие брейкпоинты: %s" % medias)
         fd, part = tempfile.mkstemp(dir=os.path.dirname(dst), prefix=".lecture-3.")
         os.close(fd)
         open(part, "w", encoding="utf-8").write(css)
