@@ -605,7 +605,20 @@ h1 .text-solar, h2 .text-solar {
 
 /* Премиальное «оживление» контента при показе слайда — каскадный fade-rise (FR-LECTURE-14).
    Класс .is-active ставит скрипт portal-fit при каждой смене слайда. */
-@keyframes deckRise { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform:none; } }
+/* translate вместо transform — по той же причине, что и в aIn: конечный
+   кадр transform:none стирал позиционирующие классы у детей content-z. */
+/* Каскад ПОЯВЛЯЕТ, но ничего не двигает. markActive() перещёлкивает
+   .is-active при КАЖДОЙ смене слайда, поэтому подъём на 14px играл заново
+   на каждом переключении: зритель видел, как блоки «встают на место».
+   Осталась только прозрачность — движения нет, появление есть. */
+@keyframes deckRise { from { opacity:0; } to { opacity:1; } }
+/* И сам слайд появляется ТОЛЬКО прозрачностью. Роутер переключает классы
+   translate-y-8 / -translate-y-8 / translate-y-0, то есть каждый слайд
+   влетал по вертикали на 32px. Вместе с каскадом это и читалось как
+   «кнопки на полсекунды скачут и встают на место». В покое у контейнера
+   собственного transform нет (замер: matrix(1,0,0,1,0,0)), подгонщик его
+   не использует — гасить безопасно. */
+.slide-container{ transform:none !important; }
 /* Заголовки никогда не должны быть невидимыми из-за анимации (FR-LECTURE-25) */
 .slide-container h1, .slide-container h2, .slide-container h3, .slide-container h4 { opacity:1 !important; }
 /* FR-LECTURE-28 — вертикальное центрирование + СИММЕТРИЧНЫЙ резерв сверху/снизу,
@@ -828,7 +841,10 @@ html.dark .slide-container .content-z [class*="rounded-2xl"] > i:only-child{ col
 
   /* 3. Иконки проявляются вместе со своим блоком — короткий «выдох» после
         общего каскада, поэтому задержка чуть больше его шага. */
-  @keyframes iconPop { from{ opacity:0; transform:scale(.72); } to{ opacity:1; transform:none; } }
+  /* По той же причине, что и deckRise: играло на каждой смене слайда и
+     дёргало иконки. Плюс transform:none в конечном кадре — тот самый
+     затирающий приём, из-за которого разъехалась схема слайда 30. */
+  @keyframes iconPop { from{ opacity:0; } to{ opacity:1; } }
   .slide-container.is-active [class*="rounded-full"] > i,
   .slide-container.is-active [class*="rounded-2xl"] > i{
     animation:iconPop .45s cubic-bezier(.34,1.56,.64,1);

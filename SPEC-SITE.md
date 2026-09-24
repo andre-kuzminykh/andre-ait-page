@@ -2840,4 +2840,14 @@ Story: «проверь ещё первую и вторую лекцию по в
   от свободного места, и на телефоне 41 слайд из 42 был ниже 10px (минимум
   8.25px). С ним — все слайды не ниже 10.25px (`lecture_check.py kegl 1`).
 
-Тест: `test_lectures.test_every_lecture_has_the_phone_canvas_of_the_canon`.
+- Анимации лекций 1–2 — как у 3–6: блок `portal-deck` общий для всех лекций.
+  У 1–2 он был старым — каскад поднимал блоки на 14px, слайд влетал на 32px,
+  иконки масштабировались на КАЖДОЙ смене слайда («кнопки на полсекунды
+  скачут и встают на место»). Теперь появление только прозрачностью;
+  `lecture_check.py perehod` и `transform` — чисто у обеих.
+- `portal-deck` и `lecture-chrome` — под тестом одинаковости общих блоков:
+  синхронизатор `tools/sync_lecture_blocks.py` разносит их из лекции 1 и при
+  расхождении молча откатывал свежие правки лекций 3–6.
+
+Тест: `test_lectures.test_every_lecture_has_the_phone_canvas_of_the_canon`,
+`test_lectures.test_shared_blocks_identical`.

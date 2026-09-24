@@ -172,9 +172,13 @@ def test_shared_blocks_identical():
     попадает в одни файлы и не попадает в другие. Тест ловит это сразу.
     """
     import hashlib
+    # portal-deck и lecture-chrome тоже: tools/sync_lecture_blocks.py разносит
+    # их из лекции 1, и когда они разъехались (у 1–2 не было починки дёрганья
+    # анимаций лекций 3–6), синхронизация молча откатывала свежие правки (FR-SITE73).
     for block, tag in (("slide-polish", "style"), ("notes-panel-style", "style"),
                        ("notes-panel-script", "script"), ("radial-fig", "style"),
-                       ("portal-fit", "script")):
+                       ("portal-fit", "script"), ("portal-deck", "style"),
+                       ("lecture-chrome", "style")):
         seen = {}
         for rel, html in _pages():
             m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, block, tag), html, re.S)
