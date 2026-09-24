@@ -37,8 +37,9 @@ _COURSE_PAGES = (
     "automation/skills/index.html",
     "automation/1/practice/index.html",
     "automation/2/practice/index.html",
+    "automation/3/practice/index.html",
 ) + tuple("automation/%d/index.html" % n for n in range(1, 9))
-# Открыт только модуль 1: лекции 2-8 закрыты и не опубликованы (см.
+# Открыты модули 1-3, часть остальных выложена превью (см.
 # tests/test_lectures.py::test_locked_modules_closed). Проверяем то, что
 # реально лежит на сайте, — вернувшийся модуль подхватится сам.
 _COURSE_PAGES = tuple(

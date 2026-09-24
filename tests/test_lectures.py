@@ -11,8 +11,8 @@ import re
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
-# Открыт только модуль 1: лекции 2-8 закрыты и НЕ опубликованы — их файлов нет
-# в репозитории, поэтому по адресу /automation/3/ отдаётся 404 и контент
+# Открыты модули 1-3; 4-6 выложены превью, 7-8 закрыты и НЕ опубликованы — их
+# файлов нет в репозитории, поэтому по их адресам отдаётся 404 и контент
 # недоступен даже прямой ссылкой (это стережёт test_locked_modules_closed).
 # Проверки идут по фактически опубликованным лекциям, так что вернувшийся
 # модуль автоматически попадает под весь набор тестов — без правки списка.
@@ -721,14 +721,14 @@ def _published_pages():
 
 
 def test_locked_modules_closed():
-    """Открыты модули 1 и 2. Модули 3, 4, 5 и 6 выложены как превью по просьбе
+    """Открыты модули 1, 2 и 3 (модуль 3 открыт владельцем, FR-SITE69). Модули 4, 5 и 6 выложены как превью по просьбе
     владельца: он хочет смотреть колоду на живом сайте, пока записывает
     озвучку. На дорожной карте они по-прежнему заперты и ниоткуда не связаны,
     то есть попасть туда можно только прямой ссылкой, которую владелец даёт
     сам. Модулей 7 и 8 в репозитории нет: по их адресам отдаётся 404, контент
     недоступен даже прямой ссылкой. Архив контента — тег lectures-2-8-archive.
     """
-    for n in (1, 2):
+    for n in (1, 2, 3):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
             "модуль %d открыт и должен быть опубликован" % n
     for n in (7, 8):
@@ -740,31 +740,32 @@ def test_no_links_to_locked_modules():
     """Ни одна опубликованная страница не ведёт на закрытый модуль — на сайте
     нет ссылок, которые упирались бы в 404.
 
-    Модули 3, 4, 5 и 6 выложены как превью (см. test_locked_modules_closed):
+    Модуль 3 открыт (FR-SITE69): ссылки на него с дорожной карты законны.
+    Модули 4, 5 и 6 выложены как превью (см. test_locked_modules_closed):
     попасть туда можно только прямой ссылкой от владельца, и с дорожной карты,
     входа в курс и остальных страниц на них по-прежнему не ведёт ничего.
-    Собственные адреса внутри самих лекций 3-6 (og:url, ссылки на их же
+    Собственные адреса внутри самих лекций 4-6 (og:url, ссылки на их же
     практику) под правило не попадают — это не путь с сайта, а их собственная
     разметка.
     """
-    link = re.compile(r"automation/[3-8](?=[/\"'#?)\s]|$)")
+    link = re.compile(r"automation/[4-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
-        for n in ("3", "4", "5", "6"):
+        for n in ("4", "5", "6"):
             if rel.startswith("automation/%s/" % n):
                 hits = [h for h in hits if h != "automation/%s" % n]
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
 
 
 def test_locked_module_cards_have_no_href():
-    """Карточки модулей 3-8 на /automation/main/ — под замком и без href."""
+    """Карточки модулей 4-8 на /automation/main/ — под замком и без href."""
     with open(os.path.join(_ROOT, "automation/main/index.html"), encoding="utf-8") as f:
         html = f.read()
     cards = re.findall(r'<a class="module( locked)?"([^>]*)>', html)
     assert len(cards) == 8, "на главной курса восемь карточек модулей"
     opened = [c for c in cards if not c[0]]
-    assert len(opened) == 2 and all("href=" in o[1] for o in opened), \
-        "открыты ровно два модуля — первый и второй"
+    assert len(opened) == 3 and all("href=" in o[1] for o in opened), \
+        "открыты ровно три модуля — первый, второй и третий"
     for locked, attrs in [c for c in cards if c[0]]:
         assert "href=" not in attrs, "закрытая карточка не должна иметь href: " + attrs
         assert 'aria-disabled="true"' in attrs, "закрытая карточка помечена aria-disabled"
