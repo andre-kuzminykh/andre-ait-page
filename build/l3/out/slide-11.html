@@ -1,0 +1,123 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-11">
+        <div class="content-z max-w-7xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Границы автономности <span class="text-solar">ИИ-агента</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Автономность — не «да или нет», а несколько уровней</p>
+
+            <!-- График: лестница автономности и шкала цены ошибки стоят рядом, пол у них общий.
+                 ПК: ступени растут вверх, цена ошибки — снизу вверх справа.
+                 Телефон: ступени растут вширь строками, цена ошибки — под ними в том же порядке -->
+            <div class="flex flex-col md:flex-row items-stretch gap-3 md:gap-6 w-full">
+
+                <!-- Лестница: четыре уровня из текста, заливка и высота нарастают -->
+                <div class="flex-1 min-w-0 flex flex-col gap-1.5 md:gap-2">
+                    <div class="flex flex-col md:flex-row items-start md:items-end gap-1 md:gap-3 w-full md:h-[200px] md:border-b-2 md:border-grayBase">
+                        <div class="w-[64%] md:w-auto md:flex-1 md:h-[56%] bg-solar/10 border border-solar/25 md:border-b-0 rounded-xl md:rounded-t-2xl md:rounded-b-none px-2 py-1.5 md:px-2 md:py-2.5 flex flex-row md:flex-col items-center md:justify-center gap-2 md:gap-0 text-left md:text-center a-in">
+                            <i class="ph-fill ph-magnifying-glass text-lg md:text-3xl text-solar shrink-0 md:mb-1.5"></i>
+                            <div class="min-w-0 flex flex-row md:flex-col items-center gap-1.5 md:gap-0.5">
+                                <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 whitespace-nowrap">Анализ</h3>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 whitespace-nowrap">работает с данными</p>
+                            </div>
+                        </div>
+                        <div class="w-[76%] md:w-auto md:flex-1 md:h-[71%] bg-solar/20 border border-solar/35 md:border-b-0 rounded-xl md:rounded-t-2xl md:rounded-b-none px-2 py-1.5 md:px-2 md:py-2.5 flex flex-row md:flex-col items-center md:justify-center gap-2 md:gap-0 text-left md:text-center a-in a-in-2">
+                            <i class="ph-fill ph-user text-lg md:text-3xl text-solar shrink-0 md:mb-1.5"></i>
+                            <div class="min-w-0 flex flex-row md:flex-col items-center gap-1.5 md:gap-0.5">
+                                <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 whitespace-nowrap">Предложение</h3>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 whitespace-nowrap">решает человек</p>
+                            </div>
+                        </div>
+                        <div class="w-[88%] md:w-auto md:flex-1 md:h-[86%] bg-solar/35 border border-solar/50 md:border-b-0 rounded-xl md:rounded-t-2xl md:rounded-b-none px-2 py-1.5 md:px-2 md:py-2.5 flex flex-row md:flex-col items-center md:justify-center gap-2 md:gap-0 text-left md:text-center a-in a-in-3">
+                            <i class="ph-fill ph-robot text-lg md:text-3xl text-solar shrink-0 md:mb-1.5"></i>
+                            <div class="min-w-0 flex flex-row md:flex-col items-center gap-1.5 md:gap-0.5">
+                                <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 whitespace-nowrap">Решение</h3>
+                                <p class="text-[9px] md:text-sm text-black/70 leading-tight m-0 whitespace-nowrap">агент решает сам</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-auto md:flex-1 md:h-full bg-black border-2 border-solar md:border-b-0 rounded-xl md:rounded-t-2xl md:rounded-b-none px-2 py-1.5 md:px-2 md:py-2.5 flex flex-row md:flex-col items-center md:justify-center gap-2 md:gap-0 text-left md:text-center a-in a-in-4">
+                            <i class="ph-fill ph-lightning text-lg md:text-3xl text-solar shrink-0 md:mb-1.5 a-pulse"></i>
+                            <div class="min-w-0 flex flex-row md:flex-col items-center gap-1.5 md:gap-0.5">
+                                <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0 whitespace-nowrap">Действие</h3>
+                                <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0 whitespace-nowrap">во внешней системе</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Подпись оси: вправо растёт автономность (на телефоне ступени тоже растут вправо) -->
+                    <div class="flex items-center gap-2 md:gap-3 w-full">
+                        <div class="h-[2px] flex-1 text-solar/40 a-flow"></div>
+                        <p class="text-black/45 text-[9px] md:text-xs font-medium uppercase tracking-widest m-0 leading-tight shrink-0 whitespace-nowrap">автономность <i class="ph-bold ph-arrow-right text-solar"></i></p>
+                    </div>
+                </div>
+
+                <!-- Цена ошибки: три примера из текста, сегменты шкалы загораются от дешёвой ошибки к дорогой.
+                     На телефоне список растёт вниз, как и ступени, поэтому стрелка оси там смотрит вниз.
+                     Заливка полосок не бледнее /45: a-step гасит их до 0.42, и полоска /25 в светлой
+                     теме пропадала — шкала теряла нижнюю ступень -->
+                <div class="w-full md:w-[330px] shrink-0 flex flex-col gap-1.5 md:gap-2">
+                    <div class="flex flex-col md:flex-col-reverse md:justify-between gap-1 md:gap-0 w-full md:h-[200px]">
+                        <div class="flex flex-row items-stretch gap-2 md:gap-2.5 w-full a-in a-in-2">
+                            <div class="w-1.5 md:w-2 shrink-0 rounded-full bg-solar/45 a-step"></div>
+                            <div class="flex-1 min-w-0 bg-white border border-grayBase rounded-xl md:rounded-2xl px-2 py-1 md:px-3 md:py-2.5 flex flex-row items-center justify-center gap-1.5 md:gap-2">
+                                <i class="ph-fill ph-receipt text-base md:text-2xl text-solar shrink-0"></i>
+                                <p class="text-[10px] md:text-sm text-black/70 leading-tight m-0">неверно классифицировать счёт</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-row items-stretch gap-2 md:gap-2.5 w-full a-in a-in-3">
+                            <div class="w-1.5 md:w-2 shrink-0 rounded-full bg-solar/75 a-step a-step-2"></div>
+                            <div class="flex-1 min-w-0 bg-solar/15 border border-solar/40 rounded-xl md:rounded-2xl px-2 py-1 md:px-3 md:py-2.5 flex flex-row items-center justify-center gap-1.5 md:gap-2">
+                                <i class="ph-fill ph-credit-card text-base md:text-2xl text-solar shrink-0"></i>
+                                <p class="text-[10px] md:text-sm text-black/70 leading-tight m-0">подготовить платёж</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-row items-stretch gap-2 md:gap-2.5 w-full a-in a-in-4">
+                            <div class="w-1.5 md:w-2 shrink-0 rounded-full bg-solar a-step a-step-3"></div>
+                            <div class="flex-1 min-w-0 bg-solar border border-solar rounded-xl md:rounded-2xl px-2 py-1 md:px-3 md:py-2.5 flex flex-row items-center justify-center gap-1.5 md:gap-2" style="color:#111;-webkit-text-fill-color:#111">
+                                <i class="ph-fill ph-paper-plane-tilt text-base md:text-2xl shrink-0"></i>
+                                <p class="text-[10px] md:text-sm leading-tight m-0">самостоятельно отправить деньги</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Подпись оси по центру своей колонки и без горизонтального пунктира: ось цены
+                         вертикальная (полоски слева), а стоя вплотную к «автономность →» подписи
+                         читались одной фразой -->
+                    <div class="flex items-center justify-center w-full">
+                        <p class="text-black/45 text-[9px] md:text-xs font-medium uppercase tracking-widest m-0 leading-tight whitespace-nowrap"><i class="ph-bold ph-arrow-up text-solar inline-block rotate-180 md:rotate-0"></i> цена ошибки</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Недоверенные данные упираются в контроль: две угрозы из текста слева, четыре меры справа.
+                 Левая карточка шире: строка «внешний документ… — инъекция промта» должна стоять одной
+                 строкой, а у 2×2 мер справа запас по ширине есть. На телефоне «— инъекция промта»
+                 уходит второй строкой; висячий отступ ставит её под текст, а не под иконку -->
+            <div class="flex flex-col md:flex-row items-stretch gap-0 w-full mt-4 md:mt-6">
+                <div class="flex-1 md:flex-[1.2] min-w-0 bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2.5 md:p-3 flex flex-col items-center justify-center text-center a-in a-in-5">
+                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 mb-1 md:mb-1.5"><span class="whitespace-nowrap"><i class="ph-fill ph-file-x text-solar"></i> Недоверенные данные</span></h3>
+                    <div class="flex flex-col items-start gap-1 md:gap-1.5">
+                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 text-left pl-[1.26em] -indent-[1.26em]"><span class="whitespace-nowrap"><i class="ph-fill ph-syringe text-solar"></i> внешний документ пытается изменить правила</span> <span class="whitespace-nowrap">— инъекция промта</span></p>
+                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 text-left pl-[1.26em] -indent-[1.26em]"><span class="whitespace-nowrap"><i class="ph-fill ph-wrench text-solar"></i> разрешённый инструмент</span> <span class="whitespace-nowrap">— неправильные параметры</span></p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-center justify-center shrink-0">
+                    <div class="w-[2px] h-2 md:w-6 md:h-[2px] text-solar/40 a-flow"></div>
+                    <div class="w-7 h-7 md:w-12 md:h-12 rounded-full bg-solar/15 border-2 border-solar flex items-center justify-center shrink-0">
+                        <i class="ph-bold ph-prohibit text-sm md:text-2xl text-solar a-pulse"></i>
+                    </div>
+                    <div class="w-[2px] h-2 md:w-6 md:h-[2px] text-solar/40 a-flow"></div>
+                </div>
+
+                <div class="flex-1 min-w-0 bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] p-2.5 md:p-3 flex flex-col items-center justify-center text-center a-in a-in-6">
+                    <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0 mb-1 md:mb-1.5"><span class="whitespace-nowrap"><i class="ph-fill ph-shield-check"></i> Контроль</span></h3>
+                    <div class="grid grid-cols-[auto_auto] justify-center gap-x-4 gap-y-1 md:gap-x-8 md:gap-y-1.5">
+                        <p class="text-[9px] md:text-sm text-white/80 leading-tight m-0 whitespace-nowrap text-left"><i class="ph-fill ph-key text-solar"></i> права доступа</p>
+                        <p class="text-[9px] md:text-sm text-white/80 leading-tight m-0 whitespace-nowrap text-left"><i class="ph-fill ph-list-checks text-solar"></i> проверка параметров</p>
+                        <p class="text-[9px] md:text-sm text-white/80 leading-tight m-0 whitespace-nowrap text-left"><i class="ph-fill ph-lock text-solar"></i> технические ограничения</p>
+                        <p class="text-[9px] md:text-sm text-white/80 leading-tight m-0 whitespace-nowrap text-left"><i class="ph-fill ph-user-check text-solar"></i> подтверждение человека</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Внешние данные не меняют системные правила, <br><span class="font-black">а выше ущерб — <span class="whitespace-nowrap">уже автономность</span> <span class="whitespace-nowrap">и строже контроль</span></span></p>
+            </div>
+        </div>
+    </div>

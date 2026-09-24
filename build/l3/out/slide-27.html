@@ -1,0 +1,111 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-27">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Состояние <span class="text-solar">и память</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Хорошая память ИИ-агента — не когда он помнит всё</p>
+
+            <!-- Дорожки времени жизни: длина полосы — сколько живёт отсек, от «сегодня» до «через месяц».
+                 Полосы идут лесенкой по возрастанию (сессия → задача → между взаимодействиями):
+                 так разная длина читается как время жизни, а не как неровная вёрстка.
+                 Появляются в порядке текста озвучки: состояние, краткосрочный контекст, долговременная память.
+                 ПК: ось и дорожки | серый склад справа. Телефон: ось, дорожки, склад под ними -->
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_250px] gap-y-2 md:gap-x-6 md:gap-y-3 items-stretch w-full">
+
+                <!-- Ось времени — только над дорожками, чтобы склад справа стоял вровень с ними по верху и низу -->
+                <div class="md:col-start-1 md:row-start-1 js-keep flex flex-row items-center gap-2 md:gap-3 w-full a-in">
+                    <span class="text-[10px] md:text-base font-medium text-black leading-tight whitespace-nowrap"><i class="ph-fill ph-sun text-solar"></i> Сегодня</span>
+                    <div class="h-[2px] flex-1 text-solar/40 a-flow"></div>
+                    <span class="text-[10px] md:text-base font-medium text-black leading-tight whitespace-nowrap">Через месяц <i class="ph-fill ph-calendar-check text-solar"></i></span>
+                </div>
+
+                <div class="md:col-start-1 md:row-start-2 flex flex-col justify-between gap-2 md:gap-3 w-full min-w-0">
+
+                    <!-- Краткосрочный контекст: живёт одну сессию — самая короткая полоса -->
+                    <div class="w-[72%] md:w-[46%] bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2.5 py-2 md:px-5 md:py-3 js-keep flex flex-row items-center gap-2 md:gap-3 a-in a-in-3">
+                        <i class="ph-fill ph-chats text-xl md:text-3xl text-solar shrink-0"></i>
+                        <div class="min-w-0">
+                            <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 whitespace-nowrap">Краткосрочный контекст</h3>
+                            <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 mt-0.5">текущая сессия</p>
+                        </div>
+                    </div>
+
+                    <!-- Состояние процесса: живёт, пока идёт задача. Четыре отметки — что оно хранит;
+                         три выполненные загораются по очереди, последняя (чего ждём) дышит:
+                         договор ушёл на согласование и ждёт ответа.
+                         Отметки — flex-1 с полулиниями: линия непрерывна от центра до центра, а узлы стоят
+                         через равный шаг (flex-auto давал шаг 156/160/130 — короткая «чего ждём» поджимала последний) -->
+                    <div class="w-[90%] md:w-[82%] bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] p-2.5 md:px-5 md:py-3.5 a-in a-in-2">
+                        <div class="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1.5 mb-2 md:mb-3">
+                            <div class="flex flex-row items-center gap-2 md:gap-3">
+                                <i class="ph-fill ph-flow-arrow text-xl md:text-3xl text-solar shrink-0"></i>
+                                <div class="min-w-0">
+                                    <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0 whitespace-nowrap">Состояние процесса</h3>
+                                    <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0 mt-0.5">текущая задача</p>
+                                </div>
+                            </div>
+                            <span class="bg-white/10 border border-white/20 rounded-lg md:rounded-xl px-2 py-0.5 md:px-2.5 md:py-1 text-[10px] md:text-sm text-white/80 leading-tight whitespace-nowrap"><i class="ph-fill ph-file-text text-solar"></i> договор на согласовании</span>
+                        </div>
+                        <div class="js-keep flex flex-row items-start w-full">
+                            <div class="relative flex-1 flex flex-col items-center text-center gap-1 md:gap-1.5 px-1 min-w-0">
+                                <div class="absolute left-1/2 right-0 top-[7px] md:top-[12px] h-[2px] text-solar/50 a-flow"></div>
+                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-solar flex items-center justify-center a-step"><i class="ph-bold ph-check text-[9px] md:text-sm text-black"></i></span>
+                                <span class="text-[10px] md:text-sm text-white/75 leading-tight md:whitespace-nowrap">шаги выполнены</span>
+                            </div>
+                            <div class="relative flex-1 flex flex-col items-center text-center gap-1 md:gap-1.5 px-1 min-w-0">
+                                <div class="absolute left-0 right-0 top-[7px] md:top-[12px] h-[2px] text-solar/50 a-flow"></div>
+                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-solar flex items-center justify-center a-step a-step-2"><i class="ph-bold ph-check text-[9px] md:text-sm text-black"></i></span>
+                                <span class="text-[10px] md:text-sm text-white/75 leading-tight md:whitespace-nowrap">данные получены</span>
+                            </div>
+                            <div class="relative flex-1 flex flex-col items-center text-center gap-1 md:gap-1.5 px-1 min-w-0">
+                                <div class="absolute left-0 right-0 top-[7px] md:top-[12px] h-[2px] text-solar/50 a-flow"></div>
+                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-solar flex items-center justify-center a-step a-step-3"><i class="ph-bold ph-check text-[9px] md:text-sm text-black"></i></span>
+                                <span class="text-[10px] md:text-sm text-white/75 leading-tight md:whitespace-nowrap">решение принято</span>
+                            </div>
+                            <div class="relative flex-1 flex flex-col items-center text-center gap-1 md:gap-1.5 px-1 min-w-0">
+                                <div class="absolute left-0 right-1/2 top-[7px] md:top-[12px] h-[2px] text-solar/50 a-flow"></div>
+                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-black border-2 border-solar flex items-center justify-center a-pulse"><i class="ph-fill ph-hourglass-medium text-[9px] md:text-sm text-solar"></i></span>
+                                <span class="text-[10px] md:text-sm text-white leading-tight md:whitespace-nowrap">чего ждём</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Долговременная память: тянется до «через месяц». На конце — что в неё попадает:
+                         формат отчёта доживает, ID сегодняшней операции гаснет -->
+                    <div class="w-full bg-solar/15 border border-solar/40 rounded-[14px] md:rounded-[20px] px-2.5 py-2 md:px-5 md:py-3 js-keep flex flex-row items-center gap-2 md:gap-3 a-in a-in-4">
+                        <i class="ph-fill ph-brain text-xl md:text-3xl text-solar shrink-0"></i>
+                        <div class="min-w-0">
+                            <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 whitespace-nowrap">Долговременная память</h3>
+                            <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 mt-0.5">между взаимодействиями</p>
+                        </div>
+                        <div class="h-[2px] flex-1 min-w-[6px] text-solar/50 a-flow"></div>
+                        <div class="flex flex-col items-stretch gap-1 md:gap-1.5 shrink-0">
+                            <span class="bg-solar rounded-lg md:rounded-xl px-1.5 py-0.5 md:px-3 md:py-1 text-[10px] md:text-sm font-medium leading-tight text-center whitespace-nowrap" style="color:#111;-webkit-text-fill-color:#111"><i class="ph-bold ph-check"></i> формат отчёта</span>
+                            <span class="border border-dashed border-black/30 rounded-lg md:rounded-xl px-1.5 py-0.5 md:px-3 md:py-1 text-[10px] md:text-sm text-black/50 leading-tight text-center whitespace-nowrap a-pulse"><i class="ph-bold ph-x"></i> ID операции</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Если запоминать всё подряд: серый склад, где старое спорит с новым.
+                     Заголовок — «Всё подряд», а не «Помнить всё»: подзаголовок слайда уже говорит «помнит всё» -->
+                <div class="md:col-start-2 md:row-start-2 bg-grayBase/30 border border-grayBase rounded-[14px] md:rounded-[20px] p-2.5 md:px-4 md:py-5 js-keep flex flex-row md:flex-col items-center justify-center gap-3 md:gap-5 text-center a-in a-in-5">
+                    <div class="min-w-0 text-left md:text-center">
+                        <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 mb-0.5 md:mb-1"><span class="whitespace-nowrap"><i class="ph-fill ph-warehouse text-black/40"></i> Всё подряд</span></h3>
+                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0"><span class="whitespace-nowrap">склад устаревших</span> <br><span class="whitespace-nowrap">и противоречивых данных</span></p>
+                    </div>
+                    <!-- md:grid-cols-3 рядом с grid-cols-3 обязателен: без пары правило колоды
+                         валит сетку на телефоне в один столбик и склад вытягивается на пол-экрана -->
+                    <div class="grid grid-cols-3 md:grid-cols-3 gap-1 md:gap-2.5 shrink-0">
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-3"><i class="ph-fill ph-file-text text-sm md:text-2xl text-black/40"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-2"><i class="ph-fill ph-clock-counter-clockwise text-sm md:text-2xl text-black/40 a-step"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-3"><i class="ph-fill ph-files text-sm md:text-2xl text-black/40 a-step a-step-3"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-2"><i class="ph-fill ph-warning text-sm md:text-2xl text-solar a-pulse"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-3"><i class="ph-fill ph-file-x text-sm md:text-2xl text-black/40"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-3"><i class="ph-fill ph-note text-sm md:text-2xl text-black/40 a-step a-step-2"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Проектировать забывание <span class="font-black whitespace-nowrap">не менее важно, чем запоминание</span></p>
+            </div>
+        </div>
+    </div>

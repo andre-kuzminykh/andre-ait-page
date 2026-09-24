@@ -1,0 +1,128 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-23">
+        <div class="content-z max-w-7xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Структурированный <span class="text-solar">вывод</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Верный по смыслу ответ может сломать автоматизацию</p>
+
+            <!-- Путь ответа: текст → поля → проверка поля за полем.
+                 ПК: три зоны в ряд. Телефон: зоны друг под другом, а поля и проверки
+                 внутри них ложатся сеткой — иначе высота утраивается и кегль падает -->
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1.35fr_auto_1fr] items-stretch gap-y-0.5 md:gap-y-0 w-full">
+
+                <!-- Текстом: человеку понятно, следующему компоненту — три вопроса.
+                     На ПК пузырь и вопросы — во всю ширину карточки, как поля и проверки
+                     в соседних зонах (иначе три колонки разной ширины плашек) -->
+                <div class="bg-grayBase/30 border border-grayBase rounded-[14px] md:rounded-[20px] p-2 md:p-4 js-keep flex flex-row md:flex-col items-center md:items-stretch justify-center gap-1.5 md:gap-2.5 text-center h-full a-in">
+                    <div class="flex-1 md:flex-none min-w-0 flex flex-col items-center gap-1 md:gap-2">
+                        <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl rounded-bl-sm md:rounded-bl-sm px-2 py-1.5 md:px-4 md:py-3 md:self-stretch">
+                            <p class="text-[10px] md:text-base text-black leading-snug m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-robot text-solar"></i> «Клиент, скорее всего,</span> <br>повышенного риска»</p>
+                        </div>
+                        <p class="text-[10px] md:text-base text-black/60 leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-user-check text-solar"></i> человеку понятно</p>
+                    </div>
+                    <!-- Пунктир бежит вдоль связки: на телефоне связка горизонтальна, на ПК вертикальна,
+                         поэтому у каждой формы своя линия (у чужой формы — нулевой размер) -->
+                    <div class="shrink-0 js-keep flex flex-row md:flex-col items-center">
+                        <div class="w-2 h-[2px] md:w-0 md:h-0 text-solar/40 a-flow"></div>
+                        <div class="w-0 h-0 md:w-[2px] md:h-3 text-solar/40 a-flow-y"></div>
+                        <i class="ph-bold ph-arrow-right text-solar text-xs md:text-base md:rotate-90"></i>
+                    </div>
+                    <div class="shrink-0 flex flex-col items-stretch gap-1 md:gap-1.5">
+                        <p class="text-[10px] md:text-base text-black/60 leading-tight m-0 text-center whitespace-nowrap"><i class="ph-fill ph-gear-six text-solar"></i> следующий компонент</p>
+                        <span class="bg-white border border-dashed border-black/25 rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black/70 text-center whitespace-nowrap"><i class="ph-bold ph-question text-solar a-pulse"></i> какой статус?</span>
+                        <span class="bg-white border border-dashed border-black/25 rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black/70 text-center whitespace-nowrap"><i class="ph-bold ph-question text-solar a-pulse"></i> запускать проверку?</span>
+                        <span class="bg-white border border-dashed border-black/25 rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black/70 text-center whitespace-nowrap"><i class="ph-bold ph-question text-solar a-pulse"></i> что дальше?</span>
+                    </div>
+                </div>
+
+                <!-- Переход к полям: на телефоне вниз, на ПК вправо -->
+                <div class="flex flex-col md:flex-row items-center justify-center md:px-2">
+                    <div class="w-[2px] h-2 md:w-0 md:h-0 text-solar/40 a-flow-y"></div>
+                    <div class="w-0 h-0 md:w-5 md:h-[2px] text-solar/40 a-flow"></div>
+                    <i class="ph-bold ph-arrow-right text-solar text-sm md:text-xl rotate-90 md:rotate-0"></i>
+                </div>
+
+                <!-- Структура: те же ответы полями — появляются по одному, как при генерации.
+                     На телефоне поля идут в две колонки -->
+                <div class="bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] p-2 md:p-4 grid grid-cols-2 md:grid-cols-1 content-center md:content-stretch gap-1 md:gap-1.5 h-full min-w-0">
+                    <div class="bg-white/10 border border-white/15 rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 flex flex-col md:flex-row items-center justify-center md:justify-between text-center gap-0 md:gap-3 a-in">
+                        <span class="text-[10px] md:text-base text-solar leading-tight whitespace-nowrap">тип обращения</span>
+                        <span class="text-[10px] md:text-base text-white leading-tight whitespace-nowrap">заявка на кредит</span>
+                    </div>
+                    <div class="bg-white/10 border border-white/15 rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 flex flex-col md:flex-row items-center justify-center md:justify-between text-center gap-0 md:gap-3 a-in a-in-2">
+                        <span class="text-[10px] md:text-base text-solar leading-tight whitespace-nowrap">решение</span>
+                        <span class="text-[10px] md:text-base text-white leading-tight whitespace-nowrap">повышенный риск</span>
+                    </div>
+                    <div class="bg-white/10 border border-white/15 rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 flex flex-col md:flex-row items-center justify-center md:justify-between text-center gap-0 md:gap-3 a-in a-in-3">
+                        <span class="text-[10px] md:text-base text-solar leading-tight whitespace-nowrap">недостающие данные</span>
+                        <span class="text-[10px] md:text-base text-white leading-tight whitespace-nowrap">справка о доходе</span>
+                    </div>
+                    <div class="bg-white/10 border border-white/15 rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 flex flex-col md:flex-row items-center justify-center md:justify-between text-center gap-0 md:gap-3 a-in a-in-4">
+                        <span class="text-[10px] md:text-base text-solar leading-tight whitespace-nowrap">следующее действие</span>
+                        <span class="text-[10px] md:text-base text-white leading-tight whitespace-nowrap">запустить проверку</span>
+                    </div>
+                    <div class="bg-white/10 border border-white/15 rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 flex flex-col md:flex-row items-center justify-center md:justify-between text-center gap-0 md:gap-3 a-in a-in-5">
+                        <span class="text-[10px] md:text-base text-solar leading-tight whitespace-nowrap">передача человеку</span>
+                        <span class="text-[10px] md:text-base text-white leading-tight whitespace-nowrap">да</span>
+                    </div>
+                    <div class="bg-white/10 border border-white/15 rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 flex flex-col md:flex-row items-center justify-center md:justify-between text-center gap-0 md:gap-3 a-in a-in-6">
+                        <span class="text-[10px] md:text-base text-solar leading-tight whitespace-nowrap">объяснение</span>
+                        <span class="text-[10px] md:text-base text-white leading-tight whitespace-nowrap">две просрочки за год</span>
+                    </div>
+                </div>
+
+                <!-- Поля уходят на проверку -->
+                <div class="flex flex-col md:flex-row items-center justify-center md:px-2">
+                    <div class="w-[2px] h-2 md:w-0 md:h-0 text-solar/40 a-flow-y"></div>
+                    <div class="w-0 h-0 md:w-5 md:h-[2px] text-solar/40 a-flow"></div>
+                    <i class="ph-bold ph-arrow-right text-solar text-sm md:text-xl rotate-90 md:rotate-0"></i>
+                </div>
+
+                <!-- Проверка: три условия загораются по очереди; нарушение — три пути.
+                     На телефоне условия и пути идут строками по три -->
+                <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2 md:p-4 flex flex-col justify-center gap-1 md:gap-1.5 h-full min-w-0">
+                    <div class="grid grid-cols-3 md:grid-cols-1 gap-1 md:gap-1.5">
+                        <div class="bg-solar/10 border border-solar/30 rounded-lg md:rounded-xl px-1 py-1 md:px-3 md:py-1.5 flex items-center justify-center a-step">
+                            <p class="text-[10px] md:text-base text-black leading-tight m-0 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar"></i> обязательные</span> <span class="whitespace-nowrap">поля</span></p>
+                        </div>
+                        <div class="bg-solar/10 border border-solar/30 rounded-lg md:rounded-xl px-1 py-1 md:px-3 md:py-1.5 flex items-center justify-center a-step a-step-2">
+                            <p class="text-[10px] md:text-base text-black leading-tight m-0 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar"></i> правильные</span> <span class="whitespace-nowrap">типы</span></p>
+                        </div>
+                        <div class="bg-solar/10 border border-solar/30 rounded-lg md:rounded-xl px-1 py-1 md:px-3 md:py-1.5 flex items-center justify-center a-step a-step-3">
+                            <p class="text-[10px] md:text-base text-black leading-tight m-0 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar"></i> разрешённые</span> <span class="whitespace-nowrap">значения</span></p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] md:text-base text-black/60 leading-tight m-0 md:mt-0.5 text-center whitespace-nowrap"><i class="ph-fill ph-warning text-solar a-pulse"></i> структура нарушена</p>
+                    <div class="grid grid-cols-3 md:grid-cols-1 gap-1 md:gap-1.5">
+                        <div class="bg-white border border-grayBase rounded-lg md:rounded-xl px-1 py-1 md:px-3 md:py-1.5 flex items-center justify-center a-in a-in-4">
+                            <p class="text-[10px] md:text-base text-black leading-tight m-0 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-arrows-clockwise text-solar"></i> повторить</span> <span class="whitespace-nowrap">генерацию</span></p>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-lg md:rounded-xl px-1 py-1 md:px-3 md:py-1.5 flex items-center justify-center a-in a-in-5">
+                            <p class="text-[10px] md:text-base text-black leading-tight m-0 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-arrow-bend-down-right text-solar"></i> резервный</span> <span class="whitespace-nowrap">сценарий</span></p>
+                        </div>
+                        <div class="bg-black border border-solar rounded-lg md:rounded-xl px-1 py-1 md:px-3 md:py-1.5 flex items-center justify-center a-in a-in-6">
+                            <p class="text-[10px] md:text-base text-solar leading-tight m-0 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-hand-palm"></i> остановить</span> <span class="whitespace-nowrap">процесс</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Две ловушки: ни формат, ни уверенность модели не говорят о правильности.
+                 На телефоне ловушки стоят рядом, а их части — столбиком: в строку
+                 «правильный формат не значит правильное решение» на телефоне впритык -->
+            <div class="grid grid-cols-2 gap-1.5 md:gap-4 w-full mt-3 md:mt-7">
+                <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1.5 md:px-4 md:py-2 flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-3 a-in a-in-5">
+                    <span class="bg-solar/15 border border-solar/40 rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black whitespace-nowrap"><i class="ph-fill ph-seal-check text-solar"></i> правильный формат</span>
+                    <span class="text-[10px] md:text-sm text-solar leading-tight whitespace-nowrap">не значит</span>
+                    <span class="border border-dashed border-black/30 rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black whitespace-nowrap"><i class="ph-bold ph-question text-solar"></i> правильное решение</span>
+                </div>
+                <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1.5 md:px-4 md:py-2 flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-3 a-in a-in-6">
+                    <span class="bg-solar/15 border border-solar/40 rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black whitespace-nowrap"><i class="ph-fill ph-gauge text-solar"></i> «уверена на 95 %»</span>
+                    <span class="text-[10px] md:text-sm text-solar leading-tight whitespace-nowrap">не значит</span>
+                    <span class="border border-dashed border-black/30 rounded-lg md:rounded-xl px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black whitespace-nowrap"><i class="ph-bold ph-question text-solar"></i> точность 95 %</span>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0"><span class="whitespace-nowrap">Структура контролирует формат,</span> <span class="font-black whitespace-nowrap">а надёжность — тесты на данных и метрики</span></p>
+            </div>
+        </div>
+    </div>

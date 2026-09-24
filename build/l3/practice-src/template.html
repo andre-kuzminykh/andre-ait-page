@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Практическое задание — архитектура ИИ-агента | Andre AI Technology</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+<meta name="description" content="Практическое задание к лекции 3: превратите TO-BE модель в архитектуру одного ИИ-агента — спецификация, граф навыков, контекст, инструменты, состояние, границы автономности, передача человеку, воркфлоу на ИИ-платформе и тестовые сценарии. Шесть готовых архитектур по отраслям.">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/*@CSS2*/
+
+  /* ============================================================
+     Практика лекции 3: архитектура ИИ-агента.
+     Всё выше — дизайн практики лекции 2 без изменений (та же шапка, шаги,
+     окно схем, промты). Ниже — только то, чего там не было: способы
+     исполнения шага, спецификация агента, границы автономности, тесты.
+     ============================================================ */
+  /* Четыре способа исполнения шага — ровно те же цвета, что у классов графа
+     (classDef rule / ai / tool / human в коде схем): легенда на странице и
+     узлы в окне читаются одним ключом. Цвета тёмные и насыщенные — белая
+     подпись на них читается и на белом, и на чёрном фоне. */
+  :root{ --c-rule:#475569; --c-ai:#7C3AED; --c-tool:#C2410C; --c-human:#0369A1;
+         --code-fg:#6D28D9; }
+  html.dark{ --code-fg:#C4B5FD; }
+
+  /* Ссылка «Нет своего TO-BE?» — вторая дверь на странице: пилюля, а не кнопка,
+     чтобы не спорить с заголовком. */
+  .hero .alt{ margin-top:clamp(1.1rem,3vh,1.6rem); display:flex; justify-content:center; }
+  .pill-link{
+    display:inline-flex; align-items:center; justify-content:center; gap:.55rem;
+    border-radius:999px; padding:.75rem 1.15rem; border:1px solid var(--ctrl-border);
+    background:var(--soft); color:var(--fg); text-align:center;
+    font-weight:700; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.35;
+    transition:border-color .2s ease,color .2s ease,transform .2s ease;
+  }
+  .pill-link .ic{ color:#8B5CF6; font-size:1.15em; }
+  .pill-link:hover{ border-color:#8B5CF6; color:#8B5CF6; transform:translateY(-1px); }
+
+  /* Способы исполнения: в лекции 2 это были «правило / агент / человек /
+     гибрид», здесь — четыре способа из задания, со своим цветом каждый. */
+  .modes .m-rule{ background:var(--c-rule); } .modes .m-ai{ background:var(--c-ai); }
+  .modes .m-tool{ background:var(--c-tool); } .modes .m-human{ background:var(--c-human); }
+  .modes .ops-line{ display:block; margin-top:.35rem; color:var(--fg); font-weight:700; font-size:clamp(.74rem,2.4vw,.84rem); }
+
+  /* Шесть ИИ-операций */
+  .ops{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
+  @media (min-width:768px){ .ops{ grid-template-columns:repeat(3,1fr); gap:.7rem; } }
+  .ops li{ background:var(--soft); border:1px solid var(--soft-border); border-radius:16px; padding:.85rem .9rem; min-width:0; }
+  .ops .oi{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:2.25rem; height:2.25rem; border-radius:999px; background:var(--c-ai); color:#fff; font-size:1.1rem;
+  }
+  .ops b{ display:block; margin-top:.55rem; font-weight:800; font-size:clamp(.84rem,2.7vw,.98rem); }
+  .ops span{ display:block; margin-top:.2rem; color:var(--muted); font-weight:500; font-size:clamp(.76rem,2.4vw,.88rem); line-height:1.45; }
+
+  /* Лестница автономности: полоса растёт вместе с ценой ошибки */
+  .ladder{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
+  @media (min-width:768px){ .ladder{ grid-template-columns:repeat(4,1fr); gap:.7rem; } }
+  .ladder li{ background:var(--soft); border:1px solid var(--soft-border); border-radius:16px; padding:.85rem .9rem; min-width:0; }
+  .ladder .bar{ display:block; height:.42rem; border-radius:999px; background:var(--soft-border); overflow:hidden; }
+  .ladder .bar i{ display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#8B5CF6,#F97316); }
+  .ladder b{ display:block; margin-top:.65rem; font-weight:800; font-size:clamp(.84rem,2.7vw,.98rem); }
+  .ladder span{ display:block; margin-top:.2rem; color:var(--muted); font-weight:500; font-size:clamp(.76rem,2.4vw,.88rem); line-height:1.45; }
+  .ladder-cap{
+    display:flex; align-items:center; justify-content:center; gap:.5rem; margin-top:.7rem;
+    color:var(--muted); font-weight:700; font-size:clamp(.74rem,2.4vw,.85rem); text-align:center;
+  }
+  .ladder-cap .ic{ color:#F97316; font-size:1.1rem; }
+
+  /* Четыре тестовых сценария */
+  .scen{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; grid-template-columns:1fr; gap:.6rem; }
+  @media (min-width:640px){ .scen{ grid-template-columns:1fr 1fr; gap:.7rem; } }
+  .scen li{
+    display:flex; gap:.8rem; align-items:flex-start;
+    background:var(--soft); border:1px solid var(--soft-border); border-radius:16px; padding:.9rem 1rem;
+  }
+  .scen .si{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:2.35rem; height:2.35rem; border-radius:999px; color:#fff; font-size:1.15rem; background:var(--c);
+  }
+  .scen b{ display:block; font-weight:800; font-size:clamp(.85rem,2.7vw,.98rem); }
+  .scen span{ display:block; margin-top:.2rem; color:var(--muted); font-weight:500; font-size:clamp(.78rem,2.5vw,.9rem); line-height:1.5; }
+  .s-ok{ --c:#8B5CF6; } .s-amb{ --c:#F97316; } .s-miss{ --c:#0EA5E9; } .s-err{ --c:#E11D48; }
+
+  /* Каркас структурированного вывода — только показать, без кнопки копирования */
+  pre.code.bare{ padding-top:clamp(.9rem,2.6vw,1.15rem); margin-top:clamp(1rem,3vw,1.4rem); }
+  pre.code .k{ color:var(--code-fg); }
+
+  /* Легенда прямо в окне: цвет узла расшифровывается там же, где его видно */
+  .v-legend{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:.4rem 1rem;
+    padding:.65rem 1rem; border-bottom:1px solid var(--card-border);
+    color:var(--muted); font-weight:700; font-size:clamp(10.5px,2.6vw,12px); line-height:1.2;
+  }
+  .v-legend span{ display:inline-flex; align-items:center; gap:.42rem; white-space:nowrap; }
+  .v-legend i{ display:inline-block; width:.85rem; height:.85rem; border-radius:4px; background:var(--c); }
+  .v-legend i.t{ width:1.25rem; height:.8rem; background:transparent; border:2px solid #8B5CF6; border-radius:999px; }
+  .v-legend i.d{ width:.66rem; height:.66rem; border-radius:2px; background:transparent; border:1.5px solid var(--muted); transform:rotate(45deg); margin:0 .1rem; }
+  .l-rule{ --c:var(--c-rule); } .l-ai{ --c:var(--c-ai); } .l-tool{ --c:var(--c-tool); } .l-human{ --c:var(--c-human); }
+
+  /* Граф навыков — вертикальный: окно выше, чем у схем AS-IS лекции 2,
+     иначе в нём помещалась бы четверть графа. */
+  .v-stage{ height:clamp(22rem,70vh,44rem); }
+  @media (max-width:759px){ .v-stage{ height:clamp(20rem,64vh,36rem); } }
+  .viewer{ scroll-margin-top:clamp(5rem,12vh,7rem); }
+  /* На телефоне ручные переносы лида только рвут строки посередине */
+  @media (max-width:767px){ .hero p.wide br{ display:none; } }
+  /* Граф на телефоне: поля поуже — каждый пиксель ширины идёт в масштаб */
+  @media (max-width:759px){ .v-layer{ padding:1rem .25rem 4.4rem; } }
+
+  /* ===== Карточка архитектуры агента под окном ===== */
+  .agent-head{ display:flex; gap:clamp(.8rem,3vw,1.1rem); align-items:flex-start; }
+  .agent-ico{
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+    width:clamp(2.8rem,10vw,3.3rem); height:clamp(2.8rem,10vw,3.3rem);
+    border-radius:999px; background:var(--c-ai); color:#fff; font-size:clamp(1.3rem,4.6vw,1.6rem);
+  }
+  .agent-head > div{ min-width:0; }
+  .agent-head .kicker{ margin-bottom:.3rem; }
+  .agent-head .from{
+    margin-top:.5rem; color:var(--muted); font-weight:600;
+    font-size:clamp(.8rem,2.6vw,.93rem); line-height:1.55;
+  }
+  .spec{ margin-top:clamp(1rem,3vw,1.35rem); display:grid; gap:.6rem; }
+  @media (min-width:768px){ .spec{ grid-template-columns:1fr 1fr; gap:.7rem; } }
+  .spec > div{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:18px; padding:clamp(.9rem,3vw,1.15rem); min-width:0;
+  }
+  .lbl{
+    display:flex; align-items:center; gap:.45rem; color:#F97316;
+    font-weight:800; text-transform:uppercase; letter-spacing:.12em; font-size:clamp(9.5px,2.4vw,10.5px);
+  }
+  .lbl .ic{ font-size:1.4em; }
+  @media (max-width:767px){ .lbl{ font-size:10px; } }
+  .spec p{ margin-top:.5rem; font-weight:600; font-size:clamp(.84rem,2.7vw,.96rem); line-height:1.55; }
+
+  .ctx{ list-style:none; margin-top:.7rem; display:grid; gap:.45rem; }
+  .ctx li{
+    display:flex; justify-content:space-between; align-items:center; gap:.45rem .9rem; flex-wrap:wrap;
+    background:var(--soft); border:1px solid var(--soft-border); border-radius:14px; padding:.7rem .9rem;
+    font-weight:600; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.45;
+  }
+  .ctx .src-tag{
+    display:inline-flex; align-items:center; gap:.35rem; border-radius:999px; padding:.3rem .7rem;
+    background:var(--card); border:1px solid var(--card-border); color:var(--muted);
+    font-weight:700; font-size:10.5px; line-height:1.2;
+  }
+  .ctx .src-tag .ic{ color:#F97316; font-size:1.2em; }
+
+  .tools{ list-style:none; margin-top:.7rem; display:grid; gap:.45rem; }
+  @media (min-width:768px){ .tools{ grid-template-columns:1fr 1fr; gap:.55rem; } }
+  .tools li{
+    background:var(--soft); border:1px solid var(--soft-border); border-left:3px solid var(--c-tool);
+    border-radius:14px; padding:.75rem .9rem; min-width:0;
+  }
+  .tools b{ display:block; font-weight:800; font-size:clamp(.82rem,2.6vw,.94rem); }
+  .tools code, .state code, .case-path{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--code-fg);
+  }
+  .tools code{ display:block; margin-top:.35rem; font-size:clamp(11px,2.5vw,12.5px); line-height:1.45; overflow-wrap:anywhere; }
+  .tools span{ display:block; margin-top:.3rem; color:var(--muted); font-weight:500; font-size:clamp(.76rem,2.4vw,.86rem); line-height:1.45; }
+
+  .state{ list-style:none; margin-top:.7rem; display:grid; gap:.5rem; }
+  .state li{ font-weight:600; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.5; }
+  .state code{
+    display:inline-block; margin-right:.45rem; padding:.12rem .5rem; border-radius:8px;
+    background:var(--soft); border:1px solid var(--soft-border); font-size:clamp(11px,2.5vw,12px); font-weight:500;
+  }
+  .mem{
+    display:flex; gap:.7rem; align-items:flex-start; margin-top:.75rem;
+    background:rgba(139,92,246,.10); border-left:4px solid #8B5CF6; border-radius:0 14px 14px 0;
+    padding:.75rem .95rem; font-weight:600; font-size:clamp(.8rem,2.6vw,.92rem); line-height:1.5;
+  }
+  .mem .ic{ color:#8B5CF6; font-size:1.2rem; margin-top:.1rem; }
+
+  .auto, .finish{ margin-top:.7rem; display:grid; gap:.55rem; }
+  @media (min-width:768px){ .auto{ grid-template-columns:repeat(3,1fr); gap:.6rem; } .finish{ grid-template-columns:1fr 1fr; gap:.6rem; } }
+  .auto > div, .finish > div{
+    background:var(--soft); border:1px solid var(--soft-border); border-top:3px solid var(--c);
+    border-radius:14px; padding:.8rem .9rem; min-width:0;
+  }
+  .auto .lbl, .finish .lbl{ color:var(--c); }
+  .auto ul, .finish ul{ list-style:none; margin-top:.5rem; display:grid; gap:.4rem; }
+  .auto li, .finish li{
+    position:relative; padding-left:1rem;
+    font-weight:600; font-size:clamp(.8rem,2.6vw,.9rem); line-height:1.5;
+  }
+  .auto li::before, .finish li::before{
+    content:''; position:absolute; left:0; top:.55em; width:.42rem; height:.42rem; border-radius:999px; background:var(--c);
+  }
+  .a-self{ --c:#8B5CF6; } .a-prop{ --c:#F97316; } .a-conf{ --c:#0EA5E9; } .a-done{ --c:#8B5CF6; } .a-hand{ --c:#0EA5E9; }
+  .forbid{
+    display:flex; gap:.65rem; align-items:flex-start; margin-top:.55rem;
+    background:rgba(225,29,72,.09); border:1px solid rgba(225,29,72,.35); border-radius:14px;
+    padding:.75rem .9rem; font-weight:600; font-size:clamp(.8rem,2.6vw,.9rem); line-height:1.5;
+  }
+  .forbid .ic{ color:#E11D48; font-size:1.2rem; margin-top:.1rem; }
+  .forbid b{ font-weight:800; }
+  .json-cap{
+    display:flex; align-items:center; gap:.5rem; margin-top:.9rem;
+    color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.1em; font-size:10.5px;
+  }
+  .json-cap .ic{ color:#8B5CF6; font-size:1.3em; }
+  /* Пример вывода читают, а не копируют: длинная строка переносится, а не уезжает вбок */
+  .case-info pre.code{ margin-top:.55rem; padding-top:clamp(.9rem,2.6vw,1.15rem); font-size:clamp(10.5px,2.4vw,12px); white-space:pre-wrap; overflow-wrap:anywhere; }
+
+  .tests{ margin-top:.7rem; display:grid; gap:.55rem; }
+  @media (min-width:768px){ .tests{ grid-template-columns:1fr 1fr; gap:.6rem; } }
+  .tests article{
+    background:var(--card); border:1px solid var(--card-border); border-radius:16px; padding:.9rem 1rem; min-width:0;
+  }
+  .tests .tt{
+    display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; padding:.32rem .75rem;
+    color:#fff; background:var(--c); font-weight:800; text-transform:uppercase; letter-spacing:.08em; font-size:9.5px;
+  }
+  .tests .tt .ic{ font-size:1.25em; }
+  .tests p{ margin-top:.55rem; color:var(--muted); font-weight:500; font-size:clamp(.8rem,2.6vw,.9rem); line-height:1.55; }
+  .tests p b{ color:var(--fg); font-weight:800; }
+  .case-path{
+    display:block; margin-top:.6rem; padding:.5rem .7rem; border-radius:10px;
+    background:var(--soft); border:1px solid var(--soft-border);
+    font-size:clamp(10.5px,2.4vw,11.5px); line-height:1.55; overflow-wrap:anywhere;
+  }
+
+  .case-nav{ margin-top:clamp(1.3rem,3.5vw,1.7rem); display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; }
+  .case-nav button{
+    display:inline-flex; align-items:center; gap:.45rem; border-radius:999px; padding:.7rem 1.05rem;
+    border:1px solid var(--ctrl-border); background:var(--ctrl-bg); color:var(--fg);
+    font-weight:800; font-size:clamp(10px,2.6vw,11px); letter-spacing:.06em; text-transform:uppercase; line-height:1.2;
+    transition:border-color .2s ease,color .2s ease;
+  }
+  .case-nav button:hover{ border-color:#8B5CF6; color:#8B5CF6; }
+  .case-nav .ic{ font-size:1.25em; color:#8B5CF6; }
+  .case-nav .next{ margin-left:auto; }
+
+  /* ===== Граф → воркфлоу платформы ===== */
+  .pmap{ list-style:none; display:grid; gap:.55rem; }
+  .pmap li{
+    display:grid; grid-template-columns:1fr; gap:.65rem; align-items:center;
+    background:var(--card); border:1px solid var(--card-border); border-radius:18px; padding:clamp(.9rem,3vw,1.15rem);
+  }
+  @media (min-width:768px){ .pmap li{ grid-template-columns:16rem 1fr; gap:1.2rem; } .pmap .pn{ white-space:nowrap; } }
+  .pmap .pn{
+    display:inline-flex; align-items:center; gap:.55rem; justify-self:start;
+    border-radius:12px; padding:.62rem .9rem; color:#fff; background:var(--c);
+    font-weight:800; font-size:clamp(.8rem,2.6vw,.9rem); line-height:1.25;
+  }
+  .pmap .pn .ic{ font-size:1.2em; }
+  .pmap .pn.p-neutral{ background:transparent; color:var(--fg); border:1.5px solid var(--ctrl-border); border-radius:999px; }
+  .pmap .pn.p-neutral .ic{ color:#8B5CF6; }
+  .p-rule{ --c:var(--c-rule); } .p-ai{ --c:var(--c-ai); } .p-tool{ --c:var(--c-tool); } .p-human{ --c:var(--c-human); }
+  .pmap p{ color:var(--muted); font-weight:500; font-size:clamp(.82rem,2.7vw,.95rem); line-height:1.6; }
+  .pmap p b{ color:var(--fg); font-weight:800; }
+  .pmap p code{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--code-fg); font-size:.9em; }
+
+  /* Финал «Готово, если…»: тот же фиолетовый блок, что у призыва лекции 2 */
+  .cta ul.done-list{ max-width:46rem; }
+  .cta .actions .btn-ghost{ color:#fff; border-color:rgba(255,255,255,.35); }
+  .cta .actions .btn-ghost:hover{ border-color:#fff; color:#fff; }
+
+  /* Хвост фразы владельца после двоеточия открывает описание шага — жирным,
+     чтобы текст задания читался целиком: заголовок + первая строка. */
+  .step p.desc .lead-in{ color:var(--fg); font-weight:700; }
+
+  /* Переход к примерам и к промтам — якорями, мягкой прокруткой; цель не
+     прячется под шапку. */
+  @media (prefers-reduced-motion:no-preference){ html{ scroll-behavior:smooth; } }
+  #prompts{ scroll-margin-top:clamp(4.5rem,11vh,6.5rem); }
+  .cta .actions .btn .ic{ color:inherit; }
+
+  /* Две кнопки копирования над промтом на телефоне не влезают в ряд:
+     вторая («копировать с графом из окна») переносилась и ложилась поверх
+     первой строки промта (приёмка 360/390). На телефоне кнопки стоят
+     обычным рядом НАД кодом, а не висят над ним. */
+  @media (max-width:767px){
+    .src .code-wrap{ display:flex; flex-direction:column; }
+    .src .code-act{ position:static; order:-1; max-width:none; justify-content:flex-start; margin-bottom:.55rem; }
+    .src pre.code{ padding-top:clamp(.9rem,2.6vw,1.15rem); }
+  }
+
+  /* Телефон: читаемый текст там, где его читают, а не пробегают глазами.
+     Пример вывода, маршрут теста и подсказка окна были 10–10.5px — на
+     телефоне это мелко (приёмка 390/360). Подписи-рубрики в верхнем
+     регистре остаются мелкими — как в практике лекции 2. */
+  @media (max-width:767px){
+    .case-info pre.code{ font-size:11px; }
+    .case-path{ font-size:11px; }
+    .v-hint{ font-size:11px; }
+    .v-legend{ font-size:11px; }
+    pre.code.bare{ font-size:11px; }
+  }
+
+  /* ===== Появление ===== */
+  /* Новый граф проявляется, а не выскакивает: при смене вкладки поле схемы
+     не меняет размер, меняется только картинка — поэтому достаточно
+     прозрачности и короткого сдвига. Карточка агента под окном проявляется
+     блоками (rv-item, ниже). */
+  @keyframes v-in{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+  .v-layer.v-anim svg{ animation:v-in .45s cubic-bezier(.22,1,.36,1) both; }
+  @media (prefers-reduced-motion:reduce){ .v-layer.v-anim svg{ animation:none; } }
+  /* Блоки ниже первого экрана проявляются, когда до них доходит прокрутка.
+     Класс rv ставится в <head> ДО первой отрисовки и только там, где есть
+     IntersectionObserver и не просили меньше движения, — поэтому скрытые
+     блоки не мигают «видно → скрыто → видно». Анимируются только прозрачность
+     и transform: раскладка не сдвигается ни на пиксель. Страховка — в
+     скрипте внизу: если наблюдатель не запустился, класс снимается. */
+  html.rv .rv-item{ opacity:0; transform:translateY(18px);
+    transition:opacity .6s ease, transform .7s cubic-bezier(.22,1,.36,1);
+    transition-delay:var(--rv-d,0s); }
+  html.rv .rv-item.in{ opacity:1; transform:none; }
+  /* С появлением по прокрутке общий «подъём» разделов при загрузке лишний:
+     два движения подряд читались бы как рывок. Первый экран — как было. */
+  html.rv .sec.rise{ animation:none; }
+
+  @media print{
+    .case-info[hidden]{ display:block !important; }   /* в печать идут все шесть агентов */
+    .case-nav, .v-tools, .v-save{ display:none !important; }
+    html.rv .rv-item{ opacity:1 !important; transform:none !important; }
+  }
+</style>
+<script>
+/* Тема (фон) общая для всего клиентского пути (ключ 'welcome-theme', как в лекции):
+   по умолчанию тёмная, ?theme=light|dark перебивает сохранённую. */
+(function(){
+  var t=null; try{ t=new URLSearchParams(location.search).get('theme'); }catch(e){}
+  if(t!=='dark' && t!=='light'){ try{ t=localStorage.getItem('welcome-theme'); }catch(e){} }
+  document.documentElement.classList.toggle('dark', t!=='light');
+  // Появление блоков при прокрутке (.rv-item): класс ставится здесь, до
+  // первой отрисовки, иначе блоки успевали бы показаться и исчезнуть.
+  try{
+    if('IntersectionObserver' in window && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches))
+      document.documentElement.classList.add('rv');
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+
+  <!-- Иконки Phosphor (MIT) вшиты в страницу: с CDN они пропадают, если сеть
+       медленная или он недоступен. Здесь рисуются всегда, даже офлайн. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<!--@ICONS-->
+  </defs></svg>
+
+  <header>
+    <a class="lec-logo" href="https://andre.technology" aria-label="На главную">
+      <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="AIT"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
+      <span class="logo-fb" aria-hidden="true">AIT</span>
+    </a>
+    <div class="lec-right">
+      <button class="lec-ctrl lec-lbl js-back" type="button" aria-label="Вернуться назад" title="Вернуться назад">@I(arrow-left)<span>Назад</span></button>
+      <button id="lec-theme" class="lec-ctrl" type="button" aria-label="Сменить фон (тёмный/светлый)">@I(moon)</button>
+      <a class="lec-consult" href="https://strategy.andre.technology/ai-strategy" target="_blank" rel="noopener">ИИ-стратегия @I(arrow-right)</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero rise">
+      <span class="badge">@I(clipboard-text) Практика · Архитектура ИИ-агента</span>
+      <h1>Превратите вашу <span class="accent">TO-BE модель</span> в архитектуру одного ИИ-агента</h1>
+      <!-- Пробел перед <br> обязателен: на телефоне переносы скрыты, и без него
+           слова склеивались («навыков,задайте», «—и»). -->
+      <p class="wide">Опишите роль и цель агента, постройте граф навыков, <br>задайте контекст, инструменты, состояние и границы автономности — <br>и соберите рабочий воркфлоу, проверенный на четырёх сценариях.</p>
+      <div class="alt">
+        <a class="pill-link" href="/automation/2/practice/">@I(flow-arrow) Нет своего TO-BE? Начните с практики лекции 2 @I(arrow-right)</a>
+      </div>
+    </section>
+
+    <!-- ===== КАКОГО АГЕНТА ВЗЯТЬ ===== -->
+    <section class="sec rise d1">
+      <div class="sec-head">
+        <span class="sec-ico">@I(target)</span>
+        <h2>Какого агента <span class="accent">взять</span></h2>
+        <p>Из TO-BE берём один участок — тот, где агенту действительно есть что решать. Проверьте его по пяти признакам.</p>
+      </div>
+      <ul class="criteria">
+        <li><span class="ci">@I(brain)</span> нужна смысловая интерпретация, а не правило «если — то»</li>
+        <li><span class="ci">@I(path)</span> следующий шаг нельзя полностью задать заранее</li>
+        <li><span class="ci">@I(target)</span> у участка понятный вход и проверяемый результат</li>
+        <li><span class="ci">@I(plugs)</span> хватает нескольких узких инструментов</li>
+        <li><span class="ci">@I(warning)</span> если задачу решает один вызов модели — агент не нужен: хватит ИИ-функции</li>
+      </ul>
+    </section>
+
+    <!-- ===== ШАГИ: заголовки — дословно из текста задания =====
+         Владелец: «заголовки возьми как я тебе скинул в тексте». Каждый шаг —
+         его фраза целиком, со связками «Сначала», «Затем», «После этого»…;
+         у длинных фраз хвост после двоеточия открывает описание шага — так
+         текст задания читается на странице без пропусков и пересказа. -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico">@I(list-checks)</span>
+        <h2>Что нужно <span class="accent">сделать</span></h2>
+        <p class="wide">Семь шагов — ровно по тексту задания. Каждый опирается на результат предыдущего.</p>
+      </div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico">@I(identification-card)</span>
+          <div class="step-body">
+            <span class="kicker">Шаг 1</span>
+            <h2>Сначала кратко опишите его роль, цель, входные данные и ожидаемый результат</h2>
+          </div>
+        </div>
+        <p class="desc">Это спецификация — контракт агента. Хороший ИИ-агент начинается не с промта и не с модели, а с описания того, как он должен себя вести.</p>
+        <ul class="checks">
+          <li><span class="ci">@I(user-focus)</span> роль: кто агент в процессе и кому помогает</li>
+          <li><span class="ci">@I(target)</span> цель и критерий успеха: когда задача решена</li>
+          <li><span class="ci">@I(database)</span> входные данные: на основании чего агент решает</li>
+          <li><span class="ci">@I(seal-check)</span> результат: что изменится в системе</li>
+        </ul>
+      </article>
+
+      <div class="link" aria-hidden="true"><span class="bar"></span>@I(caret-down)</div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico">@I(tree-structure)</span>
+          <div class="step-body">
+            <span class="kicker">Шаг 2</span>
+            <h2>Затем постройте граф навыков и для каждого шага определите, как он выполняется</h2>
+          </div>
+        </div>
+        <p class="desc"><b class="lead-in">Через бизнес-правила, ИИ-модель, внешний инструмент или человека.</b> Граф навыков — внутренняя структура работы агента: какие навыки у него есть и какие переходы между ними допустимы. У каждого способа свой цвет — тот же, что у узлов графа:</p>
+        <ul class="modes">
+          <li>
+            <span class="mi m-rule">@I(gear-six)</span>
+            <div><b>Бизнес-правило</b><span>Решение однозначно записывается словами «если — то». ИИ здесь только добавит стоимость, задержку и ошибки.</span></div>
+          </li>
+          <li>
+            <span class="mi m-ai">@I(brain)</span>
+            <div><b>ИИ-модель</b><span>Нужна смысловая интерпретация: понять текст, разобраться в неполных данных, выбрать решение.</span><span class="ops-line">классификация · извлечение · суммаризация · генерация · выбор&nbsp;решения · планирование</span></div>
+          </li>
+          <li>
+            <span class="mi m-tool">@I(plugs)</span>
+            <div><b>Внешний инструмент</b><span>Прочитать или записать данные во внешней системе через API: CRM, почта, база знаний, трекер.</span></div>
+          </li>
+          <li>
+            <span class="mi m-human">@I(user)</span>
+            <div><b>Человек</b><span>Цена ошибки высока, источники противоречат друг другу или нужна ответственность.</span></div>
+          </li>
+        </ul>
+        <p class="note">@I(user) Человек в контуре — не провал автоматизации, а часть правильной архитектуры</p>
+      </article>
+
+      <div class="link" aria-hidden="true"><span class="bar"></span>@I(caret-down)</div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico">@I(brain)</span>
+          <div class="step-body">
+            <span class="kicker">Шаг 3</span>
+            <h2>Там, где нужен ИИ, укажите конкретную операцию</h2>
+          </div>
+        </div>
+        <p class="desc"><b class="lead-in">Например, классификация, извлечение данных, генерация или принятие решения.</b> Большинство ИИ-задач сводится к шести операциям. Сначала определяем операцию, затем достаточную модель: простую классификацию — быстрой и дешёвой, сложное решение с большим контекстом — более сильной.</p>
+        <ul class="ops">
+          <li><span class="oi">@I(file-text)</span><b>Извлечение</b><span>данные из резюме, брифа, договора</span></li>
+          <li><span class="oi">@I(tag)</span><b>Классификация</b><span>тема, тип обращения, критичность</span></li>
+          <li><span class="oi">@I(article)</span><b>Суммаризация</b><span>история клиента одним абзацем</span></li>
+          <li><span class="oi">@I(sparkle)</span><b>Генерация</b><span>ответ, черновик КП, вопросы</span></li>
+          <li><span class="oi">@I(signpost)</span><b>Выбор решения</b><span>принятие решения по нескольким нечётким факторам</span></li>
+          <li><span class="oi">@I(map-trifold)</span><b>Планирование</b><span>медиаплан, оценка работ, следующий шаг</span></li>
+        </ul>
+      </article>
+
+      <div class="link" aria-hidden="true"><span class="bar"></span>@I(caret-down)</div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico">@I(stack)</span>
+          <div class="step-body">
+            <span class="kicker">Шаг 4</span>
+            <h2>После этого определите контекст, инструменты и состояние агента</h2>
+          </div>
+        </div>
+        <p class="desc"><b class="lead-in">Какие данные ему нужны, что он должен помнить между шагами и где проходят границы его автономности.</b></p>
+        <ul class="checks">
+          <li><span class="ci">@I(database)</span> контекст: какие данные и откуда собираются перед вызовом модели</li>
+          <li><span class="ci">@I(plugs)</span> инструменты: узкие функции с параметрами — «найти клиента», а не «управлять CRM»</li>
+          <li><span class="ci">@I(hard-drives)</span> состояние: что уже сделано, что получено и чего агент ждёт</li>
+          <li><span class="ci">@I(shield-check)</span> границы: что решает сам, что предлагает, что — после подтверждения</li>
+        </ul>
+        <ol class="ladder" aria-label="Уровни автономности">
+          <li><span class="bar"><i style="width:25%"></i></span><b>Анализирует</b><span>классифицирует, извлекает, работает с данными</span></li>
+          <li><span class="bar"><i style="width:50%"></i></span><b>Предлагает</b><span>действие человеку, решение за ним</span></li>
+          <li><span class="bar"><i style="width:75%"></i></span><b>Решает</b><span>сам принимает решение</span></li>
+          <li><span class="bar"><i style="width:100%"></i></span><b>Выполняет</b><span>действует во внешней системе</span></li>
+        </ol>
+        <p class="ladder-cap">@I(warning) Чем выше уровень — тем дороже ошибка и строже контроль</p>
+        <p class="note">@I(shield-check) Внешние данные не меняют правила агента: письмо может содержать инъекцию промта</p>
+      </article>
+
+      <div class="link" aria-hidden="true"><span class="bar"></span>@I(caret-down)</div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico">@I(flag-checkered)</span>
+          <div class="step-body">
+            <span class="kicker">Шаг 5</span>
+            <h2>Отдельно зафиксируйте, когда агент завершает работу, когда передаёт задачу человеку и в каком формате возвращает результат</h2>
+          </div>
+        </div>
+        <p class="desc">Хороший агент умеет не только действовать, но и вовремя остановиться. Его ответ читает следующий шаг воркфлоу — поэтому результат нужен структурированный, а не текстом.</p>
+        <ul class="checks">
+          <li><span class="ci">@I(flag-checkered)</span> завершение: данные получены, подзадачи выполнены, проверка пройдена</li>
+          <li><span class="ci">@I(timer)</span> лимиты: итерации, вызовы инструментов, время и стоимость</li>
+          <li><span class="ci">@I(user-switch)</span> человеку: данных не хватает, источники спорят, цена ошибки высока</li>
+          <li><span class="ci">@I(brackets-curly)</span> формат: структурированный вывод с проверкой полей</li>
+        </ul>
+        <pre class="code bare" aria-label="Каркас структурированного вывода">{
+  <span class="k">"status"</span>: "done | need_info | awaiting_approval | handoff",
+  <span class="k">"decision"</span>: "…",
+  <span class="k">"missing"</span>: [],
+  <span class="k">"next_action"</span>: "…",
+  <span class="k">"handoff_reason"</span>: null,
+  <span class="k">"explanation"</span>: "…"
+}</pre>
+      </article>
+
+      <div class="link" aria-hidden="true"><span class="bar"></span>@I(caret-down)</div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico">@I(flow-arrow)</span>
+          <div class="step-body">
+            <span class="kicker">Шаг 6</span>
+            <h2>Затем перенесите эту архитектуру на ИИ-платформу и соберите рабочий воркфлоу</h2>
+          </div>
+        </div>
+        <p class="desc">Воркфлоу — каркас: всё предсказуемое задаём заранее, а агенту оставляем зоны свободы выбора. Узлы графа почти один к одному становятся узлами платформы, а права, лимиты, проверки и логи вокруг модели — это обвязка агента.</p>
+        <!-- Шесть пунктов: четыре способа исполнения из шага 2 (правило, ИИ,
+             инструмент, человек) плюс триггер и ошибки. Инструменты раньше
+             выпадали — а именно на них держится мысль лекции: модель только
+             выбирает вызов, выполняет его среда исполнения. -->
+        <ul class="checks">
+          <li><span class="ci">@I(lightning)</span> триггер: событие, расписание или ручной запуск</li>
+          <li><span class="ci">@I(gear-six)</span> правила — узлы условий, без вызова модели</li>
+          <li><span class="ci">@I(brain)</span> ИИ-операции — вызов модели со структурированным выводом</li>
+          <li><span class="ci">@I(plugs)</span> инструменты — интеграции и API: вызывает среда исполнения, а не модель</li>
+          <li><span class="ci">@I(hourglass)</span> человек — ожидание ответа с сохранённым состоянием</li>
+          <li><span class="ci">@I(scroll)</span> ошибки и логи: повторные попытки, резервный сценарий, журнал выполнения</li>
+        </ul>
+        <p class="note">@I(flow-arrow) Как каждый узел графа ложится на платформу — в разделе ниже</p>
+      </article>
+
+      <div class="link" aria-hidden="true"><span class="bar"></span>@I(caret-down)</div>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-ico">@I(flask)</span>
+          <div class="step-body">
+            <span class="kicker">Шаг 7</span>
+            <h2>И наконец, проверьте его на нескольких сценариях: обычном, неоднозначном, с нехваткой данных и с ошибкой внешнего сервиса</h2>
+          </div>
+        </div>
+        <p class="desc">Для каждого сценария заранее задайте ожидаемое поведение. Агент может написать прекрасное объяснение и одновременно совершить запрещённую операцию — поэтому проверяется весь путь, а не только последняя фраза модели.</p>
+        <ul class="scen">
+          <li class="s-ok"><span class="si">@I(check-circle)</span><div><b>Обычный</b><span>Типовой вход: агент проходит основной маршрут и завершает работу.</span></div></li>
+          <li class="s-amb"><span class="si">@I(question)</span><div><b>Неоднозначный</b><span>Вход можно понять двумя способами: агент уточняет или передаёт человеку, а не угадывает.</span></div></li>
+          <li class="s-miss"><span class="si">@I(puzzle-piece)</span><div><b>С нехваткой данных</b><span>Нет обязательного поля: агент запрашивает его, а не додумывает.</span></div></li>
+          <li class="s-err"><span class="si">@I(cloud-warning)</span><div><b>С ошибкой внешнего сервиса</b><span>Инструмент не ответил: повторные попытки, резервный сценарий или передача человеку.</span></div></li>
+        </ul>
+        <p class="note">@I(path) Проверяем маршрут, инструмент, параметры и разрешённые действия</p>
+      </article>
+    </section>
+
+    <!-- ===== ПЕРЕХОД К ПРИМЕРАМ ===== -->
+    <!-- Тот же фиолетовый блок, что в практике лекции 2 стоит между шагами и
+         окном схем: после семи шагов странице нужен вдох, а длинной странице —
+         короткий путь к примерам и к промтам для своего агента. -->
+    <section class="sec rise d2">
+      <div class="cta">
+        <span class="cta-ico">@I(robot)</span>
+        <h2>Сначала разберите пример — затем соберите своего агента</h2>
+        <p>Ниже шесть готовых архитектур по отраслям. У каждой всё, что требует задание, — от графа навыков до тестов.</p>
+        <ul>
+          <li>@I(tree-structure) граф навыков в виде воркфлоу</li>
+          <li>@I(stack) контекст, инструменты и состояние</li>
+          <li>@I(shield-check) границы автономности и передача человеку</li>
+          <li>@I(flask) четыре тестовых сценария</li>
+        </ul>
+        <div class="actions">
+          <a class="btn btn-light" href="#viewer">@I(robot) Смотреть шесть архитектур</a>
+          <a class="btn btn-ghost" href="#prompts">@I(sparkle) Промты для своего агента</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ОДНО ОКНО С ГРАФАМИ ===== -->
+    <!-- Механика окна — из практики лекции 2: плашки сверху, поле со свободным
+         масштабом и перетаскиванием, код снизу, ошибка + промт на исправление,
+         выгрузка SVG/PNG. Под окном — архитектура выбранного агента. -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico">@I(robot)</span>
+        <h2>Шесть архитектур <span class="accent">ИИ-агентов</span></h2>
+        <p>Те же шесть процессов, что в практике лекции 2. В каждом — один самый ценный агент: его граф навыков в виде воркфлоу, спецификация, границы и тесты.</p>
+      </div>
+
+      <!-- Исходники графов: правятся как обычный текст, отсюда их берёт окно -->
+      <div id="mmd-sources" hidden>
+<!--@SOURCES-->
+      </div>
+
+      <div class="viewer" id="viewer">
+        <div class="v-tabs" role="tablist" aria-label="Архитектуры агентов">
+<!--@TABS-->
+        </div>
+        <!-- Четыре способа исполнения — словами задания: «через бизнес-правила,
+             ИИ-модель, внешний инструмент или человека». -->
+        <div class="v-legend" aria-label="Цвета узлов графа">
+          <span><i class="l-rule"></i>Бизнес-правило</span>
+          <span><i class="l-ai"></i>ИИ-модель</span>
+          <span><i class="l-tool"></i>Внешний инструмент</span>
+          <span><i class="l-human"></i>Человек</span>
+          <span><i class="d"></i>Решение</span>
+          <span><i class="t"></i>Триггер и завершение</span>
+        </div>
+
+        <!-- Оболочка неподвижна: в ней прокручивается только полотно со схемой,
+             поэтому кнопки и растушёвка краёв остаются на месте. -->
+        <div class="v-shell">
+          <div class="v-stage" id="v-stage">
+            <div class="v-layer" id="v-layer"></div>
+          </div>
+          <span class="v-fade-t" aria-hidden="true"></span>
+          <span class="v-fade v-fade-l" aria-hidden="true"></span>
+          <span class="v-fade v-fade-r" aria-hidden="true"></span>
+          <span class="v-fade-b" aria-hidden="true"></span>
+          <div class="v-tools">
+            <button class="v-btn" type="button" data-zoom="out" aria-label="Мельче"><span class="v-sign" aria-hidden="true">−</span></button>
+            <button class="v-btn v-level" type="button" data-zoom="fit" title="Показать схему целиком">@I(corners-out)<span id="v-level">100%</span></button>
+            <button class="v-btn" type="button" data-zoom="in" aria-label="Крупнее"><span class="v-sign" aria-hidden="true">+</span></button>
+          </div>
+          <div class="v-save">
+            <button class="v-btn v-wide" type="button" id="v-svg">@I(download-simple) SVG</button>
+            <button class="v-btn v-wide" type="button" id="v-png">@I(download-simple) PNG</button>
+          </div>
+        </div>
+        <p class="v-hint" id="v-hint">Листайте схему вниз колесом или пальцем · кнопки — масштаб</p>
+
+        <div class="v-code">
+          <div class="v-code-head">
+            <span class="v-code-title">@I(code) Код mermaid</span>
+            <div class="v-code-act">
+              <button class="copy v-inline" type="button" id="v-copy">@I(copy) копировать</button>
+            </div>
+          </div>
+          <textarea id="v-input" spellcheck="false" autocomplete="off" aria-label="Код схемы"></textarea>
+          <p class="v-note">@I(pencil-simple) Правьте код или вставьте граф своего агента — схема перерисуется сама. Как получить граф из своего TO-BE — в промтах ниже.</p>
+          <div class="err" id="v-err" hidden role="alert">
+            <div class="err-h">@I(x-circle) В коде схемы ошибка</div>
+            <pre id="v-err-text"></pre>
+            <p class="err-hint">Скопируйте промт ниже вместе с кодом и текстом ошибки и попросите модель перегенерировать схему — она исправит только сломанное место.</p>
+            <div class="err-actions">
+              <button class="btn btn-ghost" id="v-fixprompt" type="button">@I(arrows-clockwise) Копировать промт на исправление</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<!--@CASES-->
+    </section>
+
+    <!-- ===== ПРОМТЫ ===== -->
+    <section class="sec rise d2" id="prompts">
+      <div class="sec-head">
+        <span class="sec-ico">@I(sparkle)</span>
+        <h2>Соберите архитектуру <span class="accent">с моделью</span></h2>
+        <p>Отдайте модели ваш TO-BE и пройдите пять промтов по порядку — каждый следующий берёт результат предыдущего.</p>
+      </div>
+      <ol class="flow">
+        <li>
+          <span class="fi">@I(flow-arrow)</span>
+          <div><b>1. Возьмите TO-BE</b><span>Код схемы TO-BE из практики лекции 2 или её описание: участники, шаги, развилки, где агент и где человек.</span></div>
+        </li>
+        <li>
+          <span class="fi">@I(identification-card)</span>
+          <div><b>2. Промт 1 → спецификация</b><span>Роль, цель и критерий успеха, входные данные, результат, полномочия и передача человеку.</span></div>
+        </li>
+        <li>
+          <span class="fi">@I(tree-structure)</span>
+          <div><b>3. Промт 2 → граф навыков</b><span>Воркфлоу в mermaid с четырьмя цветами способов исполнения. Вставьте код в окно выше: не разобрался — окно покажет ошибку и даст промт на исправление.</span></div>
+        </li>
+        <li>
+          <span class="fi">@I(stack)</span>
+          <div><b>4. Промт 3 → контекст и инструменты</b><span>Контекст, схемы функций с параметрами, состояние, границы автономности, завершение и формат результата.</span></div>
+        </li>
+        <li>
+          <span class="fi">@I(robot)</span>
+          <div><b>5. Промт 4 → системный промт</b><span>Роль и задача, критерии, ограничения и приоритеты правил, передача человеку, формат вывода.</span></div>
+        </li>
+        <li>
+          <span class="fi">@I(flask)</span>
+          <div><b>6. Промт 5 → тестовые сценарии</b><span>Четыре типа сценариев с ожидаемым маршрутом, инструментами, параметрами и запрещёнными действиями.</span></div>
+        </li>
+      </ol>
+
+<!--@PROMPTS-->
+    </section>
+
+    <!-- ===== ПЕРЕНОС НА ПЛАТФОРМУ ===== -->
+    <section class="sec rise d2">
+      <div class="sec-head">
+        <span class="sec-ico">@I(cube)</span>
+        <h2>Перенесите эту архитектуру на <span class="accent">ИИ-платформу</span></h2>
+        <p>Граф навыков ложится на воркфлоу любой платформы — например, n8n. Предсказуемое задаёте узлами, модель вызываете только там, где нужен смысл.</p>
+      </div>
+      <ul class="pmap">
+        <li><span class="pn p-neutral">@I(lightning) Триггер</span><p><b>Узел-триггер.</b> Вебхук, расписание, новое письмо или событие в CRM — то, что запускает воркфлоу.</p></li>
+        <li><span class="pn p-rule">@I(gear-six) Бизнес-правило</span><p><b>Узлы условий и преобразования данных.</b> Условие, переключатель, код. Без модели — быстро, дёшево и предсказуемо.</p></li>
+        <li><span class="pn p-ai">@I(brain) ИИ-операция</span><p><b>Вызов модели со структурированным выводом.</b> JSON-схема ответа, затем проверка: обязательные поля на месте, типы верные, значения из разрешённого списка.</p></li>
+        <li><span class="pn p-ai">@I(robot) Агент с инструментами</span><p><b>Узел «ИИ-агент».</b> Модель, разрешённые инструменты и лимит итераций. Только там, где следующий шаг нельзя задать заранее.</p></li>
+        <li><span class="pn p-tool">@I(plugs) Инструмент / API</span><p><b>HTTP-запрос или готовая интеграция.</b> Узкая функция с описанием, параметрами и их типами. Модель только выбирает её и заполняет аргументы, а проверяет и выполняет вызов среда исполнения.</p></li>
+        <li><span class="pn p-neutral">@I(git-fork) Решение</span><p><b>Ветвление по полю структурированного вывода.</b> <code>status</code>, <code>decision</code>, <code>handoff</code> — маршрут выбирает узел условия, а не текст ответа.</p></li>
+        <li><span class="pn p-human">@I(user) Человек</span><p><b>Ожидание ответа.</b> Сообщение или задача с кнопками; воркфлоу сохраняет состояние и продолжает с того же места.</p></li>
+        <li><span class="pn p-neutral">@I(arrows-clockwise) Ошибки</span><p><b>Повторные попытки, ограничение по времени, резервный сценарий</b> и отдельный воркфлоу ошибок — сбой инструмента не роняет процесс молча.</p></li>
+        <li><span class="pn p-neutral">@I(scroll) Логи</span><p><b>Журнал выполнения каждого запуска:</b> вход, собранный контекст, версия промта, вызовы инструментов с параметрами и итог.</p></li>
+      </ul>
+    </section>
+
+    <!-- ===== ФИНАЛ ===== -->
+    <section class="sec rise d2">
+      <div class="cta">
+        <span class="cta-ico">@I(seal-check)</span>
+        <h2>Готово, если…</h2>
+        <p>На руках архитектура одного ИИ-агента, которая работает на платформе, а не только на бумаге.</p>
+        <ul class="done-list">
+          <li>@I(check-circle) есть роль, цель с критерием успеха, входные данные и результат</li>
+          <li>@I(check-circle) у каждого узла графа — способ исполнения, у ИИ-узлов — операция</li>
+          <li>@I(check-circle) расписаны контекст, инструменты с параметрами и состояние</li>
+          <li>@I(check-circle) видно, что агент решает сам, что предлагает, что — после подтверждения</li>
+          <li>@I(check-circle) заданы завершение, лимиты, передача человеку и формат результата</li>
+          <li>@I(check-circle) воркфлоу собран на ИИ-платформе и запускается</li>
+          <li>@I(check-circle) пройдены четыре сценария: обычный, неоднозначный, с нехваткой данных и с ошибкой внешнего сервиса</li>
+          <li>@I(check-circle) в каждом проверен весь путь, а не только ответ</li>
+        </ul>
+        <div class="actions">
+          <a class="btn btn-light" href="/automation/3/">@I(arrow-left) Вернуться к лекции 3</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="back rise d2">
+      <button class="js-back" type="button">@I(arrow-left) Вернуться назад</button>
+    </div>
+  </main>
+
+<script>
+(function(){
+  /* Кнопка «Назад»: возвращает на страницу, с которой пришли. Если истории нет
+     (открыли по прямой ссылке), уводим в лекцию 3 — иначе кнопка была бы мёртвой. */
+  var FALLBACK = '/automation/3/';
+  Array.prototype.forEach.call(document.querySelectorAll('.js-back'), function(b){
+    b.addEventListener('click', function(){
+      if (history.length > 1) history.back(); else location.href = FALLBACK;
+    });
+  });
+
+  /* Смена фона: тёмный ⇄ светлый, выбор запоминается на весь путь */
+  var btn = document.getElementById('lec-theme');
+  function syncTheme(){
+    var dark = document.documentElement.classList.contains('dark');
+    btn.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-'+(dark?'sun':'moon')+'" xlink:href="#i-'+(dark?'sun':'moon')+'"></use></svg>';
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if(tc) tc.setAttribute('content', dark ? '#0A0A0A' : '#FFFFFF');
+  }
+  if(btn){
+    btn.addEventListener('click', function(){
+      var dark = document.documentElement.classList.toggle('dark');
+      try{ localStorage.setItem('welcome-theme', dark ? 'dark' : 'light'); }catch(e){}
+      syncTheme();
+      if (window.renderDiagrams) window.renderDiagrams(true);   // граф перерисовываем под новый фон
+    });
+    syncTheme();
+  }
+})();
+
+/* Появление блоков при прокрутке. Блок с классом rv-item проявляется, когда
+   доходит до экрана; блоки одного экрана — лесенкой по 70 мс. Показанный
+   блок больше не прячется. Любой сбой (нет наблюдателя, ошибка, наблюдатель
+   молчит 2.5 с) снимает класс rv с <html> — и всё видно сразу: спрятанного
+   навсегда текста быть не может. */
+(function(){
+  var root = document.documentElement;
+  if (!root.classList.contains('rv')) return;
+  var fired = false;
+  try {
+    var io = new IntersectionObserver(function(entries){
+      fired = true;
+      var batch = [];
+      entries.forEach(function(e){ if (e.isIntersecting) batch.push(e.target); });
+      batch.sort(function(a, b){ return (a.compareDocumentPosition(b) & 4) ? -1 : 1; });
+      batch.forEach(function(el, i){
+        el.style.setProperty('--rv-d', (Math.min(i, 5) * 0.07) + 's');
+        el.classList.add('in');
+        io.unobserve(el);
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.01 });
+    Array.prototype.forEach.call(document.querySelectorAll('.rv-item'), function(el){ io.observe(el); });
+    // Карточка другого агента при переключении проявляется заново
+    window.revealAgain = function(scope){
+      Array.prototype.forEach.call(scope.querySelectorAll('.rv-item'), function(el){
+        el.classList.remove('in'); el.style.removeProperty('--rv-d'); io.observe(el);
+      });
+    };
+  } catch (e) { root.classList.remove('rv'); return; }
+  setTimeout(function(){ if (!fired) root.classList.remove('rv'); }, 2500);
+})();
+</script>
+
+<script type="module">
+/* ============================================================
+   Одно окно с графами навыков — механика из практики лекции 2.
+   · плашки сверху переключают агента, поле кода снизу всегда редактируемое;
+   · схема рисуется mermaid'ом в браузере — никуда не отправляется;
+   · её можно листать в обе стороны и масштабировать (колесо, кнопки);
+   · ошибка разбора показывается текстом и собирается в промт на исправление.
+   Карточка агента и код переключаются БЕЗ библиотеки: если mermaid не
+   загрузился, архитектура агента всё равно читается, а окно честно
+   говорит, что схему нарисовать не удалось.
+   ============================================================ */
+const SRC = new Map();
+document.querySelectorAll('#mmd-sources .mmd-src').forEach(el => {
+  SRC.set(el.id.replace('src-', ''), el.textContent.replace(/^\n+|\s+$/g, ''));
+});
+const ORDER  = [...SRC.keys()];
+
+const viewer = document.getElementById('viewer');
+const stage  = document.getElementById('v-stage');
+const layer  = document.getElementById('v-layer');
+const tabs   = [...document.querySelectorAll('.v-tab')];
+const input  = document.getElementById('v-input');
+const errBox = document.getElementById('v-err');
+const errTxt = document.getElementById('v-err-text');
+const levelEl= document.getElementById('v-level');
+const copyBtn= document.getElementById('v-copy');
+
+// Свой ключ черновика: граф агента не должен затирать схему процесса,
+// над которой человек работал в практике лекции 2.
+const SAVE_KEY = 'ait-agent-graph-draft';
+let current = 'consult', lastError = '';
+
+/* ── Копирование в буфер ────────────────────────────────────────────────── */
+async function copyText(text, btn){
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e2) {}
+    ta.remove();
+  }
+  if (btn){
+    const was = btn.innerHTML;
+    btn.classList.add('done');
+    btn.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> скопировано';
+    setTimeout(() => { btn.classList.remove('done'); btn.innerHTML = was; }, 1600);
+  }
+}
+document.querySelectorAll('.copy[data-copy]:not(.copy-code)').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const src = document.getElementById(btn.dataset.copy);
+    if (src) copyText(src.textContent, btn);
+  });
+});
+copyBtn.addEventListener('click', () => copyText(input.value, copyBtn));
+
+/* «Копировать с графом из окна» — тот же промт, но плейсхолдер уже заменён
+   кодом открытой схемы: промт получается свой для каждого агента. */
+document.querySelectorAll('.copy-code[data-copy]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tpl = document.getElementById(btn.dataset.copy);
+    const code = (input.value || '').trim();
+    const text = (tpl ? tpl.textContent : '').replace('СЮДА ВСТАВЬТЕ КОД ГРАФА ИЗ ОКНА ВЫШЕ', code);
+    copyText(text, btn);
+  });
+});
+
+/* ── Масштаб и прокрутка ────────────────────────────────────────────────
+   Схема — обычная лента внутри прокручиваемого поля: колесо, тачпад, палец,
+   полоса прокрутки и клавиши работают сами. Масштаб — это реальный размер
+   SVG, а не transform: при увеличении текст остаётся резким. */
+const shell  = stage.parentElement;
+let k = 1, natW = 0, natH = 0;
+const K_MIN = 0.2, K_MAX = 3;
+
+function svgEl(){ return layer.querySelector('svg'); }
+function pads(){
+  const cs = getComputedStyle(layer);
+  return { x: (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight)  || 0),
+           y: (parseFloat(cs.paddingTop)  || 0) + (parseFloat(cs.paddingBottom) || 0) };
+}
+function room(){
+  const pd = pads();
+  return { w: Math.max(80, stage.clientWidth - pd.x), h: Math.max(80, stage.clientHeight - pd.y) };
+}
+// Точка схемы под курсором (или под центром окна) остаётся на месте —
+// иначе после каждого «+» приходится искать, куда уехала схема.
+function sizeTo(next, ax, ay){
+  const el = svgEl(); if(!el || !natW) return;
+  const cx = ax === undefined ? stage.clientWidth  / 2 : ax;
+  const cy = ay === undefined ? stage.clientHeight / 2 : ay;
+  const rx = (stage.scrollLeft + cx) / Math.max(1, layer.scrollWidth);
+  const ry = (stage.scrollTop  + cy) / Math.max(1, layer.scrollHeight);
+  k = Math.max(K_MIN, Math.min(K_MAX, next));
+  el.style.width  = Math.round(natW * k) + 'px';
+  el.style.height = Math.round(natH * k) + 'px';
+  levelEl.textContent = Math.round(k * 100) + '%';
+  stage.scrollLeft = rx * layer.scrollWidth  - cx;
+  stage.scrollTop  = ry * layer.scrollHeight - cy;
+  edges();
+}
+function fitAll(){                      // «целиком»: вся схема в окне
+  if(!natW) return;
+  const r = room();
+  sizeTo(Math.min(r.w / natW, r.h / natH));
+  stage.scrollLeft = 0; stage.scrollTop = 0;
+  edges(); syncHint();
+}
+function startView(){
+  // Граф навыков вертикальный: по ШИРИНЕ он входит в окно целиком, длина
+  // уходит в прокрутку вниз. На компьютере — не крупнее 85%: так в окне видно
+  // полграфа, а не три узла.
+  // На телефоне главное — чтобы подписи узлов читались. Раньше граф целиком
+  // влезал по ширине ценой масштаба 45–60%, и подписи выходили 7–9px —
+  // прочитать нельзя (приёмка 390/360). Теперь на телефоне граф собирается
+  // уже (перенос подписей и отступы — в init()), а масштаб не ниже 80%:
+  // подпись не мельче 12px. Если граф всё равно шире окна, в окно ставится
+  // его начало: верхний узел (триггер) — по центру, остальное листается
+  // пальцем в любую сторону; растушёвка краёв показывает, что граф шире.
+  if(!natW) return;
+  const narrow = isNarrow();
+  const kW = room().w / natW;
+  sizeTo(narrow ? Math.min(Math.max(kW, 0.8), 1) : Math.min(Math.max(kW, 0.5), 0.85));
+  stage.scrollTop = 0;
+  stage.scrollLeft = 0;
+  if (stage.scrollWidth > stage.clientWidth + 2) {
+    // Центр верхнего узла — в середину окна. Считаем от рамки самого окна:
+    // у <svg> нет offsetLeft, и раньше сдвиг выходил NaN — триггер графа
+    // колл-центра стоял срезанным у правого края.
+    const stR = stage.getBoundingClientRect();
+    let top = null;
+    layer.querySelectorAll('.node').forEach(n => {
+      const r = n.getBoundingClientRect();
+      if (r.width && (!top || r.top < top.top - 1)) top = r;
+    });
+    const cx = top ? (top.left + top.width / 2 - stR.left) : stage.scrollWidth / 2;
+    stage.scrollLeft = Math.max(0, stage.scrollLeft + cx - stage.clientWidth / 2);
+  }
+  edges(); syncHint();
+}
+function isNarrow(){ return window.innerWidth < 760; }
+function syncHint(){
+  const h = document.getElementById('v-hint');
+  if(!h) return;
+  const tall   = stage.scrollHeight > stage.clientHeight + 2;
+  const wide   = stage.scrollWidth  > stage.clientWidth  + 2;
+  const narrow = isNarrow();                  // на телефоне подсказка в одну строку
+  if(narrow){
+    h.textContent = tall && wide ? 'Листайте граф пальцем в любую сторону'
+                  : tall ? 'Листайте схему вниз · кнопки — масштаб'
+                  : wide ? 'Листайте схему вбок' : 'Кнопки — масштаб';
+    return;
+  }
+  h.textContent = tall && wide
+    ? 'Листайте вниз колесом, вбок — перетаскиванием или Shift+колесо · кнопки — масштаб'
+    : tall ? 'Листайте схему вниз колесом или перетаскиванием · кнопки — масштаб'
+    : wide ? 'Листайте вбок перетаскиванием или Shift+колесо · кнопки — масштаб'
+    : 'Кнопки — масштаб · двойной щелчок — показать целиком';
+}
+function edges(){                       // растушёвка там, где схема продолжается
+  const maxX = stage.scrollWidth  - stage.clientWidth;
+  const maxY = stage.scrollHeight - stage.clientHeight;
+  shell.classList.toggle('has-left',  stage.scrollLeft > 4);
+  shell.classList.toggle('has-right', stage.scrollLeft < maxX - 4);
+  shell.classList.toggle('has-up',    stage.scrollTop  > 4);
+  shell.classList.toggle('has-down',  stage.scrollTop  < maxY - 4);
+}
+stage.addEventListener('scroll', edges, { passive: true });
+
+document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
+  const key = b.dataset.zoom;
+  if(key === 'fit') fitAll(); else sizeTo(k * (key === 'in' ? 1.25 : 1 / 1.25));
+}));
+
+// Ctrl/⌘ + колесо — масштаб (привычка браузера); обычное колесо листает
+stage.addEventListener('wheel', e => {
+  if(!natW) return;
+  if(e.ctrlKey || e.metaKey){
+    e.preventDefault();
+    const r = stage.getBoundingClientRect();
+    sizeTo(k * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX - r.left, e.clientY - r.top);
+    return;
+  }
+  // Схема выше окна — колесо листает вниз, как обычно. Если по вертикали
+  // листать нечего, вертикальное колесо превращаем в горизонтальную прокрутку.
+  const canY = stage.scrollHeight > stage.clientHeight + 2;
+  if(canY) return;
+  if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+    const max = stage.scrollWidth - stage.clientWidth;
+    const next = stage.scrollLeft + e.deltaY;
+    if(next > 0 && next < max) e.preventDefault();   // на краях отдаём прокрутку странице
+    stage.scrollLeft = next;
+  }
+}, { passive: false });
+
+// Перетаскивание мышью — как «рука» в просмотрщиках; на тачскрине работает
+// обычная прокрутка пальцем, поэтому мышь только.
+let grab = null;
+stage.addEventListener('pointerdown', e => {
+  if(e.pointerType === 'touch' || !natW) return;
+  if(e.target.closest('.v-btn, .v-tools, .v-save')) return;
+  grab = { x: e.clientX, y: e.clientY, left: stage.scrollLeft, top: stage.scrollTop };
+  stage.classList.add('dragging');
+});
+window.addEventListener('pointermove', e => {
+  if(!grab) return;
+  stage.scrollLeft = grab.left - (e.clientX - grab.x);
+  stage.scrollTop  = grab.top  - (e.clientY - grab.y);
+});
+window.addEventListener('pointerup', () => { grab = null; stage.classList.remove('dragging'); });
+stage.addEventListener('dblclick', fitAll);
+
+// Смена ширины: телефонная и компьютерная раскладки графа разные (перенос
+// подписей, отступы), поэтому при переходе через границу граф пересобирается,
+// а внутри одной формы — только заново подгоняется масштаб.
+let rsz, wasNarrow = isNarrow();
+window.addEventListener('resize', () => {
+  clearTimeout(rsz);
+  rsz = setTimeout(() => {
+    const now = isNarrow();
+    if(now !== wasNarrow && window.renderDiagrams){ wasNarrow = now; window.renderDiagrams(); return; }
+    if(natW) startView();
+  }, 150);
+});
+
+function showError(msg){
+  lastError = msg;
+  errTxt.textContent = msg;
+  errBox.hidden = false;
+  layer.innerHTML = ''; natW = natH = 0;
+  levelEl.textContent = '—';
+  shell.classList.remove('has-left', 'has-right', 'has-up', 'has-down');
+}
+
+/* ── Агент: плашка, карточка и код переключаются вместе ─────────────────── */
+const tabBar = document.querySelector('.v-tabs');
+function showCase(key){
+  tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.key === key ? 'true' : 'false'));
+  document.querySelectorAll('.case-info').forEach(b => {
+    const on = b.id === ('info-' + key);
+    if (on && b.hidden && window.revealAgain) window.revealAgain(b);   // карточка проявляется заново
+    b.hidden = !on;
+  });
+  // На телефоне плашки не влезают в ряд и листаются вбок. Кнопки «следующий
+  // агент» внизу карточки переключали агента, а его плашка оставалась за
+  // краем — не видно, какой агент открыт. Подкатываем выбранную плашку
+  // к середине ленты (только саму ленту — страница не дёргается).
+  const t = tabs.find(x => x.dataset.key === key);
+  if (t && tabBar && tabBar.scrollWidth > tabBar.clientWidth + 2) {
+    const br = tabBar.getBoundingClientRect(), tr = t.getBoundingClientRect();
+    const left = tabBar.scrollLeft + (tr.left - br.left) - (br.width - tr.width) / 2;
+    const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    tabBar.scrollTo({ left: Math.max(0, left), behavior: calm ? 'auto' : 'smooth' });
+  }
+}
+function save(){ try { localStorage.setItem(SAVE_KEY, input.value); } catch (e) {} }
+function select(key){
+  current = key;
+  showCase(key);
+  input.value = SRC.get(key) || '';
+  save();
+  // Библиотека не загрузилась — сообщение об этом не прячем при смене агента:
+  // карточка и код переключаются, а окно продолжает честно говорить, почему
+  // схемы нет.
+  if (window.renderDiagrams){ errBox.hidden = true; window.renderDiagrams(); }   // новая схема — новый вид, с начала
+}
+tabs.forEach(t => t.addEventListener('click', () => select(t.dataset.key)));
+
+// «Следующий агент» внизу длинной карточки: переключаем и возвращаемся к окну,
+// иначе до плашек пришлось бы листать назад через всю архитектуру.
+document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
+  select(b.dataset.go);
+  const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  viewer.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+}));
+
+/* ── Правка кода: рисуем сами, без кнопки ────────────────────────────── */
+let typing;
+input.addEventListener('input', () => {
+  clearTimeout(typing);
+  // Полсекунды тишины — и перерисовываем. Вид (масштаб и сдвиг) сохраняем:
+  // иначе схема прыгала бы к началу на каждом нажатии клавиши.
+  typing = setTimeout(() => { save(); if (window.renderDiagrams) window.renderDiagrams(true); }, 500);
+});
+document.getElementById('v-fixprompt').addEventListener('click', ev => {
+  copyText('Схема mermaid не разобралась. Ниже код и текст ошибки. '
+    + 'Исправь только сломанное место, сохрани смысл графа и верни ВЕСЬ код целиком, '
+    + 'без пояснений и без markdown-обрамления.\n\nКод:\n' + (input.value || '').trim()
+    + '\n\nОшибка:\n' + lastError, ev.currentTarget);
+});
+
+/* ── Сохранение картинки ─────────────────────────────────────────────── */
+function currentSvg(){
+  const svg = layer.querySelector('svg');
+  if(!svg){ showError('Сначала покажите схему — сохранять пока нечего'); return null; }
+  const clone = svg.cloneNode(true);
+  const w = Math.max(1, Math.round(natW)), h = Math.max(1, Math.round(natH));
+  clone.setAttribute('width', w); clone.setAttribute('height', h);
+  clone.removeAttribute('style');
+  // Фон не наследуется из страницы: без него тёмная схема в документе
+  // выглядит как белый текст на прозрачном. Кладём его ровно по viewBox —
+  // у mermaid начало координат бывает в минусе.
+  const vb = svg.viewBox && svg.viewBox.baseVal;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', vb ? vb.x : 0);
+  rect.setAttribute('y', vb ? vb.y : 0);
+  rect.setAttribute('width',  vb && vb.width  ? vb.width  : '100%');
+  rect.setAttribute('height', vb && vb.height ? vb.height : '100%');
+  rect.setAttribute('fill', getComputedStyle(stage).backgroundColor || '#FFFFFF');
+  clone.insertBefore(rect, clone.firstChild);
+  return { markup: new XMLSerializer().serializeToString(clone), w, h };
+}
+function saveBlob(blob, name){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function fileName(ext){ return 'agent-graph-' + current + '.' + ext; }
+document.getElementById('v-svg').addEventListener('click', () => {
+  const cur = currentSvg(); if(!cur) return;
+  saveBlob(new Blob([cur.markup], {type:'image/svg+xml;charset=utf-8'}), fileName('svg'));
+});
+document.getElementById('v-png').addEventListener('click', () => {
+  const cur = currentSvg(); if(!cur) return;
+  const s = 2;                                   // ретина: граф вставляют в документы
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = cur.w * s; canvas.height = cur.h * s;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(s, s); ctx.drawImage(img, 0, 0);
+    try { canvas.toBlob(b => { if(b) saveBlob(b, fileName('png')); }, 'image/png'); }
+    catch (e) { showError('PNG не собрался в этом браузере — сохраните SVG, он открывается везде'); }
+  };
+  img.onerror = () => showError('PNG не собрался в этом браузере — сохраните SVG, он открывается везде');
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cur.markup);
+});
+
+/* ── Стартовое состояние — сразу, ещё до загрузки библиотеки ─────────── */
+// Черновик из прошлого захода поднимаем, только если это НЕ один из примеров:
+// значит, человек работал со своим графом и не должен его потерять.
+let draft = '';
+try { draft = localStorage.getItem(SAVE_KEY) || ''; } catch (e) {}
+const known = [...SRC.values()].some(v => v.trim() === draft.trim());
+if(draft && !known){
+  input.value = draft;
+  tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+  document.querySelectorAll('.case-info').forEach(b => { b.hidden = true; });
+} else {
+  select('consult');
+}
+
+/* ── Отрисовка ──────────────────────────────────────────────────────────── */
+function themeVars(){
+  const dark = document.documentElement.classList.contains('dark');
+  const fg     = dark ? '#FAFAFA' : '#0A0A0A';
+  const card   = dark ? '#1B1B1B' : '#FFFFFF';
+  const border = dark ? 'rgba(255,255,255,.28)' : '#BDBDBD';
+  const line   = dark ? 'rgba(255,255,255,.5)' : '#8A8A8A';
+  return {
+    fontFamily: 'Montserrat, sans-serif',
+    fontSize: '15px',
+    // Триггер и завершения классом не красятся — берут «карточку» темы
+    primaryColor: card, mainBkg: card, nodeBorder: border,
+    primaryTextColor: fg, textColor: fg,
+    primaryBorderColor: border,
+    lineColor: line,
+    secondaryColor: '#8B5CF6',
+    tertiaryColor: dark ? '#1B1B1B' : '#F6F4FF',
+    edgeLabelBackground: dark ? '#101010' : '#FFFFFF',
+    // Если вставят sequenceDiagram (например, свой TO-BE), подписи не должны
+    // остаться тёмными на тёмном фоне — у mermaid они по умолчанию #333
+    actorBkg: card, actorBorder: border, actorTextColor: fg, actorLineColor: line,
+    signalColor: line, signalTextColor: fg,
+    labelBoxBkgColor: card, labelBoxBorderColor: border, labelTextColor: fg,
+    loopTextColor: fg, sequenceNumberColor: '#FFFFFF',
+    noteBkgColor:    dark ? '#3A2E10' : '#FEF3C7',
+    noteTextColor:   dark ? '#FCD34D' : '#3A2E10',
+    noteBorderColor: dark ? '#8A6A18' : '#F59E0B',
+  };
+}
+
+// Шрифт узлов должен быть загружен ДО отрисовки: mermaid меряет подписи в
+// момент рендера. Кириллица в Google Fonts — отдельный файл (свой
+// unicode-range), и document.fonts.load без образца текста грузит только
+// латиницу: узлы мерились запасным шрифтом, а рисовались Montserrat — и
+// концы слов срезались краем блока. Поэтому образец — кириллический.
+// Не дождались за 3 секунды (шрифт не грузится) — рисуем как есть.
+async function fontsReady(){
+  if(!document.fonts || !document.fonts.load) return;
+  const load = Promise.all(['400', '600', '700'].map(w =>
+    document.fonts.load(w + ' 15px Montserrat', 'АаЯя Aa').catch(() => null)));
+  await Promise.race([load, new Promise(r => setTimeout(r, 3000))]);
+}
+
+try {
+  // Библиотека лежит В РЕПОЗИТОРИИ, а не на CDN — та же сборка 11.17.2, что
+  // у практики лекции 2 (подробности — assets/mermaid/README.md).
+  const [mod] = await Promise.all([import('/assets/mermaid/11.17.2/mermaid.esm.min.js'), fontsReady()]);
+  const mermaid = mod.default;
+
+  function init(){
+    mermaid.initialize({
+      startOnLoad: false, securityLevel: 'strict', theme: 'base',
+      themeVariables: themeVars(),
+      themeCSS: `
+        .node rect, .node polygon, .node circle, .node path { stroke-width: 1.5px; }
+        .node .label, .nodeLabel { line-height: 1.35; }
+        .edgeLabel { font-size: 13px; font-weight: 600; }
+        marker circle { fill: #8B5CF6; stroke: none; }
+        /* Триггер и финальные точки классом не красятся (так велит и промт 2),
+           поэтому без обводки они терялись серыми пилюлями. Фиолетовая рамка
+           бренда отмечает вход и выходы воркфлоу в обеих темах, а заливка
+           остаётся «карточкой» темы. */
+        .node.default:not(.rule):not(.ai):not(.tool):not(.human) .outer-path path { stroke: #8B5CF6 !important; stroke-width: 2px !important; }
+      `,
+      // Узкие отступы: граф и так высокий. На телефоне раскладка ещё уже:
+      // подписи переносятся по 146px (а не по 200) — ровно столько, чтобы
+      // самый длинный способ «ИИ: выбор решения» встал в строку, — и отступы
+      // меньше. Граф выходит заметно уже, и при читаемом масштабе его мало
+      // приходится листать вбок (см. startView).
+      flowchart: isNarrow()
+        ? { curve: 'basis', nodeSpacing: 16, rankSpacing: 32, padding: 10, wrappingWidth: 146, useMaxWidth: false }
+        : { curve: 'basis', nodeSpacing: 22, rankSpacing: 38, padding: 12, wrappingWidth: 200, useMaxWidth: false },
+      sequence: { wrap: true, width: 190, actorMargin: 44, boxMargin: 10,
+                  noteMargin: 10, messageMargin: 34, mirrorActors: true, useMaxWidth: false },
+    });
+  }
+
+  // Вторая строка подписи — способ исполнения («ИИ: классификация»,
+  // «инструмент: CRM», «правило», «человек») — рисуется чуть мельче и
+  // светлее названия навыка: название читается первым, способ — вторым.
+  // Заодно «ИИ: классификация» помещается в одну строку и на телефоне, где
+  // подписи переносятся уже, — без сироты «ИИ:» на отдельной строке.
+  // Меняется только картинка: код в поле остаётся ровно таким, как его
+  // вставили; стиль встроен в подпись и доезжает до выгрузки SVG/PNG.
+  function prettify(code){
+    if(!/^\s*(flowchart|graph)\b/.test(code)) return code;
+    return code.replace(/<br\/>((?:ИИ|инструмент|правило|человек)[^"<]*)"/g,
+      "<br/><span style='font-size:.9em;opacity:.86'>$1</span>\"");
+  }
+
+  let seq = 0;
+  window.renderDiagrams = async function(keepView){
+    const code = (input.value || '').trim();
+    if(!code){ showError('Пусто: вставьте код схемы — первой строкой идёт тип схемы, например flowchart TD'); return; }
+    init();                                   // тема могла смениться
+    const mine = ++seq;
+    try {
+      // parse() бросает исключение с текстом и номером строки — его и
+      // показываем; разбираем ИМЕННО код из поля, чтобы в тексте ошибки
+      // была строка человека, а не наша оформленная.
+      await mermaid.parse(code);
+      const { svg } = await mermaid.render('v-svg-' + Date.now(), prettify(code));
+      if(mine !== seq) return;                // пока рисовали, выбрали другую схему
+      const keepLeft = stage.scrollLeft, keepTop = stage.scrollTop, keepK = k,
+            prevW = natW, prevH = natH;
+      layer.innerHTML = svg;
+      const el = layer.querySelector('svg');
+      const vb = el.viewBox && el.viewBox.baseVal;
+      natW = (vb && vb.width)  || el.getBoundingClientRect().width  || 1;
+      natH = (vb && vb.height) || el.getBoundingClientRect().height || 1;
+      errBox.hidden = true;
+      // Мелкая правка кода или смена темы — вид сохраняем. Совсем другая
+      // схема — подгоняем заново.
+      const same = prevW && Math.abs(natW - prevW) / prevW < 0.25
+                        && Math.abs(natH - prevH) / Math.max(1, prevH) < 0.25;
+      if(keepView && same){
+        sizeTo(keepK); stage.scrollLeft = keepLeft; stage.scrollTop = keepTop; edges(); syncHint();
+      }
+      else {
+        startView();
+        // Новый граф проявляется. Только для новой схемы: при правке кода и
+        // смене темы граф перерисовывается на месте, и мигание на каждой
+        // букве раздражало бы.
+        layer.classList.remove('v-anim'); void layer.offsetWidth; layer.classList.add('v-anim');
+      }
+    } catch (e) {
+      if(mine !== seq) return;
+      showError((e && (e.str || e.message)) ? String(e.str || e.message) : 'Схема не разобралась');
+    }
+  };
+
+  await window.renderDiagrams();
+} catch (e) {
+  showError('Библиотека mermaid не запустилась — обновите страницу. Код схемы можно скопировать и открыть на mermaid.live');
+}
+</script>
+<!--@BUBBLE-->
+</body>
+</html>

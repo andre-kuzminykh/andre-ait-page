@@ -11,8 +11,8 @@ import re
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
-# Открыт только модуль 1: лекции 2-8 закрыты и НЕ опубликованы — их файлов нет
-# в репозитории, поэтому по адресу /automation/3/ отдаётся 404 и контент
+# Открыты модули 1-3; 4-6 выложены превью, 7-8 закрыты и НЕ опубликованы — их
+# файлов нет в репозитории, поэтому по их адресам отдаётся 404 и контент
 # недоступен даже прямой ссылкой (это стережёт test_locked_modules_closed).
 # Проверки идут по фактически опубликованным лекциям, так что вернувшийся
 # модуль автоматически попадает под весь набор тестов — без правки списка.
@@ -721,14 +721,14 @@ def _published_pages():
 
 
 def test_locked_modules_closed():
-    """Открыты модули 1 и 2. Модули 3, 4, 5 и 6 выложены как превью по просьбе
+    """Открыты модули 1, 2 и 3 (модуль 3 открыт владельцем, FR-SITE69). Модули 4, 5 и 6 выложены как превью по просьбе
     владельца: он хочет смотреть колоду на живом сайте, пока записывает
     озвучку. На дорожной карте они по-прежнему заперты и ниоткуда не связаны,
     то есть попасть туда можно только прямой ссылкой, которую владелец даёт
     сам. Модулей 7 и 8 в репозитории нет: по их адресам отдаётся 404, контент
     недоступен даже прямой ссылкой. Архив контента — тег lectures-2-8-archive.
     """
-    for n in (1, 2):
+    for n in (1, 2, 3):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
             "модуль %d открыт и должен быть опубликован" % n
     for n in (7, 8):
@@ -740,31 +740,32 @@ def test_no_links_to_locked_modules():
     """Ни одна опубликованная страница не ведёт на закрытый модуль — на сайте
     нет ссылок, которые упирались бы в 404.
 
-    Модули 3, 4, 5 и 6 выложены как превью (см. test_locked_modules_closed):
+    Модуль 3 открыт (FR-SITE69): ссылки на него с дорожной карты законны.
+    Модули 4, 5 и 6 выложены как превью (см. test_locked_modules_closed):
     попасть туда можно только прямой ссылкой от владельца, и с дорожной карты,
     входа в курс и остальных страниц на них по-прежнему не ведёт ничего.
-    Собственные адреса внутри самих лекций 3-6 (og:url, ссылки на их же
+    Собственные адреса внутри самих лекций 4-6 (og:url, ссылки на их же
     практику) под правило не попадают — это не путь с сайта, а их собственная
     разметка.
     """
-    link = re.compile(r"automation/[3-8](?=[/\"'#?)\s]|$)")
+    link = re.compile(r"automation/[4-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
-        for n in ("3", "4", "5", "6"):
+        for n in ("4", "5", "6"):
             if rel.startswith("automation/%s/" % n):
                 hits = [h for h in hits if h != "automation/%s" % n]
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
 
 
 def test_locked_module_cards_have_no_href():
-    """Карточки модулей 3-8 на /automation/main/ — под замком и без href."""
+    """Карточки модулей 4-8 на /automation/main/ — под замком и без href."""
     with open(os.path.join(_ROOT, "automation/main/index.html"), encoding="utf-8") as f:
         html = f.read()
     cards = re.findall(r'<a class="module( locked)?"([^>]*)>', html)
     assert len(cards) == 8, "на главной курса восемь карточек модулей"
     opened = [c for c in cards if not c[0]]
-    assert len(opened) == 2 and all("href=" in o[1] for o in opened), \
-        "открыты ровно два модуля — первый и второй"
+    assert len(opened) == 3 and all("href=" in o[1] for o in opened), \
+        "открыты ровно три модуля — первый, второй и третий"
     for locked, attrs in [c for c in cards if c[0]]:
         assert "href=" not in attrs, "закрытая карточка не должна иметь href: " + attrs
         assert 'aria-disabled="true"' in attrs, "закрытая карточка помечена aria-disabled"
@@ -900,22 +901,6 @@ def test_content_breakpoints_live_on_the_form_boundary():
             rel + ": в собранном CSS появился брейкпоинт вне границы формы 768"
 
 
-if __name__ == "__main__":
-    failed = 0
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            try:
-                fn()
-                print("ok   %s" % name)
-            except ModuleNotFoundError as e:
-                # Запускалка задумана как «нужен только python3»: тест, которому
-                # нужна необязательная библиотека (Pillow для размеров превью),
-                # пропускается, а не валит прогон. Под pytest он идёт как обычно.
-                print("skip %s: нет модуля %s" % (name, e.name))
-            except Exception as e:  # AssertionError и любые сбои разбора
-                failed += 1
-                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
-    raise SystemExit(1 if failed else 0)
 
 
 # ── FR-SITE67: у лекции 5 две колоды — прод и теоретическая ───────────────
@@ -1008,3 +993,120 @@ def test_standalone_builder_leaves_no_external_refs():
     assert 'id="notes-toggle"' in html, "кнопка панели нужна скрытой — на ней инициализация"
     assert 'id="slide-notes"' in html, "статьи панели пропали"
     assert html.count('class="slide-container') == 43
+
+
+# ── FR-SITE69: лекция 3 пересобрана по новому тексту владельца ───────────
+
+# Заголовки слайдов 1–40 — дословно из текста владельца (его прямая просьба:
+# «заголовки возьми как я тебе скинул в тексте»). Стрелки в заголовке второго
+# слайда рисуются иконкой: глифа «→» в Montserrat нет.
+_L3_TITLES = (
+    "AS-IS и TO-BE", "Триггер Обработка Действие", "Правила или ИИ-автоматизация",
+    "Воркфлоу или агент", "ИИ-приложение и ИИ-платформа", "Четыре слоя ИИ-платформы",
+    "Среда исполнения агента", "Компоненты ИИ-платформы", "LLM-функция или ИИ-агент",
+    "Спецификация ИИ-агента", "Границы автономности ИИ-агента", "Граф навыков ИИ-агента",
+    "Типовые ИИ-операции", "Вызов функций и схема инструментов",
+    "Выбор инструментов и динамические аргументы", "API и внешние системы",
+    "Потоки данных", "Трансформация данных", "Маршрутизация данных", "Управление воркфлоу",
+    "Инженерия промтов", "Из чего состоит хороший промт", "Структурированный вывод",
+    "Автоматическая генерация и улучшение промтов", "Отличие промта от контекста",
+    "Инженерия контекста", "Состояние и память", "Выбор контекста",
+    "Что такое обвязка ИИ-агентов", "Из чего состоит обвязка ИИ-агента", "Права ИИ-агентов",
+    "Контроль и восстановление", "Цикл работы ИИ-агента", "Как правильно тестировать ИИ-агента",
+    "Метрики для тестирования", "Инженерия циклов", "Полная архитектура рабочего ИИ-агента",
+    "Жизненный цикл ИИ-агента", "Наблюдаемость и отладка", "Надежность и постоянное улучшение",
+)
+
+
+def _l3():
+    return open(os.path.join(_ROOT, "automation/3/index.html"), encoding="utf-8").read()
+
+
+def _plain(s):
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", s.replace("&shy;", ""))).strip()
+
+
+def test_lecture3_titles_follow_owner_text():
+    html = _l3()
+    heads = re.findall(r'id="slide-(\d+)">.*?<h([12])[^>]*>(.*?)</h\2>', html, re.S)
+    got = {int(n): _plain(t) for n, _, t in heads}
+    for k, want in enumerate(_L3_TITLES, start=1):
+        assert got.get(k) == want, "слайд %d: заголовок %r, а у владельца %r" % (k, got.get(k), want)
+    assert got.get(41) == "Выводы", "последний слайд — «Выводы», как в остальных лекциях"
+    assert "Лекция 3: Разработка агента" in html, "бейдж обложки — правка владельца"
+
+
+def test_lecture3_slides_match_videos_one_to_one():
+    """42 слайда = 42 ролика озвучки: введение, 40 слайдов текста и финал.
+    Ролик слайда k лежит в /assets/video_l3/<k+1>.mp4 (LECTURE-GUIDE §6)."""
+    html = _l3()
+    assert html.count('class="slide-container') == 42
+    assert "const totalSlides = 42;" in html
+    vids = re.findall(r"'/assets/video_l3/(\d+)\.mp4'",
+                      re.search(r"const videoIds = \[(.*?)\];", html, re.S).group(1))
+    assert [int(v) for v in vids] == list(range(1, 43)), "ролики идут один к одному со слайдами"
+
+
+def test_lecture3_leads_to_its_practice():
+    html = _l3()
+    practice = "https://andre.technology/automation/3/practice/"
+    assert re.search(r'class="lec-ctrl lec-task" href="%s"' % re.escape(practice), html), \
+        "кнопка «Задание» в шапке ведёт на практику лекции 3"
+    assert '<a class="quiz-next" href="%s">' % practice in html, \
+        "экран результата теста ведёт на практику, как у лекции 2"
+    assert os.path.exists(os.path.join(_ROOT, "automation/3/practice/index.html"))
+    quiz = re.search(r"const quizQuestions = \[(.*?)\n        \];", html, re.S).group(1)
+    assert quiz.count("correct:") == 10, "в тесте десять вопросов"
+    last = re.search(r'<div class="slide-container[^"]*" id="slide-41">', html).group(0)
+    assert "bg-black text-white" in last, "последний слайд фиолетовый, как в других лекциях"
+    assert 'id="open-quiz-btn"' in html
+
+
+def test_lecture3_uses_owner_vocabulary():
+    """Слова владельца: «промт» (не «промпт»), «воркфлоу» кириллицей, «запуск»."""
+    html = _l3()
+    body = html[html.index('id="slide-0"'):html.index("<!-- Модальное окно теста -->")]
+    text = _plain(re.sub(r"<!--.*?-->", " ", body, flags=re.S))
+    for bad in ("промпт", "Промпт", "workflow", "Workflow"):
+        assert bad not in text, "на слайдах осталось «%s»" % bad
+
+
+# ── FR-SITE70: практика лекции 3 — архитектуры ИИ-агентов ─────────────────
+
+def test_practice3_agent_architectures():
+    """Практика лекции 3: шесть кейсов практики лекции 2 превращены в
+    архитектуры ИИ-агентов — графы навыков как воркфлоу (mermaid flowchart),
+    узлы раскрашены по способу исполнения: правило, ИИ-модель, инструмент,
+    человек. Схемы рисует своя копия mermaid (LECTURE-GUIDE §9), не CDN."""
+    path = os.path.join(_ROOT, "automation/3/practice/index.html")
+    html = open(path, encoding="utf-8").read()
+    assert "/assets/mermaid/11.17.2/" in html, "mermaid — своя копия из assets"
+    for cdn in ("cdn.jsdelivr.net/npm/mermaid", "unpkg.com/mermaid"):
+        assert cdn not in html, "mermaid не должен тянуться с CDN"
+    assert html.count("flowchart TD") >= 6, "шесть графов навыков-воркфлоу"
+    for cls in ("rule", "ai", "tool", "human"):
+        assert html.count("classDef %s" % cls) >= 6, \
+            "класс узлов «%s» есть во всех шести графах" % cls
+    assert 'href="/automation/3/"' in html, "обратная ссылка на лекцию"
+    assert 'href="/automation/2/practice/"' in html, "ссылка на TO-BE из практики лекции 2"
+    assert "/assets/video_l3/practice.mp4" in html, "кружок с головой ждёт ролик практики"
+    body = re.sub(r"<pre[^>]*>.*?</pre>", " ", html, flags=re.S)
+    assert "промпт" not in body and "Промпт" not in body, "владелец пишет «промт»"
+
+
+if __name__ == "__main__":
+    failed = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("ok   %s" % name)
+            except ModuleNotFoundError as e:
+                # Запускалка задумана как «нужен только python3»: тест, которому
+                # нужна необязательная библиотека (Pillow для размеров превью),
+                # пропускается, а не валит прогон. Под pytest он идёт как обычно.
+                print("skip %s: нет модуля %s" % (name, e.name))
+            except Exception as e:  # AssertionError и любые сбои разбора
+                failed += 1
+                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
+    raise SystemExit(1 if failed else 0)

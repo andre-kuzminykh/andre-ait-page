@@ -1,0 +1,119 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-7">
+        <div class="content-z max-w-7xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Среда исполнения <span class="text-solar">агента</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Это уже не интеллект модели, а инженерия исполнения</p>
+
+            <!-- Один вызов модели: короткая дорожка «запрос — модель — ответ».
+                 Длинная лента реального агента ниже нарочно в том же языке кружков,
+                 чтобы разница в длине читалась сразу. Соединители на телефоне w-6, а не w-4:
+                 на 16px шаг пунктира 14px рисовал штрих и точку — линия казалась оборванной -->
+            <div class="w-fit max-w-full mx-auto bg-grayBase/30 border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-2 md:px-6 md:py-2.5 flex flex-col md:flex-row items-center justify-center gap-1.5 md:gap-6">
+                <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 whitespace-nowrap">Один вызов модели</h3>
+                <div class="js-keep flex flex-row items-center gap-1.5 md:gap-2.5">
+                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-base font-medium text-black whitespace-nowrap"><i class="ph-fill ph-chat-text text-solar"></i> Запрос</span>
+                    <div class="h-[2px] w-6 md:w-10 shrink-0 text-solar/50 a-flow"></div>
+                    <span class="w-7 h-7 md:w-10 md:h-10 rounded-full bg-white border-2 md:border-4 border-grayBase text-solar flex items-center justify-center shrink-0"><i class="ph-fill ph-brain text-sm md:text-xl text-solar"></i></span>
+                    <div class="h-[2px] w-6 md:w-10 shrink-0 text-solar/50 a-flow"></div>
+                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-base font-medium text-black whitespace-nowrap"><i class="ph-fill ph-chat-circle-text text-solar"></i> Ответ</span>
+                </div>
+            </div>
+
+            <!-- Реальный агент внутри среды исполнения: сверху — что среда берёт на себя,
+                 снизу — лента одного запуска на примере договора -->
+            <div class="relative w-full mt-6 md:mt-9 border-2 border-dashed border-solar/50 bg-grayBase/20 rounded-[20px] md:rounded-[28px] px-2.5 pb-3 pt-5 md:px-6 md:pb-4 md:pt-7">
+                <!-- Ярлык не rounded-full: в тёмной теме у круглого белого фон полупрозрачный
+                     и пунктир рамки просвечивал сквозь надпись -->
+                <span class="absolute -top-2.5 md:-top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white border border-solar/50 rounded-lg md:rounded-xl px-2.5 md:px-4 py-0.5 md:py-1 text-[9px] md:text-sm font-medium uppercase tracking-widest text-solar">Среда исполнения</span>
+
+                <div class="flex flex-wrap justify-center gap-1.5 md:gap-2.5 w-full">
+                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-[15px] font-medium text-black whitespace-nowrap a-in"><i class="ph-fill ph-arrows-left-right text-solar"></i> Передача данных</span>
+                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-[15px] font-medium text-black whitespace-nowrap a-in a-in-2"><i class="ph-fill ph-database text-solar"></i> Хранение состояния</span>
+                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-[15px] font-medium text-black whitespace-nowrap a-in a-in-3"><i class="ph-fill ph-wrench text-solar"></i> Вызов инструментов</span>
+                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-[15px] font-medium text-black whitespace-nowrap a-in a-in-4"><i class="ph-fill ph-key text-solar"></i> Учётные записи</span>
+                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-[15px] font-medium text-black whitespace-nowrap a-in a-in-5"><i class="ph-fill ph-lifebuoy text-solar"></i> Обработка сбоев</span>
+                </div>
+
+                <!-- Лента запуска. ПК: шесть равных колонок, телефон: шесть равных строк,
+                     поэтому центры узлов стоят на 1/12, 3/12 … 11/12 и рельсы кладутся под
+                     кружки абсолютом по этим долям. Бегущий пунктир — работа, серый штрих —
+                     пауза: процесс стоит, пока не придёт ответ. Рельсы — соседи сетки, а не
+                     её дети: детям сетки slide-polish гасит анимацию (animation:none).
+                     Кружки загораются волной (a-step), пилюля паузы дышит — ход запуска
+                     виден глазами («всё анимированно»). Подписи узлов — строго в одну строку:
+                     «договор на подтверждение» в колонку не влезал и рвался на две строки,
+                     поэтому узел сервиса подписан «договор отправлен». На телефоне строки
+                     py-1.5: при py-1 кружки стояли почти вплотную и серый пунктир паузы
+                     между ними не читался -->
+                <div class="relative w-fit md:w-full mx-auto mt-3 md:mt-5">
+                    <div class="absolute left-[61px] top-[8.333%] w-[2px] h-[33.333%] md:w-0 md:h-0 text-solar/50 a-flow-y"></div>
+                    <div class="absolute top-[31px] left-[8.333%] w-0 h-0 md:w-[33.333%] md:h-[2px] text-solar/50 a-flow"></div>
+                    <div class="absolute left-[61px] top-[41.667%] w-0 h-[33.333%] border-l-2 border-dashed border-black/30 md:left-[41.667%] md:top-[31px] md:w-[33.333%] md:h-0 md:border-l-0 md:border-t-2"></div>
+                    <div class="absolute left-[61px] top-[75%] w-[2px] h-[16.667%] md:w-0 md:h-0 text-solar/50 a-flow-y"></div>
+                    <div class="absolute top-[31px] left-[75%] w-0 h-0 md:w-[16.667%] md:h-[2px] text-solar/50 a-flow"></div>
+
+                    <div class="relative grid grid-cols-1 auto-rows-fr md:grid-cols-6 w-full">
+                        <div class="flex items-center md:items-start justify-start md:justify-center py-1.5 md:py-0 md:px-1">
+                            <div class="flex flex-row md:flex-col items-center gap-2 md:gap-0 text-left md:text-center a-in">
+                                <div class="w-[124px] md:w-auto flex justify-center shrink-0 md:mb-2"><div class="w-8 h-8 md:w-16 md:h-16 rounded-full bg-white border-2 md:border-4 border-grayBase text-solar flex items-center justify-center a-step"><i class="ph-fill ph-brain text-base md:text-3xl text-solar"></i></div></div>
+                                <div class="min-w-0">
+                                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Модель</h3>
+                                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 md:mt-0.5">первый вызов</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center md:items-start justify-start md:justify-center py-1.5 md:py-0 md:px-1">
+                            <div class="flex flex-row md:flex-col items-center gap-2 md:gap-0 text-left md:text-center a-in a-in-2">
+                                <div class="w-[124px] md:w-auto flex justify-center shrink-0 md:mb-2"><div class="w-8 h-8 md:w-16 md:h-16 rounded-full bg-white border-2 md:border-4 border-grayBase text-solar flex items-center justify-center a-step a-step-2"><i class="ph-fill ph-paper-plane-tilt text-base md:text-3xl text-solar"></i></div></div>
+                                <div class="min-w-0">
+                                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Сервис</h3>
+                                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 md:mt-0.5">договор отправлен</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center md:items-start justify-start md:justify-center py-1.5 md:py-0 md:px-1">
+                            <div class="flex flex-row md:flex-col items-center gap-2 md:gap-0 text-left md:text-center a-in a-in-3">
+                                <div class="w-[124px] md:w-auto flex justify-center shrink-0 md:mb-2"><div class="w-8 h-8 md:w-16 md:h-16 rounded-full bg-white border-2 md:border-4 border-grayBase text-solar flex items-center justify-center a-step a-step-3"><i class="ph-fill ph-pause text-base md:text-3xl text-solar"></i></div></div>
+                                <div class="min-w-0">
+                                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Остановка</h3>
+                                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 md:mt-0.5">состояние сохранено</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center md:items-start justify-start md:justify-center py-1.5 md:py-0 md:px-1">
+                            <div class="flex flex-row md:flex-col items-center gap-2 md:gap-0 text-left md:text-center a-in a-in-4">
+                                <div class="w-[124px] md:w-auto h-8 md:h-16 flex items-center justify-center shrink-0 md:mb-2">
+                                    <span class="bg-black border-2 border-solar rounded-full px-2 py-1 md:px-3.5 md:py-2 text-[10px] md:text-sm font-medium text-white whitespace-nowrap a-pulse"><i class="ph-fill ph-clock text-solar"></i> часы или дни</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Ожидание</h3>
+                                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 md:mt-0.5">ответ придёт завтра</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center md:items-start justify-start md:justify-center py-1.5 md:py-0 md:px-1">
+                            <div class="flex flex-row md:flex-col items-center gap-2 md:gap-0 text-left md:text-center a-in a-in-5">
+                                <div class="w-[124px] md:w-auto flex justify-center shrink-0 md:mb-2"><div class="w-8 h-8 md:w-16 md:h-16 rounded-full bg-white border-2 md:border-4 border-grayBase text-solar flex items-center justify-center a-step a-step-2"><i class="ph-fill ph-play text-base md:text-3xl text-solar"></i></div></div>
+                                <div class="min-w-0">
+                                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Продолжение</h3>
+                                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 md:mt-0.5">с нужного места</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center md:items-start justify-start md:justify-center py-1.5 md:py-0 md:px-1">
+                            <div class="flex flex-row md:flex-col items-center gap-2 md:gap-0 text-left md:text-center a-in a-in-6">
+                                <div class="w-[124px] md:w-auto flex justify-center shrink-0 md:mb-2"><div class="w-8 h-8 md:w-16 md:h-16 rounded-full bg-white border-2 md:border-4 border-grayBase text-solar flex items-center justify-center a-step a-step-3"><i class="ph-fill ph-brain text-base md:text-3xl text-solar"></i></div></div>
+                                <div class="min-w-0">
+                                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Модель</h3>
+                                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 md:mt-0.5">повторный вызов</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Модель решает, что делать, <br><span class="font-black">а среда исполнения превращает решение <span class="whitespace-nowrap">в контролируемый процесс</span></span></p>
+            </div>
+        </div>
+    </div>

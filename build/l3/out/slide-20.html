@@ -1,0 +1,134 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-20">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Управление <span class="text-solar">воркфлоу</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Реальная автоматизация не всегда идёт по прямой</p>
+
+            <!-- ПК: четыре механизма сеткой 2×2, справа выделенный «воркфлоу как инструмент»;
+                 к нему бежит линия от подпроцесса — тот же блок агент запускает как навык.
+                 Телефон: механизмы строками «схема | текст», линия вниз, тёмная карточка последней.
+                 В каждой мини-схеме движение объясняет смысл: кольцо цикла крутится и обходит
+                 объекты по очереди, пакеты по сто уходят по одному, пауза ожидания дышит.
+                 Колонки линии и тёмной карточки — в px, а не в fr: при росте подгонщика
+                 до ~1.05 карточкам механизмов остаётся ширина на самую длинную строку;
+                 иначе строка «сохранили состояние…» переезжала на третью, высота прыгала
+                 и подгонка качалась между двумя масштабами.
+                 На телефоне у строк механизмов min-h-[82px] (= высота строки с текстом в три
+                 строки): «Цикл» с текстом в две была ниже соседних, стопка выглядела рваной.
+                 Не дорожки 1fr — с ними подгонщик ронял телефонный масштаб 0.97 → 0.93 -->
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_1fr_32px_310px] md:grid-rows-2 gap-2 md:gap-4 items-stretch w-full">
+
+                <!-- Цикл: одно действие обходит объекты по очереди -->
+                <div class="md:col-start-1 md:row-start-1 bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2.5 md:px-4 md:py-4 min-h-[82px] md:min-h-0 flex flex-row md:flex-col items-center justify-center gap-2.5 md:gap-0 h-full a-in">
+                    <div class="w-[128px] md:w-full h-12 md:h-[72px] shrink-0 flex items-center justify-center gap-1 md:gap-2.5">
+                        <div class="relative w-10 h-10 md:w-16 md:h-16 shrink-0 flex items-center justify-center">
+                            <div class="absolute inset-0 rounded-full border-2 border-dashed border-solar/50 a-orbit"></div>
+                            <i class="ph-fill ph-gear text-base md:text-3xl text-solar"></i>
+                        </div>
+                        <div class="h-[2px] w-2 md:w-6 shrink-0 text-solar/50 a-flow"></div>
+                        <span class="w-5 h-5 md:w-9 md:h-9 shrink-0 rounded-md md:rounded-lg bg-solar/15 border border-solar/50 flex items-center justify-center a-step"><i class="ph-fill ph-user text-[11px] md:text-lg text-solar"></i></span>
+                        <span class="w-5 h-5 md:w-9 md:h-9 shrink-0 rounded-md md:rounded-lg bg-solar/15 border border-solar/50 flex items-center justify-center a-step a-step-2"><i class="ph-fill ph-user text-[11px] md:text-lg text-solar"></i></span>
+                        <span class="w-5 h-5 md:w-9 md:h-9 shrink-0 rounded-md md:rounded-lg bg-solar/15 border border-solar/50 flex items-center justify-center a-step a-step-3"><i class="ph-fill ph-user text-[11px] md:text-lg text-solar"></i></span>
+                    </div>
+                    <div class="flex-1 md:flex-none min-w-0 text-center md:mt-3">
+                        <h3 class="font-black text-[11px] md:text-lg text-black mb-0.5 md:mb-1 leading-tight">Цикл</h3>
+                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">одно действие повторяется <br>для множества объектов</p>
+                    </div>
+                </div>
+
+                <!-- Пакеты: тысяча клиентов уходит по сто, пачки загораются по очереди -->
+                <div class="md:col-start-2 md:row-start-1 bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2.5 md:px-4 md:py-4 min-h-[82px] md:min-h-0 flex flex-row md:flex-col items-center justify-center gap-2.5 md:gap-0 h-full a-in a-in-2">
+                    <div class="w-[128px] md:w-full min-h-12 md:h-[72px] shrink-0 flex flex-col md:flex-row items-center justify-center md:gap-2.5">
+                        <span class="bg-grayBase/40 border border-grayBase rounded-md md:rounded-lg px-1 md:px-2.5 py-0 md:py-1.5 text-[9px] md:text-base text-black/70 leading-tight whitespace-nowrap shrink-0"><i class="ph-fill ph-users text-solar"></i> 1000</span>
+                        <div class="h-[2px] w-2.5 md:w-5 shrink-0 text-solar/50 a-flow rotate-90 md:rotate-0"></div>
+                        <div class="flex items-center gap-1 md:gap-1.5 shrink-0">
+                            <span class="bg-solar/15 border border-solar/50 rounded-md px-1.5 md:px-2.5 py-0 md:py-1.5 text-[9px] md:text-base font-medium text-black leading-tight a-step">100</span>
+                            <span class="bg-solar/15 border border-solar/50 rounded-md px-1.5 md:px-2.5 py-0 md:py-1.5 text-[9px] md:text-base font-medium text-black leading-tight a-step a-step-2">100</span>
+                            <span class="bg-solar/15 border border-solar/50 rounded-md px-1.5 md:px-2.5 py-0 md:py-1.5 text-[9px] md:text-base font-medium text-black leading-tight a-step a-step-3">100</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 md:flex-none min-w-0 text-center md:mt-3">
+                        <h3 class="font-black text-[11px] md:text-lg text-black mb-0.5 md:mb-1 leading-tight">Пакеты</h3>
+                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0"><span class="whitespace-nowrap">по сто клиентов за раз —</span> <br><span class="whitespace-nowrap">иначе упрёмся</span> <span class="whitespace-nowrap">в ограничения</span></p>
+                    </div>
+                </div>
+
+                <!-- Ожидание: договор ушёл на согласование, прогон стоит на паузе -->
+                <div class="md:col-start-1 md:row-start-2 bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2.5 md:px-4 md:py-4 min-h-[82px] md:min-h-0 flex flex-row md:flex-col items-center justify-center gap-2.5 md:gap-0 h-full a-in a-in-3">
+                    <!-- На телефоне в колонку 128px «договор — пауза — продолжение» в ряд не влезали:
+                         обе бегущие линии сжимались до нуля и цепочка слипалась. Поэтому, как у пакетов,
+                         договор сверху, линия вниз, под ней «пауза — продолжение»; на ПК — прежний ряд.
+                         md:gap-x-2.5, а не md:gap-2.5: правило колоды «[class*=gap-2] → row-gap .6rem»
+                         раздувало стопку, строка «Ожидание» выходила выше соседних и телефонный
+                         масштаб падал 0.97 → 0.93; зазор вокруг линии держит её my-1.5.
+                         «— продолжение» на телефоне вынесено за правый край паузы (absolute left-full):
+                         иначе по центру колонки стояла вся тройка, и линия от договора била мимо паузы -->
+                    <div class="w-[128px] md:w-full min-h-12 md:h-[72px] shrink-0 flex flex-col md:flex-row items-center justify-center md:gap-x-2.5">
+                        <span class="bg-grayBase/40 border border-grayBase rounded-md md:rounded-lg px-1 md:px-2.5 py-0 md:py-1 text-[9px] md:text-sm text-black/70 leading-tight whitespace-nowrap shrink-0"><i class="ph-fill ph-file-text text-solar"></i> договор</span>
+                        <div class="h-[2px] w-2 md:w-10 shrink-0 my-1.5 md:my-0 text-solar/50 a-flow rotate-90 md:rotate-0"></div>
+                        <div class="relative flex items-center gap-1 md:gap-2.5 shrink-0">
+                            <div class="w-7 h-7 md:w-12 md:h-12 shrink-0 rounded-full bg-solar/15 border-2 border-solar flex items-center justify-center a-pulse"><i class="ph-fill ph-pause text-xs md:text-2xl text-solar"></i></div>
+                            <div class="absolute md:static left-full top-1/2 -translate-y-1/2 md:translate-y-0 ml-1 md:ml-0 flex items-center gap-1 md:gap-2.5">
+                                <div class="h-[2px] w-3 md:w-10 shrink-0 text-solar/50 a-flow"></div>
+                                <i class="ph-fill ph-play text-xs md:text-2xl text-black/40 shrink-0"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 md:flex-none min-w-0 text-center md:mt-3">
+                        <h3 class="font-black text-[11px] md:text-lg text-black mb-0.5 md:mb-1 leading-tight">Ожидание</h3>
+                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0"><span class="whitespace-nowrap">сохранили состояние,</span> <span class="whitespace-nowrap">ждём человека —</span> <br><span class="whitespace-nowrap">продолжаем</span> <span class="whitespace-nowrap">с нужного места</span></p>
+                    </div>
+                </div>
+
+                <!-- Подпроцесс: проверку клиента собрали один раз, её вызывают три отдела -->
+                <div class="md:col-start-2 md:row-start-2 bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2.5 md:px-4 md:py-4 min-h-[82px] md:min-h-0 flex flex-row md:flex-col items-center justify-center gap-2.5 md:gap-0 h-full a-in a-in-4">
+                    <div class="w-[128px] md:w-full h-12 md:h-[72px] shrink-0 flex flex-col items-center justify-center">
+                        <p class="bg-solar/15 border border-solar/50 rounded-md md:rounded-lg px-1.5 md:px-3 py-0.5 text-[9px] md:text-base font-medium text-black leading-tight m-0 whitespace-nowrap">проверка клиента</p>
+                        <div class="flex items-start justify-center gap-5 md:gap-10">
+                            <div class="flex flex-col items-center a-step"><div class="w-[2px] h-2 md:h-3 text-solar/50 a-flow-y"></div><i class="ph-fill ph-handshake text-lg md:text-3xl text-solar"></i></div>
+                            <div class="flex flex-col items-center a-step a-step-2"><div class="w-[2px] h-2 md:h-3 text-solar/50 a-flow-y"></div><i class="ph-fill ph-coins text-lg md:text-3xl text-solar"></i></div>
+                            <div class="flex flex-col items-center a-step a-step-3"><div class="w-[2px] h-2 md:h-3 text-solar/50 a-flow-y"></div><i class="ph-fill ph-headset text-lg md:text-3xl text-solar"></i></div>
+                        </div>
+                    </div>
+                    <div class="flex-1 md:flex-none min-w-0 text-center md:mt-3">
+                        <h3 class="font-black text-[11px] md:text-lg text-black mb-0.5 md:mb-1 leading-tight">Подпроцесс</h3>
+                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0"><span class="whitespace-nowrap">создали один раз —</span> <br><span class="whitespace-nowrap">для продаж, финансов</span> <span class="whitespace-nowrap">и поддержки</span></p>
+                    </div>
+                </div>
+
+                <!-- Линия от подпроцесса к агенту: на ПК вправо, на телефоне повёрнута вниз -->
+                <div class="md:col-start-3 md:row-start-2 flex items-center justify-center">
+                    <div class="flex items-center w-5 md:w-full rotate-90 md:rotate-0 my-0.5 md:my-0">
+                        <div class="h-[2px] flex-1 text-solar/60 a-flow"></div>
+                        <i class="ph-bold ph-caret-right text-sm md:text-xl text-solar -ml-1 shrink-0"></i>
+                    </div>
+                </div>
+
+                <!-- Воркфлоу как инструмент: агент запускает целый процесс как один навык -->
+                <div class="md:col-start-4 md:row-start-1 md:row-span-2 bg-black border-2 border-solar rounded-[16px] md:rounded-3xl p-3 md:px-4 md:py-5 flex flex-col items-center justify-center text-center a-in a-in-5">
+                    <div class="js-keep flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 w-full">
+                        <div class="flex flex-col items-center shrink-0">
+                            <div class="w-11 h-11 md:w-20 md:h-20 rounded-full bg-solar/15 border-2 border-solar flex items-center justify-center a-pulse"><i class="ph-fill ph-robot text-xl md:text-4xl text-solar"></i></div>
+                            <span class="text-[9px] md:text-sm font-medium text-white/80 leading-tight mt-0.5 md:mt-1.5 whitespace-nowrap">ИИ-агент</span>
+                        </div>
+                        <div class="h-[2px] w-6 md:w-8 shrink-0 text-solar/60 a-flow md:rotate-90 md:my-4"></div>
+                        <div class="border-2 border-dashed border-solar/50 rounded-xl md:rounded-2xl px-2 py-1.5 md:px-4 md:py-3 flex flex-col items-center gap-1 md:gap-2">
+                            <p class="text-[9px] md:text-sm text-white/80 leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-package text-solar"></i> проверка клиента</p>
+                            <div class="flex items-center gap-1 md:gap-1.5">
+                                <span class="w-5 h-5 md:w-9 md:h-9 rounded-md md:rounded-lg bg-white/10 border border-white/25 flex items-center justify-center a-step"><i class="ph-fill ph-magnifying-glass text-[11px] md:text-lg text-solar"></i></span>
+                                <i class="ph-bold ph-arrow-right text-[9px] md:text-sm text-white/30"></i>
+                                <span class="w-5 h-5 md:w-9 md:h-9 rounded-md md:rounded-lg bg-white/10 border border-white/25 flex items-center justify-center a-step a-step-2"><i class="ph-fill ph-shield-check text-[11px] md:text-lg text-solar"></i></span>
+                                <i class="ph-bold ph-arrow-right text-[9px] md:text-sm text-white/30"></i>
+                                <span class="w-5 h-5 md:w-9 md:h-9 rounded-md md:rounded-lg bg-white/10 border border-white/25 flex items-center justify-center a-step a-step-3"><i class="ph-fill ph-seal-check text-[11px] md:text-lg text-solar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight mt-2 md:mt-5 mb-0.5 md:mb-1.5 whitespace-nowrap">Воркфлоу как инструмент</h3>
+                    <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0">целый бизнес-процесс <br>становится навыком агента</p>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0"><span class="whitespace-nowrap">Сложные системы собираются</span> <span class="font-black whitespace-nowrap">из небольших переиспользуемых компонентов</span></p>
+            </div>
+        </div>
+    </div>
