@@ -17,11 +17,10 @@ _ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
 # Проверки идут по фактически опубликованным лекциям, так что вернувшийся
 # модуль автоматически попадает под весь набор тестов — без правки списка.
 _LECTURES = tuple(r for r in _ALL_LECTURES if os.path.exists(os.path.join(_ROOT, r)))
-# Лекция 5 осталась архивной (голова с Vimeo). Лекции 3 и 4 пересобраны
-# на общем каноне: свой плеер и ролики со своего домена, как у 1 и 2.
-_VIMEO = ("automation/5/index.html",)
-# Лекция 6 пересобрана заново (превью, как 3 и 4) и роликов пока не имеет —
-# videoIds у неё пустой, CDN-источник архивной версии к ней не относится.
+# Лекции 3-6 пересобраны на общем каноне: свой плеер и ролики со своего
+# домена, как у 1 и 2 (у лекции 6 роликов пока нет — videoIds пустой). Архив
+# с головами на Vimeo остался в теге lectures-2-8-archive. Лекции 7-8 ещё
+# играют головы с CDN.
 _NATIVE_CDN = {
     "automation/7/index.html": "corp/7/videos",
     "automation/8/index.html": "corp/8/videos",
@@ -70,8 +69,14 @@ def test_slider_api_and_swipe():
 # ── FR-SITE13: видео-кружок — источники видео корректны ───────────────────
 
 def test_video_sources():
-    for rel, html in _pages(_VIMEO):
-        assert "player.vimeo.com/api/player.js" in html, rel + ": лекции 3-5 играют головы с Vimeo"
+    # Лекции на общем каноне играют головы своим плеером со своего домена
+    # (см. LECTURE-GUIDE §6): хот-линк с raw.githubusercontent.com резал по
+    # лимитам и ронял ролики на проде. Пустой videoIds — законное состояние
+    # колоды, к которой роликов ещё не записали: кружок просто не показывается.
+    for rel, html in _pages():
+        if rel in _NATIVE_CDN:
+            continue
+        assert "player.vimeo.com" not in html, rel + ": голова должна играть своим плеером, не с Vimeo"
     for rel, html in _pages(tuple(_NATIVE_CDN)):
         path = _NATIVE_CDN[rel]
         assert "raw.githubusercontent.com/andre-kuzminykh/automation/" in html and path in html, \
@@ -716,17 +721,17 @@ def _published_pages():
 
 
 def test_locked_modules_closed():
-    """Открыты модули 1 и 2. Модули 3, 4 и 6 выложены как превью по просьбе
+    """Открыты модули 1 и 2. Модули 3, 4, 5 и 6 выложены как превью по просьбе
     владельца: он хочет смотреть колоду на живом сайте, пока записывает
     озвучку. На дорожной карте они по-прежнему заперты и ниоткуда не связаны,
     то есть попасть туда можно только прямой ссылкой, которую владелец даёт
-    сам. Модулей 5, 7 и 8 в репозитории нет: по их адресам отдаётся 404, контент
+    сам. Модулей 7 и 8 в репозитории нет: по их адресам отдаётся 404, контент
     недоступен даже прямой ссылкой. Архив контента — тег lectures-2-8-archive.
     """
     for n in (1, 2):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
             "модуль %d открыт и должен быть опубликован" % n
-    for n in (5, 7, 8):
+    for n in (7, 8):
         assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
             "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
 
@@ -735,16 +740,17 @@ def test_no_links_to_locked_modules():
     """Ни одна опубликованная страница не ведёт на закрытый модуль — на сайте
     нет ссылок, которые упирались бы в 404.
 
-    Модули 3, 4 и 6 выложены как превью (см. test_locked_modules_closed): попасть
-    туда можно только прямой ссылкой от владельца, и с дорожной карты, входа в
-    курс и остальных страниц на них по-прежнему не ведёт ничего. Собственные
-    адреса внутри самих лекций 3, 4 и 6 (og:url, ссылки на их же практику) под
-    правило не попадают — это не путь с сайта, а их собственная разметка.
+    Модули 3, 4, 5 и 6 выложены как превью (см. test_locked_modules_closed):
+    попасть туда можно только прямой ссылкой от владельца, и с дорожной карты,
+    входа в курс и остальных страниц на них по-прежнему не ведёт ничего.
+    Собственные адреса внутри самих лекций 3-6 (og:url, ссылки на их же
+    практику) под правило не попадают — это не путь с сайта, а их собственная
+    разметка.
     """
     link = re.compile(r"automation/[3-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
-        for n in ("3", "4", "6"):
+        for n in ("3", "4", "5", "6"):
             if rel.startswith("automation/%s/" % n):
                 hits = [h for h in hits if h != "automation/%s" % n]
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
@@ -910,3 +916,95 @@ if __name__ == "__main__":
                 failed += 1
                 print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
     raise SystemExit(1 if failed else 0)
+
+
+# ── FR-SITE67: у лекции 5 две колоды — прод и теоретическая ───────────────
+
+_V2 = "automation/5/v2/index.html"
+
+
+def test_lecture5_has_two_decks():
+    """Вторая колода — та же лекция другой подачей: 43 слайда, своя нумерация.
+
+    Прод-колода при этом обязана остаться на месте и отдельно: владелец
+    сравнивает их рядом, поэтому склеивать или подменять одну другой нельзя.
+    """
+    prod = os.path.join(_ROOT, "automation/5/index.html")
+    v2 = os.path.join(_ROOT, _V2)
+    if not os.path.exists(v2):
+        return  # второй колоды может не быть — это не ошибка
+    assert os.path.exists(prod), "прод-колода лекции 5 пропала"
+    a = open(prod, encoding="utf-8").read()
+    b = open(v2, encoding="utf-8").read()
+    for rel, html in (("automation/5/index.html", a), (_V2, b)):
+        n = html.count('class="slide-container')
+        assert n == 43, "%s: слайдов %d, а должно быть 43" % (rel, n)
+        assert "totalSlides = 43" in html, rel + ": счётчик слайдов разошёлся с разметкой"
+    assert a != b, "колоды совпали — второй подачи нет"
+
+
+def test_lecture5_v2_owns_its_css():
+    """Свой CSS: Tailwind собирается по странице, чужой файл её не покроет.
+
+    Подсунутый lecture-5.css не отрисовал бы новые классы второй колоды —
+    молча, без ошибки в консоли, поэтому проверяем именно адрес файла.
+    """
+    v2 = os.path.join(_ROOT, _V2)
+    if not os.path.exists(v2):
+        return
+    html = open(v2, encoding="utf-8").read()
+    assert '/assets/lecture-5-v2.css' in html, "вторая колода ссылается на чужой CSS"
+    css = os.path.join(_ROOT, "assets/lecture-5-v2.css")
+    assert os.path.exists(css), "assets/lecture-5-v2.css не собран"
+    body = open(css, encoding="utf-8").read()
+    medias = set(m.strip() for m in re.findall(r"@media[^{]+", body))
+    assert all("768px" in m for m in medias), "в CSS второй колоды чужие брейкпоинты: %s" % medias
+
+
+# ── FR-SITE68: автономный HTML колоды ─────────────────────────────────────
+
+def test_standalone_builder_leaves_no_external_refs():
+    """Собранный файл обязан быть самодостаточным: ни одной ссылки наружу.
+
+    Именно внешняя ссылка и была причиной жалобы «вот что я вижу в html»:
+    `/assets/lecture-5-v2.css` с диска отдаёт 404, и колода остаётся без
+    Tailwind. Заодно стережём снятую обвязку: шапку, стрелки, кнопку теста.
+    """
+    import subprocess
+    import tempfile
+    page = os.path.join(_ROOT, "automation/5/v2/index.html")
+    css = os.path.join(_ROOT, "assets/lecture-5-v2.css")
+    builder = os.path.join(_ROOT, "tools/lecture5/standalone.py")
+    if not (os.path.exists(page) and os.path.exists(css) and os.path.exists(builder)):
+        return
+    if not os.path.isdir(os.path.join(_ROOT, "vendor")):
+        return  # шрифты и значки кэшируются отдельно, в репозитории их нет
+    with tempfile.TemporaryDirectory() as tmp:
+        out = os.path.join(tmp, "standalone.html")
+        r = subprocess.run(["python3", builder, "automation/5/v2/index.html",
+                            "assets/lecture-5-v2.css", os.path.relpath(out, _ROOT)],
+                           cwd=_ROOT, capture_output=True)
+        # Путь назначения вне репозитория — собираем рядом и переносим
+        if r.returncode != 0:
+            out = os.path.join(_ROOT, "_standalone_test.html")
+            r = subprocess.run(["python3", builder, "automation/5/v2/index.html",
+                                "assets/lecture-5-v2.css", "_standalone_test.html"],
+                               cwd=_ROOT, capture_output=True)
+            assert r.returncode == 0, r.stderr.decode("utf-8", "replace")[-500:]
+        try:
+            html = open(out, encoding="utf-8").read()
+        finally:
+            if out.startswith(_ROOT) and os.path.exists(out) and "_standalone_test" in out:
+                os.remove(out)
+    for bad in ("https://unpkg.com", "https://fonts.googleapis.com",
+                "https://fonts.gstatic.com", '"/assets/', "url(/assets/"):
+        assert bad not in html, "в автономном файле осталась внешняя ссылка: " + bad
+    for gone, what in (('id="lecture-header"', "шапка"),
+                       ('id="nav-prev"', "стрелка назад"),
+                       ('id="nav-next"', "стрелка вперёд"),
+                       ('id="open-quiz-btn"', "кнопка теста")):
+        assert gone not in html, "обвязка не снята: " + what
+    # Панель второго слоя обязана пережить снятие кнопки
+    assert 'id="notes-toggle"' in html, "кнопка панели нужна скрытой — на ней инициализация"
+    assert 'id="slide-notes"' in html, "статьи панели пропали"
+    assert html.count('class="slide-container') == 43

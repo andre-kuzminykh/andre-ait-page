@@ -127,7 +127,6 @@
   @keyframes floatY { 0% { transform: translateY(0); } 50% { transform: translateY(-9px); } 100% { transform: translateY(0); } }
   @keyframes pulseGlow { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
   @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-  @keyframes auraPulse { 0%, 100% { opacity: 0.45; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.12); } }
 
   /* ===== Background video ===== */
   .scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #050505; }
@@ -347,15 +346,25 @@
      столбец: бренд и футер уходят В ПОТОК (не absolute), поэтому больше не
      накладываются на список; крестик становится fixed и виден при прокрутке.
      Блок стоит ПОСЛЕ правил .nav-foot/.nav-brand, иначе те перебивают position. */
+  /* Правка владельца: «меню тоже ебаное — оно листается; ничего листаться не
+     должно, просто в два ряда тогда разложи». Восемь пунктов встают В ДВА
+     СТОЛБЦА, бренд сверху во всю ширину, снизу иконки, юр. ссылки и копирайт —
+     всё целиком в экране, прокрутки нет. */
   @media (max-width:1149px) and (orientation: landscape) and (max-height:520px) {
-    .nav.open { justify-content: flex-start; padding: 1.1rem 1.75rem calc(1.4rem + env(safe-area-inset-bottom, 0px)); }
+    .nav.open { display: grid; grid-template-columns: 1fr 1fr; align-content: center;
+      justify-content: stretch; column-gap: clamp(1rem, 4vw, 2.6rem); row-gap: 0.1rem;
+      padding: 0.9rem 1.75rem calc(1rem + env(safe-area-inset-bottom, 0px)); overflow: hidden; }
     .nav.open .nav-close { position: fixed; top: 0.6rem; right: 0.8rem; }
-    .nav.open .nav-brand { position: static; margin: 0 auto 0.75rem; top: auto; left: auto; right: auto; }
-    .nav.open .nav-brand-img { width: 2.1rem; height: 2.1rem; }
-    .nav.open .nav-brand-name { font-size: 13px; }
-    .nav.open .nav-tab { padding-top: 0.5rem; padding-bottom: 0.5rem; font-size: 15px; }
-    .nav.open .nav-ic { font-size: 16px; }
-    .nav.open .nav-foot { position: static; left: auto; right: auto; bottom: auto; margin-top: 1.1rem; gap: 0.6rem; }
+    .nav.open .nav-brand { position: static; grid-column: 1 / -1; margin: 0 auto 0.5rem;
+      top: auto; left: auto; right: auto; }
+    .nav.open .nav-brand-img { width: 1.9rem; height: 1.9rem; }
+    .nav.open .nav-brand-name { font-size: 12.5px; }
+    .nav.open .nav-tab { padding-top: 0.42rem; padding-bottom: 0.42rem; font-size: 14px; max-width: none; }
+    .nav.open .nav-ic { font-size: 15px; }
+    .nav.open .nav-divider { display: none; }
+    .nav.open .nav-foot { position: static; grid-column: 1 / -1; left: auto; right: auto;
+      bottom: auto; margin-top: 0.7rem; gap: 0.45rem; }
+    .nav.open .nav-social { gap: 1rem; font-size: 15px; }
   }
 
   html[lang="ru"] .nav-legal { gap: 0.45rem; }
@@ -497,9 +506,6 @@
   .rm-title { font-size: 1.5rem; white-space: nowrap; }
   @media (min-width:1024px) { .rm-title { font-size: clamp(1.5rem, 1.9vw, 2.5rem); } }
 
-  .overview-aura { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); width: min(85%, 32rem); height: 15rem;
-    background: radial-gradient(closest-side, rgba(136,84,243,0.4), rgba(249,115,22,0.14), transparent 72%); filter: blur(34px); z-index: 0; pointer-events: none; animation: auraPulse 5.5s ease-in-out infinite; }
-
   /* «About me» под CTA героя: не кнопка, а серая текстовая ссылка (FR-SITE7) */
   .about-link { position: relative; z-index: 1; margin-top: -0.65rem; font-size: 12px; font-weight: 500; text-transform: uppercase;
     letter-spacing: 0.12em; color: rgba(255,255,255,0.5); transition: color 0.3s ease; }
@@ -541,6 +547,30 @@
      кегль: EN 44 знака, RU 43 — длины сравнялись, кегль ЕДИНЫЙ для обоих языков.
      Специфичность .desc.hero-sub перебивает и десктопный, и ландшафтный кламп .desc. */
   .desc.hero-sub { white-space: nowrap; max-width: none; font-size: clamp(9px, 3.35vw, 14.5px); }
+  /* Подзаголовок стоит ближе к заголовку (правка владельца «чуть поближе
+     поставь подтайтл к тайтлу»). У экрана один gap на всех детей, поэтому
+     подтягиваем именно подзаголовок — кнопка и ссылка под ним не двигаются.
+
+     !important ОБЯЗАТЕЛЕН: у подзаголовка ГЕРОЯ и у подзаголовка КОНТАКТОВ
+     margin задан ИНЛАЙНОМ (`style="margin: 0"`), а инлайн перебивает любой
+     селектор без !important. Без него правка молча не применялась ровно на
+     тех двух экранах, ради которых её и просили — замер: зазор оставался
+     28px у героя и 23–24px у контактов против 4.8–10.4px на остальных
+     шести. В ландшафтном блоке ниже !important стоял с самого начала, из-за
+     чего горизонт работал, а веб и вертикаль — нет.
+
+     Кегль отступа у героя и контактов свой: у героя флекс-щель экрана
+     1.75rem, у контактов — своя у .contact-hero, поэтому «естественный»
+     зазор там больше. Значения подобраны замером так, чтобы итоговый зазор
+     совпал с секциями: 10.4px в вебе и 4.8px в вертикали. */
+  .screen .desc { margin-top: -0.55rem !important; }
+  .desc.hero-sub { margin-top: -1.45rem !important; }
+  .contact-hero .desc { margin-top: -1.2rem !important; }
+  @media (min-width:1024px) {
+    .screen .desc { margin-top: -0.7rem !important; }
+    .desc.hero-sub { margin-top: -1.1rem !important; }
+    .contact-hero .desc { margin-top: -0.79rem !important; }
+  }
   @media (min-width:1024px) {
     .desc.hero-sub { font-size: clamp(10px, 1.45vw - 2px, 19px); }
   }
@@ -663,16 +693,66 @@
      Uses horizontal space instead of cramming everything into a short height. ===== */
   @media (max-width:1023px) and (orientation: landscape) {
     /* video fills the left side, full height; its right edge fades into the black content side */
-    #hero-video { width: 60%; height: 100vh; height: 100dvh; transform: none; }
-    /* тот же масштаб, больше стопов — мягче переход (FR-SITE17) */
+    /* Кадр вертикальный, а ниша широкая: при object-fit:cover обрезка идёт
+       ТОЛЬКО по высоте, и object-position по горизонтали ничего не двигает
+       (замер: 64 → 72 → 90% — картинка на месте). Поэтому лицо сдвигаем
+       самим элементом; справа при этом открывается чёрное, но там и так
+       затемнение и панель с текстом. */
+    #hero-video { width: 60%; height: 100vh; height: 100dvh; transform: translateX(-7%); }
+    /* Затемнение начинается ПРАВЕЕ лица. Замер: лицо занимает 51..331px из
+       915, а прежний градиент начинал гасить уже с 35% ширины ролика (192px) —
+       ровно по середине лица, и правая половина уходила в тень (правка
+       владельца «видишь, тень закрывает»). Теперь чисто до 58% (318px), а
+       дальше плавный уход в чёрное. */
     .video-shadow { width: 60%; height: 100vh; height: 100dvh;
-      background: linear-gradient(to right, rgba(5,5,5,0) 35%, rgba(5,5,5,0.12) 46%, rgba(5,5,5,0.28) 55%,
-        rgba(5,5,5,0.5) 62%, rgba(5,5,5,0.7) 70%, rgba(5,5,5,0.86) 77%, rgba(5,5,5,0.96) 83%, #050505 88%); }
+      background: linear-gradient(to right, rgba(5,5,5,0) 58%, rgba(5,5,5,0.2) 66%, rgba(5,5,5,0.5) 74%,
+        rgba(5,5,5,0.78) 81%, rgba(5,5,5,0.94) 86%, #050505 90%); }
 
-    /* content centred in the right column */
+    /* шапка в горизонте НИЖЕ: её размеры считались от ширины окна (11vw), и
+       на 740px ширины бургер вырастал до 81px, а вся шапка — до 113px; текст
+       экрана заезжал под кнопки (правка владельца «чтобы на верхние кнопки не
+       накладывалось») */
+    header { padding: 0.5rem 0.9rem; }
+    .logo-img { width: 2.3rem; height: 2.3rem; }
+    .menu-btn { width: 2.4rem; height: 2.4rem; }
+    .cta { padding: 0.5rem 0.9rem; font-size: 10px; letter-spacing: 0.06em; }
+
+    /* видео сдвинуто ЛЕВЕЕ: лицо стоит в середине кадра, и правый край,
+       где начинается затемнение, накрывал его (правка владельца «чтобы чёрным
+       не заходило на лицо»). Показываем больше правой части кадра — лицо
+       уезжает влево, на светлую половину. */
+    #hero-video { object-position: center; }
+
+    /* содержимое колонки — ПО ЦЕНТРУ по вертикали и без прокрутки: раньше оно
+       прижималось к верху и заголовок заезжал под кнопки шапки (правка
+       владельца «по центру, но чтобы на верхние кнопки не накладывалось»).
+       Верхнее поле оставлено под шапку, центрируем внутри него. */
     .content-layer { justify-content: center; }
     .panel { width: 44%; height: auto; margin-left: auto; padding: 0 1.4rem; display: block; }
-    .scroll { max-height: 100dvh; justify-content: flex-start; padding: 3.25rem 0.25rem 1rem; overflow-y: auto; }
+    /* поля сверху и снизу ОДИНАКОВЫЕ: содержимое стоит ровно по центру экрана
+       (замер: было 230 при центре окна 206) и при этом не лезет под шапку */
+    .scroll { max-height: 100dvh; height: 100dvh; justify-content: center;
+      padding: 4.2rem 0.25rem; overflow: hidden; }
+    /* Ритм один на все экраны: подзаголовок прижат К ЗАГОЛОВКУ, а перед
+       кнопкой воздух больше (правка владельца: «подтайтл должен быть под
+       тайтлом, а то у тебя над кнопкой сразу подтайтл»). */
+    .sec, .sec-wide, .group { gap: clamp(0.7rem, 2.4vh, 1.25rem); }
+    .screen { gap: clamp(0.7rem, 2.4vh, 1.25rem) !important; }
+    /* !important обязателен: у подзаголовка героя margin задан ИНЛАЙНОМ,
+       и без него правило не срабатывало — замер показал 19px против 5px
+       у секций */
+    .screen .desc { margin-top: calc(-1 * clamp(0.4rem, 1.6vh, 0.85rem)) !important; }
+    /* ссылка под кнопкой налезала на неё: −0.65rem из вертикальной вёрстки
+       при плотном ритме давал нахлёст в 2px (замер) */
+    .about-link, .sec-link { margin-top: 0; }
+    /* у героя и контакта свои контейнеры — ритм задаём им тем же шагом */
+    .contact-hero { gap: clamp(0.7rem, 2.4vh, 1.25rem); }
+    /* подзаголовок героя набран крупнее, и у заголовка есть интерлиньяж:
+       подтягиваем сильнее, чтобы он читался как часть заголовка */
+    .desc.hero-sub { margin-top: calc(-1 * clamp(0.75rem, 2.6vh, 1.3rem)) !important; }
+    /* юридические ссылки на телефоне живут ТОЛЬКО в меню (правка владельца):
+       на экране остаются иконки и копирайт */
+    .contact-legal { display: none !important; }
 
     /* badge + caption over the video, lower-left — clear of the heading on the right */
     .speaker { left: 30%; top: auto; bottom: 7%; transform: translateX(-50%); }
@@ -685,12 +765,15 @@
     /* FR-SITE36: кегль растёт с ВЫСОТОЙ окна (vh) — раньше он был телефонный
        (фикс ~12px) и в ландшафтном окне в пол-экрана выглядел крошечным;
        min() дополнительно не даёт nowrap-строкам вылезти за узкую (44%) панель */
-    .hero-size { font-size: min(clamp(1.2rem, 6vh, 2.6rem), calc((44vw - 45px) / 9.9)); }
-    .h2-size  { font-size: min(clamp(1.25rem, 5.6vh, 2.5rem), calc((44vw - 45px) / 8.4)); }
+    .hero-size { font-size: min(clamp(1.35rem, 7.6vh, 2.6rem), calc((44vw - 45px) / 9.9)); }
+    .h2-size  { font-size: min(clamp(1.3rem, 7.2vh, 2.5rem), calc((44vw - 45px) / 8.4)); }
     .rm-title { font-size: clamp(1.25rem, 2.5vw, 1.8rem); }
-    .contact-title { font-size: min(clamp(1.3rem, 5.6vh, 2.5rem), calc((44vw - 45px) / 10.9)); }
-    .desc { font-size: min(clamp(11px, 2.1vh, 17px), calc((44vw - 45px) / 22.2)); line-height: 1.4; }
-    .desc.hero-sub { font-size: clamp(8px, calc((44vw - 48px) / 26.5), 14.5px); }
+    .contact-title { font-size: min(clamp(1.3rem, 7.2vh, 2.5rem), calc((44vw - 45px) / 10.9)); }
+    .desc { font-size: min(clamp(12.5px, 3.4vh, 18px), calc((44vw - 45px) / 19.5)); line-height: 1.45; }
+    /* подзаголовок героя набран В СТРОКУ (nowrap): 43 знака моноширинного
+       шрифта, поэтому кегль считается от ширины панели — при /23 строка
+       вылезала за панель и обрезалась с обеих сторон (замер на скрине) */
+    .desc.hero-sub { font-size: clamp(10.5px, calc((44vw - 48px) / 26.5), 16px); }
 
     /* кнопки экранов НИКОГДА не шире узкой (44%) панели: как FR-SITE4 для
        верхней CTA — ужимаем ТОЛЬКО по горизонтали (padding/шрифт/трекинг).
@@ -700,9 +783,9 @@
       padding-bottom: clamp(0.55rem, 1.9vh, 1.1rem) !important;
       padding-left: clamp(0.9rem, 2.6vh, 2rem) !important;
       padding-right: clamp(0.9rem, 2.6vh, 2rem) !important;
-      font-size: clamp(9.5px, 1.7vh, 14px) !important;
+      font-size: clamp(11px, 2.6vh, 15px) !important;
       letter-spacing: clamp(0.05em, 0.28vw, 0.15em) !important; }
-    .about-link, .sec-link { font-size: clamp(10px, 1.5vh, 13px); }
+    .about-link, .sec-link { font-size: clamp(11px, 2.2vh, 14px); }
 
     /* cards stack vertically inside the panel (no full-bleed horizontal rail) */
     .rail { flex-direction: column; align-items: stretch; gap: 0.5rem; width: 100%; max-width: 100%;
@@ -729,9 +812,12 @@
     .panel:has(.contact-screen.active) { height: 100%; }
     .scroll:has(.contact-screen.active) { max-height: 100%; height: 100%; padding: 0; }
     .contact-screen { min-height: 100%; transform: none; }
+    /* герой контакта центрируется во ВСЮ высоту экрана, а футер с иконками
+       прижат к низу абсолютом — иначе герой центрировался в остатке над
+       футером и визуально стоял выше середины (правка владельца «не по
+       центру нихуя») */
     .contact-hero { top: 0; margin: auto 0; }
-    .contact-footer { padding-bottom: 1.1rem; }
-    .contact-legal { display: flex; }
+    .contact-footer { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: 0.9rem; }
   }
 
   /* ===== FR-SITE37: НЕВЫСОКИЕ телефоны в портрете (SE, компактные Android) =====
@@ -751,6 +837,15 @@
     .desc { font-size: 13px; line-height: 1.45; }
     .about-link, .sec-link { font-size: 11px; }
     .screen .btn-white { padding-top: 0.72rem !important; padding-bottom: 0.72rem !important; font-size: 10.5px !important; }
+    /* Подтяг подзаголовка пересчитан под УЖАТЫЕ здесь щели: у героя gap
+       падает с 1.75rem до 1.05rem, у секций с 1.75 до 0.6rem, у контакта
+       с 1.4 до 0.85rem. Фиксированный подтяг «как на большом телефоне»
+       оказывался больше самой щели, и строки наезжали друг на друга
+       (замер на 360×568: −9.6px у героя и у контакта). Цель везде одна —
+       зазор около 4.8px, как на остальных экранах. */
+    .screen .desc { margin-top: -0.3rem !important; }
+    .desc.hero-sub { margin-top: -0.75rem !important; }
+    .contact-hero .desc { margin-top: -0.55rem !important; }
     /* контакт: герой + футер с иконками целиком в экране */
     .contact-screen { transform: translateY(1.2rem); min-height: 34dvh; }
     .contact-hero { gap: 0.85rem; top: 0.5rem; }
@@ -765,6 +860,10 @@
     .screen[data-screen="overview"] { gap: 0.85rem !important; }
     .h2-size { font-size: 1.2rem; }
     .desc { font-size: 12px; }
+    /* щели ужаты ещё раз — подтяг тоже (см. комментарий блоком выше) */
+    .screen .desc { margin-top: -0.2rem !important; }
+    .desc.hero-sub { margin-top: -0.55rem !important; }
+    .contact-hero .desc { margin-top: -0.3rem !important; }
     .contact-title { font-size: 1.5rem; }
     /* сдвиг героя контакта здесь наезжал бы на футер с иконками */
     .contact-hero { gap: 0.6rem; top: 0; }
@@ -969,10 +1068,9 @@
 
         <!-- OVERVIEW -->
         <section class="screen active" data-screen="overview" style="position: relative; gap: 1.75rem; max-width: 38rem; text-align: center;">
-          <div class="overview-aura" aria-hidden="true"></div>
           <h1 class="hero-size" style="position: relative; z-index: 1; margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.12; color: #ffffff; animation: floatSlow 6s ease-in-out infinite;">
-            <span style="display: block; white-space: nowrap;" data-i18n="hero.l1"><span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">AI</span> <span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">Transformation</span></span>
-            <span style="display: block; white-space: nowrap;" data-i18n="hero.l2">of your <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">Business</span></span>
+            <span style="display: block; white-space: nowrap;" data-i18n="hero.l1"><span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">AI</span> <span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">Transformation</span></span>
+            <span style="display: block; white-space: nowrap;" data-i18n="hero.l2">of your <span style="color: #ff8a33; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">Business</span></span>
           </h1>
           <p class="desc hero-sub" data-i18n="hero.sub" style="position: relative; z-index: 1; margin: 0; text-shadow: 0 1px 6px rgba(0,0,0,0.6);">I Help Companies Adapt to the New AI Economy</p>
           <!-- Первый шаг воронки — бесплатная диагностика ИИ-зрелости (maturity.) -->
@@ -1433,8 +1531,8 @@
     'nav.contact': 'Контакты',
     'cta.diagnostic': 'ИИ-диагностика <i class="fa-solid fa-arrow-right"></i>',
     'speaker.role': 'ИИ-консультант',
-    'hero.l1': '<span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">ИИ</span><span style="color: #a071ff; text-shadow: 0 0 22px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45);">-трансформация</span>',
-    'hero.l2': 'вашего <span style="color: #ff8a33; text-shadow: 0 0 22px rgba(249,115,22,0.7), 0 2px 8px rgba(0,0,0,0.45);">бизнеса</span>',
+    'hero.l1': '<span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">ИИ</span><span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">-трансформация</span>',
+    'hero.l2': 'вашего <span style="color: #ff8a33; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">бизнеса</span>',
     'hero.sub': 'Помогаю адаптироваться к новой ИИ-экономике',
     'overview.cta': 'Начать ИИ-трансформацию <i class="fa-solid fa-arrow-right"></i>',
     'overview.about': 'Обо мне',

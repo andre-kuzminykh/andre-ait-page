@@ -84,7 +84,7 @@
       }
       shrinkToFit(lines.length ? lines : [h]);
     });
-    $$('h2.one-line', root).forEach(function (h) { shrinkToFit([h]); });
+    $$('h2.one-line, h2.d-head', root).forEach(function (h) { shrinkToFit([h]); });
     /* названия кейсов и подписи метрик держим в одну строку и ОДНОГО кегля:
        иначе длинные русские подписи обрезались многоточием */
     var titles = $$('.biz h3', root);
@@ -376,42 +376,61 @@
     var p = video.play && video.play();
     if (p && p.catch) p.catch(function () {});
   }
+  if (head) {
+  /* Кружок с роликом можно ТАСКАТЬ (правка владельца: «с хуя ли я не могу
+     кружок двигать»). Точка хранится как отступы от ЛЕВОГО-НИЖНЕГО угла, а не
+     как `top`: у мобильного браузера при показе адресной строки видимая
+     область и координаты position:fixed расходятся, и сохранённый `top`
+     выбрасывал кружок на середину экрана. Снизу-слева он ведёт себя так же,
+     как заданный в CSS, и остаётся на месте. Любая точка прижимается к окну,
+     поэтому с широкого окна на узком кружок не пропадает. */
   var POS_KEY = 'ait_strategy_head';
   var drag = null;
+  function clampPos(p) {
+    if (!p || typeof p.l !== 'number' || typeof p.b !== 'number') return null;
+    var w = head.offsetWidth || 120, h = head.offsetHeight || 120;
+    return { l: Math.min(Math.max(8, window.innerWidth - w - 8), Math.max(8, p.l)),
+             b: Math.min(Math.max(8, window.innerHeight - h - 8), Math.max(8, p.b)) };
+  }
+  function clearPos() { head.style.left = ''; head.style.bottom = ''; head.style.top = ''; }
   function applyPos(p) {
-    if (!p || mqDesk.matches) return;
-    head.style.left = p.x + 'px';
-    head.style.top = p.y + 'px';
-    head.style.bottom = 'auto';
+    if (mqDesk.matches) { clearPos(); return; }
+    p = clampPos(p);
+    if (!p) return;
+    head.style.left = p.l + 'px';
+    head.style.bottom = p.b + 'px';
+    head.style.top = 'auto';
   }
   function savedPos() { try { return JSON.parse(localStorage.getItem(POS_KEY)); } catch (e) { return null; } }
-  if (head) {
-    head.addEventListener('pointerdown', function (e) {
-      if (mqDesk.matches) return;
-      var r = head.getBoundingClientRect();
-      drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: 0, w: r.width, h: r.height };
-      head.setPointerCapture(e.pointerId);
-    });
-    head.addEventListener('pointermove', function (e) {
-      if (!drag) return;
-      var x = Math.min(window.innerWidth - drag.w - 8, Math.max(8, e.clientX - drag.dx));
-      var y = Math.min(window.innerHeight - drag.h - 8, Math.max(8, e.clientY - drag.dy));
-      drag.moved += Math.abs(e.movementX) + Math.abs(e.movementY);
-      applyPos({ x: x, y: y });
-      drag.last = { x: x, y: y };
-    });
-    head.addEventListener('pointerup', function () {
-      if (drag && drag.moved < 6) setPlaying(video.muted);
-      else if (drag && drag.last) { try { localStorage.setItem(POS_KEY, JSON.stringify(drag.last)); } catch (err) {} }
-      drag = null;
-    });
-    head.addEventListener('click', function () { if (mqDesk.matches) setPlaying(video.muted); });
+  head.addEventListener('pointerdown', function (e) {
+    if (mqDesk.matches) return;
+    var r = head.getBoundingClientRect();
+    drag = { dx: e.clientX - r.left, dy: r.bottom - e.clientY, moved: 0,
+             sx: e.clientX, sy: e.clientY, w: r.width, h: r.height };
+    head.setPointerCapture(e.pointerId);
+  });
+  head.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    /* путь считаем ОТ ТОЧКИ КАСАНИЯ, а не по movementX: у событий пальца
+       movementX всегда 0, поэтому жест не засчитывался и кружок стоял на
+       месте (жалоба владельца «кружочки нихуя не двигаются») */
+    drag.moved = Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy);
+    if (drag.moved < 8) return;
+    drag.last = { l: e.clientX - drag.dx, b: window.innerHeight - e.clientY - drag.dy };
+    applyPos(drag.last);
+  });
+  head.addEventListener('pointerup', function () {
+    if (drag && drag.moved < 8) setPlaying(video.muted);
+    else if (drag && drag.last) { try { localStorage.setItem(POS_KEY, JSON.stringify(clampPos(drag.last))); } catch (err) {} }
+    drag = null;
+  });
+  if (!mqDesk.matches) applyPos(savedPos());
+  window.addEventListener('resize', function () { applyPos(savedPos()); });
     head.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPlaying(video.muted); }
     });
   }
   setPlaying(false);
-  if (!mqDesk.matches) applyPos(savedPos());
 
   paint();
 })();

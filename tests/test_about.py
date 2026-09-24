@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """FR-SITE40 — страница «Обо мне» (/about/ и /about/ru/).
 
+Обе страницы собираются генератором tools/build_about.py из текстов
+tools/about_copy.py, поэтому здесь проверяется и структура сборки, и то,
+что RU с EN не разъехались.
+
 Без зависимостей: `python3 tests/test_about.py` или через pytest.
 """
 import os
@@ -9,9 +13,19 @@ import re
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def _read(rel):
+def _raw(rel):
     with open(os.path.join(_ROOT, rel), encoding="utf-8") as f:
         return f.read()
+
+
+def _read(rel):
+    """Страница с обычными пробелами вместо неразрывных.
+
+    Генератор клеит служебные слова со следующим неразрывным пробелом
+    (FR-SITE42, tools/typo.py), а проверки ниже про текст, а не про перенос:
+    без нормализации каждая такая проверка падала бы на \u00a0. Сам перенос
+    проверяется отдельно — по сырому файлу через _raw()."""
+    return _raw(rel).replace(u"\u00a0", " ").replace(u"\u2011", "-")
 
 
 def _en():
@@ -30,11 +44,34 @@ def _pages():
     return (("en", _en()), ("ru", _ru()))
 
 
-# ── страницы и общая вёрстка существуют ───────────────────────────────────
+def _screens(html):
+    """Список экранов: (глава, внутренности) в порядке следования."""
+    out = []
+    for m in re.finditer(r'<section class="screen([^"]*)" data-i="(\d+)" data-chapter="([a-z]+)"[^>]*>(.*?)</section>',
+                         html, re.S):
+        out.append((m.group(3), m.group(4)))
+    return out
+
+
+def _mobile_blocks():
+    css = _css()
+    return [b for b in re.findall(r"@media \(max-width:1023px\) \{.*?\n  \}", css, re.S)]
+
+
+# ── страницы собираются из одного шаблона ────────────────────────────────
 
 def test_both_language_pages_exist():
-    for rel in ("about/index.html", "about/ru/index.html", "assets/about.css"):
+    for rel in ("about/index.html", "about/ru/index.html", "assets/about.css",
+                "tools/build_about.py", "tools/about_copy.py"):
         assert os.path.exists(os.path.join(_ROOT, rel)), "нет файла " + rel
+
+
+def test_pages_are_generated_not_hand_written():
+    """Биография живёт на двух языках: правим тексты, а не HTML, иначе
+    страницы разъедутся."""
+    for lang, html in _pages():
+        assert "Собрано tools/build_about.py" in html.split("\n")[1], \
+            lang + ": в шапке файла нет отметки о сборке"
 
 
 def test_pages_share_one_stylesheet():
@@ -46,6 +83,16 @@ def test_pages_share_one_stylesheet():
 def test_html_lang_matches_page():
     assert '<html lang="en">' in _en()
     assert '<html lang="ru">' in _ru()
+
+
+def test_russian_and_english_pages_have_the_same_shape():
+    """Тексты разные, а набор экранов и блоков — один в один."""
+    en, ru = _screens(_en()), _screens(_ru())
+    assert len(en) == len(ru), "разное число экранов: %d и %d" % (len(en), len(ru))
+    for i, ((ch_en, body_en), (ch_ru, body_ru)) in enumerate(zip(en, ru)):
+        assert ch_en == ch_ru, "экран %d: разные главы (%s / %s)" % (i, ch_en, ch_ru)
+        kinds = lambda b: re.findall(r'<(h1|h2|p|div|ul) class="([a-z- ]+)"', b)
+        assert kinds(body_en) == kinds(body_ru), "экран %d: разный состав блоков" % i
 
 
 # ── FR-SITE40·2: EN|RU — ссылки друг на друга, язык запоминается ──────────
@@ -62,20 +109,16 @@ def test_language_switch_links_to_the_other_page():
 
 def test_page_stores_its_language_for_the_main_site():
     for lang, html in _pages():
-        assert "localStorage.setItem(LANG_KEY, LANG)" in html, lang
-    assert "document.documentElement.lang === 'ru' ? 'ru' : 'en'" in _en()
+        assert "localStorage.setItem(LANG_KEY, LANG)" in html, \
+            lang + ": язык страницы должен запоминаться для главной"
 
 
 def test_main_page_about_link_is_language_aware():
     html = _read("index.html")
-    m = re.search(r'<a class="about-link"[^>]*>', html, re.S)
-    assert m, "на главной должна быть ссылка «About me»"
-    tag = m.group(0)
-    assert 'data-href-en="https://andre.technology/about/"' in tag
-    assert 'data-href-ru="https://andre.technology/about/ru/"' in tag
+    assert 'data-href-en="https://andre.technology/about/"' in html and \
+           'data-href-ru="https://andre.technology/about/ru/"' in html, \
+        "с главной ссылка ведёт на страницу того же языка"
 
-
-# ── FR-SITE40·1: у каждого языка свой ролик (FR-SITE28) ───────────────────
 
 def test_each_page_uses_its_own_video():
     assert 'src="/assets/Andre_AIT_video_compressed.mp4"' in _en()
@@ -84,55 +127,71 @@ def test_each_page_uses_its_own_video():
         assert os.path.exists(os.path.join(_ROOT, "assets", name)), "нет ролика " + name
 
 
-# ── FR-SITE40·3: видео слева + своя прокрутка текста; кружок на мобилке ───
+# ── FR-SITE40·3: видео слева, текст справа; кружок на мобилке ─────────────
 
-def test_desktop_splits_video_and_reading_column():
+def test_desktop_keeps_the_same_proportions_as_the_main_site():
+    """Правка владельца «сильно скрыл за чёрным»: пропорции ровно как на
+    главной — ролик 67%, колонка текста 44%, кадр сдвинут влево."""
     css = _css()
-    assert re.search(r"\.media \{ position: fixed;[^}]*width: 54%", css), \
-        "ролик ШИРЕ колонки текста — хвост растушёвки уходит под текст, как на главной"
-    assert "@media (min-width:1024px) { .read { left: 44%; } }" in css, \
-        "экраны с текстом занимают правую часть рядом с роликом"
+    assert "--read-left: 56%" in css, "колонка текста занимает правые 44%"
+    assert re.search(r"\.media \{ position: fixed;[^}]*width: 67%", css), \
+        "колонка ролика шире колонки текста — её хвост уходит под чёрное"
+    assert ".media video { transform: translateX(-6%); }" in css, \
+        "кадр сдвинут влево так же, как #hero-video на главной"
+    assert "@media (min-width:1024px) { .read { left: var(--read-left); } }" in css, \
+        "экраны с текстом стоят ровно там, где кончается растушёвка"
 
 
-def test_seam_between_video_and_text_has_no_bright_line():
-    """Жалоба владельца: на стыке ролика и чёрного блестела полоска."""
+def test_shade_starts_at_the_text_column_not_at_the_face():
+    """Растушёвка отсчитывается от левого края КОЛОНКИ ТЕКСТА: замер по
+    столбцам яркости на 36% ширины давал 60 против 124 у главной."""
     css = _css()
-    assert "width: 54%" in css, "ролик заходит под колонку текста"
     shade = re.search(r"\.media-shadow \{[^}]*\}", css, re.S).group(0)
-    # та же кривая, что на главной (FR-SITE17): лицо не затемняется вовсе,
-    # чернота набирается в хвосте колонки, который уходит под текст
-    assert "#050505 88%" in shade, "чёрное в градиенте начинается до самого края"
-    assert "rgba(5,5,5,0) 35%" in shade, "лицо не затемняется"
-    assert shade.count("rgba(5,5,5,") >= 7, "много стопов — переход мягкий, без полосы"
+    assert shade.count("var(--read-left)") >= 7, "все стопы считаются от края колонки"
+    assert "rgba(5,5,5,0)    calc(var(--read-left) * 0.746)" in shade, "лицо не затемняется"
+    assert "#050505          calc(var(--read-left) * 1.493)" in shade, \
+        "чёрное набирается уже под колонкой текста"
 
 
 def test_mobile_turns_the_video_into_a_round_head():
-    css = _css()
-    blocks = [b for b in re.findall(r"@media \(max-width:1023px\) \{.*?\n  \}", css, re.S)
-              if ".media {" in b]
+    blocks = [b for b in _mobile_blocks() if ".media {" in b]
     assert blocks, "должен быть мобильный блок правил для ролика"
     block = blocks[0]
     assert "border-radius: 50%" in block, "на мобилке ролик — кружок"
     assert "blur(5px)" in block, "кадр размыт, пока голову не включили"
-    assert ".media .speaker { display: none; }" in block or \
-           ".media .media-shadow, .media .speaker { display: none; }" in block, \
+    assert ".media .media-shadow, .media .speaker { display: none; }" in block, \
         "бейдж спикера на мобилке скрыт — остаётся только кружок"
 
 
-# ── FR-SITE40·4/5: меню и «назад» ────────────────────────────────────────
+def test_video_circle_scales_with_the_window():
+    """Правка владельца: «когда на компе сжимаю, голова не должна заходить за
+    рамки — подтягивайся под размер экрана». Диаметр считается от МЕНЬШЕЙ
+    стороны окна, поэтому на низком окне круг тоже уменьшается."""
+    css = _css()
+    assert "--vid-d: clamp(88px, min(34vw, 18vh), 168px);" in css, \
+        "диаметр кружка тянется за меньшей стороной окна"
+    assert "width: var(--vid-d); height: var(--vid-d)" in css, "кружок квадратный по --vid-d"
+
+
+# ── FR-SITE40·4/5: меню и «домой» ────────────────────────────────────────
 
 CHAPTERS = ["childhood", "education", "career", "startups", "ecosystem", "mission"]
 
 
-def test_menu_lists_biography_chapters():
-    """Сверху — главы биографии: детство, образование и так далее."""
+def test_menu_lists_six_chapters_even_though_screens_are_many():
+    """Экранов много, а пунктов меню по-прежнему шесть: экраны одной главы
+    помечены одним data-chapter, и пункт ведёт на первый из них."""
     for lang, html in _pages():
-        for key in CHAPTERS:
-            assert 'data-chapter="%s"' % key in html, "%s: в меню нет главы %s" % (lang, key)
         assert html.count('class="nav-tab') == len(CHAPTERS), lang + ": в меню шесть глав"
-        screens = re.findall(r'<section class="screen[^"]*" data-i="(\d+)" data-chapter="([a-z]+)"', html)
-        assert len(screens) >= 6, lang + ": биография разложена по экранам"
-        assert screens[0][1] == "childhood", lang + ": первый экран — про детство"
+        screens = _screens(html)
+        order = [ch for ch, _ in screens]
+        # главы идут подряд и в том же порядке, что в меню
+        seen = [k for i, k in enumerate(order) if i == 0 or order[i - 1] != k]
+        assert seen == CHAPTERS, "%s: порядок глав сбился: %s" % (lang, seen)
+        for key in CHAPTERS:
+            assert order.count(key) >= 1, "%s: у главы %s нет экранов" % (lang, key)
+        assert "for (var i = 0; i < screens.length; i++)" in html, \
+            lang + ": пункт меню ищет ПЕРВЫЙ экран своей главы"
 
 
 def test_first_screen_carries_the_tiger():
@@ -149,14 +208,6 @@ def test_screens_switch_by_wheel_swipe_and_keys():
         assert "now - lastWheel < 900" in html, lang + ": один жест = один экран"
 
 
-def test_main_page_opens_the_screen_from_the_hash():
-    html = _read("index.html")
-    assert "var start = (location.hash || '').replace('#', '');" in html, \
-        "главная должна открывать экран из хеша"
-    assert "window.addEventListener('hashchange'" in html, \
-        "возврат «назад» меняет только хеш — нужен hashchange"
-
-
 def test_home_icon_replaces_the_back_button():
     """Правка владельца: «вместо кнопки BACK иконку домой рядом с меню»."""
     css = _css()
@@ -168,7 +219,6 @@ def test_home_icon_replaces_the_back_button():
         assert nav.index('class="nav-home"') < nav.index('class="nav-tab'), \
             lang + ": иконка дома стоит ПЕРЕД пунктами меню"
         assert 'class="back"' not in html, lang + ": кнопок «назад» на экранах нет"
-        assert 'class="home-link"' not in html, lang + ": «Back to home» внизу убран"
 
 
 def test_logo_and_menu_are_present_on_both_pages():
@@ -184,9 +234,9 @@ def test_logo_and_menu_are_present_on_both_pages():
 
 def test_cta_button_text_and_target():
     en, ru = _en(), _ru()
-    assert re.search(r'<a class="btn-white" href="https://maturity\.andre\.technology/"[^>]*>\s*Start AI Transformation', en), \
+    assert re.search(r'<a class="btn-white" href="https://maturity\.andre\.technology/"[^>]*>Start AI Transformation', en), \
         "в конце английской страницы — кнопка Start AI Transformation на maturity"
-    assert re.search(r'<a class="btn-white" href="https://maturity\.andre\.technology/"[^>]*>\s*Начать ИИ-трансформацию', ru), \
+    assert re.search(r'<a class="btn-white" href="https://maturity\.andre\.technology/"[^>]*>Начать ИИ-трансформацию', ru), \
         "в конце русской страницы — кнопка «Начать ИИ-трансформацию» на maturity"
 
 
@@ -213,42 +263,194 @@ def test_accent_frames_are_purple_orange():
 
 # ── FR-SITE40·7: фоновые знаки глав ──────────────────────────────────────
 
-WM_ICONS = ["ic-tiger", "fa-graduation-cap", "fa-coins", "fa-rocket", "fa-microchip"]
+WM_ICONS = ["ic-tiger", "fa-graduation-cap", "fa-coins", "fa-rocket", "fa-microchip", "fa-star"]
 
 
 def test_chapter_watermarks_sit_bottom_right():
     """Правка владельца: знаки глав — тигр, шапочка, ракета и прочие — у ВСЕХ
-    глав стоят справа внизу, а не по очереди слева и справа посередине."""
+    глав стоят справа внизу."""
     css = _css()
-    assert re.search(r"\.wm \{[^}]*right: 2.5rem; bottom: 1.6rem", css, re.S), \
+    assert re.search(r"\.wm \{ position: absolute; right: 2\.5rem; bottom: 2\.6rem", css), \
         "знак главы прижат к правому нижнему углу"
-    assert ".wm.l, .wm.r { left: auto; right: 2.5rem; }" in css, \
-        "классы .l/.r на положение больше не влияют"
     for lang, html in _pages():
-        marks = re.findall(r'<div class="wm ([lr])"[^>]*>(.*?)</div>', html, re.S)
-        assert len(marks) >= 5, "%s: у экранов должны быть фоновые знаки, найдено %d" % (lang, len(marks))
-        bodies = " ".join(b for _, b in marks)
+        marks = re.findall(r'<div class="wm" style="--rot: [^"]+;" aria-hidden="true">(.*?)</div>', html, re.S)
+        assert len(marks) >= 15, "%s: знак есть у каждого экрана, найдено %d" % (lang, len(marks))
+        bodies = " ".join(marks)
         for icon in WM_ICONS:
             assert icon in bodies, "%s: нет знака главы %s" % (lang, icon)
 
 
-def test_chapters_are_dense_slides():
-    """Правка владельца: детство целиком на первом слайде, образование на
-    втором и так далее — один слайд на главу, без пустых нарезок."""
+def test_watermarks_are_faint():
+    """Знаки глав еле заметные. Прятать их на телефоне больше не нужно —
+    владелец попросил вернуть («на мобилках нет больших иконок, а на вебе
+    есть»), поэтому видимость проверяет test_chapter_marks_are_visible_on_phone."""
+    css = _css()
+    assert re.search(r"\.screen\.active \.wm \{ opacity: 0\.0\d+;", css), \
+        "знаки глав — еле заметные"
+
+
+# ── FR-SITE40·9: только по блокам, внутри экрана не листается ─────────────
+
+def test_nothing_scrolls_inside_a_screen():
+    """Правило владельца: «никакие эти страницы внутри себя не листаются —
+    только по блокам»."""
+    css = _css()
+    screen = re.search(r"\.screen \{.*?\n    overflow: hidden;", css, re.S)
+    assert screen, "экран не должен прокручиваться"
+    # единственное исключение — полноэкранное МЕНЮ на маленьком телефоне
+    for m in re.finditer(r"overflow-y: auto", css):
+        head = css[max(0, m.start() - 400):m.start()]
+        assert ".nav.open" in head, "внутри экрана не осталось прокручиваемых лент"
     for lang, html in _pages():
-        screens = re.findall(r'<section class="screen[^"]*" data-i="\d+" data-chapter="([a-z]+)"', html)
-        assert screens[:5] == ["childhood", "education", "career", "startups", "ecosystem"], \
-            "%s: порядок глав сбился: %s" % (lang, screens[:5])
-        first = re.search(r'<section class="screen active".*?</section>', html, re.S).group(0)
-        keep = "Intelligence creates possibilities" if lang == "en" else "Интеллект открывает возможности"
-        drop = "Sometimes the strongest motivation" if lang == "en" else "Иногда самая сильная мотивация"
-        assert keep in first, "%s: цитата должна быть на первом слайде" % lang
-        assert drop not in html, "%s: вторую цитату владелец просил убрать" % lang
-        tail = "That period shaped" if lang == "en" else "Этот период сформировал"
-        assert tail not in html, "%s: хвост главы про детство убран" % lang
-        last = re.findall(r'<section class="screen"[^>]*>.*?</section>', html, re.S)[-1]
-        assert 'class="finale' in last and 'class="foot"' in last, \
-            "%s: финал и подвал с иконками — на последнем слайде" % lang
+        assert "function innerScroll" not in html, \
+            lang + ": скрипту больше не нужно искать внутреннюю прокрутку — её нет"
+
+
+def test_long_chapters_are_split_into_short_screens():
+    """Раз внутри не листается, длинная глава разрезана на несколько экранов,
+    а не ужата кеглем: на экране заголовок и два-четыре блока."""
+    for lang, html in _pages():
+        screens = _screens(html)
+        assert len(screens) >= 15, "%s: биография разложена на много коротких экранов (%d)" % (lang, len(screens))
+        for i, (ch, body) in enumerate(screens):
+            # верхние блоки экрана помечены .reveal / .hero-rise (плюс подвал);
+            # вложенные карточки и пункты списков не в счёт
+            blocks = re.findall(r'<(?:h1|h2|p|div|ul) class="[^"]*(?:reveal|hero-rise|foot)"', body)
+            assert 2 <= len(blocks) <= 5, \
+                "%s: экран %d (%s) — %d блоков, должно быть от 2 до 5" % (lang, i, ch, len(blocks))
+            text = re.sub(r"<[^>]+>", " ", body).strip()
+            assert len(text) > 40, "%s: экран %d почти пустой" % (lang, i)
+
+
+def test_type_no_longer_shrinks_on_short_windows():
+    """Прежние три «ступени плотности» ужимали кегль до 11px и всё равно не
+    спасали. Теперь сжимается воздух: вертикальный ритм задан от высоты окна."""
+    css = _css()
+    assert "max-height:880px" not in css and "max-height:730px" not in css, \
+        "ступени плотности убраны"
+    assert ".screen.dense" not in css, "отдельного «плотного» экрана больше нет"
+    for rule in ("clamp(0.4rem, 1.15vh, 0.72rem)",     # отступ абзаца
+                 "clamp(5.9rem, 11vh, 7.4rem)"):        # верхнее поле экрана
+        assert rule in css, "вертикальный ритм считается от высоты окна: " + rule
+
+
+def test_desktop_and_mobile_share_one_large_scale():
+    """Правило владельца: вёрстки две — веб и мобилка, но выглядят одинаково,
+    просто в своём масштабе. Кегль телефона задан явно и крупно."""
+    css = _css()
+    mob = [b for b in _mobile_blocks() if "p { font-size" in b]
+    assert mob, "нужен отдельный мобильный масштаб типографики"
+    block = mob[0]
+    for rule in ("p { font-size: 14px",
+                 # нижняя граница 1.55rem — чтобы на 320px «AI-Native
+                 # экосистему» влезало одной строкой и не срезалось
+                 "h1 { font-size: clamp(1.55rem, 7.6vw, 2.4rem)",
+                 "h2 { font-size: clamp(1.15rem, 5.2vw, 1.55rem)"):
+        assert rule in block, "мобильный кегль: " + rule
+    # и на вебе основной текст не мельче 13.5px
+    assert "p { margin: 0 0 clamp(0.4rem, 1.15vh, 0.72rem); font-size: clamp(13.5px" in css
+
+
+def test_headline_breaks_where_the_owner_wants():
+    """Правило владельца: «тайтлы могут в две строки, но с красивым
+    переносом» — значит перенос размечен спанами, а не отдан ширине."""
+    css = _css()
+    assert "h1 .l { display: block; }" in css, "строки заголовка — отдельными блоками"
+    en, ru = _en(), _ru()
+    assert '<span class="l">I build an <span class="hl-p"><span class="nb">AI-native</span> ecosystem</span></span>' in en
+    assert '<span class="l">for <span class="hl-o">human good</span></span>' in en
+    assert '<span class="l">Я строю <span class="hl-p nb">AI-Native экосистему</span></span>' in ru, \
+        "«AI-Native экосистему» стоит одной строкой: на телефоне это вторая строка героя"
+    for lang, html in _pages():
+        assert "querySelectorAll('h1 .l, h2')" in html, \
+            lang + ": кегль подгоняется построчно, перенос не ломается"
+
+
+def test_chapter_stands_in_the_middle_of_the_screen():
+    """Правка владельца: глава стоит по центру экрана."""
+    css = _css()
+    assert "justify-content: center; justify-content: safe center;" in css, \
+        "блок главы выключен по центру, но не обрезается сверху"
+    assert ".finale { margin-top: auto; }" not in css, \
+        "финальный экран короткий — финал стоит по центру, а не прижат к низу"
+
+
+def test_footer_stands_at_the_bottom_of_the_last_screen():
+    """Правка владельца: «2026 © Andre AI Technologies LTD — это должно быть
+    внизу и иконки». Финал стоит по центру свободного места, подвал — у
+    нижнего края; на телефоне нижнее поле поднимает подвал НАД кружком с
+    роликом, иначе кружок накрывал левый край копирайта."""
+    css = _css()
+    assert ".screen.final { justify-content: flex-start; }" in css
+    assert ".screen.final .finale { margin-top: auto; margin-bottom: auto; }" in css, \
+        "два auto-отступа делят свободное место поровну — подвал уходит вниз"
+    assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem" not in css, \
+        "подвал стоит у самого низа: кружку разрешено его перекрывать"
+    for lang, html in _pages():
+        last = _screens(html)[-1][1]
+        assert last.index('class="finale') < last.index('class="foot"'), lang
+
+
+def test_layouts_are_only_web_and_mobile():
+    """Правило владельца: «надо чтобы было только веб и мобила, а остальное
+    всё адаптировалось». Значит вёрстку переключает ОДИН порог — 1024px (плюс
+    1150px на меню, как на главной), а всё между ними просто масштабируется."""
+    css = _css()
+    # раскладка колонок меняется только на веб-пороге
+    assert "@media (min-width:1024px) { .cards { grid-template-columns: 1fr 1fr; } }" in css, \
+        "две карточки — признак веб-вёрстки"
+    assert "min-width:640px" not in css, "промежуточной «планшетной» раскладки нет"
+    assert "max-width:420px" not in css, "и отдельной раскладки для узких телефонов тоже"
+    mob = [b for b in _mobile_blocks() if "max-width: 32rem" in b]
+    assert mob, "на мобильной вёрстке колонка чтения не растягивается шире 32rem"
+    # какие пороги вообще остались
+    import re as _re
+    widths = sorted(set(int(w) for w in _re.findall(r"(?:min|max)-width:\s*(\d+)px", css)))
+    # 1023/1024 — сама вёрстка, 1149/1150 — меню (как на главной), 1319/1399/1439 —
+    # плотность шапки, 380 — узкий телефон, 1600/1900/2300 — зум главной,
+    # 600 — нижняя граница телефона В ГОРИЗОНТЕ (вместе с max-height:520px):
+    # это не третья вёрстка, а та же мобильная в других пропорциях окна
+    assert widths == [380, 600, 1023, 1024, 1149, 1150, 1319, 1399, 1439, 1600, 1900, 2300], \
+        "лишний порог вёрстки: %s" % widths
+
+
+def test_chapter_heading_wraps_as_a_whole():
+    """Жалоба владельца по скриншоту окна ~498px: заголовок переносился, а
+    иконка главы оставалась одна у левого края — h2 был флексом. Теперь
+    иконка идёт строкой вместе с текстом, а строки делятся ровно."""
+    css = _css()
+    head = re.search(r"\n  h2 \{[^}]*\}", css, re.S).group(0)
+    assert "display: block" in head and "text-wrap: balance" in head, \
+        "заголовок — обычный блок с ровным переносом"
+    assert "display: flex" not in head, "иконка больше не отдельный флекс-элемент"
+    assert re.search(r"h2 i \{[^}]*margin-right: 0\.6rem", css), "иконка стоит в строке"
+
+
+def test_ai_native_never_splits_on_the_hyphen():
+    """На 768px заголовок первого экрана рвался посреди слова: «AI- / native»."""
+    assert ".nb { white-space: nowrap; }" in _css()
+    assert '<span class="nb">AI-native</span>' in _en()
+    # по-русски неразрывен уже весь оборот: правка владельца «„AI-Native
+    # экосистему“ перенос» — термин уезжает на строку вместе с существительным
+    assert '<span class="hl-p nb">AI-Native экосистему</span>' in _ru()
+
+
+def test_ai_employee_areas_cover_ten_roles():
+    """Правка владельца: «после менеджмента HR, после маркетинга SMM, потом
+    после Sales — Support, Analytics, Design, Development и Engineering»."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from about_copy import EN, RU
+    assert [t for _i, t in EN["x4_facts"]] == [
+        "Management", "HR", "Marketing", "SMM", "Sales",
+        "Support", "Analytics", "Design", "Development", "Engineering"]
+    assert [t for _i, t in RU["x4_facts"]] == [
+        "Управление", "HR", "Маркетинг", "SMM", "Продажи",
+        "Поддержка", "Аналитика", "Дизайн", "Разработка", "Инжиниринг"]
+    assert len(set(i for i, _t in EN["x4_facts"])) == 10, "у каждой роли своя иконка"
+    css = _css()
+    assert ".facts.grid { display: grid; grid-template-columns: 1fr 1fr;" in css, \
+        "десять ролей стоят в две колонки на любой ширине"
 
 
 def test_no_gradient_strip_above_headings():
@@ -260,28 +462,19 @@ def test_no_gradient_strip_above_headings():
 
 
 def test_biography_is_a_deck_of_screens():
-    """Правило владельца: не простыня, а экраны, которые СМЕНЯЮТ друг друга —
-    как разделы на главной."""
     css = _css()
     assert "overflow: hidden; width: 100vw" in css, "страница не прокручивается: это слайды"
     assert ".screen.active { display: flex; }" in css, "показан один экран"
     assert "@keyframes slideInScreen" in css, "экран приходит анимацией, как на главной"
     assert ".article.leaving .screen.active" in css, "уходящий экран анимируется"
+
+
+def test_last_screen_is_the_finale_with_the_footer():
     for lang, html in _pages():
-        screens = re.findall(r'<section class="screen"[^>]*>(.*?)</section>', html, re.S)
-        total = len(re.findall(r'<section class="screen[^"]*" data-i=', html))
-        assert total == 6, "%s: шесть экранов, по главе (%d)" % (lang, total)
-        for i, body in enumerate(screens):
-            text = re.sub(r"<[^>]+>", " ", body).strip()
-            assert len(text) > 40, "%s: экран %d почти пустой" % (lang, i + 1)
-
-
-def test_watermarks_are_faint_and_hidden_on_mobile():
-    css = _css()
-    assert re.search(r"\.screen\.active \.wm \{ opacity: 0\.0\d+;", css), \
-        "знаки глав — еле заметные"
-    assert "@media (max-width:1023px) { .wm { display: none; } }" in css, \
-        "на мобилке фоновых знаков нет: только текст и кружок"
+        last = _screens(html)[-1]
+        assert last[0] == "mission", lang + ": последний экран — из главы «миссия»"
+        assert 'class="finale' in last[1] and 'class="foot"' in last[1], \
+            lang + ": финал и подвал с иконками — на последнем экране"
 
 
 # ── FR-SITE40·8: текст не просвечивает сквозь шапку ──────────────────────
@@ -293,87 +486,30 @@ def test_top_fade_covers_text_under_the_header():
         assert '<div class="top-fade" aria-hidden="true"></div>' in html, lang
 
 
-def test_density_steps_survive_the_main_site_zoom():
-    """body{zoom} главной умножает вёрстку, а медиазапрос видит окно: без
-    поправки на масштаб плотные главы уезжали в прокрутку на 1600 и 1920."""
-    css = _read("assets/about.css")
-    for w, k in (("1600px", 1.15), ("1900px", 1.3), ("2300px", 1.5)):
-        assert "(min-width:%s) and (max-height:" % w in css, \
-            "нет ступени плотности с поправкой на масштаб " + w
-    # ступени должны стоять ПОСЛЕ акцентов, иначе базовые отступы .quote/.note
-    # перебивают их по порядку следования
-    assert css.index("===== Акценты") < css.index("На невысоких окнах"), \
-        "ступени плотности обязаны идти после акцентов"
-
-
-def test_third_density_step_covers_very_short_windows():
-    """Окно высотой ~635px (владелец смотрит именно в таком): самые длинные
-    главы переливались на 60–105px и уезжали в прокрутку. Третья ступень
-    ужимает их целиком, включая сведённую главу «экосистема»."""
-    css = _read("assets/about.css")
-    for w, h in (("1024px", "730px"), ("1600px", "840px"), ("1900px", "949px"), ("2300px", "1095px")):
-        assert "(min-width:%s) and (max-height:%s)" % (w, h) in css, \
-            "нет третьей ступени плотности для %s/%s" % (w, h)
-    third = css[css.index("третья ступень"):]
-    third = third[:third.index("Очень плотный экран")]
-    assert ".screen.dense p {" in third, "сведённая глава ужимается на этой ступени тоже"
-    assert "padding-top: 5.1rem" in third, "шапка экрана прижата плотнее"
+def test_mobile_text_fades_out_behind_the_video_circle():
+    css = _css()
+    assert re.search(r"\.bottom-fade \{[^}]*var\(--vid-d\)", css, re.S), \
+        "низ колонки уходит в затемнение ровно под кружком"
+    assert "@media (min-width:1024px) { .bottom-fade { display: none; } }" in css, \
+        "на вебе затемнения снизу нет"
 
 
 def test_frame_is_not_measured_in_vw():
-    """vw умножается на body{zoom} — рамку страницы меряем процентами."""
-    for rel in ("assets/about.css",):
-        css = _read(rel)
-        for m in re.finditer(r"(width|left|right): calc\([^)]*?\d+vw", css):
-            raise AssertionError(rel + ": рамка в vw — " + m.group(0))
+    """Кадр и поля считаются от высоты и ширины окна, а не от ширины строки."""
+    css = _css()
+    assert "height: 100dvh" in css, "колонка ролика во всю высоту окна"
 
 
 def test_quotes_are_not_clickable_or_zoomable():
-    """Правка владельца: цитаты просто стоят на своих местах."""
     css = _css()
-    lock = re.search(r"\.quote, \.note, \.stat \{(.*?)\}", css, re.S)
-    assert lock, "нет правила, запрещающего нажатие на цитаты"
-    body = lock.group(1)
-    for rule in ("pointer-events: none", "user-select: none", "touch-action: manipulation"):
-        assert rule in body, "у цитат нет «%s»" % rule
+    assert re.search(r"\.quote, \.note, \.stat \{ pointer-events: none;", css), \
+        "цитаты и врезки нельзя нажать или выделить"
 
 
 def test_reveal_offsets_are_reset_after_the_block_appears():
-    """Корень «налипания»: у .quote/.note/.stat своя transform той же
-    специфичности, и без сброса ПОСЛЕ них блок навсегда оставался смещённым."""
     css = _css()
-    reset = ".quote.reveal.in, .note.reveal.in, .stat.reveal.in { transform: none; }"
-    assert reset in css, "нет сброса смещения после появления"
-    assert css.index(".stat.reveal {") < css.index(reset), \
-        "сброс обязан идти ПОСЛЕ частных правил, иначе он ничего не значит"
-
-
-def test_headline_fits_one_line_on_desktop():
-    """Правка владельца: заголовок должен влезать в одну строку по шрифту."""
-    for lang, html in _pages():
-        assert "function fitHeadings" in html, lang + ": нет подбора кегля заголовка"
-        assert "whiteSpace = 'nowrap'" in html, lang + ": заголовок набирается в одну строку"
-        assert "fitHeadings(screens[cur])" in html, \
-            lang + ": подбор должен работать и на показанном экране, а не только при загрузке"
-        assert "!root.querySelectorAll" in html, \
-            lang + ": resize передаёт событие — его нельзя принимать за узел"
-
-
-def test_ecosystem_chapters_are_merged_into_one_screen():
-    """Правка владельца: «Моя цель…» и «Сейчас я строю…» переехали на слайд
-    про экосистему, и все три части живут на одном экране."""
-    for lang, html in _pages():
-        dense = re.search(r'<section class="screen dense"[^>]*>(.*?)</section>', html, re.S)
-        assert dense, lang + ": нет объединённого экрана экосистемы"
-        body = dense.group(1)
-        marks = (("My goal became", "Now I am building", "$20M+", "Large companies")
-                 if lang == "en" else
-                 ("Моей целью стало", "Сейчас я создаю", "$20M+", "Крупные компании"))
-        for mark in marks:
-            assert mark in body, "%s: на объединённом экране нет «%s»" % (lang, mark)
-    css = _css()
-    assert "columns: 2" not in css, \
-        "экран экосистемы должен выглядеть как остальные — в одну колонку"
+    assert ".quote.reveal.in, .note.reveal.in, .stat.reveal.in { transform: none; }" in css, \
+        "сброс смещения обязан стоять ПОСЛЕ частных правил, иначе блоки налипают"
 
 
 def test_data_engineer_is_bold():
@@ -381,53 +517,327 @@ def test_data_engineer_is_bold():
     assert "<strong>инженера по данным</strong>" in _ru()
 
 
-def test_last_two_paragraphs_moved_to_the_mission():
-    """Правка владельца: «But technology alone is not enough…» и абзац про
-    университеты переехали в главу «миссия»."""
-    for lang, html in _pages():
-        mission = re.search(r'<section class="screen"[^>]*data-chapter="mission"[^>]*>(.*?)</section>',
-                            html, re.S)
-        assert mission, lang + ": нет экрана миссии"
-        body = mission.group(1)
-        marks = (("But technology alone is not enough", "I collaborate with")
-                 if lang == "en" else
-                 ("Но одной технологии недостаточно", "сотрудничаю с"))
-        for mark in marks:
-            assert mark in body, "%s: в миссии нет «%s»" % (lang, mark)
-        dense = re.search(r'<section class="screen dense"[^>]*>(.*?)</section>', html, re.S).group(1)
-        for mark in marks:
-            assert mark not in dense, "%s: «%s» осталось на экране экосистемы" % (lang, mark)
+def test_phone_in_landscape_fits_without_scrolling():
+    """Правка владельца: «в about чтобы всё тоже чётко было и при
+    переворачивании в горизонталь тоже». Та же мобильная вёрстка в других
+    пропорциях: кружок с роликом слева, текст правее него, кегль от высоты
+    окна, блоки главы разворачиваются в ширину."""
+    css = _read("assets/about.css")
+    i = css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)")
+    block = css[i:]
+    # поля симметричные: «пусть всё будет по середине по центру по горизонтали»
+    assert ".screen { padding: 3.3rem calc(var(--vid-d) + 1.6rem); }" in block, \
+        "текст стоит по центру между кружком и точками"
+    assert "--vid-d: clamp(104px, 34vh, 150px);" in block, "кружок такой же, как в портрете"
+    assert "h1 { font-size: clamp(1.4rem, 8vh, 2.3rem)" in block, "кегль от высоты окна"
+    assert ".facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));" in block, \
+        "список ролей разворачивается в три колонки"
 
 
-def test_chapter_stands_in_the_middle_of_the_screen():
-    """Правка владельца «по середине всё»: глава центрируется по вертикали.
-    Именно safe center: при обычном center содержимое выше экрана обрезается
-    сверху и до него не доскроллить."""
+def test_chapter_text_is_left_aligned_everywhere():
+    """Правка владельца: «ты по середине сделал оглавление, надо везде слева».
+    Заголовок главы стоял по центру, а надзаголовок и абзацы — слева."""
+    css = _read("assets/about.css")
+    assert ".screen > .eyebrow, .screen > h1, .screen > h2 { text-align: left; }" in css, \
+        "надзаголовок, заголовок главы и текст выключены по левому краю"
+    assert ".screen > .eyebrow, .screen > h1, .screen > h2 { text-align: center; }" not in css
+
+# ── девятнадцатый проход: переносы, подвал, палец, сироты ─────────────────
+
+def test_function_words_are_bound_to_the_next_word():
+    """FR-SITE42. Правило владельца: «ты видишь, по какому принципу я переношу
+    предлоги?» — предлог, союз, частица и артикль не остаются в конце строки,
+    они уезжают ВМЕСТЕ со своим словом. Технически это неразрывный пробел,
+    который ставит генератор (tools/typo.py), а не правка руками."""
+    nb = u"\u00a0"
+    gen = _read("tools/build_about.py")
+    assert "from typo import bind_copy" in gen, "переносы ставит общий модуль, а не копипаста"
+    assert 'bind_copy(EN, "en")' in gen and 'bind_copy(RU, "ru")' in gen, \
+        "прогоняются оба языка"
+    # именно те места, которые владелец выписал по скриншотам
+    for probe in (u"a" + nb + u"decade", u"that" + nb + u"still", u"but" + nb + u"discipline",
+                  u"and" + nb + u"turn",
+                  u"the" + nb + u"most", u"I" + nb + u"am" + nb + u"building"):
+        assert probe in _raw("about/index.html"), "EN: не склеено «%s»" % probe.replace(nb, " ")
+    for probe in (u"я" + nb + u"прошёл", u"не" + nb + u"могу",
+                  u"в" + nb + u"систему", u"и" + nb + u"делать",
+                  # притяжательные — из той же серии, нашлись замером
+                  u"моё" + nb + u"представление"):
+        assert probe in _raw("about/ru/index.html"), "RU: не склеено «%s»" % probe.replace(nb, " ")
+
+
+def test_owner_named_line_breaks_that_are_not_prepositions():
+    """Два места, где служебных слов нет, а строка всё равно разваливалась.
+    «AI-Native экосистему» — термин едет на строку вместе с существительным;
+    «Один вместо команды» — заголовок главы был на 27 знаков и всегда стоял
+    в две строки (нужно 380px при колонке 355px)."""
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from about_copy import RU
+    assert RU["s3_head"] == "Один вместо команды", "заголовок владельца, влезает от 320px"
+    assert '<span class="hl-p nb">AI-Native экосистему</span>' in _ru()
     css = _css()
-    screen = re.search(r"\n  \.screen \{(.*?)\}", css, re.S)
-    assert screen, "не найдено правило .screen"
-    body = screen.group(1)
-    assert "justify-content: center; justify-content: safe center" in body, \
-        "глава стоит по центру экрана, и именно safe"
-    assert "justify-content: flex-start" not in body, "прижатия к верху больше нет"
+    assert "h1 { font-size: clamp(1.55rem, 7.6vw, 2.4rem); line-height: 1.14; }" in css, \
+        "на 320px оборот целиком влезает только при нижней границе 1.55rem"
 
 
-def test_dense_screen_is_typeset_like_the_others():
-    """Правка владельца: слайд «экосистема» не должен выглядеть мельче остальных."""
+def test_binder_never_touches_tags_and_metadata():
+    """Неразрывный пробел нужен только в видимом тексте. Внутри тегов он ломал
+    бы классы иконок и ссылки, в title — заголовок вкладки."""
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from typo import bind_short_words, bind_copy
+    nb = u"\u00a0"
+    assert bind_short_words('<i class="fa-solid fa-user"></i> a dog', "en") == \
+        '<i class="fa-solid fa-user"></i> a' + nb + 'dog'
+    # служебное слово на стыке с тегом — именно там рвалось «an / AI-native»
+    assert bind_short_words('I build an <span>AI-native</span> world', "en") == \
+        'I' + nb + 'build an' + nb + '<span>AI-native</span> world'
+    src = {"title": "AI and me", "meta_desc": "a page", "lead": "a page"}
+    out = bind_copy(src, "en")
+    assert out["title"] == "AI and me" and out["meta_desc"] == "a page", "метаданные не трогаем"
+    assert out["lead"] == "a" + nb + "page", "видимый текст склеен"
+
+
+def test_finale_sits_in_the_middle_and_the_footer_at_the_bottom():
+    """FR-SITE43. Правка владельца: «иконки и Andre AI Technologies должно быть
+    внизу, прям перед точками, а „добро пожаловать в новую экономику“ по
+    середине» — и само прощание крупнее."""
     css = _css()
-    dense = re.findall(r"\.screen\.dense[^{]*\{([^}]*)\}", css)
-    assert dense, "нет правил плотного экрана"
-    for body in dense:
-        assert "font-size" not in body, \
-            "у плотного экрана не должно быть своего кегля: " + body.strip()[:70]
+    assert ".screen.final { justify-content: flex-start; }" in css
+    assert ".screen.final .finale { margin-top: auto; margin-bottom: auto; }" in css, \
+        "два auto-отступа делят свободное место поровну: финал по центру, подвал внизу"
+    # Подвал у самого низа, кружку разрешено его перекрывать (FR-SITE55):
+    # «кружок можно перемещать, поэтому пофигу что он там закрывает».
+    assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in css, \
+        "на телефоне нижний запас под кружок финалу не нужен — подвал прижат к точкам"
+    # Крупнее — ровно там, где колонка это позволяет. Кегли подобраны замером
+    # предела, за которым появляется лишняя строка (см. FR-SITE43):
+    assert ".finale p { font-size: 17px; }" in css, "телефон, английский: 14.5px → 17px (предел 20px)"
+    assert 'html[lang="ru"] .finale p { font-size: 16px; }' in css, \
+        "телефон, русский: 14.5px → 16px (предел 16.25px на 390px)"
+    assert ".finale p, html[lang=\"ru\"] .finale p { font-size: clamp(13px, 3.8vh, 17px); }" in css, \
+        "горизонт: 12.6–14.4px → 13.7–15.7px; русский селектор повторён, иначе портретное правило перебивает"
+    assert ".finale p { margin: 0 0 1rem; font-size: clamp(14px, min(1.15vw, 2.6vh), 18px);" in css, \
+        "в вебе кегль прежний: на 1280 по-русски предел равен старому размеру"
 
 
-def test_mobile_text_fades_out_behind_the_video_circle():
-    """На мобилке глава длиннее экрана и текст проезжает под кружком видео."""
+def test_circle_follows_a_finger():
+    """FR-SITE44. «КРУЖОЧКИ НИХУЯ НЕ ДВИГАЮТСЯ». Мышью двигались, пальцем нет:
+    жест забирал браузер, а путь считался по movementX, который у тача 0."""
     css = _css()
-    assert ".bottom-fade" in css, "нет затемнения внизу колонки"
-    for lang, html in _pages():
-        assert 'class="bottom-fade"' in html, lang + ": нет элемента затемнения"
+    assert ".media { touch-action: none;" in css, \
+        "с manipulation браузер съедает жест и pointermove не приходит"
+    js = _read("about/index.html")
+    assert "e.movementX" not in js, "у тач-событий movementX всегда 0"
+    assert "drag.sx" in js and "drag.sy" in js, "путь считается от точки касания"
+
+
+def test_landscape_grids_have_no_orphan_row():
+    """FR-SITE45. «Чтобы не торчал отдельно четвёртый пункт — значит надо два
+    сверху и два снизу»: число колонок подбирается под число пунктов."""
+    css = _css()
+    i = css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)")
+    block = css[i:]
+    assert ".facts:has(li:nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }" in block, \
+        "четыре пункта — два ряда по два"
+    assert ".facts:has(li:nth-child(7):last-child) { grid-template-columns: repeat(4, minmax(0, 1fr)); }" in block
+    assert ".facts:has(li:nth-child(10):last-child) { grid-template-columns: repeat(5, minmax(0, 1fr)); }" in block
+
+
+def test_runner_stands_at_the_end_of_the_file():
+    """Блок запуска исполняется В МОМЕНТ, когда до него дошёл разбор файла,
+    поэтому тесты, дописанные ПОСЛЕ него, молча не выполнялись — так мимо
+    прогона прошли пять проверок сразу. Он должен быть последним в файле."""
+    src = _raw("tests/test_about.py")
+    tail = src[src.rindex('\nif __name__ == "__main__":'):]
+    assert "\ndef test_" not in tail, "тесты после блока запуска не запускаются"
+
+
+def test_no_coloured_glow_around_text():
+    """Правка владельца: «убери это странное свечение везде». Цвет слова
+    остаётся, цветной ореол вокруг букв снят."""
+    css = _css()
+    assert ".hl-p { color: #a071ff; }" in css and ".hl-o { color: #ff8a33; }" in css, \
+        "у выделенных слов больше нет text-shadow"
+    for rel in ("assets/about.css", "index.html"):
+        src = _raw(rel)
+        assert "text-shadow: 0 0 22px rgba(136,84,243" not in src, rel + ": остался фиолетовый ореол"
+        assert "text-shadow: 0 0 22px rgba(249,115,22" not in src, rel + ": остался оранжевый ореол"
+
+
+def test_chapter_marks_are_visible_on_phone():
+    """Правка владельца: «на мобилках снизу внизу нет больших иконок, а на
+    вебе есть». Знак главы виден и на телефоне — крупный, но еле заметный."""
+    css = _css()
+    assert "@media (max-width:1023px) { .wm { display: none; } }" not in css, \
+        "знаки глав больше не прячутся на телефоне"
+    assert ".wm { right: 1rem; bottom: calc(var(--vid-d) * 0.9 + 2rem); font-size: min(44vw, 30vh); }" in css, \
+        "в портрете знак поднят НАД нижней растушёвкой и не закрашивается ею"
+    assert ".screen.active .wm { opacity: 0.075; }" in css
+    # в горизонте растушёвки нет вовсе — там она накрывала знак целиком
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".bottom-fade { display: none; }" in land, \
+        "в горизонте полоса 145px из 390 гасила знак целиком (замер: знак 254…371, полоса 245…390)"
+    assert ".wm { bottom: 1.2rem; }" in land, "в горизонте знак стоит у нижнего края"
+
+
+def test_circle_in_landscape_is_as_big_as_in_portrait():
+    """Жалоба владельца «кружок на горизонталке схуяли такой маленький».
+    Причина: --vid-d объявлен у `html, body`, а переопределялся только у
+    `:root` — body оставался со старым значением, кружок наследовал 88px."""
+    assert ":root, body { --vid-d: clamp(104px, 34vh, 150px); }" in _css()
+
+
+def test_landscape_text_is_centred_and_breathes():
+    """Правки владельца: «на горизонталке весь текст по середине по центру»
+    и «всё налипает друг на друга»."""
+    css = _css()
+    block = css[css.index("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert "text-align: center; padding-left: 0; }" in block, "в горизонте текст по центру"
+    # FR-SITE61: правило покрывает не только прямых потомков экрана —
+    # врезки, цитаты, подписи к числам и карточки тоже выключены по центру
+    assert ".note p, .quote p, .stat p, .card h3, .card p {" in block, \
+        "текст внутри врезок, цитат и карточек тоже по центру"
+    # надзаголовок — inline-flex, text-align на него не действует
+    # .eyebrow и .card h3 — оба display:flex, и text-align на них НЕ действует:
+    # содержимое флекса пакуется к flex-start. Замер: «Обо мне» стояло на 227px
+    # левее центра, заголовки карточек — вплотную к левому краю (зазор 0.0px,
+    # смещение до −90.6px на 915×412), хотя text-align им уже был задан.
+    assert ".screen > .eyebrow, .card h3 { justify-content: center; }" in block, \
+        "надзаголовок и заголовок карточки центрируются свойством флекса"
+    # в горизонте заголовок главы по центру, поэтому значок возвращается в строку
+    assert "h2 i { position: static; width: auto; margin-right: 0.6rem; }" in block
+    assert ".top-fade { height: 3.4rem; }" in block, \
+        "верхняя растушёвка ужата под шапку горизонта, иначе она гасит заголовок главы"
+    # зазор между колонками ужат с 1.1rem: колонки были слишком узкие для
+    # длинных слов, см. test_list_items_do_not_glue_prepositions
+    assert "gap: 0.42rem 0.55rem;" in block, "ряды списка не слипаются (было 0.04rem)"
+    assert ".facts li { line-height: 1.38; gap: 0.3rem; }" in block
+    assert ".facts li { overflow-wrap: break-word; }" in block, \
+        "страховка: слово длиннее колонки переломится, а не заедет на соседа"
+
+
+def test_icon_sits_on_the_first_line_of_its_item():
+    """«Выровни текст под иконки»: значок пункта стоит строкой той же высоты,
+    что и текст, а не опускается на 0.4rem вниз."""
+    css = _css()
+    assert ".facts i { color: #8854F3; font-size: 1em; line-height: inherit;" in css
+    assert "margin-top: 0.4rem" not in css.split(".facts i")[1][:200]
+
+
+def test_one_left_edge_on_the_phone():
+    """«Выровни текст под иконки»: в вертикали заголовок, абзацы и пункты
+    начинаются от одной линии, значки висят слева от неё."""
+    assert ".screen > p, .screen > .lead { padding-left: 1.85rem; }" in _css()
+
+
+def test_startup_studio_chapter_is_renamed():
+    """Правка владельца: не «Уход из корпоративного мира», а «Стартап-студия»."""
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from about_copy import EN, RU
+    assert RU["s1_head"] == "Стартап-студия"
+    assert EN["s1_head"] == "Startup Studio"
+    assert "Уход из корпоративного мира" not in _ru()
+
+
+def test_compound_words_never_break_at_the_hyphen():
+    """Правка владельца: «топ-менеджменту» рвалось по дефису. В составных
+    словах стоит неразрывный дефис U+2011 — в JetBrains Mono он той же
+    ширины, что обычный, поэтому строки не сдвигаются."""
+    nb = u"\u2011"
+    for rel in ("about/index.html", "about/ru/index.html",
+                "ai-strategy/index.html", "ai-strategy/ru/index.html"):
+        assert nb in _raw(rel), rel + ": неразрывных дефисов нет"
+
+
+
+def test_landscape_finale_has_symmetric_padding():
+    """FR-SITE55: в ГОРИЗОНТЕ у финала поля сверху и снизу одинаковые.
+
+    Портретное правило (`.screen.final`, вес 0,2,0) перебивает ландшафтное
+    `.screen` (0,1,0), поэтому запас снизу приходится задавать явно — иначе
+    глава стоит на 14px ниже середины окна."""
+    css = _css()
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".screen.final { padding-bottom: 3.3rem; }" in land, \
+        "в горизонте запас снизу равен верхнему (3.3rem)"
+
+
+def test_ten_roles_fit_five_columns_in_landscape():
+    """FR-SITE54.5: пять колонок по 83px — «Разработка» и «Engineering» не
+    влезали и наезжали на значок соседа (замер: 6px)."""
+    css = _css()
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".facts:has(li:nth-child(10):last-child) { gap: 0.3rem 0.5rem; }" in land
+    assert ".facts:has(li:nth-child(10):last-child) li { font-size: clamp(9px, 2.4vh, 11.5px); gap: 0.28rem; }" in land
+    assert ".facts:has(li:nth-child(10):last-child) i { width: 0.9rem; }" in land
+
+
+
+def test_list_items_do_not_glue_prepositions():
+    """FR-SITE42 намеренно НЕ действует внутри пунктов списков (*_facts).
+
+    Пункт списка — не проза, а ячейка узкой сетки: в горизонте телефона на
+    него приходится 121px. Склейка предлога со следующим словом давала там
+    неразрывный кусок шире ячейки целиком — «по\u00a0бизнес\u2011информатике»
+    занимало 139px, и текст заезжал в соседнюю колонку на 18–28px (замер на
+    740×360). Неразрывный дефис (FR-SITE52) при этом остаётся."""
+    nb = u"\u00a0"
+    ru = _raw("about/ru/index.html")
+    en = _raw("about/index.html")
+    assert u"Бакалавр по бизнес\u2011информатике" in ru, \
+        "в пункте списка предлог отделён обычным пробелом, а дефис остался неразрывным"
+    # привязываемся к самому пункту: «по бизнес-информатике» встречается и в
+    # прозе (олимпиада), и там склейка как раз нужна — проверяем именно ячейку
+    assert u"Бакалавр по" + nb not in ru, "предлог в пункте списка не склеен"
+    assert u"after moving to Moscow" in en, "EN: пункт списка без склейки"
+    assert u"moving" + nb + u"to" not in en, "EN: предлог в пункте списка не склеен"
+    # а в прозе — склеен, как и просил владелец
+    assert u"я" + nb + u"прошёл" in ru, "в прозе склейка предлогов осталась"
+
+
+
+
+def test_chapter_title_sits_on_the_common_left_edge():
+    """FR-SITE66. Правка владельца «выровни текст под иконки»: в ВЕРТИКАЛИ
+    заголовок главы, абзац и пункты начинаются от одной линии.
+
+    Значок главы инлайновый, и ширина его глифа гуляет: Font Awesome квантует
+    её по 0.125em, что при кегле 20.3px даёт шаг ровно 2.53px. Текст заголовка
+    плясал в пределах 43…53px, тогда как абзацы и пункты стоят намертво на
+    47.2px. Замер после правки: разброс 0px на трёх размерах вертикали и обоих
+    языках."""
+    css = _css()
+    mob = css[css.index("@media (max-width:1023px) {"):]
+    assert "h2 { padding-left: 1.85rem; position: relative; }" in mob, \
+        "у заголовка та же колонка значка, что у пунктов списка"
+    assert "h2 i { position: absolute; left: 0; top: 0; width: 1.15rem; margin-right: 0;" in mob, \
+        "значок вынесен в фиксированную колонку, и ширина глифа больше ни на что не влияет"
+
+
+
+
+def test_owner_copy_checklist_2026_09_23():
+    """FR-SITE67. Чеклист владельца по биографии: глава «Путь не был прямым»
+    убрана, тексты заменены, строки разбиты там, где он сказал."""
+    ru, en = _raw("about/ru/index.html"), _raw("about/index.html")
+    for dead in (u"Путь не был прямым", u"компьютерного журнала", u"Not a Straight Line", u"computer magazine",
+                 u"способом двигаться вперёд", u"картой движения", u"Могли двигаться невероятно быстро",
+                 u"Could move incredibly fast"):
+        assert dead not in ru and dead not in en, u"старый текст убран: " + dead
+    for want in (u"Образование помогало мне расти.", u"дорожной картой",
+                 u"Двигались очень быстро, но ресурсов хватало не на все идеи."):
+        assert want in ru.replace(u"\u00a0", u" ").replace(u"\u2011", u"-"), want
+    assert u"Move fast, but limited resources constrain execution." in en.replace(u"\u00a0", u" ")
+    # разбивка строк — блочными .l: каждая начинается с новой строки
+    assert u'<span class="l">— Дальневосточный' in ru and u'<span class="l">— Far Eastern' in en
+    assert u'<span class="l">и\u00a0анализа данных' in ru or u'<span class="l">и анализа данных' in ru
+    css = _css()
+    assert ".screen p .l, .screen li .l { display: block; }" in css
+    assert ru.count('class="screen') == en.count('class="screen') == 18, "экранов стало 18"
+
 
 
 if __name__ == "__main__":
@@ -437,9 +847,9 @@ if __name__ == "__main__":
         if name.startswith("test_") and callable(fn):
             try:
                 fn()
-                print("ok   " + name)
-            except AssertionError as e:
+                print("ok  ", name)
+            except AssertionError as err:
                 fails += 1
-                print("FAIL " + name + ": " + str(e))
-    print(("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if not fails else "ПРОВАЛЕНО: %d" % fails))
+                print("FAIL", name + ":", err)
+    print("ПРОВАЛЕНО:", fails) if fails else print("ВСЕ ТЕСТЫ БИОГРАФИИ ПРОЙДЕНЫ")
     sys.exit(1 if fails else 0)

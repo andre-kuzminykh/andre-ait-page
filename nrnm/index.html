@@ -1,0 +1,545 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <title>Neuronium — AI‑Native Startup Program</title>
+  <meta name="description" content="Нейроний — платформа для создания и запуска AI‑Native продуктов с нуля." />
+  <style>
+    :root {
+      --bg:#050505;
+      --text:#f7f7f8;
+      --muted:#aaaab3;
+      --line:rgba(255,255,255,.11);
+      --panel:rgba(255,255,255,.035);
+      --panel2:rgba(255,255,255,.055);
+      --purple:#8b5cf6;
+      --purple2:#c267ff;
+      --orange:#ff7a1a;
+      --orange2:#ffab5c;
+      --max:1180px;
+      --ease:cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing:border-box; }
+    html, body { width:100%; height:100%; margin:0; background:var(--bg); }
+    body {
+      overflow:hidden;
+      color:var(--text);
+      font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+    button { font:inherit; color:inherit; }
+    button, a { -webkit-tap-highlight-color:transparent; }
+    .keep { white-space:nowrap; }
+    .icon { width:1em; height:1em; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+    .noise {
+      position:fixed; inset:0; z-index:80; pointer-events:none; opacity:.022; mix-blend-mode:soft-light;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    }
+
+    .topbar {
+      position:fixed; inset:0 0 auto 0; z-index:60; height:70px; pointer-events:none;
+      background:linear-gradient(to bottom,rgba(5,5,5,.96),rgba(5,5,5,.58),transparent);
+    }
+    .nav {
+      width:min(calc(100% - 40px),var(--max)); height:70px; margin:0 auto;
+      display:flex; align-items:center; pointer-events:auto;
+    }
+    .brand {
+      display:flex; align-items:center; gap:11px; padding:0; border:0; background:transparent; cursor:pointer;
+      color:#fff; font-weight:750; font-size:15px; letter-spacing:-.02em;
+    }
+    .brand-mark {
+      width:32px; height:32px; display:grid; place-items:center; border-radius:9px;
+      background:#090909; border:1px solid rgba(255,255,255,.18); color:#fff;
+      font-weight:800; font-size:12px; letter-spacing:-.03em;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .deck {
+      height:100dvh; width:100%; overflow-y:auto; overflow-x:hidden;
+      scroll-snap-type:y mandatory; scroll-behavior:smooth; overscroll-behavior-y:contain;
+      scrollbar-width:none; -ms-overflow-style:none;
+    }
+    .deck::-webkit-scrollbar { display:none; }
+    .slide {
+      position:relative; height:100dvh; min-height:100dvh; width:100%;
+      scroll-snap-align:start; scroll-snap-stop:always;
+      display:flex; align-items:center; justify-content:center;
+      padding:82px 22px 72px; overflow:hidden; isolation:isolate;
+    }
+    .slide::before,.slide::after {
+      content:""; position:absolute; z-index:-1; border-radius:50%; pointer-events:none; filter:blur(16px);
+    }
+    .slide::before {
+      width:min(70vw,900px); height:min(70vw,900px); left:-30vw; top:-42vw;
+      background:radial-gradient(circle,rgba(139,92,246,.18),rgba(139,92,246,.055) 36%,transparent 70%);
+    }
+    .slide::after {
+      width:min(62vw,800px); height:min(62vw,800px); right:-26vw; bottom:-39vw;
+      background:radial-gradient(circle,rgba(255,122,26,.15),rgba(255,122,26,.045) 38%,transparent 71%);
+    }
+    .wrap {
+      width:min(100%,var(--max)); margin:0 auto; position:relative; z-index:2;
+      transform:translateY(16px); opacity:.42; transition:transform .48s var(--ease),opacity .42s var(--ease);
+    }
+    .slide.is-active .wrap { transform:translateY(0); opacity:1; }
+
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:9px; margin-bottom:clamp(12px,2vh,20px);
+      color:#cdbdff; font-size:12px; line-height:1; font-weight:760; letter-spacing:.1em; text-transform:uppercase;
+    }
+    .eyebrow::before {
+      content:""; width:26px; height:2px; border-radius:999px;
+      background:linear-gradient(90deg,var(--purple),var(--orange));
+    }
+    h1,h2,h3,p { margin-top:0; }
+    h1,h2 { text-wrap:balance; }
+    h1 {
+      max-width:1050px; margin-bottom:clamp(18px,2.7vh,28px);
+      font-size:clamp(54px,7.15vw,104px); line-height:.94; letter-spacing:-.058em;
+    }
+    h2 {
+      max-width:980px; margin-bottom:clamp(14px,2.1vh,22px);
+      font-size:clamp(38px,4.8vw,68px); line-height:.99; letter-spacing:-.05em;
+    }
+    h3 { margin-bottom:7px; font-size:clamp(17px,1.5vw,21px); line-height:1.12; letter-spacing:-.025em; }
+    .lead {
+      max-width:930px; margin-bottom:clamp(18px,2.7vh,28px); color:#c5c5cc;
+      font-size:clamp(17px,1.65vw,23px); line-height:1.42; text-wrap:pretty;
+    }
+    .gradient-text {
+      background:linear-gradient(102deg,#f8f4ff 0%,#d6c1ff 30%,#a867ff 57%,#ff8a35 82%,#ffd1a8 100%);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    .cta-row { display:flex; gap:12px; align-items:center; }
+    .button {
+      border:1px solid var(--line); border-radius:14px; padding:14px 18px; cursor:pointer;
+      font-size:14px; font-weight:760; transition:transform .2s ease,border-color .25s ease,background .25s ease,box-shadow .25s ease;
+    }
+    .button.primary { background:#111114; color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.3); }
+    @media (hover:hover) {
+      .button.primary:hover {
+        transform:translateY(-1px); border-color:transparent;
+        background:linear-gradient(110deg,#7446ee 0%,#9853f4 34%,#c05ee4 57%,#ef715e 78%,#ff9447 100%);
+        box-shadow:0 12px 35px rgba(139,92,246,.18),0 12px 38px rgba(255,122,26,.10);
+      }
+    }
+
+    .grid-2,.grid-3,.grid-4 { display:grid; gap:14px; }
+    .grid-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .grid-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .grid-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .card {
+      min-width:0; padding:clamp(18px,2vw,24px); border:1px solid var(--line); border-radius:20px;
+      background:linear-gradient(155deg,rgba(255,255,255,.055),rgba(255,255,255,.017));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    .card p { margin:0; color:#ababB4; font-size:clamp(14px,1.16vw,16.5px); line-height:1.46; }
+    .icon-wrap,.timeline-icon,.check-icon {
+      display:grid; place-items:center; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.025); color:#cbb7ff;
+    }
+    .icon-wrap { width:42px; height:42px; margin-bottom:16px; border-radius:12px; font-size:21px; }
+
+    .flow {
+      display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px;
+    }
+    .flow-item {
+      min-height:122px; padding:18px 17px; border:1px solid var(--line); border-radius:18px;
+      background:linear-gradient(155deg,rgba(255,255,255,.047),rgba(255,255,255,.018));
+      display:flex; flex-direction:column; justify-content:space-between; align-items:flex-start;
+      color:#f2f2f4; font-size:17px; font-weight:720; letter-spacing:-.015em;
+      transition:border-color .22s ease,background .22s ease,transform .22s ease;
+    }
+    .flow-item .icon { width:42px; height:42px; color:#cbb7ff; stroke-width:1.65; }
+    @media (hover:hover) {
+      .flow-item:hover {
+        transform:translateY(-2px); border-color:rgba(178,115,255,.34);
+        background:linear-gradient(145deg,rgba(139,92,246,.13),rgba(255,255,255,.02) 48%,rgba(255,122,26,.08));
+      }
+    }
+
+    .timeline { border-top:1px solid var(--line); }
+    .timeline-row {
+      min-height:72px; border-bottom:1px solid var(--line); display:grid; grid-template-columns:48px 1fr; gap:20px; align-items:center;
+    }
+    .timeline-icon { width:34px; height:34px; border-radius:10px; font-size:17px; }
+    .timeline-row strong { font-size:clamp(20px,2.05vw,28px); line-height:1.12; letter-spacing:-.035em; }
+
+    .role { min-height:245px; display:flex; flex-direction:column; justify-content:space-between; }
+    .role-next { margin-top:18px; font-size:clamp(18px,1.55vw,22px); font-weight:780; letter-spacing:-.03em; color:#e9e9ed; }
+
+    .checks {
+      list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 18px;
+    }
+    .checks li {
+      min-height:48px; display:grid; grid-template-columns:30px 1fr; gap:11px; align-items:center;
+      color:#d6d6dc; font-size:clamp(14px,1.2vw,16.5px); line-height:1.34;
+    }
+    .check-icon { width:28px; height:28px; border-radius:9px; font-size:14px; color:#cbb7ff; }
+
+    .quote {
+      max-width:1050px; margin:0; font-size:clamp(48px,7vw,100px); line-height:.96; letter-spacing:-.058em; font-weight:820; text-wrap:balance;
+    }
+
+    .controls {
+      position:fixed; z-index:65; left:50%; bottom:max(17px,env(safe-area-inset-bottom)); transform:translateX(-50%);
+      pointer-events:none;
+    }
+    .dots { display:flex; gap:8px; align-items:center; pointer-events:auto; }
+    .dot {
+      width:7px; height:7px; padding:0; border:0; border-radius:999px; background:rgba(255,255,255,.23); cursor:pointer;
+      transition:width .25s ease,background .25s ease,transform .2s ease;
+    }
+    .dot.is-active { width:24px; background:linear-gradient(90deg,var(--purple),var(--orange)); }
+    @media (hover:hover) { .dot:hover { transform:scale(1.18); background:rgba(255,255,255,.5); } }
+
+    .home-up {
+      position:fixed; z-index:66; right:max(20px,env(safe-area-inset-right)); bottom:max(16px,env(safe-area-inset-bottom));
+      width:42px; height:42px; display:grid; place-items:center; padding:0; border-radius:13px;
+      border:1px solid var(--line); background:#101012; color:#fff; cursor:pointer;
+      opacity:0; visibility:hidden; transform:translateY(8px); transition:.22s ease;
+    }
+    .home-up.is-visible { opacity:1; visibility:visible; transform:translateY(0); }
+    .home-up .icon { width:18px; height:18px; }
+    @media (hover:hover) {
+      .home-up:hover { border-color:transparent; background:linear-gradient(120deg,#7446ee,#a653ef 52%,#ff8240); }
+    }
+
+    @media (max-width:900px) {
+      .slide { padding-left:18px; padding-right:18px; }
+      .grid-4 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .grid-3 { gap:12px; }
+      .role { min-height:220px; }
+    }
+
+    @media (max-width:680px) {
+      .topbar,.nav { height:60px; }
+      .nav { width:calc(100% - 28px); }
+      .brand { font-size:14px; gap:9px; }
+      .brand-mark { width:30px; height:30px; border-radius:9px; }
+      .slide { padding:70px 14px 58px; }
+      .wrap { width:100%; }
+      .eyebrow { margin-bottom:11px; font-size:10px; gap:7px; }
+      .eyebrow::before { width:20px; }
+      h1 { font-size:clamp(42px,13.3vw,62px); line-height:.95; margin-bottom:16px; }
+      h2 { font-size:clamp(32px,9.6vw,44px); line-height:1; margin-bottom:13px; }
+      h3 { font-size:15px; margin-bottom:5px; }
+      .lead { font-size:15.5px; line-height:1.38; margin-bottom:16px; }
+      .button { padding:12px 15px; border-radius:12px; font-size:13px; }
+
+      .grid-2,.grid-4 { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+      .grid-3 { grid-template-columns:1fr; gap:9px; }
+      .card { padding:14px; border-radius:16px; }
+      .card p { font-size:12.5px; line-height:1.34; }
+      .icon-wrap { width:34px; height:34px; margin-bottom:10px; border-radius:10px; font-size:17px; }
+
+      .flow { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+      .flow-item { min-height:88px; padding:12px; border-radius:15px; font-size:14px; }
+      .flow-item .icon { width:31px; height:31px; }
+
+      .timeline-row { min-height:59px; grid-template-columns:37px 1fr; gap:10px; }
+      .timeline-icon { width:30px; height:30px; border-radius:9px; font-size:14px; }
+      .timeline-row strong { font-size:16px; line-height:1.15; }
+
+      .role { min-height:0; padding:13px 14px; display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end; }
+      .role .icon-wrap { display:none; }
+      .role p { max-width:245px; }
+      .role-next { margin:0; font-size:14px; white-space:nowrap; }
+
+      .checks { grid-template-columns:1fr; gap:3px; }
+      .checks li { min-height:31px; grid-template-columns:24px 1fr; gap:8px; font-size:12.4px; line-height:1.2; }
+      .check-icon { width:23px; height:23px; border-radius:7px; font-size:11px; }
+
+      .quote { font-size:clamp(42px,12.7vw,58px); }
+      .controls { bottom:max(13px,env(safe-area-inset-bottom)); }
+      .dots { gap:6px; }
+      .dot { width:6px; height:6px; }
+      .dot.is-active { width:20px; }
+      .home-up { width:38px; height:38px; right:12px; bottom:max(11px,env(safe-area-inset-bottom)); border-radius:12px; }
+    }
+
+    @media (max-width:390px) and (max-height:740px) {
+      .slide { padding-top:62px; padding-bottom:48px; }
+      h1 { font-size:39px; }
+      h2 { font-size:30px; }
+      .lead { font-size:14px; margin-bottom:12px; }
+      .card { padding:11px 12px; }
+      .card p { font-size:11.5px; }
+      .grid-2,.grid-3,.grid-4 { gap:7px; }
+      .flow { gap:7px; }
+      .flow-item { min-height:74px; padding:10px; font-size:12.5px; }
+      .flow-item .icon { width:27px; height:27px; }
+      .timeline-row { min-height:49px; }
+      .timeline-row strong { font-size:14px; }
+      .checks li { min-height:27px; font-size:11.4px; }
+      .role { padding:10px 12px; }
+      .role p { font-size:11.2px; }
+      .role-next { font-size:12.5px; }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .deck { scroll-behavior:auto; }
+      .wrap,.button,.dot,.home-up { transition:none!important; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></symbol>
+    <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M14 5c2.5-2.5 5.5-2 5.5-2s.5 3-2 5.5l-5.8 5.8-3.4-3.4z"/><path d="m8.3 10.9-3.7.5-2.1 2.1 5.1 1M12.1 14.7l-.5 3.7-2.1 2.1-1-5.1M15.5 7.5h.01"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9.5 4.5A3 3 0 0 0 5 7a3 3 0 0 0-1 5.7A3.2 3.2 0 0 0 7 18a3 3 0 0 0 5 1.8V6.2A3 3 0 0 0 9.5 4.5Z"/><path d="M14.5 4.5A3 3 0 0 1 19 7a3 3 0 0 1 1 5.7A3.2 3.2 0 0 1 17 18a3 3 0 0 1-5 1.8V6.2a3 3 0 0 1 2.5-1.7Z"/></symbol>
+    <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></symbol>
+    <symbol id="i-stack" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></symbol>
+    <symbol id="i-product" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h5M8 17h3"/></symbol>
+    <symbol id="i-design" viewBox="0 0 24 24"><path d="m4 20 5-1 10-10-4-4L5 15z"/><path d="m13.5 6.5 4 4"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></symbol>
+    <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M4 13v-2l11-5v12L4 13Z"/><path d="m15 9 4-2v10l-4-2M6 13l2 6h3l-1-5"/></symbol>
+    <symbol id="i-sales" viewBox="0 0 24 24"><path d="M5 19V9M12 19V5M19 19v-7"/><path d="m4 6 5-3 4 3 7-4"/></symbol>
+    <symbol id="i-support" viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M4 13v4a2 2 0 0 0 2 2h2v-7H4ZM20 13v4a2 2 0 0 1-2 2h-2v-7h4ZM16 19c0 1-1 2-4 2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h2a4 4 0 0 0 4-4V10a4 4 0 0 1 4-4"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-7z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m4 10 8-7 8 7"/><path d="M6 9v11h12V9M10 20v-6h4v6"/></symbol>
+    <symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 7h-5V2"/><path d="M19 6a8 8 0 1 0 1 9M4 17h5v5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.9 8.1 7 10 4.1-1.9 7-5.3 7-10V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-money" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 9H5M19 15h-2"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.2 1.2"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.2-1.2"/></symbol>
+    <symbol id="i-invest" viewBox="0 0 24 24"><path d="M4 19h16M6 16l4-4 3 2 5-7"/><path d="M15 7h3v3"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="m6 14 6-6 6 6"/></symbol>
+  </svg>
+
+  <div class="noise"></div>
+  <header class="topbar">
+    <div class="nav">
+      <button class="brand" id="homeButton" type="button" aria-label="Перейти к первому экрану">
+        <span class="brand-mark" aria-hidden="true">Nr</span>
+        <span>Neuronium</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="deck" id="deck">
+    <section class="slide" data-title="Старт">
+      <div class="wrap">
+        <div class="eyebrow"><span class="keep">AI‑Native</span> Startup Program</div>
+        <h1>Создай продукт.<br><span class="gradient-text">Выведи его на рынок.</span></h1>
+        <p class="lead">Нейроний — платформа для создания и запуска <span class="keep">AI‑Native</span> <span class="keep">продуктов&nbsp;с&nbsp;нуля</span>.<br><strong>От исследования идеи</strong> — до разработки, запуска, маркетинга и продаж.</p>
+        <div class="cta-row"><button class="button primary" type="button" data-go="1">Как это работает</button></div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Что создаём">
+      <div class="wrap">
+        <div class="eyebrow">Что создаём</div>
+        <h2>Не учебный кейс.<br><span class="gradient-text">Реальный <span class="keep">AI‑Native</span> продукт.</span></h2>
+        <p class="lead">Можно выбрать одну из готовых стартап-идей или прийти со своей. Вы не разрабатываете Нейроний — используете готовую платформу, чтобы пройти путь от гипотезы до работающего продукта и проверить его на рынке.</p>
+        <div class="grid-3">
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-search"/></svg></div><h3>Исследовать</h3><p>Найти проблему, сегмент пользователей, конкурентов и сформировать гипотезу продукта.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-box"/></svg></div><h3>Собрать</h3><p>Спроектировать ИИ-архитектуру, собрать MVP, интеграции и пользовательский интерфейс.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-rocket"/></svg></div><h3>Запустить</h3><p>Получить реальных пользователей, настроить маркетинг и продажи и развивать продукт по обратной связи.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Платформа">
+      <div class="wrap">
+        <div class="eyebrow">Платформа</div>
+        <h2>Вся цепочка запуска.<br><span class="gradient-text">В одной среде.</span></h2>
+        <p class="lead">Нейроний закрывает полный цикл создания продукта.<br>Команда концентрируется на ценности и рынке, а не собирает <span class="keep">инфраструктуру&nbsp;с&nbsp;нуля</span>.</p>
+        <div class="flow" aria-label="Цепочка создания продукта">
+          <div class="flow-item"><svg class="icon"><use href="#i-search"/></svg><span>Исследование</span></div>
+          <div class="flow-item"><svg class="icon"><use href="#i-product"/></svg><span>Продукт</span></div>
+          <div class="flow-item"><svg class="icon"><use href="#i-design"/></svg><span>Дизайн</span></div>
+          <div class="flow-item"><svg class="icon"><use href="#i-code"/></svg><span>Разработка</span></div>
+          <div class="flow-item"><svg class="icon"><use href="#i-megaphone"/></svg><span>Маркетинг</span></div>
+          <div class="flow-item"><svg class="icon"><use href="#i-sales"/></svg><span>Продажи</span></div>
+          <div class="flow-item"><svg class="icon"><use href="#i-support"/></svg><span>Поддержка</span></div>
+          <div class="flow-item"><svg class="icon"><use href="#i-chart"/></svg><span>Аналитика</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Что получаете">
+      <div class="wrap">
+        <div class="eyebrow">Что вы получаете</div>
+        <h2>Технология и инфраструктура.<br><span class="gradient-text">Выход на рынок.</span></h2>
+        <div class="grid-4">
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-brain"/></svg></div><h3>Нейроний</h3><p>Готовая технологическая платформа и ИИ-инструменты для создания продукта.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-server"/></svg></div><h3>Инфраструктура</h3><p>Серверы, вычислительные ресурсы, разработка, развёртывание и техническое окружение.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-stack"/></svg></div><h3>ИИ-стек</h3><p>LLM, агенты, MCP, автоматизации, интеграции и инструменты для <span class="keep">AI‑Native</span> архитектуры.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-globe"/></svg></div><h3>Международный рынок</h3><p>Инфраструктура для международного запуска и возможность принимать зарубежные платежи.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Путь">
+      <div class="wrap">
+        <div class="eyebrow">Путь</div>
+        <h2>От идеи.<br><span class="gradient-text">До первых продаж.</span></h2>
+        <div class="timeline">
+          <div class="timeline-row"><div class="timeline-icon"><svg class="icon"><use href="#i-search"/></svg></div><strong>Исследование рынка и выбор проблемы</strong></div>
+          <div class="timeline-row"><div class="timeline-icon"><svg class="icon"><use href="#i-product"/></svg></div><strong>Продуктовая гипотеза и проверка спроса</strong></div>
+          <div class="timeline-row"><div class="timeline-icon"><svg class="icon"><use href="#i-code"/></svg></div><strong>MVP, ИИ-архитектура и разработка</strong></div>
+          <div class="timeline-row"><div class="timeline-icon"><svg class="icon"><use href="#i-rocket"/></svg></div><strong>Запуск, пользователи, маркетинг и продажи</strong></div>
+          <div class="timeline-row"><div class="timeline-icon"><svg class="icon"><use href="#i-chart"/></svg></div><strong>Итерации, бизнес-модель и масштабирование</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Рост">
+      <div class="wrap">
+        <div class="eyebrow">Рост</div>
+        <h2>Сначала строишь сам.<br><span class="gradient-text">Потом управляешь системой.</span></h2>
+        <p class="lead">Команда — три технических сооснователя. На старте каждый много делает самостоятельно, а по мере роста продукта учится принимать решения, делегировать и управлять людьми и ИИ.</p>
+        <div class="grid-3">
+          <article class="card role"><div><div class="icon-wrap"><svg class="icon"><use href="#i-product"/></svg></div><h3>Продуктовый инженер</h3><p>Продукт, требования, пользовательский опыт и сборка решения целиком.</p></div><div class="role-next">Рост до CEO</div></article>
+          <article class="card role"><div><div class="icon-wrap"><svg class="icon"><use href="#i-code"/></svg></div><h3>ИИ-инженер</h3><p>Архитектура, LLM, контекст, агентные системы и техническое качество.</p></div><div class="role-next">Рост до CTO</div></article>
+          <article class="card role"><div><div class="icon-wrap"><svg class="icon"><use href="#i-zap"/></svg></div><h3>Инженер по автоматизации ИИ</h3><p>ИИ-агенты, MCP, автоматизация процессов и операционная модель с ИИ в основе.</p></div><div class="role-next">Рост до CAIO</div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Требования">
+      <div class="wrap">
+        <div class="eyebrow">Требования</div>
+        <h2>Нужны люди, которые<br><span class="gradient-text">доводят до результата.</span></h2>
+        <ul class="checks">
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>Интерес к <span class="keep">AI‑Native</span> продуктам и технологическому предпринимательству</span></li>
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>Claude Code и разработка с ИИ</span></li>
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>Базовые навыки разработки веб-приложений</span></li>
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>LLM, ИИ-агенты, промпты и работа с контекстом</span></li>
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>API, MCP, интеграции и автоматизации</span></li>
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>Git / GitHub и современный инженерный процесс</span></li>
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>Умение быстро собирать MVP и проверять гипотезы</span></li>
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>Самостоятельность и ответственность за продукт</span></li>
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>Готовность общаться с пользователями и работать с обратной связью</span></li>
+          <li><span class="check-icon"><svg class="icon"><use href="#i-check"/></svg></span><span>Английский для документации и международного рынка</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Результат">
+      <div class="wrap">
+        <div class="eyebrow">Результат</div>
+        <h2>На выходе —<br><span class="gradient-text">работающий продукт.</span></h2>
+        <div class="grid-2">
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-box"/></svg></div><h3>Продукт</h3><p>Рабочий <span class="keep">AI‑Native</span> продукт, развёрнутая версия, Git-репозиторий и базовая техническая документация.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-user"/></svg></div><h3>Рынок</h3><p>Проверенная гипотеза, реальная пользовательская обратная связь и первые пользователи.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-sales"/></svg></div><h3>Бизнес</h3><p>Рабочая бизнес-модель, первые каналы маркетинга и продаж и понимание ключевых метрик.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-route"/></svg></div><h3>Рост</h3><p>План дальнейшего развития и готовность продукта к масштабированию и международному рынку.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Формат">
+      <div class="wrap">
+        <div class="eyebrow">Формат</div>
+        <h2>Максимум самостоятельности.<br><span class="gradient-text">Минимум бюрократии.</span></h2>
+        <div class="grid-3">
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-home"/></svg></div><h3>Удалённо</h3><p>Полностью удалённая работа и самостоятельная организация внутри команды.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-sync"/></svg></div><h3>Синхронизация</h3><p>Созвон и разбор прогресса раз в неделю или раз в две недели — по договорённости и стадии проекта.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-shield"/></svg></div><h3>Ответственность</h3><p>Это не набор задач от компании. Команда отвечает за собственный продукт и его результат.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Дальше">
+      <div class="wrap">
+        <div class="eyebrow">Дальше</div>
+        <h2>Сильные продукты<br><span class="gradient-text">не заканчиваются на программе.</span></h2>
+        <p class="lead">Лучшие проекты смогут продолжить развитие внутри экосистемы Andre AI Technologies: коммерциализация, международный рынок, партнёрства, технология и потенциальные инвестиции.</p>
+        <div class="grid-4">
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-money"/></svg></div><h3>Коммерциализация</h3><p>Запуск продаж и развитие бизнес-модели.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-globe"/></svg></div><h3>Международный рынок</h3><p>Доступ к международной коммерческой и платёжной инфраструктуре.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-link"/></svg></div><h3>Партнёрства</h3><p>Партнёрства и развитие внутри экосистемы.</p></article>
+          <article class="card"><div class="icon-wrap"><svg class="icon"><use href="#i-invest"/></svg></div><h3>Инвестиции</h3><p>Потенциальные инвестиции в наиболее перспективные проекты.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Финал">
+      <div class="wrap">
+        <div class="eyebrow">Neuronium</div>
+        <p class="quote">Не изучай, как создаются <span class="keep">AI‑Native</span> продукты.<br><span class="gradient-text">Создай свой.</span></p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="controls" aria-label="Навигация по презентации"><div class="dots" id="dots"></div></nav>
+  <button class="home-up" id="homeUp" type="button" aria-label="Вернуться в начало"><svg class="icon"><use href="#i-up"/></svg></button>
+
+  <script>
+    (() => {
+      const deck = document.getElementById('deck');
+      const slides = [...document.querySelectorAll('.slide')];
+      const dotsWrap = document.getElementById('dots');
+      const home = document.getElementById('homeButton');
+      const homeUp = document.getElementById('homeUp');
+      const dots = [];
+      let current = 0;
+      let keyLocked = false;
+
+      function go(index, behavior = 'smooth') {
+        const next = Math.max(0, Math.min(index, slides.length - 1));
+        slides[next].scrollIntoView({ behavior, block:'start' });
+      }
+
+      slides.forEach((slide, i) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'dot';
+        dot.setAttribute('aria-label', `Экран ${i + 1}: ${slide.dataset.title || ''}`);
+        dot.addEventListener('click', () => go(i));
+        dotsWrap.appendChild(dot);
+        dots.push(dot);
+      });
+
+      function activate(index) {
+        current = index;
+        slides.forEach((s, i) => s.classList.toggle('is-active', i === index));
+        dots.forEach((d, i) => d.classList.toggle('is-active', i === index));
+        homeUp.classList.toggle('is-visible', index > 0);
+      }
+
+      const observer = new IntersectionObserver(entries => {
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        const index = slides.indexOf(visible.target);
+        if (index >= 0) activate(index);
+      }, { root:deck, threshold:[.45,.6,.75] });
+      slides.forEach(s => observer.observe(s));
+      activate(0);
+
+      home.addEventListener('click', () => go(0));
+      homeUp.addEventListener('click', () => go(0));
+      document.querySelectorAll('[data-go]').forEach(btn => btn.addEventListener('click', () => go(Number(btn.dataset.go))));
+
+      window.addEventListener('keydown', e => {
+        if (keyLocked) return;
+        let next = null;
+        if (['ArrowDown','ArrowRight','PageDown',' '].includes(e.key)) next = current + 1;
+        if (['ArrowUp','ArrowLeft','PageUp'].includes(e.key)) next = current - 1;
+        if (e.key === 'Home') next = 0;
+        if (e.key === 'End') next = slides.length - 1;
+        if (next == null) return;
+        e.preventDefault();
+        keyLocked = true;
+        go(next);
+        setTimeout(() => keyLocked = false, 420);
+      });
+    })();
+  </script>
+</body>
+</html>

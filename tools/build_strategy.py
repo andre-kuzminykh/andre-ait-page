@@ -53,7 +53,12 @@ def flip_key(name):
 def radar(values, dims):
     """Паутина зрелости: семь осей, оценка живёт НАД схемой."""
     cx = cy = 100
-    r = 68
+    # Радиус почти во всю картинку: подписей на осях нет (они у графиков
+    # справа), и прежние r=68 оставляли треть картинки пустым полем — сама
+    # паутина выходила заметно меньше своего места (правка владельца:
+    # «паутина всё равно небольшая — надо побольше»). 95 из 100 оставляют
+    # запас только под обводку контура (stroke-width 1.5).
+    r = 95
     def pts(k, vals=None):
         out = []
         for i in range(len(dims)):
@@ -97,15 +102,24 @@ def color_rows(groups, cls="prow", per=3):
     return "".join(out)
 
 
-def chain_rows(items, arrow=None, down=None, cls="prow"):
+def chain_rows(items, arrow=None, down=None, cls="prow", rows=2):
     """Цепочка двумя рядами со СКВОЗНОЙ нумерацией элементов.
 
     Каждому блоку и стрелке проставляется --i: задержка появления считается
     из него, поэтому каскад идёт через оба ряда одной волной и не начинается
     заново на переносе (правка владельца: «анимация в слайдах с процессами
     фиговая»)."""
-    half = -(-len(items) // 2)
-    rows, out, i = [items[:half], items[half:]], [], 0
+    # ряды набираются как можно ровнее: 7 блоков в три ряда — это 3 + 2 + 2,
+    # а не 3 + 3 + 1. Ряд из четырёх блоков не влезал в панель на 1280 и 1366
+    # (замер: 548px против 500px панели), поэтому цепочка AI-First идёт тремя
+    # рядами (правка владельца «первый экран не вмещается»).
+    n, cut = len(items), []
+    start = 0
+    for r in range(rows):
+        size = -(-(n - start) // (rows - r))
+        cut.append(items[start:start + size])
+        start += size
+    rows, out, i = cut, [], 0
     for r, row in enumerate(rows):
         cells = []
         for k, node in enumerate(row):
@@ -141,29 +155,25 @@ def stages(t):
         <div class="ui-body">
           <div class="maturity">
             <svg class="radar" viewBox="0 0 200 200" role="img" aria-label="{bar}">{svg}</svg>
-            <div class="dimcol">
-              <div class="score"><b class="idx-val">2.4</b><span>/ 5</span></div>
-              <div class="dims">{bars7}</div>
-            </div>
+            <div class="score"><b class="idx-val">2.4</b><span>/ 5</span></div>
+            <div class="dims">{bars7}</div>
           </div>
         </div>
       </div>""".format(bar=s["s1_bar"], svg=radar(vals, s["dims"]), bars7=bars7))
 
-    # 02 — голос превращается в процессы
+    # 02 — голос: на этой сцене ТОЛЬКО речь. Блоки процессов отсюда убраны
+    # (правка владельца): они принадлежат следующему шагу, где из услышанного
+    # собирается цепочка, и здесь только повторялись раньше времени.
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
         <div class="ui-body">
           <div class="wave">{bars}</div>
           <p class="typing" data-type="{quote}"><span class="typed"></span><span class="caret"></span></p>
-          <div class="flow-row">{cards}</div>
         </div>
       </div>""".format(
         bar=s["s2_bar"], quote=s["s2_quote"],
-        bars="".join('<span style="animation-delay:%.2fs"></span>' % (i * 0.08) for i in range(18)),
-        cards="".join('<div class="node %s" data-seq><i class="fa-solid %s"></i>%s</div>'
-                      % (kind, "fa-user" if kind == "human" else "fa-database", name)
-                      for name, kind in s["s2_cards"])))
+        bars="".join('<span style="animation-delay:%.2fs"></span>' % (i * 0.08) for i in range(18))))
 
     # 03 — процессы связаны между собой, где люди — оранжевые
     proc = s["s3_cards"]
@@ -184,17 +194,26 @@ def stages(t):
         <div class="ui-body"><div class="pchain">{chain}</div></div>
       </div>""".format(bar=s["s3_bar"], chain=chain))
 
-    # 04 — что может забрать ИИ
+    # 04 — что может забрать ИИ.
+    # Цвета те же, что на соседних сценах (правка владельца «где оранжевые
+    # были — пусть будут, где фиолетовые — пусть будут»): человек оранжевый,
+    # система фиолетовая, а операция, которую забирает ИИ, — агент:
+    # фиолетово-оранжевая рамка и КРУГЛЫЙ значок робота, а не овал.
+    OP_ICON = {"human": "fa-user", "sys": "fa-database", "ai": "fa-robot"}
     ops_html = []
-    for name, can in s["s4_ops"]:
-        flip = "" if can else flip_key(name)
-        ops_html.append((can, '<div class="opnode%s" data-seq%s><i class="fa-solid %s"></i><span>%s</span></div>'
-                         % (" can" if can else "", flip, "fa-wand-magic-sparkles" if can else "fa-user", name)))
+    for name, kind in s["s4_ops"]:
+        ai = kind == "ai"
+        flip = "" if ai else flip_key(name)
+        mark = ('<span class="op-ic"><i class="fa-solid fa-robot"></i></span>' if ai
+                else '<i class="fa-solid %s"></i>' % OP_ICON[kind])
+        ops_html.append((ai, '<div class="opnode %s" data-seq%s>%s<span>%s</span></div>'
+                         % (kind, flip, mark, name)))
     # Правка владельца: сверху фиолетовое (что забирает ИИ), снизу серое
     # (что остаётся человеку) — рядами не больше трёх, чтобы блоки были
     # крупные и ряд не упирался в края панели.
-    ops_groups = ([o for can, o in ops_html if can],
-                  [o for can, o in ops_html if not can])
+    # сверху — операции, которые забирает ИИ; снизу — то, что остаётся как было
+    ops_groups = ([o for ai, o in ops_html if ai],
+                  [o for ai, o in ops_html if not ai])
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span>{bar}</div>
@@ -217,7 +236,7 @@ def stages(t):
                      % (kind, flip, icon, name))
     ARROW = '<span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
     DOWN = '<span class="fwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
-    flow = chain_rows(items, ARROW, DOWN, cls="frow")
+    flow = chain_rows(items, ARROW, DOWN, cls="frow", rows=3)
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>{bar}</div>
@@ -281,10 +300,11 @@ def page(t, lang):
             <span class="biz-ic"><i class="fa-solid {ic}"></i></span>
             <div class="biz-body">
               <h3>{name}</h3>
-              <p class="biz-metric"><span>{label}</span></p>
+              <p class="biz-metric"><i class="biz-dir {dir_ic} fa-solid {dir_fa}" aria-hidden="true"></i><span>{label}</span></p>
             </div>
             <span class="biz-go"><span>{explore}</span> <i class="fa-solid fa-arrow-right"></i></span>
-          </article>""".format(ic=BIZ_ICONS[i], name=b[0], label=b[1], explore=t["biz_explore"])
+          </article>""".format(ic=BIZ_ICONS[i], name=b[0], label=b[1], explore=t["biz_explore"],
+                 dir_ic=b[2], dir_fa="fa-arrow-trend-up" if b[2] == "up" else "fa-arrow-trend-down")
         for i, b in enumerate(t["businesses"]))
 
     outs = "".join("""
@@ -321,12 +341,19 @@ def page(t, lang):
           </article>""".format(
         best=" best" if p[0] == "best" else "", name=p[1], price=p[2], scope=p[3], cta=p[4],
         badge='<span class="plan-badge">%s</span>' % t["best_value"] if p[0] == "best" else "",
-        style="primary" if p[0] == "best" else "ghost", href=t["cta_href"])
+        # кнопка одинаковая у всех четырёх: у «Компании» она была белой, а
+        # владелец просил «как в первых трёх»
+        style="ghost", href=t["cta_href"])
         for p in t["plans"])
 
+    # Разделитель ставится ТОЛЬКО между зачёркнутыми ценами: строка
+    # переносилась по ширине колонки, и точка повисала в конце первой строки
+    # (правка владельца «убери точку после 10к»). Последний пункт всегда
+    # начинает новую строку — см. .cmp.now в CSS.
     compare = "".join(
-        '<span class="cmp%s">%s</span>%s' % (" old" if old else " now", txt,
-                                             '<i class="fa-solid fa-circle"></i>' if i < len(t["compare"]) - 1 else "")
+        '<span class="cmp%s">%s</span>%s' % (
+            " old" if old else " now", txt,
+            '<i class="fa-solid fa-circle"></i>' if old and t["compare"][i + 1][1] else "")
         for i, (txt, old) in enumerate(t["compare"]))
 
     return """<!DOCTYPE html>
@@ -389,7 +416,7 @@ def page(t, lang):
       <button class="nav-close" id="nav-close" aria-label="{close}"><i class="fa-solid fa-xmark"></i></button>
       <div class="nav-brand" aria-hidden="true">
         <img src="https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png" alt="">
-        <span>AI Strategy</span>
+        <span>{brand}</span>
       </div>
       {home}{nav_html}
     </nav>
@@ -411,7 +438,7 @@ def page(t, lang):
   <!-- 1. Первый экран -->
   <section class="screen active" data-chapter="top" id="top">
     <div class="wrap center">
-      <p class="eyebrow">AI Strategy</p>
+      <p class="eyebrow">{brand}</p>
       <h1>{h1}</h1>
       <p class="lead">{hero_lead}</p>
       <div class="hero-cta">
@@ -435,7 +462,7 @@ def page(t, lang):
   <section class="screen" data-chapter="solution" id="solution">
     <div class="wrap center">
       <p class="eyebrow o">{d_eyebrow}</p>
-      <h2>{d_head}</h2>
+      <h2 class="d-head">{d_head}</h2>
       <p class="lead">{d_sub}</p>
       <div class="outs">{outs}</div>
     </div>
@@ -497,7 +524,7 @@ def page(t, lang):
         <a href="https://www.linkedin.com/in/andre-kuzminykh/" target="_blank" rel="noopener" aria-label="LinkedIn" style="--brand:#0a66c2"><i class="fa-brands fa-linkedin"></i></a>
         <a href="mailto:admin@andre.technology" aria-label="Email" style="--brand:#F97316"><i class="fa-solid fa-envelope"></i></a>
       </div>
-      <p class="legal"><a href="/">{legal0}</a><span>&middot;</span><a href="/">{legal1}</a></p>
+      <p class="legal"><a href="/">{legal0}</a><a href="/">{legal1}</a></p>
       <p class="copy">2026 &copy; Andre AI Technologies LTD</p>
     </footer>
   </section>
@@ -510,7 +537,7 @@ def page(t, lang):
 """.format(
         lang=lang, title=t["title"], desc=t["meta_desc"], self_href=self_href, video=video,
         site=SITE, path_en=PATH_EN, path_ru=PATH_RU,
-        video_aria=t["video_aria"], role=t["role"], sections=t["sections"], close=t["close"], menu=t["menu"],
+        video_aria=t["video_aria"], role=t["role"], brand=t["brand"], sections=t["sections"], close=t["close"], menu=t["menu"],
         nav_html=nav_html, cta_href=t["cta_href"], cta_top=t["cta_top"], home=home,
         lang_switch=('<span class="lang-opt active">EN</span><span class="lang-sep">|</span>'
                      '<a class="lang-opt" href="%s">RU</a>' % other_href) if lang == "en" else
@@ -531,7 +558,7 @@ def page(t, lang):
 
 MOVED_TEXT = {
     "en": ("AI Strategy has moved", "This page has moved to"),
-    "ru": ("Страница AI Strategy переехала", "Страница переехала"),
+    "ru": ("Страница ИИ-стратегии переехала", "Страница переехала"),
 }
 
 
@@ -577,9 +604,13 @@ def moved(to, lang):
 
 def build():
     from strategy_copy import EN, RU
+    # правило переносов — общее на весь сайт (tools/typo.py): служебное слово
+    # уезжает на следующую строку вместе со своим («don't use it / effectively»
+    # владельцу режет глаз так же, как и в биографии)
+    from typo import bind_copy
     pages = (
-        ("ai-strategy/index.html", page(EN, "en")),
-        ("ai-strategy/ru/index.html", page(RU, "ru")),
+        ("ai-strategy/index.html", page(bind_copy(EN, "en"), "en")),
+        ("ai-strategy/ru/index.html", page(bind_copy(RU, "ru"), "ru")),
         # старые адреса: лендинг успел постоять на /strategy/
         (OLD_PATH_EN.strip("/") + "/index.html", moved(PATH_EN, "en")),
         (OLD_PATH_RU.strip("/") + "/index.html", moved(PATH_RU, "ru")),

@@ -15,7 +15,12 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --head-w: 56%;
   /* диаметр кружка с роликом на телефоне: от него считается нижнее поле экранов */
-  --vid-d: clamp(128px, 36vw, 168px);
+  /* Диаметр кружка с роликом. Считается от МЕНЬШЕЙ стороны окна: на
+     сжатом окне (узком или низком) 36vw давали круг почти в треть
+     высоты, он упирался в край и накрывал подвал (правка владельца:
+     «голова должна подтягиваться под размер экрана, а не заходить за
+     рамки»). */
+  --vid-d: clamp(88px, min(34vw, 18vh), 168px);
 }
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: var(--bg); color-scheme: dark;
@@ -32,6 +37,10 @@ img, svg { max-width: 100%; }
 @media (min-width:2300px) { body { zoom: 1.5; } }
 
 /* ===== Лицо ===== */
+/* touch-action: none ОБЯЗАТЕЛЕН: кружок таскают пальцем, а при manipulation
+   браузер забирает жест себе под прокрутку и события pointermove до элемента
+   не доходят — на телефоне кружок не двигался вообще (жалоба владельца
+   «кружочки нихуя не двигаются»). */
 .head { position: fixed; z-index: 45; overflow: hidden; background: #0a0a0f; cursor: pointer; touch-action: none;
   border: 1px solid transparent; transition: border-color 0.4s ease, box-shadow 0.4s ease; }
 .head video { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -251,23 +260,34 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
 
 /* ===== Типографика ===== */
 h1, h2, h3 { color: var(--w); margin: 0; }
-h1 { font-size: clamp(1.7rem, 5vw, 4.4rem); font-weight: 800; line-height: 1.16; letter-spacing: -0.025em; margin-bottom: 1.1rem; }
+.nb { white-space: nowrap; }
+/* подзаголовок ближе к заголовку (правка владельца) */
+h1 { font-size: clamp(1.7rem, 5vw, 4.4rem); font-weight: 800; line-height: 1.16; letter-spacing: -0.025em; margin-bottom: 0.7rem; }
 h1 .l { display: block; white-space: nowrap; }
 h2 .l { display: block; }
 @media (min-width:1024px) { h2 .l { white-space: nowrap; } }
 @media (max-width:1023px) { h1 { font-size: clamp(1.05rem, 5.2vw, 1.9rem); } }
-h2 { font-size: clamp(1.15rem, 2.1vw, 1.75rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.015em; margin-bottom: 0.9rem; }
-h2.one-line { white-space: nowrap; font-size: clamp(0.95rem, 1.85vw, 1.5rem); }
+h2 { font-size: clamp(1.2rem, 2.25vw, 1.9rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.015em; margin-bottom: 0.6rem; }
+h2.one-line { white-space: nowrap; font-size: clamp(1rem, 2vw, 1.65rem); }
+/* Заголовок экрана «Решение»: правка владельца «model оранжевым и можно в
+   одну строку?». В вебе — да: обе строки встают в одну, а кегль под колонку
+   подбирает скрипт. На телефоне 29 знаков (по-русски 34) в строку не лезут
+   даже мелким кеглем, поэтому там остаётся авторский перенос по .l. */
+@media (min-width:1024px) {
+  h2.d-head { white-space: nowrap; }
+  h2.d-head .l { display: inline; }
+  h2.d-head .l + .l::before { content: " "; white-space: pre; }
+}
 @media (max-width:1023px) { h2.one-line { white-space: normal; } }
-h3 { font-size: clamp(0.95rem, 1.1vw, 1.1rem); font-weight: 700; line-height: 1.3; }
-p { margin: 0 0 0.8rem; font-size: clamp(12.5px, 0.92vw, 14.5px); line-height: 1.7; }
+h3 { font-size: clamp(1rem, 1.2vw, 1.22rem); font-weight: 700; line-height: 1.3; }
+p { margin: 0 0 0.8rem; font-size: clamp(13.5px, 1.08vw, 17px); line-height: 1.65; }
 p:last-child { margin-bottom: 0; }
 strong { color: var(--w); font-weight: 700; }
-.lead { font-size: clamp(13.5px, 1.05vw, 16px); line-height: 1.6; color: #dfe4ec; }
+.lead { font-size: clamp(14.5px, 1.25vw, 19px); line-height: 1.55; color: #dfe4ec; }
 /* строки, которые владелец просил не склеивать в одну */
 .lead .l { display: block; }
 .eyebrow { display: inline-flex; align-items: center; gap: 0.55rem; margin: 0 0 0.8rem;
-  font-size: clamp(11.5px, 0.92vw, 13.5px); font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--p-l); }
+  font-size: clamp(12px, 1.02vw, 15px); font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--p-l); }
 .eyebrow.o { color: var(--o-l); }
 .center .eyebrow { justify-content: center; }
 .hl-p { color: var(--p-l); }
@@ -279,7 +299,7 @@ strong { color: var(--w); font-weight: 700; }
 .hero-how { background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
   font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em;
   color: rgba(255,255,255,0.5); transition: color 0.3s ease; }
-@media (min-width:1024px) { .hero-how { font-size: clamp(12px, 0.9vw, 15px); } }
+@media (min-width:1024px) { .hero-how { font-size: clamp(12.5px, 1vw, 16.5px); } }
 @media (hover:hover) { .hero-how:hover { color: var(--w); } }
 
 /* ===== Проблема: вопросы в одну строку каждый ===== */
@@ -295,32 +315,37 @@ strong { color: var(--w); font-weight: 700; }
 .num-card:nth-child(2n+1) { background: linear-gradient(165deg, rgba(136,84,243,0.08), rgba(255,255,255,0.01)); }
 .num-val { font-size: clamp(1.7rem, 3.2vw, 2.5rem); font-weight: 800; line-height: 1; letter-spacing: -0.03em;
   background: linear-gradient(120deg, var(--p-l), var(--o-l)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.num-card p { margin: 0; font-size: clamp(11.5px, 1vw, 14.5px); line-height: 1.4; color: var(--w); }
+.num-card p { margin: 0; font-size: clamp(12px, 1vw, 14.5px); line-height: 1.4; color: var(--w); }
 .num-card p .l, .out p .l { display: block; }
 @media (min-width:1024px) and (max-height:760px),
          (min-width:1600px) and (max-height:874px),
          (min-width:1900px) and (max-height:988px),
          (min-width:2300px) and (max-height:1140px) { .num-card { min-height: 4.6rem; padding: 0.8rem; } }
-.nums-foot { font-size: clamp(12px, 1.05vw, 15.5px); font-weight: 700; color: var(--o-l); }
+.nums-foot { font-size: clamp(12px, 1.18vw, 17px); font-weight: 700; color: var(--o-l); }
 
 /* ===== Кейсы: восемь карточек на одном экране ===== */
 .biz-grid { display: grid; gap: 0.6rem; grid-template-columns: minmax(0, 1fr); margin: 1.2rem auto 1.1rem; }
 @media (min-width:620px) { .biz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* min-width:0 обязателен: иначе карточки не ужимаются до ячейки и вылезают вправо */
-.biz { display: flex; align-items: center; gap: 0.55rem; min-width: 0; min-height: 3.6rem; padding: 0.7rem 0.7rem; border-radius: 0.9rem;
+.biz { display: flex; align-items: center; gap: 0.65rem; min-width: 0; min-height: 4.1rem; padding: 0.85rem 0.8rem; border-radius: 0.9rem;
   border: 1px solid var(--line); background: var(--card); transition: border-color 0.3s ease, background 0.3s ease; }
-.biz-ic { display: flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 0.6rem;
-  background: rgba(136,84,243,0.14); color: var(--p-l); font-size: 12px; flex-shrink: 0; }
+.biz-ic { display: flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; border-radius: 0.65rem;
+  background: rgba(136,84,243,0.14); color: var(--p-l); font-size: 14px; flex-shrink: 0; }
 .biz:nth-child(even) .biz-ic { background: rgba(249,115,22,0.14); color: var(--o-l); }
-.biz-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
-.biz h3 { font-size: clamp(10.5px, 0.82vw, 12.5px); text-transform: uppercase; letter-spacing: 0.03em;
+.biz-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.32rem; }
+.biz h3 { font-size: clamp(12px, 1.05vw, 15.5px); text-transform: uppercase; letter-spacing: 0.03em;
   line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* метрика и её подпись — одной строкой под названием */
 /* кегль детей задан в em, чтобы подбор размера на .biz-metric ужимал строку
    целиком: иначе длинные русские подписи обрезались многоточием */
 .biz-metric { display: flex; align-items: baseline; gap: 0.4rem; margin: 0; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis; font-size: clamp(10px, 0.8vw, 12px); }
+  overflow: hidden; text-overflow: ellipsis; font-size: clamp(11.5px, 1vw, 14.5px); }
 .biz-metric b { font-size: 1.08em; color: var(--o-l); font-weight: 800; }
+/* стрелка направления: вверх — фиолетовая (метрика растёт), вниз — оранжевая
+   (падает, например стоимость звонка). Обе означают улучшение. */
+.biz-dir { font-size: 1.05em; flex-shrink: 0; align-self: center; }
+.biz-dir.up { color: var(--p-l); }
+.biz-dir.down { color: var(--o-l); }
 .biz-metric span { font-size: 0.84em; color: var(--tx-d); text-transform: uppercase; letter-spacing: 0.03em; }
 
 .biz-go { display: inline-flex; align-items: center; gap: 0.25rem; flex-shrink: 0; margin-left: auto; font-size: 13px; font-weight: 700;
@@ -335,7 +360,7 @@ strong { color: var(--w); font-weight: 700; }
   .biz-go { font-size: 8px; }
 }
 @media (hover:hover) { .biz:hover { border-color: rgba(136,84,243,0.45); background: rgba(136,84,243,0.07); } }
-.biz-all { display: flex; width: fit-content; margin: 0 auto; align-items: center; gap: 0.5rem; font-size: clamp(11.5px, 0.85vw, 13px); font-weight: 700; text-transform: uppercase;
+.biz-all { display: flex; width: fit-content; margin: 0 auto; align-items: center; gap: 0.5rem; font-size: clamp(12px, 0.95vw, 14.5px); font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.12em; color: var(--tx); transition: color 0.3s ease; }
 @media (hover:hover) { .biz-all:hover { color: var(--w); } }
 
@@ -359,8 +384,8 @@ strong { color: var(--w); font-weight: 700; }
   width: clamp(1.6rem, 3.4vh, 2.1rem); height: clamp(1.6rem, 3.4vh, 2.1rem);
   margin: 0 auto clamp(0.2rem, 0.7vh, 0.45rem); border-radius: 0.7rem;
   border: 1px solid rgba(136,84,243,0.32); background: rgba(136,84,243,0.12);
-  color: var(--p-l); font-size: clamp(11px, 1.6vh, 14px); }
-.out h3 { margin: 0 0 0.2rem; font-size: clamp(11px, 0.85vw, 13px); }
+  color: var(--p-l); font-size: clamp(11.5px, 1.75vh, 15px); }
+.out h3 { margin: 0 0 0.3rem; font-size: clamp(11px, 0.85vw, 13px); }
 /* Низкое окно (владелец смотрит сайт в 1496×635): сетка решения там впритык,
    поэтому отдельная ступень плотности — иначе нижний ряд срезался бы краем
    экрана, ведь прокрутки внутри экранов больше нет. */
@@ -399,8 +424,8 @@ strong { color: var(--w); font-weight: 700; }
   height: min(48vh, 24rem); }
 .stage-card > .ui { width: 100%; }
 /* правка владельца: номер, заголовок и текст шага стоят ПЛОТНЕЕ друг к другу */
-.step-n { font-size: clamp(11.5px, 0.92vw, 13.5px); font-weight: 700; letter-spacing: 0.18em; color: var(--o-l); margin-bottom: 0.3rem; }
-.step-copy h2 { font-size: clamp(1.25rem, 2.15vw, 1.8rem); margin-bottom: 0.3rem; }
+.step-n { font-size: clamp(12px, 1vw, 15px); font-weight: 700; letter-spacing: 0.18em; color: var(--o-l); margin-bottom: 0.3rem; }
+.step-copy h2 { font-size: clamp(1.3rem, 2.3vw, 1.95rem); margin-bottom: 0.3rem; }
 .step-copy p { max-width: min(38rem, 100%); }
 .step-copy p .l { display: block; }
 
@@ -418,14 +443,15 @@ strong { color: var(--w); font-weight: 700; }
 .screen.active .stage-card [data-seq] { opacity: 1; transform: none; }
 
 /* 01 — зрелость: оценка стоит РОВНО НАД столбцом графиков (правка владельца
-   «оценку выровни с графиками чтобы над ними ровно была»), поэтому она живёт
-   в одной колонке с ними, а не по центру всей панели */
-.dimcol { display: flex; flex-direction: column; min-width: 0; }
+   «оценку выровни с графиками чтобы над ними ровно была»). Раскладку держит
+   сетка .maturity, см. ниже. */
 .score { display: flex; align-items: baseline; justify-content: flex-start; gap: 0.5rem; margin-bottom: 0.55rem; }
 .score b { font-size: clamp(1.4rem, 2.6vw, 2rem); line-height: 1; letter-spacing: -0.02em;
   background: linear-gradient(120deg, var(--p-l), var(--o-l)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.score span { font-size: clamp(11.5px, 0.85vw, 13px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--tx-d); }
-.radar { display: block; width: 100%; max-height: 34vh; height: auto; margin: 0 auto; }
+.score span { font-size: clamp(12px, 0.95vw, 14.5px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--tx-d); }
+/* правка владельца «паутинку побольше»: раньше 34vh, и на широком окне
+   график занимал меньше половины своей колонки */
+.radar { display: block; width: 100%; max-height: 46vh; height: auto; margin: 0 auto; }
 .radar .grid-l { stroke: rgba(255,255,255,0.10); fill: none; }
 .radar .axis { stroke: rgba(255,255,255,0.10); }
 .radar .shape { fill: rgba(136,84,243,0.22); stroke: var(--p-l); stroke-width: 1.5; opacity: 0;
@@ -434,7 +460,7 @@ strong { color: var(--w); font-weight: 700; }
 .radar text { font-size: 7px; fill: var(--tx-d); font-family: 'JetBrains Mono', monospace; }
 
 /* 02 — голос */
-.wave { display: flex; align-items: center; gap: 3px; height: 2.2rem; }
+.wave { display: flex; align-items: center; gap: 3px; height: clamp(2.2rem, 5vh, 3.2rem); }
 .wave span { flex: 1; border-radius: 999px; background: linear-gradient(180deg, var(--p-l), var(--p)); opacity: 0.85;
   animation: waveMove 1.1s ease-in-out infinite; }
 @keyframes waveMove { 0%, 100% { height: 18%; } 50% { height: 100%; } }
@@ -488,9 +514,27 @@ strong { color: var(--w); font-weight: 700; }
   padding: 0.55rem 0.35rem; border-radius: 0.6rem; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03);
   color: var(--w); }
 .opnode i { font-size: 12.5px; color: var(--tx-d); }
-.opnode.can { border-color: rgba(136,84,243,0.65); background: linear-gradient(135deg, rgba(136,84,243,0.18), rgba(249,115,22,0.10));
-  box-shadow: 0 0 0 1px rgba(136,84,243,0.25), 0 0 22px -6px rgba(136,84,243,0.8); }
-.opnode.can i { color: var(--p-l); }
+/* Цвета ровно те же, что на соседних сценах: человек оранжевый, система
+   фиолетовая (правка владельца «где оранжевые были — пусть будут»). */
+.opnode.human { border: 1px solid rgba(249,115,22,0.55); background: rgba(249,115,22,0.12); }
+.opnode.human i { color: var(--o-l); }
+.opnode.sys { border: 1px solid rgba(136,84,243,0.6); background: rgba(136,84,243,0.16); }
+.opnode.sys i { color: var(--p-l); }
+/* Операция, которую забирает ИИ, — агент: фиолетово-оранжевая рамка
+   градиентом по маске и КРУГЛЫЙ значок робота, а не овал. */
+.opnode.ai { position: relative; border: 1px solid transparent;
+  background: linear-gradient(135deg, rgba(136,84,243,0.18), rgba(249,115,22,0.12));
+  box-shadow: 0 0 22px -8px rgba(136,84,243,0.75); }
+.opnode.ai::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(120deg, var(--p), var(--o));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude; }
+.op-ic { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 1.65em; height: 1.65em; border-radius: 50%; aspect-ratio: 1 / 1;
+  background: linear-gradient(140deg, rgba(136,84,243,0.30), rgba(249,115,22,0.24));
+  border: 1px solid rgba(255,255,255,0.14); }
+.op-ic i { font-size: 0.85em; color: var(--p-l); }
 .chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
 .chip { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.6rem; border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.14); font-size: 9.5px; letter-spacing: 0.06em; color: var(--tx); }
@@ -517,19 +561,35 @@ strong { color: var(--w); font-weight: 700; }
 .fnode i { font-size: 10px; }
 .farrow { color: rgba(255,255,255,0.25); font-size: 9px; }
 .fwrap { color: rgba(255,255,255,0.22); font-size: 10px; line-height: 1; }
-.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1rem; margin-top: 0.8rem; font-size: 9px;
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1rem; margin-top: 0.8rem; font-size: 10.5px;
   letter-spacing: 0.1em; text-transform: uppercase; color: var(--tx-d); }
 .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 0.35rem; }
 
 /* 06 — агент в центре, поля вокруг */
 /* круг обязан быть КРУГОМ: ширину задаём от высоты, иначе max-height
    сплющивал квадрат в эллипс и поля вокруг вставали неровно */
-.hub { position: relative; height: min(34vh, 19rem); aspect-ratio: 1 / 1; width: auto;
-  max-width: 100%; margin: 0 auto; --rx: 50%; --ry: 40%; }
+/* Кольцо полей и пунктирная орбита — ОДНА окружность: раньше поля стояли
+   по эллипсу 50%/40%, а орбита была кругом 40%, и плашки висели в стороне
+   от неё (правка владельца «на круг не заходит»). */
+/* ОДНА геометрия на все размеры окна (правка владельца: «какого хуя на
+   мобиле овал» и «только два вида: веб и мобилка, остальное масштабируется»).
+   Раньше круг задавался пятью разными правилами — по ширине (620px), по
+   высоте (799px) и внутри мобильного блока, — и в двух из них радиусы по осям
+   были РАЗНЫЕ (33%/43% и 60%/43%), то есть кольцо становилось эллипсом.
+   Теперь .hub — контейнер во всё тело панели, а радиус считается от него:
+   по горизонтали остаётся запас под половину самой широкой плашки, по
+   вертикали — под её высоту, и берётся МЕНЬШЕЕ. Радиус один на обе оси,
+   поэтому кольцо — всегда окружность, а размер плашек и ядра задан в долях
+   контейнера и тянется вместе с ним. */
+.hub { position: relative; flex: 1 1 auto; align-self: stretch; min-height: 0; width: 100%;
+  container-type: size;
+  --gut: 17.5cqmin;
+  --r: min(50cqw - var(--gut), 50cqh - 5.5cqmin); }
 /* агент — фиолетово-оранжевый: рамка градиентом по маске (border-image ломает
    радиус), свечение и подпись тоже переливаются из фиолетового в оранжевый */
 .hub-core { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; display: flex;
-  align-items: center; justify-content: center; width: 4.2rem; height: 4.2rem; border-radius: 50%;
+  align-items: center; justify-content: center; border-radius: 50%;
+  width: clamp(2.8rem, 22cqmin, 6.6rem); height: clamp(2.8rem, 22cqmin, 6.6rem);
   border: 0; background: linear-gradient(140deg, rgba(136,84,243,0.20), rgba(249,115,22,0.18));
   box-shadow: 0 0 44px -10px rgba(136,84,243,0.75), 0 0 34px -14px rgba(249,115,22,0.7); }
 .hub-core::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
@@ -537,7 +597,7 @@ strong { color: var(--w); font-weight: 700; }
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude; }
-.hub-core i { font-size: 26px; background: linear-gradient(120deg, var(--p-l), var(--o-l));
+.hub-core i { font-size: clamp(18px, 8.8cqmin, 38px); background: linear-gradient(120deg, var(--p-l), var(--o-l));
   -webkit-background-clip: text; background-clip: text; color: transparent; }
 /* поля по кругу чередуются: фиолетовое — оранжевое */
 /* центрируем СВОЙСТВОМ translate, а не transform: у .spoke есть data-seq, и
@@ -549,17 +609,26 @@ strong { color: var(--w); font-weight: 700; }
 /* z-index обязателен: ::after у .hub — последний ребёнок, и оранжевая половина
    орбиты рисовалась ПОВЕРХ плашек, из-за чего пунктир шёл прямо по тексту и
    плашки выглядели прозрачными (жалоба владельца «теги закрашенные чёрным») */
-.spoke { position: absolute; z-index: 2; left: calc(50% + var(--cx, 0) * var(--rx, 50%));
-  top: calc(50% + var(--cy, 0) * var(--ry, 40%));
-  translate: -50% -50%; display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.42rem 0.8rem; border-radius: 999px; white-space: nowrap;
-  border: 1px solid rgba(136,84,243,0.55); background: #060609; font-size: 11px; color: var(--w);
+.spoke { position: absolute; z-index: 2; left: calc(50% + var(--cx, 0) * var(--r));
+  top: calc(50% + var(--cy, 0) * var(--r));
+  translate: -50% -50%; display: inline-flex; align-items: center; gap: 0.36em;
+  padding: 0.36em 0.72em; border-radius: 999px; white-space: nowrap;
+  border: 1px solid rgba(136,84,243,0.55); background: #060609; color: var(--w);
+  font-size: clamp(9px, 3.4cqmin, 13.5px);
   box-shadow: 0 10px 26px -14px #000, 0 0 0 3px #060609; }
 .spoke i { font-size: 0.95em; color: var(--p-l); }
+/* Веб: подписи паспорта крупнее (правка владельца «сделай больше размер
+   шрифта тут, но чтобы друг на друга не наслаивалось и не выходило за
+   пределы»). Было 3.4cqmin ≈ 10.5px, стало 5.2cqmin ≈ 16px. Замер на ширинах
+   1024…2560px, оба языка: зазор между плашками не меньше 7px, до ядра — не
+   меньше 14px, за панель не выходит ни одна. 5.6cqmin (≈17.4px) уже сводили
+   зазор к 6px — это предел. Телефон не трогаем: там зазор и так 8px. */
+@media (min-width:1024px) { .spoke { font-size: clamp(12px, 5.2cqmin, 18px); } }
 .spoke:nth-of-type(even) { border-color: rgba(249,115,22,0.5); }
 .spoke:nth-of-type(even) i { color: var(--o-l); }
 /* ровная орбита, которая медленно крутится: половина фиолетовая, половина оранжевая */
-.hub::before, .hub::after { content: ''; position: absolute; left: 50%; top: 50%; width: 80%; height: 80%;
+.hub::before, .hub::after { content: ''; position: absolute; left: 50%; top: 50%;
+  width: calc(var(--r) * 2); height: calc(var(--r) * 2);
   border-radius: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%;
   animation: hubSpin 44s linear infinite; }
 .hub::before { border: 1px dashed rgba(136,84,243,0.3); }
@@ -568,12 +637,21 @@ strong { color: var(--w); font-weight: 700; }
                      to   { transform: translate(-50%, -50%) rotate(360deg); } }
 
 /* ===== Обучение ===== */
-.l-note { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; padding: 0.6rem 1rem; border-radius: 999px;
+/* align-items:flex-start, а не center: на телефоне надпись переносится на две
+   строки, и при центрировании значок повисал ПОСЕРЕДИНЕ между ними — замер:
+   +12px от центра первой строки (правка владельца «выровни текст под иконки»).
+   Рецепт тот же, что у пунктов списка: у значка кегль и интерлиньяж текста,
+   поэтому его строчная коробка совпадает с первой строкой надписи. */
+.l-note { display: inline-flex; align-items: flex-start; gap: 0.5rem; margin-top: 1rem; padding: 0.6rem 1rem; border-radius: 999px;
   border: 1px solid rgba(136,84,243,0.35); background: rgba(136,84,243,0.10); color: var(--w);
-  font-size: clamp(10.5px, 0.85vw, 12.5px); }
-.l-note i { color: var(--p-l); }
-.ticker { position: relative; margin-top: 1.6rem; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+  font-size: clamp(11.5px, 1vw, 14.5px); }
+.l-note i { color: var(--p-l); font-size: 1em; line-height: inherit; flex-shrink: 0; }
+/* Роли идут ОДНОЙ бегущей строкой (правка владельца: «почему не листается
+   как было — там в одну линию нужно»). Растушёвка по краям шире прежней:
+   при маске 12%/88% плашка обрывалась резко и выглядела разрезанной. */
+.ticker { position: relative; margin-top: clamp(0.9rem, 2.6vh, 1.6rem); overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18%, #000 82%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 18%, #000 82%, transparent 100%); }
 .ticker-row { display: flex; gap: 0.5rem; width: max-content; animation: tick 38s linear infinite; }
 @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .role { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.8rem; border-radius: 999px;
@@ -588,7 +666,7 @@ strong { color: var(--w); font-weight: 700; }
 .plan { position: relative; display: flex; flex-direction: column; gap: 0.45rem; min-width: 0; padding: 0.9rem 0.7rem; border-radius: 1rem;
   border: 1px solid var(--line); background: var(--card); text-align: center; }
 .plan h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--tx-d); }
-.plan-price { font-size: clamp(1.3rem, 2.2vw, 1.8rem); font-weight: 800; letter-spacing: -0.02em; color: var(--w); line-height: 1; }
+.plan-price { font-size: clamp(1.4rem, 2.45vw, 2rem); font-weight: 800; letter-spacing: -0.02em; color: var(--w); line-height: 1; }
 .plan-scope { font-size: 10px; color: var(--p-l); font-weight: 700; letter-spacing: 0.04em; }
 .plan .btn { margin-top: auto; width: 100%; }
 .plan.best { border-color: rgba(136,84,243,0.55); background: linear-gradient(170deg, rgba(136,84,243,0.16), rgba(249,115,22,0.05)); }
@@ -596,9 +674,9 @@ strong { color: var(--w); font-weight: 700; }
   background: linear-gradient(100deg, var(--p), var(--o)); color: var(--w); font-size: 8px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
 .compare { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem 0.8rem; text-align: center;
-  font-size: clamp(10px, 0.82vw, 12px); }
+  font-size: clamp(11.5px, 1.05vw, 15px); }
 .compare .cmp.old { color: var(--tx-d); text-decoration: line-through; }
-.compare .cmp.now { color: var(--w); font-weight: 700; }
+.compare .cmp.now { color: var(--w); font-weight: 700; flex-basis: 100%; }
 .compare i { font-size: 3px; color: rgba(255,255,255,0.3); vertical-align: middle; }
 
 /* ===== Финал ===== */
@@ -609,21 +687,26 @@ strong { color: var(--w); font-weight: 700; }
 .final .wrap > * { flex-shrink: 0; }
 /* На финале две строки: вопрос и ответ. Средняя строка («You don’t need to
    know») убрана владельцем, поэтому расстояние держит только эта пара. */
-.final-1 { margin-bottom: 0.85rem; }
+/* правка владельца: «поближе друг к другу» — вопрос и ответ стояли через
+   1.7rem воздуха и читались как два разных экрана */
+/* Финал набран крупнее общих заголовков: это последний экран и на нём всего
+   две строки (правка владельца «тоже мелко»). */
+.final-1, .final-3 { font-size: clamp(1.45rem, 2.25vw, 2.2rem); line-height: 1.2; }
+.final-1 { margin-bottom: 0.3rem; }
 /* правка владельца: «Strategy shows» — БЕЛЫМ, цвет несут только спаны */
-.final-3 { color: var(--w); margin: 0.85rem 0 1.5rem; }
+.final-3 { color: var(--w); margin: 0.3rem 0 1.5rem; }
 
 /* ===== Знак финала: фиолетовый робот и оранжевые монеты фонтаном =====
    Правка владельца: «просто иконка агента, а слева и справа монетки как
    фонтан появляются и исчезают бесконечно». */
 .final-mark { position: relative; display: flex; align-items: center; justify-content: center;
   width: clamp(12rem, 22vw, 16rem); height: clamp(5.4rem, 9vw, 7rem); margin: 0 auto 1.2rem; flex-shrink: 0; }
-.fm-bot { font-size: clamp(44px, 4.4vw, 68px); line-height: 1; color: var(--p-l);
+.fm-bot { font-size: clamp(58px, 6vw, 92px); line-height: 1; color: var(--p-l);
   filter: drop-shadow(0 0 22px rgba(136,84,243,0.6)); }
 .fm-side { position: absolute; top: 58%; width: 0; height: 0; }
 .fm-l { left: 38%; }
 .fm-r { right: 38%; }
-.fm-side i { position: absolute; top: 0; left: 0; font-size: clamp(15px, 1.35vw, 21px); color: var(--o-l);
+.fm-side i { position: absolute; top: 0; left: 0; font-size: clamp(19px, 1.75vw, 28px); color: var(--o-l);
   opacity: 0; will-change: transform, opacity;
   filter: drop-shadow(0 0 10px rgba(249,115,22,0.55));
   animation: coinL 2.4s ease-out infinite; animation-delay: var(--d, 0s); }
@@ -653,12 +736,12 @@ strong { color: var(--w); font-weight: 700; }
 }
 .final-cta { margin-top: 0.2rem; }
 .final footer { margin-top: auto; padding-top: 1.4rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
-.company { font-size: clamp(11.5px, 0.75vw, 13px); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--w); margin: 0; }
-.copy { margin: 0; font-size: clamp(10.5px, 0.68vw, 12.5px); letter-spacing: 0.1em; color: var(--tx-d); }
+.company { font-size: clamp(12px, 0.85vw, 14.5px); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--w); margin: 0; }
+.copy { margin: 0; font-size: clamp(11.5px, 0.78vw, 14px); letter-spacing: 0.1em; color: var(--tx-d); }
 .socials { display: flex; gap: 1rem; }
 .socials a { color: rgba(255,255,255,0.7); font-size: 15px; transition: color 0.3s ease; }
 @media (hover:hover) { .socials a:hover { color: var(--brand); } }
-.legal { display: flex; align-items: center; gap: 0.7rem; margin: 0; font-size: clamp(10.5px, 0.68vw, 12.5px); letter-spacing: 0.1em;
+.legal { display: flex; align-items: center; gap: 0.7rem; margin: 0; font-size: clamp(11.5px, 0.78vw, 14px); letter-spacing: 0.1em;
   text-transform: uppercase; color: rgba(255,255,255,0.45); }
 @media (hover:hover) { .legal a:hover { color: var(--w); } }
 
@@ -668,14 +751,14 @@ strong { color: var(--w); font-weight: 700; }
          (min-width:1900px) and (max-height:1144px),
          (min-width:2300px) and (max-height:1320px) {
   .screen { padding-top: 6.2rem; padding-bottom: 1.6rem; }
-  h1 { margin-bottom: 0.9rem; }
-  h2 { margin-bottom: 0.7rem; }
+  h1 { margin-bottom: 0.6rem; }
+  h2 { margin-bottom: 0.48rem; }
   /* ВАЖНО: боковое auto сохраняем. Короткая запись «margin: 1.2rem 0 1rem»
      обнуляла его, и сетки уезжали влево от центра экрана. */
   .nums { margin: 1.2rem auto 1rem; gap: 0.7rem; }
   .biz-grid { gap: 0.5rem; margin: 1rem auto 0.9rem; }
   .plans { margin: 1rem auto 0.8rem; }
-  .radar { max-height: 30vh; }
+  .radar { max-height: 40vh; }
 }
 
 /* Заголовок тарифов стал двухстрочным (правка владельца «Scale as you grow» на
@@ -707,9 +790,7 @@ strong { color: var(--w); font-weight: 700; }
   .pnode, .fnode, .node { padding: 0.45rem 0.6rem; font-size: 10.5px; gap: 0.35rem; }
   .opnode { font-size: 10px; }
   /* подписи осей паутины упираются в края — даём им запас */
-  .radar { max-height: 30vh; padding: 0 0.6rem; }
-  .hub { height: min(38vh, 15rem); }
-  .spoke { font-size: 9px; padding: 0.28rem 0.5rem; }
+  .radar { max-height: 40vh; padding: 0 0.6rem; }
   /* подпись метрики на узкой карточке переносится, а не мельчает */
   .biz-metric { white-space: normal; }
 }
@@ -733,6 +814,10 @@ strong { color: var(--w); font-weight: 700; }
    выглядела полупустой. Саму панель заодно ужали с 52vh до 48vh, чтобы
    заголовок шага не уезжал далеко от блоков. */
 .stage-card > .ui > .ui-body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+/* На сцене диктовки содержимое прижато к ВЕРХУ: дорожка звука остаётся на
+   месте, а строка печатается под ней. При центрировании всей группы волна
+   ползла вверх с каждой новой строкой. */
+.stage-card > .ui > .ui-body:has(> .typing) { justify-content: flex-start; padding-top: clamp(1.2rem, 4vh, 2.4rem); }
 
 /* Квадраты рынка одной высоты: у грид-элемента с aspect-ratio выравнивание
    normal работает как start, и карточка не растягивалась на высоту ряда. */
@@ -748,14 +833,31 @@ strong { color: var(--w); font-weight: 700; }
 /* ===== Зрелость: слева паутина, справа семь горизонтальных графиков =====
    Правка владельца: «слева паутина, справа графики горизонтальные», и при
    переходе на экран они оба должны оживать. */
+/* Раскладка задаётся областями: в вебе слева паутина во всю высоту, справа
+   оценка и семь графиков. На телефоне — оценка слева, паутина справа, а
+   графики во всю ширину под ними (правка владельца: «справа паутинку,
+   а слева 2.4 / 5»). */
 .maturity { display: grid; gap: clamp(0.8rem, 2vw, 1.6rem); align-items: center;
-  grid-template-columns: minmax(0, 1fr); }
-@media (min-width:700px) { .maturity { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); } }
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "score radar" "dims dims"; }
+.maturity .radar { grid-area: radar; }
+.maturity .score { grid-area: score; }
+.maturity .dims { grid-area: dims; }
+/* Раскладок ровно две — веб и мобилка, граница одна на весь сайт: 1024px.
+   Была своя граница 700px, и между 700 и 1023 стояла ТРЕТЬЯ вёрстка зрелости
+   (правка владельца: «почему меняется-то всё?? только два вида: веб и
+   мобилка, остальное масштабируется»). */
+@media (min-width:1024px) {
+  .maturity { grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+    grid-template-rows: auto auto; align-items: center;
+    grid-template-areas: "radar score" "radar dims"; }
+  .maturity .radar { align-self: center; }
+}
 .dims { display: flex; flex-direction: column; gap: clamp(0.3rem, 0.9vh, 0.55rem); min-width: 0; }
 .dim { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center;
   column-gap: 0.5rem; row-gap: 0.15rem; }
-.dim-name { font-size: clamp(11.5px, 0.88vw, 13px); color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dim-val { grid-column: 2; grid-row: 1 / span 2; font-size: clamp(12.5px, 0.95vw, 14px); font-weight: 800; color: var(--w);
+.dim-name { font-size: clamp(12px, 1vw, 14.5px); color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dim-val { grid-column: 2; grid-row: 1 / span 2; font-size: clamp(13px, 1.05vw, 15.5px); font-weight: 800; color: var(--w);
   font-variant-numeric: tabular-nums; }
 .dim-track { grid-column: 1; height: 5px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
 .dim-fill { display: block; height: 100%; width: 0; border-radius: inherit;
@@ -800,18 +902,10 @@ strong { color: var(--w); font-weight: 700; }
 .stage-card .flying { opacity: 1 !important; transition-delay: 0s !important; }
 
 /* ===== Крупнее: блоки, паспорт агента, типографика ===== */
-.node, .pnode, .opnode, .fnode { font-size: 13.5px; }
+.node, .pnode, .opnode, .fnode { font-size: 14.5px; }
 .node, .pnode, .fnode { padding: 0.85rem 1.25rem; }
 .opnode { padding: 0.85rem 1.25rem; }
-.node i, .pnode i, .opnode i, .fnode i { font-size: 12px; }
-/* круг агента занимает панель по высоте целиком: 38vh оставляли треть
-   панели пустой и сам круг выглядел мелким (правка владельца «слишком
-   маленький круг получился»). min() с процентом берёт высоту содержимого
-   .ui-body — панель фиксированной высоты, поэтому процент разрешим. */
-.hub { height: min(100%, 23rem); }
-.hub-core { width: 6.6rem; height: 6.6rem; }
-.hub-core i { font-size: 38px; }
-.spoke { font-size: 12px; padding: 0.46rem 0.9rem; }
+.node i, .pnode i, .opnode i, .fnode i { font-size: 13px; }
 /* Поля появляются по кругу одно за другим, как звенья цепочки на соседних
    сценах. Конечное состояние — на .lit, а не на .active: переход не стартует
    для элемента, который в этом же кадре был display:none, и поля просто
@@ -823,35 +917,13 @@ strong { color: var(--w); font-weight: 700; }
   transition-delay: calc(var(--i, 0) * 0.055s); }
 .screen.active .stage-card .spoke { opacity: 0; transform: translateY(12px) scale(0.9); }
 .screen.lit .stage-card .spoke { opacity: 1; transform: none; }
-/* Низкая панель: поля на окружности налезают друг на друга сверху и снизу —
-   разводим кольцо шире по горизонтали, где место есть. */
-@media (max-height:799px) {
-  .hub { --rx: 60%; --ry: 43%; }
-  /* и сами плашки ниже: иначе верхнее поле цепляет соседние по диагонали */
-  .spoke { padding-top: 0.24rem; padding-bottom: 0.24rem; }
-  .hub-core { width: 6.2rem; height: 6.2rem; }
-  .hub-core i { font-size: 36px; }
-}
-@media (max-width:620px) {
-  /* Правка владельца: «надо больше круг делать на мобиле». Круг занимал
-     меньше половины высоты панели, поля стояли тесным кольцом в середине. */
-  /* Кольцо заметно крупнее (было 15rem), но --rx считается от ШИРИНЫ круга,
-     а не панели: при большом радиусе крайние поля («Роль человека»,
-     «Outputs») выезжали за края панели. Значения подобраны замером — чисто
-     на 360/390/414 в обоих языках: нет ни вылета, ни нахлёста на ядро. */
-  .hub { height: min(100%, 20.5rem); --rx: 33%; --ry: 43%; }
-  .hub-core { width: 4.8rem; height: 4.8rem; }
-  .hub-core i { font-size: 27px; }
-  /* мобильные размеры полей объявлены ВЫШЕ блока «Крупнее» и им перебивались */
-  .spoke { font-size: 10px; padding: 0.3rem 0.6rem; gap: 0.3rem; }
-}
-.ui-bar { font-size: clamp(11px, 0.85vw, 12.5px); }
-.out h3 { font-size: clamp(12.5px, 1vw, 14.5px); }
-.out p { font-size: clamp(11.5px, 0.88vw, 13px); }
-.role { font-size: clamp(11.5px, 0.85vw, 13px); }
-.plan h3 { font-size: clamp(11.5px, 0.85vw, 13px); }
-.plan-scope { font-size: clamp(11.5px, 0.85vw, 13px); }
-.typing { font-size: clamp(11.5px, 0.95vw, 14px); }
+.ui-bar { font-size: clamp(11.5px, 0.95vw, 14px); }
+.out h3 { font-size: clamp(13.5px, 1.2vw, 17px); }
+.out p { font-size: clamp(12px, 0.95vw, 14px); }
+.role { font-size: clamp(12px, 0.95vw, 14.5px); }
+.plan h3 { font-size: clamp(12px, 0.95vw, 14.5px); }
+.plan-scope { font-size: clamp(12px, 0.95vw, 14.5px); }
+.typing { font-size: clamp(15px, 1.4vw, 21px); }
 
 /* Названия шагов не должны ломаться на две строки — блоки от этого выглядят
    разной высоты. Если строка не влезает, кегль всей группы подбирает скрипт. */
@@ -869,7 +941,7 @@ strong { color: var(--w); font-weight: 700; }
    ===================================================================== */
 @media (max-width:1023px) {
   /* ── заголовок первого экрана: те же две строки, что и на вебе ── */
-  h1 { font-size: clamp(1.9rem, 8.6vw, 2.7rem); line-height: 1.12; margin-bottom: 1rem; }
+  h1 { font-size: clamp(1.9rem, 8.6vw, 2.7rem); line-height: 1.12; margin-bottom: 0.62rem; }
 
   /* ── базовая типографика ── */
   .eyebrow { font-size: 13px; letter-spacing: 0.16em; margin-bottom: 0.7rem; }
@@ -889,7 +961,11 @@ strong { color: var(--w); font-weight: 700; }
   .n-foot { font-size: 13.5px; }
 
   /* ── кейсы: карточка короче, а текст внутри крупнее ── */
-  .biz-grid { grid-template-columns: minmax(0, 1fr); gap: 0.32rem; margin: 0.7rem auto 0.7rem; }
+  /* восемь карточек в ОДНУ колонку: на 360×780 экран вылезал на 7px, а на
+     375×780 — на 13px, и низ просто срезался (у экрана overflow:hidden).
+     Семь зазоров между карточками плюс поля сетки — самое дешёвое место,
+     чтобы вернуть эти пиксели, не трогая сами карточки. */
+  .biz-grid { grid-template-columns: minmax(0, 1fr); gap: 0.2rem; margin: 0.5rem auto 0.5rem; }
   .biz { padding: 0.42rem 0.65rem; gap: 0.55rem; }
   .biz-body { gap: 0.1rem; }
   .biz-ic { width: 1.95rem; height: 1.95rem; font-size: 13px; border-radius: 0.6rem; }
@@ -907,48 +983,81 @@ strong { color: var(--w); font-weight: 700; }
 
   /* ── шаги и сцены продукта ── */
   .step-n { font-size: 13px; letter-spacing: 0.14em; }
-  .step-copy h2 { font-size: clamp(1.25rem, 5.8vw, 1.7rem); }
+  /* нижняя граница ниже прежних 1.25rem: на 320px заголовок шага вставал в
+     лишнюю строку и панель вылезала за экран. Размер тянется по ширине окна,
+     отдельной вёрстки под узкий телефон нет. */
+  .step-copy h2 { font-size: clamp(1.05rem, 5.8vw, 1.7rem); }
   .step-copy p { font-size: 14px; min-height: 0; }
-  .typing { font-size: 14.5px; line-height: 1.6; margin: 0.6rem 0; }
+  .typing { font-size: 19px; line-height: 1.62; margin: 1rem 0; }
   .node, .pnode, .fnode, .opnode { font-size: 15px; padding: 0.62rem 0.85rem; gap: 0.45rem; }
   .node i, .pnode i, .fnode i, .opnode i { font-size: 14px; }
   /* Панель на телефоне ПЛОТНЕЕ по высоте: блоки внутри стали крупнее, и при
      прежних 48vh/24rem половина панели оставалась пустой — схема на её фоне
      выглядела мелкой (правка владельца «тут пздц мелко вся эта схема»).
      Высота всё равно общая для всех шести шагов, иначе панель скачет. */
-  .stage-card { height: min(53vh, 28rem); }
+  /* Панель выше: у сцены зрелости паутина упирается в высоту ряда, а не
+     в ширину (правка владельца «паутина всё равно маленькая»). Высота
+     общая для всех шести шагов, иначе панель скачет при листании. */
+  /* Высота панели считается от ОКНА за вычетом того, что занято всегда:
+     шапка, заголовок шага с подписью и кружок с роликом. Фиксированные
+     53vh/58vh либо оставляли пустоту, либо панель заезжала под кружок и он
+     закрывал два последних графика зрелости — данные прятать нельзя.
+     Высота общая для всех шести шагов, иначе панель скачет при листании. */
+  .stage-card { height: clamp(14rem, calc(100dvh - 16rem - var(--vid-d)), 32rem); }
+  /* у экранов С ПАНЕЛЬЮ низ считается от полного диаметра кружка: на
+     остальных (и на финале с подвалом) кружку по-прежнему разрешено
+     перекрывать содержимое */
+  .screen:has(.stage-card) { padding-bottom: calc(var(--vid-d) + 1rem + env(safe-area-inset-bottom, 0px)); }
   .ui-body { padding: 0.75rem 0.6rem; }
-  /* Одна ВЁРСТКА цепочки на телефон: ряды схлопываются в общий поток и
-     переносятся по ширине экрана, а связи-стрелки убраны. Ряды, посчитанные
-     под веб, на 390px всё равно ломались переносом, и в конце строки повисала
-     стрелка, указывающая в пустоту (правка владельца «видишь и стрелки,
-     и мелкота»). */
-  .parrow, .farrow, .pwrap, .fwrap { display: none; }
-  .pchain, .fflow { flex-direction: row; flex-wrap: wrap; justify-content: center;
-    align-content: center; gap: 0.75rem 0.55rem; }
-  .pchain .prow, .fflow .frow { display: contents; }
+  /* Цепочка на телефоне идёт СВЕРХУ ВНИЗ, и стрелки на месте (правка
+     владельца: «стрелки проебал и тут, и где AI fits»). Раньше ряды по три
+     блока схлопывались в общий поток без стрелок: ряд из трёх блоков со
+     стрелками в 306px ширины не помещается никак — блок пришлось бы ужать
+     до 5px. Вертикальная цепочка решает это сама: между двумя блоками
+     всегда стрелка, ни одна не повисает в конце строки. */
+  /* размеры звеньев считаются от ВЫСОТЫ окна: на 640px высоты панель всего
+     233px, и семь блоков со стрелками иначе не укладываются */
+  .pchain, .fflow { flex-direction: column; flex-wrap: nowrap; align-items: center;
+    justify-content: center; gap: clamp(0.08rem, 0.35vh, 0.3rem); }
+  .pchain .prow, .fflow .frow { display: flex; flex-direction: column; align-items: center;
+    gap: clamp(0.08rem, 0.35vh, 0.3rem); width: auto; }
+  .parrow, .farrow { display: block; transform: rotate(90deg);
+    font-size: clamp(7px, 1.3vh, 11px); line-height: 1; }
+  .pwrap, .fwrap { display: block; font-size: clamp(7px, 1.3vh, 11px); line-height: 1; }
+  .node, .pnode, .fnode { font-size: clamp(8.5px, 1.75vh, 15px);
+    padding: clamp(0.16rem, 0.45vh, 0.4rem) clamp(0.5rem, 1.6vw, 0.75rem); }
   /* На сцене возможностей поток свой у каждой группы: сверху фиолетовые,
      снизу серые — они не должны перемешаться на переносе. */
   .opchain { flex-direction: column; align-items: stretch; gap: 0.7rem; }
   .opgroup { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
   .opgroup .oprow { display: contents; }
-  /* Зрелость на телефоне: паутина сверху, семь графиков снизу. Паутина
-     РАСТЯГИВАЕТСЯ на весь остаток панели и потому никогда её не распирает —
-     при квадратной svg во всю ширину колонки половина графиков уезжала за
-     нижний край панели и просто не показывалась. */
-  .maturity { flex: 1; min-height: 0; grid-template-rows: minmax(60px, 1fr) auto;
-    align-items: stretch; gap: 0.5rem; }
-  .radar { width: 100%; height: 100%; min-height: 0; }
-  .dims { gap: 0.3rem; }
-  .dim-name { font-size: 13px; }
-  .dim-val { font-size: 14px; }
-  .dim-track { height: 6px; }
+  /* Зрелость на телефоне: СЛЕВА оценка, СПРАВА паутина, под ними семь
+     графиков во всю ширину (правка владельца: «какая маленькая паутинка —
+     можно справа паутинку, а слева 2.4 / 5»). Паутина растягивается на
+     остаток верхнего ряда и потому не распирает панель. */
+  .maturity { flex: 1; min-height: 0; grid-template-rows: minmax(84px, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.4rem 0.7rem; }
+  /* Паутина — КВАДРАТ во всю высоту ряда и прижата к правому краю: при
+     width:100% она рисовалась по центру широкой ячейки и половина места
+     пропадала (правка владельца «паутина маленькая, сделай её ещё правее»). */
+  .radar { width: auto; height: 100%; aspect-ratio: 1 / 1; max-width: 100%; max-height: none;
+    min-height: 0; align-self: stretch; justify-self: end; margin: 0; }
+  /* «2.4 / 5» — ОДНОЙ строкой (правка владельца «почему 5 внизу») */
+  .score { align-items: baseline; gap: 0.4rem; margin-bottom: 0; }
+  /* Семь графиков в ДВА столбца. Паутина — квадрат, её сторона равна
+     меньшему из двух: ширина колонки и остаток высоты ряда. Столбик из семи
+     графиков съедал 164px, и упиралась именно высота: на 360px паутина была
+     147px, на сжатом окне 503px — 204px. В два столбца графики занимают
+     четыре ряда вместо семи, и паутина растёт. Размер подписей — не
+     ступенькой, а clamp по ширине окна: на 320px «Инфраструктура»
+     помещается в половину ширины целиком, без многоточия. */
+  .dims { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 0.9rem; align-content: center; }
+  .dim { row-gap: 0.06rem; }
+  .dim-name { font-size: clamp(10px, 3.3vw, 13px); }
+  .dim-val { font-size: clamp(11px, 3.6vw, 14px); }
+  .dim-track { height: 5px; }
   .score b { font-size: clamp(1.7rem, 8vw, 2.2rem); }
   .score span { font-size: 12.5px; }
-  /* Размер полей паспорта объявлен ЗДЕСЬ: блок про круг стоит выше по файлу
-     и при равной специфичности его перебивал бы этот. Значения подобраны
-     замером вместе с радиусами кольца. */
-  .spoke { font-size: 11px; padding: 0.26rem 0.48rem; gap: 0.3rem; }
   .role { font-size: 13px; padding: 0.5rem 0.9rem; }
   .role i { font-size: 12px; }
   .l-note { font-size: 13.5px; }
@@ -974,10 +1083,249 @@ strong { color: var(--w); font-weight: 700; }
   /* Подвал стоит НИЖЕ — почти у самых точек, и по ЦЕНТРУ экрана во всю
      ширину: владелец разрешил кружку с роликом его перекрывать, поэтому
      смещать колонку правее круга больше не нужно. */
-  .final .wrap { flex: 0 1 auto; margin-top: auto; margin-bottom: auto; }
+  /* Три элемента финала стоят ровно по центру экрана (правка владельца
+     «по середине по центру»): три конкурирующих auto-отступа поднимали
+     их в верхнюю треть. */
+  .final .wrap { flex: 1 1 auto; margin: 0; }
   .final footer { margin-top: auto; padding-top: 0.9rem; gap: 0.45rem; }
   .legal { font-size: 12px; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
   .legal a { white-space: nowrap; }
   .copy { font-size: 11.5px; }
+  /* Подвал стоит у самого низа экрана (правка владельца: «надо внизу делать
+     как и было, то что кружок заходит — это ок»). */
+  /* Подвал финала прижат к самому низу, кружку разрешено его перекрывать:
+     владелец решил это прямо — «кружок можно перемещать, поэтому пофигу что
+     он там закрывает». Подъём подвала над кружком отменён. */
   .screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ===== Телефон в ГОРИЗОНТЕ ===============================================
+   Правка владельца: «видишь как фигово, когда переворачиваешь экран на
+   мобилке, я не должен ничего листать, и круг должен быть не такой мелкий»,
+   с примером главной — «видишь, как норм по горизонтали».
+   Это не третья вёрстка, а та же мобильная в других пропорциях: место здесь
+   есть по ШИРИНЕ, а не по высоте. Поэтому кружок с роликом уходит влево, а
+   содержимое встаёт правее него — как ролик и текст на главной, — и кегль
+   считается от высоты окна, а не от ширины: на 915px ширины заголовок по
+   8.6vw вырастал до 78px, и экран переставал помещаться (перелив 70px).
+   Порог по высоте: телефон в горизонте — это 360–430px, портрет даже у
+   самых коротких телефонов от 568px. */
+@media (max-width:1023px) and (min-width:600px) and (max-height:520px) {
+  /* кружок крупнее прежних 88px: 18vh от короткой стороны упирались в
+     нижнюю границу clamp (правка владельца «круг не такой мелкий») */
+  /* кружок того же размера, что в портрете, и его можно двигать
+     (правка владельца) */
+  :root { --vid-d: clamp(104px, 34vh, 150px); }
+  header { padding: 0.5rem 0.9rem; }
+  .logo-img { width: 2.2rem; height: 2.2rem; }
+  .menu-btn { width: 2.3rem; height: 2.3rem; }
+  .cta-head { padding: 0.5rem 0.85rem; font-size: 9.5px; letter-spacing: 0.06em; }
+  /* содержимое правее кружка, сверху — только под шапку */
+  /* всё по центру по горизонтали, справа — вертикальная колонка точек
+     (правка владельца: «пусть всё будет по середине по центру по горизонтали,
+     справа будут по вертикали точки переходов»). Кружку разрешено заходить
+     на угол: его можно отодвинуть пальцем. */
+  /* поля СИММЕТРИЧНЫЕ и равны кружку: содержимое стоит ровно по центру
+     экрана и при этом не заезжает на кружок слева и на точки справа */
+  /* поля сверху и снизу ОДИНАКОВЫЕ, как на главной: содержимое стояло на
+     17px ниже середины окна (замер 222 при центре 206) */
+  .screen { padding: 3.5rem calc(var(--vid-d) + 1.6rem); }
+  .dots { left: auto; right: 0.7rem; top: 50%; bottom: auto;
+    transform: translateY(-50%); flex-direction: column; }
+  .screen > *:not(.wm) { max-width: 34rem; margin-left: auto; margin-right: auto; }
+  /* кегль от ВЫСОТЫ окна */
+  h1 { font-size: clamp(1.45rem, 8.4vh, 2.4rem); line-height: 1.14; margin-bottom: 0.6rem; }
+  h2, h2.one-line { font-size: clamp(1.1rem, 6.2vh, 1.85rem); margin-bottom: 0.45rem; }
+  .lead { font-size: clamp(13px, 4vh, 16.5px); line-height: 1.45; }
+  p { font-size: clamp(12.5px, 3.6vh, 15px); line-height: 1.45; }
+  .eyebrow { font-size: clamp(10.5px, 3vh, 13.5px); margin-bottom: 0.4rem; }
+  .hero-how { font-size: clamp(10px, 2.6vh, 12px); }
+  .num-val { font-size: clamp(1.3rem, 6.4vh, 2rem); }
+  .num-card p { font-size: clamp(10.5px, 2.8vh, 12.5px); }
+  .nums-foot { font-size: clamp(11px, 3vh, 13.5px); }
+  .step-n { font-size: clamp(10.5px, 3vh, 13.5px); }
+  .step-copy h2 { font-size: clamp(1.1rem, 5.8vh, 1.75rem); }
+  .step-copy p { font-size: clamp(11.5px, 3.3vh, 14px); }
+  .score b { font-size: clamp(1.3rem, 6.4vh, 2rem); }
+  .plan-price { font-size: clamp(1.05rem, 5.2vh, 1.6rem); }
+  .final-1, .final-3 { font-size: clamp(1.3rem, 7vh, 2rem); }
+  .typing { font-size: clamp(13px, 3.6vh, 17px); }
+  .node, .pnode, .opnode, .fnode { font-size: clamp(10px, 2.8vh, 12.5px); padding: 0.4rem 0.6rem; }
+  .biz h3 { font-size: clamp(9.5px, 2.6vh, 11.5px); }
+  .biz-metric { font-size: clamp(9px, 2.4vh, 11px); }
+  /* Сетки разворачиваются В ШИРИНУ: по две колонки они складывались
+     в 300–500px высоты, которых в горизонте нет, а справа оставалось
+     пустое место. Четыре колонки — та же вёрстка, просто в других
+     пропорциях окна. */
+  .wrap { max-width: none; }
+  .screen > *:not(.wm) { max-width: none; }
+  .nums, .outs, .plans, .biz-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .nums, .plans { margin: 0.4rem auto 0.35rem; gap: 0.36rem; }
+  .outs { gap: 0.32rem; margin-top: 0.2rem; }
+  /* содержимое карточек ужимается вместе с сеткой: восемь карточек в две
+     строки иначе не укладывались в 360px высоты */
+  .out { padding: 0.18rem 0.34rem; gap: 0.1rem; }
+  .out-ic { width: 1.1rem; height: 1.1rem; font-size: 8px; margin-bottom: 0.05rem; }
+  /* «Решение»: подписи карточек были 8–9px — мельче всего на сайте, хотя по
+     высоте у этого экрана запас (сетка занимает ~80px из 390). Кегль поднят
+     до 10/9.5px, подписи в две строки разрешены. */
+  .out h3 { font-size: clamp(9.5px, 2.75vh, 12px); margin-bottom: 0.05rem; }
+  .out p { font-size: clamp(9px, 2.45vh, 11px); line-height: 1.22; }
+  .plan { padding: 0.42rem 0.5rem; gap: 0.2rem; }
+  .plan h3 { font-size: clamp(9px, 2.3vh, 11px); }
+  .plan-scope { font-size: clamp(9px, 2.3vh, 11px); }
+  .btn-sm { padding: 0.34rem 0.45rem; font-size: clamp(8.5px, 2.2vh, 10.5px); }
+  .plan-badge { font-size: 7.5px; padding: 0.12rem 0.4rem; }
+  .compare { font-size: clamp(9px, 2.3vh, 11px); line-height: 1.35; }
+  .biz-grid { gap: 0.25rem; margin: 0.5rem auto 0.45rem; }
+  .compare { flex-direction: row; gap: 0.3rem 0.7rem; }
+  .compare .cmp.now { flex-basis: auto; }
+  /* Зрелость в горизонте: паутина справа во всю высоту панели, слева оценка
+     и графики одним столбцом. В мобильной раскладке (паутина в верхнем ряду,
+     графики под ней) на 412px высоты паутина сжималась до 90px, а графики
+     уезжали под нижний край (правка владельца: «паутина нормальная, и там
+     не влезают под паутиной все линии»). */
+  /* ряды по СОДЕРЖИМОМУ и вся сетка по центру: при minmax(0,1fr) графики не
+     влезали в свой ряд и с align-items:center вылезали вверх, наезжая на
+     оценку (замер: нахлёст 9px на 915x412 и 26px на 740x360) */
+  .maturity { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto; align-content: center;
+    grid-template-areas: "score radar" "dims radar"; align-items: center; gap: 0.35rem 0.8rem; }
+  .maturity .score { align-self: end; }
+  .ui-body { padding: 0.42rem 0.55rem; }
+  .dim-track { height: 3px; }
+  .dims { gap: 0.14rem; }
+  .dim { row-gap: 0.12rem; }
+  .score b { font-size: clamp(0.95rem, 4.4vh, 1.5rem); }
+  .maturity .radar { width: auto; height: 100%; max-height: 100%; aspect-ratio: 1 / 1;
+    justify-self: center; align-self: center; }
+  /* у «Зрелости» семь строк: на 740×360 даже подросшей панели не хватало 4px,
+     а зазоры строк — самое дешёвое, что можно ужать */
+  .dims { grid-template-columns: minmax(0, 1fr); gap: 0.06rem; align-content: center; }
+  .dim { row-gap: 0.06rem; }
+  .dim-name { font-size: clamp(8px, 2.2vh, 11.5px); }
+  .dim-val { font-size: clamp(8.5px, 2.3vh, 12px); }
+  .score b { font-size: clamp(1.1rem, 5.4vh, 1.7rem); }
+  .score span { font-size: clamp(9px, 2.4vh, 11px); }
+  /* панель шага считается от высоты окна: кружок теперь сбоку, а не снизу,
+     и запас под него больше не нужен */
+  /* поля стали симметричными (7rem вместо 4.9rem) — панель пересчитана,
+     иначе экран шага вылезал на 11–20px */
+  /* 13.4rem оставляли панели 144px при 360px высоты, а содержимому нужно до
+     156px — у «Зрелости» срезало нижнюю строку (R&D) и край паутины, у
+     «Голоса» разрезало пополам последнюю строку цитаты, у «AI-First модели»
+     — нижний ряд цепочки. Замер показал запас 68px сверху и снизу, поэтому
+     панель можно растить. 12.3rem давали 161px, но тогда на 915×412 и
+     932×430 экран сам вылезал на 3–5px: у паутины aspect-ratio 1/1, она
+     растёт ВМЕСТЕ с панелью и тянет содержимое за собой. 12.8rem — середина,
+     при которой ничего не срезано и ничего не вылезает. */
+  .stage-card { height: clamp(6.5rem, calc(100dvh - 12.8rem), 20rem); }
+
+  /* ===== Паспорт агента в ГОРИЗОНТЕ =====
+     Восемь подписей вокруг круга здесь не помещаются: на кольцо остаётся
+     93–145px высоты, и замер показал, что подписи наезжают на ядро (при
+     740×360 — шесть из восьми) и друг на друга (до шести пар). Круг в такой
+     коробке нечестен, поэтому в горизонте те же восемь подписей встают двумя
+     колонками по бокам от ядра: смысл тот же — «агент в центре, вокруг его
+     паспорт», — а читается без единого нахлёста. Пунктирные кольца тут не
+     нужны, они рисовали овал. */
+  .hub { display: grid; grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: repeat(4, auto); align-items: center;
+    column-gap: clamp(0.5rem, 2.2vw, 1.3rem); row-gap: clamp(0.18rem, 1vh, 0.4rem); }
+  .hub::before, .hub::after { display: none; }
+  /* position:relative, а НЕ static: у ядра есть ::before с inset:0 (кольцо
+     градиентом по маске). При static он считается от .hub и растягивался
+     в овал во всю панель — замер: 508×123px с border-radius:50% (жалоба
+     владельца на «овал» в горизонте). */
+  /* left/top обнуляются вместе с transform: у вебовой раскладки ядро стоит
+     на left:50%/top:50% с обратным сдвигом; при relative сдвиг transform
+     убран, а проценты остались — ядро уезжало вправо-вниз на пол-панели и
+     садилось на плашку «Инструкции». */
+  .hub-core { position: relative; transform: none; left: auto; top: auto;
+    grid-column: 2; grid-row: 1 / span 4;
+    align-self: center; justify-self: center;
+    width: clamp(2.6rem, 13vh, 4.4rem); height: clamp(2.6rem, 13vh, 4.4rem); }
+  .hub-core i { font-size: clamp(16px, 6.5vh, 26px); }
+  .spoke { position: static; left: auto; top: auto; translate: none;
+    font-size: clamp(9.5px, 2.9vh, 12.5px); padding: 0.3em 0.62em; }
+  .spoke:nth-of-type(1) { grid-area: 1 / 1; }
+  .spoke:nth-of-type(2) { grid-area: 2 / 1; }
+  .spoke:nth-of-type(3) { grid-area: 3 / 1; }
+  .spoke:nth-of-type(4) { grid-area: 4 / 1; }
+  .spoke:nth-of-type(5) { grid-area: 1 / 3; }
+  .spoke:nth-of-type(6) { grid-area: 2 / 3; }
+  .spoke:nth-of-type(7) { grid-area: 3 / 3; }
+  .spoke:nth-of-type(8) { grid-area: 4 / 3; }
+  .spoke:nth-of-type(-n+4) { justify-self: end; }
+  .spoke:nth-of-type(n+5) { justify-self: start; }
+  /* поля у экранов с панелью и у финала ЯВНО симметричные: без этого
+     действуют портретные правила (запас снизу под кружок), и экран стоял
+     на 16–20px ниже середины, а без них вовсе разъезжался на 120px */
+  .screen:has(.stage-card), .screen.final { padding: 3.5rem calc(var(--vid-d) + 1.6rem); }
+  /* подвал финала прижат к низу абсолютом: с margin-top:auto он занимал
+     место в потоке, и вопрос с кнопкой вставал выше середины экрана */
+  .final footer { position: absolute; left: 0; right: 0; bottom: 0.7rem;
+    margin-top: 0; padding-top: 0; gap: 0.3rem; }
+  /* Подвал финала здесь прижат абсолютом к низу, поэтому он НЕ занимает
+     места в потоке — и содержимое, центрируясь во всю высоту, наезжало на
+     него: белая кнопка CTA ложилась прямо на ряд иконок соцсетей (замер:
+     перекрытие 148×20px, то есть иконки целиком внутри кнопки) и на
+     юридические ссылки (10px на 740×360). Запас снизу равен высоте подвала,
+     и содержимое центрируется НАД ним. */
+  .final .wrap { flex: 1 1 auto; justify-content: center; padding-bottom: 5.6rem; }
+  .ticker { margin-top: 0.6rem; }
+  /* Бегущая строка ролей: .screen > *:not(.wm){max-width:none} снял с неё
+     ограничение, и коробка выросла до ширины ленты (замер: 158…3833px) —
+     растушёвка на 82% уезжала за экран, и плашки обрывались по краю окна.
+     Возвращаем её в колонку: маска снова попадает на видимые края. */
+  .ticker { width: 100%; max-width: 100%; }
+
+  /* Кейсы: четыре колонки по 127px, из которых 100 съедали иконка, поля и
+     слово «ВСЕ ТИПЫ →». На текст оставалось 25px, и все восемь названий
+     обрывались многоточием («КОНСА…», «КАДРО…»). В горизонте стрелку
+     убираем, значок ужимаем, а подпись метрики пускаем в две строки. */
+  /* Каждый пиксель ширины идёт тексту: русские подписи длинные
+     («Маркетинговое» — 81px при колонке 80), и не хватало буквально
+     единиц. Значок, поля и зазоры ужаты — колонка выросла с 80 до 94px. */
+  .biz { padding: 0.3rem 0.36rem; gap: 0.25rem; min-height: 0; }
+  .biz-ic { width: 1.05rem; height: 1.05rem; font-size: 8px; border-radius: 0.35rem; }
+  .biz-go { display: none; }
+  .biz-body { gap: 0.1rem; }
+  /* overflow:visible снял обрезку многоточием — и длинные слова, которым не
+     хватает колонки, стали ВЫЛЕЗАТЬ за карточку на соседнюю (замер на
+     740×360: «Удовлетворённость» наружу 29px, «Отдача от маркетинга» 6px).
+     break-word ломает только то слово, которое не влезает в строку целиком;
+     остальной текст не трогает. */
+  .biz h3 { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.15;
+    overflow-wrap: break-word; }
+  .biz-metric { white-space: normal; overflow: visible; text-overflow: clip;
+    flex-wrap: wrap; line-height: 1.15; row-gap: 0; overflow-wrap: break-word; }
+  /* min-width:0 обязателен: .biz-metric — флекс, а у флекс-элемента
+     min-width по умолчанию auto, то есть он не ужимается уже своего
+     min-content. Длинное слово («Удовлетворённость») распирало элемент, и
+     никакой break-word не срабатывал — подпись вылезала за карточку на
+     6–29px (замер на 740×360). */
+  .biz-metric > * { min-width: 0; }
+
+  /* Цепочки процессов — В РЯД, как на вебе. Мобильное правило ставит узлы
+     столбиком (в портрете панель узкая и высокая); в горизонте панель ровно
+     наоборот — 175px высоты при 526px ширины, и шесть узлов подряд уезжали
+     под нижний край (замер на 844×390: хвост цепочки срезан). */
+  .pchain, .fflow { flex-direction: column; gap: clamp(0.15rem, 0.9vh, 0.4rem); }
+  .pchain .prow, .fflow .frow { flex-direction: row; gap: 0.3rem; }
+  .pwrap { font-size: 9px; }
+  .opchain { gap: 0.3rem; }
+  .opgroup { gap: 0.3rem; }
+
+  /* «Как это работает»: в горизонте колонка одна, и шапка шага, прижатая
+     влево, висела над панелью во всю ширину. Правило владельца — «на
+     горизонталке весь текст по центру». */
+  .step-copy, .step-copy h2, .step-copy p, .step-n { text-align: center; }
+  .step-copy .step-n { justify-content: center; }
+
+  /* «·» между юридическими ссылками: при gap 0.7rem и разрядке 0.1em
+     «ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ» и «УСЛОВИЯ ИСПОЛЬЗОВАНИЯ» читались
+     как одна строка */
+  .legal { gap: 0.55rem; }
+  .legal a + a::before { content: '\00b7'; margin-right: 0.55rem; color: rgba(255,255,255,0.3); }
 }

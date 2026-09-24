@@ -622,11 +622,32 @@ def test_landscape_type_scales_with_height():
     html = _html()
     block = html.split("@media (max-width:1023px) and (orientation: landscape) {", 1)[1] \
                 .split("/* FR-SITE36: рослый ландшафт")[0]
-    assert "min(clamp(1.2rem, 6vh, 2.6rem)" in block, "hero-кегль ландшафта — от vh"
-    assert "min(clamp(1.25rem, 5.6vh, 2.5rem)" in block, "h2-кегль ландшафта — от vh"
-    assert "min(clamp(11px, 2.1vh, 17px)" in block, "desc-кегль ландшафта — от vh"
-    assert "font-size: clamp(9.5px, 1.7vh, 14px) !important" in block, \
+    # Правка владельца: «всё очень мелко блять везде, не надо так мелко» —
+    # кегли подняты, но по-прежнему считаются от ВЫСОТЫ окна, а min() держит
+    # nowrap-строки внутри узкой панели.
+    assert "min(clamp(1.35rem, 7.6vh, 2.6rem)" in block, "hero-кегль ландшафта — от vh"
+    assert "min(clamp(1.3rem, 7.2vh, 2.5rem)" in block, "h2-кегль ландшафта — от vh"
+    assert "min(clamp(12.5px, 3.4vh, 18px)" in block, "desc-кегль ландшафта — от vh"
+    assert "font-size: clamp(11px, 2.6vh, 15px) !important" in block, \
         "кегль кнопок ландшафта — от vh"
+    # Ритм: подзаголовок прижат к заголовку, перед кнопкой воздуха больше
+    # (правка владельца «подтайтл должен быть под тайтлом»). Замер: 5–7px
+    # против 11px.
+    assert ".screen .desc { margin-top: calc(-1 * clamp(0.4rem, 1.6vh, 0.85rem)) !important; }" in block
+    assert ".about-link, .sec-link { margin-top: 0; }" in block, \
+        "ссылка под кнопкой больше не налезает на неё"
+    # Содержимое ровно по центру экрана: поля сверху и снизу одинаковые
+    assert "padding: 4.2rem 0.25rem; overflow: hidden;" in block, \
+        "контент по центру и без прокрутки"
+    # Затемнение ролика начинается ПРАВЕЕ лица (замер: лицо 51..331 из 915)
+    assert "rgba(5,5,5,0) 58%" in block, "тень не заходит на лицо"
+    # Кадр вертикальный, а ниша широкая: обрезка идёт только по высоте, и
+    # object-position по горизонтали ничего не двигает (замер: 64 → 72 → 90%
+    # — картинка на месте). Лицо сдвигает сам элемент.
+    assert "#hero-video { width: 60%; height: 100vh; height: 100dvh; transform: translateX(-7%); }" in block, \
+        "голова сдвинута левее самим элементом"
+    assert "#050505 90%" in block, \
+        "затемнение добирает до чёрного раньше правого края ролика — шва не видно"
     assert re.search(r"@media \(max-width:1023px\) and \(orientation: landscape\) and \(min-height:520px\)", html), \
         "рослый ландшафт возвращает плиткам нормальный масштаб"
 
@@ -712,6 +733,46 @@ def test_video_per_language_with_poster():
     assert '<link rel="preload" as="image" href="/andre_ai.jpg" fetchpriority="high">' in html, \
         "постер грузится первым приоритетом"
     assert "hero-poster.jpg" not in html, "ссылок на старый постер быть не должно"
+
+
+
+def test_subtitle_hugs_the_title_on_every_screen():
+    """FR-SITE56. Правка владельца «чуть поближе поставь подтайтл к тайтлу».
+
+    !important обязателен: у подзаголовка героя и у подзаголовка контактов
+    margin задан ИНЛАЙНОМ, и без него правка молча не применялась ровно на
+    тех двух экранах, ради которых её просили (замер: зазор 28px и 23–24px
+    против 4.8–10.4px на остальных шести).
+
+    Подтяг пересчитан под каждую высотную ступень: на коротких телефонах
+    щели экрана ужимаются (1.75rem → 1.05rem → 0.85rem), и фиксированный
+    подтяг оказывался БОЛЬШЕ самой щели — строки наезжали друг на друга
+    (замер на 360×568: −9.6px). Цель везде одна: зазор около 4.8px."""
+    html = _html()
+    # базовая вертикаль
+    assert ".screen .desc { margin-top: -0.55rem !important; }" in html
+    assert ".desc.hero-sub { margin-top: -1.45rem !important; }" in html
+    assert ".contact-hero .desc { margin-top: -1.2rem !important; }" in html
+    # веб
+    assert ".screen .desc { margin-top: -0.7rem !important; }" in html
+    assert ".desc.hero-sub { margin-top: -1.1rem !important; }" in html
+    assert ".contact-hero .desc { margin-top: -0.79rem !important; }" in html
+    # короткие телефоны: ≤700px и ≤600px
+    assert ".screen .desc { margin-top: -0.3rem !important; }" in html
+    assert ".desc.hero-sub { margin-top: -0.75rem !important; }" in html
+    assert ".contact-hero .desc { margin-top: -0.55rem !important; }" in html
+    assert ".screen .desc { margin-top: -0.2rem !important; }" in html
+    assert ".desc.hero-sub { margin-top: -0.55rem !important; }" in html
+    assert ".contact-hero .desc { margin-top: -0.3rem !important; }" in html
+
+
+def test_hero_has_no_glowing_blob_behind_it():
+    """FR-SITE46: «убери это странное свечение везде» — кроме цветных теней
+    у букв убран и размытый фиолетово-оранжевый блоб под героем."""
+    html = _html()
+    assert "overview-aura" not in html, "блоб под героем удалён вместе с разметкой"
+    assert "auraPulse" not in html, "и его анимация тоже"
+
 
 
 if __name__ == "__main__":
