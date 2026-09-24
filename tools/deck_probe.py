@@ -5,6 +5,8 @@
     python3 tools/deck_probe.py 2 7 8 9        # лекция 2, несколько слайдов
     python3 tools/deck_probe.py 1 7 --light    # ещё кадры светлой темы
     python3 tools/deck_probe.py 1 7 --json     # машинный вывод
+    python3 tools/deck_probe.py 1 7 --base     # замер ИСХОДНОЙ версии из build/l1/base,
+                                               # кадры slide-07-pc-base.png и т.д. — «до правки»
 
 Слайды берутся из build/l<N>/out (их режет tools/deck_split.py extract N):
 меряемые — целиком, остальные — заглушками. Каркас — сама колода
@@ -25,6 +27,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, os.path.join(ROOT, "build", "l3"))     # css.build — tailwind один раз
 N = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1].isdigit() else None
 LN = os.path.join(ROOT, "build", "l%s" % N)
+BASE = "--base" in sys.argv
 import record_lecture as rl        # noqa: E402
 import lecture_check as lc         # noqa: E402
 
@@ -159,7 +162,7 @@ def free_port():
 
 def build_probe(ids):
     """Пробная колода + её собственный CSS; возвращает (путь страницы, путь CSS)."""
-    src = os.path.join(LN, "out")
+    src = os.path.join(LN, "base" if BASE else "out")
     tmp = tempfile.mkdtemp(prefix="l%sprobe-" % N)
     have = set()
     for f in os.listdir(src):
@@ -256,7 +259,7 @@ def main():
                         "texts": r["texts"],
                     }
                     if shots:
-                        page.screenshot(path=os.path.join(frames, "slide-%02d-%s.png" % (i, form)))
+                        page.screenshot(path=os.path.join(frames, "slide-%02d-%s%s.png" % (i, form, "-base" if BASE else "")))
                 ctx.close()
             if light and shots:
                 for form, vp in (("pc", lc.PC), ("mob", lc.MOB)):
@@ -271,7 +274,7 @@ def main():
                     page.evaluate("() => document.querySelectorAll('#start-overlay,#intro-overlay').forEach(e => e.remove())")
                     for i in ids:
                         goto_slide(page, i)
-                        page.screenshot(path=os.path.join(frames, "slide-%02d-%s-light.png" % (i, form)))
+                        page.screenshot(path=os.path.join(frames, "slide-%02d-%s-light%s.png" % (i, form, "-base" if BASE else "")))
                     ctx.close()
             br.close()
     finally:
