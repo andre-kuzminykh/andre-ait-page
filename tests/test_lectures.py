@@ -1089,7 +1089,19 @@ def test_practice3_agent_architectures():
             "класс узлов «%s» есть во всех шести графах" % cls
     assert 'href="/automation/3/"' in html, "обратная ссылка на лекцию"
     assert 'href="/automation/2/practice/"' in html, "ссылка на TO-BE из практики лекции 2"
-    assert "/assets/video_l3/practice.mp4" in html, "кружок с головой ждёт ролик практики"
+    assert "/assets/video_l3/practice.mp4" in html, "кружок с головой играет ролик практики"
+    # Кружок — побайтово кружок задания лекции 1 (LECTURE-GUIDE §9), с
+    # обложкой сразу: прежняя обёртка прятала его до loadeddata, а на iPhone
+    # без звука кадры до play() не грузятся — кружок не появлялся (FR-SITE71).
+    def bubble(h):
+        b = h[h.index('<div class="bubble'):
+              h.rindex("</script>", 0, h.index("</body>")) + len("</script>")]
+        b = re.sub(r'src="/assets/[^"]*\.mp4"', 'src="CLIP"', b)
+        b = re.sub(r'poster="/assets/[^"]*\.jpg"', 'poster="COVER"', b)
+        return re.sub(r'url\(/assets/[^)]*\.jpg\)', 'url(COVER)', b)
+    ref = open(os.path.join(_ROOT, "automation/1/practice/index.html"), encoding="utf-8").read()
+    assert bubble(html) == bubble(ref), "кружок практики лекции 3 разъехался с эталоном лекции 1"
+    assert "bubble-ready" not in html, "кружок не прячется до загрузки ролика"
     # На мониторах от 1600px у body zoom 1.15–1.5: без контейнера-мерки с
     # обратным zoom mermaid мерил подписи увеличенными — блоки узлов шире
     # текста, длинная подпись в одну строку и срезана (приёмка 1920×1080).
