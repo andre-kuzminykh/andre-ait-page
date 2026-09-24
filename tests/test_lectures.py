@@ -1071,6 +1071,29 @@ def test_lecture3_uses_owner_vocabulary():
         assert bad not in text, "на слайдах осталось «%s»" % bad
 
 
+# ── FR-SITE70: практика лекции 3 — архитектуры ИИ-агентов ─────────────────
+
+def test_practice3_agent_architectures():
+    """Практика лекции 3: шесть кейсов практики лекции 2 превращены в
+    архитектуры ИИ-агентов — графы навыков как воркфлоу (mermaid flowchart),
+    узлы раскрашены по способу исполнения: правило, ИИ-модель, инструмент,
+    человек. Схемы рисует своя копия mermaid (LECTURE-GUIDE §9), не CDN."""
+    path = os.path.join(_ROOT, "automation/3/practice/index.html")
+    html = open(path, encoding="utf-8").read()
+    assert "/assets/mermaid/11.17.2/" in html, "mermaid — своя копия из assets"
+    for cdn in ("cdn.jsdelivr.net/npm/mermaid", "unpkg.com/mermaid"):
+        assert cdn not in html, "mermaid не должен тянуться с CDN"
+    assert html.count("flowchart TD") >= 6, "шесть графов навыков-воркфлоу"
+    for cls in ("rule", "ai", "tool", "human"):
+        assert html.count("classDef %s" % cls) >= 6, \
+            "класс узлов «%s» есть во всех шести графах" % cls
+    assert 'href="/automation/3/"' in html, "обратная ссылка на лекцию"
+    assert 'href="/automation/2/practice/"' in html, "ссылка на TO-BE из практики лекции 2"
+    assert "/assets/video_l3/practice.mp4" in html, "кружок с головой ждёт ролик практики"
+    body = re.sub(r"<pre[^>]*>.*?</pre>", " ", html, flags=re.S)
+    assert "промпт" not in body and "Промпт" not in body, "владелец пишет «промт»"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
