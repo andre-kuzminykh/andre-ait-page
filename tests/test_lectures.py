@@ -1089,7 +1089,19 @@ def test_practice3_agent_architectures():
             "класс узлов «%s» есть во всех шести графах" % cls
     assert 'href="/automation/3/"' in html, "обратная ссылка на лекцию"
     assert 'href="/automation/2/practice/"' in html, "ссылка на TO-BE из практики лекции 2"
-    assert "/assets/video_l3/practice.mp4" in html, "кружок с головой ждёт ролик практики"
+    assert "/assets/video_l3/practice.mp4" in html, "кружок с головой играет ролик практики"
+    # Кружок — побайтово кружок задания лекции 1 (LECTURE-GUIDE §9), с
+    # обложкой сразу: прежняя обёртка прятала его до loadeddata, а на iPhone
+    # без звука кадры до play() не грузятся — кружок не появлялся (FR-SITE71).
+    def bubble(h):
+        b = h[h.index('<div class="bubble'):
+              h.rindex("</script>", 0, h.index("</body>")) + len("</script>")]
+        b = re.sub(r'src="/assets/[^"]*\.mp4"', 'src="CLIP"', b)
+        b = re.sub(r'poster="/assets/[^"]*\.jpg"', 'poster="COVER"', b)
+        return re.sub(r'url\(/assets/[^)]*\.jpg\)', 'url(COVER)', b)
+    ref = open(os.path.join(_ROOT, "automation/1/practice/index.html"), encoding="utf-8").read()
+    assert bubble(html) == bubble(ref), "кружок практики лекции 3 разъехался с эталоном лекции 1"
+    assert "bubble-ready" not in html, "кружок не прячется до загрузки ролика"
     # На мониторах от 1600px у body zoom 1.15–1.5: без контейнера-мерки с
     # обратным zoom mermaid мерил подписи увеличенными — блоки узлов шире
     # текста, длинная подпись в одну строку и срезана (приёмка 1920×1080).
@@ -1098,6 +1110,73 @@ def test_practice3_agent_architectures():
     assert "inverseZoom" in html, "обратный zoom мерки подобран до ровной единицы"
     body = re.sub(r"<pre[^>]*>.*?</pre>", " ", html, flags=re.S)
     assert "промпт" not in body and "Промпт" not in body, "владелец пишет «промт»"
+
+
+
+# ── FR-SITE71: ролики лекции 3 на месте, квадрат 514 и faststart ──────────
+
+def _mp4_boxes(path):
+    """Верхние атомы mp4 по порядку: [(тип, смещение, размер), …]."""
+    out, off = [], 0
+    size_all = os.path.getsize(path)
+    with open(path, "rb") as f:
+        while off < size_all:
+            f.seek(off)
+            head = f.read(16)
+            if len(head) < 8:
+                break
+            size, kind = int.from_bytes(head[:4], "big"), head[4:8].decode("latin-1")
+            if size == 1:
+                size = int.from_bytes(head[8:16], "big")
+            elif size == 0:
+                size = size_all - off
+            out.append((kind, off, size))
+            off += size
+    return out
+
+
+def _mp4_video_size(path):
+    """Ширина и высота видеодорожки из tkhd (у звуковой дорожки там нули)."""
+    kind, off, size = next(b for b in _mp4_boxes(path) if b[0] == "moov")
+    with open(path, "rb") as f:
+        f.seek(off)
+        moov = f.read(size)
+    i = 0
+    while True:
+        i = moov.find(b"tkhd", i + 1)
+        if i < 0:
+            return None
+        body = i + 4                      # сразу за типом атома
+        v1 = moov[body] == 1
+        at = body + 4 + (32 if v1 else 20) + 8 + 8 + 36
+        w = int.from_bytes(moov[at:at + 4], "big") >> 16
+        h = int.from_bytes(moov[at + 4:at + 8], "big") >> 16
+        if w and h:
+            return w, h
+
+
+def test_lecture3_clips_are_uploaded_square_and_faststart():
+    """Ролики владельца выложены: 42 кружка лекции и ролик практики с обложкой.
+
+    Формат — как у лекции 2 (LECTURE-GUIDE §6): квадрат 514×514 и moov перед
+    mdat, иначе браузер ждёт весь файл, прежде чем начать. Сторож «ссылка есть,
+    файла нет» в test_media смотрит только на наличие; здесь — что это те
+    самые квадратные ролики, а не исходники с телефона (1080×1920, HEVC)."""
+    html = _l3()
+    names = re.findall(r"'/assets/video_l3/(\d+)\.mp4'", html) + ["practice"]
+    assert len(names) == 43, "42 ролика лекции и один ролик практики"
+    for n in names:
+        rel = "assets/video_l3/%s.mp4" % n
+        path = os.path.join(_ROOT, rel)
+        assert os.path.isfile(path), "нет ролика " + rel
+        kinds = [b[0] for b in _mp4_boxes(path)]
+        assert "moov" in kinds and "mdat" in kinds, rel + ": не mp4"
+        assert kinds.index("moov") < kinds.index("mdat"), rel + ": moov в конце — нужен faststart"
+        assert _mp4_video_size(path) == (514, 514), \
+            "%s: кружок ждёт квадрат 514×514, а не %r" % (rel, _mp4_video_size(path))
+    cover = os.path.join(_ROOT, "assets/video_l3/practice.jpg")
+    with open(cover, "rb") as f:
+        assert f.read(3) == b"\xff\xd8\xff", "обложка практики — jpg с первым кадром ролика"
 
 
 if __name__ == "__main__":

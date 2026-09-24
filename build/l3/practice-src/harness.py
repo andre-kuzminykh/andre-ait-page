@@ -1,5 +1,5 @@
 import os, sys, glob, socket
-ROOT = '/home/user/andre-ait-page'
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 import record_lecture as rl
 import lecture_check as lc

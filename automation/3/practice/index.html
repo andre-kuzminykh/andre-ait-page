@@ -3002,10 +3002,11 @@ try {
 }
 </script>
 <!-- ГОВОРЯЩАЯ ГОЛОВА (кружок): механика, размеры и разметка — те же, что в
-     заданиях лекций 1 и 2, отличаются только ролик и обложка. Ролик практики
-     лекции 3 владелец запишет позже: пока файла нет, кружок не показывается
-     вовсе (см. обёртку ниже) — вместо пустого градиента с ▶, который никуда
-     не ведёт. -->
+     заданиях лекций 1 и 2, отличаются только ролик и обложка (первый кадр
+     ролика практики, FR-SITE71). Кружок виден сразу с обложкой, как у лекций
+     1 и 2: прежняя обёртка прятала его до loadeddata, пока ролика не было, —
+     а на iPhone без звука кадры до play() не грузятся, и кружок так бы и не
+     появился (приёмка роликов). -->
 <style>
 /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
   .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(170px,13.6vw,260px);height:clamp(170px,13.6vw,260px);touch-action:none;user-select:none;-webkit-user-select:none}
@@ -3028,29 +3029,6 @@ try {
   .bubble{ left:auto; right:12px; width:170px !important; height:170px !important; }
 }
 </style>
-<!-- Обёртка кружка (код самого кружка ниже не тронут): кружок появляется
-     только после loadeddata своего ролика. Пока ролика нет (или он не
-     загрузился), кружка на странице нет совсем — никакой пустой рамки.
-     События медиа не всплывают, но ловятся на погружении, поэтому слушатель
-     висит на document и поставлен ДО разметки кружка: loadeddata не пропустим. -->
-<style>
-  html:not(.bubble-ready) #bubble{ display:none !important; }
-  html.bubble-ready #bubble{ animation:bubble-in .5s cubic-bezier(.22,1,.36,1) both; }
-  @keyframes bubble-in{ from{ opacity:0; scale:.85; } to{ opacity:1; scale:1; } }
-  @media (prefers-reduced-motion:reduce){ html.bubble-ready #bubble{ animation:none; } }
-</style>
-<script>
-(function(){
-  function ready(){ document.documentElement.classList.add('bubble-ready'); }
-  document.addEventListener('loadeddata', function(e){
-    if (e.target && e.target.id === 'bubble-video') ready();
-  }, true);
-  document.addEventListener('DOMContentLoaded', function(){
-    var v = document.getElementById('bubble-video');
-    if (v && v.readyState >= 2) ready();
-  });
-})();
-</script>
 <div class="bubble muted" id="bubble" title="Перетащите кружок · клик — звук, затем пауза/воспроизведение">
     <div class="inner">
       <div class="grad"></div>

@@ -7,7 +7,7 @@ sys.path.insert(0, HERE)
 from cases import CASES, CLASSDEFS
 from prompts import PROMPTS
 
-ROOT = "/home/user/andre-ait-page"
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 P2 = open(os.path.join(ROOT, "automation/2/practice/index.html"), encoding="utf-8").read()
 OUT = os.path.join(ROOT, "automation/3/practice/index.html")
 tpl = open(os.path.join(HERE, "template.html"), encoding="utf-8").read()
@@ -142,38 +142,13 @@ b1 = P2.rindex("</script>", 0, P2.index("</body>")) + len("</script>")
 bubble = P2[b0:b1]
 head_comment_end = bubble.index("-->") + 3
 bubble = ("""<!-- ГОВОРЯЩАЯ ГОЛОВА (кружок): механика, размеры и разметка — те же, что в
-     заданиях лекций 1 и 2, отличаются только ролик и обложка. Ролик практики
-     лекции 3 владелец запишет позже: пока файла нет, кружок не показывается
-     вовсе (см. обёртку ниже) — вместо пустого градиента с ▶, который никуда
-     не ведёт. -->""" + bubble[head_comment_end:])
+     заданиях лекций 1 и 2, отличаются только ролик и обложка (первый кадр
+     ролика практики, FR-SITE71). Кружок виден сразу с обложкой, как у лекций
+     1 и 2: прежняя обёртка прятала его до loadeddata, пока ролика не было, —
+     а на iPhone без звука кадры до play() не грузятся, и кружок так бы и не
+     появился (приёмка роликов). -->""" + bubble[head_comment_end:])
 bubble = bubble.replace('src="/assets/video_l2/40.mp4"', 'src="/assets/video_l3/practice.mp4"')
 bubble = bubble.replace("/assets/video_sq/poster_practice_2.jpg", "/assets/video_l3/practice.jpg")
-wrapper = """<!-- Обёртка кружка (код самого кружка ниже не тронут): кружок появляется
-     только после loadeddata своего ролика. Пока ролика нет (или он не
-     загрузился), кружка на странице нет совсем — никакой пустой рамки.
-     События медиа не всплывают, но ловятся на погружении, поэтому слушатель
-     висит на document и поставлен ДО разметки кружка: loadeddata не пропустим. -->
-<style>
-  html:not(.bubble-ready) #bubble{ display:none !important; }
-  html.bubble-ready #bubble{ animation:bubble-in .5s cubic-bezier(.22,1,.36,1) both; }
-  @keyframes bubble-in{ from{ opacity:0; scale:.85; } to{ opacity:1; scale:1; } }
-  @media (prefers-reduced-motion:reduce){ html.bubble-ready #bubble{ animation:none; } }
-</style>
-<script>
-(function(){
-  function ready(){ document.documentElement.classList.add('bubble-ready'); }
-  document.addEventListener('loadeddata', function(e){
-    if (e.target && e.target.id === 'bubble-video') ready();
-  }, true);
-  document.addEventListener('DOMContentLoaded', function(){
-    var v = document.getElementById('bubble-video');
-    if (v && v.readyState >= 2) ready();
-  });
-})();
-</script>
-"""
-i = bubble.index('<div class="bubble')
-bubble = bubble[:i] + wrapper + bubble[i:]
 tpl = tpl.replace("<!--@BUBBLE-->", bubble)
 
 # ── иконки ───────────────────────────────────────────────────────────────

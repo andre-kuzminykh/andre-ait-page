@@ -74,6 +74,8 @@ def main():
     vids = ",\n".join("            '/assets/video_l3/%d.mp4'" % (k + 1) for k in range(total))
     html = re.sub(r"const videoIds = \[.*?\];",
                   lambda m: "const videoIds = [\n%s\n        ];" % vids, html, count=1, flags=re.S)
+    html = html.replace("];   // роликов к лекции 4 ещё нет: кружок не показывается",
+                        "];   // ролик слайда k — /assets/video_l3/<k+1>.mp4 (FR-SITE71)", 1)
 
     # ── экран результата теста ведёт на практику ─────────────────────────
     html = html.replace('<a class="quiz-next" href="/automation/bootcamp/">',
