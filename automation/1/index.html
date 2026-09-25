@@ -4020,17 +4020,20 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                 </div>
 
+                <!-- Столбики тренда — bg-[#ffffff66], а не bg-white/40: правило slide-polish для
+                     плашек внутри тёмной карточки красит любой bg-white/* в 7% белого, и столбики
+                     почти пропадали — очередь подсветки по ним была не видна (FR-SITE74) -->
                 <div class="bg-white/5 rounded-[16px] md:rounded-3xl border border-white/10 p-3 md:p-6 flex flex-col justify-end relative h-20 md:h-32 w-full a-in a-in-5">
                     <span class="text-white/50 text-[8px] md:text-[10px] font-bold uppercase tracking-widest absolute top-2 md:top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 whitespace-nowrap"><i class="ph-fill ph-chart-line-up text-solar text-xs md:text-base shrink-0"></i>Тренд нагрузки</span>
                     <div class="flex items-end gap-0.5 md:gap-2 h-10 md:h-16 w-full mt-auto">
-                        <div class="flex-1 bg-white/40 rounded-t-sm md:rounded-t-lg h-[40%] a-step"></div>
-                        <div class="flex-1 bg-white/40 rounded-t-sm md:rounded-t-lg h-[50%] a-step"></div>
-                        <div class="flex-1 bg-white/40 rounded-t-sm md:rounded-t-lg h-[30%] a-step"></div>
-                        <div class="flex-1 bg-white/40 rounded-t-sm md:rounded-t-lg h-[70%] a-step"></div>
+                        <div class="flex-1 bg-[#ffffff66] rounded-t-sm md:rounded-t-lg h-[40%] a-step"></div>
+                        <div class="flex-1 bg-[#ffffff66] rounded-t-sm md:rounded-t-lg h-[50%] a-step"></div>
+                        <div class="flex-1 bg-[#ffffff66] rounded-t-sm md:rounded-t-lg h-[30%] a-step"></div>
+                        <div class="flex-1 bg-[#ffffff66] rounded-t-sm md:rounded-t-lg h-[70%] a-step"></div>
                         <div class="flex-1 bg-solar rounded-t-sm md:rounded-t-lg h-[90%]"></div>
-                        <div class="flex-1 bg-white/40 rounded-t-sm md:rounded-t-lg h-[50%] a-step"></div>
-                        <div class="flex-1 bg-white/40 rounded-t-sm md:rounded-t-lg h-[30%] a-step"></div>
-                        <div class="flex-1 bg-white/40 rounded-t-sm md:rounded-t-lg h-[60%] a-step"></div>
+                        <div class="flex-1 bg-[#ffffff66] rounded-t-sm md:rounded-t-lg h-[50%] a-step"></div>
+                        <div class="flex-1 bg-[#ffffff66] rounded-t-sm md:rounded-t-lg h-[30%] a-step"></div>
+                        <div class="flex-1 bg-[#ffffff66] rounded-t-sm md:rounded-t-lg h-[60%] a-step"></div>
                     </div>
                 </div>
             </div>
@@ -5681,7 +5684,8 @@ html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{
    разом). Бегущие пунктиры и кольца двигаются как прежде — это движение, а не
    подсветка. Без :has() (старые браузеры) всё просто дышит, как раньше. */
 html.seq-on .content-z:has(.a-step) .a-glow,
-html.seq-on .content-z:has(.a-step) .a-pulse{ animation:none !important; }
+html.seq-on .content-z:has(.a-step) .a-pulse,
+html.seq-on .content-z:has(.a-step) .animate-pulse{ animation:none !important; }
 
 /* прочерчивание линии в схеме */
 .a-draw{ stroke-dasharray:6 6; animation:aDraw 1.4s linear infinite; }
