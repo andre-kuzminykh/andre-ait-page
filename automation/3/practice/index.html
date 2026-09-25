@@ -615,8 +615,8 @@
      окно схем, промты). Ниже — только то, чего там не было: способы
      исполнения шага, спецификация агента, границы автономности, тесты.
      ============================================================ */
-  /* Четыре способа исполнения шага — ровно те же цвета, что у классов графа
-     (classDef rule / ai / tool / human в коде схем): легенда на странице и
+  /* Пять способов исполнения шага — ровно те же цвета, что у классов графа
+     (classDef rule / ai / tool / human / agent в коде схем): легенда на странице и
      узлы в окне читаются одним ключом. Цвета тёмные и насыщенные — белая
      подпись на них читается и на белом, и на чёрном фоне. */
   :root{ --c-rule:#475569; --c-ai:#7C3AED; --c-tool:#C2410C; --c-human:#0369A1;
@@ -678,7 +678,8 @@
   }
   .ladder-cap .ic, .fork-cap .ic{ color:#F97316; font-size:1.1rem; }
   /* Итог развилки «Воркфлоу или агент» — фраза со слайда 5 лекции */
-  .fork-cap{ margin-top:clamp(.9rem,2.6vw,1.1rem); }
+  .fork-cap{ margin-top:clamp(.9rem,2.6vw,1.1rem); display:block; }
+  .fork-cap .ic{ vertical-align:-.2em; margin-right:.45rem; }
 
   /* Четыре тестовых сценария */
   .scen{ list-style:none; margin-top:clamp(1rem,3vw,1.4rem); display:grid; grid-template-columns:1fr; gap:.6rem; }
@@ -722,6 +723,7 @@
   /* Ряд цветов способов и ряд форм узлов (FR-SITE79): с пятым способом пунктов
      семь, и без рядов последний падал на вторую строку один */
   .v-legend .v-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:inherit; flex-basis:100%; }
+  @media (max-width:759px){ .v-legend .v-row{ column-gap:.6rem; } }
   .v-legend i{ display:inline-block; width:.85rem; height:.85rem; border-radius:4px; background:var(--c); }
   .v-legend i.t{ width:1.25rem; height:.8rem; background:transparent; border:2px solid #8B5CF6; border-radius:999px; }
   .v-legend i.d{ width:.66rem; height:.66rem; border-radius:2px; background:transparent; border:1.5px solid var(--muted); transform:rotate(45deg); margin:0 .1rem; }
@@ -1093,7 +1095,7 @@
       <!-- Рамка — «ИИ-автоматизация», а не «один ИИ-агент» (FR-SITE79). Ролик в
            кружке — прежняя озвучка владельца («в архитектуру одного ИИ-агента»):
            страница уточняет её развилкой ниже, а не спорит с ней. -->
-      <span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Практика · Архитектура ИИ‑автоматизации</span>
+      <span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-text" xlink:href="#i-clipboard-text"></use></svg> Практика · ИИ‑автоматизация</span>
       <h1>Превратите вашу <span class="accent">TO‑BE модель</span> в архитектуру ИИ‑автоматизации</h1>
       <!-- Пробел перед <br> обязателен: на телефоне переносы скрыты, и без него
            слова склеивались («навыков,задайте», «—и»). -->
@@ -1116,7 +1118,7 @@
       <div class="sec-head rv-item">
         <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-git-fork" xlink:href="#i-git-fork"></use></svg></span>
         <h2>Воркфлоу <span class="accent">или агент</span></h2>
-        <p>Не везде нужен ИИ‑агент: стабильный бизнес‑процесс чаще всего закрывает воркфлоу с ИИ — путь задан заранее, а модель работает внутри шагов. Возьмите из TO‑BE участок и проверьте каждый его шаг по четырём признакам.</p>
+        <p>Не везде нужен ИИ‑агент: стабильному бизнес‑процессу чаще всего хватает воркфлоу с ИИ — путь задан заранее, а модель работает внутри шагов. Возьмите из TO‑BE участок и проверьте его шаги и переходы по четырём признакам.</p>
       </div>
       <ul class="criteria">
         <li class="rv-item"><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-gear-six" xlink:href="#i-gear-six"></use></svg></span> условие записывается словами «если — то» — хватит бизнес‑правила, модель не нужна</li>
@@ -1138,7 +1140,7 @@
       <div class="sec-head rv-item">
         <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-list-checks" xlink:href="#i-list-checks"></use></svg></span>
         <h2>Что нужно <span class="accent">сделать</span></h2>
-        <p class="wide">Семь шагов — ровно по тексту задания. Каждый опирается на результат предыдущего.</p>
+        <p class="wide">Семь шагов — ровно по тексту задания; «он» в них — ваш будущий ИИ‑воркфлоу. Каждый шаг опирается на результат предыдущего.</p>
       </div>
 
       <article class="step rv-item">
@@ -1280,8 +1282,8 @@
           </div>
         </div>
         <p class="desc">Воркфлоу — каркас: всё предсказуемое задаём заранее, а агенту, если он нужен, оставляем зоны свободы выбора. Узлы графа почти один к одному становятся узлами платформы, а права, лимиты, проверки и логи вокруг модели — это обвязка.</p>
-        <!-- Шесть пунктов: четыре способа исполнения из шага 2 (правило, ИИ,
-             инструмент, человек) плюс триггер и ошибки. Инструменты раньше
+        <!-- Семь пунктов: пять способов исполнения из шага 2 (правило, ИИ,
+             инструмент, человек, агент) плюс триггер и ошибки. Инструменты раньше
              выпадали — а именно на них держится мысль лекции: модель только
              выбирает вызов, выполняет его среда исполнения. -->
         <ul class="checks">
@@ -1290,7 +1292,8 @@
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-brain" xlink:href="#i-brain"></use></svg></span> ИИ‑операции — вызов модели со структурированным выводом</li>
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg></span> инструменты — интеграции и API: вызывает среда исполнения, а не модель</li>
           <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-hourglass" xlink:href="#i-hourglass"></use></svg></span> человек — ожидание ответа с сохранённым состоянием</li>
-          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-scroll" xlink:href="#i-scroll"></use></svg></span> ошибки и логи: повторные попытки, резервный сценарий, журнал выполнения</li>
+          <li><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg></span> агент — узел «ИИ‑агент»: модель, свои инструменты, лимит итераций и выход к человеку</li>
+          <li class="wide"><span class="ci"><svg class="ic" aria-hidden="true"><use href="#i-scroll" xlink:href="#i-scroll"></use></svg></span> ошибки и логи: повторные попытки, резервный сценарий, журнал выполнения</li>
         </ul>
         <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg> Как каждый узел графа ложится на платформу — в разделе ниже</p>
       </article>
@@ -1324,7 +1327,7 @@
       <div class="cta rv-item">
         <span class="cta-ico"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span>
         <h2>Сначала разберите пример — затем соберите свою автоматизацию</h2>
-        <p>Ниже шесть готовых архитектур по отраслям. Везде каркас — воркфлоу, а агент занимает одну зону, где без него не обойтись; запуск кампании обходится совсем без агента. У каждой всё, что требует задание, — от графа навыков до тестов.</p>
+        <p>Ниже шесть готовых архитектур по отраслям. Везде каркас — воркфлоу; в пяти процессах агент занимает одну зону, где без него не обойтись, а запуск кампании обходится совсем без агента. У каждой всё, что требует задание, — от графа навыков до тестов.</p>
         <ul>
           <li><svg class="ic" aria-hidden="true"><use href="#i-tree-structure" xlink:href="#i-tree-structure"></use></svg> граф навыков в виде воркфлоу</li>
           <li><svg class="ic" aria-hidden="true"><use href="#i-stack" xlink:href="#i-stack"></use></svg> контекст, инструменты и состояние</li>
@@ -1346,7 +1349,7 @@
       <div class="sec-head rv-item">
         <span class="sec-ico"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg></span>
         <h2>Шесть архитектур <span class="accent">ИИ‑автоматизации</span></h2>
-        <p>Те же шесть процессов, что в практике лекции 2. В их TO‑BE шаги с ИИ помечены «агент», но агентом на деле остаётся один узел: переписка с клиентом, разговор с кандидатом, чат, правка макетов, исправление бага. Всё, что известно заранее, идёт воркфлоу, а запуск кампании обходится без агента.</p>
+        <p>Те же шесть процессов, что в практике лекции 2. В их TO‑BE шаги с ИИ помечены «агент», но агентом на деле остаётся по одному узлу в процессе: переписка с клиентом, разговор с кандидатом, чат, правка макетов, исправление бага. Всё, что известно заранее, остаётся воркфлоу, а запуск кампании обходится без агента.</p>
       </div>
 
       <!-- Исходники графов: правятся как обычный текст, отсюда их берёт окно -->
@@ -1356,7 +1359,6 @@
   R1{"Бюджет и срок&lt;br/&gt;подходят?&lt;br/&gt;правило"}
   A1["&lt;b&gt;Извлечь требования&lt;/b&gt;&lt;br/&gt;ИИ: извлечение"]
   D1{"Данных&lt;br/&gt;хватает?&lt;br/&gt;ИИ: выбор решения"}
-  AG1[["&lt;b&gt;Уточнить у клиента&lt;/b&gt;&lt;br/&gt;агент: переписка по сделке&lt;br/&gt;до 2 кругов"]]
   I1["&lt;b&gt;Найти похожие кейсы&lt;/b&gt;&lt;br/&gt;инструмент: архив КП"]
   A2["&lt;b&gt;Оценить трудозатраты&lt;/b&gt;&lt;br/&gt;ИИ: планирование"]
   R2["&lt;b&gt;Рассчитать стоимость и маржу&lt;/b&gt;&lt;br/&gt;правило"]
@@ -1365,13 +1367,15 @@
   I2["&lt;b&gt;Сохранить КП в CRM&lt;/b&gt;&lt;br/&gt;инструмент: CRM"]
   E1(["&lt;b&gt;Готово&lt;/b&gt;&lt;br/&gt;КП на отправку"])
   E2(["&lt;b&gt;Передано человеку&lt;/b&gt;&lt;br/&gt;аккаунт-менеджер"])
+  AG1[["&lt;b&gt;Уточнить у клиента&lt;/b&gt;&lt;br/&gt;агент: переписка по сделке&lt;br/&gt;до 2 кругов"]]
 
   T --&gt; R1
   R1 --&gt;|нет| E2
   R1 --&gt;|да| A1 --&gt; D1
   D1 --&gt;|нет| AG1
   AG1 --&gt;|ответы получены| A1
-  AG1 --&gt;|2 круга без ответа| E2
+  AG1 --&gt;|2 круга без ясности| E2
+  AG1 --&gt;|вопрос о цене| E2
   D1 --&gt;|да| I1
   I1 --&gt;|кейсов нет| E2
   I1 --&gt;|найдены| A2 --&gt; R2 --&gt; A3 --&gt; H1
@@ -1394,7 +1398,7 @@
   R1{"Есть&lt;br/&gt;стоп-фактор?&lt;br/&gt;правило"}
   A2["&lt;b&gt;Сверить с критериями&lt;/b&gt;&lt;br/&gt;ИИ: классификация"]
   D1{"Данных&lt;br/&gt;хватает?&lt;br/&gt;ИИ: выбор решения"}
-  AG1[["&lt;b&gt;Поговорить с кандидатом&lt;/b&gt;&lt;br/&gt;агент: мессенджер,&lt;br/&gt;вакансия · до 3 вопросов"]]
+  AG1[["&lt;b&gt;Поговорить с кандидатом&lt;/b&gt;&lt;br/&gt;агент: мессенджер, вакансия&lt;br/&gt;до 3 вопросов"]]
   A3["&lt;b&gt;Ранжировать и обосновать&lt;/b&gt;&lt;br/&gt;ИИ: выбор решения"]
   A4["&lt;b&gt;Собрать карточку&lt;/b&gt;&lt;br/&gt;ИИ: суммаризация"]
   H1{"Рекрутер&lt;br/&gt;согласен?&lt;br/&gt;человек"}
@@ -1407,13 +1411,14 @@
   R1 --&gt;|не проверить| AG1
   R1 --&gt;|нет| A2 --&gt; D1
   D1 --&gt;|нет| AG1
-  AG1 --&gt;|ответы получены| A1
-  AG1 --&gt;|нет ответа 3 дня| I1
-  AG1 --&gt;|вопрос об условиях| E2
   D1 --&gt;|да| A3 --&gt; A4 --&gt; H1
   H1 --&gt;|да| I1
   H1 --&gt;|нет| E2
   I1 --&gt; E1
+  AG1 --&gt;|ответы получены| A1
+  AG1 --&gt;|нет ответа 3 дня| I1
+  AG1 --&gt;|вопрос об условиях| E2
+  AG1 --&gt;|3 вопроса, данных нет| E2
 
   classDef rule fill:#475569,stroke:#94A3B8,color:#fff
   classDef ai fill:#7C3AED,stroke:#A78BFA,color:#fff
@@ -1444,7 +1449,7 @@
   T --&gt; A1 --&gt; R1
   R1 --&gt;|нет| A2
   A2 --&gt;|ответ аккаунта| A1
-  A2 --&gt;|2 круга без ответа| E2
+  A2 --&gt;|2 круга без ясности| E2
   R1 --&gt;|да| I1 --&gt; A3 --&gt; H1
   H1 --&gt;|нет| E2
   H1 --&gt;|да| A4 --&gt; R2
@@ -1471,7 +1476,6 @@
   A2["&lt;b&gt;Тема и тон обращения&lt;/b&gt;&lt;br/&gt;ИИ: классификация"]
   R1{"Конфликт, возврат&lt;br/&gt;или просят человека?&lt;br/&gt;правило"}
   AG1[["&lt;b&gt;Разговор с клиентом&lt;/b&gt;&lt;br/&gt;агент: регламент, заказ&lt;br/&gt;до 2 кругов уточнения"]]
-  R2{"Вопрос&lt;br/&gt;решён?&lt;br/&gt;правило"}
   I2["&lt;b&gt;Заполнить карточку&lt;/b&gt;&lt;br/&gt;инструмент: CRM"]
   H1["&lt;b&gt;Оператор со сводкой&lt;/b&gt;&lt;br/&gt;человек"]
   E1(["&lt;b&gt;Готово&lt;/b&gt;&lt;br/&gt;тикет закрыт"])
@@ -1479,12 +1483,12 @@
 
   T --&gt; I1
   I1 --&gt;|найден| A1 --&gt; A2 --&gt; R1
-  I1 --&gt;|не найден| AG1
+  I1 --&gt;|не найден| A2
   R1 --&gt;|нет| AG1
   R1 --&gt;|да| H1
-  AG1 --&gt; R2
-  R2 --&gt;|да| I2 --&gt; E1
-  R2 --&gt;|нет| H1
+  AG1 --&gt;|решено| I2 --&gt; E1
+  AG1 --&gt;|2 круга без ясности| H1
+  AG1 --&gt;|ответа по регламенту нет| H1
   H1 --&gt; E2
 
   classDef rule fill:#475569,stroke:#94A3B8,color:#fff
@@ -1492,13 +1496,13 @@
   classDef tool fill:#C2410C,stroke:#FB923C,color:#fff
   classDef human fill:#0369A1,stroke:#38BDF8,color:#fff
   classDef agent fill:#A21CAF,stroke:#F0ABFC,color:#fff,stroke-width:2px
-  class R1,R2 rule
+  class R1 rule
   class A1,A2 ai
   class AG1 agent
   class I1,I2 tool
   class H1 human</pre>
       <pre class="mmd-src" id="src-design">flowchart TD
-  T(["Триггер: правки клиента — письмо, чат или созвон"])
+  T(["Триггер: письмо, чат или созвон по проекту"])
   D1{"Что прислал&lt;br/&gt;клиент?&lt;br/&gt;ИИ: классификация"}
   I1["&lt;b&gt;Получить договор и макеты&lt;/b&gt;&lt;br/&gt;инструмент: трекер"]
   A1["&lt;b&gt;Свести правки в список&lt;/b&gt;&lt;br/&gt;ИИ: извлечение"]
@@ -1518,7 +1522,7 @@
   R1 --&gt;|да| D2
   D2 --&gt;|да| A2
   A2 --&gt;|ответ клиента| A1
-  A2 --&gt;|2 круга без ответа| E2
+  A2 --&gt;|2 круга без ясности| E2
   D2 --&gt;|нет| AG1
   AG1 --&gt;|готово| H1
   AG1 --&gt;|3 итерации без приёмки| E2
@@ -1536,7 +1540,7 @@
   class I1,I2 tool
   class H1 human</pre>
       <pre class="mmd-src" id="src-software">flowchart TD
-  T(["Триггер: алерт мониторинга или баг-репорт"])
+  T(["Триггер: алерт мониторинга или сообщение о баге"])
   R1["&lt;b&gt;Склеить дубли&lt;/b&gt;&lt;br/&gt;правило"]
   I1["&lt;b&gt;Собрать логи&lt;/b&gt;&lt;br/&gt;инструмент: логи"]
   I2["&lt;b&gt;Найти релиз&lt;/b&gt;&lt;br/&gt;инструмент: сборка"]
@@ -1544,7 +1548,7 @@
   A1["&lt;b&gt;Оценить критичность&lt;/b&gt;&lt;br/&gt;ИИ: классификация"]
   A2["&lt;b&gt;Сводка для дежурного&lt;/b&gt;&lt;br/&gt;ИИ: суммаризация"]
   H1{"Дежурный&lt;br/&gt;за откат?&lt;br/&gt;человек"}
-  I4["&lt;b&gt;Откатить релиз&lt;/b&gt;&lt;br/&gt;инструмент: сборка"]
+  I4["&lt;b&gt;Откатить релиз и проверить ошибки&lt;/b&gt;&lt;br/&gt;инструмент: сборка, метрики"]
   AG1[["&lt;b&gt;Исправить баг&lt;/b&gt;&lt;br/&gt;агент: код, логи, тесты&lt;br/&gt;до 5 итераций"]]
   R2{"Тесты и линтеры&lt;br/&gt;зелёные?&lt;br/&gt;правило"}
   H2{"Разработчик:&lt;br/&gt;выкатываем?&lt;br/&gt;человек"}
@@ -1555,10 +1559,13 @@
 
   T --&gt; R1 --&gt; I1 &amp; I2 &amp; I3
   I1 &amp; I2 &amp; I3 --&gt; A1 --&gt; A2 --&gt; H1
-  H1 --&gt;|откат| I4 --&gt; AG1
+  H1 --&gt;|откат| I4
+  I4 --&gt;|ошибки ниже порога| AG1
+  I4 --&gt;|ошибки не ушли| E2
   H1 --&gt;|без отката| AG1
-  AG1 --&gt;|PR с тестом| R2
+  AG1 --&gt;|пул-реквест с тестом| R2
   AG1 --&gt;|5 итераций без исправления| E2
+  AG1 --&gt;|нужно архитектурное решение| E2
   R2 --&gt;|нет| AG1
   R2 --&gt;|да| H2
   H2 --&gt;|правки| AG1
@@ -1654,7 +1661,7 @@
             <p class="from">Из TO‑BE: квалификация по бюджету и сроку — правило; подбор кейсов и черновик КП, уточнение требований в переписке с клиентом — агент; оценка трудозатрат — гибрид: агент считает по аналогам, партнёр подтверждает; цена и обязательства перед клиентом — человек.</p>
           </div>
         </div>
-        <p class="verdict is-agent rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg><span><b>Воркфлоу с агентом.</b> Агент нужен в одном месте — в переписке с клиентом: какой вопрос задать следующим, зависит от его ответа. Путь сделки — квалификация, требования, кейсы, оценка, стоимость, черновик, партнёр — одинаков для всех, это воркфлоу.</span></p>
+        <p class="verdict is-agent rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg><span><b>Воркфлоу с агентом.</b> Агент нужен в одном месте — в переписке с клиентом: он сам ведёт её вопрос за вопросом, и какой вопрос задать следующим, зависит от ответа. Путь сделки — квалификация, требования, кейсы, оценка, стоимость, черновик, партнёр — одинаков для всех, это воркфлоу.</span></p>
         <div class="spec">
           <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-focus" xlink:href="#i-user-focus"></use></svg> Роль</span><p>Помощник аккаунт‑менеджера и партнёра: готовит коммерческое предложение по сделке, которую взяли в работу.</p></div>
           <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg> Цель и критерий успеха</span><p>Черновик КП за один рабочий день вместо недели. Успех — партнёр согласует КП с первого круга, без переписывания.</p></div>
@@ -1665,6 +1672,7 @@
         <ul class="ctx rv-item">
           <li><span>Требования, бюджет, срок, стейкхолдеры</span><span class="src-tag"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> CRM</span></li>
           <li><span>Протокол установочной встречи</span><span class="src-tag"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> CRM, вложения</span></li>
+          <li><span>Переписка с клиентом по сделке</span><span class="src-tag"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> почта и CRM</span></li>
           <li><span>2–3 самых похожих кейса и прошлых КП — по отрасли и теме, свежие выше</span><span class="src-tag"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> архив кейсов и КП</span></li>
           <li><span>Ставки ролей и целевая маржа</span><span class="src-tag"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> справочник ставок</span></li>
           <li><span>Шаблон КП и правила оформления</span><span class="src-tag"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> база знаний</span></li>
@@ -1678,11 +1686,11 @@
           <li><b>Получить ответы</b><code>get_client_replies(deal_id, since)</code><span>ответы клиента из почты и CRM</span></li>
           <li><b>Сохранить КП</b><code>save_proposal(deal_id, doc, estimate, status)</code><span>версия КП и статус сделки в CRM — после утверждения партнёром</span></li>
         </ul>
-        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: свой контекст и набор инструментов</h4>
+        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: контекст и набор инструментов</h4>
         <div class="auto agent-box rv-item">
           <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> Вход — контекст</span><ul><li>требования и найденные пробелы</li><li>протокол встречи</li><li>переписка по сделке</li></ul></div>
           <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg> Инструменты</span><ul><li><code>send_client_message</code></li><li><code>get_client_replies</code></li></ul></div>
-          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Лимит и выход</span><ul><li>до 2 кругов вопросов</li><li>ответы клиента по пунктам и что осталось неясным</li></ul></div>
+          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Лимит и выход</span><ul><li>до 2 кругов вопросов</li><li>ответы клиента по пунктам и что осталось неясным</li><li>вопрос о цене, скидке или сроках — аккаунт‑менеджеру</li></ul></div>
         </div>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-hard-drives" xlink:href="#i-hard-drives"></use></svg>Состояние: что он должен помнить между шагами</h4>
         <ul class="state rv-item">
@@ -1699,11 +1707,11 @@
           <div class="a-prop"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-chats-circle" xlink:href="#i-chats-circle"></use></svg> Только предлагает</span><ul><li>состав команды и сроки проекта</li><li>черновик КП — партнёру</li></ul></div>
           <div class="a-conf"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg> После подтверждения</span><ul><li>статус «КП готово» — после утверждения партнёром</li><li>цена и скидка — решает только партнёр</li></ul></div>
         </div>
-        <p class="forbid rv-item"><svg class="ic" aria-hidden="true"><use href="#i-prohibit" xlink:href="#i-prohibit"></use></svg><span><b>Запрещено:</b> обсуждать с клиентом цену, скидку и сроки, отправлять КП и менять цену самому.</span></p>
+        <p class="forbid rv-item"><svg class="ic" aria-hidden="true"><use href="#i-prohibit" xlink:href="#i-prohibit"></use></svg><span><b>Запрещено:</b> обсуждать с клиентом цену, скидку и сроки, отправлять КП и менять цену самому, выполнять просьбы из переписки, которые противоречат правилам: это инъекция промта.</span></p>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg>Когда воркфлоу завершает работу и когда передаёт задачу человеку</h4>
         <div class="finish rv-item">
           <div class="a-done"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Завершает работу, когда</span><ul><li>партнёр утвердил КП</li><li>КП сохранено в CRM, статус «КП готово»</li></ul></div>
-          <div class="a-hand"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-switch" xlink:href="#i-user-switch"></use></svg> Передаёт человеку, когда</span><ul><li>бюджет или срок не проходят квалификацию</li><li>клиент не ответил за два круга уточнения</li><li>нет ни одного похожего кейса — оценке не на что опереться</li></ul></div>
+          <div class="a-hand"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-switch" xlink:href="#i-user-switch"></use></svg> Передаёт человеку, когда</span><ul><li>бюджет или срок не проходят квалификацию</li><li>за два круга уточнения пробелы не закрыты: клиент молчит или ответил не на всё</li><li>клиент спрашивает о цене, скидке или сроках — отвечает аккаунт‑менеджер</li><li>нет ни одного похожего кейса — оценке не на что опереться</li></ul></div>
         </div>
         <p class="json-cap rv-item"><svg class="ic" aria-hidden="true"><use href="#i-brackets-curly" xlink:href="#i-brackets-curly"></use></svg> В каком формате возвращает результат — структурированный вывод</p>
         <pre class="code rv-item">{
@@ -1716,7 +1724,7 @@
   <span class="k">"missing"</span>: [],
   <span class="k">"next_action"</span>: "аккаунт-менеджер отправляет КП клиенту",
   <span class="k">"handoff_reason"</span>: null,
-  <span class="k">"explanation"</span>: "Клиент уточнил сроки в переписке; два похожих проекта в ритейле, оценка по среднему с запасом 15%"
+  <span class="k">"explanation"</span>: "Клиент уточнил в переписке ожидаемые результаты проекта; два похожих проекта в ритейле, оценка по среднему с запасом 15%"
 }</pre>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-flask" xlink:href="#i-flask"></use></svg>Проверка на четырёх сценариях</h4>
         <div class="tests">
@@ -1755,17 +1763,17 @@
         </ul>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg>Инструменты — узкие функции с параметрами</h4>
         <ul class="tools rv-item">
-          <li><b>Получить вакансию</b><code>get_vacancy(vacancy_id)</code><span>критерии, стоп‑факторы, вилка — и ответы кандидату о вакансии</span></li>
+          <li><b>Получить вакансию</b><code>get_vacancy(vacancy_id)</code><span>критерии, стоп‑факторы и вилка — правилу; агенту — карточка без вилки, для ответов о вакансии</span></li>
           <li><b>Получить резюме</b><code>get_resume(candidate_id)</code><span>текст и вложения отклика</span></li>
           <li><b>Написать кандидату</b><code>send_message(candidate_id, channel, text)</code><span>вопросы и ответы в диалоге — не больше трёх вопросов</span></li>
           <li><b>Получить ответы</b><code>get_replies(candidate_id, since)</code><span>ответы кандидата из мессенджера и почты</span></li>
-          <li><b>Записать статус</b><code>update_candidate(candidate_id, status, score, notes)</code><span>статус, балл и обоснование в карточке</span></li>
+          <li><b>Записать статус</b><code>update_candidate(candidate_id, status, score, notes)</code><span>статус, балл и обоснование в карточке; агенту — только статус «ждём ответа»</span></li>
         </ul>
-        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: свой контекст и набор инструментов</h4>
+        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: контекст и набор инструментов</h4>
         <div class="auto agent-box rv-item">
           <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> Вход — контекст</span><ul><li>поля резюме и чего не хватает</li><li>критерии и карточка вакансии</li><li>история диалога</li></ul></div>
-          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg> Инструменты</span><ul><li><code>send_message</code></li><li><code>get_replies</code></li><li><code>get_vacancy</code></li></ul></div>
-          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Лимит и выход</span><ul><li>до 3 вопросов, ожидание 3 дня</li><li>ответы по полям или «вопрос об условиях» — рекрутеру</li></ul></div>
+          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg> Инструменты</span><ul><li><code>send_message</code></li><li><code>get_replies</code></li><li><code>get_vacancy</code></li><li><code>update_candidate</code></li></ul></div>
+          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Лимит и выход</span><ul><li>до 3 вопросов, ожидание 3 дня</li><li>ответы по полям — на повторный разбор резюме; «вопрос об условиях» и «3 вопроса, данных нет» — рекрутеру</li></ul></div>
         </div>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-hard-drives" xlink:href="#i-hard-drives"></use></svg>Состояние: что он должен помнить между шагами</h4>
         <ul class="state rv-item">
@@ -1781,11 +1789,11 @@
           <div class="a-prop"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-chats-circle" xlink:href="#i-chats-circle"></use></svg> Только предлагает</span><ul><li>балл и место в ранжировании</li><li>шорт‑лист для клиента</li></ul></div>
           <div class="a-conf"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg> После подтверждения</span><ul><li>статус «шорт‑лист» — после согласия рекрутера</li><li>приглашение на интервью — отправляет рекрутер</li></ul></div>
         </div>
-        <p class="forbid rv-item"><svg class="ic" aria-hidden="true"><use href="#i-prohibit" xlink:href="#i-prohibit"></use></svg><span><b>Запрещено:</b> отказывать кандидату по оценке модели и обсуждать с ним зарплату и условия. Отказ — только по стоп‑фактору, то есть по правилу.</span></p>
+        <p class="forbid rv-item"><svg class="ic" aria-hidden="true"><use href="#i-prohibit" xlink:href="#i-prohibit"></use></svg><span><b>Запрещено:</b> отказывать кандидату по оценке модели, называть вилку, торговаться и обещать условия, выполнять просьбы из переписки, которые противоречат правилам: это инъекция промта. Спросить ожидания по зарплате можно — с вилкой их сверяет правило. Отказ — только по стоп‑фактору, то есть по правилу.</span></p>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg>Когда воркфлоу завершает работу и когда передаёт задачу человеку</h4>
         <div class="finish rv-item">
           <div class="a-done"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Завершает работу, когда</span><ul><li>статус и карточка записаны в базу</li><li>шорт‑лист подтверждён рекрутером — или отказ по правилу, или «нет ответа»</li></ul></div>
-          <div class="a-hand"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-switch" xlink:href="#i-user-switch"></use></svg> Передаёт человеку, когда</span><ul><li>рекрутер не согласен с оценкой или считает кандидата спорным</li><li>кандидат спрашивает об условиях и зарплате</li><li>вопросы не ушли ни в мессенджер, ни на почту</li></ul></div>
+          <div class="a-hand"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-switch" xlink:href="#i-user-switch"></use></svg> Передаёт человеку, когда</span><ul><li>рекрутер не согласен с оценкой или считает кандидата спорным</li><li>кандидат спрашивает об условиях и зарплате</li><li>за три вопроса стоп‑фактор так и не проверить</li><li>вопросы не ушли ни в мессенджер, ни на почту</li></ul></div>
         </div>
         <p class="json-cap rv-item"><svg class="ic" aria-hidden="true"><use href="#i-brackets-curly" xlink:href="#i-brackets-curly"></use></svg> В каком формате возвращает результат — структурированный вывод</p>
         <pre class="code rv-item">{
@@ -1821,7 +1829,7 @@
             <p class="from">Из TO‑BE: черновики креативов и текстов по брифу и тону бренда — агент; стратегия кампании и защита идеи — человек. Выбран запуск: круги правок по креативам — самая долгая его часть. Выгрузка статистики и оптимизация ставок — задача следующего агента, на этапе ведения.</p>
           </div>
         </div>
-        <p class="verdict rv-item"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg><span><b>ИИ‑воркфлоу.</b> Агент не нужен: запуск идёт по одному плану — бриф, статистика, медиаплан, стратег, креативы, правила площадок, клиент, черновики кампаний. Модель планирует и пишет, а круги правок и их лимиты задают правила и люди. Агент понадобится позже, на этапе ведения: какую ставку менять, зависит от свежей статистики.</span></p>
+        <p class="verdict rv-item"><svg class="ic" aria-hidden="true"><use href="#i-flow-arrow" xlink:href="#i-flow-arrow"></use></svg><span><b>ИИ‑воркфлоу.</b> Агент не нужен: запуск идёт по одному плану — бриф, статистика, медиаплан, стратег, креативы, правила площадок, клиент, черновики кампаний. Модель планирует и пишет, а круги правок и их лимиты задают правила и люди. Недостающее в брифе запрашивается одним списком у аккаунт‑менеджера — это генерация, а не агент. Агент понадобится позже, на этапе ведения: какую ставку менять, зависит от свежей статистики.</span></p>
         <div class="spec">
           <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-focus" xlink:href="#i-user-focus"></use></svg> Роль</span><p>Помощник стратега и трафик‑менеджера: ведёт запуск от согласованного брифа до кампаний, заведённых в кабинетах.</p></div>
           <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg> Цель и критерий успеха</span><p>От брифа до запуска за 3 дня вместо двух недель. Успех — клиент согласует креативы не больше чем за два круга правок, параметры кампаний без ошибок.</p></div>
@@ -1923,9 +1931,9 @@
           <li><b>Закрыть тикет</b><code>close_ticket(ticket_id, topic, resolution, tags[])</code><span>заполненная карточка обращения</span></li>
           <li><b>Передать оператору</b><code>handoff(ticket_id, summary, reason)</code><span>очередь второй линии со сводкой</span></li>
         </ul>
-        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: свой контекст и набор инструментов</h4>
+        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: контекст и набор инструментов</h4>
         <div class="auto agent-box rv-item">
-          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> Вход — контекст</span><ul><li>сводка истории, тема и тон</li><li>реплики чата</li><li>карточка клиента, если найден</li></ul></div>
+          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> Вход — контекст</span><ul><li>тема и тон; сводка истории — если клиент найден</li><li>реплики чата</li><li>карточка клиента, если найден</li></ul></div>
           <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg> Инструменты</span><ul><li><code>search_kb</code></li><li><code>get_order</code></li><li><code>find_customer</code></li></ul></div>
           <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Лимит и выход</span><ul><li>до 2 кругов уточнения</li><li>ответ по регламенту со ссылкой на пункт и статус: решено или к оператору</li></ul></div>
         </div>
@@ -1966,8 +1974,8 @@
         <div class="tests">
           <article class="s-ok rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> Обычный</span><p><b>Вход:</b> «Где мой заказ?» — клиент найден, регламент есть.</p><p><b>Ожидаем:</b> агент проверяет заказ, находит правило в регламенте и отвечает; клиент подтверждает, тикет закрыт. Вызваны find_customer, get_tickets, get_order, search_kb, close_ticket; handoff не вызывается.</p><code class="case-path">клиент найден → сводка → тема → правило: нет → агент: заказ, регламент, ответ → решено → карточка → Готово</code></article>
           <article class="s-amb rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-question" xlink:href="#i-question"></use></svg> Неоднозначный</span><p><b>Вход:</b> «Верните деньги или перенесите доставку» — две разные просьбы.</p><p><b>Ожидаем:</b> возврат денег — правило «к человеку»: агент в разговор не вступает, оператор получает сводку обеих просьб.</p><code class="case-path">клиент найден → сводка → тема → возврат денег → оператор → Передано человеку</code></article>
-          <article class="s-miss rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-puzzle-piece" xlink:href="#i-puzzle-piece"></use></svg> С нехваткой данных</span><p><b>Вход:</b> Пишут с незнакомого номера, номер заказа не указан.</p><p><b>Ожидаем:</b> клиент не найден — агент просит номер заказа или email и не показывает чужих данных; после двух кругов — оператору.</p><code class="case-path">клиент не найден → агент: уточнение ×2 → не решён → оператор → Передано человеку</code></article>
-          <article class="s-err rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-cloud-warning" xlink:href="#i-cloud-warning"></use></svg> С ошибкой внешнего сервиса</span><p><b>Вход:</b> База знаний не отвечает.</p><p><b>Ожидаем:</b> отвечать «по памяти» запрещено: повтор, затем честное «передаю специалисту» и handoff со сводкой. В логе — ошибка search_kb.</p><code class="case-path">тема → агент: регламент ✗ ×2 → не решён → оператор → Передано человеку</code></article>
+          <article class="s-miss rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-puzzle-piece" xlink:href="#i-puzzle-piece"></use></svg> С нехваткой данных</span><p><b>Вход:</b> Пишут с незнакомого номера, номер заказа не указан.</p><p><b>Ожидаем:</b> клиент не найден — агент просит номер заказа или email и не показывает чужих данных; после двух кругов — оператору.</p><code class="case-path">клиент не найден → тема → правило: нет → агент: уточнение ×2 → 2 круга без ясности → оператор → Передано человеку</code></article>
+          <article class="s-err rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-cloud-warning" xlink:href="#i-cloud-warning"></use></svg> С ошибкой внешнего сервиса</span><p><b>Вход:</b> База знаний не отвечает.</p><p><b>Ожидаем:</b> отвечать «по памяти» запрещено: повтор, затем честное «передаю специалисту» и handoff со сводкой. В логе — ошибка search_kb.</p><code class="case-path">тема → правило: нет → агент: регламент ✗ ×2 → ответа по регламенту нет → оператор → Передано человеку</code></article>
         </div>
         <div class="case-nav rv-item">
           <button class="prev" type="button" data-go="marketing"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg> Маркетинг</button>
@@ -1983,7 +1991,7 @@
             <p class="from">Из TO‑BE: структурированный бриф, сведение правок в один список и правки в макетах — агент; лимит кругов и чек‑лист приёмки — правило; оценка объёма — гибрид: агент считает по прошлым проектам, арт‑директор утверждает; концепция — человек. Выбраны правки: круги правок — самая долгая часть проекта.</p>
           </div>
         </div>
-        <p class="verdict is-agent rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg><span><b>Воркфлоу с агентом.</b> Агент нужен в одном месте — в макетах: правки он вносит сам, и что поправить следующим, зависит от того, что получилось на превью. Сбор правок, лимит кругов, вопросы клиенту и приёмка арт‑директором — воркфлоу.</span></p>
+        <p class="verdict is-agent rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg><span><b>Воркфлоу с агентом.</b> Агент нужен в одном месте — в макетах: правки он вносит сам, и что поправить следующим, зависит от того, что получилось на превью. Сбор правок, лимит кругов, вопросы клиенту и приёмка арт‑директором — воркфлоу. Вопросы клиенту — одна генерация: список уходит через аккаунт‑менеджера, переписку ведёт он.</span></p>
         <div class="spec">
           <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-focus" xlink:href="#i-user-focus"></use></svg> Роль</span><p>Помощник аккаунт‑менеджера и арт‑директора: сводит правки клиента из переписки и созвонов в один список и сам вносит их в макеты.</p></div>
           <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg> Цель и критерий успеха</span><p>Ни одного потерянного комментария, правки в макетах — за часы, а не за дни. Успех — каждый круг правок — один сведённый список по чек‑листу приёмки, и арт‑директор принимает макеты с первого раза.</p></div>
@@ -2007,9 +2015,9 @@
           <li><b>Снять превью</b><code>render_preview(file_id, frames[])</code><span>картинки экранов — агент сверяет их с чек‑листом</span></li>
           <li><b>Сохранить версию</b><code>save_version(project_id, file_id, round)</code><span>версия макетов и номер круга в трекере</span></li>
         </ul>
-        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: свой контекст и набор инструментов</h4>
+        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: контекст и набор инструментов</h4>
         <div class="auto agent-box rv-item">
-          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> Вход — контекст</span><ul><li>утверждённый список правок</li><li>чек‑лист приёмки и концепция</li><li>текущая версия макета</li></ul></div>
+          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> Вход — контекст</span><ul><li>сведённый список правок</li><li>чек‑лист приёмки и концепция</li><li>текущая версия макета</li><li>замечания арт‑директора к прошлой версии</li></ul></div>
           <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg> Инструменты</span><ul><li><code>get_mockup</code></li><li><code>edit_mockup</code></li><li><code>render_preview</code></li></ul></div>
           <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Лимит и выход</span><ul><li>до 3 итераций</li><li>новая версия макета и отметка по каждой правке и пункту чек‑листа</li></ul></div>
         </div>
@@ -2020,20 +2028,20 @@
           <li><code>revision_round</code>номер круга правок по договору</li>
           <li><code>revisions</code>сведённый список с источником каждой правки</li>
           <li><code>open_questions, clarify_round</code>что спросили у клиента и сколько кругов ждём — лимит 2</li>
-          <li><code>mockup_version, iteration</code>версия макета и итерации агента — лимит 3</li>
+          <li><code>mockup_version, iteration, review_notes</code>версия макета, итерации агента и замечания арт‑директора — лимит 3</li>
         </ul>
         <p class="mem rv-item"><svg class="ic" aria-hidden="true"><use href="#i-brain" xlink:href="#i-brain"></use></svg><span>В долговременную память — вкусы клиента и отклонённые направления: пригодятся в следующем проекте. Черновые списки правок — нет.</span></p>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-shield-check" xlink:href="#i-shield-check"></use></svg>Где проходят границы его автономности</h4>
         <div class="auto rv-item">
           <div class="a-self"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> Решает сам</span><ul><li>классифицирует входящее и сводит правки</li><li>находит противоречия и повторы</li><li>вносит правки в макеты и сверяет превью с чек‑листом</li></ul></div>
-          <div class="a-prop"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-chats-circle" xlink:href="#i-chats-circle"></use></svg> Только предлагает</span><ul><li>вопросы клиенту — через аккаунт‑менеджера</li><li>спорную правку — арт‑директору с вариантами</li></ul></div>
+          <div class="a-prop"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-chats-circle" xlink:href="#i-chats-circle"></use></svg> Только предлагает</span><ul><li>вопросы клиенту — через аккаунт‑менеджера</li><li>новую версию макетов — арт‑директору на приёмку</li></ul></div>
           <div class="a-conf"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg> После подтверждения</span><ul><li>макеты уходят клиенту только после приёмки арт‑директором</li><li>платный круг сверх лимита — решает аккаунт‑менеджер с клиентом</li></ul></div>
         </div>
         <p class="forbid rv-item"><svg class="ic" aria-hidden="true"><use href="#i-prohibit" xlink:href="#i-prohibit"></use></svg><span><b>Запрещено:</b> менять утверждённую концепцию, отправлять макеты клиенту самому и обещать сроки.</span></p>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg>Когда воркфлоу завершает работу и когда передаёт задачу человеку</h4>
         <div class="finish rv-item">
           <div class="a-done"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Завершает работу, когда</span><ul><li>арт‑директор принял макеты</li><li>версия сохранена, аккаунт‑менеджер отправляет макеты клиенту</li></ul></div>
-          <div class="a-hand"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-switch" xlink:href="#i-user-switch"></use></svg> Передаёт человеку, когда</span><ul><li>лимит кругов превышен</li><li>противоречие или пробел не сняты: клиент не ответил за два круга</li><li>сообщение не про правки: претензия, оплата, новый проект</li><li>за три итерации макет не принят: не прошёл чек‑лист или арт‑директор вернул правки</li></ul></div>
+          <div class="a-hand"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-switch" xlink:href="#i-user-switch"></use></svg> Передаёт человеку, когда</span><ul><li>лимит кругов превышен</li><li>противоречие или пробел не сняты за два круга уточнения</li><li>сообщение не про правки: претензия, оплата, новый проект</li><li>за три итерации макет не принят: не прошёл чек‑лист или арт‑директор вернул правки</li></ul></div>
         </div>
         <p class="json-cap rv-item"><svg class="ic" aria-hidden="true"><use href="#i-brackets-curly" xlink:href="#i-brackets-curly"></use></svg> В каком формате возвращает результат — структурированный вывод</p>
         <pre class="code rv-item">{
@@ -2054,10 +2062,10 @@
 }</pre>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-flask" xlink:href="#i-flask"></use></svg>Проверка на четырёх сценариях</h4>
         <div class="tests">
-          <article class="s-ok rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> Обычный</span><p><b>Вход:</b> После созвона клиент прислал 6 правок в чате и 2 в письме.</p><p><b>Ожидаем:</b> один список из восьми пунктов, дубли склеены, у каждой правки источник и пункт чек‑листа; круг 2 из 3. Агент вносит правки в макет и сверяет превью с чек‑листом, арт‑директор принимает.</p><code class="case-path">правки → договор → список → лимит ✓ → противоречий нет → агент: макеты → арт-директор ✓ → версия → Готово</code></article>
+          <article class="s-ok rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> Обычный</span><p><b>Вход:</b> После созвона клиент прислал 6 правок в чате и 3 в письме, одна повторяется.</p><p><b>Ожидаем:</b> один список из восьми пунктов, дубль склеен, у каждой правки источник и пункт чек‑листа; круг 2 из 3. Агент вносит правки в макет и сверяет превью с чек‑листом, арт‑директор принимает.</p><code class="case-path">правки → договор → список → лимит ✓ → противоречий нет → агент: макеты → арт-директор ✓ → версия → Готово</code></article>
           <article class="s-amb rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-question" xlink:href="#i-question"></use></svg> Неоднозначный</span><p><b>Вход:</b> «Сделайте ярче, но строже» — правка спорит с утверждённой концепцией.</p><p><b>Ожидаем:</b> модель не выбирает трактовку: противоречие помечено, клиенту готовится вопрос. Макеты не трогаются.</p><code class="case-path">правки → договор → список → лимит ✓ → противоречие → вопросы клиенту</code></article>
           <article class="s-miss rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-puzzle-piece" xlink:href="#i-puzzle-piece"></use></svg> С нехваткой данных</span><p><b>Вход:</b> В правке «как в прошлый раз» нет ссылки на вариант.</p><p><b>Ожидаем:</b> правка не додумывается: вопрос клиенту через аккаунт‑менеджера и ожидание; ответ пришёл — список сводится заново.</p><code class="case-path">правки → список → пробел → вопросы клиенту → ожидание → список</code></article>
-          <article class="s-err rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-cloud-warning" xlink:href="#i-cloud-warning"></use></svg> С ошибкой внешнего сервиса</span><p><b>Вход:</b> Редактор макетов не отвечает.</p><p><b>Ожидаем:</b> повтор с паузой; правки не применяются дважды — у каждой свой id. После третьей неудачи список правок уходит дизайнеру вручную.</p><code class="case-path">список ✓ → агент: редактор ✗ ×3 → Передано человеку</code></article>
+          <article class="s-err rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-cloud-warning" xlink:href="#i-cloud-warning"></use></svg> С ошибкой внешнего сервиса</span><p><b>Вход:</b> Редактор макетов не отвечает.</p><p><b>Ожидаем:</b> повтор с паузой; правки не применяются дважды — у каждой свой id. После третьей неудачи список правок уходит дизайнеру — он вносит их вручную.</p><code class="case-path">список ✓ → агент: редактор ✗ ×3 → Передано человеку</code></article>
         </div>
         <div class="case-nav rv-item">
           <button class="prev" type="button" data-go="callcenter"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg> Колл‑центр</button>
@@ -2076,9 +2084,9 @@
         <p class="verdict is-agent rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg><span><b>Воркфлоу с агентом.</b> Агент нужен в одном месте — в исправлении бага: что проверить и поправить дальше, зависит от того, что показали логи и тесты. Сбор данных, критичность, сводка, откат, проверка тестами и выкатка идут по заранее заданному пути — это воркфлоу, а решения «откатываем» и «выкатываем» остаются за людьми.</span></p>
         <div class="spec">
           <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-focus" xlink:href="#i-user-focus"></use></svg> Роль</span><p>Помощник дежурного и команды сервиса: собирает картину инцидента и сам готовит исправление бага.</p></div>
-          <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg> Цель и критерий успеха</span><p>Сервис восстановлен откатом за минуты, баг исправлен за часы, а не за дни. Успех — PR с исправлением и тестом, который воспроизводит баг, проходит тесты и ревью с первого раза; после выкатки ошибки ниже порога.</p></div>
+          <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-target" xlink:href="#i-target"></use></svg> Цель и критерий успеха</span><p>Сервис восстановлен откатом за минуты, баг исправлен за часы, а не за дни. Успех — пул‑реквест с исправлением и тестом, который воспроизводит баг, проходит тесты и ревью с первого раза; после выкатки ошибки ниже порога.</p></div>
           <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> Входные данные</span><p>Алерт мониторинга или баг‑репорт, логи и метрики, журнал релизов и изменений, репозиторий с тестами, прошлые инциденты.</p></div>
-          <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Ожидаемый результат</span><p>Сводка инцидента для дежурного, откат по его решению и PR с исправлением и тестом; выкатывает разработчик.</p></div>
+          <div class="rv-item"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-seal-check" xlink:href="#i-seal-check"></use></svg> Ожидаемый результат</span><p>Сводка инцидента для дежурного, откат по его решению и пул‑реквест с исправлением и тестом; выкатывает разработчик.</p></div>
         </div>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg>Контекст: какие данные ему нужны</h4>
         <ul class="ctx rv-item">
@@ -2095,22 +2103,24 @@
           <li><b>Похожие инциденты</b><code>search_incidents(signature, limit=5)</code><span>причина и способ закрытия</span></li>
           <li><b>Откатить релиз</b><code>rollback(service, to_version)</code><span>только после подтверждения дежурного</span></li>
           <li><b>Искать в коде</b><code>search_code(repo, query)</code><span>файлы и строки — агенту</span></li>
-          <li><b>Прогнать тесты</b><code>run_tests(branch, tests[])</code><span>в песочнице, без доступа к продакшену</span></li>
-          <li><b>Открыть PR</b><code>create_pull_request(branch, title, body)</code><span>исправление с тестом, который воспроизводит баг</span></li>
+          <li><b>Изменить код в ветке</b><code>commit_changes(branch, files[], message)</code><span>правка файлов только в ветке fix/* — агенту</span></li>
+          <li><b>Прогнать тесты</b><code>run_tests(branch, tests[])</code><span>в песочнице, без доступа к рабочей среде</span></li>
+          <li><b>Открыть пул‑реквест</b><code>create_pull_request(branch, title, body)</code><span>исправление с тестом, который воспроизводит баг</span></li>
           <li><b>Выкатить</b><code>deploy(service, version)</code><span>только после «выкатываем» разработчика</span></li>
-          <li><b>Проверить метрики</b><code>get_metrics(service, metric, minutes=15)</code><span>доля ошибок после выкатки — для проверки порога</span></li>
+          <li><b>Проверить метрики</b><code>get_metrics(service, metric, minutes=15)</code><span>доля ошибок после отката и после выкатки — для проверки порога</span></li>
         </ul>
-        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: свой контекст и набор инструментов</h4>
+        <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-robot" xlink:href="#i-robot"></use></svg>Агент: контекст и набор инструментов</h4>
         <div class="auto agent-box rv-item">
-          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> Вход — контекст</span><ul><li>сводка инцидента и логи</li><li>изменения релиза</li><li>похожие инциденты</li></ul></div>
-          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg> Инструменты</span><ul><li><code>get_logs</code></li><li><code>search_code</code></li><li><code>run_tests</code></li><li><code>create_pull_request</code></li></ul></div>
-          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Лимит и выход</span><ul><li>до 5 итераций, только песочница</li><li>PR с тестом, который воспроизводит баг, и исправлением — или «не воспроизводится» с собранными данными</li></ul></div>
+          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-database" xlink:href="#i-database"></use></svg> Вход — контекст</span><ul><li>сводка инцидента и логи</li><li>изменения релиза</li><li>похожие инциденты</li><li>замечания ревью и упавшие проверки</li></ul></div>
+          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-plugs" xlink:href="#i-plugs"></use></svg> Инструменты</span><ul><li><code>get_logs</code></li><li><code>search_code</code></li><li><code>commit_changes</code></li><li><code>run_tests</code></li><li><code>create_pull_request</code></li></ul></div>
+          <div><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Лимит и выход</span><ul><li>до 5 итераций, только песочница</li><li>пул‑реквест с тестом, который воспроизводит баг, и исправлением — или «не воспроизводится» либо «нужно архитектурное решение» с собранными данными</li></ul></div>
         </div>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-hard-drives" xlink:href="#i-hard-drives"></use></svg>Состояние: что он должен помнить между шагами</h4>
         <ul class="state rv-item">
           <li><code>incident_id, signature</code>какой инцидент разбираем</li>
           <li><code>evidence</code>логи, метрики и релизы — со ссылками</li>
-          <li><code>branch, pr_url</code>ветка и PR с исправлением</li>
+          <li><code>branch, pr_url</code>ветка и пул‑реквест с исправлением</li>
+          <li><code>review_comments</code>замечания разработчика к пул‑реквесту и упавшие проверки</li>
           <li><code>iteration, test_runs</code>итерации агента и прогоны тестов — лимит 5</li>
           <li><code>awaiting</code>ждём решения дежурного или ревью разработчика</li>
         </ul>
@@ -2118,14 +2128,14 @@
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-shield-check" xlink:href="#i-shield-check"></use></svg>Где проходят границы его автономности</h4>
         <div class="auto rv-item">
           <div class="a-self"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> Решает сам</span><ul><li>склеивает дубли и собирает логи, релизы и похожие инциденты</li><li>оценивает критичность и пишет сводку</li><li>ищет причину в коде, пишет тест, который воспроизводит баг, и исправление — в отдельной ветке</li></ul></div>
-          <div class="a-prop"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-chats-circle" xlink:href="#i-chats-circle"></use></svg> Только предлагает</span><ul><li>откат — дежурному</li><li>PR с исправлением — разработчику на ревью</li></ul></div>
+          <div class="a-prop"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-chats-circle" xlink:href="#i-chats-circle"></use></svg> Только предлагает</span><ul><li>откат — дежурному</li><li>пул‑реквест с исправлением — разработчику на ревью</li></ul></div>
           <div class="a-conf"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user" xlink:href="#i-user"></use></svg> После подтверждения</span><ul><li>откат релиза — только по решению дежурного</li><li>выкатка исправления — только после «выкатываем» разработчика</li></ul></div>
         </div>
-        <p class="forbid rv-item"><svg class="ic" aria-hidden="true"><use href="#i-prohibit" xlink:href="#i-prohibit"></use></svg><span><b>Запрещено:</b> мёржить и выкатывать самому, менять конфигурацию и права доступа, работать с продакшеном вне песочницы.</span></p>
+        <p class="forbid rv-item"><svg class="ic" aria-hidden="true"><use href="#i-prohibit" xlink:href="#i-prohibit"></use></svg><span><b>Запрещено:</b> вливать изменения в основную ветку и выкатывать самому, менять настройки рабочей среды и права доступа, выходить из песочницы. Код и настройки в репозитории — только через пул‑реквест.</span></p>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg>Когда воркфлоу завершает работу и когда передаёт задачу человеку</h4>
         <div class="finish rv-item">
-          <div class="a-done"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Завершает работу, когда</span><ul><li>разработчик принял PR и выкатил исправление</li><li>метрики после выкатки проверены: ошибки ниже порога</li></ul></div>
-          <div class="a-hand"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-switch" xlink:href="#i-user-switch"></use></svg> Передаёт человеку, когда</span><ul><li>пять итераций без зелёных тестов</li><li>после выкатки ошибки не ушли ниже порога</li><li>исправление требует архитектурного решения</li></ul></div>
+          <div class="a-done"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-flag-checkered" xlink:href="#i-flag-checkered"></use></svg> Завершает работу, когда</span><ul><li>разработчик принял пул‑реквест и выкатил исправление</li><li>метрики после выкатки проверены: ошибки ниже порога</li></ul></div>
+          <div class="a-hand"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-user-switch" xlink:href="#i-user-switch"></use></svg> Передаёт человеку, когда</span><ul><li>пять итераций без зелёных тестов</li><li>после отката ошибки не ушли ниже порога</li><li>после выкатки ошибки не ушли ниже порога</li><li>исправление требует архитектурного решения</li></ul></div>
         </div>
         <p class="json-cap rv-item"><svg class="ic" aria-hidden="true"><use href="#i-brackets-curly" xlink:href="#i-brackets-curly"></use></svg> В каком формате возвращает результат — структурированный вывод</p>
         <pre class="code rv-item">{
@@ -2144,10 +2154,10 @@
 }</pre>
         <h4 class="rv-item"><svg class="ic" aria-hidden="true"><use href="#i-flask" xlink:href="#i-flask"></use></svg>Проверка на четырёх сценариях</h4>
         <div class="tests">
-          <article class="s-ok rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> Обычный</span><p><b>Вход:</b> Рост ошибок 5xx через две минуты после релиза.</p><p><b>Ожидаем:</b> логи, релиз и похожие инциденты собраны параллельно, критичность «высокая», дежурный откатывает. Агент находит причину в коде, пишет тест и исправление, тесты зелёные; разработчик выкатывает, get_metrics показывает ошибки ниже порога.</p><code class="case-path">алерт → дубли → логи ∥ релиз ∥ инциденты → критичность → сводка → дежурный: откат → агент: тест, исправление → тесты ✓ → выкатываем → метрики ✓ → Готово</code></article>
+          <article class="s-ok rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> Обычный</span><p><b>Вход:</b> Рост ошибок 5xx через две минуты после релиза.</p><p><b>Ожидаем:</b> логи, релиз и похожие инциденты собраны параллельно, критичность «высокая», дежурный откатывает, ошибки ниже порога. Агент находит причину в коде, пишет тест и исправление, тесты зелёные; разработчик выкатывает, get_metrics показывает ошибки ниже порога.</p><code class="case-path">алерт → дубли → логи ∥ релиз ∥ инциденты → критичность → сводка → дежурный: откат → ошибки ниже порога → агент: тест, исправление → тесты ✓ → выкатываем → метрики ✓ → Готово</code></article>
           <article class="s-amb rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-question" xlink:href="#i-question"></use></svg> Неоднозначный</span><p><b>Вход:</b> Ошибки растут, но релиза не было — зато был всплеск трафика.</p><p><b>Ожидаем:</b> агент не натягивает причину на релиз: проверяет обе гипотезы тестами и чинит ту, что воспроизводит сбой. Дежурный не откатывает.</p><code class="case-path">сбор данных → сводка → дежурный: без отката → агент: гипотезы ×2 → тест воспроизвёл одну → исправление → тесты ✓ → разработчик</code></article>
-          <article class="s-miss rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-puzzle-piece" xlink:href="#i-puzzle-piece"></use></svg> С нехваткой данных</span><p><b>Вход:</b> Логи за нужный период ещё не пришли — сервис пишет их с задержкой.</p><p><b>Ожидаем:</b> агент добирает логи за другой период и пробует воспроизвести баг по метрикам; после пяти итераций без воспроизведения — «Передано человеку» с тем, что успел собрать.</p><code class="case-path">логи ∅ → агент: логи за другой период, метрики ×5 → Передано человеку</code></article>
-          <article class="s-err rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-cloud-warning" xlink:href="#i-cloud-warning"></use></svg> С ошибкой внешнего сервиса</span><p><b>Вход:</b> Прогон тестов упал по таймауту раннера.</p><p><b>Ожидаем:</b> это сбой инфраструктуры, а не кода: повтор прогона; второй таймаут — задача команде сервиса, PR остаётся открытым. Код агент не трогает.</p><code class="case-path">агент: исправление → тесты ✗ таймаут ×2 → Передано человеку</code></article>
+          <article class="s-miss rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-puzzle-piece" xlink:href="#i-puzzle-piece"></use></svg> С нехваткой данных</span><p><b>Вход:</b> Логи за нужный период ещё не пришли — сервис пишет их с задержкой.</p><p><b>Ожидаем:</b> агент добирает логи за другой период и пробует воспроизвести баг тестами; после пяти итераций без воспроизведения — «Передано человеку» с тем, что успел собрать.</p><code class="case-path">логи ∅ → агент: логи за другой период, тесты ×5 → Передано человеку</code></article>
+          <article class="s-err rv-item"><span class="tt"><svg class="ic" aria-hidden="true"><use href="#i-cloud-warning" xlink:href="#i-cloud-warning"></use></svg> С ошибкой внешнего сервиса</span><p><b>Вход:</b> Прогон тестов упал по таймауту стенда сборки.</p><p><b>Ожидаем:</b> это сбой инфраструктуры, а не кода: повтор прогона; второй таймаут — задача команде сервиса, пул‑реквест остаётся открытым. Код агент не трогает.</p><code class="case-path">агент: исправление → тесты ✗ таймаут ×2 → Передано человеку</code></article>
         </div>
         <div class="case-nav rv-item">
           <button class="prev" type="button" data-go="design"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left" xlink:href="#i-arrow-left"></use></svg> Дизайн</button>
@@ -2174,7 +2184,7 @@
         </li>
         <li class="rv-item">
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-tree-structure" xlink:href="#i-tree-structure"></use></svg></span>
-          <div><b>2. Промт 1 → граф навыков</b><span>Он же воркфлоу: у каждого шага — чем он выполняется: код, человек, ИИ‑операция или ИИ‑агент. У ИИ‑шагов — контекст, у агента ещё и инструменты.</span></div>
+          <div><b>2. Промт 1 → граф навыков</b><span>Он же воркфлоу. У каждого шага указано, чем он выполняется: код (правило или инструмент), человек, ИИ‑операция или ИИ‑агент. У ИИ‑шагов — контекст, у агента ещё и инструменты.</span></div>
         </li>
         <li class="rv-item">
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-code" xlink:href="#i-code"></use></svg></span>
@@ -2182,11 +2192,11 @@
         </li>
         <li class="rv-item">
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-sparkle" xlink:href="#i-sparkle"></use></svg></span>
-          <div><b>4. Промт 2 → промты</b><span>Модель пишет их сама по графу: для каждой ИИ‑операции — промт, JSON‑схема ответа и примеры; для агента — ещё инструменты и лимит.</span></div>
+          <div><b>4. Промт 2 → промты</b><span>Модель пишет их сама по графу: для каждой ИИ‑операции — промт, JSON‑схема ответа и примеры; для агента — ещё инструменты и лимит; плюс состояние, завершение и формат результата.</span></div>
         </li>
         <li class="rv-item">
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-flask" xlink:href="#i-flask"></use></svg></span>
-          <div><b>5. Промт 3 → тесты</b><span>Тесты каждого ИИ‑шага на эталонных примерах и четыре сквозных сценария с маршрутом, инструментами и запрещёнными действиями.</span></div>
+          <div><b>5. Промт 3 → тесты</b><span>Тесты каждого ИИ‑шага на эталонных примерах и сквозные сценарии четырёх типов — по два на тип и ещё один с инъекцией промта — с маршрутом, инструментами и запрещёнными действиями.</span></div>
         </li>
         <li class="rv-item">
           <span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-cube" xlink:href="#i-cube"></use></svg></span>
@@ -2207,12 +2217,13 @@
 - человек — цена ошибки высока, источники противоречат друг другу или нужна ответственность;
 - ИИ-операция — нужен смысл, и задачу решает один вызов модели: извлечение, классификация, суммаризация, генерация, выбор решения или планирование;
 - ИИ-агент — набор возможных действий известен, а их порядок и число зависят от ответа человека или от найденного: переписка с клиентом или кандидатом, разговор в чате, правка макета, исправление бага. Если порядок шагов можно нарисовать до запуска — это воркфлоу, а не агент.
-У ИИ-операции и у агента одинаково есть контекст — входные данные для модели. Агент отличается тем, что у него есть ещё набор инструментов, которые он вызывает сам, и лимит итераций.
+У ИИ-операции и у агента одинаково есть контекст — входные данные для модели. Агент отличается тем, что у него есть ещё набор инструментов — какой вызвать и с какими параметрами, модель выбирает сама, а вызов выполняет среда исполнения, — и лимит итераций.
+Участник «ИИ-агент» во входной схеме TO-BE — только пометка, что шаг делает ИИ. Способ исполнения каждого шага выбирай заново по этому разделу — чаще всего это ИИ-операция внутри воркфлоу.
 
 2. Структура ответа
 1) Спецификация — роль, цель и критерий успеха, входные данные с системами, ожидаемый результат; по одной строке.
 2) Граф — Mermaid-код отдельным блоком, без пояснений внутри: его целиком вставляют в окно на странице.
-3) Узлы — таблица: | ID | Навык | Чем выполняется | Контекст: данные и источник | Инструменты агента |. Контекст — у ИИ-операций и агентов: минимально достаточный набор данных, а не всё подряд. Инструменты — только у агентов: узкие функции вроде «написать клиенту» или «найти в регламенте», а не «управлять CRM».
+3) Узлы — таблица: | ID | Навык | Чем выполняется | Контекст: данные и источник | Инструменты агента |. Контекст — у ИИ-операций и агентов: минимально достаточный набор данных, а не всё подряд. У узла «инструмент: …» в колонке «Чем выполняется» — одна узкая функция с параметрами, например find_customer(phone, email): её вызывает код воркфлоу. В колонке «Инструменты агента» — набор таких функций у агента: «написать клиенту», «найти в регламенте», а не «управлять CRM».
 4) Границы — что делается автоматически, что только предлагается, что — после подтверждения человека, что запрещено; когда работа останавливается и уходит человеку.
 
 3. Узлы графа
@@ -2220,7 +2231,7 @@
 - Первый узел — триггер в форме ([...]): что запускает воркфлоу — событие, расписание или запрос.
 - Навык — прямоугольник [...]. Название — глагол и объект: «Извлечь требования», «Найти похожие кейсы». Не статусы и не роли.
 - Решение — ромб {...} с вопросом: «Данных хватает?», «Лимит кругов не превышен?».
-- Агент — узел в форме [[...]]: "&lt;b&gt;Уточнить у клиента&lt;/b&gt;&lt;br/&gt;агент: почта, CRM&lt;br/&gt;до 2 кругов". Внутрь не раскладывай и петлю на себя не рисуй — порядок шагов агент выбирает сам. Выходы агента подпиши по полю его вывода, например --&gt;|ответы получены| и --&gt;|2 круга без ответа|; один из них всегда ведёт в «Передано человеку».
+- Агент — узел в форме [[...]]: "&lt;b&gt;Уточнить у клиента&lt;/b&gt;&lt;br/&gt;агент: почта, CRM&lt;br/&gt;до 2 кругов". Внутрь не раскладывай и петлю на себя не рисуй — порядок шагов агент выбирает сам. Выходы агента подпиши по полю его вывода, например --&gt;|ответы получены| и --&gt;|2 круга без ясности|; выход по лимиту всегда ведёт в «Передано человеку».
 - Две финальные точки в форме ([...]): «Готово» и «Передано человеку».
 - Всего 9-16 узлов. Больше — объедини мелкие навыки; меньше — разложи крупные.
 
@@ -2229,7 +2240,7 @@
 - ИИ: операция — извлечение, классификация, суммаризация, генерация, выбор решения или планирование;
 - инструмент: система;
 - человек;
-- агент: его инструменты и лимит итераций.
+- агент: его инструменты; лимит итераций — отдельной последней строкой («до 2 кругов»).
 Формат подписи навыка: "&lt;b&gt;Название навыка&lt;/b&gt;&lt;br/&gt;ИИ: извлечение"
 Формат подписи решения: "Вопрос?&lt;br/&gt;правило"
 Не ставь ИИ там, где справится правило: сравнение чисел, обязательные поля, лимиты и пороги — это правило.
@@ -2237,9 +2248,9 @@
 5. Связи
 - Связь — допустимый переход между навыками, а не передача документа между людьми.
 - У каждого выхода ромба есть подпись: --&gt;|да|, --&gt;|нет|, --&gt;|правки|.
-- Цикл уточнения: если данных не хватает, покажи навык запроса уточнения и явную петлю назад к навыку, который перепроверяет данные. У петли есть лимит — отдельный выход вроде «2 круга без ответа» в «Передано человеку».
+- Цикл уточнения: если данных не хватает, покажи навык «Запросить недостающее» (ИИ: генерация — вопросы одним списком уходят человеку) и явную петлю назад к навыку, который перепроверяет данные. У петли есть лимит — отдельный выход вроде «2 круга без ясности» в «Передано человеку». Агентом уточнение делай, только если модель сама переписывается с клиентом или кандидатом и следующий вопрос выбирает по его ответу: тогда лимит стоит в подписи агента, а выход по лимиту ведёт к человеку.
 - Независимые шаги (например, сбор данных из трёх систем) покажи разветвлением A --&gt; B &amp; C &amp; D и объединением B &amp; C &amp; D --&gt; E.
-- Человек в контуре: там, где цена ошибки высока или нужна ответственность, поставь узел человека ДО необратимого действия (отправка клиенту, деньги, запуск, откат).
+- Человек в контуре: там, где цена ошибки высока или нужна ответственность, поставь узел человека ДО необратимого действия: отправка клиенту документа или обязательства (КП, цена, сроки, отказ), деньги, запуск, откат. Если агент сам переписывается с клиентом, в границах перечисли, о чём ему можно и нельзя говорить, и дай выход к человеку, когда клиент поднимает запретную тему.
 - После необратимого действия проверь результат: правило или инструмент убеждается, что система действительно выполнила операцию.
 - Из каждого узла есть путь к «Готово» или «Передано человеку»; тупиков нет.
 
@@ -2260,7 +2271,7 @@ classDef agent fill:#A21CAF,stroke:#F0ABFC,color:#fff,stroke-width:2px
 - у каждого узла, кроме триггера и финальных точек, есть способ исполнения и класс;
 - у каждого ИИ-узла названа операция, у каждого ИИ-узла и агента в таблице есть контекст;
 - агент стоит только там, где следующий шаг зависит от ответа или от найденного, и у него есть инструменты и лимит;
-- есть хотя бы один ромб, цикл уточнения с лимитом и узел человека;
+- есть хотя бы один ромб и узел человека; цикл уточнения с лимитом — явной петлёй назад или внутри агента;
 - есть обе финальные точки, и к каждой ведёт путь;
 - код разбирается без ошибок.
 
@@ -2280,7 +2291,7 @@ flowchart TD
   T --&gt; A1 --&gt; R1
   R1 --&gt;|нет| AG1
   AG1 --&gt;|ответы получены| A1
-  AG1 --&gt;|2 круга без ответа| E2
+  AG1 --&gt;|2 круга без ясности| E2
   R1 --&gt;|да| I1 --&gt; A2 --&gt; H1
   H1 --&gt;|да| I2 --&gt; E1
   H1 --&gt;|нет| E2
@@ -2332,19 +2343,21 @@ flowchart TD
 - Выход — JSON с полем status, по которому граф выбирает выход агента.
 Агентов в графе нет — так и напиши и пропусти раздел.
 
-3. Состояние и завершение
+3. Состояние, завершение и формат результата
 Что воркфлоу хранит между шагами одного запуска: пройденные узлы, полученные данные, принятые решения, счётчики циклов, чего сейчас ждёт. Что сохранить в долговременную память и что забыть после завершения. Условие завершения, технические лимиты — итерации, вызовы инструментов, время и стоимость, — и что передаётся человеку при остановке.
+Формат результата воркфлоу — JSON-схема структурированного вывода, который читает следующий шаг: status (done | need_info | awaiting_approval | handoff), решение или результат, missing, next_action, handoff_reason, explanation. Покажи один заполненный пример.
 
 Правила:
 - Каждое правило в промте можно проверить на тестовом примере; без общих слов вроде «будь полезным» и «старайся».
 - Не меняй граф; если видишь в нём ошибку или противоречие с таблицей узлов, выпиши отдельно в конце.
 - Имена систем — только из входных данных.
+- Если граф в результате промта 1 и граф ниже расходятся, главный — граф ниже: его проверили в окне.
 
 Входные данные:
 
 1. Спецификация, таблица узлов и границы — результат промта 1:
 """
-СЮДА ВСТАВЬТЕ РЕЗУЛЬТАТ ПРОМТА 1
+СЮДА ВСТАВЬТЕ РЕЗУЛЬТАТ ПРОМТА 1 (код графа можно не вставлять — он ниже)
 """
 
 2. Граф навыков:
@@ -2389,13 +2402,15 @@ flowchart TD
 Оформи сценарии таблицей:
 | ID | Тип | Вход | Маршрут | Инструменты и параметры | Запрещено | Ожидаемый вывод | Проверка |
 
+Если граф в результате промта 1 и граф ниже расходятся, главный — граф ниже: его проверили в окне.
+
 После таблиц — метрики набора: доля пройденных тестов, соблюдение ограничений, стабильность структурированного вывода, успешность вызовов инструментов, качество передачи человеку. Этот же набор прогоняется после любого изменения модели, промта, контекста или инструментов — это регрессионное тестирование.
 
 Входные данные:
 
 1. Спецификация, таблица узлов и границы — результат промта 1:
 """
-СЮДА ВСТАВЬТЕ РЕЗУЛЬТАТ ПРОМТА 1
+СЮДА ВСТАВЬТЕ РЕЗУЛЬТАТ ПРОМТА 1 (код графа можно не вставлять — он ниже)
 """
 
 2. Граф навыков:
@@ -2441,9 +2456,8 @@ flowchart TD
         <p>На руках архитектура ИИ‑автоматизации, которая работает на платформе, а не только на бумаге.</p>
         <ul class="done-list">
           <li><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> есть роль, цель с критерием успеха, входные данные и результат</li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> у каждого шага выбран способ, агент — только там, где следующий шаг зависит от ответа или от найденного</li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> у каждого узла графа — способ исполнения, у ИИ‑узлов — операция</li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> у каждой ИИ‑операции и агента — промт, JSON‑схема ответа и примеры, у агента — ещё инструменты</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> у каждого узла графа — способ исполнения, у ИИ‑узлов — операция; агент — только там, где следующий шаг зависит от ответа или от найденного</li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> у каждой ИИ‑операции и агента — промт, JSON‑схема ответа и примеры, у агента — ещё инструменты и лимит</li>
           <li><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> расписаны контекст, инструменты с параметрами и состояние</li>
           <li><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> видно, что решается само, что только предлагается, что — после подтверждения</li>
           <li><svg class="ic" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg> заданы завершение, лимиты, передача человеку и формат результата</li>
@@ -2552,9 +2566,11 @@ const errTxt = document.getElementById('v-err-text');
 const levelEl= document.getElementById('v-level');
 const copyBtn= document.getElementById('v-copy');
 
-// Свой ключ черновика: граф агента не должен затирать схему процесса,
-// над которой человек работал в практике лекции 2.
-const SAVE_KEY = 'ait-agent-graph-draft';
+// Свой ключ черновика: граф не должен затирать схему процесса, над которой
+// человек работал в практике лекции 2. Ключ сменён с FR-SITE79: под старым
+// лежали примеры прежних графов (их сохраняло переключение плашек), и после
+// выкладки они всплыли бы у вернувшихся как «свой» граф.
+const SAVE_KEY = 'ait-skill-graph-draft';
 let current = 'consult', lastError = '';
 
 /* ── Копирование в буфер ────────────────────────────────────────────────── */
@@ -2588,7 +2604,7 @@ document.querySelectorAll('.copy-code[data-copy]').forEach(btn => {
   btn.addEventListener('click', () => {
     const tpl = document.getElementById(btn.dataset.copy);
     const code = (input.value || '').trim();
-    const text = (tpl ? tpl.textContent : '').replace('СЮДА ВСТАВЬТЕ КОД ГРАФА ИЗ ОКНА ВЫШЕ', code);
+    const text = (tpl ? tpl.textContent : '').replace('СЮДА ВСТАВЬТЕ КОД ГРАФА ИЗ ОКНА ВЫШЕ', () => code);
     copyText(text, btn);
   });
 });
@@ -2794,7 +2810,8 @@ function select(key){
   current = key;
   showCase(key);
   input.value = SRC.get(key) || '';
-  save();
+  // Пример — не черновик: сохраняем только правку руками (обработчик input)
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
   // Библиотека не загрузилась — сообщение об этом не прячем при смене агента:
   // карточка и код переключаются, а окно продолжает честно говорить, почему
   // схемы нет.
@@ -3013,7 +3030,7 @@ try {
   // вставили; стиль встроен в подпись и доезжает до выгрузки SVG/PNG.
   function prettify(code){
     if(!/^\s*(flowchart|graph)\b/.test(code)) return code;
-    return code.replace(/<br\/>((?:ИИ|инструмент|правило|человек)[^"<]*)"/g,
+    return code.replace(/<br\/>((?:ИИ|инструмент|правило|человек|агент)[^"]*)"/g,
       "<br/><span style='font-size:.9em;opacity:.86'>$1</span>\"");
   }
 

@@ -97,7 +97,7 @@ for n, c in enumerate(CASES):
     # видно, какие функции вызывает он сам, а какие — воркфлоу.
     ag = c.get("agent")
     if ag:
-        h.append('        <h4 class="rv-item">%sАгент: свой контекст и набор инструментов</h4>' % I("robot"))
+        h.append('        <h4 class="rv-item">%sАгент: контекст и набор инструментов</h4>' % I("robot"))
         h.append('        <div class="auto agent-box rv-item">')
         h.append('          <div><span class="lbl">%s Вход — контекст</span><ul>%s</ul></div>' % (I("database"), lis(ag["inp"])))
         h.append('          <div><span class="lbl">%s Инструменты</span><ul>%s</ul></div>'

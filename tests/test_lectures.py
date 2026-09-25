@@ -1216,7 +1216,9 @@ def test_practice3_workflow_first_agent_in_one_zone():
     with_agent = sorted(k for k, v in srcs.items() if re.search(r"^  class [A-Z0-9,]+ agent$", v, re.M))
     assert with_agent == ["callcenter", "consult", "design", "hr", "software"], with_agent
     for k in with_agent:
-        assert len(re.findall(r"^  AG\d+\[\[", srcs[k], re.M)) == 1, "%s: агент — ровно один узел [[…]]" % k
+        ids = re.findall(r"^  class ([A-Z0-9,]+) agent$", srcs[k], re.M)
+        assert len(ids) == 1 and "," not in ids[0], "%s: класс agent — у одного узла" % k
+        assert srcs[k].count("[[") == 1, "%s: агент — ровно один узел [[…]]" % k
     assert "[[" not in srcs["marketing"], "запуск кампании обходится без агента"
     for k, v in srcs.items():
         assert "classDef agent" in v, "%s: у графа пятый класс узлов — agent" % k
@@ -1243,6 +1245,20 @@ def test_practice3_workflow_first_agent_in_one_zone():
     for word in ("ИИ-операции", "Агенты", "JSON-схема", "Примеры", "Инструменты", "лимит итераций"):
         assert word in p2, "промт 2 (промты ИИ-операций и агентов): «%s»" % word
     assert "ОДНОГО самого ценного" not in html
+    # Типографика — только в видимом тексте: промты, код и графы копируют как есть
+    for tag, blk in re.findall(r"(?is)<(pre|code|textarea)\b[^>]*>(.*?)</\1>", html):
+        assert "\u00a0" not in blk and "\u2011" not in blk, "в <%s> попал неразрывный символ" % tag
+    # «Копировать с графом» — у промтов 2 и 3, плейсхолдер графа в каждом ровно один
+    for pid in ("prompt-prompts", "prompt-tests"):
+        blk = re.search(r'<pre class="code" id="%s">(.*?)</pre>' % pid, html, re.S).group(1)
+        assert blk.count("СЮДА ВСТАВЬТЕ КОД ГРАФА ИЗ ОКНА ВЫШЕ") == 1, pid
+        assert 'class="copy copy-code" type="button" data-copy="%s"' % pid in html, pid
+    assert "СЮДА ВСТАВЬТЕ КОД ГРАФА ИЗ ОКНА ВЫШЕ" not in p1
+    # Переключение плашек не пишет пример в черновик; старый ключ с примерами
+    # прежних графов не читается (иначе у вернувшихся всплыл бы старый граф)
+    assert "ait-agent-graph-draft" not in html
+    sel = re.search(r"function select\(key\)\{(.*?)\n\}", html, re.S).group(1)
+    assert "save()" not in sel, "select() не сохраняет пример как черновик"
     # Зоны агента практики 3 есть в TO-BE практики 2 («Чем закрывать») — цепочка сходится
     p2 = norm(open(os.path.join(_ROOT, "automation/2/practice/index.html"), encoding="utf-8").read())
     fixes = " ".join(re.findall(r'<ul class="fix">(.*?)</ul>', p2, re.S))
