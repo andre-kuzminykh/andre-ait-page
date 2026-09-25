@@ -1462,13 +1462,16 @@ def _css_classes(css):
     return out
 
 
-def test_lecture_css_has_every_variant_class():
+def test_lecture_css_has_every_markup_class():
     """Слайд 37 лекции 3 («Полная архитектура») на сайте стоял столбиком: класс
     md:grid-cols-[1.035fr_auto_1fr] появился в разметке, а assets/lecture-3.css
     не пересобрали, и правила двух колонок в нём не было (скрин владельца
-    «на вебе как-то не очень выглядит»). Каждый класс с вариантом (md:, hover:)
-    или произвольным значением ([…]) обязан быть в CSS своей лекции — после
-    правки разметки CSS пересобирается: python3 tools/build_lecture_css.py N."""
+    «на вебе как-то не очень выглядит»). То же ловится и на простом классе:
+    z-10 у центра круга лекции 4 молча ничего не делал. Каждый класс разметки
+    обязан иметь правило — в CSS своей лекции (у чистой страницы — во
+    встроенном) или в её собственных стилях. После правки разметки CSS
+    пересобирается: python3 tools/build_lecture_css.py N."""
+    hooks = {"js-keep"}          # метка для скрипта подгонки, стилей у неё нет
     pages = [rel for rel, _ in _pages()] + ["automation/5/v2/index.html", "automation/3/clean/index.html"]
     for rel in pages:
         path = os.path.join(_ROOT, rel)
@@ -1476,15 +1479,12 @@ def test_lecture_css_has_every_variant_class():
             continue
         html = open(path, encoding="utf-8").read()
         link = re.search(r'<link rel="stylesheet" href="/(assets/lecture-[^"]+\.css)">', html)
-        if link:
-            css = open(os.path.join(_ROOT, link.group(1)), encoding="utf-8").read()
-        else:
-            css = _block(html, "style", "lecture-css-inline")
-        have = _css_classes(css)
-        toks = {t for c in _class_attrs(html) for t in c.split() if "[" in t or ":" in t}
+        css = open(os.path.join(_ROOT, link.group(1)), encoding="utf-8").read() if link else ""
+        have = _css_classes(css) | _css_classes("\n".join(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S)))
+        toks = {t for c in _class_attrs(html) for t in c.split()
+                if t not in hooks and t != "ph" and not t.startswith("ph-")}
         miss = sorted(t for t in toks if t not in have)
         assert not miss, "%s: в CSS нет правил для %s — пересоберите CSS лекции" % (rel, miss[:8])
-
 
 if __name__ == "__main__":
     failed = 0

@@ -2223,7 +2223,9 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                  встают в столбик, иначе высота удваивается и кегль падает вдвое -->
             <div class="flex flex-row items-center gap-2 md:gap-6 w-full">
 
-                <!-- Кольцо цикла: мысль, действие и наблюдение идут по кругу вокруг агента -->
+                <!-- Кольцо цикла: мысль, действие и наблюдение идут по кругу вокруг агента.
+                     Центр — z-10: на телефоне низ «Мысли» стоит на его ободе, и контур горящей
+                     карточки ложился поверх круга (FR-SITE74) -->
                 <div class="w-[50%] md:w-[46%] shrink-0 flex flex-col">
 
                     <!-- Обёртка держит диаметр: FR-LECTURE-24 задаёт самому aspect-square
@@ -2232,7 +2234,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     <div class="relative w-full aspect-square mx-auto">
                         <div class="absolute inset-[15%] rounded-full border-2 border-dashed border-solar/40 a-orbit"></div>
 
-                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center a-pulse">
+                        <div class="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center a-pulse">
                             <i class="ph-fill ph-robot text-xl md:text-4xl text-solar"></i>
                             <span class="text-[10px] md:text-sm font-black text-white leading-none mt-0.5">агент</span>
                         </div>
