@@ -57,14 +57,21 @@ for n, c in enumerate(CASES):
     next_c = CASES[(n + 1) % len(CASES)]
     h = []
     h.append('      <div class="case-info" id="info-%s"%s>' % (c["key"], "" if n == 0 else " hidden"))
+    # Значок и строка «почему так» (FR-SITE79): у ИИ-воркфлоу — схема потока,
+    # у воркфлоу с зоной агента — робот. Строка отвечает на вопрос владельца
+    # «а где здесь агенты?»: пяти процессам хватает воркфлоу, одному нужен агент.
+    agent = c["kind"] == "agent"
     h.append('        <div class="agent-head rv-item">')
-    h.append('          <span class="agent-ico">%s</span>' % I("robot"))
+    h.append('          <span class="agent-ico%s">%s</span>' % (" is-agent" if agent else "", I("robot" if agent else "flow-arrow")))
     h.append('          <div>')
     h.append('            <span class="kicker">%s</span>' % esc(c["kicker"]))
     h.append('            <h3>%s</h3>' % esc(c["name"]))
     h.append('            <p class="from">%s</p>' % esc(c["frm"]))
     h.append('          </div>')
     h.append('        </div>')
+    h.append('        <p class="verdict%s rv-item">%s<span><b>%s</b> %s</span></p>'
+             % (" is-agent" if agent else "", I("robot" if agent else "flow-arrow"),
+                "Воркфлоу с агентом." if agent else "ИИ-воркфлоу.", esc(c["why"])))
     h.append('        <div class="spec">')
     for ic, lbl, key in (("user-focus", "Роль", "role"), ("target", "Цель и критерий успеха", "goal"),
                          ("database", "Входные данные", "inp"), ("seal-check", "Ожидаемый результат", "out")):
@@ -72,8 +79,9 @@ for n, c in enumerate(CASES):
     h.append('        </div>')
     # Заголовки карточки — фразами из текста задания владельца: «какие данные
     # ему нужны, что он должен помнить между шагами и где проходят границы
-    # его автономности», «когда агент завершает работу, когда передаёт задачу
-    # человеку и в каком формате возвращает результат».
+    # его автономности», «когда … завершает работу, когда передаёт задачу
+    # человеку и в каком формате возвращает результат». «Агент» там заменён на
+    # «воркфлоу»: даже в разборе инцидента агент — лишь один узел воркфлоу.
     h.append('        <h4 class="rv-item">%sКонтекст: какие данные ему нужны</h4>' % I("database"))
     h.append('        <ul class="ctx rv-item">')
     for what, src in c["ctx"]:
@@ -84,6 +92,18 @@ for n, c in enumerate(CASES):
     for nm, sig, what in c["tools"]:
         h.append('          <li><b>%s</b><code>%s</code><span>%s</span></li>' % (esc(nm), esc(sig), esc(what)))
     h.append('        </ul>')
+    # У агента свой контекст — входные данные, как у любого ИИ-шага, — и ещё
+    # свой набор инструментов (слова владельца, FR-SITE79): из общего списка
+    # видно, какие функции вызывает он сам, а какие — воркфлоу.
+    ag = c.get("agent")
+    if ag:
+        h.append('        <h4 class="rv-item">%sАгент: свой контекст и набор инструментов</h4>' % I("robot"))
+        h.append('        <div class="auto agent-box rv-item">')
+        h.append('          <div><span class="lbl">%s Вход — контекст</span><ul>%s</ul></div>' % (I("database"), lis(ag["inp"])))
+        h.append('          <div><span class="lbl">%s Инструменты</span><ul>%s</ul></div>'
+                 % (I("plugs"), "".join("<li><code>%s</code></li>" % esc(t) for t in ag["tools"])))
+        h.append('          <div><span class="lbl">%s Лимит и выход</span><ul>%s</ul></div>' % (I("flag-checkered"), lis(ag["out"])))
+        h.append('        </div>')
     h.append('        <h4 class="rv-item">%sСостояние: что он должен помнить между шагами</h4>' % I("hard-drives"))
     h.append('        <ul class="state rv-item">')
     for f, what in c["state"]:
@@ -97,7 +117,7 @@ for n, c in enumerate(CASES):
     h.append('          <div class="a-conf"><span class="lbl">%s После подтверждения</span><ul>%s</ul></div>' % (I("user"), lis(c["conf"])))
     h.append('        </div>')
     h.append('        <p class="forbid rv-item">%s<span><b>Запрещено:</b> %s</span></p>' % (I("prohibit"), esc(c["forbid"])))
-    h.append('        <h4 class="rv-item">%sКогда агент завершает работу и когда передаёт задачу человеку</h4>' % I("flag-checkered"))
+    h.append('        <h4 class="rv-item">%sКогда воркфлоу завершает работу и когда передаёт задачу человеку</h4>' % I("flag-checkered"))
     h.append('        <div class="finish rv-item">')
     h.append('          <div class="a-done"><span class="lbl">%s Завершает работу, когда</span><ul>%s</ul></div>' % (I("flag-checkered"), lis(c["done"])))
     h.append('          <div class="a-hand"><span class="lbl">%s Передаёт человеку, когда</span><ul>%s</ul></div>' % (I("user-switch"), lis(c["hand"])))
@@ -191,6 +211,20 @@ tpl, n_rv = re.subn(r'(?s)(<(ul|ol) class="(criteria|flow|pmap)"[^>]*>)(.*?)(</\
 assert n_rv == 3, n_rv
 
 # ── неразрывный дефис в видимом тексте тела (не в коде и не в промтах) ───
+NBSP = "\u00a0"
+
+
+def typo(t):
+    t = re.sub(r"(?<=[A-Za-zА-Яа-яЁё])-(?=[A-Za-zА-Яа-яЁё])", NBH, t)
+    # Тире не открывает строку: пробел перед ним неразрывный. В новых блоках
+    # FR-SITE79 строки начинались с «— ИИ-воркфлоу», «— системный промт».
+    t = t.replace(" — ", NBSP + "— ")
+    # «если — то» — одна формула: рвалась на «если —» и «то»
+    t = t.replace("«если" + NBSP + "— то»", "«если" + NBSP + "—" + NBSP + "то»")
+    # Однобуквенный предлог или союз не висит в конце строки («…нужен. У» / «каждой»)
+    return re.sub(r"(?<![A-Za-zА-Яа-яЁё0-9\u2011-])([АВИКОСУЯавикосуя]) (?=\S)", "\\1" + NBSP, t)
+
+
 head, body = tpl.split("<body>", 1)
 parts = re.split(r"(?is)(<(pre|textarea|script|style|code)\b.*?</\2>)", body)
 out = []
@@ -206,7 +240,7 @@ for idx, part in enumerate(parts):
     # и в конце части тоже текст: он примыкает к вырезанному <code>/<pre>.
     # Раньше он пропускался — «чек-лист» после <code>contract</code> в
     # карточке дизайна остался с обычным дефисом и мог разорваться.
-    out.append(re.sub(r"(^|>)([^<]*)(?=<|$)", lambda m: m.group(1) + re.sub(r"(?<=[A-Za-zА-Яа-яЁё])-(?=[A-Za-zА-Яа-яЁё])", NBH, m.group(2)), part))
+    out.append(re.sub(r"(^|>)([^<]*)(?=<|$)", lambda m: m.group(1) + typo(m.group(2)), part))
 body = "".join(out)
 tpl = head + "<body>" + body
 
