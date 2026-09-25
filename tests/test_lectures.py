@@ -175,10 +175,13 @@ def test_shared_blocks_identical():
     # portal-deck и lecture-chrome тоже: tools/sync_lecture_blocks.py разносит
     # их из лекции 1, и когда они разъехались (у 1–2 не было починки дёрганья
     # анимаций лекций 3–6), синхронизация молча откатывала свежие правки (FR-SITE73).
+    # lecture-anim и lecture-seq — анимации и очередь подсветки a-step (FR-SITE74):
+    # разъедутся — в одной лекции узлы горят по одному, в соседней снова парами.
     for block, tag in (("slide-polish", "style"), ("notes-panel-style", "style"),
                        ("notes-panel-script", "script"), ("radial-fig", "style"),
                        ("portal-fit", "script"), ("portal-deck", "style"),
-                       ("lecture-chrome", "style")):
+                       ("lecture-chrome", "style"), ("lecture-anim", "style"),
+                       ("lecture-seq", "script")):
         seen = {}
         for rel, html in _pages():
             m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, block, tag), html, re.S)
@@ -725,12 +728,13 @@ def _published_pages():
 
 
 def test_locked_modules_closed():
-    """Открыты модули 1, 2 и 3 (модуль 3 открыт владельцем, FR-SITE69). Модули 4, 5 и 6 выложены как превью по просьбе
-    владельца: он хочет смотреть колоду на живом сайте, пока записывает
-    озвучку. На дорожной карте они по-прежнему заперты и ниоткуда не связаны,
-    то есть попасть туда можно только прямой ссылкой, которую владелец даёт
-    сам. Модулей 7 и 8 в репозитории нет: по их адресам отдаётся 404, контент
-    недоступен даже прямой ссылкой. Архив контента — тег lectures-2-8-archive.
+    """Открыты модули 1, 2 и 3 (модуль 3 открыт владельцем, FR-SITE69).
+    Модули 4, 5 и 6 закрыты (FR-SITE77, «4, 5, 6 пока поставь заглушку, что
+    недоступны модули, как уже делал, чтобы никто не открыл»): их исходники
+    остаются в репозитории — из каркаса лекции 4 собирается лекция 3, общие
+    блоки сверяются тестами, — но деплой их на сайт не выкладывает, и по их
+    адресам, как у 7 и 8, отдаётся 404 «Модуль N ещё закрыт». Модулей 7 и 8 в
+    репозитории нет вовсе. Архив контента — тег lectures-2-8-archive.
     """
     for n in (1, 2, 3):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
@@ -738,6 +742,14 @@ def test_locked_modules_closed():
     for n in (7, 8):
         assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
             "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
+    wf = open(os.path.join(_ROOT, ".github/workflows/deploy-pages-manual.yml"), encoding="utf-8").read()
+    assert "path: ${{ runner.temp }}/site" in wf, "на сайт уходит весь репозиторий, закрытые модули в том числе"
+    for n in (4, 5, 6):
+        assert "--exclude=./automation/%d " % n in wf, "модуль %d закрыт: деплой не должен его выкладывать" % n
+    for n in (1, 2, 3):
+        assert "--exclude=./automation/%d " % n not in wf, "модуль %d открыт, а деплой его вырезает" % n
+    page404 = open(os.path.join(_ROOT, "404.html"), encoding="utf-8").read()
+    assert "/^[2-8]$/" in page404 and "ещё закрыт" in page404, "404 не говорит про закрытый модуль"
 
 
 def test_no_links_to_locked_modules():
@@ -745,9 +757,9 @@ def test_no_links_to_locked_modules():
     нет ссылок, которые упирались бы в 404.
 
     Модуль 3 открыт (FR-SITE69): ссылки на него с дорожной карты законны.
-    Модули 4, 5 и 6 выложены как превью (см. test_locked_modules_closed):
-    попасть туда можно только прямой ссылкой от владельца, и с дорожной карты,
-    входа в курс и остальных страниц на них по-прежнему не ведёт ничего.
+    Модули 4, 5 и 6 закрыты (FR-SITE77, см. test_locked_modules_closed): на
+    сайт они не выкладываются, и с дорожной карты, входа в курс и остальных
+    страниц на них не ведёт ничего.
     Собственные адреса внутри самих лекций 4-6 (og:url, ссылки на их же
     практику) под правило не попадают — это не путь с сайта, а их собственная
     разметка.
@@ -1338,6 +1350,150 @@ def test_text_never_blinks():
         p.feed(re.sub(r"<!--.*?-->", "", body, flags=re.S))
         assert not p.bad, "лекция %d: мигает текст %s" % (n, p.bad[:5])
 
+
+# ── FR-SITE74: очередь подсветки — строго по одному узлу ─────────────────
+
+def _block(html, tag, ident):
+    m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, ident, tag), html, re.S)
+    assert m, "нет блока %s#%s" % (tag, ident)
+    return m.group(1)
+
+
+def _class_attrs(html):
+    """class="…" разметки без комментариев и скриптов."""
+    body = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    body = re.sub(r"<script\b.*?</script>", "", body, flags=re.S)
+    return re.findall(r'\bclass="([^"]*)"', body)
+
+
+def test_step_queue_lights_one_node_at_a_time():
+    """Правка владельца по скрину «Среда исполнения»: «анимация вызовов иконок
+    почему-то по два вызывает, надо по одному по очереди». Причина — у a-step
+    было три фазы (a-step-2/-3) на пять-семь узлов: фазы повторялись, и узлы
+    горели парами. Теперь очередь ведёт скрипт lecture-seq: на активном слайде
+    горит один узел (is-lit), дальше — следующий по порядку разметки."""
+    for rel, html in list(_pages()) + [("automation/5/v2/index.html", open(
+            os.path.join(_ROOT, "automation/5/v2/index.html"), encoding="utf-8").read())]:
+        anim = _block(html, "style", "lecture-anim")
+        assert not re.search(r"\.a-step-\d", anim) and "@keyframes aStep" not in anim, \
+            "%s: у очереди остались фазы — узлы снова загорятся парами" % rel
+        assert ".a-step.is-lit" in anim, rel
+        assert ":has(.a-step) .a-glow" in anim and ":has(.a-step) .a-pulse" in anim, \
+            "%s: на слайде с очередью дыхание акцентов не остановлено — рядом с горящим узлом светится второй" % rel
+        seq = _block(html, "script", "lecture-seq")
+        for need in ("is-lit", "data-seq", "prefers-reduced-motion", "getClientRects", "setInterval", "fit-ready"):
+            assert need in seq, "%s: в очереди нет %s" % (rel, need)
+        for cls in _class_attrs(html):
+            toks = cls.split()
+            assert not any(re.fullmatch(r"a-step-\d+", t) for t in toks), \
+                "%s: класс фазы a-step-N ничего не значит — порядок задаёт разметка: %s" % (rel, cls[:80])
+            assert not ("a-step" in toks and "a-glow" in toks), \
+                "%s: узел очереди не дышит сам по себе — два ритма на одном узле: %s" % (rel, cls[:80])
+
+
+def test_step_queue_never_dims_words():
+    """Текст не мигает (канон владельца): у узла очереди со словами гаснет
+    только значок, а горящий обводится контуром. Прозрачность .42 разрешена
+    лишь узлу без слов и значку внутри узла со словами."""
+    anim = re.sub(r"/\*.*?\*/", "", _block(_l3(), "style", "lecture-anim"), flags=re.S)
+    rules = re.findall(r"([^{}]+)\{([^{}]*opacity:\s*\.42[^{}]*)\}", anim)
+    assert rules, "нет правила гашения узла очереди"
+    for sel, _ in rules:
+        for s in sel.split(","):
+            s = s.strip()
+            assert s.endswith('[data-seq="icon"]') or s.endswith('[data-seq="text"] i'), \
+                "гасится узел со словами: %s" % s
+
+
+def test_lecture3_queue_slides_follow_the_owner():
+    """Лекция 3. «Среда исполнения»: пилюля «часы или дни» — такой же узел
+    очереди (раньше дышала рядом с горящим кружком — «по два»); ярлык рамки
+    лежит поверх плашек (z-10) и не заходит на них (поле pt-7) — «оранжевый
+    контур должен перекрывать остальное». «Компоненты ИИ-платформы»: очередь
+    на самих карточках — контур обводит карточку, а не обёртку внутри.
+    «Инженерия циклов»: круг начинается с запуска."""
+    html = _l3()
+    s7 = html[html.index('id="slide-7"'):html.index('id="slide-8"')]
+    lab = re.search(r'<span class="([^"]*)">Среда исполнения</span>', s7).group(1).split()
+    assert {"absolute", "z-10", "-top-3.5"} <= set(lab), lab
+    box = re.search(r'<div class="(relative w-full mt-6[^"]*)">', s7).group(1).split()
+    assert "pt-7" in box and "pt-5" not in box, box
+    pill = re.search(r'<span class="([^"]*)"><i class="ph-fill ph-clock[^"]*"></i> часы или дни', s7).group(1).split()
+    assert "a-step" in pill and "a-glow" not in pill, pill
+    s8 = html[html.index('id="slide-8"'):html.index('id="slide-9"')]
+    cards = re.findall(r'<div class="absolute [^"]*bg-white border border-grayBase rounded-xl[^"]*a-step">', s8)
+    assert len(cards) == 5, "слайд 8: очередь — на пяти карточках спутников, а не на обёртках"
+    s36 = html[html.index('id="slide-36"'):html.index('id="slide-37"')]
+    order = re.findall(r'a-step">\s*<i class="ph-fill ph-[a-z-]+[^"]*"></i>\s*<p[^>]*>([^<]+)</p>', s36)
+    assert order[:4] == ["Запуск", "Оценка", "Анализ", "Улучшение"], order
+    # круг — целиком: узел вне очереди не гаснет и рядом с погасшими кажется
+    # горящим постоянно («Воркфлоу или агент», «LLM-функция или ИИ-агент»)
+    def queue(a, b):
+        s = html[html.index('id="slide-%d"' % a):html.index('id="slide-%d"' % b)]
+        return [re.sub(r"(?:<br>|\s)+", " ", t).strip() for t in re.findall(
+            r'a-step"[^>]*>\s*<i class="ph-fill ph-[a-z-]+[^"]*"></i>\s*<p[^>]*>(.*?)</p>', s)]
+    assert queue(4, 5)[0] == "Нет данных", queue(4, 5)
+    q9 = queue(9, 10)
+    assert q9[0] == "Заказы в CRM" and q9[-1] == "Решение принято", q9
+    q14 = queue(14, 15)
+    assert q14[:2] == ["Промт и контекст", "Модель"], q14
+    # «Наблюдаемость»: в очереди отладки плашки со словами, а не лупы по 12px
+    s39 = html[html.index('id="slide-39"'):html.index('id="slide-40"')]
+    assert not re.search(r'<i class="ph-bold ph-magnifying-glass[^"]*a-step', s39)
+    assert len(re.findall(r'rounded-xl md:rounded-2xl[^"]*a-step">\s*<i class="ph-bold ph-magnifying-glass', s39)) == 6
+
+
+# ── FR-SITE75: кнопки финала отвечают на наведение ───────────────────────
+
+def test_final_buttons_answer_hover():
+    """Правка владельца: «практика — нет наводки на последнем экране ни в 1,
+    ни в 2, ни в 3 лекции». У «Практики» курсор был обычной стрелкой, и она
+    никак не отвечала на наведение. Теперь обе кнопки финала — с курсором-
+    рукой и заливкой градиентом бренда при наведении (только для мыши)."""
+    polish = _block(_l3(), "style", "slide-polish")
+    assert re.search(r"\.slide-container \.lec-practice-btn, \.slide-container \.lec-practice-btn \*\{ cursor:pointer; \}",
+                     polish), "у «Практики» нет курсора-руки"
+    hover = polish[polish.index("@media (hover:hover){\n  .slide-container #open-quiz-btn:hover"):]
+    hover = hover[:hover.index("@keyframes finalBtnShimmer")]
+    assert ".slide-container .lec-practice-btn:hover" in hover and "linear-gradient" in hover, \
+        "«Практика» не отвечает на наведение"
+    assert "box-shadow" not in hover and "transform" not in hover, \
+        "без тени и без сдвига: теней в лекциях нет, кнопки не «скачут»"
+
+
+# ── FR-SITE76: CSS лекции покрывает каждый класс разметки ────────────────
+
+def _css_classes(css):
+    out = set()
+    for m in re.finditer(r'\.((?:\\[0-9a-fA-F]{1,6} ?|\\.|[\w-])+)', css):
+        s = re.sub(r'\\([0-9a-fA-F]{1,6}) ?', lambda k: chr(int(k.group(1), 16)), m.group(1))
+        out.add(re.sub(r'\\(.)', r'\1', s))
+    return out
+
+
+def test_lecture_css_has_every_markup_class():
+    """Слайд 37 лекции 3 («Полная архитектура») на сайте стоял столбиком: класс
+    md:grid-cols-[1.035fr_auto_1fr] появился в разметке, а assets/lecture-3.css
+    не пересобрали, и правила двух колонок в нём не было (скрин владельца
+    «на вебе как-то не очень выглядит»). То же ловится и на простом классе:
+    z-10 у центра круга лекции 4 молча ничего не делал. Каждый класс разметки
+    обязан иметь правило — в CSS своей лекции (у чистой страницы — во
+    встроенном) или в её собственных стилях. После правки разметки CSS
+    пересобирается: python3 tools/build_lecture_css.py N."""
+    hooks = {"js-keep"}          # метка для скрипта подгонки, стилей у неё нет
+    pages = [rel for rel, _ in _pages()] + ["automation/5/v2/index.html", "automation/3/clean/index.html"]
+    for rel in pages:
+        path = os.path.join(_ROOT, rel)
+        if not os.path.exists(path):
+            continue
+        html = open(path, encoding="utf-8").read()
+        link = re.search(r'<link rel="stylesheet" href="/(assets/lecture-[^"]+\.css)">', html)
+        css = open(os.path.join(_ROOT, link.group(1)), encoding="utf-8").read() if link else ""
+        have = _css_classes(css) | _css_classes("\n".join(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S)))
+        toks = {t for c in _class_attrs(html) for t in c.split()
+                if t not in hooks and t != "ph" and not t.startswith("ph-")}
+        miss = sorted(t for t in toks if t not in have)
+        assert not miss, "%s: в CSS нет правил для %s — пересоберите CSS лекции" % (rel, miss[:8])
 
 if __name__ == "__main__":
     failed = 0

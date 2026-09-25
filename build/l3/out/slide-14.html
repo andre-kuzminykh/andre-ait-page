@@ -58,7 +58,11 @@
 
                 <!-- Кольцо: среда исполнения в центре делает всё, кроме решения; модель только просит.
                      Модель стоит справа, чтобы развилка её решения выходила прямо из неё.
-                     Пары противоположных узлов загораются по очереди — огонь бежит по кругу.
+                     Узлы загораются строго по одному по кругу, как в озвучке: промт и контекст →
+                     модель → запрос функции → проверка вызова → результат → состояние (раньше —
+                     парами противоположных узлов, «по два вызывает»). Поэтому «Промт и контекст»
+                     первый в разметке. У «Модели» рамка обычная, как у соседей: постоянная
+                     оранжевая рядом с горящим узлом читалась как второй горящий.
                      Узлы верхней и нижней пары разведены до 31/69 %, чтобы стрелка между ними не касалась рамок.
                      Узлы одной высоты (h-[23%]) — однострочные «Модель» и «Состояние» не короче соседей.
                      Подпись узла w-full: обнимающая подпись с <br> подгонщик меряет по её же ширине минус зазор
@@ -75,15 +79,19 @@
                             <span class="text-[9px] md:text-sm font-black text-white leading-tight"><i class="ph-fill ph-gear text-[9px] md:text-3xl text-solar md:block md:mb-0.5"></i> Среда <br>исполнения</span>
                         </div>
 
-                        <div class="absolute left-[86%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border-2 border-solar rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step">
+                        <div class="absolute left-[69%] top-[19%] -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step">
+                            <i class="ph-fill ph-stack text-base md:text-2xl text-solar block"></i>
+                            <p class="w-full text-[9px] md:text-sm font-black text-black leading-tight m-0">Промт <br>и контекст</p>
+                        </div>
+                        <div class="absolute left-[86%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step">
                             <i class="ph-fill ph-brain text-base md:text-2xl text-solar block"></i>
                             <p class="w-full text-[9px] md:text-sm font-black text-black leading-tight m-0">Модель</p>
                         </div>
-                        <div class="absolute left-[69%] top-[81%] -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step a-step-2">
+                        <div class="absolute left-[69%] top-[81%] -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step">
                             <i class="ph-fill ph-brackets-curly text-base md:text-2xl text-solar block"></i>
                             <p class="w-full text-[9px] md:text-sm font-black text-black leading-tight m-0">Запрос <br>функции</p>
                         </div>
-                        <div class="absolute left-[31%] top-[81%] -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step a-step-3">
+                        <div class="absolute left-[31%] top-[81%] -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step">
                             <i class="ph-fill ph-shield-check text-base md:text-2xl text-solar block"></i>
                             <p class="w-full text-[9px] md:text-sm font-black text-black leading-tight m-0">Проверка <br>вызова</p>
                         </div>
@@ -91,13 +99,9 @@
                             <i class="ph-fill ph-database text-base md:text-2xl text-solar block"></i>
                             <p class="w-full text-[9px] md:text-sm font-black text-black leading-tight m-0">Результат <br>из CRM</p>
                         </div>
-                        <div class="absolute left-[31%] top-[19%] -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step a-step-2">
+                        <div class="absolute left-[31%] top-[19%] -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step">
                             <i class="ph-fill ph-floppy-disk text-base md:text-2xl text-solar block"></i>
                             <p class="w-full text-[9px] md:text-sm font-black text-black leading-tight m-0">Состояние</p>
-                        </div>
-                        <div class="absolute left-[69%] top-[19%] -translate-x-1/2 -translate-y-1/2 w-[31%] h-[23%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-0.5 md:py-1.5 flex flex-col items-center justify-center text-center a-step a-step-3">
-                            <i class="ph-fill ph-stack text-base md:text-2xl text-solar block"></i>
-                            <p class="w-full text-[9px] md:text-sm font-black text-black leading-tight m-0">Промт <br>и контекст</p>
                         </div>
 
                         <i class="ph-bold ph-arrow-right absolute left-[83%] top-[65%] -translate-x-1/2 -translate-y-1/2 rotate-[113deg] text-solar text-sm md:text-xl"></i>

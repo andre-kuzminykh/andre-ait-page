@@ -29,8 +29,10 @@
                     </div>
 
                     <!-- Состояние процесса: живёт, пока идёт задача. Четыре отметки — что оно хранит;
-                         три выполненные загораются по очереди, последняя (чего ждём) дышит:
-                         договор ушёл на согласование и ждёт ответа.
+                         загораются строго по одному: три выполненные, потом «чего ждём» —
+                         договор ушёл на согласование и ждёт ответа. В очереди только они:
+                         значки «склада» справа (text-black/40) горящими не выглядели, и полкруга
+                         очереди слайд стоял будто погасшим.
                          Отметки — flex-1 с полулиниями: линия непрерывна от центра до центра, а узлы стоят
                          через равный шаг (flex-auto давал шаг 156/160/130 — короткая «чего ждём» поджимала последний) -->
                     <div class="w-[90%] md:w-[82%] bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] p-2.5 md:px-5 md:py-3.5 a-in a-in-2">
@@ -52,17 +54,17 @@
                             </div>
                             <div class="relative flex-1 flex flex-col items-center text-center gap-1 md:gap-1.5 px-1 min-w-0">
                                 <div class="absolute left-0 right-0 top-[7px] md:top-[12px] h-[2px] text-solar/50 a-flow"></div>
-                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-solar flex items-center justify-center a-step a-step-2"><i class="ph-bold ph-check text-[9px] md:text-sm text-black"></i></span>
+                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-solar flex items-center justify-center a-step"><i class="ph-bold ph-check text-[9px] md:text-sm text-black"></i></span>
                                 <span class="text-[10px] md:text-sm text-white/75 leading-tight md:whitespace-nowrap">данные получены</span>
                             </div>
                             <div class="relative flex-1 flex flex-col items-center text-center gap-1 md:gap-1.5 px-1 min-w-0">
                                 <div class="absolute left-0 right-0 top-[7px] md:top-[12px] h-[2px] text-solar/50 a-flow"></div>
-                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-solar flex items-center justify-center a-step a-step-3"><i class="ph-bold ph-check text-[9px] md:text-sm text-black"></i></span>
+                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-solar flex items-center justify-center a-step"><i class="ph-bold ph-check text-[9px] md:text-sm text-black"></i></span>
                                 <span class="text-[10px] md:text-sm text-white/75 leading-tight md:whitespace-nowrap">решение принято</span>
                             </div>
                             <div class="relative flex-1 flex flex-col items-center text-center gap-1 md:gap-1.5 px-1 min-w-0">
                                 <div class="absolute left-0 right-1/2 top-[7px] md:top-[12px] h-[2px] text-solar/50 a-flow"></div>
-                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-black border-2 border-solar flex items-center justify-center a-pulse"><i class="ph-fill ph-hourglass-medium text-[9px] md:text-sm text-solar"></i></span>
+                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-black border-2 border-solar flex items-center justify-center a-step"><i class="ph-fill ph-hourglass-medium text-[9px] md:text-sm text-solar"></i></span>
                                 <span class="text-[10px] md:text-sm text-white leading-tight md:whitespace-nowrap">чего ждём</span>
                             </div>
                         </div>
@@ -95,11 +97,11 @@
                          валит сетку на телефоне в один столбик и склад вытягивается на пол-экрана -->
                     <div class="grid grid-cols-3 md:grid-cols-3 gap-1 md:gap-2.5 shrink-0">
                         <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-3"><i class="ph-fill ph-file-text text-sm md:text-2xl text-black/40"></i></span>
-                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-2"><i class="ph-fill ph-clock-counter-clockwise text-sm md:text-2xl text-black/40 a-step"></i></span>
-                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-3"><i class="ph-fill ph-files text-sm md:text-2xl text-black/40 a-step a-step-3"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-2"><i class="ph-fill ph-clock-counter-clockwise text-sm md:text-2xl text-black/40"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-3"><i class="ph-fill ph-files text-sm md:text-2xl text-black/40"></i></span>
                         <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-2"><i class="ph-fill ph-warning text-sm md:text-2xl text-solar a-pulse"></i></span>
                         <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-3"><i class="ph-fill ph-file-x text-sm md:text-2xl text-black/40"></i></span>
-                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-3"><i class="ph-fill ph-note text-sm md:text-2xl text-black/40 a-step a-step-2"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-3"><i class="ph-fill ph-note text-sm md:text-2xl text-black/40"></i></span>
                     </div>
                 </div>
             </div>

@@ -37,6 +37,8 @@
 
                 <!-- ИИ-агент сам выбирает следующий шаг: CRM появляется первым, узлы примера загораются по очереди, пунктир крутится,
                      «Решение» — оранжевый выход из цикла (появляется последним), поэтому стрелки от него к CRM нет.
+                     Очередь идёт по всему пути, от CRM до решения: раньше в ней были только три средних узла,
+                     подсветка перескакивала через кольцо назад, а значок CRM один не гас и казался горящим.
                      Кольцо опущено на 3%: верхний узел пятиугольника выше круга, нижние не доходят до низа —
                      без сдвига схема висела выше соседних колонок ("выровни по центру").
                      На телефоне боковые узлы разведены до 12/88%, а CRM поднят до 10%: в кольце 214px
@@ -51,7 +53,7 @@
                             <span class="text-[10px] md:text-base font-black text-white leading-tight mt-0.5">ИИ-агент</span>
                         </div>
 
-                        <div class="absolute left-1/2 top-[10%] md:top-[11%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-in">
+                        <div class="absolute left-1/2 top-[10%] md:top-[11%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-in a-step">
                             <i class="ph-fill ph-address-book text-base md:text-2xl text-solar block"></i>
                             <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Заказы <br>в CRM</p>
                         </div>
@@ -59,15 +61,15 @@
                             <i class="ph-fill ph-file-x text-base md:text-2xl text-solar block"></i>
                             <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Нет <br>документа</p>
                         </div>
-                        <div class="absolute left-[73%] md:left-[72%] top-[82%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step a-step-2">
+                        <div class="absolute left-[73%] md:left-[72%] top-[82%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step">
                             <i class="ph-fill ph-database text-base md:text-2xl text-solar block"></i>
                             <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Другой <br>источник</p>
                         </div>
-                        <div class="absolute left-[27%] md:left-[28%] top-[82%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step a-step-3">
+                        <div class="absolute left-[27%] md:left-[28%] top-[82%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-step">
                             <i class="ph-fill ph-magnifying-glass text-base md:text-2xl text-solar block"></i>
                             <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Анализ <br>результата</p>
                         </div>
-                        <div class="absolute left-[12%] md:left-[14%] top-[38%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-solar border border-solar rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-in a-in-5" style="color:#111;-webkit-text-fill-color:#111">
+                        <div class="absolute left-[12%] md:left-[14%] top-[38%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-solar border border-solar rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-in a-in-5 a-step" style="color:#111;-webkit-text-fill-color:#111">
                             <i class="ph-fill ph-seal-check text-base md:text-2xl block"></i>
                             <p class="text-[9px] md:text-sm font-black leading-tight m-0">Решение <br>принято</p>
                         </div>

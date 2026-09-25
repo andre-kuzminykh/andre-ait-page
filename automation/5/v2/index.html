@@ -8321,10 +8321,32 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   .slide-container [class*="lg:scale-105"]:hover{ transform:scale(1.05) !important; }
 }
 
-/* 25. На слайдах нечего нажимать — курсор всюду обычный; единственная
-   настоящая кнопка — «Пройти тест» на финальном слайде. */
+/* 25. На слайдах нечего нажимать — курсор всюду обычный; настоящие кнопки —
+   «Пройти тест» и «Практика» на финальном слайде. У «Практики» курсор был
+   обычной стрелкой, и она не отвечала на наведение вовсе (правка владельца:
+   «практика — нет наводки на последнем экране»). */
 .slide-container .content-z, .slide-container .content-z *{ cursor:default; }
-.slide-container #open-quiz-btn, .slide-container #open-quiz-btn *{ cursor:pointer; }
+.slide-container #open-quiz-btn, .slide-container #open-quiz-btn *,
+.slide-container .lec-practice-btn, .slide-container .lec-practice-btn *{ cursor:pointer; }
+/* 25а. Отклик кнопок финала на наведение (FR-SITE75) — как у белых кнопок
+   главной: заливка градиентом бренда с медленным переливом. Без тени (теней
+   в лекциях нет) и без сдвига (кнопки не «скачут»). Остальное содержимое
+   слайда на наведение по-прежнему не отвечает (FR-LECTURE-20). Только для
+   мыши: на телефоне «залипший» hover красил бы кнопку после касания. */
+@media (hover:hover){
+  .slide-container #open-quiz-btn:hover, .slide-container #open-quiz-btn:focus-visible,
+  .slide-container .lec-practice-btn:hover, .slide-container .lec-practice-btn:focus-visible{
+    background:linear-gradient(100deg,#8854F3 0%,#F97316 50%,#8854F3 100%) !important;
+    background-size:250% 250% !important;
+    border-color:transparent !important;
+    color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
+    animation:finalBtnShimmer 4.5s ease infinite;
+  }
+  .slide-container #open-quiz-btn:hover i, .slide-container .lec-practice-btn:hover i{
+    color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
+  }
+}
+@keyframes finalBtnShimmer{ 0%,100%{ background-position:0% 50%; } 50%{ background-position:100% 50%; } }
 
 /* 26. Галочки/крестики списков: глиф центрируется по ПЕРВОЙ строке текста на
    любом брейкпоинте. Фиксированный mt-0.5 при разных кеглях иконки и текста
@@ -8437,11 +8459,57 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 .a-orbit{ animation:aOrbit 18s linear infinite; }
 @keyframes aOrbit{ to{ transform:rotate(360deg); } }
 
-/* очередь подсветки: три узла цикла загораются по очереди */
-.a-step{ animation:aStep 3.6s ease-in-out infinite; }
-.a-step-2{ animation-delay:1.2s; }
-.a-step-3{ animation-delay:2.4s; }
-@keyframes aStep{ 0%,22%{ opacity:1; } 40%,100%{ opacity:.42; } }
+/* очередь подсветки: узлы a-step загораются СТРОГО по одному, по порядку
+   разметки (FR-SITE74). Ведёт её скрипт lecture-seq: горящему узлу ставит
+   is-lit и на каждом показе слайда начинает с первого узла. Раньше очередь
+   была чистым CSS на три фазы (a-step-2/-3) — на пяти-семи узлах фазы
+   повторялись, и узлы горели по два-три разом (правка владельца: «по два
+   вызывает, надо по одному по очереди»). Несколько групп на слайде идут
+   друг за другом, а не хором.
+   Узел без слов (кружок-значок, полоска трассы) гаснет прозрачностью. У узла
+   со словами гаснет только значок, а горящий обводится контуром: текст не
+   мигает (канон владельца), контур — не тень (теней в лекциях нет). Контур
+   оранжевый: фиолетовый терялся на фиолетовых плашках (обвязка на слайде
+   «Полная архитектура»), а оранжевый виден и на белой, и на тёмной, и на
+   фиолетовой карточке.
+   Переходы разрешены явно: portal-deck глушит transition у всего содержимого
+   слайда (FR-LECTURE-20), и без !important узел гас бы рывком. Гаснет узел
+   быстро (.2s), а загорается следующий с задержкой .15s: при общем плавном
+   переходе на стыке шагов почти полсекунды светились два узла разом. Появление
+   значка (iconPop) кончалось на opacity:1 и роняло его в .42 тоже рывком,
+   поэтому у гаснущих значков его нет. */
+html.seq-on .slide-container .content-z .a-step[data-seq="icon"],
+html.seq-on .slide-container .content-z .a-step[data-seq="text"] i{
+  opacity:.42; transition:opacity .2s ease !important;
+}
+html.seq-on .slide-container .content-z i.a-step[data-seq="icon"],
+html.seq-on .slide-container .content-z .a-step[data-seq="text"] i{ animation:none !important; }
+html.seq-on .slide-container .content-z .a-step[data-seq="text"]{
+  outline:2px solid rgba(249,115,22,0); outline-offset:1px;
+  transition:outline-color .2s ease, outline-offset .2s ease !important;
+}
+html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="icon"],
+html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"] i{
+  opacity:1; transition:opacity .35s ease .15s !important;
+}
+html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{
+  outline-color:rgba(249,115,22,.9); outline-offset:2px;
+  transition:outline-color .35s ease .15s, outline-offset .35s ease .15s !important;
+}
+/* на телефоне узлы стоят теснее (зазоры 4–5px): контур почти вплотную, иначе
+   он заходил на соседнюю карточку и на центр круга */
+@media (max-width:767px){
+  html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{ outline-offset:1px; }
+}
+/* на слайде с очередью подсвечивает только она: собственное дыхание акцентов
+   (a-glow, a-pulse) на нём стоит — рядом с горящим узлом дышащая плашка или
+   значок читались как второй горящий («по два вызывает»: на «Полной
+   архитектуре» дышала «передать человеку», на «Надёжности» — восемь значков
+   разом). Бегущие пунктиры и кольца двигаются как прежде — это движение, а не
+   подсветка. Без :has() (старые браузеры) всё просто дышит, как раньше. */
+html.seq-on .content-z:has(.a-step) .a-glow,
+html.seq-on .content-z:has(.a-step) .a-pulse,
+html.seq-on .content-z:has(.a-step) .animate-pulse{ animation:none !important; }
 
 /* прочерчивание линии в схеме */
 .a-draw{ stroke-dasharray:6 6; animation:aDraw 1.4s linear infinite; }
@@ -8464,9 +8532,56 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 @keyframes aIn{ from{ opacity:0; } to{ opacity:1; } }
 
 @media (prefers-reduced-motion:reduce){
-  .a-flow,.a-flow-y,.a-pulse,.a-glow,.a-orbit,.a-step,.a-draw,.slide-container .a-in{ animation:none !important; }
+  .a-flow,.a-flow-y,.a-pulse,.a-glow,.a-orbit,.a-draw,.slide-container .a-in{ animation:none !important; }
 }
 </style>
+<script id="lecture-seq">
+/* Очередь подсветки a-step (FR-SITE74), стили — в блоке lecture-anim.
+   На активном слайде горит ровно один узел a-step; через STEP мс — следующий
+   по порядку разметки, по кругу. На каждом показе слайда очередь начинается
+   с первого узла. Узлы, скрытые в этой форме (md:hidden и т.п.), в очередь
+   не входят — иначе на ПК «горели» бы невидимые узлы телефона и очередь
+   стояла пустой. Узел со словами получает data-seq="text": у него гаснет
+   значок, а не текст. При reduced motion очередь не запускается — всё горит
+   ровно (так же снимаются кадры для роликов и приёмки). */
+(function(){
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var STEP = 1100, slide = null, nodes = [], t0 = 0, lit = -1, width = 0;
+  function mark(){
+    var all = document.querySelectorAll('.slide-container .a-step');
+    for (var i = 0; i < all.length; i++){
+      if (!all[i].hasAttribute('data-seq'))
+        all[i].setAttribute('data-seq', all[i].textContent.trim() ? 'text' : 'icon');
+    }
+    document.documentElement.classList.add('seq-on');
+  }
+  function collect(s){
+    var out = [], all = s ? s.querySelectorAll('.a-step') : [];
+    for (var i = 0; i < all.length; i++) if (all[i].getClientRects().length) out.push(all[i]);
+    return out;
+  }
+  function tick(){
+    var s = document.querySelector('.slide-container.is-active') ||
+            document.querySelector('.slide-container.opacity-100');
+    // Пока колода не показана (body без fit-ready — идёт подгонка), активного
+    // слайда для очереди нет: иначе к показу первого слайда очередь успевала
+    // уйти вперёд, и зритель видел её с середины, а не с первого узла.
+    if (!document.body.classList.contains('fit-ready')) s = null;
+    if (s !== slide || window.innerWidth !== width){
+      for (var i = 0; i < nodes.length; i++) nodes[i].classList.remove('is-lit');
+      slide = s; width = window.innerWidth; nodes = collect(s); t0 = Date.now(); lit = -1;
+    }
+    if (!nodes.length) return;
+    var k = Math.floor((Date.now() - t0) / STEP) % nodes.length;
+    if (k === lit) return;
+    if (lit >= 0) nodes[lit].classList.remove('is-lit');
+    nodes[k].classList.add('is-lit'); lit = k;
+  }
+  function start(){ mark(); tick(); setInterval(tick, 100); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
 <style id="lecture-mobile">
 /* ── ТЕЛЕФОН ЭТОЙ ЛЕКЦИИ ──────────────────────────────────────────────────
    Блок пер-лекционный (slide-polish общий для всех лекций и правится только
