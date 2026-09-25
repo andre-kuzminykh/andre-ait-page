@@ -2266,7 +2266,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     <li class="flex items-start gap-2 a-in"><i class="ph-fill ph-globe text-black mt-0.5"></i><span><b>Сайт</b> — заявка оставлена<span class="ml-1 inline-block bg-grayBase/60 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-black/60 align-middle md:hidden">заявка</span></span></li>
                     <li class="flex items-start gap-2 a-in a-in-2"><i class="ph-fill ph-database text-black mt-0.5"></i><span><b>CRM</b> — фиксация данных<span class="ml-1 inline-block bg-grayBase/60 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-black/60 align-middle md:hidden">лид</span></span></li>
                     <li class="flex items-start gap-2 a-in a-in-3"><i class="ph-fill ph-user-circle text-black mt-0.5"></i><span><b>Менеджер</b> — уточняет детали<span class="ml-1 inline-block bg-grayBase/60 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-black/60 align-middle md:hidden">КП</span></span></li>
-                    <li class="flex items-start gap-2 a-in a-in-4"><i class="ph-fill ph-file-text text-black mt-0.5"></i><span><b>Финсистема</b> — формирование счёта<span class="ml-1 inline-block bg-grayBase/60 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-black/60 align-middle md:hidden">счёт</span></span></li>
+                    <li class="flex items-start gap-2 a-in a-in-4"><i class="ph-fill ph-file-text text-black mt-0.5"></i><span><b>Финсистема</b> — формирует счёт<span class="ml-1 inline-block bg-grayBase/60 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-black/60 align-middle md:hidden">счёт</span></span></li>
                     <li class="flex items-start gap-2 a-in a-in-5"><i class="ph-fill ph-check-circle text-solar mt-0.5"></i><span><b>Оплата</b> — фиксация оплаты<span class="ml-1 inline-block bg-white/10 border border-solar/40 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-solar align-middle md:hidden">платёж</span></span></li>
                 </ul>
             </div>
@@ -2414,7 +2414,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                      вращается пунктирное кольцо — декоративное, без текста -->
                 <div class="relative flex items-start gap-3 md:gap-6 a-in a-in-4">
                     <div class="relative shrink-0 w-8 h-8 md:w-14 md:h-14">
-                        <div class="absolute -inset-1 md:-inset-1.5 rounded-full border-2 border-dashed border-solar/60 a-orbit"></div>
+                        <div class="absolute -inset-0.5 md:-inset-1.5 rounded-full border-2 border-dashed border-solar/60 a-orbit"></div>
                         <div class="absolute inset-0 rounded-full bg-solar flex items-center justify-center"><i class="ph-fill ph-brain text-base md:text-[26px] text-white"></i></div>
                     </div>
                     <div class="min-w-0">
@@ -3622,8 +3622,12 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                   </div>
                 </div>
             </div>
-<div class="lg:hidden flex flex-col gap-2 w-full">
-                <div class="bg-white border border-grayBase rounded-[16px] p-3 shadow-sm a-in a-in-2">
+<div class="lg:hidden flex flex-col gap-1.5 w-full">
+                <!-- Легенда столбцов для телефона: таблица ПК там не показывается, и
+                     «точка (узел) · тип · ожидаемый эффект · сложность» пропадали
+                     (lecture_check parnost); заодно объясняет значки карточек -->
+                <p class="text-center text-black/40 text-[9px] font-bold uppercase tracking-widest leading-snug m-0"><span class="whitespace-nowrap">Точка (узел) · Тип</span> <br><span class="whitespace-nowrap"><i class="ph-fill ph-trend-up text-solar"></i> Ожидаемый эффект · <i class="ph-fill ph-wrench"></i> Сложность</span></p>
+                <div class="bg-white border border-grayBase rounded-[16px] px-3 py-2 shadow-sm a-in a-in-2">
                     <div class="flex items-start gap-2 mb-2">
                         <i class="ph-fill ph-funnel text-solar text-base shrink-0 mt-0.5"></i>
                         <h4 class="font-black text-[11px] leading-tight">Сортировка входящих заявок</h4>
@@ -3632,7 +3636,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     <p class="text-[10px] text-black/70 mt-2 flex items-start gap-1.5"><i class="ph-fill ph-trend-up text-solar text-xs shrink-0 mt-0.5"></i>-2 часа работы менеджера в день</p>
                     <p class="text-[10px] text-black/50 mt-1 flex items-start gap-1.5"><i class="ph-fill ph-wrench text-xs shrink-0 mt-0.5"></i>Средняя (нужна проработка промтов)</p>
                 </div>
-                <div class="bg-white border border-grayBase rounded-[16px] p-3 shadow-sm a-in a-in-3">
+                <div class="bg-white border border-grayBase rounded-[16px] px-3 py-2 shadow-sm a-in a-in-3">
                     <div class="flex items-start gap-2 mb-2">
                         <i class="ph-fill ph-check-square-offset text-solar text-base shrink-0 mt-0.5"></i>
                         <h4 class="font-black text-[11px] leading-tight">Проверка наличия ИНН</h4>
@@ -3644,7 +3648,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                 <!-- Точка «ИИ-агент» — акцент слайда: у карточки дышит рамка (a-glow),
                      а каскад появления переехал на её содержимое — две анимации
                      на одном элементе перебивают друг друга (обе задают animation). -->
-                <div class="bg-black text-white border border-solar/40 rounded-[16px] p-3 shadow-xl a-glow">
+                <div class="bg-black text-white border border-solar/40 rounded-[16px] px-3 py-2 shadow-xl a-glow">
                     <div class="flex items-start gap-2 mb-2 a-in a-in-4">
                         <i class="ph-fill ph-robot text-solar text-base shrink-0 mt-0.5"></i>
                         <h4 class="font-black text-[11px] leading-tight text-solar">Составление черновика ответа</h4>
@@ -3827,8 +3831,10 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                  посреди второго («Здесь / задаётся» читалось как обрыв). Телефонный абзац
                  свой (круг 7 правок владельца: «свой на каждую форму»); в нём последнее
                  слово «изменений.» висело одно — режем по смыслу. -->
-            <p class="hidden md:block text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-5xl mx-auto">Модель того, как процесс должен работать после изменений. <br>Здесь задаётся новая логика: что автоматизировать и где оставить человека</p>
-                <p class="md:hidden text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-5xl mx-auto">Модель того, как процесс <br>должен работать после изменений.</p>
+            <!-- Подзаголовок один на обе формы: у телефона был свой, без второго
+                 предложения, — «где оставить человека» на телефоне пропадало
+                 (lecture_check parnost). Переносы по смыслу — куски nowrap. -->
+            <p class="text-center text-black/60 mb-4 md:mb-6 text-[10px] md:text-lg font-medium max-w-5xl mx-auto"><span class="whitespace-nowrap">Модель того, как процесс</span> <span class="whitespace-nowrap">должен работать после изменений.</span> <br><span class="whitespace-nowrap">Здесь задаётся новая логика:</span> <span class="whitespace-nowrap">что автоматизировать</span> <span class="whitespace-nowrap">и где оставить человека</span></p>
 
             <!-- Цепочка AS-IS → Редизайн → TO-BE. Стрелки — живые: по линии бежит пунктир
                  (a-flow), наконечник прижат к линии; один элемент на обе формы — на телефоне
