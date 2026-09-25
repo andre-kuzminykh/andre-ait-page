@@ -3644,14 +3644,17 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
             </div>
 
             <!-- Порядок решения: ступени загораются по очереди, агент — последняя;
-                 условие его появления — ударной второй строкой -->
-            <div class="bg-solar/20 border-l-4 border-solar p-2 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                 условие его появления — ударной второй строкой.
+                 На телефоне поля плашек px-1 и поля выноски px-1.5: при px-1.5 / p-2 ряд был
+                 на ~14px уже своего содержимого, правило колоды min-width:0 ужимало плашки, и
+                 «достаточная модель» упиралась в собственную правую рамку (−0.2px) -->
+            <div class="bg-solar/20 border-l-4 border-solar px-1.5 py-2 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
                 <div class="js-keep flex flex-row items-center justify-center gap-1 md:gap-2 mb-1 md:mb-2">
-                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-1.5 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black whitespace-nowrap a-step"><i class="ph-fill ph-question text-solar"></i> операция</span>
+                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-1 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black whitespace-nowrap a-step"><i class="ph-fill ph-question text-solar"></i> операция</span>
                     <i class="ph-bold ph-arrow-right text-black/30 text-[10px] md:text-lg shrink-0"></i>
-                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-1.5 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black whitespace-nowrap a-step"><i class="ph-fill ph-cpu text-solar"></i> достаточная модель</span>
+                    <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-1 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-black whitespace-nowrap a-step"><i class="ph-fill ph-cpu text-solar"></i> достаточная модель</span>
                     <i class="ph-bold ph-arrow-right text-black/30 text-[10px] md:text-lg shrink-0"></i>
-                    <span class="bg-black border border-solar rounded-lg md:rounded-xl px-1.5 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-white whitespace-nowrap a-step"><i class="ph-fill ph-robot text-solar"></i> агент</span>
+                    <span class="bg-black border border-solar rounded-lg md:rounded-xl px-1 py-0.5 md:px-3 md:py-1 text-[10px] md:text-base font-medium text-white whitespace-nowrap a-step"><i class="ph-fill ph-robot text-solar"></i> агент</span>
                 </div>
                 <p class="text-[10px] md:text-base text-black font-black leading-snug m-0"><span class="whitespace-nowrap">только если система сама</span> <span class="whitespace-nowrap">связывает операции</span></p>
             </div>
@@ -4566,7 +4569,9 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                 </div>
 
-                <!-- Воркфлоу как инструмент: агент запускает целый процесс как один навык -->
+                <!-- Воркфлоу как инструмент: агент запускает целый процесс как один навык.
+                     В очереди подсветки — значки цепочки, а не плитки: плитка с рамкой гасла целиком
+                     и почти пропадала на фиолетовой карточке, цепочка выглядела выключенной -->
                 <div class="md:col-start-4 md:row-start-1 md:row-span-2 bg-black border-2 border-solar rounded-[16px] md:rounded-3xl p-3 md:px-4 md:py-5 flex flex-col items-center justify-center text-center a-in a-in-5">
                     <div class="js-keep flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 w-full">
                         <div class="flex flex-col items-center shrink-0">
@@ -4577,11 +4582,11 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <div class="border-2 border-dashed border-solar/50 rounded-xl md:rounded-2xl px-2 py-1.5 md:px-4 md:py-3 flex flex-col items-center gap-1 md:gap-2">
                             <p class="text-[9px] md:text-sm text-white/80 leading-tight m-0 whitespace-nowrap"><i class="ph-fill ph-package text-solar"></i> проверка клиента</p>
                             <div class="flex items-center gap-1 md:gap-1.5">
-                                <span class="w-5 h-5 md:w-9 md:h-9 rounded-md md:rounded-lg bg-white/10 border border-white/25 flex items-center justify-center a-step"><i class="ph-fill ph-magnifying-glass text-[11px] md:text-lg text-solar"></i></span>
+                                <span class="w-5 h-5 md:w-9 md:h-9 rounded-md md:rounded-lg bg-white/10 border border-white/25 flex items-center justify-center"><i class="ph-fill ph-magnifying-glass text-[11px] md:text-lg text-solar a-step"></i></span>
                                 <i class="ph-bold ph-arrow-right text-[9px] md:text-sm text-white/30"></i>
-                                <span class="w-5 h-5 md:w-9 md:h-9 rounded-md md:rounded-lg bg-white/10 border border-white/25 flex items-center justify-center a-step"><i class="ph-fill ph-shield-check text-[11px] md:text-lg text-solar"></i></span>
+                                <span class="w-5 h-5 md:w-9 md:h-9 rounded-md md:rounded-lg bg-white/10 border border-white/25 flex items-center justify-center"><i class="ph-fill ph-shield-check text-[11px] md:text-lg text-solar a-step"></i></span>
                                 <i class="ph-bold ph-arrow-right text-[9px] md:text-sm text-white/30"></i>
-                                <span class="w-5 h-5 md:w-9 md:h-9 rounded-md md:rounded-lg bg-white/10 border border-white/25 flex items-center justify-center a-step"><i class="ph-fill ph-seal-check text-[11px] md:text-lg text-solar"></i></span>
+                                <span class="w-5 h-5 md:w-9 md:h-9 rounded-md md:rounded-lg bg-white/10 border border-white/25 flex items-center justify-center"><i class="ph-fill ph-seal-check text-[11px] md:text-lg text-solar a-step"></i></span>
                             </div>
                         </div>
                     </div>
@@ -5411,8 +5416,10 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
 
                     <!-- Состояние процесса: живёт, пока идёт задача. Четыре отметки — что оно хранит;
-                         три выполненные загораются по очереди, последняя (чего ждём) дышит:
-                         договор ушёл на согласование и ждёт ответа.
+                         загораются строго по одному: три выполненные, потом «чего ждём» —
+                         договор ушёл на согласование и ждёт ответа. В очереди только они:
+                         значки «склада» справа (text-black/40) горящими не выглядели, и полкруга
+                         очереди слайд стоял будто погасшим.
                          Отметки — flex-1 с полулиниями: линия непрерывна от центра до центра, а узлы стоят
                          через равный шаг (flex-auto давал шаг 156/160/130 — короткая «чего ждём» поджимала последний) -->
                     <div class="w-[90%] md:w-[82%] bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] p-2.5 md:px-5 md:py-3.5 a-in a-in-2">
@@ -5444,7 +5451,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                             </div>
                             <div class="relative flex-1 flex flex-col items-center text-center gap-1 md:gap-1.5 px-1 min-w-0">
                                 <div class="absolute left-0 right-1/2 top-[7px] md:top-[12px] h-[2px] text-solar/50 a-flow"></div>
-                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-black border-2 border-solar flex items-center justify-center a-pulse"><i class="ph-fill ph-hourglass-medium text-[9px] md:text-sm text-solar"></i></span>
+                                <span class="relative w-4 h-4 md:w-[26px] md:h-[26px] rounded-full bg-black border-2 border-solar flex items-center justify-center a-step"><i class="ph-fill ph-hourglass-medium text-[9px] md:text-sm text-solar"></i></span>
                                 <span class="text-[10px] md:text-sm text-white leading-tight md:whitespace-nowrap">чего ждём</span>
                             </div>
                         </div>
@@ -5477,11 +5484,11 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                          валит сетку на телефоне в один столбик и склад вытягивается на пол-экрана -->
                     <div class="grid grid-cols-3 md:grid-cols-3 gap-1 md:gap-2.5 shrink-0">
                         <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-3"><i class="ph-fill ph-file-text text-sm md:text-2xl text-black/40"></i></span>
-                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-2"><i class="ph-fill ph-clock-counter-clockwise text-sm md:text-2xl text-black/40 a-step"></i></span>
-                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-3"><i class="ph-fill ph-files text-sm md:text-2xl text-black/40 a-step"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-2"><i class="ph-fill ph-clock-counter-clockwise text-sm md:text-2xl text-black/40"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-3"><i class="ph-fill ph-files text-sm md:text-2xl text-black/40"></i></span>
                         <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-2"><i class="ph-fill ph-warning text-sm md:text-2xl text-solar a-pulse"></i></span>
                         <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center rotate-3"><i class="ph-fill ph-file-x text-sm md:text-2xl text-black/40"></i></span>
-                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-3"><i class="ph-fill ph-note text-sm md:text-2xl text-black/40 a-step"></i></span>
+                        <span class="w-7 h-7 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-white border border-grayBase flex items-center justify-center -rotate-3"><i class="ph-fill ph-note text-sm md:text-2xl text-black/40"></i></span>
                     </div>
                 </div>
             </div>
