@@ -11602,10 +11602,15 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 .a-pulse{ animation:aPulse 2.6s ease-in-out infinite; }
 @keyframes aPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
 
-/* дыхание рамки для блоков со словами: акцент живой, а текст не мигает.
-   box-shadow не влияет на поток — подгонщик его не видит */
-.a-glow{ animation:aGlow 2.6s ease-in-out infinite; }
-@keyframes aGlow{ 0%,100%{ box-shadow:0 0 0 0 rgba(139,92,246,0); } 50%{ box-shadow:0 0 0 5px rgba(139,92,246,.28); } }
+/* дыхание контура для блоков со словами: акцент живой, а текст не мигает.
+   Контур, а не тень: теней в лекциях нет нигде (требование заказчика —
+   глушитель box-shadow:none !important), и тень-анимация молча не играла.
+   outline не влияет на поток, подгонщик его не видит, скругление повторяет */
+.a-glow{ outline:2px solid rgba(139,92,246,0); outline-offset:1px; animation:aGlow 2.6s ease-in-out infinite; }
+/* на активном слайде правило portal-deck вешает тёмным карточкам (bg-black)
+   свою accentGlow — тоже тень, то есть невидимую; своя анимация сильнее */
+.slide-container.is-active .content-z .a-glow{ animation:aGlow 2.6s ease-in-out infinite; }
+@keyframes aGlow{ 0%,100%{ outline-color:rgba(139,92,246,0); outline-offset:1px; } 50%{ outline-color:rgba(139,92,246,.5); outline-offset:4px; } }
 
 /* медленное вращение кольца вокруг центра */
 .a-orbit{ animation:aOrbit 18s linear infinite; }
@@ -11621,19 +11626,24 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 .a-draw{ stroke-dasharray:6 6; animation:aDraw 1.4s linear infinite; }
 @keyframes aDraw{ to{ stroke-dashoffset:-24; } }
 
-/* появление элемента при показе слайда, без сдвига соседей */
-.a-in{ animation:aIn .5s ease both; }
-.a-in-2{ animation-delay:.09s; } .a-in-3{ animation-delay:.18s; }
-.a-in-4{ animation-delay:.27s; } .a-in-5{ animation-delay:.36s; }
-.a-in-6{ animation-delay:.45s; }
-/* scale, а не transform: независимое свойство КОМПОНУЕТСЯ со статическим
-   transform элемента, а не стирает его. С transform:none в конечном кадре
-   и fill-mode both анимация навсегда затирала -translate-x-1/2 у карточек
-   радиальной схемы — они висели углом на точке вместо центра. */
-@keyframes aIn{ from{ opacity:0; scale:.94; } to{ opacity:1; scale:1; } }
+/* появление элемента при КАЖДОМ показе слайда — только прозрачностью.
+   Анимация привязана к .is-active (его ставит portal-fit на смене слайда):
+   без привязки она играла один раз при загрузке страницы, когда слайда ещё
+   не видно, а у детей сеток правило portal-deck гасило её на показе — и она
+   вспыхивала при УХОДЕ со слайда (замер: карточки падали в прозрачность,
+   пока слайд ещё виден на 99%). .content-z .a-in специфичнее того правила.
+   Масштаба нет: каскад появляет, но ничего не двигает — жалоба владельца
+   «кнопки на полсекунды скачут и встают на место». */
+.slide-container.is-active .content-z .a-in{ animation:aIn .5s ease both; }
+.slide-container.is-active .content-z .a-in-2{ animation-delay:.09s; }
+.slide-container.is-active .content-z .a-in-3{ animation-delay:.18s; }
+.slide-container.is-active .content-z .a-in-4{ animation-delay:.27s; }
+.slide-container.is-active .content-z .a-in-5{ animation-delay:.36s; }
+.slide-container.is-active .content-z .a-in-6{ animation-delay:.45s; }
+@keyframes aIn{ from{ opacity:0; } to{ opacity:1; } }
 
 @media (prefers-reduced-motion:reduce){
-  .a-flow,.a-flow-y,.a-pulse,.a-glow,.a-orbit,.a-step,.a-draw,.a-in{ animation:none !important; }
+  .a-flow,.a-flow-y,.a-pulse,.a-glow,.a-orbit,.a-step,.a-draw,.slide-container .a-in{ animation:none !important; }
 }
 </style>
 <style id="lecture-mobile">
