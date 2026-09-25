@@ -175,10 +175,13 @@ def test_shared_blocks_identical():
     # portal-deck и lecture-chrome тоже: tools/sync_lecture_blocks.py разносит
     # их из лекции 1, и когда они разъехались (у 1–2 не было починки дёрганья
     # анимаций лекций 3–6), синхронизация молча откатывала свежие правки (FR-SITE73).
+    # lecture-anim и lecture-seq — анимации и очередь подсветки a-step (FR-SITE74):
+    # разъедутся — в одной лекции узлы горят по одному, в соседней снова парами.
     for block, tag in (("slide-polish", "style"), ("notes-panel-style", "style"),
                        ("notes-panel-script", "script"), ("radial-fig", "style"),
                        ("portal-fit", "script"), ("portal-deck", "style"),
-                       ("lecture-chrome", "style")):
+                       ("lecture-chrome", "style"), ("lecture-anim", "style"),
+                       ("lecture-seq", "script")):
         seen = {}
         for rel, html in _pages():
             m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, block, tag), html, re.S)
@@ -1339,7 +1342,7 @@ def test_text_never_blinks():
         assert not p.bad, "лекция %d: мигает текст %s" % (n, p.bad[:5])
 
 
-# ── FR-SITE76: CSS лекции покрывает каждый класс разметки ────────────────
+# ── FR-SITE74: очередь подсветки — строго по одному узлу ─────────────────
 
 def _block(html, tag, ident):
     m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, ident, tag), html, re.S)
@@ -1353,6 +1356,86 @@ def _class_attrs(html):
     body = re.sub(r"<script\b.*?</script>", "", body, flags=re.S)
     return re.findall(r'\bclass="([^"]*)"', body)
 
+
+def test_step_queue_lights_one_node_at_a_time():
+    """Правка владельца по скрину «Среда исполнения»: «анимация вызовов иконок
+    почему-то по два вызывает, надо по одному по очереди». Причина — у a-step
+    было три фазы (a-step-2/-3) на пять-семь узлов: фазы повторялись, и узлы
+    горели парами. Теперь очередь ведёт скрипт lecture-seq: на активном слайде
+    горит один узел (is-lit), дальше — следующий по порядку разметки."""
+    for rel, html in list(_pages()) + [("automation/5/v2/index.html", open(
+            os.path.join(_ROOT, "automation/5/v2/index.html"), encoding="utf-8").read())]:
+        anim = _block(html, "style", "lecture-anim")
+        assert not re.search(r"\.a-step-\d", anim) and "@keyframes aStep" not in anim, \
+            "%s: у очереди остались фазы — узлы снова загорятся парами" % rel
+        assert ".a-step.is-lit" in anim, rel
+        seq = _block(html, "script", "lecture-seq")
+        for need in ("is-lit", "data-seq", "prefers-reduced-motion", "getClientRects", "setInterval"):
+            assert need in seq, "%s: в очереди нет %s" % (rel, need)
+        for cls in _class_attrs(html):
+            toks = cls.split()
+            assert not any(re.fullmatch(r"a-step-\d+", t) for t in toks), \
+                "%s: класс фазы a-step-N ничего не значит — порядок задаёт разметка: %s" % (rel, cls[:80])
+            assert not ("a-step" in toks and "a-glow" in toks), \
+                "%s: узел очереди не дышит сам по себе — два ритма на одном узле: %s" % (rel, cls[:80])
+
+
+def test_step_queue_never_dims_words():
+    """Текст не мигает (канон владельца): у узла очереди со словами гаснет
+    только значок, а горящий обводится контуром. Прозрачность .42 разрешена
+    лишь узлу без слов и значку внутри узла со словами."""
+    anim = re.sub(r"/\*.*?\*/", "", _block(_l3(), "style", "lecture-anim"), flags=re.S)
+    rules = re.findall(r"([^{}]+)\{([^{}]*opacity:\s*\.42[^{}]*)\}", anim)
+    assert rules, "нет правила гашения узла очереди"
+    for sel, _ in rules:
+        for s in sel.split(","):
+            s = s.strip()
+            assert s.endswith('[data-seq="icon"]') or s.endswith('[data-seq="text"] i'), \
+                "гасится узел со словами: %s" % s
+
+
+def test_lecture3_queue_slides_follow_the_owner():
+    """Лекция 3. «Среда исполнения»: пилюля «часы или дни» — такой же узел
+    очереди (раньше дышала рядом с горящим кружком — «по два»); ярлык рамки
+    лежит поверх плашек (z-10) и не заходит на них (поле pt-7) — «оранжевый
+    контур должен перекрывать остальное». «Компоненты ИИ-платформы»: очередь
+    на самих карточках — контур обводит карточку, а не обёртку внутри.
+    «Инженерия циклов»: круг начинается с запуска."""
+    html = _l3()
+    s7 = html[html.index('id="slide-7"'):html.index('id="slide-8"')]
+    lab = re.search(r'<span class="([^"]*)">Среда исполнения</span>', s7).group(1).split()
+    assert {"absolute", "z-10", "-top-3.5"} <= set(lab), lab
+    box = re.search(r'<div class="(relative w-full mt-6[^"]*)">', s7).group(1).split()
+    assert "pt-7" in box and "pt-5" not in box, box
+    pill = re.search(r'<span class="([^"]*)"><i class="ph-fill ph-clock[^"]*"></i> часы или дни', s7).group(1).split()
+    assert "a-step" in pill and "a-glow" not in pill, pill
+    s8 = html[html.index('id="slide-8"'):html.index('id="slide-9"')]
+    cards = re.findall(r'<div class="absolute [^"]*bg-white border border-grayBase rounded-xl[^"]*a-step">', s8)
+    assert len(cards) == 5, "слайд 8: очередь — на пяти карточках спутников, а не на обёртках"
+    s36 = html[html.index('id="slide-36"'):html.index('id="slide-37"')]
+    order = re.findall(r'a-step">\s*<i class="ph-fill ph-[a-z-]+[^"]*"></i>\s*<p[^>]*>([^<]+)</p>', s36)
+    assert order[:4] == ["Запуск", "Оценка", "Анализ", "Улучшение"], order
+
+
+# ── FR-SITE75: кнопки финала отвечают на наведение ───────────────────────
+
+def test_final_buttons_answer_hover():
+    """Правка владельца: «практика — нет наводки на последнем экране ни в 1,
+    ни в 2, ни в 3 лекции». У «Практики» курсор был обычной стрелкой, и она
+    никак не отвечала на наведение. Теперь обе кнопки финала — с курсором-
+    рукой и заливкой градиентом бренда при наведении (только для мыши)."""
+    polish = _block(_l3(), "style", "slide-polish")
+    assert re.search(r"\.slide-container \.lec-practice-btn, \.slide-container \.lec-practice-btn \*\{ cursor:pointer; \}",
+                     polish), "у «Практики» нет курсора-руки"
+    hover = polish[polish.index("@media (hover:hover){\n  .slide-container #open-quiz-btn:hover"):]
+    hover = hover[:hover.index("@keyframes finalBtnShimmer")]
+    assert ".slide-container .lec-practice-btn:hover" in hover and "linear-gradient" in hover, \
+        "«Практика» не отвечает на наведение"
+    assert "box-shadow" not in hover and "transform" not in hover, \
+        "без тени и без сдвига: теней в лекциях нет, кнопки не «скачут»"
+
+
+# ── FR-SITE76: CSS лекции покрывает каждый класс разметки ────────────────
 
 def _css_classes(css):
     out = set()

@@ -2099,7 +2099,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                 </div>
                 <div class="a-in a-in-2">
                     <div class="bg-white border border-grayBase rounded-[18px] md:rounded-3xl px-3 py-3 md:px-4 md:py-8 flex flex-row md:flex-col items-center justify-start md:justify-center gap-3 md:gap-0 h-full">
-                        <div class="relative w-14 h-14 md:w-24 md:h-24 shrink-0 md:mb-5 a-step a-step-2">
+                        <div class="relative w-14 h-14 md:w-24 md:h-24 shrink-0 md:mb-5 a-step">
                             <div class="absolute inset-0 rounded-full border-2 border-dashed border-solar/40 a-orbit"></div>
                             <div class="absolute inset-[13%] bg-solar/30 rounded-full flex items-center justify-center text-black"><i class="ph-fill ph-database text-[26px] md:text-4xl"></i></div>
                         </div>
@@ -2111,7 +2111,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                 </div>
                 <div class="a-in a-in-3">
                     <div class="bg-black text-white border-2 border-solar rounded-[18px] md:rounded-3xl px-3 py-3 md:px-4 md:py-8 flex flex-row md:flex-col items-center justify-start md:justify-center gap-3 md:gap-0 h-full">
-                        <div class="relative w-14 h-14 md:w-24 md:h-24 shrink-0 md:mb-5 a-step a-step-3">
+                        <div class="relative w-14 h-14 md:w-24 md:h-24 shrink-0 md:mb-5 a-step">
                             <div class="absolute inset-0 rounded-full border-2 border-dashed border-solar/60 a-orbit"></div>
                             <div class="absolute inset-[13%] bg-white/10 rounded-full flex items-center justify-center text-solar"><i class="ph-fill ph-robot text-[26px] md:text-4xl"></i></div>
                         </div>
@@ -3039,8 +3039,9 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                  действие → скрытые решения → вопросы интервью (a-step только на значках, текст не мигает).
                  Скругление [16px]/[24px], а не rounded-2xl: правило iconPop колоды у прямых <i> карточки
                  rounded-2xl перебивает a-step. md:p-2 у обоих значков — симметрия: в lecture-mobile есть
-                 адресное #slide-13 [class*="p-2"]{padding:.45rem}, и оно ловит «a-step-2» у мозга; второй значок
-                 получает тот же отступ, иначе зазоры значок—слово в двух карточках разные -->
+                 адресное #slide-13 [class*="p-2"]{padding:.45rem}, и оно ловит md:p-2 у обоих значков
+                 (раньше у мозга его ловил ещё и класс фазы a-step-2 — фаз больше нет, очередь идёт по
+                 порядку разметки), поэтому зазоры значок—слово в двух карточках одинаковые -->
             <div class="flex flex-col md:flex-row items-stretch justify-center gap-1.5 md:gap-5 w-full bg-grayBase/20 p-3 md:p-5 rounded-[20px] md:rounded-[36px] border border-grayBase">
                 <div class="bg-white border border-grayBase px-3 py-3 md:px-6 md:py-5 rounded-[16px] md:rounded-[24px] text-center w-full md:w-[36%] flex flex-col items-center justify-center">
                     <div class="flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-0">
@@ -3054,7 +3055,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
 
                 <div class="bg-black border-2 border-solar px-3 py-3 md:px-6 md:py-5 rounded-[16px] md:rounded-[24px] text-center text-white w-full md:flex-1 flex flex-col items-center justify-center">
                     <div class="flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-0 mb-1.5 md:mb-4">
-                        <i class="ph-fill ph-brain text-2xl md:text-5xl text-solar md:p-2 a-step a-step-2"></i>
+                        <i class="ph-fill ph-brain text-2xl md:text-5xl text-solar md:p-2 a-step"></i>
                         <h3 class="font-black text-sm md:text-2xl text-solar leading-tight m-0">Скрытые микро-решения</h3>
                     </div>
                     <ul class="text-[10px] md:text-lg text-left space-y-1.5 md:space-y-2 text-white/80 w-fit mx-auto my-0">
@@ -3072,16 +3073,16 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
             <p class="text-center text-black/40 text-[10px] md:text-sm font-bold uppercase tracking-widest mt-3 md:mt-6 mb-1.5 md:mb-3">Что спрашивать на интервью</p>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-1.5 md:gap-3 w-full">
                 <div class="bg-grayBase/30 border border-grayBase rounded-xl px-3 md:px-2 py-1.5 md:py-3 flex items-center justify-center text-center">
-                    <p class="text-[10px] md:text-[15px] font-bold text-black leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-question text-[#F97316] mr-1 a-step a-step-3"></i>Почему такое решение?</p>
+                    <p class="text-[10px] md:text-[15px] font-bold text-black leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-question text-[#F97316] mr-1 a-step"></i>Почему такое решение?</p>
                 </div>
                 <div class="bg-grayBase/30 border border-grayBase rounded-xl px-3 md:px-2 py-1.5 md:py-3 flex items-center justify-center text-center">
-                    <p class="text-[10px] md:text-[15px] font-bold text-black leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-question text-[#F97316] mr-1 a-step a-step-3"></i>На что смотрите сначала?</p>
+                    <p class="text-[10px] md:text-[15px] font-bold text-black leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-question text-[#F97316] mr-1 a-step"></i>На что смотрите сначала?</p>
                 </div>
                 <div class="bg-grayBase/30 border border-grayBase rounded-xl px-3 md:px-2 py-1.5 md:py-3 flex items-center justify-center text-center">
-                    <p class="text-[10px] md:text-[15px] font-bold text-black leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-question text-[#F97316] mr-1 a-step a-step-3"></i>Как понять, что хорошо?</p>
+                    <p class="text-[10px] md:text-[15px] font-bold text-black leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-question text-[#F97316] mr-1 a-step"></i>Как понять, что хорошо?</p>
                 </div>
                 <div class="bg-grayBase/30 border border-grayBase rounded-xl px-3 md:px-2 py-1.5 md:py-3 flex items-center justify-center text-center">
-                    <p class="text-[10px] md:text-[15px] font-bold text-black leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-question text-[#F97316] mr-1 a-step a-step-3"></i>Когда делаете исключение?</p>
+                    <p class="text-[10px] md:text-[15px] font-bold text-black leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-question text-[#F97316] mr-1 a-step"></i>Когда делаете исключение?</p>
                 </div>
             </div>
         </div>
@@ -3137,7 +3138,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <p class="text-[9px] md:text-base font-bold m-0 whitespace-nowrap">Маршрут А · стандарт</p>
                     </div>
                     <div class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl px-2 py-1.5 md:px-5 md:py-2.5 flex items-center gap-1.5 md:gap-2.5">
-                        <i class="ph-bold ph-arrow-bend-down-right text-solar text-sm md:text-xl shrink-0 a-step a-step-3"></i>
+                        <i class="ph-bold ph-arrow-bend-down-right text-solar text-sm md:text-xl shrink-0 a-step"></i>
                         <p class="text-[9px] md:text-base font-bold m-0 whitespace-nowrap">Маршрут Б · проверка</p>
                     </div>
                 </div>
@@ -3236,8 +3237,8 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                     <div class="flex-1 min-w-0 h-14 md:h-28 flex items-center justify-evenly gap-2 text-black/40 text-2xl md:text-5xl">
                         <div class="flex flex-col items-center gap-0.5 md:gap-1"><i class="ph-fill ph-circle text-black a-step"></i><span class="text-[7px] md:text-xs font-bold uppercase tracking-wider leading-none md:leading-none text-black/40">Шаг 1</span></div><i class="ph-bold ph-arrow-right mb-3 md:mb-4"></i>
-                        <div class="flex flex-col items-center gap-0.5 md:gap-1"><i class="ph-fill ph-circle text-black a-step a-step-2"></i><span class="text-[7px] md:text-xs font-bold uppercase tracking-wider leading-none md:leading-none text-black/40">Шаг 2</span></div><i class="ph-bold ph-arrow-right mb-3 md:mb-4"></i>
-                        <div class="flex flex-col items-center gap-0.5 md:gap-1"><i class="ph-fill ph-circle text-black a-step a-step-3"></i><span class="text-[7px] md:text-xs font-bold uppercase tracking-wider leading-none md:leading-none text-black/40">Шаг 3</span></div>
+                        <div class="flex flex-col items-center gap-0.5 md:gap-1"><i class="ph-fill ph-circle text-black a-step"></i><span class="text-[7px] md:text-xs font-bold uppercase tracking-wider leading-none md:leading-none text-black/40">Шаг 2</span></div><i class="ph-bold ph-arrow-right mb-3 md:mb-4"></i>
+                        <div class="flex flex-col items-center gap-0.5 md:gap-1"><i class="ph-fill ph-circle text-black a-step"></i><span class="text-[7px] md:text-xs font-bold uppercase tracking-wider leading-none md:leading-none text-black/40">Шаг 3</span></div>
                     </div>
                 </div>
 
@@ -4045,7 +4046,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                     <div class="bg-white border border-grayBase p-2.5 md:p-5 rounded-2xl text-center shadow-sm w-full md:w-1/3 flex flex-col a-in a-in-2">
                         <span class="text-[8px] md:text-xs font-bold text-black/40 uppercase tracking-widest block mb-1 md:mb-3">Точка 2</span>
-                        <div class="w-11 h-11 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-3 shrink-0 a-step a-step-2"><i class="ph-fill ph-user-check text-xl md:text-3xl text-black"></i></div>
+                        <div class="w-11 h-11 md:w-16 md:h-16 bg-grayBase rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-3 shrink-0 a-step"><i class="ph-fill ph-user-check text-xl md:text-3xl text-black"></i></div>
                         <h4 class="font-black text-xs md:text-xl text-black mb-0.5 md:mb-4 leading-tight min-h-[2.4em] md:min-h-0 flex items-start justify-center">Подтверж&shy;дение</h4>
                         <div class="flex flex-col gap-1 md:gap-2 w-full mt-auto md:flex-1">
                             <span class="md:flex-1 md:flex md:items-center md:justify-center bg-grayBase/40 border-grayBase border rounded-md md:rounded-lg px-1.5 py-1 md:px-2 md:py-1.5 text-[8px] md:text-xs font-bold text-black/60 leading-tight">Когда нужно подтверждение?</span>
@@ -4054,7 +4055,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                     <div class="bg-black border-2 border-solar p-2.5 md:p-5 rounded-2xl text-center shadow-2xl w-full md:w-1/3 relative text-white z-10 flex flex-col a-in a-in-3">
                         <span class="text-solar font-bold text-[8px] md:text-xs uppercase tracking-widest block mb-1 md:mb-3">Точка 3</span>
-                        <div class="w-11 h-11 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-3 shrink-0 text-solar a-step a-step-3"><i class="ph-fill ph-warning text-xl md:text-3xl"></i></div>
+                        <div class="w-11 h-11 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-3 shrink-0 text-solar a-step"><i class="ph-fill ph-warning text-xl md:text-3xl"></i></div>
                         <h4 class="font-black text-xs md:text-xl text-solar mb-0.5 md:mb-4 leading-tight min-h-[2.4em] md:min-h-0 flex items-start justify-center">Эскалация</h4>
                         <div class="flex flex-col gap-1 md:gap-2 w-full mt-auto md:flex-1">
                             <span class="md:flex-1 md:flex md:items-center md:justify-center bg-white/10 border-white/20 border rounded-md md:rounded-lg px-1.5 py-1 md:px-2 md:py-1.5 text-[8px] md:text-xs font-bold text-white/80 leading-tight">В каком случае нужна&nbsp;эскалация?</span>
@@ -4890,7 +4891,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     <div class="flex items-center justify-center self-center shrink-0 w-6 md:w-10 rotate-90 md:rotate-0 a-in a-in-2"><div class="h-[2px] flex-1 text-white/60 a-flow"></div><i class="ph-bold ph-caret-right text-sm md:text-xl text-solar -ml-1 shrink-0"></i></div>
                     <div class="bg-white/10 border border-white/20 rounded-xl md:rounded-2xl flex-1 w-full px-3 py-3 md:px-2 md:py-5 flex items-center justify-center a-in a-in-3">
                         <div class="w-[240px] md:w-full flex flex-row md:flex-col items-center gap-3 md:gap-0 text-left md:text-center">
-                            <span class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/10 flex items-center justify-center shrink-0 md:mb-3 a-step a-step-2"><i class="ph-fill ph-target text-solar text-2xl md:text-3xl"></i></span>
+                            <span class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/10 flex items-center justify-center shrink-0 md:mb-3 a-step"><i class="ph-fill ph-target text-solar text-2xl md:text-3xl"></i></span>
                             <div class="min-w-0">
                                 <p class="text-sm md:text-lg font-bold leading-tight whitespace-nowrap m-0">2. Найти точки ИИ</p>
                                 <p class="text-[12.5px] md:text-[13px] text-white/50 leading-tight whitespace-nowrap m-0 mt-0.5 md:mt-1">реестр с эффектом</p>
@@ -4900,7 +4901,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     <div class="flex items-center justify-center self-center shrink-0 w-6 md:w-10 rotate-90 md:rotate-0 a-in a-in-4"><div class="h-[2px] flex-1 text-white/60 a-flow"></div><i class="ph-bold ph-caret-right text-sm md:text-xl text-solar -ml-1 shrink-0"></i></div>
                     <div class="bg-white/10 border border-white/20 rounded-xl md:rounded-2xl flex-1 w-full px-3 py-3 md:px-2 md:py-5 flex items-center justify-center a-in a-in-5">
                         <div class="w-[240px] md:w-full flex flex-row md:flex-col items-center gap-3 md:gap-0 text-left md:text-center">
-                            <span class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/10 flex items-center justify-center shrink-0 md:mb-3 a-step a-step-3"><i class="ph-fill ph-compass-tool text-solar text-2xl md:text-3xl"></i></span>
+                            <span class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/10 flex items-center justify-center shrink-0 md:mb-3 a-step"><i class="ph-fill ph-compass-tool text-solar text-2xl md:text-3xl"></i></span>
                             <div class="min-w-0">
                                 <p class="text-sm md:text-lg font-bold leading-tight whitespace-nowrap m-0">3.&nbsp;<span class="whitespace-nowrap">TO-BE</span> модель</p>
                                 <p class="text-[12.5px] md:text-[13px] text-white/50 leading-tight whitespace-nowrap m-0 mt-0.5 md:mt-1">пересборка, а не вставка</p>
@@ -8284,10 +8285,32 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
   .slide-container [class*="lg:scale-105"]:hover{ transform:scale(1.05) !important; }
 }
 
-/* 25. На слайдах нечего нажимать — курсор всюду обычный; единственная
-   настоящая кнопка — «Пройти тест» на финальном слайде. */
+/* 25. На слайдах нечего нажимать — курсор всюду обычный; настоящие кнопки —
+   «Пройти тест» и «Практика» на финальном слайде. У «Практики» курсор был
+   обычной стрелкой, и она не отвечала на наведение вовсе (правка владельца:
+   «практика — нет наводки на последнем экране»). */
 .slide-container .content-z, .slide-container .content-z *{ cursor:default; }
-.slide-container #open-quiz-btn, .slide-container #open-quiz-btn *{ cursor:pointer; }
+.slide-container #open-quiz-btn, .slide-container #open-quiz-btn *,
+.slide-container .lec-practice-btn, .slide-container .lec-practice-btn *{ cursor:pointer; }
+/* 25а. Отклик кнопок финала на наведение (FR-SITE75) — как у белых кнопок
+   главной: заливка градиентом бренда с медленным переливом. Без тени (теней
+   в лекциях нет) и без сдвига (кнопки не «скачут»). Остальное содержимое
+   слайда на наведение по-прежнему не отвечает (FR-LECTURE-20). Только для
+   мыши: на телефоне «залипший» hover красил бы кнопку после касания. */
+@media (hover:hover){
+  .slide-container #open-quiz-btn:hover, .slide-container #open-quiz-btn:focus-visible,
+  .slide-container .lec-practice-btn:hover, .slide-container .lec-practice-btn:focus-visible{
+    background:linear-gradient(100deg,#8854F3 0%,#F97316 50%,#8854F3 100%) !important;
+    background-size:250% 250% !important;
+    border-color:transparent !important;
+    color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
+    animation:finalBtnShimmer 4.5s ease infinite;
+  }
+  .slide-container #open-quiz-btn:hover i, .slide-container .lec-practice-btn:hover i{
+    color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important;
+  }
+}
+@keyframes finalBtnShimmer{ 0%,100%{ background-position:0% 50%; } 50%{ background-position:100% 50%; } }
 
 /* 26. Галочки/крестики списков: глиф центрируется по ПЕРВОЙ строке текста на
    любом брейкпоинте. Фиксированный mt-0.5 при разных кеглях иконки и текста
@@ -8399,11 +8422,43 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 .a-orbit{ animation:aOrbit 18s linear infinite; }
 @keyframes aOrbit{ to{ transform:rotate(360deg); } }
 
-/* очередь подсветки: три узла цикла загораются по очереди */
-.a-step{ animation:aStep 3.6s ease-in-out infinite; }
-.a-step-2{ animation-delay:1.2s; }
-.a-step-3{ animation-delay:2.4s; }
-@keyframes aStep{ 0%,22%{ opacity:1; } 40%,100%{ opacity:.42; } }
+/* очередь подсветки: узлы a-step загораются СТРОГО по одному, по порядку
+   разметки (FR-SITE74). Ведёт её скрипт lecture-seq: горящему узлу ставит
+   is-lit и на каждом показе слайда начинает с первого узла. Раньше очередь
+   была чистым CSS на три фазы (a-step-2/-3) — на пяти-семи узлах фазы
+   повторялись, и узлы горели по два-три разом (правка владельца: «по два
+   вызывает, надо по одному по очереди»). Несколько групп на слайде идут
+   друг за другом, а не хором.
+   Узел без слов (кружок-значок, полоска трассы) гаснет прозрачностью. У узла
+   со словами гаснет только значок, а горящий обводится контуром: текст не
+   мигает (канон владельца), контур — не тень (теней в лекциях нет). Контур
+   оранжевый: фиолетовый терялся на фиолетовых плашках (обвязка на слайде
+   «Полная архитектура»), а оранжевый виден и на белой, и на тёмной, и на
+   фиолетовой карточке.
+   Переходы разрешены явно: portal-deck глушит transition у всего содержимого
+   слайда (FR-LECTURE-20), и без !important узел гас бы рывком. Гаснет узел
+   быстро (.2s), а загорается следующий с задержкой .15s: при общем плавном
+   переходе на стыке шагов почти полсекунды светились два узла разом. Появление
+   значка (iconPop) кончалось на opacity:1 и роняло его в .42 тоже рывком,
+   поэтому у гаснущих значков его нет. */
+html.seq-on .slide-container .content-z .a-step[data-seq="icon"],
+html.seq-on .slide-container .content-z .a-step[data-seq="text"] i{
+  opacity:.42; transition:opacity .2s ease !important;
+}
+html.seq-on .slide-container .content-z i.a-step[data-seq="icon"],
+html.seq-on .slide-container .content-z .a-step[data-seq="text"] i{ animation:none !important; }
+html.seq-on .slide-container .content-z .a-step[data-seq="text"]{
+  outline:2px solid rgba(249,115,22,0); outline-offset:1px;
+  transition:outline-color .2s ease, outline-offset .2s ease !important;
+}
+html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="icon"],
+html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"] i{
+  opacity:1; transition:opacity .35s ease .15s !important;
+}
+html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{
+  outline-color:rgba(249,115,22,.9); outline-offset:3px;
+  transition:outline-color .35s ease .15s, outline-offset .35s ease .15s !important;
+}
 
 /* прочерчивание линии в схеме */
 .a-draw{ stroke-dasharray:6 6; animation:aDraw 1.4s linear infinite; }
@@ -8426,9 +8481,52 @@ html.dark .slide-container [class~="bg-white"][class*="border-4"][class*="rounde
 @keyframes aIn{ from{ opacity:0; } to{ opacity:1; } }
 
 @media (prefers-reduced-motion:reduce){
-  .a-flow,.a-flow-y,.a-pulse,.a-glow,.a-orbit,.a-step,.a-draw,.slide-container .a-in{ animation:none !important; }
+  .a-flow,.a-flow-y,.a-pulse,.a-glow,.a-orbit,.a-draw,.slide-container .a-in{ animation:none !important; }
 }
 </style>
+<script id="lecture-seq">
+/* Очередь подсветки a-step (FR-SITE74), стили — в блоке lecture-anim.
+   На активном слайде горит ровно один узел a-step; через STEP мс — следующий
+   по порядку разметки, по кругу. На каждом показе слайда очередь начинается
+   с первого узла. Узлы, скрытые в этой форме (md:hidden и т.п.), в очередь
+   не входят — иначе на ПК «горели» бы невидимые узлы телефона и очередь
+   стояла пустой. Узел со словами получает data-seq="text": у него гаснет
+   значок, а не текст. При reduced motion очередь не запускается — всё горит
+   ровно (так же снимаются кадры для роликов и приёмки). */
+(function(){
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var STEP = 1100, slide = null, nodes = [], t0 = 0, lit = -1, width = 0;
+  function mark(){
+    var all = document.querySelectorAll('.slide-container .a-step');
+    for (var i = 0; i < all.length; i++){
+      if (!all[i].hasAttribute('data-seq'))
+        all[i].setAttribute('data-seq', all[i].textContent.trim() ? 'text' : 'icon');
+    }
+    document.documentElement.classList.add('seq-on');
+  }
+  function collect(s){
+    var out = [], all = s ? s.querySelectorAll('.a-step') : [];
+    for (var i = 0; i < all.length; i++) if (all[i].getClientRects().length) out.push(all[i]);
+    return out;
+  }
+  function tick(){
+    var s = document.querySelector('.slide-container.is-active') ||
+            document.querySelector('.slide-container.opacity-100');
+    if (s !== slide || window.innerWidth !== width){
+      for (var i = 0; i < nodes.length; i++) nodes[i].classList.remove('is-lit');
+      slide = s; width = window.innerWidth; nodes = collect(s); t0 = Date.now(); lit = -1;
+    }
+    if (!nodes.length) return;
+    var k = Math.floor((Date.now() - t0) / STEP) % nodes.length;
+    if (k === lit) return;
+    if (lit >= 0) nodes[lit].classList.remove('is-lit');
+    nodes[k].classList.add('is-lit'); lit = k;
+  }
+  function start(){ mark(); tick(); setInterval(tick, 100); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
 
 <style id="lecture-mobile">
 /* ── ТЕЛЕФОН ЭТОЙ ЛЕКЦИИ ──────────────────────────────────────────────────
