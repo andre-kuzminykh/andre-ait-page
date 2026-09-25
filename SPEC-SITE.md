@@ -2966,3 +2966,17 @@ Story: «4, 5, 6 пока поставь заглушку, что недосту
 
 Тест: `test_lectures.test_locked_modules_closed`,
 `test_no_links_to_locked_modules`, `test_locked_module_cards_have_no_href`.
+
+### FR-SITE78 — обложка превью лекции 3
+
+Story: «automation/3/cover.jpg — это обложка для 3 лекции для вебвью в телеге,
+X и т. д. — вставь».
+
+Требование:
+- Ссылка на лекцию 3 раскрывается крупной карточкой с обложкой владельца
+  `automation/3/cover.jpg` (1920×1080): `og:image`, `og:image:secure_url`,
+  тип, фактические ширина и высота, `alt`, `twitter:card =
+  summary_large_image`, `twitter:image`. Теги ставит `build/l3/assemble.py`,
+  поэтому пересборка колоды их не теряет.
+
+Тест: `test_lectures.test_lecture3_web_preview_image`.

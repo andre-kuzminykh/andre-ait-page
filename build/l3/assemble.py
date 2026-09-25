@@ -84,6 +84,21 @@ def main():
     html = html.replace("Модуль 4 — От одного агента к системе агентов", TITLE)
     html = html.replace('content="https://andre.technology/automation/4/"',
                         'content="https://andre.technology/automation/3/"', 1)
+    # ── обложка превью (Telegram, X и др.): cover.jpg владельца, 1920×1080 ──
+    # Размеры в тегах — фактические: соцсети верят тегам и не качают файл.
+    card = '    <!-- twitter:card станет summary_large_image, когда придёт обложка -->\n    <meta name="twitter:card" content="summary">\n'
+    assert html.count(card) == 1
+    img = "https://andre.technology/automation/3/cover.jpg"
+    html = html.replace(card, (
+        '    <meta property="og:image" content="%s">\n'
+        '    <meta property="og:image:secure_url" content="%s">\n'
+        '    <meta property="og:image:type" content="image/jpeg">\n'
+        '    <meta property="og:image:width" content="1920">\n'
+        '    <meta property="og:image:height" content="1080">\n'
+        '    <meta property="og:image:alt" content="Автоматизация — Модуль 3: инженерия ИИ-агентов">\n'
+        '    <meta name="twitter:card" content="summary_large_image">\n') % (img, img), 1)
+    tw = re.search(r'    <meta name="twitter:description" content="[^"]*">\n', html).group(0)
+    html = html.replace(tw, tw + '    <meta name="twitter:image" content="%s">\n' % img, 1)
     html = html.replace('<link rel="stylesheet" href="/assets/lecture-4.css">',
                         '<link rel="stylesheet" href="/assets/lecture-3.css">', 1)
 

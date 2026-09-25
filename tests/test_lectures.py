@@ -709,6 +709,25 @@ def test_lecture1_web_preview_image():
     assert "assets/1_long.jpg" not in html, "старая картинка превью должна уйти"
 
 
+
+def test_lecture3_web_preview_image():
+    """FR-SITE78: обложка превью лекции 3 для Telegram, X и др. — cover.jpg
+    владельца. Лежит в репозитории, на неё указывают og:image и twitter:image,
+    карточка крупная, размеры в тегах совпадают с фактическими."""
+    from PIL import Image
+    path = os.path.join(_ROOT, "automation/3/cover.jpg")
+    assert os.path.isfile(path), "нет файла automation/3/cover.jpg"
+    w, h = Image.open(path).size
+    html = _l3()
+    url = "https://andre.technology/automation/3/cover.jpg"
+    for tag in ('<meta property="og:image" content="%s">' % url,
+                '<meta property="og:image:secure_url" content="%s">' % url,
+                '<meta name="twitter:image" content="%s">' % url,
+                '<meta property="og:image:width" content="%d">' % w,
+                '<meta property="og:image:height" content="%d">' % h,
+                '<meta name="twitter:card" content="summary_large_image">'):
+        assert tag in html, "нет тега: " + tag
+
 # ── Доступ к модулям 2-8 закрыт (правка владельца) ────────────────────────
 
 def _published_pages():
