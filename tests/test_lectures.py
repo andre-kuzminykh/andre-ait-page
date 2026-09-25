@@ -1243,6 +1243,12 @@ def test_practice3_workflow_first_agent_in_one_zone():
     for word in ("ИИ-операции", "Агенты", "JSON-схема", "Примеры", "Инструменты", "лимит итераций"):
         assert word in p2, "промт 2 (промты ИИ-операций и агентов): «%s»" % word
     assert "ОДНОГО самого ценного" not in html
+    # Зоны агента практики 3 есть в TO-BE практики 2 («Чем закрывать») — цепочка сходится
+    p2 = norm(open(os.path.join(_ROOT, "automation/2/practice/index.html"), encoding="utf-8").read())
+    fixes = " ".join(re.findall(r'<ul class="fix">(.*?)</ul>', p2, re.S))
+    for zone in ("переписке с клиентом", "переписка с кандидатом", "ответы на типовые вопросы",
+                 "правки в макетах", "исправление бага"):
+        assert zone in fixes, "в TO-BE практики 2 нет зоны агента: «%s»" % zone
 
 # ── FR-SITE71: ролики лекции 3 на месте, квадрат 514 и faststart ──────────
 
