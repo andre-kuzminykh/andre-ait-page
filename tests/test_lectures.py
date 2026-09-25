@@ -172,9 +172,13 @@ def test_shared_blocks_identical():
     попадает в одни файлы и не попадает в другие. Тест ловит это сразу.
     """
     import hashlib
+    # portal-deck и lecture-chrome тоже: tools/sync_lecture_blocks.py разносит
+    # их из лекции 1, и когда они разъехались (у 1–2 не было починки дёрганья
+    # анимаций лекций 3–6), синхронизация молча откатывала свежие правки (FR-SITE73).
     for block, tag in (("slide-polish", "style"), ("notes-panel-style", "style"),
                        ("notes-panel-script", "script"), ("radial-fig", "style"),
-                       ("portal-fit", "script")):
+                       ("portal-fit", "script"), ("portal-deck", "style"),
+                       ("lecture-chrome", "style")):
         seen = {}
         for rel, html in _pages():
             m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, block, tag), html, re.S)
@@ -1062,6 +1066,22 @@ def test_lecture3_leads_to_its_practice():
     assert 'id="open-quiz-btn"' in html
 
 
+def test_lecture3_quiz_result_names_its_own_topics():
+    """Экран результата теста — тексты лекции 3. Каркас лекции 4 нёс тексты
+    лекции 2, и «что перечитать» отправляло не в ту лекцию (правка владельца:
+    «там, где ошибки делаются, что перечитать — проверь»)."""
+    html = _l3()
+    descs = re.findall(r"\n                desc = '([^']+)';", html)
+    assert len(descs) == 4, "четыре уровня результата"
+    text = " ".join(descs)
+    for foreign in ("ограничение потока", "реестр точек", "Ценность — Сложность", "H0–H3",
+                    "Вы мыслите процессами", "точки решений"):
+        assert foreign not in text, "на экране результата текст лекции 2: «%s»" % foreign
+    for topic in ("среду исполнения", "обвязку", "граф навыков", "вызов функций",
+                  "спецификация ИИ-агента", "воркфлоу"):
+        assert topic in text, "«что перечитать» называет темы слайдов лекции 3: «%s»" % topic
+
+
 def test_lecture3_uses_owner_vocabulary():
     """Слова владельца: «промт» (не «промпт»), «воркфлоу» кириллицей, «запуск»."""
     html = _l3()
@@ -1102,6 +1122,14 @@ def test_practice3_agent_architectures():
     ref = open(os.path.join(_ROOT, "automation/1/practice/index.html"), encoding="utf-8").read()
     assert bubble(html) == bubble(ref), "кружок практики лекции 3 разъехался с эталоном лекции 1"
     assert "bubble-ready" not in html, "кружок не прячется до загрузки ролика"
+    # «Какого агента взять» — четыре признака сеткой 2×2, без «следующий шаг
+    # нельзя полностью задать заранее»; ИИ-операции — только на шаге 3, в
+    # легенде «ИИ-модель» их нет (правки владельца).
+    crit = re.search(r'<ul class="criteria">(.*?)</ul>', html, re.S).group(1)
+    assert crit.count("<li") == 4, "признаков выбора участка — четыре"
+    assert "нельзя полностью задать заранее" not in crit
+    assert "по четырём признакам" in html
+    assert "ops-line" not in html, "список операций живёт только на шаге 3"
     # На мониторах от 1600px у body zoom 1.15–1.5: без контейнера-мерки с
     # обратным zoom mermaid мерил подписи увеличенными — блоки узлов шире
     # текста, длинная подпись в одну строку и срезана (приёмка 1920×1080).
@@ -1177,6 +1205,138 @@ def test_lecture3_clips_are_uploaded_square_and_faststart():
     cover = os.path.join(_ROOT, "assets/video_l3/practice.jpg")
     with open(cover, "rb") as f:
         assert f.read(3) == b"\xff\xd8\xff", "обложка практики — jpg с первым кадром ролика"
+
+
+
+# ── FR-SITE72: тест и финал — вопрос ближе к шапке, путь к практике ───────
+
+def test_quiz_header_sits_close_to_the_question():
+    """Скрин владельца «в тестах расстояние большое»: под шапкой и под полосой
+    прогресса было по 2.5rem, вопрос стоял далеко от «Вопрос N из 10»."""
+    for rel, html in _pages():
+        modal = html[html.index('id="quiz-modal"'):]
+        assert '<div class="flex items-center justify-between mb-4 md:mb-6 shrink-0">' in modal, rel
+        assert 'overflow-hidden mb-5 md:mb-8">' in modal, rel
+        assert "mb-6 md:mb-10 shrink-0" not in modal, rel
+
+
+def test_quiz_soon_is_one_line():
+    """«Следующая лекция будет доступна на следующей неделе» — в одну строку."""
+    for rel, html in _pages():
+        rule = re.search(r"\.quiz-soon\{[^}]*\}", html).group(0)
+        assert "white-space:nowrap" in rule and "max-width:24rem" not in rule, rel
+
+
+def test_quiz_result_header_says_result():
+    """Над итогом теста — «Результат», а не «Вопрос 10 из 10»: у лекций 2–6
+    счётчик на экране итога заменён, у лекции 1 он оставался (приёмка тестов
+    лекций 1–3: «проверь вообще ещё раз хорошо эти три лекции»)."""
+    for rel, html in _pages():
+        show = html[html.index("function showResults()"):]
+        show = show[:show.index("const score = quizScore;")]
+        assert "quizProgress.textContent = 'Результат';" in show, rel
+
+
+def _quiz(html):
+    """[(варианты, индекс верного)] из const quizQuestions: строки в одинарных
+    (лекции 1–2) или двойных (лекция 3, собрана из quiz.json) кавычках."""
+    block = re.search(r"const quizQuestions = \[(.*?)\n        \];", html, re.S).group(1)
+    lit = r"'((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\""
+    out = []
+    for opts, correct in re.findall(r"options: \[(.*?)\],\s*correct: (\d+)", block, re.S):
+        out.append(([a or b for a, b in re.findall(lit, opts)], int(correct)))
+    return out
+
+
+def test_quiz_answer_is_not_given_away():
+    """Приёмка тестов лекций 1–3: верный ответ был самым длинным почти в каждом
+    вопросе, а в лекции 1 стоял только на B и C — тест проходился правилом
+    «выбирай самый длинный». Теперь длина и позиция ответ не подсказывают."""
+    for n in (1, 2, 3):
+        html = open(os.path.join(_ROOT, "automation/%d/index.html" % n), encoding="utf-8").read()
+        quiz = _quiz(html)
+        assert len(quiz) == 10 and all(len(o) == 4 for o, _ in quiz), "лекция %d: 10 вопросов по 4 варианта" % n
+        longest = 0
+        for i, (opts, c) in enumerate(quiz, 1):
+            rest = max(len(o) for j, o in enumerate(opts) if j != c)
+            assert len(opts[c]) - rest <= 5, \
+                "лекция %d, вопрос %d: верный вариант длиннее остальных на %d знаков" % (n, i, len(opts[c]) - rest)
+            longest += len(opts[c]) > rest
+        assert longest <= 5, "лекция %d: верный вариант самый длинный в %d вопросах из 10" % (n, longest)
+        letters = {c for _, c in quiz}
+        assert len(letters) >= 3, "лекция %d: верные ответы только на %s" % (n, sorted("ABCD"[c] for c in letters))
+
+
+def test_lectures_1_3_lead_to_practice_after_the_test():
+    """Правка владельца: рядом с «Пройти тест» — кнопка «Практика», и после
+    теста — тоже «Практика» (а не «Буткемп» и не «Практическое задание»)."""
+    for n in (1, 2, 3):
+        html = open(os.path.join(_ROOT, "automation/%d/index.html" % n), encoding="utf-8").read()
+        url = "https://andre.technology/automation/%d/practice/" % n
+        m = re.search(r'<a class="quiz-next" href="([^"]+)">\s*([^<]+?)\s*<i', html)
+        assert m and m.group(1) == url and m.group(2) == "Практика", \
+            "лекция %d: после теста — кнопка «Практика»" % n
+        final = html[html.index('id="open-quiz-btn"'):html.index("<!-- Модальное окно теста -->")]
+        assert re.search(r'<a href="%s" class="lec-practice-btn[^"]*">\s*<i[^>]*></i>\s*Практика\s*</a>'
+                         % re.escape(url), final), "лекция %d: рядом с тестом — «Практика»" % n
+
+
+def test_lecture3_every_day_pill_does_not_blink():
+    """Слайд 0 лекции 3: пилюля «работает каждый день» не дышит (правка
+    владельца «пусть не мигает»); крутятся только стрелки цикла."""
+    html = _l3()
+    pill = re.search(r'<div class="bg-solar rounded-xl md:rounded-full[^"]*"[^>]*>\s*'
+                     r'<i class="ph-bold ph-arrows-clockwise[^"]*"></i>\s*<p[^>]*>.*?каждый день', html, re.S).group(0)
+    assert "a-pulse" not in pill.split(">", 1)[0], "пилюля «работает каждый день» мигает"
+
+
+
+# ── FR-SITE73: лекции 1–2 на каноне лекций 3–6 ────────────────────────────
+
+def test_every_lecture_has_the_phone_canvas_of_the_canon():
+    """Без tightW запас 0.97 копился шесть раз, и на телефоне мелкими были ВСЕ
+    слайды сразу (LECTURE-GUIDE §3.2) — так было у лекции 1."""
+    for rel, html in _pages():
+        floor = re.search(r'<script id="lecture-floor">(.*?)</script>', html, re.S).group(1)
+        assert "window.__FIT = { mob: { bottom: 72 }, tightW: true };" in floor, rel
+
+
+
+def test_text_never_blinks():
+    """Правка владельца «работает каждый день — пусть не мигает»: a-pulse мигает
+    прозрачностью вместе со словами, поэтому он стоит только на значках и
+    кольцах без текста. Живой акцент блока со словами — дышащая рамка a-glow."""
+    from html.parser import HTMLParser
+
+    class Blink(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.stack, self.bad = [], []
+
+        def handle_starttag(self, tag, attrs):
+            if tag not in ("br", "img", "input", "meta", "link"):
+                self.stack.append([tag, dict(attrs).get("class") or "", ""])
+
+        def handle_endtag(self, tag):
+            while self.stack:
+                t, cls, txt = self.stack.pop()
+                if "a-pulse" in cls.split() and txt.strip():
+                    self.bad.append(txt.strip()[:40])
+                if self.stack:
+                    self.stack[-1][2] += txt
+                if t == tag:
+                    break
+
+        def handle_data(self, d):
+            if self.stack:
+                self.stack[-1][2] += d
+
+    for n in (1, 2, 3):
+        html = open(os.path.join(_ROOT, "automation/%d/index.html" % n), encoding="utf-8").read()
+        body = html[html.index('id="slide-0"'):html.index("<!-- Модальное окно теста -->")]
+        p = Blink()
+        p.feed(re.sub(r"<!--.*?-->", "", body, flags=re.S))
+        assert not p.bad, "лекция %d: мигает текст %s" % (n, p.bad[:5])
 
 
 if __name__ == "__main__":

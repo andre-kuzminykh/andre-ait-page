@@ -430,7 +430,12 @@ JS_TEXT = r"""
     const st = getComputedStyle(el);
     if (st.visibility === 'hidden' || st.display === 'none') continue;
     if (parseFloat(st.opacity) < 0.05) continue;
-    if (!el.getClientRects().length) continue;
+    // Видимость — по рамкам самого текста, а не родителя: у обёртки
+    // display:contents рамок нет по определению, и её текст считался
+    // потерянным на телефоне, хотя виден (слайд 8 лекции 2). Текст внутри
+    // скрытого предка рамок не даёт и по-прежнему не считается.
+    const rg = document.createRange(); rg.selectNodeContents(n);
+    if (!rg.getClientRects().length) continue;
     const t = n.nodeValue.replace(/­/g, '').replace(/\s+/g, ' ').trim();
     if (t) out.push(t);
   }

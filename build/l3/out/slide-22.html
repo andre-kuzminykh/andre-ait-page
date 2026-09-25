@@ -4,7 +4,7 @@
             <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Не длина текста, а чёткая рабочая структура</p>
 
             <!-- Контраст из текста владельца: стопка «на две страницы» против документа,
-                 собранного из шести блоков. Блоки вставляются по очереди — промт собирают,
+                 собранного из семи блоков. Блоки вставляются по очереди — промт собирают,
                  а не пишут одним куском. Два блока, для которых в озвучке есть пример
                  (приоритеты и формат), выносят пример вниз бегущей линией.
                  ПК: стопка | стрелка | документ, примеры под крайними колонками документа.
@@ -50,35 +50,47 @@
                     <i class="ph-bold ph-arrow-right text-solar text-base md:text-2xl rotate-90 md:rotate-0"></i>
                 </div>
 
-                <!-- Хороший промт: чёткая рабочая структура из шести блоков (шапку-подпись владелец бы вычеркнул — её мысль уже в подзаголовке).
+                <!-- Хороший промт: чёткая рабочая структура из семи блоков (шапку-подпись владелец бы вычеркнул — её мысль уже в подзаголовке).
                      Сетка записана как grid-cols-[1fr_1fr_1fr], а не grid-cols-3: простой класс
-                     на телефоне складывается в столбик, и документ вытягивался в шесть этажей -->
+                     на телефоне складывается в столбик, и документ вытягивался в шесть этажей.
+                     Седьмой блок — «Примеры» (в ролике: «также полезно задать пару примеров»).
+                     Полоса во всю ширину под сеткой встала бы между приоритетами и форматом
+                     и их плашками внизу — линии будто падали бы из «Примеров», и плашки
+                     читались бы как сами примеры. Поэтому приоритеты и формат занимают два
+                     этажа, их низ — низ документа, линии идут прямо из них, а «Примеры»
+                     встают в середину под «Передачей человеку», последними в порядке чтения.
+                     Без auto-rows-fr: иначе третий этаж равнялся бы двухстрочным «Критериям»
+                     и документ вырастал бы на целый ряд -->
 
                 <div class="bg-black border-2 border-solar rounded-[16px] md:rounded-[24px] p-2 md:p-3 min-w-0 flex flex-col">
-                    <div class="flex-1 grid grid-cols-[1fr_1fr_1fr] auto-rows-fr gap-1.5 md:gap-3 items-stretch">
-                        <div class="bg-white/10 border border-white/15 rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2.5 flex flex-col items-center justify-center text-center h-full a-in">
+                    <div class="flex-1 grid grid-cols-[1fr_1fr_1fr] gap-1.5 md:gap-3 items-stretch">
+                        <div class="bg-white/10 border border-white/15 rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center h-full a-in">
                             <i class="ph-fill ph-identification-badge text-lg md:text-3xl text-solar mb-1"></i>
                             <h3 class="font-black text-[10px] md:text-lg text-white leading-tight m-0">Роль <span class="whitespace-nowrap">и задача</span></h3>
                         </div>
-                        <div class="bg-white/10 border border-white/15 rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2.5 flex flex-col items-center justify-center text-center h-full a-in a-in-2">
+                        <div class="bg-white/10 border border-white/15 rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-2">
                             <i class="ph-fill ph-seal-check text-lg md:text-3xl text-solar mb-1"></i>
                             <h3 class="font-black text-[10px] md:text-lg text-white leading-tight m-0">Критерии <br>правильного результата</h3>
                         </div>
-                        <div class="bg-white/10 border border-white/15 rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2.5 flex flex-col items-center justify-center text-center h-full a-in a-in-3">
+                        <div class="bg-white/10 border border-white/15 rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-3">
                             <i class="ph-fill ph-shield-check text-lg md:text-3xl text-solar mb-1"></i>
                             <h3 class="font-black text-[10px] md:text-lg text-white leading-tight m-0">Ограничения</h3>
                         </div>
-                        <div class="bg-white/10 border border-solar rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2.5 flex flex-col items-center justify-center text-center h-full a-in a-in-4">
+                        <div class="row-span-2 bg-white/10 border border-solar rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-4">
                             <i class="ph-fill ph-scales text-lg md:text-3xl text-solar mb-1 a-pulse"></i>
                             <h3 class="font-black text-[10px] md:text-lg text-white leading-tight m-0">Приоритеты правил</h3>
                         </div>
-                        <div class="bg-white/10 border border-white/15 rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2.5 flex flex-col items-center justify-center text-center h-full a-in a-in-5">
+                        <div class="bg-white/10 border border-white/15 rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-5">
                             <i class="ph-fill ph-user-switch text-lg md:text-3xl text-solar mb-1"></i>
                             <h3 class="font-black text-[10px] md:text-lg text-white leading-tight m-0">Передача человеку</h3>
                         </div>
-                        <div class="bg-white/10 border border-solar rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2.5 flex flex-col items-center justify-center text-center h-full a-in a-in-6">
+                        <div class="row-span-2 bg-white/10 border border-solar rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-6">
                             <i class="ph-fill ph-brackets-curly text-lg md:text-3xl text-solar mb-1 a-pulse"></i>
                             <h3 class="font-black text-[10px] md:text-lg text-white leading-tight m-0">Формат результата</h3>
+                        </div>
+                        <div class="bg-white/10 border border-white/15 rounded-xl md:rounded-2xl px-1 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center h-full a-in a-in-6">
+                            <i class="ph-fill ph-cards text-lg md:text-3xl text-solar mb-1"></i>
+                            <h3 class="font-black text-[10px] md:text-lg text-white leading-tight m-0">Примеры</h3>
                         </div>
                     </div>
                 </div>
