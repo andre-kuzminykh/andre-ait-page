@@ -2516,7 +2516,10 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     <h3 class="font-black text-[12px] md:text-2xl text-black leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-robot text-solar"></i> Агент</span></h3>
 
                     <div class="js-keep flex flex-row items-center justify-center gap-1.5 w-full">
-                        <!-- Телефон: кольцо шире (узел 44% = 88px), иначе «Инструмент» и «Нет данных» упираются в рамку;
+                        <!-- Очередь обходит весь круг по стрелкам: нет данных → где взять → инструмент → оценка.
+                             Раньше «Нет данных» в очереди не было: подсветка прыгала по диагонали, а его значок
+                             единственный не гас и казался горящим постоянно.
+                             Телефон: кольцо шире (узел 44% = 88px), иначе «Инструмент» и «Нет данных» упираются в рамку;
                              -my-2 забирает пустые поля квадрата над и под узлами, чтобы высота слайда и кегль не просели -->
                         <div class="w-[200px] -my-2 md:my-0 md:w-[250px] md:ml-4 shrink-0">
                         <div class="relative w-full aspect-square mx-auto">
@@ -2527,7 +2530,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                                 <span class="text-[10px] md:text-base font-black text-white leading-tight">цель</span>
                             </div>
 
-                            <div class="absolute left-[23%] top-[16%] -translate-x-1/2 -translate-y-1/2 w-[44%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-1 md:py-2 text-center">
+                            <div class="absolute left-[23%] top-[16%] -translate-x-1/2 -translate-y-1/2 w-[44%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0 py-1 md:px-1 md:py-2 text-center a-step">
                                 <i class="ph-fill ph-question text-base md:text-2xl text-solar block"></i>
                                 <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Нет данных</p>
                             </div>
@@ -3138,6 +3141,8 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
 
                 <!-- ИИ-агент сам выбирает следующий шаг: CRM появляется первым, узлы примера загораются по очереди, пунктир крутится,
                      «Решение» — оранжевый выход из цикла (появляется последним), поэтому стрелки от него к CRM нет.
+                     Очередь идёт по всему пути, от CRM до решения: раньше в ней были только три средних узла,
+                     подсветка перескакивала через кольцо назад, а значок CRM один не гас и казался горящим.
                      Кольцо опущено на 3%: верхний узел пятиугольника выше круга, нижние не доходят до низа —
                      без сдвига схема висела выше соседних колонок ("выровни по центру").
                      На телефоне боковые узлы разведены до 12/88%, а CRM поднят до 10%: в кольце 214px
@@ -3152,7 +3157,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                             <span class="text-[10px] md:text-base font-black text-white leading-tight mt-0.5">ИИ-агент</span>
                         </div>
 
-                        <div class="absolute left-1/2 top-[10%] md:top-[11%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-in">
+                        <div class="absolute left-1/2 top-[10%] md:top-[11%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-in a-step">
                             <i class="ph-fill ph-address-book text-base md:text-2xl text-solar block"></i>
                             <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Заказы <br>в CRM</p>
                         </div>
@@ -3168,7 +3173,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                             <i class="ph-fill ph-magnifying-glass text-base md:text-2xl text-solar block"></i>
                             <p class="text-[9px] md:text-sm font-black text-black leading-tight m-0">Анализ <br>результата</p>
                         </div>
-                        <div class="absolute left-[12%] md:left-[14%] top-[38%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-solar border border-solar rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-in a-in-5" style="color:#111;-webkit-text-fill-color:#111">
+                        <div class="absolute left-[12%] md:left-[14%] top-[38%] -translate-x-1/2 -translate-y-1/2 w-[38%] md:w-[34%] bg-solar border border-solar rounded-xl md:rounded-2xl px-0.5 py-1 md:px-1 md:py-2 text-center a-in a-in-5 a-step" style="color:#111;-webkit-text-fill-color:#111">
                             <i class="ph-fill ph-seal-check text-base md:text-2xl block"></i>
                             <p class="text-[9px] md:text-sm font-black leading-tight m-0">Решение <br>принято</p>
                         </div>
@@ -6961,35 +6966,38 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
 
                 <!-- Отладка: шесть подозреваемых, лупа обходит их по очереди.
                      На телефоне — кирпичная кладка по ширине слов (flex-wrap + grow): в сетке
-                     2×2 «Неоднозначная инструкция» ломалась в две строки и лупа отрывалась от слова -->
+                     2×2 «Неоднозначная инструкция» ломалась в две строки и лупа отрывалась от слова.
+                     Узел очереди — сама плашка, а не лупа: одна загоравшаяся лупа 12px на телефоне
+                     почти не видна, и половину круга очереди слайд стоял будто погасшим. Теперь
+                     горящую плашку обводит контур, гаснет только лупа, слова не мигают -->
                 <div class="a-in a-in-5 bg-white border border-grayBase rounded-[16px] md:rounded-[24px] p-2.5 md:p-4 flex flex-col h-full">
                     <div class="flex items-center justify-center gap-2 md:gap-2.5 mb-2 md:mb-4">
                         <i class="ph-fill ph-bug text-solar text-lg md:text-3xl shrink-0"></i>
                         <h3 class="font-black text-[12px] md:text-lg text-black leading-tight m-0 whitespace-nowrap">Отладка</h3>
                     </div>
                     <div class="flex-1 flex flex-wrap justify-center gap-1 md:flex-col md:flex-nowrap md:gap-2">
-                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
-                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step"></i>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2 a-step">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0"></i>
                             <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Входные данные</p>
                         </div>
-                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
-                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step"></i>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2 a-step">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0"></i>
                             <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Устаревший контекст</p>
                         </div>
-                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
-                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step"></i>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2 a-step">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0"></i>
                             <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Неоднозначная инструкция</p>
                         </div>
-                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
-                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step"></i>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2 a-step">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0"></i>
                             <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Ответ сервиса</p>
                         </div>
-                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
-                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step"></i>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2 a-step">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0"></i>
                             <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Преобразование данных</p>
                         </div>
-                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2">
-                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0 a-step"></i>
+                        <div class="grow md:flex-1 bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-1.5 py-1 md:px-2 md:py-1.5 flex items-center justify-center gap-1 md:gap-2 a-step">
+                            <i class="ph-bold ph-magnifying-glass text-solar text-xs md:text-lg shrink-0"></i>
                             <p class="text-[10px] md:text-[15px] text-black leading-tight m-0 text-center md:whitespace-nowrap">Маршрутизация</p>
                         </div>
                     </div>
@@ -11684,9 +11692,22 @@ html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"] i{
   opacity:1; transition:opacity .35s ease .15s !important;
 }
 html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{
-  outline-color:rgba(249,115,22,.9); outline-offset:3px;
+  outline-color:rgba(249,115,22,.9); outline-offset:2px;
   transition:outline-color .35s ease .15s, outline-offset .35s ease .15s !important;
 }
+/* на телефоне узлы стоят теснее (зазоры 4–5px): контур почти вплотную, иначе
+   он заходил на соседнюю карточку и на центр круга */
+@media (max-width:767px){
+  html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{ outline-offset:1px; }
+}
+/* на слайде с очередью подсвечивает только она: собственное дыхание акцентов
+   (a-glow, a-pulse) на нём стоит — рядом с горящим узлом дышащая плашка или
+   значок читались как второй горящий («по два вызывает»: на «Полной
+   архитектуре» дышала «передать человеку», на «Надёжности» — восемь значков
+   разом). Бегущие пунктиры и кольца двигаются как прежде — это движение, а не
+   подсветка. Без :has() (старые браузеры) всё просто дышит, как раньше. */
+html.seq-on .content-z:has(.a-step) .a-glow,
+html.seq-on .content-z:has(.a-step) .a-pulse{ animation:none !important; }
 
 /* прочерчивание линии в схеме */
 .a-draw{ stroke-dasharray:6 6; animation:aDraw 1.4s linear infinite; }
@@ -11740,6 +11761,10 @@ html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{
   function tick(){
     var s = document.querySelector('.slide-container.is-active') ||
             document.querySelector('.slide-container.opacity-100');
+    // Пока колода не показана (body без fit-ready — идёт подгонка), активного
+    // слайда для очереди нет: иначе к показу первого слайда очередь успевала
+    // уйти вперёд, и зритель видел её с середины, а не с первого узла.
+    if (!document.body.classList.contains('fit-ready')) s = null;
     if (s !== slide || window.innerWidth !== width){
       for (var i = 0; i < nodes.length; i++) nodes[i].classList.remove('is-lit');
       slide = s; width = window.innerWidth; nodes = collect(s); t0 = Date.now(); lit = -1;

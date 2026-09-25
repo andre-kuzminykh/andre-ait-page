@@ -8493,9 +8493,22 @@ html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"] i{
   opacity:1; transition:opacity .35s ease .15s !important;
 }
 html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{
-  outline-color:rgba(249,115,22,.9); outline-offset:3px;
+  outline-color:rgba(249,115,22,.9); outline-offset:2px;
   transition:outline-color .35s ease .15s, outline-offset .35s ease .15s !important;
 }
+/* на телефоне узлы стоят теснее (зазоры 4–5px): контур почти вплотную, иначе
+   он заходил на соседнюю карточку и на центр круга */
+@media (max-width:767px){
+  html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{ outline-offset:1px; }
+}
+/* на слайде с очередью подсвечивает только она: собственное дыхание акцентов
+   (a-glow, a-pulse) на нём стоит — рядом с горящим узлом дышащая плашка или
+   значок читались как второй горящий («по два вызывает»: на «Полной
+   архитектуре» дышала «передать человеку», на «Надёжности» — восемь значков
+   разом). Бегущие пунктиры и кольца двигаются как прежде — это движение, а не
+   подсветка. Без :has() (старые браузеры) всё просто дышит, как раньше. */
+html.seq-on .content-z:has(.a-step) .a-glow,
+html.seq-on .content-z:has(.a-step) .a-pulse{ animation:none !important; }
 
 /* прочерчивание линии в схеме */
 .a-draw{ stroke-dasharray:6 6; animation:aDraw 1.4s linear infinite; }
@@ -8549,6 +8562,10 @@ html.seq-on .slide-container .content-z .a-step.is-lit[data-seq="text"]{
   function tick(){
     var s = document.querySelector('.slide-container.is-active') ||
             document.querySelector('.slide-container.opacity-100');
+    // Пока колода не показана (body без fit-ready — идёт подгонка), активного
+    // слайда для очереди нет: иначе к показу первого слайда очередь успевала
+    // уйти вперёд, и зритель видел её с середины, а не с первого узла.
+    if (!document.body.classList.contains('fit-ready')) s = null;
     if (s !== slide || window.innerWidth !== width){
       for (var i = 0; i < nodes.length; i++) nodes[i].classList.remove('is-lit');
       slide = s; width = window.innerWidth; nodes = collect(s); t0 = Date.now(); lit = -1;

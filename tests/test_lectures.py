@@ -1369,8 +1369,10 @@ def test_step_queue_lights_one_node_at_a_time():
         assert not re.search(r"\.a-step-\d", anim) and "@keyframes aStep" not in anim, \
             "%s: у очереди остались фазы — узлы снова загорятся парами" % rel
         assert ".a-step.is-lit" in anim, rel
+        assert ":has(.a-step) .a-glow" in anim and ":has(.a-step) .a-pulse" in anim, \
+            "%s: на слайде с очередью дыхание акцентов не остановлено — рядом с горящим узлом светится второй" % rel
         seq = _block(html, "script", "lecture-seq")
-        for need in ("is-lit", "data-seq", "prefers-reduced-motion", "getClientRects", "setInterval"):
+        for need in ("is-lit", "data-seq", "prefers-reduced-motion", "getClientRects", "setInterval", "fit-ready"):
             assert need in seq, "%s: в очереди нет %s" % (rel, need)
         for cls in _class_attrs(html):
             toks = cls.split()
@@ -1415,6 +1417,21 @@ def test_lecture3_queue_slides_follow_the_owner():
     s36 = html[html.index('id="slide-36"'):html.index('id="slide-37"')]
     order = re.findall(r'a-step">\s*<i class="ph-fill ph-[a-z-]+[^"]*"></i>\s*<p[^>]*>([^<]+)</p>', s36)
     assert order[:4] == ["Запуск", "Оценка", "Анализ", "Улучшение"], order
+    # круг — целиком: узел вне очереди не гаснет и рядом с погасшими кажется
+    # горящим постоянно («Воркфлоу или агент», «LLM-функция или ИИ-агент»)
+    def queue(a, b):
+        s = html[html.index('id="slide-%d"' % a):html.index('id="slide-%d"' % b)]
+        return [re.sub(r"(?:<br>|\s)+", " ", t).strip() for t in re.findall(
+            r'a-step"[^>]*>\s*<i class="ph-fill ph-[a-z-]+[^"]*"></i>\s*<p[^>]*>(.*?)</p>', s)]
+    assert queue(4, 5)[0] == "Нет данных", queue(4, 5)
+    q9 = queue(9, 10)
+    assert q9[0] == "Заказы в CRM" and q9[-1] == "Решение принято", q9
+    q14 = queue(14, 15)
+    assert q14[:2] == ["Промт и контекст", "Модель"], q14
+    # «Наблюдаемость»: в очереди отладки плашки со словами, а не лупы по 12px
+    s39 = html[html.index('id="slide-39"'):html.index('id="slide-40"')]
+    assert not re.search(r'<i class="ph-bold ph-magnifying-glass[^"]*a-step', s39)
+    assert len(re.findall(r'rounded-xl md:rounded-2xl[^"]*a-step">\s*<i class="ph-bold ph-magnifying-glass', s39)) == 6
 
 
 # ── FR-SITE75: кнопки финала отвечают на наведение ───────────────────────
