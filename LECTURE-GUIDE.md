@@ -640,8 +640,12 @@ python3 tools/lecture_check.py kegl 3         # что-то одно
    ```
 3. Пуш в `main` запускает workflow
    [`deploy-pages`](https://github.com/andre-kuzminykh/andre-ait-page/blob/main/.github/workflows/deploy-pages-manual.yml):
-   `checkout` → `configure-pages` → `upload-pages-artifact` с `path: .`
-   (**весь корень репозитория целиком**) → `deploy-pages`.
+   `checkout` → `configure-pages` → копия корня репозитория **без закрытых
+   модулей** (`automation/4`, `5`, `6` — FR-SITE77) → `upload-pages-artifact`
+   → `deploy-pages`. Закрытый модуль лежит в репозитории (каркас лекции 4
+   нужен для сборки лекции 3), но на сайт не попадает: по его адресу 404.html
+   говорит «Модуль N ещё закрыт». Открыть модуль — убрать его `--exclude` из
+   workflow и поправить `test_locked_modules_closed`.
 4. Дождаться `success` в
    [Actions](https://github.com/andre-kuzminykh/andre-ait-page/actions).
    В логе шага должно быть `syncing_files` и `Reported success!`.
