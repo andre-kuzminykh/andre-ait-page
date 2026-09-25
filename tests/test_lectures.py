@@ -1456,6 +1456,15 @@ def test_lecture3_queue_slides_follow_the_owner():
     assert q9[0] == "Заказы в CRM" and q9[-1] == "Решение принято", q9
     q14 = queue(14, 15)
     assert q14[:2] == ["Промт и контекст", "Модель"], q14
+    # Правка владельца: на слайдах 2, 6, 19, 24, 29 (по счёту зрителя) — без
+    # оранжевого контура. Очередь там только на значках (узел без слов не
+    # обводится), на 29-м у плашек значков нет — очереди нет вовсе.
+    for a, b in ((1, 2), (5, 6), (18, 19), (23, 24), (28, 29)):
+        s = html[html.index('id="slide-%d"' % a):html.index('id="slide-%d"' % b)]
+        s = re.sub(r"<!--.*?-->", "", s, flags=re.S)
+        steps = [c for c in re.findall(r'<(\w+) class="([^"]*)"', s) if "a-step" in c[1].split()]
+        assert all(tag == "i" for tag, _ in steps), "слайд %d: оранжевый контур у узла очереди" % b
+        assert bool(steps) == (b != 29), "слайд %d: очередь %s" % (b, "лишняя" if steps else "пропала")
     # «Наблюдаемость»: в очереди отладки плашки со словами, а не лупы по 12px
     s39 = html[html.index('id="slide-39"'):html.index('id="slide-40"')]
     assert not re.search(r'<i class="ph-bold ph-magnifying-glass[^"]*a-step', s39)
