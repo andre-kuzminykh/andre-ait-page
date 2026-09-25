@@ -1122,13 +1122,14 @@ def test_lecture3_uses_owner_vocabulary():
         assert bad not in text, "на слайдах осталось «%s»" % bad
 
 
-# ── FR-SITE70: практика лекции 3 — архитектуры ИИ-агентов ─────────────────
+# ── FR-SITE70: практика лекции 3 — архитектуры ИИ-автоматизации ───────────
 
 def test_practice3_agent_architectures():
     """Практика лекции 3: шесть кейсов практики лекции 2 превращены в
-    архитектуры ИИ-агентов — графы навыков как воркфлоу (mermaid flowchart),
-    узлы раскрашены по способу исполнения: правило, ИИ-модель, инструмент,
-    человек. Схемы рисует своя копия mermaid (LECTURE-GUIDE §9), не CDN."""
+    архитектуры ИИ-автоматизации — графы навыков как воркфлоу (mermaid
+    flowchart), узлы раскрашены по способу исполнения: правило, ИИ-модель,
+    инструмент, человек и ИИ-агент (FR-SITE79). Схемы рисует своя копия
+    mermaid (LECTURE-GUIDE §9), не CDN."""
     path = os.path.join(_ROOT, "automation/3/practice/index.html")
     html = open(path, encoding="utf-8").read()
     assert "/assets/mermaid/11.17.2/" in html, "mermaid — своя копия из assets"
@@ -1153,9 +1154,10 @@ def test_practice3_agent_architectures():
     ref = open(os.path.join(_ROOT, "automation/1/practice/index.html"), encoding="utf-8").read()
     assert bubble(html) == bubble(ref), "кружок практики лекции 3 разъехался с эталоном лекции 1"
     assert "bubble-ready" not in html, "кружок не прячется до загрузки ролика"
-    # «Какого агента взять» — четыре признака сеткой 2×2, без «следующий шаг
-    # нельзя полностью задать заранее»; ИИ-операции — только на шаге 3, в
-    # легенде «ИИ-модель» их нет (правки владельца).
+    # Развилка «Воркфлоу или агент» (была «Какого агента взять») — четыре
+    # признака сеткой 2×2, без «следующий шаг нельзя полностью задать
+    # заранее»; ИИ-операции — только на шаге 3, в легенде «ИИ-модель» их нет
+    # (правки владельца).
     crit = re.search(r'<ul class="criteria">(.*?)</ul>', html, re.S).group(1)
     assert crit.count("<li") == 4, "признаков выбора участка — четыре"
     assert "нельзя полностью задать заранее" not in crit
@@ -1171,6 +1173,98 @@ def test_practice3_agent_architectures():
     assert "промпт" not in body and "Промпт" not in body, "владелец пишет «промт»"
 
 
+
+# ── FR-SITE79: практика лекции 3 — не везде нужен ИИ-агент ────────────────
+
+def test_practice3_workflow_first_agent_in_one_zone():
+    """Правки владельца: «не везде нужен ИИ-агент, часто для стабильных
+    бизнес-процессов достаточно воркфлоу с использованием ИИ, и вот примеры»;
+    «в консалтинге агент может общаться с клиентом… в дизайне агент делает
+    сам дизайн, в колцентре агент общается с клиентом, в рекрутинге — с
+    кандидатом, в разработке ПО агент собственно чинит баг»; три промта:
+    TO-BE → граф навыков (он же воркфлоу), промты для ИИ-операций и агентов,
+    тесты."""
+    path = os.path.join(_ROOT, "automation/3/practice/index.html")
+    html = open(path, encoding="utf-8").read()
+
+    def norm(t):
+        # неразрывные пробелы и дефисы видимого текста — обычными
+        return t.replace("\u00a0", " ").replace("\u2011", "-")
+
+    body = html.split("<body>", 1)[1]
+    body = re.sub(r"(?is)<(script|style|pre|textarea|code)\b.*?</\1>", " ", body)
+    prose = re.sub(r"\s+", " ", norm(re.sub(r"<[^>]+>", " ", body)))
+    # Рамка — ИИ-автоматизация и развилка «воркфлоу или агент»
+    assert "архитектуру одного ИИ-агента" not in prose, "рамка — ИИ-автоматизация, а не один агент"
+    assert "Не везде нужен ИИ-агент" in prose
+    assert "Воркфлоу или агент" in prose
+    # Шаги — дословно текст задания (он же озвучка ролика); «агент» стал
+    # «воркфлоу» только в шагах 4 и 5
+    for phrase in ("Сначала кратко опишите его роль, цель, входные данные и ожидаемый результат",
+                   "Затем постройте граф навыков и для каждого шага определите, как он выполняется",
+                   "Там, где нужен ИИ, укажите конкретную операцию",
+                   "После этого определите контекст, инструменты и состояние воркфлоу",
+                   "Отдельно зафиксируйте, когда воркфлоу завершает работу, когда передаёт "
+                   "задачу человеку и в каком формате возвращает результат",
+                   "Затем перенесите эту архитектуру на ИИ-платформу и соберите рабочий воркфлоу",
+                   "И наконец, проверьте его на нескольких сценариях: обычном, неоднозначном, "
+                   "с нехваткой данных и с ошибкой внешнего сервиса"):
+        assert phrase in prose, "шаг задания: «%s»" % phrase
+    # Примеры: в пяти процессах агент — ровно один узел [[…]], маркетинг — без агента
+    srcs = dict(re.findall(r'<pre class="mmd-src" id="src-([a-z]+)">(.*?)</pre>', html, re.S))
+    assert len(srcs) == 6, "шесть графов"
+    with_agent = sorted(k for k, v in srcs.items() if re.search(r"^  class [A-Z0-9,]+ agent$", v, re.M))
+    assert with_agent == ["callcenter", "consult", "design", "hr", "software"], with_agent
+    for k in with_agent:
+        ids = re.findall(r"^  class ([A-Z0-9,]+) agent$", srcs[k], re.M)
+        assert len(ids) == 1 and "," not in ids[0], "%s: класс agent — у одного узла" % k
+        assert srcs[k].count("[[") == 1, "%s: агент — ровно один узел [[…]]" % k
+    assert "[[" not in srcs["marketing"], "запуск кампании обходится без агента"
+    for k, v in srcs.items():
+        assert "classDef agent" in v, "%s: у графа пятый класс узлов — agent" % k
+        assert "Передано человеку" in v, "%s: есть выход к человеку" % k
+    # Строка «почему так» у каждого примера, блок «Агент» — у примеров с агентом
+    assert html.count('<p class="verdict') == 6
+    assert html.count('<p class="verdict is-agent') == 5
+    assert html.count('class="auto agent-box') == 5
+    # Пятый способ исполнения — ИИ-агент: на шаге 2 и в легенде окна
+    assert 'class="mi m-agent"' in html
+    assert re.search(r'<i class="l-agent"></i>ИИ.агент', html)
+    # Три промта по цепочке владельца
+    titles = [re.sub(r"\s+", " ", norm(t)).strip()
+              for t in re.findall(r"<summary>.*?</svg>\s*([^<]*Промт \d[^<]*)</summary>", html, re.S)]
+    assert len(titles) == 3, titles
+    assert titles[0].startswith("Промт 1") and "граф навыков" in titles[0], titles[0]
+    assert titles[1].startswith("Промт 2") and "промты" in titles[1] and "агент" in titles[1], titles[1]
+    assert titles[2].startswith("Промт 3") and "тест" in titles[2], titles[2]
+    p1 = re.search(r'<pre class="code" id="prompt-graph">(.*?)</pre>', html, re.S).group(1)
+    p2 = re.search(r'<pre class="code" id="prompt-prompts">(.*?)</pre>', html, re.S).group(1)
+    for word in ("правило", "инструмент", "человек", "ИИ-операция", "ИИ-агент",
+                 "Инструменты агента", "flowchart TD", "classDef agent"):
+        assert word in p1, "промт 1 (граф навыков): «%s»" % word
+    for word in ("ИИ-операции", "Агенты", "JSON-схема", "Примеры", "Инструменты", "лимит итераций"):
+        assert word in p2, "промт 2 (промты ИИ-операций и агентов): «%s»" % word
+    assert "ОДНОГО самого ценного" not in html
+    # Типографика — только в видимом тексте: промты, код и графы копируют как есть
+    for tag, blk in re.findall(r"(?is)<(pre|code|textarea)\b[^>]*>(.*?)</\1>", html):
+        assert "\u00a0" not in blk and "\u2011" not in blk, "в <%s> попал неразрывный символ" % tag
+    # «Копировать с графом» — у промтов 2 и 3, плейсхолдер графа в каждом ровно один
+    for pid in ("prompt-prompts", "prompt-tests"):
+        blk = re.search(r'<pre class="code" id="%s">(.*?)</pre>' % pid, html, re.S).group(1)
+        assert blk.count("СЮДА ВСТАВЬТЕ КОД ГРАФА ИЗ ОКНА ВЫШЕ") == 1, pid
+        assert 'class="copy copy-code" type="button" data-copy="%s"' % pid in html, pid
+    assert "СЮДА ВСТАВЬТЕ КОД ГРАФА ИЗ ОКНА ВЫШЕ" not in p1
+    # Переключение плашек не пишет пример в черновик; старый ключ с примерами
+    # прежних графов не читается (иначе у вернувшихся всплыл бы старый граф)
+    assert "ait-agent-graph-draft" not in html
+    sel = re.search(r"function select\(key\)\{(.*?)\n\}", html, re.S).group(1)
+    assert "save()" not in sel, "select() не сохраняет пример как черновик"
+    # Зоны агента практики 3 есть в TO-BE практики 2 («Чем закрывать») — цепочка сходится
+    p2 = norm(open(os.path.join(_ROOT, "automation/2/practice/index.html"), encoding="utf-8").read())
+    fixes = " ".join(re.findall(r'<ul class="fix">(.*?)</ul>', p2, re.S))
+    for zone in ("переписке с клиентом", "переписка с кандидатом", "ответы на типовые вопросы",
+                 "правки в макетах", "исправление бага"):
+        assert zone in fixes, "в TO-BE практики 2 нет зоны агента: «%s»" % zone
 
 # ── FR-SITE71: ролики лекции 3 на месте, квадрат 514 и faststart ──────────
 
