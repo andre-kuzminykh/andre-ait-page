@@ -1339,6 +1339,53 @@ def test_text_never_blinks():
         assert not p.bad, "лекция %d: мигает текст %s" % (n, p.bad[:5])
 
 
+# ── FR-SITE76: CSS лекции покрывает каждый класс разметки ────────────────
+
+def _block(html, tag, ident):
+    m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, ident, tag), html, re.S)
+    assert m, "нет блока %s#%s" % (tag, ident)
+    return m.group(1)
+
+
+def _class_attrs(html):
+    """class="…" разметки без комментариев и скриптов."""
+    body = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    body = re.sub(r"<script\b.*?</script>", "", body, flags=re.S)
+    return re.findall(r'\bclass="([^"]*)"', body)
+
+
+def _css_classes(css):
+    out = set()
+    for m in re.finditer(r'\.((?:\\[0-9a-fA-F]{1,6} ?|\\.|[\w-])+)', css):
+        s = re.sub(r'\\([0-9a-fA-F]{1,6}) ?', lambda k: chr(int(k.group(1), 16)), m.group(1))
+        out.add(re.sub(r'\\(.)', r'\1', s))
+    return out
+
+
+def test_lecture_css_has_every_variant_class():
+    """Слайд 37 лекции 3 («Полная архитектура») на сайте стоял столбиком: класс
+    md:grid-cols-[1.035fr_auto_1fr] появился в разметке, а assets/lecture-3.css
+    не пересобрали, и правила двух колонок в нём не было (скрин владельца
+    «на вебе как-то не очень выглядит»). Каждый класс с вариантом (md:, hover:)
+    или произвольным значением ([…]) обязан быть в CSS своей лекции — после
+    правки разметки CSS пересобирается: python3 tools/build_lecture_css.py N."""
+    pages = [rel for rel, _ in _pages()] + ["automation/5/v2/index.html", "automation/3/clean/index.html"]
+    for rel in pages:
+        path = os.path.join(_ROOT, rel)
+        if not os.path.exists(path):
+            continue
+        html = open(path, encoding="utf-8").read()
+        link = re.search(r'<link rel="stylesheet" href="/(assets/lecture-[^"]+\.css)">', html)
+        if link:
+            css = open(os.path.join(_ROOT, link.group(1)), encoding="utf-8").read()
+        else:
+            css = _block(html, "style", "lecture-css-inline")
+        have = _css_classes(css)
+        toks = {t for c in _class_attrs(html) for t in c.split() if "[" in t or ":" in t}
+        miss = sorted(t for t in toks if t not in have)
+        assert not miss, "%s: в CSS нет правил для %s — пересоберите CSS лекции" % (rel, miss[:8])
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
