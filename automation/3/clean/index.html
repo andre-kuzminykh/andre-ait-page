@@ -6162,7 +6162,9 @@ html, body{ overflow:hidden; }
                     <div class="relative w-full aspect-square mx-auto">
                         <div class="absolute inset-[14%] rounded-full border-2 border-dashed border-solar/40 a-orbit"></div>
 
-                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[32%] h-[32%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center a-glow">
+                        <!-- z-10: на телефоне углы боковых карточек касаются центра, и контур горящей
+                             карточки заходил на его обод; центр рисуется поверх -->
+                        <div class="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[32%] h-[32%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center a-glow">
                             <i class="ph-fill ph-robot text-xl md:text-4xl text-solar"></i>
                             <span class="text-[10px] md:text-base font-black text-white leading-tight">агент</span>
                         </div>
@@ -6338,7 +6340,7 @@ html, body{ overflow:hidden; }
                                 <p class="text-[10px] md:text-base font-medium text-white leading-tight m-0 whitespace-nowrap">Разрешённые действия</p>
                                 <p class="text-[10px] md:text-sm font-medium text-solar leading-tight m-0 whitespace-nowrap">запрещённая операция</p>
                             </div>
-                            <i class="ph-fill ph-x-circle text-base md:text-2xl text-solar shrink-0 a-pulse"></i>
+                            <i class="ph-fill ph-x-circle text-base md:text-2xl text-solar shrink-0 a-step"></i>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 md:gap-2.5 flex-1 a-in a-in-6">
@@ -6826,7 +6828,7 @@ html, body{ overflow:hidden; }
                 </div>
 
                 <div class="relative md:col-span-2 bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:px-3 md:py-3 js-keep flex flex-row md:flex-col items-center md:justify-center gap-2.5 md:gap-0 text-left md:text-center a-in a-in-4">
-                    <div class="w-9 h-9 md:w-12 md:h-12 rounded-full bg-solar/20 flex items-center justify-center shrink-0 md:mb-1.5 a-pulse"><i class="ph-fill ph-rocket-launch text-lg md:text-2xl text-solar"></i></div>
+                    <div class="w-9 h-9 md:w-12 md:h-12 rounded-full bg-solar/20 flex items-center justify-center shrink-0 md:mb-1.5 a-step"><i class="ph-fill ph-rocket-launch text-lg md:text-2xl text-solar"></i></div>
                     <div class="min-w-0">
                         <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0">Рабочая среда</h3>
                         <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0 mt-0.5 md:mt-1">только после тестов <span class="md:block">и отдельной среды</span></p>
