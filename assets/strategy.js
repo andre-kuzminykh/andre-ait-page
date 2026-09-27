@@ -60,7 +60,13 @@
     }
   }
   function fitHeadings(root) {
-    if (!root || !root.querySelectorAll) root = document;
+    /* Без аргумента (растягивание окна, загрузка шрифтов) подгоняем ТЕКУЩИЙ
+       экран. Раньше корнем становился весь документ, и панелью для цепочки
+       считалась первая по порядку — скрытая панель шага 01 с нулевой рамкой:
+       любой ряд казался шире неё, и кегль блоков при растягивании окна
+       падал до 9px (жалоба владельца «шрифт мелкий на вебе», «при
+       растягивании что-то не так»). */
+    if (!root || !root.querySelectorAll) root = $('.screen.active') || document;
     /* МОБИЛКА — отдельная вёрстка, а не ужатая настольная: подгонка кегля
        здесь не работает вовсе. Она существует, чтобы строка влезла в одну
        строку на широком экране; на телефоне тот же расчёт зажимал заголовки,
@@ -95,7 +101,7 @@
        сценах, поэтому и кегль им подбирается вместе с ними — с проверкой
        ширины всего ряда, а не каждого блока по отдельности */
     var chain = $$('.pnode, .fnode, .node, .opnode', root);
-    if (chain.length) {
+    function fitChain() {
       shrinkToFit(chain);
       /* ряд целиком тоже не должен вылезать за колонку: у блоков nowrap, и
          переполнение видно только на самом ряду */
@@ -118,11 +124,35 @@
           return rr.width > right - left || rr.right > right || rr.left < left;
         });
       }
+      /* и по высоте: на вебе цепочки идут рядами по два (FR-SITE83), и на
+         низком окне (1366×640) четыре ряда шага 05 вылезали за панель на
+         16px. Высота меряется offset-размером — без transform появления. */
+      var flow = box && $('.pchain, .fflow, .opchain', box);
+      function tooTall() {
+        if (!flow) return false;
+        var cs = getComputedStyle(box);
+        var room = box.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+        return flow.offsetHeight > room;
+      }
       var size = chain[0] ? parseFloat(getComputedStyle(chain[0]).fontSize) : 0;
       var min = Math.max(size * 0.6, 9);
-      while (size > min && tooWide()) {
+      while (size > min && (tooWide() || tooTall())) {
         size -= 0.5;
         chain.forEach(function (el) { el.style.fontSize = size + 'px'; });
+      }
+      return size;
+    }
+    if (chain.length) {
+      /* Шаг 05 на вебе — ряды по два (2+2+2+1). На низком окне (1366×657 —
+         обычный ноутбук) четыре ряда влезают в панель только при 9px, а в
+         три ряда (2+2+3) — заметно крупнее. Берём раскладку, при которой
+         кегль больше. */
+      var ff = $$('.fflow', root).filter(function (f) { return f.clientWidth > 0; })[0];
+      if (ff) ff.classList.remove('m3');
+      var best = fitChain();
+      if (ff) {
+        ff.classList.add('m3');
+        if (fitChain() <= best) { ff.classList.remove('m3'); fitChain(); }
       }
     }
   }

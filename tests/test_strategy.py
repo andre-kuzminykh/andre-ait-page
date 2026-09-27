@@ -388,7 +388,9 @@ def test_agent_passport_fields_sit_around_the_agent():
     """Иконка агента — в центре, поля вокруг. Радиус кольца ОДИН на обе оси,
     в вёрстку уходят только косинус и синус."""
     css = _read("assets/strategy.css")
-    assert "var(--cx, 0) * var(--r)" in css and "var(--cy, 0) * var(--r)" in css, \
+    # FR-SITE83: кольцо повёрнуто на одно место (--mx/--my), --cx/--cy —
+    # запасное положение
+    assert "var(--mx, var(--cx, 0)) * var(--r)" in css and "var(--my, var(--cy, 0)) * var(--r)" in css, \
         "положение поля считается из --cx/--cy и одного радиуса"
     for lang, html in _pages():
         spokes = re.findall(r'<span class="spoke" data-seq style="--cx:(-?[\d.]+); --cy:(-?[\d.]+);', html)
@@ -1552,7 +1554,9 @@ def test_agent_passport_labels_are_bigger_on_the_web():
     наслаивалось и не выходило за пределы». На вебе подписи ≈16px вместо
     ≈10.5px; замер 1024…2560px — зазоры ≥7px, за панель ничего не выходит."""
     css = _read("assets/strategy.css")
-    assert "@media (min-width:1024px) { .spoke { font-size: clamp(12px, 5.2cqmin, 18px); } }" in css
+    # FR-SITE83: на узкой панели (1024×768) кегль ограничен её шириной —
+    # боковая плашка вылезала за край на 19–33px
+    assert ".hub { --sf: clamp(12px, min(5.2cqmin, 4.7cqw - 2px), 18px); --gut: calc(var(--sf) * 3.7); }" in css
     # базовое правило (телефон) прежнее — там запаса нет
     assert "font-size: clamp(9px, 3.4cqmin, 13.5px);" in css
 
