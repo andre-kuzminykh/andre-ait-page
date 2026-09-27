@@ -311,7 +311,7 @@ def test_long_chapters_are_split_into_short_screens():
     а не ужата кеглем: на экране заголовок и два-четыре блока."""
     for lang, html in _pages():
         screens = _screens(html)
-        # FR-SITE80: владелец слил короткие экраны — их 13, самые плотные по 6 блоков
+        # FR-SITE82: владелец слил короткие экраны — их 13, самые плотные по 6 блоков
         assert len(screens) == 13, "%s: биография — 13 экранов (%d)" % (lang, len(screens))
         for i, (ch, body) in enumerate(screens):
             # верхние блоки экрана помечены .reveal / .hero-rise (плюс подвал);
@@ -342,9 +342,9 @@ def test_desktop_and_mobile_share_one_large_scale():
     mob = [b for b in _mobile_blocks() if "p { font-size" in b]
     assert mob, "нужен отдельный мобильный масштаб типографики"
     block = mob[0]
-    # множитель --k равен 1, пока экран влезает в окно (FR-SITE80)
+    # множитель --k равен 1, пока экран влезает в окно (FR-SITE82)
     for rule in ("p { font-size: calc(14px * var(--k, 1))",
-                 # две строки героя при любой ширине телефона (FR-SITE80)
+                 # две строки героя при любой ширине телефона (FR-SITE82)
                  "h1 { font-size: calc(min(1.78rem, 5.58cqi) * var(--k, 1))",
                  "h2 { font-size: calc(clamp(1.15rem, 5.2vw, 1.55rem) * var(--k, 1))"):
         assert rule in block, "мобильный кегль: " + rule
@@ -385,7 +385,7 @@ def test_footer_stands_at_the_bottom_of_the_last_screen():
     assert ".screen.final { justify-content: flex-start; }" in css
     assert ".screen.final > h2 { margin-top: auto; }" in css and \
         ".screen.final .finale { margin-bottom: auto; }" in css, \
-        "текст главы с прощанием — группой по центру, подвал уходит вниз (FR-SITE80)"
+        "текст главы с прощанием — группой по центру, подвал уходит вниз (FR-SITE82)"
     assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem" not in css, \
         "подвал стоит у самого низа: кружку разрешено его перекрывать"
     for lang, html in _pages():
@@ -489,7 +489,7 @@ def test_top_fade_covers_text_under_the_header():
 
 
 def test_no_bottom_fade_over_the_chapter_mark():
-    """FR-SITE80. Нижняя растушёвка гасила текст, проезжавший под кружком, —
+    """FR-SITE82. Нижняя растушёвка гасила текст, проезжавший под кружком, —
     но внутри экрана ничего не прокручивается, а нижнее поле держит текст
     выше кружка. Осталась она только над знаком главы, который владелец
     хочет видеть в самом углу, — поэтому её нет."""
@@ -582,7 +582,7 @@ def test_owner_named_line_breaks_that_are_not_prepositions():
     assert RU["s3_head"] == "Один вместо команды", "заголовок владельца, влезает от 320px"
     assert '<span class="hl-p nb">AI-Native экосистему</span>' in _ru()
     css = _css()
-    # FR-SITE80: кегль героя считается от ширины колонки — строка с оборотом
+    # FR-SITE82: кегль героя считается от ширины колонки — строка с оборотом
     # целиком влезает при любой ширине телефона
     assert "h1 { font-size: calc(min(1.78rem, 5.58cqi) * var(--k, 1)); line-height: 1.14; }" in css, \
         "обе строки героя влезают при любой ширине"
@@ -614,7 +614,7 @@ def test_finale_sits_in_the_middle_and_the_footer_at_the_bottom():
     assert ".screen.final { justify-content: flex-start; }" in css
     assert ".screen.final > h2 { margin-top: auto; }" in css and \
         ".screen.final .finale { margin-bottom: auto; }" in css, \
-        "группа главы с прощанием по центру свободного места, подвал внизу (FR-SITE80)"
+        "группа главы с прощанием по центру свободного места, подвал внизу (FR-SITE82)"
     # Подвал у самого низа, кружку разрешено его перекрывать (FR-SITE55):
     # «кружок можно перемещать, поэтому пофигу что он там закрывает».
     assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in css, \
@@ -680,7 +680,7 @@ def test_chapter_marks_are_visible_on_phone():
     css = _css()
     assert "@media (max-width:1023px) { .wm { display: none; } }" not in css, \
         "знаки глав больше не прячутся на телефоне"
-    # FR-SITE80: «на мобилах иконки большие должны быть справа внизу прям» —
+    # FR-SITE82: «на мобилах иконки большие должны быть справа внизу прям» —
     # знак в самом углу, нижней растушёвки, которая его закрашивала, больше нет
     assert ".wm { right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: min(44vw, 30vh); }" in css, \
         "в портрете знак стоит в правом нижнем углу"
@@ -820,7 +820,7 @@ def test_chapter_title_sits_on_the_common_left_edge():
     mob = css[css.index("@media (max-width:1023px) {"):]
     assert "h2 { padding-left: 1.85rem; position: relative; }" in mob, \
         "у заголовка та же колонка значка, что у пунктов списка"
-    # FR-SITE80: значок 0.82 кегля по центру первой строки — самый широкий
+    # FR-SITE82: значок 0.82 кегля по центру первой строки — самый широкий
     # глиф не доходит до текста ближе 10px
     assert "h2 i { position: absolute; left: 0; top: calc(0.1rem + 0.2439em); width: 1.15rem;" in mob, \
         "значок вынесен в фиксированную колонку, и ширина глифа больше ни на что не влияет"
@@ -845,12 +845,12 @@ def test_owner_copy_checklist_2026_09_23():
     assert u'<span class="l">и\u00a0анализа данных' in ru or u'<span class="l">и анализа данных' in ru
     css = _css()
     assert ".screen p .l, .screen li .l { display: block; }" in css
-    assert ru.count('class="screen') == en.count('class="screen') == 13, "экранов стало 13 (FR-SITE80)"
+    assert ru.count('class="screen') == en.count('class="screen') == 13, "экранов стало 13 (FR-SITE82)"
 
 
 
 def test_owner_merged_screens_2026_09_27():
-    """FR-SITE80. Правка владельца: главы слиты — «Наука и преподавание» в
+    """FR-SITE82. Правка владельца: главы слиты — «Наука и преподавание» в
     «Наука и образование», «ИИ во всём банке» в «От данных к ИИ-трансформации»,
     «Что я строил» в «Стартап-студию», «Система вместо стартапа» в «Один вместо
     команды», прощание с подвалом — в «Части одной экосистемы». Шахматы
@@ -890,7 +890,7 @@ def test_owner_merged_screens_2026_09_27():
 
 
 def test_hero_title_is_two_lines_of_one_size():
-    """FR-SITE80. «„Я строю…“ в любом случае в две строчки и одинакового шрифта
+    """FR-SITE82. «„Я строю…“ в любом случае в две строчки и одинакового шрифта
     и на рус и на англ — выровни по тексту и где „Обо мне“». Шрифт
     моноширинный: самая длинная строка — английская, 30 знаков = 17.7em;
     кегль = ширина колонки / 17.9 одинаков в обеих версиях, строки не
@@ -908,7 +908,7 @@ def test_hero_title_is_two_lines_of_one_size():
 
 
 def test_chapter_icon_is_centred_and_spaced():
-    """FR-SITE80. «Иконки херово болтаются — к тексту прижимаются и сверху».
+    """FR-SITE82. «Иконки херово болтаются — к тексту прижимаются и сверху».
     Веб: зазор полкегля вместо 0.6rem; телефон: значок 0.82 кегля в колонке,
     по центру первой строки. Замер по пикселям: центр значка совпадает с
     центром заглавных ±1px, зазор 9.5–18.5px."""
@@ -919,7 +919,7 @@ def test_chapter_icon_is_centred_and_spaced():
 
 
 def test_dense_screen_shrinks_instead_of_overflowing():
-    """FR-SITE80. После слияния глав плотный экран на коротком телефоне или в
+    """FR-SITE82. После слияния глав плотный экран на коротком телефоне или в
     горизонте выше окна. Он не обрезается и не листается: скрипт подбирает
     общий множитель кегля --k (двоичным поиском), отступы и левый край
     остаются на месте."""
