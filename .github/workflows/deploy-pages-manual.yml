@@ -35,8 +35,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # Закрытые модули (FR-SITE77): исходники 4–6 живут в репозитории — из
+      # каркаса лекции 4 собирается лекция 3, и общие блоки сверяются тестами, —
+      # но на сайт они не выкладываются. По их адресам отдаётся 404.html:
+      # «Модуль N ещё закрыт». Открыть модуль = убрать его строку отсюда.
+      - name: Сайт без закрытых модулей
+        run: |
+          mkdir -p "$RUNNER_TEMP/site"
+          tar --exclude=./.git --exclude=./.github \
+              --exclude=./automation/4 \
+              --exclude=./automation/5 \
+              --exclude=./automation/6 \
+              -cf - . | tar -xf - -C "$RUNNER_TEMP/site"
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: ${{ runner.temp }}/site
       - id: deployment
         uses: actions/deploy-pages@v4

@@ -62,15 +62,10 @@ def test_every_referenced_clip_is_in_the_repo():
                             r"[^'\"]+\.mp4)['\"]", s):
             checked += 1
             f = os.path.join(_ROOT, urllib.parse.unquote(m.lstrip("/")))
-            # Лекция 3 выложена как превью раньше озвучки: слайды готовы,
-            # ролики владелец записывает и зальёт сам. Кружок с головой до
-            # этого показывает обложку, поэтому «ссылка без файла» здесь —
-            # ожидаемое состояние, а не потеря. Сторож вернётся на неё, когда
-            # в assets/video_l3 появится хотя бы один файл.
+            # Исключения для лекции 3 больше нет: пока ролики не были записаны,
+            # «ссылка без файла» на assets/video_l3 была ожидаемой. Теперь все
+            # 43 ролика выложены (FR-SITE71), и пропажа любого — снова потеря.
             if not os.path.isfile(f):
-                if "/assets/video_l3/" in m and not os.path.isdir(
-                        os.path.join(_ROOT, "assets/video_l3")):
-                    continue
                 miss.append((os.path.relpath(p, _ROOT), m))
     assert checked, "в разметке не нашлось ни одной локальной ссылки на ролик"
     assert not miss, "ссылки без файлов:\n" + "\n".join(

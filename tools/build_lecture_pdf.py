@@ -51,6 +51,63 @@ PAGE_CSS = ('<style id="pdf-page">@page{size:14.375in 9in;margin:0}'
             % (FORM["width"], FORM["height"]))
 
 
+# Градиентный заголовок печатается слоем прозрачности, и край этого слоя
+# Chromium рисует волоском — в PDF вокруг цветной половины заголовка
+# появлялась тонкая рамка (на экране её нет). Убираем сам слой: перед печатью
+# каждая буква получает СПЛОШНОЙ цвет, взятый из той же линейной шкалы
+# #8B5CF6 → #F97316 по её месту в строке. Вид тот же, текст остаётся текстом,
+# а background-clip:text со страницы уходит вместе с рамкой.
+JS_SPLIT_GRADIENT = """
+() => {
+  const slide = document.querySelector('.slide-container.opacity-100')
+             || document.querySelector('.slide-container');
+  if (!slide) return [];
+  const A = [0x8B, 0x5C, 0xF6], B = [0xF9, 0x73, 0x16];
+  const hex = c => '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  const out = [];
+  for (const el of slide.querySelectorAll('h1 .text-solar, h2 .text-solar')) {
+    if (el.dataset.pdfSplit) continue;
+    const w0 = el.getBoundingClientRect().width;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = []; let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    for (const node of nodes) {
+      const frag = document.createDocumentFragment();
+      // Мягкий перенос остаётся ПРИ своей букве: в отдельном span он
+      // перестал бы работать как место переноса, и длинные заголовки
+      // («остано-виться») сломали бы строку не там.
+      const chars = [];
+      for (const ch of node.nodeValue) {
+        if (ch === '\u00AD' && chars.length) chars[chars.length - 1] += ch;
+        else chars.push(ch);
+      }
+      for (const ch of chars) {
+        const sp = document.createElement('span');
+        sp.className = 'pdf-ch';
+        sp.textContent = ch;
+        frag.appendChild(sp);
+      }
+      node.parentNode.replaceChild(frag, node);
+    }
+    const box = el.getBoundingClientRect();
+    for (const sp of el.querySelectorAll('.pdf-ch')) {
+      const r = sp.getBoundingClientRect();
+      let t = box.width > 0 ? ((r.left + r.width / 2) - box.left) / box.width : 0;
+      t = Math.max(0, Math.min(1, t));
+      const c = hex(A.map((a, i) => Math.round(a + (B[i] - a) * t)));
+      sp.setAttribute('style', 'background:none !important;background-image:none !important;'
+        + 'color:' + c + ' !important;-webkit-text-fill-color:' + c + ' !important');
+    }
+    el.setAttribute('style', 'background:none !important;background-image:none !important;'
+      + '-webkit-text-fill-color:currentColor !important');
+    el.dataset.pdfSplit = '1';
+    out.push([w0, el.getBoundingClientRect().width]);
+  }
+  return out;
+}
+"""
+
+
 def chromium_path():
     env = os.environ.get("CHROMIUM_PATH")
     if env and os.path.exists(env):
@@ -178,8 +235,13 @@ def build(lecture, out_path, theme):
         total = page.evaluate("() => document.querySelectorAll('.slide-container').length")
         print("   тема: %s, слайдов: %d" % (actual, total))
 
+        drift = 0.0
         for i in range(total):
             page.wait_for_timeout(420)                 # дать подгонке встать
+            # Заголовок разбираем на буквы ПОСЛЕ того, как подгонка встала:
+            # кегль и переносы уже посчитаны, меняются только заливки.
+            for w0, w1 in (page.evaluate(JS_SPLIT_GRADIENT) or []):
+                drift = max(drift, abs(w1 - w0))
             # Размер листа берётся ИЗ СТРАНИЦЫ (@page в PAGE_CSS), а не из
             # аргументов. С width/height Chromium раскладывал печать сам и
             # разъезжался с экраном: содержимое выходило шире листа, и обложку
@@ -189,6 +251,8 @@ def build(lecture, out_path, theme):
             pages += 1
             if i < total - 1:
                 page.evaluate("() => window.nextSlide && window.nextSlide()")
+        if drift:
+            print("   заголовки разобраны на буквы, ширина сдвинулась не больше чем на %.2f px" % drift)
         ctx.close()
         br.close()
 

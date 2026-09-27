@@ -14,7 +14,9 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, "automation/1/index.html")
-TARGETS = [os.path.join(ROOT, "automation/%d/index.html" % n) for n in range(2, 9)]
+# Вторая колода лекции 5 — такая же лекция, общие блоки у неё обязаны совпадать.
+TARGETS = [os.path.join(ROOT, "automation/%d/index.html" % n) for n in range(2, 9)] + \
+    [os.path.join(ROOT, "automation/5/v2/index.html")]
 
 # (тег, id) — блоки, которые обязаны совпадать во всех лекциях
 BLOCKS = [
@@ -25,6 +27,10 @@ BLOCKS = [
     ("style", "notes-panel-style"),
     ("script", "portal-fit"),
     ("script", "notes-panel-script"),
+    # анимации и очередь подсветки a-step (FR-SITE74): блоки общие, иначе в одной
+    # лекции узлы горели бы по одному, а в соседней — снова парами
+    ("style", "lecture-anim"),
+    ("script", "lecture-seq"),
 ]
 
 # Куски разметки, которые тоже должны быть одинаковыми (кнопки шапки).

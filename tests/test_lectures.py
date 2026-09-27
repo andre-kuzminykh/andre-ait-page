@@ -11,17 +11,17 @@ import re
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
-# Открыт только модуль 1: лекции 2-8 закрыты и НЕ опубликованы — их файлов нет
-# в репозитории, поэтому по адресу /automation/3/ отдаётся 404 и контент
+# Открыты модули 1-3; 4-6 выложены превью, 7-8 закрыты и НЕ опубликованы — их
+# файлов нет в репозитории, поэтому по их адресам отдаётся 404 и контент
 # недоступен даже прямой ссылкой (это стережёт test_locked_modules_closed).
 # Проверки идут по фактически опубликованным лекциям, так что вернувшийся
 # модуль автоматически попадает под весь набор тестов — без правки списка.
 _LECTURES = tuple(r for r in _ALL_LECTURES if os.path.exists(os.path.join(_ROOT, r)))
-# Лекции 3-5 пересобраны на общем каноне: свой плеер и ролики со своего
-# домена, как у 1 и 2. Архив с головами на Vimeo остался в теге
-# lectures-2-8-archive. Лекции 6-8 ещё играют головы с CDN.
+# Лекции 3-6 пересобраны на общем каноне: свой плеер и ролики со своего
+# домена, как у 1 и 2 (у лекции 6 роликов пока нет — videoIds пустой). Архив
+# с головами на Vimeo остался в теге lectures-2-8-archive. Лекции 7-8 ещё
+# играют головы с CDN.
 _NATIVE_CDN = {
-    "automation/6/index.html": "corp/6/videos",
     "automation/7/index.html": "corp/7/videos",
     "automation/8/index.html": "corp/8/videos",
 }
@@ -172,9 +172,16 @@ def test_shared_blocks_identical():
     попадает в одни файлы и не попадает в другие. Тест ловит это сразу.
     """
     import hashlib
+    # portal-deck и lecture-chrome тоже: tools/sync_lecture_blocks.py разносит
+    # их из лекции 1, и когда они разъехались (у 1–2 не было починки дёрганья
+    # анимаций лекций 3–6), синхронизация молча откатывала свежие правки (FR-SITE73).
+    # lecture-anim и lecture-seq — анимации и очередь подсветки a-step (FR-SITE74):
+    # разъедутся — в одной лекции узлы горят по одному, в соседней снова парами.
     for block, tag in (("slide-polish", "style"), ("notes-panel-style", "style"),
                        ("notes-panel-script", "script"), ("radial-fig", "style"),
-                       ("portal-fit", "script")):
+                       ("portal-fit", "script"), ("portal-deck", "style"),
+                       ("lecture-chrome", "style"), ("lecture-anim", "style"),
+                       ("lecture-seq", "script")):
         seen = {}
         for rel, html in _pages():
             m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, block, tag), html, re.S)
@@ -208,13 +215,15 @@ _TERM_KEEP = (
     "Retrieval-Augmented Generation", "Custom n8n Workflow Tool",
     "MCP Server Trigger", "MCP Client Tool",
     "идеальный путь (happy path)", "(touch time)", "(lead time)",
+    # Лекция 6: владелец прямо попросил писать эти два термина латиницей.
+    "AI Governance", "Data Governance",
 )
 
 # «AI» остаётся только там, где это часть имени.
 _AI_KEEP = (
     "AI-First", "AI-first", "AI-Native", "AI-native", "AI-Driven", "AI-driven",
     "AI-powered", "AI Maturity", "Chief AI Officer", "AI Product",
-    "AI Automation Engineer", "AI Agent",
+    "AI Automation Engineer", "AI Agent", "AI Governance",
 )
 
 
@@ -700,6 +709,25 @@ def test_lecture1_web_preview_image():
     assert "assets/1_long.jpg" not in html, "старая картинка превью должна уйти"
 
 
+
+def test_lecture3_web_preview_image():
+    """FR-SITE78: обложка превью лекции 3 для Telegram, X и др. — cover.jpg
+    владельца. Лежит в репозитории, на неё указывают og:image и twitter:image,
+    карточка крупная, размеры в тегах совпадают с фактическими."""
+    from PIL import Image
+    path = os.path.join(_ROOT, "automation/3/cover.jpg")
+    assert os.path.isfile(path), "нет файла automation/3/cover.jpg"
+    w, h = Image.open(path).size
+    html = _l3()
+    url = "https://andre.technology/automation/3/cover.jpg"
+    for tag in ('<meta property="og:image" content="%s">' % url,
+                '<meta property="og:image:secure_url" content="%s">' % url,
+                '<meta name="twitter:image" content="%s">' % url,
+                '<meta property="og:image:width" content="%d">' % w,
+                '<meta property="og:image:height" content="%d">' % h,
+                '<meta name="twitter:card" content="summary_large_image">'):
+        assert tag in html, "нет тега: " + tag
+
 # ── Доступ к модулям 2-8 закрыт (правка владельца) ────────────────────────
 
 def _published_pages():
@@ -719,50 +747,60 @@ def _published_pages():
 
 
 def test_locked_modules_closed():
-    """Открыты модули 1 и 2. Модули 3, 4 и 5 выложены как превью по просьбе
-    владельца: он хочет смотреть колоду на живом сайте, пока записывает
-    озвучку. На дорожной карте они по-прежнему заперты и ниоткуда не связаны,
-    то есть попасть туда можно только прямой ссылкой, которую владелец даёт
-    сам. Модулей 6-8 в репозитории нет: по их адресам отдаётся 404, контент
-    недоступен даже прямой ссылкой. Архив контента — тег lectures-2-8-archive.
+    """Открыты модули 1, 2 и 3 (модуль 3 открыт владельцем, FR-SITE69).
+    Модули 4, 5 и 6 закрыты (FR-SITE77, «4, 5, 6 пока поставь заглушку, что
+    недоступны модули, как уже делал, чтобы никто не открыл»): их исходники
+    остаются в репозитории — из каркаса лекции 4 собирается лекция 3, общие
+    блоки сверяются тестами, — но деплой их на сайт не выкладывает, и по их
+    адресам, как у 7 и 8, отдаётся 404 «Модуль N ещё закрыт». Модулей 7 и 8 в
+    репозитории нет вовсе. Архив контента — тег lectures-2-8-archive.
     """
-    for n in (1, 2):
+    for n in (1, 2, 3):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
             "модуль %d открыт и должен быть опубликован" % n
-    for n in range(6, 9):
+    for n in (7, 8):
         assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
             "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
+    wf = open(os.path.join(_ROOT, ".github/workflows/deploy-pages-manual.yml"), encoding="utf-8").read()
+    assert "path: ${{ runner.temp }}/site" in wf, "на сайт уходит весь репозиторий, закрытые модули в том числе"
+    for n in (4, 5, 6):
+        assert "--exclude=./automation/%d " % n in wf, "модуль %d закрыт: деплой не должен его выкладывать" % n
+    for n in (1, 2, 3):
+        assert "--exclude=./automation/%d " % n not in wf, "модуль %d открыт, а деплой его вырезает" % n
+    page404 = open(os.path.join(_ROOT, "404.html"), encoding="utf-8").read()
+    assert "/^[2-8]$/" in page404 and "ещё закрыт" in page404, "404 не говорит про закрытый модуль"
 
 
 def test_no_links_to_locked_modules():
     """Ни одна опубликованная страница не ведёт на закрытый модуль — на сайте
     нет ссылок, которые упирались бы в 404.
 
-    Модули 3, 4 и 5 выложены как превью (см. test_locked_modules_closed):
-    попасть туда можно только прямой ссылкой от владельца, и с дорожной карты,
-    входа в курс и остальных страниц на них по-прежнему не ведёт ничего.
-    Собственные адреса внутри самих лекций 3-5 (og:url, ссылки на их же
+    Модуль 3 открыт (FR-SITE69): ссылки на него с дорожной карты законны.
+    Модули 4, 5 и 6 закрыты (FR-SITE77, см. test_locked_modules_closed): на
+    сайт они не выкладываются, и с дорожной карты, входа в курс и остальных
+    страниц на них не ведёт ничего.
+    Собственные адреса внутри самих лекций 4-6 (og:url, ссылки на их же
     практику) под правило не попадают — это не путь с сайта, а их собственная
     разметка.
     """
-    link = re.compile(r"automation/[3-8](?=[/\"'#?)\s]|$)")
+    link = re.compile(r"automation/[4-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
-        for n in ("3", "4", "5"):
+        for n in ("4", "5", "6"):
             if rel.startswith("automation/%s/" % n):
                 hits = [h for h in hits if h != "automation/%s" % n]
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
 
 
 def test_locked_module_cards_have_no_href():
-    """Карточки модулей 3-8 на /automation/main/ — под замком и без href."""
+    """Карточки модулей 4-8 на /automation/main/ — под замком и без href."""
     with open(os.path.join(_ROOT, "automation/main/index.html"), encoding="utf-8") as f:
         html = f.read()
     cards = re.findall(r'<a class="module( locked)?"([^>]*)>', html)
     assert len(cards) == 8, "на главной курса восемь карточек модулей"
     opened = [c for c in cards if not c[0]]
-    assert len(opened) == 2 and all("href=" in o[1] for o in opened), \
-        "открыты ровно два модуля — первый и второй"
+    assert len(opened) == 3 and all("href=" in o[1] for o in opened), \
+        "открыты ровно три модуля — первый, второй и третий"
     for locked, attrs in [c for c in cards if c[0]]:
         assert "href=" not in attrs, "закрытая карточка не должна иметь href: " + attrs
         assert 'aria-disabled="true"' in attrs, "закрытая карточка помечена aria-disabled"
@@ -898,22 +936,6 @@ def test_content_breakpoints_live_on_the_form_boundary():
             rel + ": в собранном CSS появился брейкпоинт вне границы формы 768"
 
 
-if __name__ == "__main__":
-    failed = 0
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            try:
-                fn()
-                print("ok   %s" % name)
-            except ModuleNotFoundError as e:
-                # Запускалка задумана как «нужен только python3»: тест, которому
-                # нужна необязательная библиотека (Pillow для размеров превью),
-                # пропускается, а не валит прогон. Под pytest он идёт как обычно.
-                print("skip %s: нет модуля %s" % (name, e.name))
-            except Exception as e:  # AssertionError и любые сбои разбора
-                failed += 1
-                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
-    raise SystemExit(1 if failed else 0)
 
 
 # ── FR-SITE67: у лекции 5 две колоды — прод и теоретическая ───────────────
@@ -1006,3 +1028,608 @@ def test_standalone_builder_leaves_no_external_refs():
     assert 'id="notes-toggle"' in html, "кнопка панели нужна скрытой — на ней инициализация"
     assert 'id="slide-notes"' in html, "статьи панели пропали"
     assert html.count('class="slide-container') == 43
+
+
+# ── FR-SITE69: лекция 3 пересобрана по новому тексту владельца ───────────
+
+# Заголовки слайдов 1–40 — дословно из текста владельца (его прямая просьба:
+# «заголовки возьми как я тебе скинул в тексте»). Стрелки в заголовке второго
+# слайда рисуются иконкой: глифа «→» в Montserrat нет.
+_L3_TITLES = (
+    "AS-IS и TO-BE", "Триггер Обработка Действие", "Правила или ИИ-автоматизация",
+    "Воркфлоу или агент", "ИИ-приложение и ИИ-платформа", "Четыре слоя ИИ-платформы",
+    "Среда исполнения агента", "Компоненты ИИ-платформы", "LLM-функция или ИИ-агент",
+    "Спецификация ИИ-агента", "Границы автономности ИИ-агента", "Граф навыков ИИ-агента",
+    "Типовые ИИ-операции", "Вызов функций и схема инструментов",
+    "Выбор инструментов и динамические аргументы", "API и внешние системы",
+    "Потоки данных", "Трансформация данных", "Маршрутизация данных", "Управление воркфлоу",
+    "Инженерия промтов", "Из чего состоит хороший промт", "Структурированный вывод",
+    "Автоматическая генерация и улучшение промтов", "Отличие промта от контекста",
+    "Инженерия контекста", "Состояние и память", "Выбор контекста",
+    "Что такое обвязка ИИ-агентов", "Из чего состоит обвязка ИИ-агента", "Права ИИ-агентов",
+    "Контроль и восстановление", "Цикл работы ИИ-агента", "Как правильно тестировать ИИ-агента",
+    "Метрики для тестирования", "Инженерия циклов", "Полная архитектура рабочего ИИ-агента",
+    "Жизненный цикл ИИ-агента", "Наблюдаемость и отладка", "Надежность и постоянное улучшение",
+)
+
+
+def _l3():
+    return open(os.path.join(_ROOT, "automation/3/index.html"), encoding="utf-8").read()
+
+
+def _plain(s):
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", s.replace("&shy;", ""))).strip()
+
+
+def test_lecture3_titles_follow_owner_text():
+    html = _l3()
+    heads = re.findall(r'id="slide-(\d+)">.*?<h([12])[^>]*>(.*?)</h\2>', html, re.S)
+    got = {int(n): _plain(t) for n, _, t in heads}
+    for k, want in enumerate(_L3_TITLES, start=1):
+        assert got.get(k) == want, "слайд %d: заголовок %r, а у владельца %r" % (k, got.get(k), want)
+    assert got.get(41) == "Выводы", "последний слайд — «Выводы», как в остальных лекциях"
+    assert "Лекция 3: Разработка агента" in html, "бейдж обложки — правка владельца"
+
+
+def test_lecture3_slides_match_videos_one_to_one():
+    """42 слайда = 42 ролика озвучки: введение, 40 слайдов текста и финал.
+    Ролик слайда k лежит в /assets/video_l3/<k+1>.mp4 (LECTURE-GUIDE §6)."""
+    html = _l3()
+    assert html.count('class="slide-container') == 42
+    assert "const totalSlides = 42;" in html
+    vids = re.findall(r"'/assets/video_l3/(\d+)\.mp4'",
+                      re.search(r"const videoIds = \[(.*?)\];", html, re.S).group(1))
+    assert [int(v) for v in vids] == list(range(1, 43)), "ролики идут один к одному со слайдами"
+
+
+def test_lecture3_leads_to_its_practice():
+    html = _l3()
+    practice = "https://andre.technology/automation/3/practice/"
+    assert re.search(r'class="lec-ctrl lec-task" href="%s"' % re.escape(practice), html), \
+        "кнопка «Задание» в шапке ведёт на практику лекции 3"
+    assert '<a class="quiz-next" href="%s">' % practice in html, \
+        "экран результата теста ведёт на практику, как у лекции 2"
+    assert os.path.exists(os.path.join(_ROOT, "automation/3/practice/index.html"))
+    quiz = re.search(r"const quizQuestions = \[(.*?)\n        \];", html, re.S).group(1)
+    assert quiz.count("correct:") == 10, "в тесте десять вопросов"
+    last = re.search(r'<div class="slide-container[^"]*" id="slide-41">', html).group(0)
+    assert "bg-black text-white" in last, "последний слайд фиолетовый, как в других лекциях"
+    assert 'id="open-quiz-btn"' in html
+
+
+def test_lecture3_quiz_result_names_its_own_topics():
+    """Экран результата теста — тексты лекции 3. Каркас лекции 4 нёс тексты
+    лекции 2, и «что перечитать» отправляло не в ту лекцию (правка владельца:
+    «там, где ошибки делаются, что перечитать — проверь»)."""
+    html = _l3()
+    descs = re.findall(r"\n                desc = '([^']+)';", html)
+    assert len(descs) == 4, "четыре уровня результата"
+    text = " ".join(descs)
+    for foreign in ("ограничение потока", "реестр точек", "Ценность — Сложность", "H0–H3",
+                    "Вы мыслите процессами", "точки решений"):
+        assert foreign not in text, "на экране результата текст лекции 2: «%s»" % foreign
+    for topic in ("среду исполнения", "обвязку", "граф навыков", "вызов функций",
+                  "спецификация ИИ-агента", "воркфлоу"):
+        assert topic in text, "«что перечитать» называет темы слайдов лекции 3: «%s»" % topic
+
+
+def test_lecture3_uses_owner_vocabulary():
+    """Слова владельца: «промт» (не «промпт»), «воркфлоу» кириллицей, «запуск»."""
+    html = _l3()
+    body = html[html.index('id="slide-0"'):html.index("<!-- Модальное окно теста -->")]
+    text = _plain(re.sub(r"<!--.*?-->", " ", body, flags=re.S))
+    for bad in ("промпт", "Промпт", "workflow", "Workflow"):
+        assert bad not in text, "на слайдах осталось «%s»" % bad
+
+
+# ── FR-SITE70: практика лекции 3 — архитектуры ИИ-автоматизации ───────────
+
+def test_practice3_agent_architectures():
+    """Практика лекции 3: шесть кейсов практики лекции 2 превращены в
+    архитектуры ИИ-автоматизации — графы навыков как воркфлоу (mermaid
+    flowchart), узлы раскрашены по способу исполнения: правило, ИИ-модель,
+    инструмент, человек и ИИ-агент (FR-SITE79). Схемы рисует своя копия
+    mermaid (LECTURE-GUIDE §9), не CDN."""
+    path = os.path.join(_ROOT, "automation/3/practice/index.html")
+    html = open(path, encoding="utf-8").read()
+    assert "/assets/mermaid/11.17.2/" in html, "mermaid — своя копия из assets"
+    for cdn in ("cdn.jsdelivr.net/npm/mermaid", "unpkg.com/mermaid"):
+        assert cdn not in html, "mermaid не должен тянуться с CDN"
+    assert html.count("flowchart TD") >= 6, "шесть графов навыков-воркфлоу"
+    for cls in ("rule", "ai", "tool", "human"):
+        assert html.count("classDef %s" % cls) >= 6, \
+            "класс узлов «%s» есть во всех шести графах" % cls
+    assert 'href="/automation/3/"' in html, "обратная ссылка на лекцию"
+    assert 'href="/automation/2/practice/"' in html, "ссылка на TO-BE из практики лекции 2"
+    assert "/assets/video_l3/practice.mp4" in html, "кружок с головой играет ролик практики"
+    # Кружок — побайтово кружок задания лекции 1 (LECTURE-GUIDE §9), с
+    # обложкой сразу: прежняя обёртка прятала его до loadeddata, а на iPhone
+    # без звука кадры до play() не грузятся — кружок не появлялся (FR-SITE71).
+    def bubble(h):
+        b = h[h.index('<div class="bubble'):
+              h.rindex("</script>", 0, h.index("</body>")) + len("</script>")]
+        b = re.sub(r'src="/assets/[^"]*\.mp4"', 'src="CLIP"', b)
+        b = re.sub(r'poster="/assets/[^"]*\.jpg"', 'poster="COVER"', b)
+        return re.sub(r'url\(/assets/[^)]*\.jpg\)', 'url(COVER)', b)
+    ref = open(os.path.join(_ROOT, "automation/1/practice/index.html"), encoding="utf-8").read()
+    assert bubble(html) == bubble(ref), "кружок практики лекции 3 разъехался с эталоном лекции 1"
+    assert "bubble-ready" not in html, "кружок не прячется до загрузки ролика"
+    # Развилка «Воркфлоу или агент» (была «Какого агента взять») — четыре
+    # признака сеткой 2×2, без «следующий шаг нельзя полностью задать
+    # заранее»; ИИ-операции — только на шаге 3, в легенде «ИИ-модель» их нет
+    # (правки владельца).
+    crit = re.search(r'<ul class="criteria">(.*?)</ul>', html, re.S).group(1)
+    assert crit.count("<li") == 4, "признаков выбора участка — четыре"
+    assert "нельзя полностью задать заранее" not in crit
+    assert "по четырём признакам" in html
+    assert "ops-line" not in html, "список операций живёт только на шаге 3"
+    # На мониторах от 1600px у body zoom 1.15–1.5: без контейнера-мерки с
+    # обратным zoom mermaid мерил подписи увеличенными — блоки узлов шире
+    # текста, длинная подпись в одну строку и срезана (приёмка 1920×1080).
+    assert re.search(r"mermaid\.render\(.*,\s*measure\)", html), \
+        "граф рисуется через скрытый контейнер-мерку, а не прямо в body"
+    assert "inverseZoom" in html, "обратный zoom мерки подобран до ровной единицы"
+    body = re.sub(r"<pre[^>]*>.*?</pre>", " ", html, flags=re.S)
+    assert "промпт" not in body and "Промпт" not in body, "владелец пишет «промт»"
+
+
+
+# ── FR-SITE79: практика лекции 3 — не везде нужен ИИ-агент ────────────────
+
+def test_practice3_workflow_first_agent_in_one_zone():
+    """Правки владельца: «не везде нужен ИИ-агент, часто для стабильных
+    бизнес-процессов достаточно воркфлоу с использованием ИИ, и вот примеры»;
+    «в консалтинге агент может общаться с клиентом… в дизайне агент делает
+    сам дизайн, в колцентре агент общается с клиентом, в рекрутинге — с
+    кандидатом, в разработке ПО агент собственно чинит баг»; три промта:
+    TO-BE → граф навыков (он же воркфлоу), промты для ИИ-операций и агентов,
+    тесты."""
+    path = os.path.join(_ROOT, "automation/3/practice/index.html")
+    html = open(path, encoding="utf-8").read()
+
+    def norm(t):
+        # неразрывные пробелы и дефисы видимого текста — обычными
+        return t.replace("\u00a0", " ").replace("\u2011", "-")
+
+    body = html.split("<body>", 1)[1]
+    body = re.sub(r"(?is)<(script|style|pre|textarea|code)\b.*?</\1>", " ", body)
+    prose = re.sub(r"\s+", " ", norm(re.sub(r"<[^>]+>", " ", body)))
+    # Рамка — ИИ-автоматизация и развилка «воркфлоу или агент»
+    assert "архитектуру одного ИИ-агента" not in prose, "рамка — ИИ-автоматизация, а не один агент"
+    assert "Не везде нужен ИИ-агент" in prose
+    assert "Воркфлоу или агент" in prose
+    # Шаги — дословно текст задания (он же озвучка ролика); «агент» стал
+    # «воркфлоу» только в шагах 4 и 5
+    for phrase in ("Сначала кратко опишите его роль, цель, входные данные и ожидаемый результат",
+                   "Затем постройте граф навыков и для каждого шага определите, как он выполняется",
+                   "Там, где нужен ИИ, укажите конкретную операцию",
+                   "После этого определите контекст, инструменты и состояние воркфлоу",
+                   "Отдельно зафиксируйте, когда воркфлоу завершает работу, когда передаёт "
+                   "задачу человеку и в каком формате возвращает результат",
+                   "Затем перенесите эту архитектуру на ИИ-платформу и соберите рабочий воркфлоу",
+                   "И наконец, проверьте его на нескольких сценариях: обычном, неоднозначном, "
+                   "с нехваткой данных и с ошибкой внешнего сервиса"):
+        assert phrase in prose, "шаг задания: «%s»" % phrase
+    # Примеры: в пяти процессах агент — ровно один узел [[…]], маркетинг — без агента
+    srcs = dict(re.findall(r'<pre class="mmd-src" id="src-([a-z]+)">(.*?)</pre>', html, re.S))
+    assert len(srcs) == 6, "шесть графов"
+    with_agent = sorted(k for k, v in srcs.items() if re.search(r"^  class [A-Z0-9,]+ agent$", v, re.M))
+    assert with_agent == ["callcenter", "consult", "design", "hr", "software"], with_agent
+    for k in with_agent:
+        ids = re.findall(r"^  class ([A-Z0-9,]+) agent$", srcs[k], re.M)
+        assert len(ids) == 1 and "," not in ids[0], "%s: класс agent — у одного узла" % k
+        assert srcs[k].count("[[") == 1, "%s: агент — ровно один узел [[…]]" % k
+    assert "[[" not in srcs["marketing"], "запуск кампании обходится без агента"
+    for k, v in srcs.items():
+        assert "classDef agent" in v, "%s: у графа пятый класс узлов — agent" % k
+        assert "Передано человеку" in v, "%s: есть выход к человеку" % k
+    # Строка «почему так» у каждого примера, блок «Агент» — у примеров с агентом
+    assert html.count('<p class="verdict') == 6
+    assert html.count('<p class="verdict is-agent') == 5
+    assert html.count('class="auto agent-box') == 5
+    # Пятый способ исполнения — ИИ-агент: на шаге 2 и в легенде окна
+    assert 'class="mi m-agent"' in html
+    assert re.search(r'<i class="l-agent"></i>ИИ.агент', html)
+    # Три промта по цепочке владельца
+    titles = [re.sub(r"\s+", " ", norm(t)).strip()
+              for t in re.findall(r"<summary>.*?</svg>\s*([^<]*Промт \d[^<]*)</summary>", html, re.S)]
+    assert len(titles) == 3, titles
+    assert titles[0].startswith("Промт 1") and "граф навыков" in titles[0], titles[0]
+    assert titles[1].startswith("Промт 2") and "промты" in titles[1] and "агент" in titles[1], titles[1]
+    assert titles[2].startswith("Промт 3") and "тест" in titles[2], titles[2]
+    p1 = re.search(r'<pre class="code" id="prompt-graph">(.*?)</pre>', html, re.S).group(1)
+    p2 = re.search(r'<pre class="code" id="prompt-prompts">(.*?)</pre>', html, re.S).group(1)
+    for word in ("правило", "инструмент", "человек", "ИИ-операция", "ИИ-агент",
+                 "Инструменты агента", "flowchart TD", "classDef agent"):
+        assert word in p1, "промт 1 (граф навыков): «%s»" % word
+    for word in ("ИИ-операции", "Агенты", "JSON-схема", "Примеры", "Инструменты", "лимит итераций"):
+        assert word in p2, "промт 2 (промты ИИ-операций и агентов): «%s»" % word
+    assert "ОДНОГО самого ценного" not in html
+    # Типографика — только в видимом тексте: промты, код и графы копируют как есть
+    for tag, blk in re.findall(r"(?is)<(pre|code|textarea)\b[^>]*>(.*?)</\1>", html):
+        assert "\u00a0" not in blk and "\u2011" not in blk, "в <%s> попал неразрывный символ" % tag
+    # «Копировать с графом» — у промтов 2 и 3, плейсхолдер графа в каждом ровно один
+    for pid in ("prompt-prompts", "prompt-tests"):
+        blk = re.search(r'<pre class="code" id="%s">(.*?)</pre>' % pid, html, re.S).group(1)
+        assert blk.count("СЮДА ВСТАВЬТЕ КОД ГРАФА ИЗ ОКНА ВЫШЕ") == 1, pid
+        assert 'class="copy copy-code" type="button" data-copy="%s"' % pid in html, pid
+    assert "СЮДА ВСТАВЬТЕ КОД ГРАФА ИЗ ОКНА ВЫШЕ" not in p1
+    # Переключение плашек не пишет пример в черновик; старый ключ с примерами
+    # прежних графов не читается (иначе у вернувшихся всплыл бы старый граф)
+    assert "ait-agent-graph-draft" not in html
+    sel = re.search(r"function select\(key\)\{(.*?)\n\}", html, re.S).group(1)
+    assert "save()" not in sel, "select() не сохраняет пример как черновик"
+    # Зоны агента практики 3 есть в TO-BE практики 2 («Чем закрывать») — цепочка сходится
+    p2 = norm(open(os.path.join(_ROOT, "automation/2/practice/index.html"), encoding="utf-8").read())
+    fixes = " ".join(re.findall(r'<ul class="fix">(.*?)</ul>', p2, re.S))
+    for zone in ("переписке с клиентом", "переписка с кандидатом", "ответы на типовые вопросы",
+                 "правки в макетах", "исправление бага"):
+        assert zone in fixes, "в TO-BE практики 2 нет зоны агента: «%s»" % zone
+
+# ── FR-SITE71: ролики лекции 3 на месте, квадрат 514 и faststart ──────────
+
+def _mp4_boxes(path):
+    """Верхние атомы mp4 по порядку: [(тип, смещение, размер), …]."""
+    out, off = [], 0
+    size_all = os.path.getsize(path)
+    with open(path, "rb") as f:
+        while off < size_all:
+            f.seek(off)
+            head = f.read(16)
+            if len(head) < 8:
+                break
+            size, kind = int.from_bytes(head[:4], "big"), head[4:8].decode("latin-1")
+            if size == 1:
+                size = int.from_bytes(head[8:16], "big")
+            elif size == 0:
+                size = size_all - off
+            out.append((kind, off, size))
+            off += size
+    return out
+
+
+def _mp4_video_size(path):
+    """Ширина и высота видеодорожки из tkhd (у звуковой дорожки там нули)."""
+    kind, off, size = next(b for b in _mp4_boxes(path) if b[0] == "moov")
+    with open(path, "rb") as f:
+        f.seek(off)
+        moov = f.read(size)
+    i = 0
+    while True:
+        i = moov.find(b"tkhd", i + 1)
+        if i < 0:
+            return None
+        body = i + 4                      # сразу за типом атома
+        v1 = moov[body] == 1
+        at = body + 4 + (32 if v1 else 20) + 8 + 8 + 36
+        w = int.from_bytes(moov[at:at + 4], "big") >> 16
+        h = int.from_bytes(moov[at + 4:at + 8], "big") >> 16
+        if w and h:
+            return w, h
+
+
+def test_lecture3_clips_are_uploaded_square_and_faststart():
+    """Ролики владельца выложены: 42 кружка лекции и ролик практики с обложкой.
+
+    Формат — как у лекции 2 (LECTURE-GUIDE §6): квадрат 514×514 и moov перед
+    mdat, иначе браузер ждёт весь файл, прежде чем начать. Сторож «ссылка есть,
+    файла нет» в test_media смотрит только на наличие; здесь — что это те
+    самые квадратные ролики, а не исходники с телефона (1080×1920, HEVC)."""
+    html = _l3()
+    names = re.findall(r"'/assets/video_l3/(\d+)\.mp4'", html) + ["practice"]
+    assert len(names) == 43, "42 ролика лекции и один ролик практики"
+    for n in names:
+        rel = "assets/video_l3/%s.mp4" % n
+        path = os.path.join(_ROOT, rel)
+        assert os.path.isfile(path), "нет ролика " + rel
+        kinds = [b[0] for b in _mp4_boxes(path)]
+        assert "moov" in kinds and "mdat" in kinds, rel + ": не mp4"
+        assert kinds.index("moov") < kinds.index("mdat"), rel + ": moov в конце — нужен faststart"
+        assert _mp4_video_size(path) == (514, 514), \
+            "%s: кружок ждёт квадрат 514×514, а не %r" % (rel, _mp4_video_size(path))
+    cover = os.path.join(_ROOT, "assets/video_l3/practice.jpg")
+    with open(cover, "rb") as f:
+        assert f.read(3) == b"\xff\xd8\xff", "обложка практики — jpg с первым кадром ролика"
+
+
+
+# ── FR-SITE72: тест и финал — вопрос ближе к шапке, путь к практике ───────
+
+def test_quiz_header_sits_close_to_the_question():
+    """Скрин владельца «в тестах расстояние большое»: под шапкой и под полосой
+    прогресса было по 2.5rem, вопрос стоял далеко от «Вопрос N из 10»."""
+    for rel, html in _pages():
+        modal = html[html.index('id="quiz-modal"'):]
+        assert '<div class="flex items-center justify-between mb-4 md:mb-6 shrink-0">' in modal, rel
+        assert 'overflow-hidden mb-5 md:mb-8">' in modal, rel
+        assert "mb-6 md:mb-10 shrink-0" not in modal, rel
+
+
+def test_quiz_soon_is_one_line():
+    """«Следующая лекция будет доступна на следующей неделе» — в одну строку."""
+    for rel, html in _pages():
+        rule = re.search(r"\.quiz-soon\{[^}]*\}", html).group(0)
+        assert "white-space:nowrap" in rule and "max-width:24rem" not in rule, rel
+
+
+def test_quiz_result_header_says_result():
+    """Над итогом теста — «Результат», а не «Вопрос 10 из 10»: у лекций 2–6
+    счётчик на экране итога заменён, у лекции 1 он оставался (приёмка тестов
+    лекций 1–3: «проверь вообще ещё раз хорошо эти три лекции»)."""
+    for rel, html in _pages():
+        show = html[html.index("function showResults()"):]
+        show = show[:show.index("const score = quizScore;")]
+        assert "quizProgress.textContent = 'Результат';" in show, rel
+
+
+def _quiz(html):
+    """[(варианты, индекс верного)] из const quizQuestions: строки в одинарных
+    (лекции 1–2) или двойных (лекция 3, собрана из quiz.json) кавычках."""
+    block = re.search(r"const quizQuestions = \[(.*?)\n        \];", html, re.S).group(1)
+    lit = r"'((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\""
+    out = []
+    for opts, correct in re.findall(r"options: \[(.*?)\],\s*correct: (\d+)", block, re.S):
+        out.append(([a or b for a, b in re.findall(lit, opts)], int(correct)))
+    return out
+
+
+def test_quiz_answer_is_not_given_away():
+    """Приёмка тестов лекций 1–3: верный ответ был самым длинным почти в каждом
+    вопросе, а в лекции 1 стоял только на B и C — тест проходился правилом
+    «выбирай самый длинный». Теперь длина и позиция ответ не подсказывают."""
+    for n in (1, 2, 3):
+        html = open(os.path.join(_ROOT, "automation/%d/index.html" % n), encoding="utf-8").read()
+        quiz = _quiz(html)
+        assert len(quiz) == 10 and all(len(o) == 4 for o, _ in quiz), "лекция %d: 10 вопросов по 4 варианта" % n
+        longest = 0
+        for i, (opts, c) in enumerate(quiz, 1):
+            rest = max(len(o) for j, o in enumerate(opts) if j != c)
+            assert len(opts[c]) - rest <= 5, \
+                "лекция %d, вопрос %d: верный вариант длиннее остальных на %d знаков" % (n, i, len(opts[c]) - rest)
+            longest += len(opts[c]) > rest
+        assert longest <= 5, "лекция %d: верный вариант самый длинный в %d вопросах из 10" % (n, longest)
+        letters = {c for _, c in quiz}
+        assert len(letters) >= 3, "лекция %d: верные ответы только на %s" % (n, sorted("ABCD"[c] for c in letters))
+
+
+def test_lectures_1_3_lead_to_practice_after_the_test():
+    """Правка владельца: рядом с «Пройти тест» — кнопка «Практика», и после
+    теста — тоже «Практика» (а не «Буткемп» и не «Практическое задание»)."""
+    for n in (1, 2, 3):
+        html = open(os.path.join(_ROOT, "automation/%d/index.html" % n), encoding="utf-8").read()
+        url = "https://andre.technology/automation/%d/practice/" % n
+        m = re.search(r'<a class="quiz-next" href="([^"]+)">\s*([^<]+?)\s*<i', html)
+        assert m and m.group(1) == url and m.group(2) == "Практика", \
+            "лекция %d: после теста — кнопка «Практика»" % n
+        final = html[html.index('id="open-quiz-btn"'):html.index("<!-- Модальное окно теста -->")]
+        assert re.search(r'<a href="%s" class="lec-practice-btn[^"]*">\s*<i[^>]*></i>\s*Практика\s*</a>'
+                         % re.escape(url), final), "лекция %d: рядом с тестом — «Практика»" % n
+
+
+def test_lecture3_every_day_pill_does_not_blink():
+    """Слайд 0 лекции 3: пилюля «работает каждый день» не дышит (правка
+    владельца «пусть не мигает»); крутятся только стрелки цикла."""
+    html = _l3()
+    pill = re.search(r'<div class="bg-solar rounded-xl md:rounded-full[^"]*"[^>]*>\s*'
+                     r'<i class="ph-bold ph-arrows-clockwise[^"]*"></i>\s*<p[^>]*>.*?каждый день', html, re.S).group(0)
+    assert "a-pulse" not in pill.split(">", 1)[0], "пилюля «работает каждый день» мигает"
+
+
+
+# ── FR-SITE73: лекции 1–2 на каноне лекций 3–6 ────────────────────────────
+
+def test_every_lecture_has_the_phone_canvas_of_the_canon():
+    """Без tightW запас 0.97 копился шесть раз, и на телефоне мелкими были ВСЕ
+    слайды сразу (LECTURE-GUIDE §3.2) — так было у лекции 1."""
+    for rel, html in _pages():
+        floor = re.search(r'<script id="lecture-floor">(.*?)</script>', html, re.S).group(1)
+        assert "window.__FIT = { mob: { bottom: 72 }, tightW: true };" in floor, rel
+
+
+
+def test_text_never_blinks():
+    """Правка владельца «работает каждый день — пусть не мигает»: a-pulse мигает
+    прозрачностью вместе со словами, поэтому он стоит только на значках и
+    кольцах без текста. Живой акцент блока со словами — дышащая рамка a-glow."""
+    from html.parser import HTMLParser
+
+    class Blink(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.stack, self.bad = [], []
+
+        def handle_starttag(self, tag, attrs):
+            if tag not in ("br", "img", "input", "meta", "link"):
+                self.stack.append([tag, dict(attrs).get("class") or "", ""])
+
+        def handle_endtag(self, tag):
+            while self.stack:
+                t, cls, txt = self.stack.pop()
+                if "a-pulse" in cls.split() and txt.strip():
+                    self.bad.append(txt.strip()[:40])
+                if self.stack:
+                    self.stack[-1][2] += txt
+                if t == tag:
+                    break
+
+        def handle_data(self, d):
+            if self.stack:
+                self.stack[-1][2] += d
+
+    for n in (1, 2, 3):
+        html = open(os.path.join(_ROOT, "automation/%d/index.html" % n), encoding="utf-8").read()
+        body = html[html.index('id="slide-0"'):html.index("<!-- Модальное окно теста -->")]
+        p = Blink()
+        p.feed(re.sub(r"<!--.*?-->", "", body, flags=re.S))
+        assert not p.bad, "лекция %d: мигает текст %s" % (n, p.bad[:5])
+
+
+# ── FR-SITE74: очередь подсветки — строго по одному узлу ─────────────────
+
+def _block(html, tag, ident):
+    m = re.search(r'<%s id="%s">(.*?)</%s>' % (tag, ident, tag), html, re.S)
+    assert m, "нет блока %s#%s" % (tag, ident)
+    return m.group(1)
+
+
+def _class_attrs(html):
+    """class="…" разметки без комментариев и скриптов."""
+    body = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+    body = re.sub(r"<script\b.*?</script>", "", body, flags=re.S)
+    return re.findall(r'\bclass="([^"]*)"', body)
+
+
+def test_step_queue_lights_one_node_at_a_time():
+    """Правка владельца по скрину «Среда исполнения»: «анимация вызовов иконок
+    почему-то по два вызывает, надо по одному по очереди». Причина — у a-step
+    было три фазы (a-step-2/-3) на пять-семь узлов: фазы повторялись, и узлы
+    горели парами. Теперь очередь ведёт скрипт lecture-seq: на активном слайде
+    горит один узел (is-lit), дальше — следующий по порядку разметки."""
+    for rel, html in list(_pages()) + [("automation/5/v2/index.html", open(
+            os.path.join(_ROOT, "automation/5/v2/index.html"), encoding="utf-8").read())]:
+        anim = _block(html, "style", "lecture-anim")
+        assert not re.search(r"\.a-step-\d", anim) and "@keyframes aStep" not in anim, \
+            "%s: у очереди остались фазы — узлы снова загорятся парами" % rel
+        assert ".a-step.is-lit" in anim, rel
+        assert ":has(.a-step) .a-glow" in anim and ":has(.a-step) .a-pulse" in anim, \
+            "%s: на слайде с очередью дыхание акцентов не остановлено — рядом с горящим узлом светится второй" % rel
+        seq = _block(html, "script", "lecture-seq")
+        for need in ("is-lit", "data-seq", "prefers-reduced-motion", "getClientRects", "setInterval", "fit-ready"):
+            assert need in seq, "%s: в очереди нет %s" % (rel, need)
+        for cls in _class_attrs(html):
+            toks = cls.split()
+            assert not any(re.fullmatch(r"a-step-\d+", t) for t in toks), \
+                "%s: класс фазы a-step-N ничего не значит — порядок задаёт разметка: %s" % (rel, cls[:80])
+            assert not ("a-step" in toks and "a-glow" in toks), \
+                "%s: узел очереди не дышит сам по себе — два ритма на одном узле: %s" % (rel, cls[:80])
+
+
+def test_step_queue_never_dims_words():
+    """Текст не мигает (канон владельца): у узла очереди со словами гаснет
+    только значок, а горящий обводится контуром. Прозрачность .42 разрешена
+    лишь узлу без слов и значку внутри узла со словами."""
+    anim = re.sub(r"/\*.*?\*/", "", _block(_l3(), "style", "lecture-anim"), flags=re.S)
+    rules = re.findall(r"([^{}]+)\{([^{}]*opacity:\s*\.42[^{}]*)\}", anim)
+    assert rules, "нет правила гашения узла очереди"
+    for sel, _ in rules:
+        for s in sel.split(","):
+            s = s.strip()
+            assert s.endswith('[data-seq="icon"]') or s.endswith('[data-seq="text"] i'), \
+                "гасится узел со словами: %s" % s
+
+
+def test_lecture3_queue_slides_follow_the_owner():
+    """Лекция 3. «Среда исполнения»: пилюля «часы или дни» — такой же узел
+    очереди (раньше дышала рядом с горящим кружком — «по два»); ярлык рамки
+    лежит поверх плашек (z-10) и не заходит на них (поле pt-7) — «оранжевый
+    контур должен перекрывать остальное». «Компоненты ИИ-платформы»: очередь
+    на самих карточках — контур обводит карточку, а не обёртку внутри.
+    «Инженерия циклов»: круг начинается с запуска."""
+    html = _l3()
+    s7 = html[html.index('id="slide-7"'):html.index('id="slide-8"')]
+    lab = re.search(r'<span class="([^"]*)">Среда исполнения</span>', s7).group(1).split()
+    assert {"absolute", "z-10", "-top-3.5"} <= set(lab), lab
+    box = re.search(r'<div class="(relative w-full mt-6[^"]*)">', s7).group(1).split()
+    assert "pt-7" in box and "pt-5" not in box, box
+    pill = re.search(r'<span class="([^"]*)"><i class="ph-fill ph-clock[^"]*"></i> часы или дни', s7).group(1).split()
+    assert "a-step" in pill and "a-glow" not in pill, pill
+    s8 = html[html.index('id="slide-8"'):html.index('id="slide-9"')]
+    cards = re.findall(r'<div class="absolute [^"]*bg-white border border-grayBase rounded-xl[^"]*a-step">', s8)
+    assert len(cards) == 5, "слайд 8: очередь — на пяти карточках спутников, а не на обёртках"
+    s36 = html[html.index('id="slide-36"'):html.index('id="slide-37"')]
+    order = re.findall(r'a-step">\s*<i class="ph-fill ph-[a-z-]+[^"]*"></i>\s*<p[^>]*>([^<]+)</p>', s36)
+    assert order[:4] == ["Запуск", "Оценка", "Анализ", "Улучшение"], order
+    # круг — целиком: узел вне очереди не гаснет и рядом с погасшими кажется
+    # горящим постоянно («Воркфлоу или агент», «LLM-функция или ИИ-агент»)
+    def queue(a, b):
+        s = html[html.index('id="slide-%d"' % a):html.index('id="slide-%d"' % b)]
+        return [re.sub(r"(?:<br>|\s)+", " ", t).strip() for t in re.findall(
+            r'a-step"[^>]*>\s*<i class="ph-fill ph-[a-z-]+[^"]*"></i>\s*<p[^>]*>(.*?)</p>', s)]
+    assert queue(4, 5)[0] == "Нет данных", queue(4, 5)
+    q9 = queue(9, 10)
+    assert q9[0] == "Заказы в CRM" and q9[-1] == "Решение принято", q9
+    q14 = queue(14, 15)
+    assert q14[:2] == ["Промт и контекст", "Модель"], q14
+    # Правка владельца: на слайдах 2, 6, 11, 19, 24, 29 (по счёту зрителя) — без
+    # оранжевого контура. Очередь там только на значках (узел без слов не
+    # обводится), на 29-м у плашек значков нет — очереди нет вовсе.
+    for a, b in ((1, 2), (5, 6), (10, 11), (18, 19), (23, 24), (28, 29)):
+        s = html[html.index('id="slide-%d"' % a):html.index('id="slide-%d"' % b)]
+        s = re.sub(r"<!--.*?-->", "", s, flags=re.S)
+        steps = [c for c in re.findall(r'<(\w+) class="([^"]*)"', s) if "a-step" in c[1].split()]
+        assert all(tag == "i" for tag, _ in steps), "слайд %d: оранжевый контур у узла очереди" % b
+        assert bool(steps) == (b != 29), "слайд %d: очередь %s" % (b, "лишняя" if steps else "пропала")
+    # «Наблюдаемость»: в очереди отладки плашки со словами, а не лупы по 12px
+    s39 = html[html.index('id="slide-39"'):html.index('id="slide-40"')]
+    assert not re.search(r'<i class="ph-bold ph-magnifying-glass[^"]*a-step', s39)
+    assert len(re.findall(r'rounded-xl md:rounded-2xl[^"]*a-step">\s*<i class="ph-bold ph-magnifying-glass', s39)) == 6
+
+
+# ── FR-SITE75: кнопки финала отвечают на наведение ───────────────────────
+
+def test_final_buttons_answer_hover():
+    """Правка владельца: «практика — нет наводки на последнем экране ни в 1,
+    ни в 2, ни в 3 лекции». У «Практики» курсор был обычной стрелкой, и она
+    никак не отвечала на наведение. Теперь обе кнопки финала — с курсором-
+    рукой и заливкой градиентом бренда при наведении (только для мыши)."""
+    polish = _block(_l3(), "style", "slide-polish")
+    assert re.search(r"\.slide-container \.lec-practice-btn, \.slide-container \.lec-practice-btn \*\{ cursor:pointer; \}",
+                     polish), "у «Практики» нет курсора-руки"
+    hover = polish[polish.index("@media (hover:hover){\n  .slide-container #open-quiz-btn:hover"):]
+    hover = hover[:hover.index("@keyframes finalBtnShimmer")]
+    assert ".slide-container .lec-practice-btn:hover" in hover and "linear-gradient" in hover, \
+        "«Практика» не отвечает на наведение"
+    assert "box-shadow" not in hover and "transform" not in hover, \
+        "без тени и без сдвига: теней в лекциях нет, кнопки не «скачут»"
+
+
+# ── FR-SITE76: CSS лекции покрывает каждый класс разметки ────────────────
+
+def _css_classes(css):
+    out = set()
+    for m in re.finditer(r'\.((?:\\[0-9a-fA-F]{1,6} ?|\\.|[\w-])+)', css):
+        s = re.sub(r'\\([0-9a-fA-F]{1,6}) ?', lambda k: chr(int(k.group(1), 16)), m.group(1))
+        out.add(re.sub(r'\\(.)', r'\1', s))
+    return out
+
+
+def test_lecture_css_has_every_markup_class():
+    """Слайд 37 лекции 3 («Полная архитектура») на сайте стоял столбиком: класс
+    md:grid-cols-[1.035fr_auto_1fr] появился в разметке, а assets/lecture-3.css
+    не пересобрали, и правила двух колонок в нём не было (скрин владельца
+    «на вебе как-то не очень выглядит»). То же ловится и на простом классе:
+    z-10 у центра круга лекции 4 молча ничего не делал. Каждый класс разметки
+    обязан иметь правило — в CSS своей лекции (у чистой страницы — во
+    встроенном) или в её собственных стилях. После правки разметки CSS
+    пересобирается: python3 tools/build_lecture_css.py N."""
+    hooks = {"js-keep"}          # метка для скрипта подгонки, стилей у неё нет
+    pages = [rel for rel, _ in _pages()] + ["automation/5/v2/index.html", "automation/3/clean/index.html"]
+    for rel in pages:
+        path = os.path.join(_ROOT, rel)
+        if not os.path.exists(path):
+            continue
+        html = open(path, encoding="utf-8").read()
+        link = re.search(r'<link rel="stylesheet" href="/(assets/lecture-[^"]+\.css)">', html)
+        css = open(os.path.join(_ROOT, link.group(1)), encoding="utf-8").read() if link else ""
+        have = _css_classes(css) | _css_classes("\n".join(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S)))
+        toks = {t for c in _class_attrs(html) for t in c.split()
+                if t not in hooks and t != "ph" and not t.startswith("ph-")}
+        miss = sorted(t for t in toks if t not in have)
+        assert not miss, "%s: в CSS нет правил для %s — пересоберите CSS лекции" % (rel, miss[:8])
+
+if __name__ == "__main__":
+    failed = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("ok   %s" % name)
+            except ModuleNotFoundError as e:
+                # Запускалка задумана как «нужен только python3»: тест, которому
+                # нужна необязательная библиотека (Pillow для размеров превью),
+                # пропускается, а не валит прогон. Под pytest он идёт как обычно.
+                print("skip %s: нет модуля %s" % (name, e.name))
+            except Exception as e:  # AssertionError и любые сбои разбора
+                failed += 1
+                print("FAIL %s: %s: %s" % (name, type(e).__name__, e))
+    raise SystemExit(1 if failed else 0)
