@@ -33,12 +33,30 @@ def test_no_nav_menu():
 
 # ── FR-SITE6: шрифт как на главной ────────────────────────────────────────
 
+_MONTSERRAT_PAGES = ("automation/main/index.html",)   # FR-SITE80
+
+
 def test_jetbrains_mono_font():
     for rel, html in _pages():
+        if rel in _MONTSERRAT_PAGES:
+            continue
         assert "Montserrat" not in html, rel + ": Montserrat должен быть заменён"
         assert "family=JetBrains+Mono" in html, rel + ": нужен Google Fonts JetBrains Mono"
         assert re.search(r"font-family:'JetBrains Mono'", html), \
             rel + ": body должен использовать JetBrains Mono"
+
+
+def test_montserrat_on_automation_ru_and_main():
+    """FR-SITE80: /automation_ru/ и /automation/main/ — Montserrat вместо
+    JetBrains Mono, фолбэк — sans-serif, не моноширинный."""
+    for rel in ("automation_ru/index.html", "automation/main/index.html"):
+        with open(os.path.join(_ROOT, rel), encoding="utf-8") as f:
+            html = f.read()
+        assert "family=Montserrat:" in html, rel + ": нужен Google Fonts Montserrat"
+        assert "JetBrains" not in html, rel + ": JetBrains Mono здесь больше не нужен"
+        assert re.search(r"font-family:'Montserrat',[^;]*sans-serif;", html), \
+            rel + ": body должен использовать Montserrat"
+        assert "monospace" not in html.split("<body")[0].split("font-family:'Montserrat'")[1][:120]
 
 
 # ── FR-SITE6: без теней за иконками-плитками героя ────────────────────────
