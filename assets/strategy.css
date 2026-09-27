@@ -624,6 +624,19 @@ strong { color: var(--w); font-weight: 700; }
    меньше 14px, за панель не выходит ни одна. 5.6cqmin (≈17.4px) уже сводили
    зазор к 6px — это предел. Телефон не трогаем: там зазор и так 8px. */
 @media (min-width:1024px) { .spoke { font-size: clamp(12px, 5.2cqmin, 18px); } }
+/* Телефон: кольцо повёрнуто на одно место (--mx/--my, см. build_strategy):
+   длинные подписи сверху, по бокам короткие — радиус задаёт ширина боковых,
+   и подписи можно сделать крупнее (правка владельца «на мобиле чето мелкие
+   слова в круге»). */
+/* Замер (оба языка): 390px — 14px вместо 11.3, зазор между плашками 7px,
+   до ядра 31px; 360px — 12.8px и 6px; 430px — 15.7px и 7px. Поля плашки
+   чуть уже (0.3em 0.6em), запас под полуширину боковой плашки — 15.5cqmin. */
+@media (max-width:1023px) {
+  .hub { --gut: 15.5cqmin; }
+  .spoke { left: calc(50% + var(--mx, var(--cx, 0)) * var(--r));
+    top: calc(50% + var(--my, var(--cy, 0)) * var(--r));
+    font-size: clamp(9px, 4.2cqmin, 20px); padding: 0.3em 0.6em; gap: 0.3em; }
+}
 .spoke:nth-of-type(even) { border-color: rgba(249,115,22,0.5); }
 .spoke:nth-of-type(even) i { color: var(--o-l); }
 /* ровная орбита, которая медленно крутится: половина фиолетовая, половина оранжевая */
@@ -741,8 +754,29 @@ strong { color: var(--w); font-weight: 700; }
 .socials { display: flex; gap: 1rem; }
 .socials a { color: rgba(255,255,255,0.7); font-size: 15px; transition: color 0.3s ease; }
 @media (hover:hover) { .socials a:hover { color: var(--brand); } }
-.legal { display: flex; align-items: center; gap: 0.7rem; margin: 0; font-size: clamp(11.5px, 0.78vw, 14px); letter-spacing: 0.1em;
+.legal { display: flex; align-items: center; gap: 0.55rem; margin: 0; font-size: clamp(11.5px, 0.78vw, 14px); letter-spacing: 0.1em;
   text-transform: uppercase; color: rgba(255,255,255,0.45); }
+/* «·» между ссылками (правка владельца «точку между ними поставь, чтобы
+   разделялось»): «ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ УСЛОВИЯ ИСПОЛЬЗОВАНИЯ»
+   читалось одной строкой */
+.legal a + a::before { content: '\00b7'; margin-right: 0.55rem; color: rgba(255,255,255,0.3); }
+/* В меню ссылки нужны только на телефоне: на вебе они стоят в подвале */
+.nav-legal { display: none; }
+.nav-legal-link { color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; white-space: nowrap; transition: color 0.3s ease; }
+.nav-legal-sep { color: rgba(255,255,255,0.3); font-size: 12px; user-select: none; }
+/* по-русски ссылки вдвое длиннее: кегль от ширины, чтобы обе встали в ряд */
+html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spacing: 0.05em; }
+@media (hover:hover) { .nav-legal-link:hover { color: var(--w); } }
+/* На телефоне юридические ссылки живут в меню, а не в подвале финала
+   (правка владельца «политика конф. и условия на мобиле должны быть скрыты
+   в меню, а на вебе ок») */
+@media (max-width:1023px) {
+  .final .legal { display: none; }
+  .nav.open .nav-legal { display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 0.3rem 0.55rem; position: absolute; left: 1rem; right: 1rem;
+    bottom: calc(1.3rem + env(safe-area-inset-bottom, 0px)); }
+}
 @media (hover:hover) { .legal a:hover { color: var(--w); } }
 
 /* ===== Плотнее на невысоких окнах ===== */
@@ -837,23 +871,31 @@ strong { color: var(--w); font-weight: 700; }
    оценка и семь графиков. На телефоне — оценка слева, паутина справа, а
    графики во всю ширину под ними (правка владельца: «справа паутинку,
    а слева 2.4 / 5»). */
-.maturity { display: grid; gap: clamp(0.8rem, 2vw, 1.6rem); align-items: center;
-  grid-template-columns: auto minmax(0, 1fr);
+/* Правка владельца: «2.4/5 и паутинка должны быть по середине каждой из
+   половинок: где Стратегия / Инфраструктура / Модели — сверху по середине
+   2.4/5, где Люди / Данные / Внедрение — паутинка, и при растягивании так и
+   должно сохраняться». Поэтому раскладка ОДНА на всех ширинах: две равные
+   половины, графики в два столбца (Стратегия, Инфраструктура, Модели, R&D —
+   слева; Люди, Данные, Внедрение — справа), а оценка и паутина стоят по
+   центру СВОИХ половин. Зазор между половинами тот же, что между столбцами
+   графиков (--mgap), — иначе центры съезжали бы на долю пикселя. Раньше на
+   вебе паутина стояла слева, а на узком окне справа — при растягивании окна
+   раскладка переворачивалась. */
+.maturity { --mgap: 0.9rem; display: grid; flex: 1; min-height: 0; align-items: center;
+  gap: clamp(0.4rem, 1.4vh, 0.9rem) var(--mgap);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(84px, 1fr) auto;
   grid-template-areas: "score radar" "dims dims"; }
-.maturity .radar { grid-area: radar; }
-.maturity .score { grid-area: score; }
+.maturity .radar { grid-area: radar; width: auto; height: 100%; aspect-ratio: 1 / 1; max-width: 100%;
+  max-height: none; min-height: 0; align-self: stretch; justify-self: center; margin: 0; }
+.maturity .score { grid-area: score; justify-self: center; margin-bottom: 0; }
 .maturity .dims { grid-area: dims; }
 /* Раскладок ровно две — веб и мобилка, граница одна на весь сайт: 1024px.
    Была своя граница 700px, и между 700 и 1023 стояла ТРЕТЬЯ вёрстка зрелости
    (правка владельца: «почему меняется-то всё?? только два вида: веб и
    мобилка, остальное масштабируется»). */
-@media (min-width:1024px) {
-  .maturity { grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
-    grid-template-rows: auto auto; align-items: center;
-    grid-template-areas: "radar score" "radar dims"; }
-  .maturity .radar { align-self: center; }
-}
-.dims { display: flex; flex-direction: column; gap: clamp(0.3rem, 0.9vh, 0.55rem); min-width: 0; }
+.dims { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(0.3rem, 0.9vh, 0.55rem) var(--mgap, 0.9rem); align-content: center; min-width: 0; }
 .dim { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center;
   column-gap: 0.5rem; row-gap: 0.15rem; }
 .dim-name { font-size: clamp(12px, 1vw, 14.5px); color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -902,10 +944,14 @@ strong { color: var(--w); font-weight: 700; }
 .stage-card .flying { opacity: 1 !important; transition-delay: 0s !important; }
 
 /* ===== Крупнее: блоки, паспорт агента, типографика ===== */
-.node, .pnode, .opnode, .fnode { font-size: 14.5px; }
-.node, .pnode, .fnode { padding: 0.85rem 1.25rem; }
-.opnode { padding: 0.85rem 1.25rem; }
-.node i, .pnode i, .opnode i, .fnode i { font-size: 13px; }
+/* Правка владельца «Пришёл лид / Обновление CRM / … — тут шрифт мелкий на
+   вебе»: по три блока в ряд цепочка влезала в панель только при 9–12.5px.
+   Теперь ряды по два, и кегль растёт вместе с окном (14.5px на 1100,
+   17px на 1440); поля блока чуть уже, чтобы крупный текст влезал. */
+.node, .pnode, .opnode, .fnode { font-size: clamp(14.5px, 1.2vw, 18px); }
+.node, .pnode, .fnode { padding: 0.7rem 1.05rem; }
+.opnode { padding: 0.7rem 1.05rem; }
+.node i, .pnode i, .opnode i, .fnode i { font-size: 0.9em; }
 /* Поля появляются по кругу одно за другим, как звенья цепочки на соседних
    сценах. Конечное состояние — на .lit, а не на .active: переход не стартует
    для элемента, который в этом же кадре был display:none, и поля просто
@@ -1024,24 +1070,19 @@ strong { color: var(--w); font-weight: 700; }
   .parrow, .farrow { display: block; transform: rotate(90deg);
     font-size: clamp(7px, 1.3vh, 11px); line-height: 1; }
   .pwrap, .fwrap { display: block; font-size: clamp(7px, 1.3vh, 11px); line-height: 1; }
-  .node, .pnode, .fnode { font-size: clamp(8.5px, 1.75vh, 15px);
+  /* .opnode — в том же ряду: без него блоки сцены возможностей оставались
+     15px и на 375×667 не влезали в панель — верхний срезался её краем */
+  .node, .pnode, .fnode, .opnode { font-size: clamp(8.5px, 1.75vh, 15px);
     padding: clamp(0.16rem, 0.45vh, 0.4rem) clamp(0.5rem, 1.6vw, 0.75rem); }
   /* На сцене возможностей поток свой у каждой группы: сверху фиолетовые,
      снизу серые — они не должны перемешаться на переносе. */
   .opchain { flex-direction: column; align-items: stretch; gap: 0.7rem; }
   .opgroup { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
   .opgroup .oprow { display: contents; }
-  /* Зрелость на телефоне: СЛЕВА оценка, СПРАВА паутина, под ними семь
-     графиков во всю ширину (правка владельца: «какая маленькая паутинка —
-     можно справа паутинку, а слева 2.4 / 5»). Паутина растягивается на
-     остаток верхнего ряда и потому не распирает панель. */
-  .maturity { flex: 1; min-height: 0; grid-template-rows: minmax(84px, 1fr) auto;
-    grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.4rem 0.7rem; }
-  /* Паутина — КВАДРАТ во всю высоту ряда и прижата к правому краю: при
-     width:100% она рисовалась по центру широкой ячейки и половина места
-     пропадала (правка владельца «паутина маленькая, сделай её ещё правее»). */
-  .radar { width: auto; height: 100%; aspect-ratio: 1 / 1; max-width: 100%; max-height: none;
-    min-height: 0; align-self: stretch; justify-self: end; margin: 0; }
+  /* Зрелость: СЛЕВА оценка, СПРАВА паутина, под ними семь графиков в два
+     столбца (правка владельца: «справа паутинку, а слева 2.4 / 5»); сама
+     раскладка общая для всех ширин и задана выше. */
+  .maturity { gap: 0.4rem var(--mgap); }
   /* «2.4 / 5» — ОДНОЙ строкой (правка владельца «почему 5 внизу») */
   .score { align-items: baseline; gap: 0.4rem; margin-bottom: 0; }
   /* Семь графиков в ДВА столбца. Паутина — квадрат, её сторона равна
@@ -1051,7 +1092,7 @@ strong { color: var(--w); font-weight: 700; }
      четыре ряда вместо семи, и паутина растёт. Размер подписей — не
      ступенькой, а clamp по ширине окна: на 320px «Инфраструктура»
      помещается в половину ширины целиком, без многоточия. */
-  .dims { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 0.9rem; align-content: center; }
+  .dims { gap: 0.3rem var(--mgap); }
   .dim { row-gap: 0.06rem; }
   .dim-name { font-size: clamp(10px, 3.3vw, 13px); }
   .dim-val { font-size: clamp(11px, 3.6vw, 14px); }
@@ -1086,7 +1127,10 @@ strong { color: var(--w); font-weight: 700; }
   /* Три элемента финала стоят ровно по центру экрана (правка владельца
      «по середине по центру»): три конкурирующих auto-отступа поднимали
      их в верхнюю треть. */
-  .final .wrap { flex: 1 1 auto; margin: 0; }
+  /* Боковое auto обязательно (жалоба владельца «криво» на окне ~1000px):
+     при margin:0 колонка шириной 46rem прижималась к левому краю, и призыв
+     стоял на 100px левее подвала. */
+  .final .wrap { flex: 1 1 auto; margin: 0 auto; }
   .final footer { margin-top: auto; padding-top: 0.9rem; gap: 0.45rem; }
   .legal { font-size: 12px; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
   .legal a { white-space: nowrap; }
@@ -1272,7 +1316,11 @@ strong { color: var(--w); font-weight: 700; }
      перекрытие 148×20px, то есть иконки целиком внутри кнопки) и на
      юридические ссылки (10px на 740×360). Запас снизу равен высоте подвала,
      и содержимое центрируется НАД ним. */
-  .final .wrap { flex: 1 1 auto; justify-content: center; padding-bottom: 5.6rem; }
+  /* Юридические ссылки на телефоне ушли в меню (FR-SITE83), и подвал —
+     одна строка: соцсети и копирайт рядом. Запас снизу под него 2.6rem
+     вместо 5.6rem — призыв с роботом больше не ужимается на треть. */
+  .final .wrap { flex: 1 1 auto; justify-content: center; padding-bottom: 2.6rem; }
+  .final footer { flex-direction: row; justify-content: center; align-items: center; gap: 1.2rem; }
   .ticker { margin-top: 0.6rem; }
   /* Бегущая строка ролей: .screen > *:not(.wm){max-width:none} снял с неё
      ограничение, и коробка выросла до ширины ленты (замер: 158…3833px) —
@@ -1314,6 +1362,17 @@ strong { color: var(--w); font-weight: 700; }
   .pchain, .fflow { flex-direction: column; gap: clamp(0.15rem, 0.9vh, 0.4rem); }
   .pchain .prow, .fflow .frow { flex-direction: row; gap: 0.3rem; }
   .pwrap { font-size: 9px; }
+  /* Шаг 05 на вебе идёт рядами по два (2+2+2+1), а панель горизонта низкая:
+     четыре ряда не влезали — верхний заезжал под заголовок панели, нижний
+     срезался краем (замер на 740×360). Здесь два последних ряда встают в
+     один (2+2+3): сетка, а третий поворот цепочки — стрелка вправо. */
+  .fflow { display: grid; grid-template-columns: auto auto auto; justify-content: center;
+    align-content: center; row-gap: clamp(0.15rem, 0.9vh, 0.4rem); column-gap: 0.3rem; }
+  .fflow > * { grid-column: 1 / -1; justify-self: center; }
+  .fflow > .frow:nth-of-type(3) { grid-column: 1; justify-self: end; }
+  .fflow > .fwrap:nth-of-type(3) { grid-column: 2; align-self: center; }
+  .fflow > .fwrap:nth-of-type(3) i::before { content: "\f061"; }
+  .fflow > .frow:nth-of-type(4) { grid-column: 3; justify-self: start; }
   .opchain { gap: 0.3rem; }
   .opgroup { gap: 0.3rem; }
 
@@ -1323,9 +1382,4 @@ strong { color: var(--w); font-weight: 700; }
   .step-copy, .step-copy h2, .step-copy p, .step-n { text-align: center; }
   .step-copy .step-n { justify-content: center; }
 
-  /* «·» между юридическими ссылками: при gap 0.7rem и разрядке 0.1em
-     «ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ» и «УСЛОВИЯ ИСПОЛЬЗОВАНИЯ» читались
-     как одна строка */
-  .legal { gap: 0.55rem; }
-  .legal a + a::before { content: '\00b7'; margin-right: 0.55rem; color: rgba(255,255,255,0.3); }
 }

@@ -187,7 +187,11 @@ def stages(t):
     # висящую чёрточку в конце ряда и рвала связь между рядами
     PARROW = '<span class="parrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
     PDOWN = '<span class="pwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
-    chain = chain_rows(nodes, PARROW, PDOWN)
+    # Рядами по ДВА (2 + 2 + 2): по три в ряд шесть блоков влезали в панель
+    # только при кегле 9–12.5px, и на вебе цепочка читалась мелко (правка
+    # владельца «тут шрифт мелкий на вебе»). На телефоне ряды разворачиваются
+    # в столбик, и число рядов его не касается.
+    chain = chain_rows(nodes, PARROW, PDOWN, rows=3)
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot o"></span>{bar}</div>
@@ -236,7 +240,9 @@ def stages(t):
                      % (kind, flip, icon, name))
     ARROW = '<span class="farrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>'
     DOWN = '<span class="fwrap" aria-hidden="true"><i class="fa-solid fa-arrow-turn-down"></i></span>'
-    flow = chain_rows(items, ARROW, DOWN, cls="frow", rows=3)
+    # те же ряды по два, что у цепочки шага 03: блоки перелетают между
+    # сценами и должны быть одного размера (2 + 2 + 2 + 1)
+    flow = chain_rows(items, ARROW, DOWN, cls="frow", rows=4)
     out.append("""
       <div class="ui">
         <div class="ui-bar"><span class="ui-dot p"></span><span class="ui-dot o"></span>{bar}</div>
@@ -257,9 +263,16 @@ def stages(t):
         a = -math.pi / 2 + i * 2 * math.pi / n
         cx = math.cos(a)
         cy = math.sin(a)
+        # На телефоне кольцо повёрнуто на одно место: самые длинные подписи
+        # («Роль человека», «Инструкции») встают сверху, где места по
+        # горизонтали много, а по бокам — короткие. Ширина боковых подписей
+        # и задаёт радиус, поэтому шрифт в круге можно сделать крупнее
+        # (правка владельца «на мобиле чето мелкие слова в круге»).
+        m = a + 2 * math.pi / n
         ic = SPOKE_ICONS[i % len(SPOKE_ICONS)]
-        spokes.append('<span class="spoke" data-seq style="--cx:%.4f; --cy:%.4f; --i:%d">'
-                      '<i class="fa-solid %s"></i><span>%s</span></span>' % (cx, cy, i, ic, sp))
+        spokes.append('<span class="spoke" data-seq style="--cx:%.4f; --cy:%.4f; --mx:%.4f; --my:%.4f; --i:%d">'
+                      '<i class="fa-solid %s"></i><span>%s</span></span>'
+                      % (cx, cy, math.cos(m), math.sin(m), i, ic, sp))
     spokes = "".join(spokes)
     out.append("""
       <div class="ui">
@@ -419,6 +432,11 @@ def page(t, lang):
         <span>{brand}</span>
       </div>
       {home}{nav_html}
+      <!-- юридические ссылки на телефоне живут в меню, а не в подвале финала
+           (правка владельца «на мобиле должны быть скрыты в меню») -->
+      <div class="nav-legal">
+        <a class="nav-legal-link" href="/">{legal0}</a><span class="nav-legal-sep" aria-hidden="true">&middot;</span><a class="nav-legal-link" href="/">{legal1}</a>
+      </div>
     </nav>
 
     <div class="header-right">

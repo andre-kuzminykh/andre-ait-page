@@ -130,6 +130,34 @@
   window.addEventListener('resize', fitHeadings);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeadings);
 
+  /* ---------- экран целиком в окне ----------
+     Внутри экрана не листают, а окно владелец тянет как угодно: на ~1000×766
+     восемь кейсов уходили под точки и за нижний край (жалоба «при
+     растягивании что-то не так»). Если колонка экрана выше свободного
+     места, она уменьшается ЦЕЛИКОМ (zoom): вёрстка та же, просто мельче.
+     Высота меряется без уменьшения offset-размерами — они не видят
+     transform-анимаций появления. Подвал финала занимает своё место. */
+  function fitScreen(s) {
+    var w = s && s.querySelector(':scope > .wrap');
+    if (!w) return;
+    w.style.zoom = '';
+    var cs = getComputedStyle(s);
+    var room = s.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    $$(':scope > *', s).forEach(function (el) {
+      if (el !== w && getComputedStyle(el).position !== 'absolute') room -= el.offsetHeight;
+    });
+    var ws = getComputedStyle(w);
+    room -= parseFloat(ws.paddingTop) + parseFloat(ws.paddingBottom);
+    var kids = $$(':scope > *', w).filter(function (el) { return getComputedStyle(el).position !== 'absolute'; });
+    if (!kids.length || room <= 0) return;
+    var first = kids[0], last = kids[kids.length - 1];
+    var h = last.offsetTop + last.offsetHeight + parseFloat(getComputedStyle(last).marginBottom)
+          - first.offsetTop + parseFloat(getComputedStyle(first).marginTop);
+    if (h > room + 1) w.style.zoom = (room / h * 0.99).toFixed(4);
+  }
+  window.addEventListener('resize', function () { fitScreen(screens[cur]); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitScreen(screens[cur]); });
+
   /* ---------- запуск анимаций сцены ----------
      Переход НЕ стартует для элемента, который в этом же кадре был display:none —
      браузеру не от чего анимировать, и он сразу ставит конечное значение.
@@ -238,6 +266,7 @@
     dots.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
     screens[cur].scrollTop = 0;
     fitHeadings(screens[cur]);
+    fitScreen(screens[cur]);
     sceneIn(screens[cur]);
     typeIn(screens[cur]);
     countUpIn(screens[cur]);

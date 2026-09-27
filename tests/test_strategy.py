@@ -511,13 +511,14 @@ def test_process_chain_has_no_dangling_connectors():
     assert ".pnode.linked::after" not in css, "псевдо-соединители убраны"
     assert ".prow {" in css and ".pwrap {" in css, "цепочка рисуется рядами"
     for lang, html in _pages():
-        assert html.count('class="prow"') == 2, lang + ": два ряда процессов"
-        assert html.count('class="pwrap"') == 1, lang + ": одна стрелка переноса"
+        # FR-SITE83: ряды по два — на вебе кегль цепочки вырос с 9–12.5px
+        assert html.count('class="prow"') == 3, lang + ": три ряда процессов"
+        assert html.count('class="pwrap"') == 2, lang + ": две стрелки переноса"
         # Правка владельца «первый экран не вмещается»: ряд из четырёх блоков
         # на 1280 и 1366 выходил за панель (замер: 548px против 500px), и
         # цепочка AI-First разложена тремя рядами — 3 + 2 + 2.
-        assert html.count('class="frow"') == 3, lang + ": AI-First идёт тремя рядами"
-        assert html.count('class="fwrap"') == 2, lang + ": две стрелки переноса"
+        assert html.count('class="frow"') == 4, lang + ": AI-First идёт рядами по два"
+        assert html.count('class="fwrap"') == 3, lang + ": три стрелки переноса"
 
 
 def test_dragged_circle_never_leaves_the_window():
@@ -724,7 +725,7 @@ def test_mobile_hero_headline_is_bigger_than_section_headings():
 def test_maturity_scene_has_radar_left_and_seven_bars_right():
     """Правка владельца: «слева паутина, справа графики горизонтальные»."""
     css = _read("assets/strategy.css")
-    assert ".maturity { display: grid;" in css, "сцена зрелости — две колонки"
+    assert ".maturity { --mgap: 0.9rem; display: grid;" in css, "сцена зрелости — две половины"
     for lang, html in _pages():
         card = html[html.index('data-step="1"'):html.index('data-step="2"')]
         assert card.index('class="radar"') < card.index('class="dims"'), \
@@ -975,7 +976,7 @@ def test_mobile_chain_runs_top_down_with_arrows():
         "стрелка развёрнута вниз"
     assert ".pchain .prow, .fflow .frow { display: flex; flex-direction: column;" in mob, \
         "ряды идут колонкой"
-    assert ".node, .pnode, .fnode { font-size: clamp(8.5px, 1.75vh, 15px);" in mob, \
+    assert ".node, .pnode, .fnode, .opnode { font-size: clamp(8.5px, 1.75vh, 15px);" in mob, \
         "звенья считаются от высоты окна"
     assert ".opgroup .oprow { display: contents; }" in mob, \
         "на сцене возможностей поток свой у каждой группы"
@@ -990,14 +991,17 @@ def test_mobile_maturity_scene_shows_all_seven_bars():
     assert ".stage-card > .ui > .ui-body { flex: 1; min-height: 0;" in css, \
         "без min-height:0 тело панели растёт под содержимое и графики срезает рамка"
     mob = _mobile_block()
-    assert ".maturity { flex: 1; min-height: 0; grid-template-rows: minmax(84px, 1fr) auto;" in mob
-    assert "grid-template-columns: auto minmax(0, 1fr)" in mob, \
-        "верхний ряд: слева оценка, справа паутина"
-    # Правки владельца: «почему 5 внизу — должно быть на одной линии»,
-    # «паутина всё равно маленькая, сделай её ещё правее».
-    assert ".radar { width: auto; height: 100%; aspect-ratio: 1 / 1;" in mob, \
+    # FR-SITE83: раскладка одна на всех ширинах — две равные половины,
+    # оценка и паутина по центру своих половин
+    assert ".maturity { --mgap: 0.9rem; display: grid; flex: 1; min-height: 0;" in css
+    assert "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);\n  grid-template-rows: minmax(84px, 1fr) auto;" in css, \
+        "верхний ряд: слева оценка, справа паутина — две равные половины"
+    # Правка владельца: «почему 5 внизу — должно быть на одной линии».
+    assert ".maturity .radar { grid-area: radar; width: auto; height: 100%; aspect-ratio: 1 / 1;" in css, \
         "паутина — квадрат во всю высоту ряда, а не по ширине ячейки"
-    assert "justify-self: end;" in mob, "паутина прижата к правому краю"
+    assert "justify-self: center; margin: 0; }" in css and \
+        ".maturity .score { grid-area: score; justify-self: center;" in css, \
+        "оценка и паутина — по центру своих половин"
     assert ".score { align-items: baseline; gap: 0.4rem; margin-bottom: 0; }" in mob, \
         "«2.4 / 5» стоит одной строкой"
     assert "flex-direction: column" not in mob.split(".score {")[1][:120], \
@@ -1010,8 +1014,10 @@ def test_mobile_maturity_scene_shows_all_seven_bars():
     css_areas = _read("assets/strategy.css")
     assert 'grid-template-areas: "score radar" "dims dims";' in css_areas, \
         "на телефоне оценка слева, паутина справа, графики под ними"
-    assert 'grid-template-areas: "radar score" "radar dims";' in css_areas, \
-        "в вебе паутина слева во всю высоту"
+    # FR-SITE83: на вебе та же раскладка — при растягивании окна паутина
+    # больше не перескакивает на левую сторону
+    assert 'grid-template-areas: "radar score" "radar dims";' not in css_areas, \
+        "в вебе раскладка та же, что на телефоне"
 
 
 def test_mobile_footer_stands_just_above_the_dots():
@@ -1266,9 +1272,10 @@ def test_maturity_switches_only_at_the_one_site_wide_breakpoint():
         "своей границы 700px у зрелости больше нет"
     assert "@media (max-width:359px)" not in css, \
         "и отдельной вёрстки под узкий телефон тоже"
-    web = css[css.index('grid-template-areas: "radar score" "radar dims";') - 400:]
-    web = web[:web.index('grid-template-areas: "radar score" "radar dims";')]
-    assert "@media (min-width:1024px)" in web, "веб-раскладка зрелости включается с 1024px"
+    # FR-SITE83: «при растягивании так и должно сохраняться» — раскладка
+    # зрелости теперь одна на всех ширинах, и границы у неё нет вовсе
+    assert '"radar score"' not in css, "паутина больше не перескакивает влево на вебе"
+    assert 'grid-template-areas: "score radar" "dims dims"; }' in css
 
 
 def test_maturity_web_fills_its_picture():
@@ -1295,7 +1302,7 @@ def test_mobile_maturity_bars_stand_in_two_columns():
     в неё: на 360px она была 147px, на сжатом окне 503px — 204px. В два
     столбца графики занимают четыре ряда, и паутина вырастает."""
     mob = _mobile_block()
-    assert ".dims { display: grid; grid-template-columns: 1fr 1fr;" in mob, \
+    assert ".dims { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);" in _read("assets/strategy.css"), \
         "на телефоне графики зрелости стоят в два столбца"
     assert ".dim-name { font-size: clamp(10px, 3.3vw, 13px); }" in mob, \
         "подписи тянутся по ширине окна: на 320px «Инфраструктура» влезает целиком"
@@ -1320,7 +1327,7 @@ def test_web_type_is_bigger_without_new_line_breaks():
     assert ".final-1, .final-3 { font-size: clamp(1.45rem, 2.25vw, 2.2rem); line-height: 1.2; }" in css, \
         "финал набран крупнее общих заголовков и всё ещё влезает в строку"
     assert ".step-copy h2 { font-size: clamp(1.3rem, 2.3vw, 1.95rem);" in css
-    assert ".node, .pnode, .opnode, .fnode { font-size: 14.5px; }" in css, \
+    assert ".node, .pnode, .opnode, .fnode { font-size: clamp(14.5px, 1.2vw, 18px); }" in css, \
         "блоки процессов крупнее"
 
 
@@ -1506,7 +1513,10 @@ def test_finale_button_does_not_cover_the_footer():
     перекрытие 148×20px при высоте иконки 20px) и юридические ссылки."""
     css = _read("assets/strategy.css")
     land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
-    assert ".final .wrap { flex: 1 1 auto; justify-content: center; padding-bottom: 5.6rem; }" in land, \
+    # FR-SITE83: юридические ссылки на телефоне ушли в меню, подвал — одна
+    # строка, и запас под него меньше
+    assert ".final .wrap { flex: 1 1 auto; justify-content: center; padding-bottom: 2.6rem; }" in land and \
+        ".final footer { flex-direction: row;" in land, \
         "содержимое финала центрируется НАД подвалом, а не поверх него"
 
 
@@ -1546,6 +1556,33 @@ def test_agent_passport_labels_are_bigger_on_the_web():
     # базовое правило (телефон) прежнее — там запаса нет
     assert "font-size: clamp(9px, 3.4cqmin, 13.5px);" in css
 
+
+def test_owner_landing_fixes_2026_09_27():
+    """FR-SITE83. Правки владельца по лендингу: цепочка «Пришёл лид…» мелкая на
+    вебе; «2.4/5» и паутинка — по центру своих половин и при растягивании так
+    и остаются; кейсы при растягивании уходили под точки; финал на окне
+    ~1000px «криво»; мелкие слова в круге агента на телефоне; юридические
+    ссылки на телефоне — в меню, на вебе — через точку."""
+    css = _read("assets/strategy.css")
+    js = _read("assets/strategy.js")
+    # колонка экрана, которая выше окна, уменьшается целиком
+    assert "function fitScreen(s)" in js and "w.style.zoom = (room / h * 0.99)" in js
+    assert "fitScreen(screens[cur]);" in js
+    # финал: колонка по центру и на окнах 794–1023px
+    assert ".final .wrap { flex: 1 1 auto; margin: 0 auto; }" in css
+    # точка между юридическими ссылками — во всех вёрстках
+    assert ".legal a + a::before { content: '\\00b7';" in css
+    # на телефоне ссылки в меню, в подвале их нет
+    assert ".final .legal { display: none; }" in css and ".nav.open .nav-legal { display: flex;" in css
+    for lang, html in _pages():
+        assert html.count('class="nav-legal-link"') == 2, lang + ": обе ссылки в меню"
+        # кольцо агента на телефоне повёрнуто: длинные подписи сверху
+        assert html.count("--mx:") == 8 and html.count("--my:") == 8, lang
+    assert "font-size: clamp(9px, 4.2cqmin, 20px); padding: 0.3em 0.6em; gap: 0.3em; }" in css, \
+        "подписи круга на телефоне крупнее: 14px вместо 11.3 на 390px"
+    # в горизонте шаг 05 — три ряда (2+2+3), иначе панель не вмещает
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".fflow { display: grid; grid-template-columns: auto auto auto;" in land
 
 if __name__ == "__main__":
     import sys
