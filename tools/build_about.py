@@ -50,31 +50,30 @@ SOCIALS = [
 # короткие. Одна глава — несколько экранов подряд.
 SCREENS = [
     # ── детство ──
-    dict(ch="childhood", wm=("tiger", "-7deg"), blocks=[
+    dict(ch="childhood", wm=("tiger", "-7deg"), cls=" hero", blocks=[
         ("eyebrow", "eyebrow"), ("h1", "h1"), ("lead", "c1_lead"), ("p", "c1_p1")]),
     dict(ch="childhood", wm=("fa-chess-knight", "8deg"), ic="fa-chess-knight", blocks=[
         ("h2", "c2_head"), ("p", "c2_p1"), ("p", "c2_p2"), ("quote", "c2_quote")]),
     # ── образование ──
+    # Правка владельца: «Наука и преподавание» влиты в этот экран — «это один
+    # будет», заголовок «Наука и образование».
     dict(ch="education", wm=("fa-graduation-cap", "8deg"), ic="fa-graduation-cap", blocks=[
-        ("h2", "e1_head"), ("lead", "e1_lead"), ("facts", "e1_facts")]),
-    dict(ch="education", wm=("fa-microscope", "-6deg"), ic="fa-microscope", blocks=[
-        ("h2", "e2_head"), ("p", "e2_p1"), ("p", "e2_p2"), ("note-o", "e2_note")]),
+        ("h2", "e1_head"), ("lead", "e1_lead"), ("facts", "e1_facts"),
+        ("p", "e2_p1"), ("p", "e2_p2"), ("note-o", "e2_note")]),
     # ── карьера ──
+    # «ИИ во всём банке» без своего заголовка — продолжение этого экрана
     dict(ch="career", wm=("fa-coins", "6deg"), ic="fa-chart-line", blocks=[
-        ("h2", "k1_head"), ("p", "k1_p1"), ("p", "k1_p2")]),
-    dict(ch="career", wm=("fa-building-columns", "-6deg"), ic="fa-building-columns", blocks=[
-        ("h2", "k2_head"), ("p", "k2_p1"), ("stat", "k2_stat")]),
+        ("h2", "k1_head"), ("p", "k1_p1"), ("p", "k1_p2"), ("p", "k2_p1"), ("stat", "k2_stat")]),
     dict(ch="career", wm=("fa-door-open", "7deg"), ic="fa-door-open", blocks=[
         ("h2", "k3_head"), ("p", "k3_p1"), ("p", "k3_p2"), ("p", "k3_p3"), ("quote", "k3_quote")]),
     # ── стартапы ──
+    # «Что я строил» и «Система вместо стартапа» влиты в соседние экраны без
+    # своих заголовков (правка владельца)
     dict(ch="startups", wm=("fa-rocket", "12deg"), ic="fa-rocket", blocks=[
-        ("h2", "s1_head"), ("p", "s1_p1"), ("p", "s1_p2")]),
-    dict(ch="startups", wm=("fa-flask", "-8deg"), ic="fa-flask", blocks=[
-        ("h2", "s2_head"), ("facts", "s2_facts"), ("stat", "s2_stat")]),
+        ("h2", "s1_head"), ("p", "s1_p1"), ("p", "s1_p2"), ("facts", "s2_facts"), ("stat", "s2_stat")]),
     dict(ch="startups", wm=("fa-user-gear", "6deg"), ic="fa-user-gear", blocks=[
-        ("h2", "s3_head"), ("p", "s3_p1"), ("p", "s3_p2"), ("p", "s3_p3")]),
-    dict(ch="startups", wm=("fa-lightbulb", "-10deg"), ic="fa-lightbulb", blocks=[
-        ("h2", "s4_head"), ("note", "s4_note"), ("p", "s4_p1")]),
+        ("h2", "s3_head"), ("p", "s3_p1"), ("p", "s3_p2"), ("p", "s3_p3"),
+        ("note", "s4_note"), ("p", "s4_p1")]),
     # ── экосистема ──
     dict(ch="ecosystem", wm=("fa-microchip", "-9deg"), ic="fa-microchip", blocks=[
         ("h2", "x1_head"), ("p", "x1_p1"), ("p", "x1_p2"), ("cards", "x1_cards")]),
@@ -87,9 +86,10 @@ SCREENS = [
     # ── миссия ──
     dict(ch="mission", wm=("fa-people-group", "-6deg"), ic="fa-people-group", blocks=[
         ("h2", "m1_head"), ("p", "m1_p1"), ("p", "m1_p2")]),
-    dict(ch="mission", wm=("fa-star", "9deg"), ic="fa-star", blocks=[
-        ("h2", "m2_head"), ("p", "m2_p1"), ("p", "m2_p2"), ("p", "m2_p3")]),
-    dict(ch="mission", wm=("fa-flag-checkered", "-8deg"), cls=" final", blocks=[
+    # Прощание и подвал — на этом же экране: он стал последним (правка
+    # владельца «это тоже перенеси в предыдущий слайд»)
+    dict(ch="mission", wm=("fa-star", "9deg"), ic="fa-star", cls=" final", blocks=[
+        ("h2", "m2_head"), ("p", "m2_p1"), ("p", "m2_p2"), ("p", "m2_p3"),
         ("finale", "finale"), ("foot", None)]),
 ]
 
@@ -216,13 +216,13 @@ JS = r"""
   });
 
   /* ---------- заголовки: перенос авторский, подгоняем только кегль ----------
-     На вебе строка заголовка не переносится: если она чуть шире колонки,
-     уменьшаем кегль, а не ломаем строку. На телефоне подгонка выключена —
-     там свой крупный масштаб и переносы по месту (как на лендинге). */
+     Заголовок главы на вебе не переносится: если строка чуть шире колонки,
+     уменьшаем кегль, а не ломаем строку. На телефоне у главы свой крупный
+     масштаб и переносы по месту (как на лендинге). */
   function fitHeadings(root) {
     var wide = mqDesktop.matches;
     if (!root || !root.querySelectorAll) root = document;
-    Array.prototype.slice.call(root.querySelectorAll('h1 .l, h2')).forEach(function (el) {
+    Array.prototype.slice.call(root.querySelectorAll('h2')).forEach(function (el) {
       el.style.fontSize = '';
       el.style.whiteSpace = '';
       if (!wide) return;
@@ -237,10 +237,69 @@ JS = r"""
          чем текст уедет за край */
       if (el.scrollWidth > el.clientWidth + 1) { el.style.whiteSpace = ''; el.style.fontSize = ''; }
     });
+    /* Заголовок первого экрана — ВСЕГДА две строки одного кегля, и кегль тот
+       же в русской и английской версии (правка владельца, FR-SITE82). Кегль
+       задаёт CSS от ширины колонки; здесь только страховка на случай чужого
+       шрифта: ужимается весь заголовок разом, а не одна его строка — раньше
+       строки подгонялись по отдельности и выходили 32 и 43px. */
+    Array.prototype.slice.call(root.querySelectorAll('h1')).forEach(function (el) {
+      el.style.fontSize = '';
+      var lines = Array.prototype.slice.call(el.querySelectorAll('.l'));
+      var over = function () {
+        return lines.some(function (l) { return l.scrollWidth > l.clientWidth + 1; });
+      };
+      var size = parseFloat(getComputedStyle(el).fontSize), min = size * 0.6;
+      while (size > min && over()) {
+        size -= 0.5;
+        el.style.fontSize = size + 'px';
+      }
+    });
   }
+
+  /* ---------- экран целиком помещается в окно ----------
+     Внутри экрана не листают (правило владельца), а после слияния глав
+     (FR-SITE82) плотный экран на коротком телефоне или в горизонте выше
+     свободного места. Такой экран не обрезается: кегль его текста
+     уменьшается общим множителем --k ровно настолько, чтобы всё влезло.
+     Отступы и левый край колонки при этом не двигаются — меняется только
+     размер букв, и строки перетекают по той же ширине.
+     Высота меряется offset-размерами: они не видят transform появления
+     (.reveal), который сдвигает блоки на 10–26px. */
+  function fitScreen(s) {
+    if (!s) return;
+    s.style.removeProperty('--k');
+    /* знак главы и прижатый к краю подвал (горизонт) стоят вне потока */
+    var blocks = Array.prototype.slice.call(s.children).filter(function (el) {
+      return getComputedStyle(el).position !== 'absolute';
+    });
+    if (!blocks.length) return;
+    var cs = getComputedStyle(s);
+    var room = s.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    var first = blocks[0], last = blocks[blocks.length - 1];
+    function fits() {
+      var h = last.offsetTop + last.offsetHeight + parseFloat(getComputedStyle(last).marginBottom)
+            - first.offsetTop + parseFloat(getComputedStyle(first).marginTop);
+      return h <= room + 1;
+    }
+    if (room <= 0 || fits()) return;
+    var lo = 0.5, hi = 1;
+    for (var t = 0; t < 8; t++) {
+      var mid = (lo + hi) / 2;
+      s.style.setProperty('--k', mid.toFixed(4));
+      if (fits()) lo = mid; else hi = mid;
+    }
+    s.style.setProperty('--k', lo.toFixed(4));
+  }
+  /* сначала экран по высоте, потом заголовки по ширине: подгонка
+     заголовка на вебе только уменьшает его и высоту не прибавляет */
+  function fitCurrent() {
+    fitScreen(screens[cur]);
+    fitHeadings(screens[cur]);
+  }
+  fitScreen(screens[0]);
   fitHeadings();
-  window.addEventListener('resize', fitHeadings);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeadings);
+  window.addEventListener('resize', function () { fitScreen(screens[cur]); fitHeadings(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitScreen(screens[cur]); fitHeadings(); });
 
   /* ---------- переключение экранов (как на главной) ---------- */
   var cur = 0, swapT, enterT, busy = false;
@@ -249,7 +308,7 @@ JS = r"""
     var chapter = screens[cur].getAttribute('data-chapter');
     navTabs.forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-chapter') === chapter); });
     dots.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
-    fitHeadings(screens[cur]);
+    fitCurrent();
     revealIn(screens[cur]);
     countUpIn(screens[cur]);
   }
@@ -466,7 +525,6 @@ TEMPLATE = """<!DOCTYPE html>
 
 <div class="grain" aria-hidden="true"></div>
 <div class="top-fade" aria-hidden="true"></div>
-<div class="bottom-fade" aria-hidden="true"></div>
 
 <!-- Тигр (детство на Дальнем Востоке) — в Font Awesome его нет, рисуем линиями -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">

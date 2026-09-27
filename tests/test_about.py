@@ -197,7 +197,7 @@ def test_menu_lists_six_chapters_even_though_screens_are_many():
 def test_first_screen_carries_the_tiger():
     """Тигр — на первом экране, там же, где про детство."""
     for lang, html in _pages():
-        first = re.search(r'<section class="screen active"[^>]*>(.*?)</section>', html, re.S).group(1)
+        first = re.search(r'<section class="screen active[^"]*"[^>]*>(.*?)</section>', html, re.S).group(1)
         assert "ic-tiger" in first, lang + ": на первом экране должен быть тигр"
 
 
@@ -274,7 +274,7 @@ def test_chapter_watermarks_sit_bottom_right():
         "знак главы прижат к правому нижнему углу"
     for lang, html in _pages():
         marks = re.findall(r'<div class="wm" style="--rot: [^"]+;" aria-hidden="true">(.*?)</div>', html, re.S)
-        assert len(marks) >= 15, "%s: знак есть у каждого экрана, найдено %d" % (lang, len(marks))
+        assert len(marks) == 13, "%s: знак есть у каждого экрана, найдено %d" % (lang, len(marks))
         bodies = " ".join(marks)
         for icon in WM_ICONS:
             assert icon in bodies, "%s: нет знака главы %s" % (lang, icon)
@@ -311,13 +311,14 @@ def test_long_chapters_are_split_into_short_screens():
     а не ужата кеглем: на экране заголовок и два-четыре блока."""
     for lang, html in _pages():
         screens = _screens(html)
-        assert len(screens) >= 15, "%s: биография разложена на много коротких экранов (%d)" % (lang, len(screens))
+        # FR-SITE82: владелец слил короткие экраны — их 13, самые плотные по 6 блоков
+        assert len(screens) == 13, "%s: биография — 13 экранов (%d)" % (lang, len(screens))
         for i, (ch, body) in enumerate(screens):
             # верхние блоки экрана помечены .reveal / .hero-rise (плюс подвал);
             # вложенные карточки и пункты списков не в счёт
             blocks = re.findall(r'<(?:h1|h2|p|div|ul) class="[^"]*(?:reveal|hero-rise|foot)"', body)
-            assert 2 <= len(blocks) <= 5, \
-                "%s: экран %d (%s) — %d блоков, должно быть от 2 до 5" % (lang, i, ch, len(blocks))
+            assert 2 <= len(blocks) <= 6, \
+                "%s: экран %d (%s) — %d блоков, должно быть от 2 до 6" % (lang, i, ch, len(blocks))
             text = re.sub(r"<[^>]+>", " ", body).strip()
             assert len(text) > 40, "%s: экран %d почти пустой" % (lang, i)
 
@@ -341,29 +342,29 @@ def test_desktop_and_mobile_share_one_large_scale():
     mob = [b for b in _mobile_blocks() if "p { font-size" in b]
     assert mob, "нужен отдельный мобильный масштаб типографики"
     block = mob[0]
-    for rule in ("p { font-size: 14px",
-                 # нижняя граница 1.55rem — чтобы на 320px «AI-Native
-                 # экосистему» влезало одной строкой и не срезалось
-                 "h1 { font-size: clamp(1.55rem, 7.6vw, 2.4rem)",
-                 "h2 { font-size: clamp(1.15rem, 5.2vw, 1.55rem)"):
+    # множитель --k равен 1, пока экран влезает в окно (FR-SITE82)
+    for rule in ("p { font-size: calc(14px * var(--k, 1))",
+                 # две строки героя при любой ширине телефона (FR-SITE82)
+                 "h1 { font-size: calc(min(1.78rem, 5.58cqi) * var(--k, 1))",
+                 "h2 { font-size: calc(clamp(1.15rem, 5.2vw, 1.55rem) * var(--k, 1))"):
         assert rule in block, "мобильный кегль: " + rule
     # и на вебе основной текст не мельче 13.5px
-    assert "p { margin: 0 0 clamp(0.4rem, 1.15vh, 0.72rem); font-size: clamp(13.5px" in css
+    assert "p { margin: 0 0 clamp(0.4rem, 1.15vh, 0.72rem); font-size: calc(clamp(13.5px" in css
 
 
 def test_headline_breaks_where_the_owner_wants():
     """Правило владельца: «тайтлы могут в две строки, но с красивым
     переносом» — значит перенос размечен спанами, а не отдан ширине."""
     css = _css()
-    assert "h1 .l { display: block; }" in css, "строки заголовка — отдельными блоками"
+    assert "h1 .l { display: block; white-space: nowrap; }" in css, "строки заголовка — отдельными блоками"
     en, ru = _en(), _ru()
     assert '<span class="l">I build an <span class="hl-p"><span class="nb">AI-native</span> ecosystem</span></span>' in en
     assert '<span class="l">for <span class="hl-o">human good</span></span>' in en
     assert '<span class="l">Я строю <span class="hl-p nb">AI-Native экосистему</span></span>' in ru, \
         "«AI-Native экосистему» стоит одной строкой: на телефоне это вторая строка героя"
     for lang, html in _pages():
-        assert "querySelectorAll('h1 .l, h2')" in html, \
-            lang + ": кегль подгоняется построчно, перенос не ломается"
+        assert "querySelectorAll('h1')" in html and "querySelectorAll('h2')" in html, \
+            lang + ": кегль подгоняется, перенос не ломается"
 
 
 def test_chapter_stands_in_the_middle_of_the_screen():
@@ -382,8 +383,9 @@ def test_footer_stands_at_the_bottom_of_the_last_screen():
     роликом, иначе кружок накрывал левый край копирайта."""
     css = _css()
     assert ".screen.final { justify-content: flex-start; }" in css
-    assert ".screen.final .finale { margin-top: auto; margin-bottom: auto; }" in css, \
-        "два auto-отступа делят свободное место поровну — подвал уходит вниз"
+    assert ".screen.final > h2 { margin-top: auto; }" in css and \
+        ".screen.final .finale { margin-bottom: auto; }" in css, \
+        "текст главы с прощанием — группой по центру, подвал уходит вниз (FR-SITE82)"
     assert ".screen.final { padding-bottom: calc(var(--vid-d) + 1.4rem" not in css, \
         "подвал стоит у самого низа: кружку разрешено его перекрывать"
     for lang, html in _pages():
@@ -423,7 +425,7 @@ def test_chapter_heading_wraps_as_a_whole():
     assert "display: block" in head and "text-wrap: balance" in head, \
         "заголовок — обычный блок с ровным переносом"
     assert "display: flex" not in head, "иконка больше не отдельный флекс-элемент"
-    assert re.search(r"h2 i \{[^}]*margin-right: 0\.6rem", css), "иконка стоит в строке"
+    assert re.search(r"h2 i \{[^}]*margin-right: 0\.5em", css), "иконка стоит в строке"
 
 
 def test_ai_native_never_splits_on_the_hyphen():
@@ -486,12 +488,15 @@ def test_top_fade_covers_text_under_the_header():
         assert '<div class="top-fade" aria-hidden="true"></div>' in html, lang
 
 
-def test_mobile_text_fades_out_behind_the_video_circle():
+def test_no_bottom_fade_over_the_chapter_mark():
+    """FR-SITE82. Нижняя растушёвка гасила текст, проезжавший под кружком, —
+    но внутри экрана ничего не прокручивается, а нижнее поле держит текст
+    выше кружка. Осталась она только над знаком главы, который владелец
+    хочет видеть в самом углу, — поэтому её нет."""
     css = _css()
-    assert re.search(r"\.bottom-fade \{[^}]*var\(--vid-d\)", css, re.S), \
-        "низ колонки уходит в затемнение ровно под кружком"
-    assert "@media (min-width:1024px) { .bottom-fade { display: none; } }" in css, \
-        "на вебе затемнения снизу нет"
+    assert ".bottom-fade {" not in css, "растушёвки нет ни в одной вёрстке"
+    for lang, html in _pages():
+        assert 'class="bottom-fade"' not in html, lang + ": элемент растушёвки убран"
 
 
 def test_frame_is_not_measured_in_vw():
@@ -508,7 +513,7 @@ def test_quotes_are_not_clickable_or_zoomable():
 
 def test_reveal_offsets_are_reset_after_the_block_appears():
     css = _css()
-    assert ".quote.reveal.in, .note.reveal.in, .stat.reveal.in { transform: none; }" in css, \
+    assert ".quote.reveal.in, .note.reveal.in, .stat.reveal.in, .finale.reveal.in { transform: none; }" in css, \
         "сброс смещения обязан стоять ПОСЛЕ частных правил, иначе блоки налипают"
 
 
@@ -529,7 +534,7 @@ def test_phone_in_landscape_fits_without_scrolling():
     assert ".screen { padding: 3.3rem calc(var(--vid-d) + 1.6rem); }" in block, \
         "текст стоит по центру между кружком и точками"
     assert "--vid-d: clamp(104px, 34vh, 150px);" in block, "кружок такой же, как в портрете"
-    assert "h1 { font-size: clamp(1.4rem, 8vh, 2.3rem)" in block, "кегль от высоты окна"
+    assert "h1 { font-size: calc(min(2.3rem, 8vh, 5.58cqi) * var(--k, 1))" in block, "кегль от высоты окна"
     assert ".facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));" in block, \
         "список ролей разворачивается в три колонки"
 
@@ -577,8 +582,10 @@ def test_owner_named_line_breaks_that_are_not_prepositions():
     assert RU["s3_head"] == "Один вместо команды", "заголовок владельца, влезает от 320px"
     assert '<span class="hl-p nb">AI-Native экосистему</span>' in _ru()
     css = _css()
-    assert "h1 { font-size: clamp(1.55rem, 7.6vw, 2.4rem); line-height: 1.14; }" in css, \
-        "на 320px оборот целиком влезает только при нижней границе 1.55rem"
+    # FR-SITE82: кегль героя считается от ширины колонки — строка с оборотом
+    # целиком влезает при любой ширине телефона
+    assert "h1 { font-size: calc(min(1.78rem, 5.58cqi) * var(--k, 1)); line-height: 1.14; }" in css, \
+        "обе строки героя влезают при любой ширине"
 
 
 def test_binder_never_touches_tags_and_metadata():
@@ -605,20 +612,21 @@ def test_finale_sits_in_the_middle_and_the_footer_at_the_bottom():
     середине» — и само прощание крупнее."""
     css = _css()
     assert ".screen.final { justify-content: flex-start; }" in css
-    assert ".screen.final .finale { margin-top: auto; margin-bottom: auto; }" in css, \
-        "два auto-отступа делят свободное место поровну: финал по центру, подвал внизу"
+    assert ".screen.final > h2 { margin-top: auto; }" in css and \
+        ".screen.final .finale { margin-bottom: auto; }" in css, \
+        "группа главы с прощанием по центру свободного места, подвал внизу (FR-SITE82)"
     # Подвал у самого низа, кружку разрешено его перекрывать (FR-SITE55):
     # «кружок можно перемещать, поэтому пофигу что он там закрывает».
     assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in css, \
         "на телефоне нижний запас под кружок финалу не нужен — подвал прижат к точкам"
     # Крупнее — ровно там, где колонка это позволяет. Кегли подобраны замером
     # предела, за которым появляется лишняя строка (см. FR-SITE43):
-    assert ".finale p { font-size: 17px; }" in css, "телефон, английский: 14.5px → 17px (предел 20px)"
-    assert 'html[lang="ru"] .finale p { font-size: 16px; }' in css, \
+    assert ".finale p { font-size: calc(17px * var(--k, 1)); }" in css, "телефон, английский: 14.5px → 17px (предел 20px)"
+    assert 'html[lang="ru"] .finale p { font-size: calc(16px * var(--k, 1)); }' in css, \
         "телефон, русский: 14.5px → 16px (предел 16.25px на 390px)"
-    assert ".finale p, html[lang=\"ru\"] .finale p { font-size: clamp(13px, 3.8vh, 17px); }" in css, \
+    assert ".finale p, html[lang=\"ru\"] .finale p { font-size: calc(clamp(13px, 3.8vh, 17px) * var(--k, 1)); }" in css, \
         "горизонт: 12.6–14.4px → 13.7–15.7px; русский селектор повторён, иначе портретное правило перебивает"
-    assert ".finale p { margin: 0 0 1rem; font-size: clamp(14px, min(1.15vw, 2.6vh), 18px);" in css, \
+    assert ".finale p { margin: 0 0 1rem; font-size: calc(clamp(14px, min(1.15vw, 2.6vh), 18px) * var(--k, 1));" in css, \
         "в вебе кегль прежний: на 1280 по-русски предел равен старому размеру"
 
 
@@ -672,13 +680,12 @@ def test_chapter_marks_are_visible_on_phone():
     css = _css()
     assert "@media (max-width:1023px) { .wm { display: none; } }" not in css, \
         "знаки глав больше не прячутся на телефоне"
-    assert ".wm { right: 1rem; bottom: calc(var(--vid-d) * 0.9 + 2rem); font-size: min(44vw, 30vh); }" in css, \
-        "в портрете знак поднят НАД нижней растушёвкой и не закрашивается ею"
+    # FR-SITE82: «на мобилах иконки большие должны быть справа внизу прям» —
+    # знак в самом углу, нижней растушёвки, которая его закрашивала, больше нет
+    assert ".wm { right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: min(44vw, 30vh); }" in css, \
+        "в портрете знак стоит в правом нижнем углу"
     assert ".screen.active .wm { opacity: 0.075; }" in css
-    # в горизонте растушёвки нет вовсе — там она накрывала знак целиком
     land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
-    assert ".bottom-fade { display: none; }" in land, \
-        "в горизонте полоса 145px из 390 гасила знак целиком (замер: знак 254…371, полоса 245…390)"
     assert ".wm { bottom: 1.2rem; }" in land, "в горизонте знак стоит у нижнего края"
 
 
@@ -707,7 +714,7 @@ def test_landscape_text_is_centred_and_breathes():
     assert ".screen > .eyebrow, .card h3 { justify-content: center; }" in block, \
         "надзаголовок и заголовок карточки центрируются свойством флекса"
     # в горизонте заголовок главы по центру, поэтому значок возвращается в строку
-    assert "h2 i { position: static; width: auto; margin-right: 0.6rem; }" in block
+    assert "h2 i { position: static; width: auto; margin-right: 0.5em; font-size: 1em; }" in block
     assert ".top-fade { height: 3.4rem; }" in block, \
         "верхняя растушёвка ужата под шапку горизонта, иначе она гасит заголовок главы"
     # зазор между колонками ужат с 1.1rem: колонки были слишком узкие для
@@ -771,7 +778,7 @@ def test_ten_roles_fit_five_columns_in_landscape():
     css = _css()
     land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
     assert ".facts:has(li:nth-child(10):last-child) { gap: 0.3rem 0.5rem; }" in land
-    assert ".facts:has(li:nth-child(10):last-child) li { font-size: clamp(9px, 2.4vh, 11.5px); gap: 0.28rem; }" in land
+    assert ".facts:has(li:nth-child(10):last-child) li { font-size: calc(clamp(9px, 2.4vh, 11.5px) * var(--k, 1)); gap: 0.28rem; }" in land
     assert ".facts:has(li:nth-child(10):last-child) i { width: 0.9rem; }" in land
 
 
@@ -813,7 +820,9 @@ def test_chapter_title_sits_on_the_common_left_edge():
     mob = css[css.index("@media (max-width:1023px) {"):]
     assert "h2 { padding-left: 1.85rem; position: relative; }" in mob, \
         "у заголовка та же колонка значка, что у пунктов списка"
-    assert "h2 i { position: absolute; left: 0; top: 0; width: 1.15rem; margin-right: 0;" in mob, \
+    # FR-SITE82: значок 0.82 кегля по центру первой строки — самый широкий
+    # глиф не доходит до текста ближе 10px
+    assert "h2 i { position: absolute; left: 0; top: calc(0.1rem + 0.2439em); width: 1.15rem;" in mob, \
         "значок вынесен в фиксированную колонку, и ширина глифа больше ни на что не влияет"
 
 
@@ -836,8 +845,93 @@ def test_owner_copy_checklist_2026_09_23():
     assert u'<span class="l">и\u00a0анализа данных' in ru or u'<span class="l">и анализа данных' in ru
     css = _css()
     assert ".screen p .l, .screen li .l { display: block; }" in css
-    assert ru.count('class="screen') == en.count('class="screen') == 18, "экранов стало 18"
+    assert ru.count('class="screen') == en.count('class="screen') == 13, "экранов стало 13 (FR-SITE82)"
 
+
+
+def test_owner_merged_screens_2026_09_27():
+    """FR-SITE82. Правка владельца: главы слиты — «Наука и преподавание» в
+    «Наука и образование», «ИИ во всём банке» в «От данных к ИИ-трансформации»,
+    «Что я строил» в «Стартап-студию», «Система вместо стартапа» в «Один вместо
+    команды», прощание с подвалом — в «Части одной экосистемы». Шахматы
+    переименованы в «Интеллект и дисциплину». Ни один текст не потерян."""
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from about_copy import EN, RU
+    assert RU["c2_head"] == u"Интеллект и дисциплина" and EN["c2_head"] == "Intelligence and Discipline"
+    assert RU["e1_head"] == u"Наука и образование" and EN["e1_head"] == "Science and Education"
+    for key in ("e2_head", "k2_head", "s2_head", "s4_head"):
+        assert key not in RU and key not in EN, u"заголовок убран: " + key
+    ru, en = _ru(), _en()
+    for dead in (u"Наука и преподавание", u"ИИ во всём банке", u"Что я строил", u"Система вместо стартапа",
+                 u"Шахматы и дисциплина", "Research and Teaching", "AI Across the Bank", "What I Built",
+                 "A System, Not a Startup", "Chess and Discipline"):
+        assert dead not in ru.replace(u"\u00a0", " ") and dead not in en.replace(u"\u00a0", " "), dead
+    for lang, html in _pages():
+        screens = _screens(html)
+        assert len(screens) == 13, lang
+        bodies = [b for _, b in screens]
+        def screen_with(text):
+            hits = [b for b in bodies if text in b]
+            assert len(hits) == 1, "%s: «%s» ровно на одном экране" % (lang, text)
+            return hits[0]
+        c = RU if lang == "ru" else EN
+        pairs = [("e1_head", ("e2_note",)), ("k1_head", ("k2_stat",)), ("s1_head", ("s2_stat",)),
+                 ("s3_head", ("s4_p1",)), ("m2_head", ("finale_btn",))]
+        for head, keys in pairs:
+            body = screen_with(c[head].replace(" ", u"\u00a0") if c[head].replace(" ", u"\u00a0") in html else c[head])
+            for k in keys:
+                v = c[k][0] if isinstance(c[k], tuple) else c[k]
+                probe = re.sub(r"<[^>]+>", "", v)[:6]
+                assert probe in re.sub(r"<[^>]+>", "", body), "%s: %s на экране %s" % (lang, k, head)
+        last = bodies[-1]
+        assert 'class="finale' in last and 'class="foot"' in last, lang + ": прощание и подвал на последнем экране"
+        assert c["m2_head"] in last.replace(u"\u00a0", " ") or c["m2_head"].replace(" ", u"\u00a0") in last
+
+
+def test_hero_title_is_two_lines_of_one_size():
+    """FR-SITE82. «„Я строю…“ в любом случае в две строчки и одинакового шрифта
+    и на рус и на англ — выровни по тексту и где „Обо мне“». Шрифт
+    моноширинный: самая длинная строка — английская, 30 знаков = 17.7em;
+    кегль = ширина колонки / 17.9 одинаков в обеих версиях, строки не
+    переносятся, а на телефоне первый экран стоит от одного края."""
+    css = _css()
+    assert "container-type: inline-size;" in css, "кегль героя считается от ширины колонки"
+    assert "h1 { margin: 0 0 clamp(0.42rem, 1.2vh, 0.75rem); font-size: calc(min(2.7rem, 8vh, 5.58cqi) * var(--k, 1));" in css
+    assert "h1 .l { display: block; white-space: nowrap; }" in css, "строка героя не переносится"
+    assert ".screen.hero > p, .screen.hero > .lead { padding-left: 0; }" in css, \
+        "«Обо мне», заголовок и текст первого экрана — от одного края"
+    for lang, html in _pages():
+        assert re.search(r'<section class="screen active hero"', html), lang
+        assert "querySelectorAll('h1')" in html and "el.querySelectorAll('.l')" in html, \
+            lang + ": страховка ужимает весь заголовок разом, а не одну строку"
+
+
+def test_chapter_icon_is_centred_and_spaced():
+    """FR-SITE82. «Иконки херово болтаются — к тексту прижимаются и сверху».
+    Веб: зазор полкегля вместо 0.6rem; телефон: значок 0.82 кегля в колонке,
+    по центру первой строки. Замер по пикселям: центр значка совпадает с
+    центром заглавных ±1px, зазор 9.5–18.5px."""
+    css = _css()
+    assert "h2 i { font-size: 1em; line-height: 1; color: var(--ic, #8854F3); margin-right: 0.5em;" in css
+    mob = css[css.index("@media (max-width:1023px) {"):]
+    assert "font-size: 0.82em; margin-right: 0; text-align: center; }" in mob
+
+
+def test_dense_screen_shrinks_instead_of_overflowing():
+    """FR-SITE82. После слияния глав плотный экран на коротком телефоне или в
+    горизонте выше окна. Он не обрезается и не листается: скрипт подбирает
+    общий множитель кегля --k (двоичным поиском), отступы и левый край
+    остаются на месте."""
+    css = _css()
+    assert css.count("* var(--k, 1))") >= 30, "кегль текста экрана умножается на --k"
+    for lang, html in _pages():
+        assert "function fitScreen(s)" in html and "s.style.setProperty('--k'" in html, lang
+        assert "getComputedStyle(el).position !== 'absolute'" in html, \
+            lang + ": знак главы и подвал в горизонте в высоту не считаются"
+    land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
+    assert ".screen.final .foot { position: absolute; left: 0; right: 0; bottom: 0.55rem;" in land, \
+        "в горизонте подвал — строкой в нижнем поле"
 
 
 if __name__ == "__main__":

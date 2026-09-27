@@ -224,7 +224,10 @@
     justify-content: center; justify-content: safe center;
     align-items: center; touch-action: manipulation;
     padding: 5.5rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 + 1rem + env(safe-area-inset-bottom, 0px));
-    overflow: hidden; scrollbar-width: none; }
+    overflow: hidden; scrollbar-width: none;
+    /* контейнер: кегль заголовка первого экрана считается от ширины колонки
+       (cqi), чтобы обе его строки влезали при любом окне (FR-SITE82) */
+    container-type: inline-size; }
   .screen::-webkit-scrollbar { width: 0; }
   @media (min-width:1024px) {
     /* сверху ровно столько, чтобы текст не лез под шапку: остальное — воздух
@@ -276,14 +279,12 @@
      МЕНЬШЕЙ стороны окна, чтобы в горизонте он не разрастался на пол-экрана,
      и он стоит справа внизу, подальше от кружка с роликом слева. */
   @media (max-width:1023px) {
-    /* Знак поднят НАД нижней растушёвкой: .bottom-fade — fixed, z-index 8, а
-       у .screen есть transform (переходы экранов), из-за которого экран сам
-       создаёт контекст наложения — поднять знак z-индексом нельзя, он заперт
-       внутри экрана. Замер на 390×844: знак занимал 653…825, растушёвка
-       начинается на 699 — три четверти «большой иконки» закрашивались в ноль
-       (жалоба владельца «на мобилках нет больших иконок»). Запас равен
-       высоте растушёвки. */
-    .wm { right: 1rem; bottom: calc(var(--vid-d) * 0.9 + 2rem); font-size: min(44vw, 30vh); }
+    /* Правка владельца «на мобилах иконки большие должны быть справа внизу
+       прям»: знак стоит в самом углу. Раньше его приходилось поднимать над
+       нижней растушёвкой (она закрашивала его в ноль), теперь растушёвки
+       нет — FR-SITE82. Кружок с роликом слева, точки по центру — знак с
+       ними не сталкивается. */
+    .wm { right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: min(44vw, 30vh); }
     .screen.active .wm { opacity: 0.075; }
   }
   @media (min-width:1024px) and (max-width:1399px) { .wm { font-size: min(26vh, 13vw); } }
@@ -304,16 +305,20 @@
   .nav.open .nav-home::after { content: attr(data-label); }
   .nav.open .nav-home i { font-size: clamp(17px, 2.3vh, 21px); color: #8854F3; }
 
-  .eyebrow { display: inline-flex; align-items: center; gap: 0.55rem; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  .eyebrow { display: inline-flex; align-items: center; gap: 0.55rem; font-size: calc(10.5px * var(--k, 1)); font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.2em; color: #a071ff; margin: 0 0 0.7rem; }
   .eyebrow::after { content: ''; width: clamp(2rem, 8vw, 4rem); height: 1px; background: linear-gradient(90deg, #8854F3, rgba(249,115,22,0)); }
   /* Заголовок первого экрана переносится ТАМ, ГДЕ НАДО: строки размечены
      спанами .l, а не отданы на волю ширины колонки (правило владельца:
      «тайтлы могут в две, но с красивым переносом»). */
   /* подзаголовок ближе к заголовку (правка владельца) */
-  h1 { margin: 0 0 clamp(0.42rem, 1.2vh, 0.75rem); font-size: clamp(1.5rem, min(3.6vw, 8vh), 2.7rem); font-weight: 800; line-height: 1.18; letter-spacing: -0.01em; color: #ffffff;
+  /* Правка владельца: «„Я строю…“ в любом случае в две строчки и одинакового
+     шрифта и на рус и на англ». Шрифт моноширинный, самая длинная строка —
+     английская, 30 знаков по 0.59em (0.6em минус разрядка) = 17.7em; кегль
+     = ширина колонки / 17.9 (запас 1%) — один и тот же в обеих версиях. */
+  h1 { margin: 0 0 clamp(0.42rem, 1.2vh, 0.75rem); font-size: calc(min(2.7rem, 8vh, 5.58cqi) * var(--k, 1)); font-weight: 800; line-height: 1.18; letter-spacing: -0.01em; color: #ffffff;
     text-wrap: balance; }
-  h1 .l { display: block; }
+  h1 .l { display: block; white-space: nowrap; }
   /* «AI-native» — одно слово: без этого перенос вставал по дефису и на
      768px заголовок читался как «AI- / native» */
   /* Правка владельца «„AI-Native экосистему“ перенос»: термин и его
@@ -331,22 +336,25 @@
   .hl-o { color: #ff8a33; }
   /* Заголовок главы: без градиентной полоски сверху (правка владельца) и с
      запасом по высоте, иначе иконка обрезалась. На вебе — в одну строку. */
-  h2 { margin: 0 0 clamp(0.35rem, 1.05vh, 0.62rem); padding: 0.1rem 0; font-size: clamp(1.05rem, min(2.1vw, 4.7vh), 1.7rem); font-weight: 800;
+  h2 { margin: 0 0 clamp(0.35rem, 1.05vh, 0.62rem); padding: 0.1rem 0; font-size: calc(clamp(1.05rem, min(2.1vw, 4.7vh), 1.7rem) * var(--k, 1)); font-weight: 800;
     text-transform: uppercase; letter-spacing: 0.03em; color: #ffffff; display: block;
     line-height: 1.35; text-wrap: balance; }
   /* иконка идёт СТРОКОЙ вместе с заголовком: у флекса при переносе текст
      вставал по центру, а иконка висела отдельно у левого края */
-  h2 i { font-size: 1em; line-height: 1; color: var(--ic, #8854F3); margin-right: 0.6rem;
-    vertical-align: -0.08em; }
+  /* Правка владельца «иконки херово болтаются — к тексту прижимаются и
+     сверху»: зазор до текста был 0.6rem (9.6px при кегле 28px — треть
+     буквы), теперь половина кегля; центр значка стоит на центре строки. */
+  h2 i { font-size: 1em; line-height: 1; color: var(--ic, #8854F3); margin-right: 0.5em;
+    vertical-align: -0.03em; }
   @media (min-width:1024px) { h2 { white-space: nowrap; } }
   /* Абзацы здесь короткие — два-четыре предложения, — поэтому строки делятся
      РОВНО (balance), а не просто без «сирот» (pretty): иначе в конце абзаца
      повисало одно слово («…the way I work / today:»). Замер на 768 и 1023px
      показывал такие огрызки в шести абзацах. */
-  p { margin: 0 0 clamp(0.4rem, 1.15vh, 0.72rem); font-size: clamp(13.5px, min(1.05vw, 2.4vh), 16.5px); line-height: 1.62; color: #b9c2d0;
+  p { margin: 0 0 clamp(0.4rem, 1.15vh, 0.72rem); font-size: calc(clamp(13.5px, min(1.05vw, 2.4vh), 16.5px) * var(--k, 1)); line-height: 1.62; color: #b9c2d0;
     text-wrap: balance; }
   p strong { color: #ffffff; font-weight: 700; }
-  .lead { font-size: clamp(15px, min(1.2vw, 2.7vh), 18.5px); line-height: 1.6; color: #E5E7EB; font-weight: 500; }
+  .lead { font-size: calc(clamp(15px, min(1.2vw, 2.7vh), 18.5px) * var(--k, 1)); line-height: 1.6; color: #E5E7EB; font-weight: 500; }
 
 
 
@@ -359,7 +367,7 @@
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude; pointer-events: none; }
   .quote::after { content: '\201C'; position: absolute; left: 0.85rem; top: 0.35rem; font-size: 2.6rem; line-height: 1; color: rgba(136,84,243,0.55); font-family: Georgia, serif; }
-  .quote p { margin: 0; font-size: clamp(14px, min(1.15vw, 2.6vh), 17.5px); line-height: 1.6; color: #ffffff; font-weight: 500; font-style: italic; }
+  .quote p { margin: 0; font-size: calc(clamp(14px, min(1.15vw, 2.6vh), 17.5px) * var(--k, 1)); line-height: 1.6; color: #ffffff; font-weight: 500; font-style: italic; }
   /* правка владельца: цитаты просто стоят на своих местах — нажать,
      выделить или приблизить их нельзя */
   .quote, .note, .stat { pointer-events: none; user-select: none; -webkit-user-select: none;
@@ -374,9 +382,9 @@
   /* карточка-цифра */
   .stat { display: flex; align-items: center; gap: 1rem; margin: clamp(0.5rem, 1.5vh, 0.9rem) 0 clamp(0.6rem, 1.8vh, 1.15rem); padding: clamp(0.6rem, 1.8vh, 0.95rem) 1.1rem; border-radius: 0.9rem;
     border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.025); }
-  .stat-num { font-size: clamp(1.3rem, min(2.6vw, 5.8vh), 2rem); font-weight: 800; line-height: 1; letter-spacing: -0.02em; white-space: nowrap;
+  .stat-num { font-size: calc(clamp(1.3rem, min(2.6vw, 5.8vh), 2rem) * var(--k, 1)); font-weight: 800; line-height: 1; letter-spacing: -0.02em; white-space: nowrap;
     background: linear-gradient(120deg, #a071ff 0%, #ff8a33 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .stat p { margin: 0; font-size: clamp(13px, min(0.98vw, 2.2vh), 15px); line-height: 1.55; }
+  .stat p { margin: 0; font-size: calc(clamp(13px, min(0.98vw, 2.2vh), 15px) * var(--k, 1)); line-height: 1.55; }
   /* карточка-цифра встаёт столбиком на ВСЕЙ мобильной вёрстке, а не с
      какой-то своей ширины: вёрстки две — веб и мобила */
   @media (max-width:1023px) { .stat { flex-direction: column; align-items: flex-start; gap: 0.7rem; } }
@@ -388,9 +396,9 @@
   .card { padding: clamp(0.6rem, 1.8vh, 0.9rem) 1rem; border-radius: 0.9rem; border: 1px solid var(--bc, rgba(136,84,243,0.35));
     background: linear-gradient(160deg, rgba(136,84,243,0.10), rgba(255,255,255,0.01)); }
   .card.o { --bc: rgba(249,115,22,0.35); background: linear-gradient(160deg, rgba(249,115,22,0.10), rgba(255,255,255,0.01)); }
-  .card h3 { margin: 0 0 0.6rem; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--tc, #a071ff); display: flex; align-items: center; gap: 0.5rem; }
+  .card h3 { margin: 0 0 0.6rem; font-size: calc(12px * var(--k, 1)); font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--tc, #a071ff); display: flex; align-items: center; gap: 0.5rem; }
   .card.o h3 { --tc: #ff8a33; }
-  .card p { margin: 0; font-size: clamp(13px, min(0.98vw, 2.2vh), 15px); line-height: 1.55; }
+  .card p { margin: 0; font-size: calc(clamp(13px, min(0.98vw, 2.2vh), 15px) * var(--k, 1)); line-height: 1.55; }
 
   /* список фактов (образование, проекты) */
   .facts { list-style: none; margin: clamp(0.45rem, 1.4vh, 0.8rem) 0; padding: 0; display: flex; flex-direction: column; gap: clamp(0.3rem, 1vh, 0.55rem); }
@@ -400,7 +408,7 @@
      0.4rem вниз, и на телефоне (где кегль другой) он уезжал с первой строки
      (правка владельца «выровни текст под иконки»). Теперь значок — строка
      той же высоты, что и текст, и центрируется по ней при любом кегле. */
-  .facts li { display: flex; align-items: flex-start; gap: 0.7rem; font-size: clamp(13px, min(1vw, 2.3vh), 15.5px); line-height: 1.55; color: #b9c2d0; }
+  .facts li { display: flex; align-items: flex-start; gap: 0.7rem; font-size: calc(clamp(13px, min(1vw, 2.3vh), 15.5px) * var(--k, 1)); line-height: 1.55; color: #b9c2d0; }
   /* Кегль значка равен кеглю строки, межстрочный — тот же: только так
      строка значка совпадает со строкой текста при ЛЮБОМ кегле, и значок
      стоит ровно на первой строке пункта (замер: смещение 0px вместо -11). */
@@ -420,8 +428,8 @@
      пиксела. Владелец просил крупнее, но с тем же форматом; на компе эти два
      требования несовместимы, поэтому крупнее стало там, где запас есть, —
      на телефоне и в горизонте. */
-  .finale p { margin: 0 0 1rem; font-size: clamp(14px, min(1.15vw, 2.6vh), 18px); line-height: 1.55; color: #ffffff; font-weight: 500; }
-  .finale .btn-white { padding: 0.85rem 1.7rem; letter-spacing: 0.15em; font-size: clamp(11px, 0.9vw, 14px); gap: 0.75rem; max-width: 100%; white-space: normal; text-align: center; }
+  .finale p { margin: 0 0 1rem; font-size: calc(clamp(14px, min(1.15vw, 2.6vh), 18px) * var(--k, 1)); line-height: 1.55; color: #ffffff; font-weight: 500; }
+  .finale .btn-white { padding: 0.85rem 1.7rem; letter-spacing: 0.15em; font-size: calc(clamp(11px, 0.9vw, 14px) * var(--k, 1)); gap: 0.75rem; max-width: 100%; white-space: normal; text-align: center; }
   .home-link { display: block; width: fit-content; margin: 0.9rem auto 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255,255,255,0.45); transition: color 0.3s ease; }
   @media (hover:hover) { .home-link:hover { color: #ffffff; } }
 
@@ -436,7 +444,11 @@
      внизу». Финальный блок стоит по центру свободного места, подвал — у
      нижнего края: два auto-отступа у финала делят остаток поровну. */
   .screen.final { justify-content: flex-start; }
-  .screen.final .finale { margin-top: auto; margin-bottom: auto; }
+  /* Прощание теперь живёт на экране «Части одной экосистемы» (правка
+     владельца): текст главы и прощание стоят одной группой по центру
+     свободного места, подвал — у нижнего края. */
+  .screen.final > h2 { margin-top: auto; }
+  .screen.final .finale { margin-bottom: auto; }
   /* на мобилке глава длиннее экрана: при отрицательном свободном месте
      margin-top:auto ТЯНЕТ подвал ВВЕРХ и он налезает на финальный блок */
   @media (max-width:1023px) { .foot { margin-top: 1.2rem; } }
@@ -480,7 +492,7 @@
   /* Сброс обязан стоять ПОСЛЕ частных правил .quote/.note/.stat: у них та же
      специфичность, и без этого блок навсегда оставался смещённым вниз и
      налезал на следующий абзац (жалоба владельца «чтобы ничего не налипало»). */
-  .quote.reveal.in, .note.reveal.in, .stat.reveal.in { transform: none; }
+  .quote.reveal.in, .note.reveal.in, .stat.reveal.in, .finale.reveal.in { transform: none; }
 
   /* заголовок главы: линия раскрывается слева направо, иконка подпрыгивает */
   h2.reveal::before { transform: scaleX(0); transform-origin: left center;
@@ -554,21 +566,11 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
   html[lang="ru"] .nav-tab { font-size: clamp(11.5px, 0.95vw, 13px); letter-spacing: 0; padding-left: 0.3rem; padding-right: 0.3rem; }
 }
 
-  /* На мобилке глава длиннее экрана и текст проезжает под кружком видео.
-     Чтобы он не «сталкивался» с ним, низ колонки уходит в затемнение. */
-  @media (max-width:1023px) {
-    .bottom-fade { position: fixed; left: 0; right: 0; z-index: 8; pointer-events: none;
-      bottom: 0; height: calc(var(--vid-d) * 0.9 + 1.6rem + env(safe-area-inset-bottom, 0px));
-      background: linear-gradient(to top, #050505 0%, #050505 42%, rgba(5,5,5,0) 100%); }
-    /* На ФИНАЛЕ растушёвки нет: под кружком там ничего не проезжает (экран
-       короткий — карточка прощания и подвал), зато её глухая нижняя часть
-       ложилась ровно на копирайт и закрашивала его насмерть. Замер на
-       390×844: копирайт 790…806, сплошной чёрный от 783. Кружок подвал
-       закрывать может — его владелец отодвинет пальцем, — а растушёвку
-       отодвинуть нельзя. */
-    body:has(.screen.final.active) .bottom-fade { display: none; }
-  }
-  @media (min-width:1024px) { .bottom-fade { display: none; } }
+  /* Нижней растушёвки больше нет (FR-SITE82): внутри экрана ничего не
+     прокручивается и под кружок не заезжает — нижнее поле экрана держит
+     текст выше него, а плотный экран уменьшается целиком. Растушёвка
+     гасила только знак главы, а он теперь стоит в самом углу справа внизу
+     (правка владельца «на мобилах иконки большие справа внизу прям»). */
 
   /* =====================================================================
      МОБИЛЬНАЯ ВЁРСТКА
@@ -584,36 +586,46 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
        слова. Вёрстки ровно две — веб и мобильная, а всё между ними просто
        центрируется. */
     .screen > *:not(.wm) { max-width: 32rem; }
-    /* нижняя граница 1.55rem, а не 1.75rem: на 320px «AI-Native экосистему»
-       стоит одной строкой и не срезается краем (правка владельца про перенос) */
-    h1 { font-size: clamp(1.55rem, 7.6vw, 2.4rem); line-height: 1.14; }
-    h2 { font-size: clamp(1.15rem, 5.2vw, 1.55rem); line-height: 1.22; }
-    .eyebrow { font-size: 12px; letter-spacing: 0.18em; }
-    p { font-size: 14px; line-height: 1.6; }
-    .lead { font-size: clamp(14.5px, 4.1vw, 16px); line-height: 1.55; }
-    .facts li { font-size: 13.5px; line-height: 1.5; }
+    /* Две строки при любой ширине телефона (FR-SITE82): кегль = ширина
+       колонки / 17.9, потолок 1.78rem — на 600–1023px колонка не шире 32rem */
+    h1 { font-size: calc(min(1.78rem, 5.58cqi) * var(--k, 1)); line-height: 1.14; }
+    h2 { font-size: calc(clamp(1.15rem, 5.2vw, 1.55rem) * var(--k, 1)); line-height: 1.22; }
+    .eyebrow { font-size: calc(12px * var(--k, 1)); letter-spacing: 0.18em; }
+    p { font-size: calc(14px * var(--k, 1)); line-height: 1.6; }
+    .lead { font-size: calc(clamp(14.5px, 4.1vw, 16px) * var(--k, 1)); line-height: 1.55; }
+    .facts li { font-size: calc(13.5px * var(--k, 1)); line-height: 1.5; }
     /* Один левый край (правка владельца «выровни текст под иконки»): значки
        глав и пунктов висят слева, а заголовок, абзацы и пункты начинаются от
        одной линии. Ширина колонки значков = кегль значка + отступ. */
     .screen > p, .screen > .lead { padding-left: 1.85rem; }
+    /* На первом экране значков нет, и отступ под их колонку сдвигал «Обо мне»
+       и текст на 30px правее заголовка (жалоба владельца «выровни по тексту и
+       где „Обо мне“»). Здесь всё стоит от одного края — края колонки. */
+    .screen.hero > p, .screen.hero > .lead { padding-left: 0; }
     .facts i { width: 1.15rem; }
     /* Заголовок главы встаёт на ТУ ЖЕ левую линию. Значок главы инлайновый,
        и ширина его глифа гуляет: Font Awesome квантует её по 0.125em, что при
        кегле 20.3px даёт шаг ровно 2.53px — текст заголовка плясал в пределах
        43…53px, тогда как абзацы и пункты стоят намертво на 47.2px. Выносим
        значок в такую же фиксированную колонку, как у пунктов списка. */
+    /* Правка владельца «иконки болтаются — к тексту прижимаются и сверху»:
+       значок стоял у верха строки (на 3.5px выше центра текста), а широкий
+       глиф (1.25em = 25px) вылезал из колонки 18px — до текста оставалось
+       7px. Теперь значок 0.82 кегля: самый широкий глиф 21px, до текста
+       не меньше 10px, ось — та же, что у значков пунктов списка. По
+       вертикали — центр первой строки: поле 0.1rem + (1.22 − 0.82)/2 кегля. */
     h2 { padding-left: 1.85rem; position: relative; }
-    h2 i { position: absolute; left: 0; top: 0; width: 1.15rem; margin-right: 0;
-      text-align: center; }
-    .quote p { font-size: 14px; }
-    .stat p, .card p { font-size: 13px; line-height: 1.5; }
-    .stat-num { font-size: clamp(1.5rem, 7vw, 2rem); }
-    .card h3 { font-size: 12px; }
+    h2 i { position: absolute; left: 0; top: calc(0.1rem + 0.2439em); width: 1.15rem;
+      font-size: 0.82em; margin-right: 0; text-align: center; }
+    .quote p { font-size: calc(14px * var(--k, 1)); }
+    .stat p, .card p { font-size: calc(13px * var(--k, 1)); line-height: 1.5; }
+    .stat-num { font-size: calc(clamp(1.5rem, 7vw, 2rem) * var(--k, 1)); }
+    .card h3 { font-size: calc(12px * var(--k, 1)); }
     /* Крупнее ровно настолько, насколько позволяет колонка: предел без новой
        строки — 20px по-английски и 16.25px по-русски на 390px (замер). */
-    .finale p { font-size: 17px; }
-    html[lang="ru"] .finale p { font-size: 16px; }
-    .finale .btn-white { font-size: 12.5px; padding: 0.85rem 1.4rem; }
+    .finale p { font-size: calc(17px * var(--k, 1)); }
+    html[lang="ru"] .finale p { font-size: calc(16px * var(--k, 1)); }
+    .finale .btn-white { font-size: calc(12.5px * var(--k, 1)); padding: 0.85rem 1.4rem; }
     /* Подвал финала — к САМОМУ низу, прямо над точками (правка владельца:
        «оно же блять должно быть внизу, прям перед точками»). Кружку
        разрешено его перекрывать — владелец решил это прямо: «кружок можно
@@ -625,11 +637,11 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
      («НАЧАТЬ ИИ- / ТРАНСФОРМАЦИЮ»): виноват был разрядка 0.15em, она добавляла
      к строке 40px. Ужимаем разрядку и поля — надпись встаёт в строку. */
   @media (max-width:380px) {
-    .finale .btn-white { font-size: 12px; letter-spacing: 0.08em; padding: 0.8rem 1rem; gap: 0.55rem; }
+    .finale .btn-white { font-size: calc(12px * var(--k, 1)); letter-spacing: 0.08em; padding: 0.8rem 1rem; gap: 0.55rem; }
     /* на 320–375px прощание уже впритык: предел 15.5px по-английски и
        14.5px по-русски — ровно столько и ставим */
-    .finale p { font-size: 15px; }
-    html[lang="ru"] .finale p { font-size: 14.5px; }
+    .finale p { font-size: calc(15px * var(--k, 1)); }
+    html[lang="ru"] .finale p { font-size: calc(14.5px * var(--k, 1)); }
   }
 
   /* ===== Телефон в ГОРИЗОНТЕ ============================================
@@ -659,22 +671,22 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
     .dots { left: auto; right: 0.7rem; top: 50%; bottom: auto;
       transform: translateY(-50%); flex-direction: column; }
     .screen > *:not(.wm) { max-width: none; }
-    h1 { font-size: clamp(1.4rem, 8vh, 2.3rem); line-height: 1.14; }
-    h2 { font-size: clamp(1.1rem, 5.8vh, 1.75rem); margin-bottom: 0.3rem; }
-    .eyebrow { font-size: clamp(10.5px, 3vh, 13px); }
-    p { font-size: clamp(11.5px, 3.2vh, 14.5px); line-height: 1.45; margin-bottom: 0.38rem; }
-    .lead { font-size: clamp(12.5px, 3.6vh, 16px); line-height: 1.42; }
-    .quote p { font-size: clamp(12px, 3.3vh, 15px); }
-    .facts li { font-size: clamp(11px, 3vh, 13.5px); }
-    .stat p, .card p { font-size: clamp(11.5px, 3.2vh, 13.5px); line-height: 1.4; }
-    .stat-num { font-size: clamp(1.3rem, 6.4vh, 2rem); }
-    .card h3 { font-size: clamp(10px, 2.7vh, 11.5px); }
+    h1 { font-size: calc(min(2.3rem, 8vh, 5.58cqi) * var(--k, 1)); line-height: 1.14; }
+    h2 { font-size: calc(clamp(1.1rem, 5.8vh, 1.75rem) * var(--k, 1)); margin-bottom: 0.3rem; }
+    .eyebrow { font-size: calc(clamp(10.5px, 3vh, 13px) * var(--k, 1)); }
+    p { font-size: calc(clamp(11.5px, 3.2vh, 14.5px) * var(--k, 1)); line-height: 1.45; margin-bottom: 0.38rem; }
+    .lead { font-size: calc(clamp(12.5px, 3.6vh, 16px) * var(--k, 1)); line-height: 1.42; }
+    .quote p { font-size: calc(clamp(12px, 3.3vh, 15px) * var(--k, 1)); }
+    .facts li { font-size: calc(clamp(11px, 3vh, 13.5px) * var(--k, 1)); }
+    .stat p, .card p { font-size: calc(clamp(11.5px, 3.2vh, 13.5px) * var(--k, 1)); line-height: 1.4; }
+    .stat-num { font-size: calc(clamp(1.3rem, 6.4vh, 2rem) * var(--k, 1)); }
+    .card h3 { font-size: calc(clamp(10px, 2.7vh, 11.5px) * var(--k, 1)); }
     /* в горизонте запас есть, но на 740x360 по-русски предел 13.85px —
        отсюда 3.8vh вместо 4vh. Русский селектор повторён намеренно: у
        портретного правила html[lang="ru"] .finale p вес выше, и без этого
        оно перебивало горизонт (замер: 16px вместо 13.7px на 740x360). */
-    .finale p, html[lang="ru"] .finale p { font-size: clamp(13px, 3.8vh, 17px); }
-    .finale .btn-white { font-size: clamp(10px, 2.7vh, 12px); padding: 0.6rem 1.1rem; }
+    .finale p, html[lang="ru"] .finale p { font-size: calc(clamp(13px, 3.8vh, 17px) * var(--k, 1)); }
+    .finale .btn-white { font-size: calc(clamp(10px, 2.7vh, 12px) * var(--k, 1)); padding: 0.6rem 1.1rem; }
     /* блоки главы разворачиваются в ширину — там, где есть место */
     .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.45rem; margin: 0.4rem auto 0.45rem; }
     .card { padding: 0.42rem 0.6rem; }
@@ -695,7 +707,7 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
     /* колонка значка из вертикали здесь не нужна: заголовок стоит по центру,
        и значок возвращается В СТРОКУ рядом с текстом */
     h2 { position: static; }
-    h2 i { position: static; width: auto; margin-right: 0.6rem; }
+    h2 i { position: static; width: auto; margin-right: 0.5em; font-size: 1em; }
     /* Надзаголовок — не просто текст, а inline-flex (подпись плюс черта
        градиентом), и text-align на него не действует: содержимое флекса
        пакуется к flex-start. Замер на 844×390: «Обо мне» стояло в [158…231]
@@ -737,7 +749,7 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
        влезали и наезжали на значок соседа (замер: нахлёст 6px). Для этого
        одного списка значок и кегль ужимаются, зазор между колонками меньше. */
     .facts:has(li:nth-child(10):last-child) { gap: 0.3rem 0.5rem; }
-    .facts:has(li:nth-child(10):last-child) li { font-size: clamp(9px, 2.4vh, 11.5px); gap: 0.28rem; }
+    .facts:has(li:nth-child(10):last-child) li { font-size: calc(clamp(9px, 2.4vh, 11.5px) * var(--k, 1)); gap: 0.28rem; }
     .facts:has(li:nth-child(10):last-child) i { width: 0.9rem; }
     .facts li { line-height: 1.38; gap: 0.3rem; }
     .facts i { width: 1rem; }
@@ -755,14 +767,13 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
        всего 3.3rem = 52.8px — заголовок главы центрировался прямо под
        растушёвкой и гас. */
     .top-fade { height: 3.4rem; }
-    /* Нижней растушёвки в горизонте нет: она гасит текст, проезжающий ПОД
-       кружком, а в горизонте кружок стоит слева и под ним ничего не
-       проезжает — у экрана симметричные поля шириной в кружок, и ничего не
-       прокручивается. Зато полоса высотой 145px из 390 целиком накрывала
-       знак главы (замер: знак 254…371, растушёвка 245…390) — «большая
-       иконка» превращалась в еле заметное пятно.
-       Знак при этом возвращается на своё место у нижнего края. */
-    .bottom-fade { display: none; }
+    /* Знак главы — у нижнего края (растушёвки больше нет, FR-SITE82). */
     .wm { bottom: 1.2rem; }
+    /* Подвал последнего экрана — одной строкой в нижнем поле: в горизонте
+       высоты мало, а поле 3.3rem всё равно пустует. Под кружок (он слева) и
+       под точки (справа) строка не заходит. */
+    .screen.final .foot { position: absolute; left: 0; right: 0; bottom: 0.55rem;
+      width: auto; max-width: none; margin: 0; padding: 0; border-top: 0;
+      flex-direction: row; justify-content: center; gap: 1.1rem; }
   }
 

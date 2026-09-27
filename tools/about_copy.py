@@ -38,7 +38,7 @@ EN = {
     "c1_p1": ("My grandfather gave me my first computer when I was three, and artificial intelligence "
               "became my chess opponent long before AI became part of everyday life."),
 
-    "c2_head": "Chess and Discipline",
+    "c2_head": "Intelligence and Discipline",
     "c2_p1": ("I won chess tournaments, as well as mathematics and computer science competitions. "
               "At the same time, I spent more than a decade in martial arts and later moved into "
               "powerlifting and bodybuilding."),
@@ -47,7 +47,7 @@ EN = {
 
 
     # ── образование ──────────────────────────────────────────────────────
-    "e1_head": "From Education to AI",
+    "e1_head": "Science and Education",
     "e1_lead": "Education became my way forward.",
     "e1_facts": [
         ("fa-circle-check", "<strong>Bachelor’s degree in Business Informatics</strong><span class=\"l\">— Far Eastern Federal University</span>"),
@@ -55,7 +55,6 @@ EN = {
         ("fa-circle-check", "<strong>Diploma</strong> from the International Institute of Business Analysis"),
     ],
 
-    "e2_head": "Research and Teaching",
     "e2_p1": ('<span class="l">Then came postgraduate research in AI and data analysis</span>'
               '<span class="l">— and teaching at universities myself.</span>'),
     "e2_p2": ("During those years, I won machine-learning competitions and the National Olympiad "
@@ -72,7 +71,6 @@ EN = {
               "<strong>Chief Data Officer</strong> and <strong>Chief Data Scientist</strong>, moving "
               "from building data infrastructure to leading large-scale AI transformation."),
 
-    "k2_head": "AI Across the Bank",
     "k2_p1": ("There, I built analytics and AI systems that helped senior management make better "
               "decisions, and led AI adoption across strategic management, macroeconomic analysis, "
               "HR, organizational design and thousands of business processes."),
@@ -95,7 +93,6 @@ EN = {
     "s1_p2": ("There, I became <strong>CTO of an AI startup studio</strong>, building technology "
               "across very different domains."),
 
-    "s2_head": "What I Built",
     "s2_facts": [
         ("fa-car-side", "Trained <strong>self-driving cars</strong> in simulation"),
         ("fa-bolt", "Built an <strong>AI digital twin</strong> for power-grid loss detection"),
@@ -114,7 +111,6 @@ EN = {
     "s3_p3": ("I started learning how to create products and launch businesses without building a "
               "traditional team. That completely <span class=\"nb\">changed the way</span> I thought about entrepreneurship."),
 
-    "s4_head": "A System, Not a Startup",
     "s4_note": ("I no longer wanted to build another startup the old way. I wanted to build a system "
                 "that would allow one person or a small team to create what previously required an "
                 "entire company."),
@@ -219,7 +215,7 @@ RU = {
     "c1_p1": ("Когда мне было три года, дедушка купил мне первый компьютер, и искусственный интеллект "
               "стал моим соперником по шахматам задолго до того, как ИИ вошёл в повседневную жизнь."),
 
-    "c2_head": "Шахматы и дисциплина",
+    "c2_head": "Интеллект и дисциплина",
     "c2_p1": ("Я выигрывал шахматные турниры, олимпиады по математике и информатике. Параллельно "
               "больше двенадцати лет занимался единоборствами, а позже — пауэрлифтингом и "
               "бодибилдингом."),
@@ -227,7 +223,7 @@ RU = {
     "c2_quote": "Интеллект открывает возможности, но именно дисциплина позволяет превратить их в результат.",
 
 
-    "e1_head": "От образования к ИИ",
+    "e1_head": "Наука и образование",
     "e1_lead": "Образование помогало мне расти.",
     "e1_facts": [
         ("fa-circle-check", "<strong>Бакалавр по бизнес-информатике</strong><span class=\"l\">— Дальневосточный федеральный университет</span>"),
@@ -235,7 +231,6 @@ RU = {
         ("fa-circle-check", "<strong>Диплом</strong> Международного института бизнес-анализа"),
     ],
 
-    "e2_head": "Наука и преподавание",
     "e2_p1": ('<span class="l">Дальше была аспирантура в области ИИ</span>'
               '<span class="l">и анализа данных — и преподавание в университетах.</span>'),
     "e2_p2": ("В эти же годы я побеждал в соревнованиях по машинному обучению и выиграл "
@@ -249,7 +244,6 @@ RU = {
               "За несколько лет я прошёл путь до <strong>директора по данным и ИИ</strong> — от "
               "построения инфраструктуры данных до руководства масштабной ИИ-трансформацией."),
 
-    "k2_head": "ИИ во всём банке",
     "k2_p1": ("Там я создавал аналитические и ИИ-системы, которые помогали топ-менеджменту принимать "
               "более качественные решения, а также внедрял ИИ в стратегическое управление, "
               "макроэкономический анализ, HR, организационный дизайн и тысячи бизнес-процессов."),
@@ -271,7 +265,6 @@ RU = {
     "s1_p2": ("Там я стал <strong>CTO ИИ-стартап-студии</strong> и начал создавать технологии в "
               "совершенно разных направлениях."),
 
-    "s2_head": "Что я строил",
     "s2_facts": [
         ("fa-car-side", "Обучал <strong>беспилотные автомобили</strong> в симуляции"),
         ("fa-bolt", "Создал <strong>ИИ-двойника энергосети</strong> для поиска потерь."),
@@ -291,7 +284,6 @@ RU = {
     "s3_p3": ("Я начал учиться создавать продукты и запускать бизнесы без традиционной команды. "
               "Это полностью изменило моё представление о предпринимательстве."),
 
-    "s4_head": "Система вместо стартапа",
     "s4_note": ("Я больше не хотел строить очередной стартап по старым правилам. Я хотел создать "
                 "систему, которая позволила бы одному человеку или небольшой команде делать то, для "
                 "чего раньше требовалась целая компания."),
