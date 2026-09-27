@@ -135,10 +135,10 @@ def inline_phosphor(html):
     return html, weights
 
 
-def main():
-    if len(sys.argv) < 4:
-        die("нужно: <страница> <css> <куда>")
-    page, css_rel, out = (os.path.join(ROOT, a) for a in sys.argv[1:4])
+def build_html(page, css_rel, font_css=None):
+    """Автономная страница колоды строкой. `font_css` — свои @font-face
+    вместо вариативного Montserrat из vendor/fonts (PDF-сборщику нужны
+    статические начертания: вариативные Chromium в PDF не вшивает)."""
     html = read(page)
     css = read(css_rel)
 
@@ -150,7 +150,14 @@ def main():
 
     # 2. Значки и шрифт — тоже внутрь, чтобы файл не зависел от сети.
     html, weights = inline_phosphor(html)
-    html = inline_fonts(html)
+    if font_css is None:
+        html = inline_fonts(html)
+    else:
+        html = re.sub(r'\n?\s*<link rel="preconnect" href="https://fonts\.[^"]*"[^>]*>', "", html)
+        html, k = re.subn(r'<link href="https://fonts\.googleapis\.com/css2[^"]*" rel="stylesheet">',
+                          "<style>\n%s\n</style>" % font_css, html)
+        if k != 1:
+            die("ссылка на Google Fonts не заменена (найдено %d)" % k)
 
     # 3. Иконки вкладки и манифест: с диска это только 404 в консоли.
     html = re.sub(r'\n?\s*<link rel="(icon|apple-touch-icon|manifest)"[^>]*>', "", html)
@@ -225,7 +232,14 @@ def main():
                       ("/assets/video_sq/", "постер видео")):
         if bad in html:
             die("в готовом файле остался %s" % what)
+    return html, weights
 
+
+def main():
+    if len(sys.argv) < 4:
+        die("нужно: <страница> <css> <куда>")
+    page, css_rel, out = (os.path.join(ROOT, a) for a in sys.argv[1:4])
+    html, weights = build_html(page, css_rel)
     io.open(out, "w", encoding="utf-8").write(html)
     print("собран %s (%.1f МБ), начертания Phosphor: %s"
           % (out, len(html.encode("utf-8")) / 1048576.0, ", ".join(weights)))

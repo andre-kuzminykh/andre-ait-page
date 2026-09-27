@@ -3032,3 +3032,21 @@ Story: «а где здесь получается нет ИИ-агентов в
   прежняя озвучка владельца («в архитектуру одного ИИ-агента»).
 
 Тест: `test_lectures.test_practice3_workflow_first_agent_in_one_zone`.
+
+## FR-SITE80 — /automation_ru/ и /automation/main/ на Montserrat
+
+**Story.** Владелец (2026-09-27): «тут поменяем на Montserrat… только чтобы ничего не
+сломалось… и чтобы всё было по форматированию».
+
+**Требование.**
+- Две страницы — `/automation_ru/` и дорожная карта курса `/automation/main/` — набраны
+  Montserrat (Google Fonts, 400–800, `display=swap`). Фолбэк — системный sans-serif, не
+  моноширинный.
+- JetBrains Mono на этих двух страницах больше не подключается.
+- Остальные страницы визарда (`/automation/`, `roles/`, `skills/`) и главная остаются на
+  JetBrains Mono (FR-SITE6 для них в силе).
+- Вёрстка не меняется: нет бокового скролла (`scrollWidth ≤ clientWidth`) на 1440×900,
+  1024×768 и 390×844 в обеих темах.
+
+Тест: `test_automation.test_montserrat_on_automation_ru_and_main` (плюс проверка в Chromium
+при правке).
