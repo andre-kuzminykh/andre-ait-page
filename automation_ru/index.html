@@ -226,7 +226,13 @@
   .tile.lg .bar{width:2.25rem}
 
   .hero{font-size:clamp(1.55rem,5vw,3.3rem);font-weight:800;text-transform:uppercase;line-height:1.12;letter-spacing:-.02em;padding-top:.5rem}
-  .hero span.line{display:block}
+  .hero span.line{display:block;white-space:nowrap}
+  /* FR-SITE81 (владелец 2026-09-27): заголовок — ровно четыре строки на любой
+     ширине, «с» — в начале последней. Кегль подгоняется под ширину колонки:
+     самая длинная строка «Добро пожаловать на курс» ≈ 17,05em в Montserrat 800 */
+  .hero-fit{container-type:inline-size}
+  .hero{font-size:clamp(.9rem,calc((100vw - 46px) / 17.6),3.3rem)}
+  @supports (font-size:1cqi){ .hero{font-size:min(3.3rem,calc(100cqi / 17.6))} }
   .hero .plum,.hero .flame{white-space:nowrap}
   .desc{color:var(--muted);max-width:min(62em,92vw);margin:1.35rem auto 0;font-size:clamp(15.5px,1.18vw,24px);line-height:1.6}
   .desc .lb{display:none}
@@ -345,7 +351,7 @@
           <div class="tile lg" style="border-color:rgba(249,115,22,.5);animation-delay:.2s"><i class="fa-solid fa-robot" style="font-size:38px;color:#F97316"></i><div class="bar" style="background:rgba(249,115,22,.5)"></div></div>
           <div class="tile sm" style="border-color:rgba(136,84,243,.3);animation-delay:.4s"><i class="fa-solid fa-gears" style="font-size:26px;color:#8854F3"></i><div class="bar" style="background:rgba(136,84,243,.5)"></div></div>
         </div>
-        <h1 class="hero" id="hero-h"><span class="line">Добро пожаловать на курс</span><span class="line">по автоматизации</span><span class="line"><span class="plum">бизнес-процессов</span> с <span class="flame">ИИ-агентами</span></span></h1>
+        <div class="hero-fit"><h1 class="hero" id="hero-h"><span class="line">Добро пожаловать на курс</span><span class="line">по автоматизации</span><span class="line"><span class="plum">бизнес-процессов</span></span><span class="line">с <span class="flame">ИИ-агентами</span></span></h1></div>
         <p class="desc" id="hero-d">Вы научитесь трансформировать бизнес в AI-First компанию: <br class="lb">автоматизировать процессы с помощью ИИ-агентов, масштабироваться <br class="lb">без роста штата и получать измеримый экономический эффект.</p>
       </div>
     </section>
