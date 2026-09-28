@@ -1,0 +1,116 @@
+{
+  "name": "Портал · чат с агентом (OpenAI)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "portal-chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "portal-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Узел «Промт агента»: сюда ментор вписывает роль агента и базу знаний.\n// Портал присылает: question, history [{q,a}], role, agent, agent_does.\nconst b = $input.first().json.body || {};\n\nconst SYSTEM = `Ты — ${b.agent || 'агент'} корпоративного портала. ${b.agent_does || ''}\nСобеседник: ${b.role || 'сотрудник'}.\nПравила:\n1. Отвечай только по базе знаний ниже. Называй источник (раздел или номер кейса).\n2. Если ответа в базе нет — честно напиши: «В базе этого нет, передаю эксперту». Не додумывай.\n3. Коротко: 2–5 предложений, по-русски, без канцелярита.`;\n\nconst KB = `⟦ВСТАВЬТЕ: база знаний — методология, этапы, сроки, прошлые кейсы с номерами⟧`;\n\nconst messages = [{ role: 'system', content: SYSTEM + '\\n\\nБаза знаний:\\n' + KB }];\nfor (const h of (b.history || []).slice(-6)) {\n  messages.push({ role: 'user', content: String(h.q) });\n  messages.push({ role: 'assistant', content: String(h.a) });\n}\nmessages.push({ role: 'user', content: String(b.question || '') });\n\nreturn [{ json: { payload: { model: 'gpt-4o-mini', temperature: 0.2, messages } } }];"
+      },
+      "name": "Промт агента",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "OpenAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"answer\": $json.choices[0].message.content } }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Ответ порталу",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Промт агента",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Промт агента": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Ответ порталу",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}
