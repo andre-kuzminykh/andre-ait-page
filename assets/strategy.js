@@ -35,6 +35,17 @@
     return b;
   });
 
+  /* ---------- большое окно в мобильной вёрстке: всё крупнее ----------
+     FR-SITE84: окно 600–1023px (не телефон) масштабируется целиком, --z
+     читают стили (zoom шапки, экранов и точек). */
+  function bandZoom() {
+    var w = window.innerWidth, h = window.innerHeight;
+    var z = (w >= 600 && w <= 1023 && h > 520) ? Math.max(1, Math.min(w / 600, h / 880, 1.8)) : 1;
+    document.documentElement.style.setProperty('--z', z.toFixed(3));
+  }
+  bandZoom();
+  window.addEventListener('resize', bandZoom);
+
   /* ---------- заголовки в одну строку ----------
      h2.one-line и строки заголовка первого экрана набраны с nowrap. Кегль в
      vw их не спасает: ширина колонки зависит и от масштаба, и от языка, и на
