@@ -89,7 +89,7 @@ const CHAT_WEBHOOK = '';    // ⟦ВСТАВЬТЕ: Production URL вебхук�
 1. Ключ: [platform.openai.com](https://platform.openai.com) → **API keys → Create new secret key**.
    Пополните баланс, иначе API вернёт ошибку 429.
 2. n8n → **Credentials → Add credential → OpenAI API** → вставьте ключ → Save.
-3. **Workflows → Import from File** → `04-n8n-chat-openai.json`. В нём четыре узла:
+3. **Workflows → Import from File** → `n8n-chat-openai.json`. В нём четыре узла:
    - **Webhook** — `POST /portal-chat`, отвечает узлом «Ответ порталу», CORS `*`;
    - **Промт агента** (Code) — системный промт с правилами и база знаний, плюс 6 последних реплик;
    - **OpenAI** (HTTP Request) — `POST https://api.openai.com/v1/chat/completions`,
