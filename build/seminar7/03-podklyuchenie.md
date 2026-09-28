@@ -11,7 +11,7 @@
                        └──▶ воркфлоу агента: решение человека продолжает его работу
 ```
 
-В начале скрипта `index.html` есть три строки:
+В начале скрипта `corporate_ai_portal.html` есть три строки:
 
 ```js
 const N8N_WEBHOOK = '';     // ⟦ВСТАВЬТЕ: Production URL вебхука журнала⟧
@@ -49,7 +49,7 @@ const CHAT_WEBHOOK = '';    // ⟦ВСТАВЬТЕ: Production URL вебхук�
      - лист `journal`;
      - Mapping — каждое поле из `{{$json.body.<поле>}}`.
 3. Включите воркфлоу (Active) и скопируйте **Production URL** вебхука.
-4. Вставьте URL в `N8N_WEBHOOK` в `index.html`.
+4. Вставьте URL в `N8N_WEBHOOK` в `corporate_ai_portal.html`.
 
 **CORS.** Если портал открыт как файл или с другого домена и запрос блокируется,
 в узле Webhook включите **Options → Allowed Origins (CORS)** = `*`.
