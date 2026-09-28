@@ -227,7 +227,7 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
   /* Нижнее поле меньше диаметра кружка: владелец разрешил ему перекрывать
      элементы, а прокрутки внутри экранов больше нет — высокие экраны иначе
      срезались бы краем. */
-  padding: 6.2rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 + 1.1rem + env(safe-area-inset-bottom, 0px));
+  padding: 6.2rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 / var(--z, 1) + 1.1rem + env(safe-area-inset-bottom, 0px));
   overflow: hidden; scrollbar-width: none; }
 .screen::-webkit-scrollbar { width: 0; }
 @media (min-width:1024px) { .screen { padding: 7rem clamp(1.4rem, 2.4vw, 2.6rem) 2.5rem; } }
@@ -1067,11 +1067,18 @@ html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spa
      53vh/58vh либо оставляли пустоту, либо панель заезжала под кружок и он
      закрывал два последних графика зрелости — данные прятать нельзя.
      Высота общая для всех шести шагов, иначе панель скачет при листании. */
-  .stage-card { height: clamp(14rem, calc(100dvh - 16rem - var(--vid-d)), 32rem); }
+  .stage-card { height: clamp(14rem, calc(100dvh / var(--z, 1) - 16rem - var(--vid-d) / var(--z, 1)), 32rem); }
   /* у экранов С ПАНЕЛЬЮ низ считается от полного диаметра кружка: на
      остальных (и на финале с подвалом) кружку по-прежнему разрешено
      перекрывать содержимое */
-  .screen:has(.stage-card) { padding-bottom: calc(var(--vid-d) + 1rem + env(safe-area-inset-bottom, 0px)); }
+  .screen:has(.stage-card) { padding-bottom: calc(var(--vid-d) / var(--z, 1) + 1rem + env(safe-area-inset-bottom, 0px)); }
+  /* Большое окно в мобильной вёрстке (FR-SITE84): вёрстка та же, но
+     целиком крупнее — --z ставит скрипт (min(ширина/600, высота/880),
+     1…1.8). Кружок не масштабируется (его тащат пальцем), поэтому всё, что
+     считается от его диаметра и от окна, выше поделено на --z. */
+  @media (min-width:600px) and (min-height:521px) {
+    header, .deck, .dots { zoom: var(--z, 1); }
+  }
   .ui-body { padding: 0.75rem 0.6rem; }
   /* Цепочка на телефоне идёт СВЕРХУ ВНИЗ, и стрелки на месте (правка
      владельца: «стрелки проебал и тут, и где AI fits»). Раньше ряды по три

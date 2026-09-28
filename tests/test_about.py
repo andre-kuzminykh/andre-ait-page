@@ -682,7 +682,9 @@ def test_chapter_marks_are_visible_on_phone():
         "знаки глав больше не прячутся на телефоне"
     # FR-SITE82: «на мобилах иконки большие должны быть справа внизу прям» —
     # знак в самом углу, нижней растушёвки, которая его закрашивала, больше нет
-    assert ".wm { right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: min(44vw, 30vh); }" in css, \
+    # FR-SITE84: в большом окне экраны увеличены zoom, и размер знака от окна
+    # делится на --z, чтобы знак не рос вдвое
+    assert ".wm { right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: calc(min(44vw, 30vh) / var(--z, 1)); }" in css, \
         "в портрете знак стоит в правом нижнем углу"
     assert ".screen.active .wm { opacity: 0.075; }" in css
     land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
@@ -871,19 +873,20 @@ def test_owner_merged_screens_2026_09_27():
         screens = _screens(html)
         assert len(screens) == 13, lang
         bodies = [b for _, b in screens]
-        def screen_with(text):
-            hits = [b for b in bodies if text in b]
-            assert len(hits) == 1, "%s: «%s» ровно на одном экране" % (lang, text)
-            return hits[0]
+        norm = lambda x: re.sub(r"<[^>]+>", "", x.replace(u"\u00a0", " ").replace(u"\u2011", "-"))
+        heads = [[norm(h) for h in re.findall(r"<h2[^>]*><i [^>]*></i>(.*?)</h2>", b)] for b in bodies]
         c = RU if lang == "ru" else EN
         pairs = [("e1_head", ("e2_note",)), ("k1_head", ("k2_stat",)), ("s1_head", ("s2_stat",)),
                  ("s3_head", ("s4_p1",)), ("m2_head", ("finale_btn",))]
         for head, keys in pairs:
-            body = screen_with(c[head].replace(" ", u"\u00a0") if c[head].replace(" ", u"\u00a0") in html else c[head])
+            # «AI-Native экосистема» стоит и у экрана главы «Экосистема»
+            # (правка владельца 2026-09-28), поэтому ищем экран с этим
+            # заголовком И со слитым в него текстом
             for k in keys:
                 v = c[k][0] if isinstance(c[k], tuple) else c[k]
-                probe = re.sub(r"<[^>]+>", "", v)[:6]
-                assert probe in re.sub(r"<[^>]+>", "", body), "%s: %s на экране %s" % (lang, k, head)
+                probe = norm(v)[:6]
+                assert any(norm(c[head]) in hs and probe in norm(b) for hs, b in zip(heads, bodies)), \
+                    "%s: %s на экране «%s»" % (lang, k, c[head])
         last = bodies[-1]
         assert 'class="finale' in last and 'class="foot"' in last, lang + ": прощание и подвал на последнем экране"
         assert c["m2_head"] in last.replace(u"\u00a0", " ") or c["m2_head"].replace(" ", u"\u00a0") in last
@@ -932,6 +935,27 @@ def test_dense_screen_shrinks_instead_of_overflowing():
     land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
     assert ".screen.final .foot { position: absolute; left: 0; right: 0; bottom: 0.55rem;" in land, \
         "в горизонте подвал — строкой в нижнем поле"
+
+
+def test_big_window_scales_the_mobile_layout():
+    """FR-SITE84. «Почему вот так получается на веб-экранах, когда не на полный
+    экран — просто динамически надо подтягивать отформатированный текст».
+    Окно 600–1023px (не телефон) получало вёрстку телефонного размера; теперь
+    она та же, но целиком крупнее: --z = min(ширина/600, высота/880) в
+    пределах 1…1.8, zoom у шапки, экранов и точек. Кружок не увеличивается —
+    его тащат пальцем, — поэтому его диаметр и размеры от окна делятся на --z.
+    Последний экран называется «AI-Native экосистема» (правка владельца)."""
+    css = _css()
+    assert "@media (min-width:600px) and (max-width:1023px) and (min-height:521px) {\n    header, .read, .dots, .top-fade { zoom: var(--z, 1); }" in css
+    assert "calc(var(--vid-d) * 0.82 / var(--z, 1) + 1rem" in css, "поле под кружок не растёт вместе с экраном"
+    for lang, html in _pages():
+        assert "function bandZoom()" in html and "Math.min(w / 600, h / 880, 1.8)" in html, lang
+        assert "bandZoom(); fitScreen(screens[cur]); fitHeadings();" in html, lang + ": масштаб — до подгонки"
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from about_copy import EN, RU
+    assert RU["m2_head"] == u"AI-Native экосистема" and EN["m2_head"] == "AI-Native Ecosystem"
+    assert u"Части одной экосистемы" not in _ru() and "Parts of the Same Ecosystem" not in _en()
 
 
 if __name__ == "__main__":

@@ -273,7 +273,7 @@
 
       <section class="screen final" data-i="12" data-chapter="mission">
         <div class="wm" style="--rot: 9deg;" aria-hidden="true"><i class="fa-solid fa-star"></i></div>
-        <h2 class="reveal" style="--ic:#8854F3;"><i class="fa-solid fa-star"></i>Части одной экосистемы</h2>
+        <h2 class="reveal" style="--ic:#8854F3;"><i class="fa-solid fa-star"></i>AI‑Native экосистема</h2>
         <p class="reveal">Образование, исследования, технологии, продукты и трансформация бизнеса для меня — не отдельные направления. Это части одной экосистемы.</p>
         <p class="reveal">Я создаю продукты для собственной работы, превращаю самые полезные из них в инструменты для других и объединяю предпринимателей, исследователей и инженеров, которые хотят участвовать в создании новой экономики.</p>
         <p class="reveal">А образование я делаю доступным бесплатно. Вот что я строю в <strong>Andre AI Technologies</strong>.</p>
@@ -317,6 +317,17 @@
   /* язык страницы синхронизирован с главной: вернувшись на «/», посетитель
      увидит сайт на том же языке */
   try { localStorage.setItem(LANG_KEY, LANG); } catch (err) {}
+
+  /* ---------- большое окно в мобильной вёрстке: всё крупнее ----------
+     FR-SITE84: окно 600–1023px (не телефон) масштабируется целиком, --z
+     читают стили (zoom шапки, экранов и точек). Считается до подгонки
+     экранов: от масштаба зависит, сколько места у текста. */
+  function bandZoom() {
+    var w = window.innerWidth, h = window.innerHeight;
+    var z = (w >= 600 && w <= 1023 && h > 520) ? Math.max(1, Math.min(w / 600, h / 880, 1.8)) : 1;
+    document.documentElement.style.setProperty('--z', z.toFixed(3));
+  }
+  bandZoom();
 
   /* ---------- точки-индикаторы ---------- */
   var dots = screens.map(function (s, i) {
@@ -412,7 +423,7 @@
   }
   fitScreen(screens[0]);
   fitHeadings();
-  window.addEventListener('resize', function () { fitScreen(screens[cur]); fitHeadings(); });
+  window.addEventListener('resize', function () { bandZoom(); fitScreen(screens[cur]); fitHeadings(); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitScreen(screens[cur]); fitHeadings(); });
 
   /* ---------- переключение экранов (как на главной) ---------- */

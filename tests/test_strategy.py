@@ -1011,7 +1011,7 @@ def test_mobile_maturity_scene_shows_all_seven_bars():
     # Высота панели считается от окна за вычетом шапки, заголовка шага и
     # кружка с роликом: фиксированные 64vh заезжали под кружок, и он закрывал
     # два последних графика зрелости.
-    assert ".stage-card { height: clamp(14rem, calc(100dvh - 16rem - var(--vid-d)), 32rem); }" in mob, \
+    assert ".stage-card { height: clamp(14rem, calc(100dvh / var(--z, 1) - 16rem - var(--vid-d) / var(--z, 1)), 32rem); }" in mob, \
         "высота панели выведена из окна, а не задана долей высоты"
     css_areas = _read("assets/strategy.css")
     assert 'grid-template-areas: "score radar" "dims dims";' in css_areas, \
@@ -1242,7 +1242,9 @@ def test_video_circle_scales_with_the_window():
     assert "--vid-d: clamp(88px, min(34vw, 18vh), 168px);" in css, \
         "диаметр кружка тянется за меньшей стороной окна"
     assert "36vw" not in css.split("--vid-d")[1][:80], "ширина больше не решает одна"
-    assert "calc(var(--vid-d) * 0.82 + 1.1rem + env(safe-area-inset-bottom, 0px))" in css, \
+    # FR-SITE84: в большом окне экраны увеличены zoom, а кружок нет —
+    # поэтому его диаметр в поле экрана делится на --z
+    assert "calc(var(--vid-d) * 0.82 / var(--z, 1) + 1.1rem + env(safe-area-inset-bottom, 0px))" in css, \
         "нижнее поле меньше диаметра — кружку разрешено перекрывать"
     mob = _mobile_block()
     assert "padding-left" not in mob.split(".final footer")[1][:160], \
@@ -1587,6 +1589,16 @@ def test_owner_landing_fixes_2026_09_27():
     # в горизонте шаг 05 — три ряда (2+2+3), иначе панель не вмещает
     land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
     assert ".fflow { display: grid; grid-template-columns: auto auto auto;" in land
+
+def test_big_window_scales_the_mobile_layout():
+    """FR-SITE84. Окно 600–1023px (не телефон) получало мобильную вёрстку
+    телефонного размера — теперь она целиком крупнее (--z, zoom у шапки,
+    экранов и точек); кружок и размеры от окна поделены на --z."""
+    css = _read("assets/strategy.css")
+    js = _read("assets/strategy.js")
+    assert "@media (min-width:600px) and (min-height:521px) {\n    header, .deck, .dots { zoom: var(--z, 1); }" in css
+    assert "function bandZoom()" in js and "Math.min(w / 600, h / 880, 1.8)" in js
+    assert js.index("bandZoom();") < js.index("fitHeadings();"), "масштаб ставится до подгонки"
 
 if __name__ == "__main__":
     import sys
