@@ -223,7 +223,7 @@
   .screen { position: absolute; inset: 0; display: none; flex-direction: column;
     justify-content: center; justify-content: safe center;
     align-items: center; touch-action: manipulation;
-    padding: 5.5rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 + 1rem + env(safe-area-inset-bottom, 0px));
+    padding: 5.5rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 / var(--z, 1) + 1rem + env(safe-area-inset-bottom, 0px));
     overflow: hidden; scrollbar-width: none;
     /* контейнер: кегль заголовка первого экрана считается от ширины колонки
        (cqi), чтобы обе его строки влезали при любом окне (FR-SITE82) */
@@ -284,7 +284,7 @@
        нижней растушёвкой (она закрашивала его в ноль), теперь растушёвки
        нет — FR-SITE82. Кружок с роликом слева, точки по центру — знак с
        ними не сталкивается. */
-    .wm { right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: min(44vw, 30vh); }
+    .wm { right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: calc(min(44vw, 30vh) / var(--z, 1)); }
     .screen.active .wm { opacity: 0.075; }
   }
   @media (min-width:1024px) and (max-width:1399px) { .wm { font-size: min(26vh, 13vw); } }
@@ -642,6 +642,21 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
        14.5px по-русски — ровно столько и ставим */
     .finale p { font-size: calc(15px * var(--k, 1)); }
     html[lang="ru"] .finale p { font-size: calc(14.5px * var(--k, 1)); }
+  }
+
+  /* ===== Мобильная вёрстка в БОЛЬШОМ окне (FR-SITE84) =====================
+     Правка владельца: «почему вот так получается на веб-экранах, когда не на
+     полный экран — просто динамически надо подтягивать отформатированный
+     текст». Окно браузера уже 1024px (или планшет) получало мобильную
+     вёрстку ТЕЛЕФОННОГО размера: текст 14px в колонке посреди пустого
+     экрана. Вёрстка остаётся той же, но целиком крупнее: скрипт ставит
+     --z = min(ширина/600, высота/880) в пределах 1…1.8, и шапка, экраны и
+     точки масштабируются zoom. Кружок с роликом не масштабируется — его
+     тащат пальцем, и координаты должны совпадать с экранными, — поэтому
+     всё, что внутри увеличенных слоёв считается от его диаметра и от окна
+     (vw/vh), делится на --z. Телефоны (уже 600px) и горизонт не трогаем. */
+  @media (min-width:600px) and (max-width:1023px) and (min-height:521px) {
+    header, .read, .dots, .top-fade { zoom: var(--z, 1); }
   }
 
   /* ===== Телефон в ГОРИЗОНТЕ ============================================

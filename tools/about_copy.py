@@ -170,7 +170,7 @@ EN = {
               "collaborate with <strong>research centers</strong> to develop new technologies and "
               "turn them into products that create real value."),
 
-    "m2_head": "Parts of the Same Ecosystem",
+    "m2_head": "AI-Native Ecosystem",
     "m2_p1": ('<span class="l">Education, research, technology, products and business</span>'
               '<span class="l">transformation are not separate directions for me.</span>'
               '<span class="l">They are parts of the same ecosystem.</span>'),
@@ -338,7 +338,7 @@ RU = {
               "центрами</strong> — чтобы создавать новые технологии и превращать их в продукты, "
               "которые приносят реальную пользу."),
 
-    "m2_head": "Части одной экосистемы",
+    "m2_head": "AI-Native экосистема",
     "m2_p1": ("Образование, исследования, технологии, продукты и трансформация бизнеса для меня — "
               "не отдельные направления. Это части одной экосистемы."),
     "m2_p2": ("Я создаю продукты для собственной работы, превращаю самые полезные из них в "
