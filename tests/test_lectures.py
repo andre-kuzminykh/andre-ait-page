@@ -22,7 +22,8 @@ _LECTURES = tuple(r for r in _ALL_LECTURES if os.path.exists(os.path.join(_ROOT,
 # с головами на Vimeo остался в теге lectures-2-8-archive. Лекции 7-8 ещё
 # играют головы с CDN.
 _NATIVE_CDN = {
-    "automation/7/index.html": "corp/7/videos",
+    # лекция 7 собрана заново на общем каноне (FR-SITE85): своих роликов
+    # пока нет, videoIds пуст — под это правило она больше не попадает
     "automation/8/index.html": "corp/8/videos",
 }
 
