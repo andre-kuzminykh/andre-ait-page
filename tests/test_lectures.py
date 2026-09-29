@@ -1622,7 +1622,7 @@ def test_lecture_css_has_every_markup_class():
 
 def test_lecture7_deck():
     """FR-SITE85: лекция 7 — 43 слайда, панель на каждом, тест, свой CSS,
-    меньше англицизмов (правка владельца «меньше англицизмов»)."""
+    без латиницы «AI» (устоявшийся жаргон кириллицей — «фича», «релиз» — владелец разрешил)."""
     path = os.path.join(_ROOT, "automation/7/index.html")
     html = open(path, encoding="utf-8").read()
     n = html.count('class="slide-container')
@@ -1639,8 +1639,6 @@ def test_lecture7_deck():
     body = html[html.index('id="slide-0"'):html.index("<!-- Модальное окно теста -->")]
     visible = re.sub(r"<[^>]+>", " ", body) + json.dumps(notes, ensure_ascii=False)
     low = visible.lower()
-    for w in ("фича", "фичи", "релиз", "бэклог", "онбординг", "паттерн", "эскалац"):
-        assert w not in low, "англицизм «%s» в лекции 7" % w
     assert not re.search(r"(?<![A-Za-z])AI(?![A-Za-z])", visible), "«AI» вместо «ИИ» в лекции 7"
 
 if __name__ == "__main__":
