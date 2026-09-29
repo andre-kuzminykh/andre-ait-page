@@ -5,7 +5,7 @@
 ## Заголовок (вставить дословно)
 
 ```html
-<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Обучение ИИ — <span class="text-solar">часть работы сотрудника</span></h2>
+<h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Корпоративный интеллект <span class="text-solar">обучают сотрудники</span></h2>
 ```
 
 ## Подзаголовок (вставить дословно, одна строка)
