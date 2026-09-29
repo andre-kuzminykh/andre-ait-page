@@ -84,6 +84,42 @@ def элементы_сцены(pg, ид):
     }""", ид)
 
 
+def сценарий_сцены(pg, ид):
+    """Что и когда происходит внутри сцены — СЛОВАМИ.
+
+    Картинка показывает кадр, но не показывает, как он собирается: в
+    каком порядке выходят элементы и где горит кольцо. Владелец читает
+    это до того, как смотреть анимацию, и ловит «вылезло невовремя» без
+    единого рендера.
+    """
+    return pg.evaluate("""(id) => {
+        const s = document.getElementById(id);
+        if (!s) return [];
+        const шаги = [];
+        s.querySelectorAll('[data-in]').forEach(el => {
+            const t = parseFloat(el.dataset.in || '0');
+            if (!t) return;
+            let имя = (el.querySelector('.label,.title,.core,.chip,.cap')
+                       || el).textContent.trim();
+            if (!имя) {
+                imя = '';
+                if (el.classList.contains('halo')) имя = 'сияние';
+                else if (el.classList.contains('fly')) имя = 'значки';
+            }
+            if (!имя) имя = el.className.split(' ')[0] || 'элемент';
+            шаги.push({t: t, что: имя.slice(0, 60), тип: 'выход'});
+            const cur = (el.dataset.cur || '').trim();
+            if (cur) {
+                const [a, b] = cur.split(/\s+/).map(parseFloat);
+                шаги.push({t: a, что: имя.slice(0, 60),
+                           тип: 'кольцо до ' + b.toFixed(2)});
+            }
+        });
+        шаги.sort((x, y) => x.t - y.t);
+        return шаги;
+    }""", ид)
+
+
 def лист(pg, снимки, выход, колонок=4):
     """Контактный лист: все сцены одной картинкой.
 
@@ -161,6 +197,17 @@ def главное():
             строки.append("| %d | %.2f | %.1f c | %s |"
                           % (c["n"], c["кадр"], c["out"] - c["in"],
                              " · ".join(c["подписи"]) or "—"))
+        строки += ["", "## Как это анимируется", ""]
+        for c in сцены:
+            строки.append("**Сцена %d — %.2f…%.2f c** (%s)"
+                          % (c["n"], c["in"], c["out"],
+                             " · ".join(c["подписи"][:3]) or "—"))
+            for ш in сценарий_сцены(pg, c["id"]):
+                строки.append("- `%6.2f` %s — %s"
+                              % (ш["t"], ш["что"], ш["тип"]))
+            строки.append("- `%6.2f` сцена уходит, приходит следующая"
+                          % c["out"])
+            строки.append("")
             print("сцена %2d  %6.2f c  %4.1f c  %s"
                   % (c["n"], c["кадр"], c["out"] - c["in"],
                      " · ".join(c["подписи"])[:70]))
