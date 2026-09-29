@@ -6,7 +6,7 @@
 к главной. Проверяем инварианты «портального» стиля: палитра, портальные блоки,
 навигация, видео-кружок.
 """
-import os
+import json, os
 import re
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -752,18 +752,19 @@ def test_locked_modules_closed():
     недоступны модули, как уже делал, чтобы никто не открыл»): их исходники
     остаются в репозитории — из каркаса лекции 4 собирается лекция 3, общие
     блоки сверяются тестами, — но деплой их на сайт не выкладывает, и по их
-    адресам, как у 7 и 8, отдаётся 404 «Модуль N ещё закрыт». Модулей 7 и 8 в
-    репозитории нет вовсе. Архив контента — тег lectures-2-8-archive.
+    адресам, как у 8, отдаётся 404 «Модуль N ещё закрыт». Модуль 7 собран
+    (FR-SITE85) и закрыт так же, как 4–6. Модуля 8 в репозитории нет вовсе.
+    Архив контента — тег lectures-2-8-archive.
     """
     for n in (1, 2, 3):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
             "модуль %d открыт и должен быть опубликован" % n
-    for n in (7, 8):
+    for n in (8,):
         assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
             "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
     wf = open(os.path.join(_ROOT, ".github/workflows/deploy-pages-manual.yml"), encoding="utf-8").read()
     assert "path: ${{ runner.temp }}/site" in wf, "на сайт уходит весь репозиторий, закрытые модули в том числе"
-    for n in (4, 5, 6):
+    for n in (4, 5, 6, 7):
         assert "--exclude=./automation/%d " % n in wf, "модуль %d закрыт: деплой не должен его выкладывать" % n
     for n in (1, 2, 3):
         assert "--exclude=./automation/%d " % n not in wf, "модуль %d открыт, а деплой его вырезает" % n
@@ -786,7 +787,7 @@ def test_no_links_to_locked_modules():
     link = re.compile(r"automation/[4-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
-        for n in ("4", "5", "6"):
+        for n in ("4", "5", "6", "7"):
             if rel.startswith("automation/%s/" % n):
                 hits = [h for h in hits if h != "automation/%s" % n]
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
@@ -1616,6 +1617,30 @@ def test_lecture_css_has_every_markup_class():
                 if t not in hooks and t != "ph" and not t.startswith("ph-")}
         miss = sorted(t for t in toks if t not in have)
         assert not miss, "%s: в CSS нет правил для %s — пересоберите CSS лекции" % (rel, miss[:8])
+
+
+def test_lecture7_deck():
+    """FR-SITE85: лекция 7 — 43 слайда, панель на каждом, тест, свой CSS,
+    меньше англицизмов (правка владельца «меньше англицизмов»)."""
+    path = os.path.join(_ROOT, "automation/7/index.html")
+    html = open(path, encoding="utf-8").read()
+    n = html.count('class="slide-container')
+    assert n == 43, "в лекции 7 43 слайда, сейчас %d" % n
+    assert "const totalSlides = 43;" in html
+    assert 'href="/assets/lecture-7.css"' in html
+    assert os.path.exists(os.path.join(_ROOT, "assets/lecture-7.css"))
+    assert "Модуль 7 — Управление изменениями в компании" in html
+    notes = json.loads(re.search(r'<script id="slide-notes" type="application/json">\n(.*?)\n</script>',
+                                 html, re.S).group(1))
+    assert len(notes) >= 42, "панель «Текст» должна покрывать все слайды, кроме максимум одного"
+    quiz = re.search(r"const quizQuestions = \[(.*?)\n        \];", html, re.S).group(1)
+    assert quiz.count("correct:") >= 8, "в тесте лекции 7 не меньше восьми вопросов"
+    body = html[html.index('id="slide-0"'):html.index("<!-- Модальное окно теста -->")]
+    visible = re.sub(r"<[^>]+>", " ", body) + json.dumps(notes, ensure_ascii=False)
+    low = visible.lower()
+    for w in ("фича", "фичи", "релиз", "бэклог", "онбординг", "паттерн", "эскалац"):
+        assert w not in low, "англицизм «%s» в лекции 7" % w
+    assert not re.search(r"(?<![A-Za-z])AI(?![A-Za-z])", visible), "«AI» вместо «ИИ» в лекции 7"
 
 if __name__ == "__main__":
     failed = 0
