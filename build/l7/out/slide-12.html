@@ -19,33 +19,32 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2 md:gap-3 flex-1">
-                    <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2 py-2 md:px-5 md:py-3.5 flex flex-col md:grid md:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)_auto_minmax(max-content,1fr)] items-center justify-center text-center md:text-left gap-1 md:gap-3 js-keep flex-1 a-in a-in-3">
-                        <span class="text-[10px] md:text-base text-black leading-tight whitespace-nowrap shrink-0"><i class="ph-fill ph-bug text-solar"></i> Единичный <br>сбой теста</span>
-                        <div class="flex flex-row items-center gap-1 md:contents js-keep">
-                            <i class="ph-bold ph-arrow-right text-black/25 text-[10px] md:text-2xl"></i>
-                            <span class="whitespace-nowrap text-[10px] md:text-base text-black"><i class="ph-fill ph-user-gear text-solar"></i> Инженер</span>
-                            <i class="ph-bold ph-arrow-right text-black/25 text-[10px] md:text-2xl"></i>
-                            <span class="whitespace-nowrap text-[10px] md:text-base text-black/60"><i class="ph-fill ph-tray text-solar"></i> в очередь</span>
-                        </div>
+                <!-- Правка владельца «стрелочки неправильно»: у каждой дорожки были свои колонки, стрелки
+                     гуляли, а на телефоне «→» висел в начале строки. Теперь три дорожки — одна сетка с общими
+                     колонками «сигнал → адресат → срок» (subgrid): стрелки друг под другом, одного размера и
+                     цвета, по центру строки. Колонка берёт ширину по содержимому (md:flex-none), иначе колонки
+                     стрелок схлопывались в ноль; на телефоне адресат и срок переносятся по словам. -->
+                <div class="grid grid-cols-[max-content_auto_min-content_auto_min-content] md:grid-cols-[max-content_auto_max-content_auto_max-content] justify-between auto-rows-fr gap-x-1.5 gap-y-2 md:gap-x-4 md:gap-y-3 md:flex-none js-keep">
+                    <div class="col-span-5 grid grid-cols-subgrid items-center justify-items-center text-center bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2 py-2 md:px-5 md:py-3.5 a-in a-in-3">
+                        <span class="text-[8px] md:text-base text-black leading-tight whitespace-nowrap"><i class="ph-fill ph-bug text-solar"></i> Единичный <br>сбой теста</span>
+                        <i class="ph-bold ph-arrow-right text-orange-500 text-[10px] md:text-2xl leading-none"></i>
+                        <span class="text-[8px] md:text-base text-black leading-tight whitespace-nowrap"><i class="ph-fill ph-user-gear text-solar"></i> Инженер</span>
+                        <i class="ph-bold ph-arrow-right text-orange-500 text-[10px] md:text-2xl leading-none"></i>
+                        <span class="text-[8px] md:text-base text-black/60 leading-tight whitespace-nowrap"><i class="ph-fill ph-tray text-solar"></i> в&nbsp;очередь</span>
                     </div>
-                    <div class="bg-solar/20 border border-solar/40 rounded-[14px] md:rounded-[20px] px-2 py-2 md:px-5 md:py-3.5 flex flex-col md:grid md:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)_auto_minmax(max-content,1fr)] items-center justify-center text-center md:text-left gap-1 md:gap-3 js-keep flex-1 a-in a-in-4">
-                        <span class="text-[10px] md:text-base text-black leading-tight whitespace-nowrap shrink-0"><i class="ph-fill ph-chat-circle-dots text-solar"></i> Серия жалоб <br>после релиза</span>
-                        <div class="flex flex-row items-center gap-1 md:contents js-keep">
-                            <i class="ph-bold ph-arrow-right text-black/25 text-[10px] md:text-2xl"></i>
-                            <span class="whitespace-nowrap text-[10px] md:text-base text-black"><i class="ph-fill ph-user text-solar"></i> Владелец процесса</span>
-                            <i class="ph-bold ph-arrow-right text-black/25 text-[10px] md:text-2xl"></i>
-                            <span class="whitespace-nowrap text-[10px] md:text-base text-black/60"><i class="ph-fill ph-calendar-check text-solar"></i> на разбор</span>
-                        </div>
+                    <div class="col-span-5 grid grid-cols-subgrid items-center justify-items-center text-center bg-solar/20 border border-solar/40 rounded-[14px] md:rounded-[20px] px-2 py-2 md:px-5 md:py-3.5 a-in a-in-4">
+                        <span class="text-[8px] md:text-base text-black leading-tight whitespace-nowrap"><i class="ph-fill ph-chat-circle-dots text-solar"></i> Серия жалоб <br>после релиза</span>
+                        <i class="ph-bold ph-arrow-right text-orange-500 text-[10px] md:text-2xl leading-none"></i>
+                        <span class="text-[8px] md:text-base text-black leading-tight md:whitespace-nowrap"><i class="ph-fill ph-user text-solar"></i>&nbsp;Владелец процесса</span>
+                        <i class="ph-bold ph-arrow-right text-orange-500 text-[10px] md:text-2xl leading-none"></i>
+                        <span class="text-[8px] md:text-base text-black/60 leading-tight whitespace-nowrap"><i class="ph-fill ph-calendar-check text-solar"></i> на&nbsp;разбор</span>
                     </div>
-                    <div class="bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] px-2 py-2 md:px-5 md:py-3.5 flex flex-col md:grid md:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)_auto_minmax(max-content,1fr)] items-center justify-center text-center md:text-left gap-1 md:gap-3 js-keep flex-1 a-in a-in-5">
-                        <span class="text-[10px] md:text-base text-white leading-tight whitespace-nowrap shrink-0"><i class="ph-fill ph-siren text-solar"></i> Рост ошибок <br>в критическом сценарии</span>
-                        <div class="flex flex-row items-center gap-1 md:contents js-keep">
-                            <i class="ph-bold ph-arrow-right text-white/30 text-[10px] md:text-2xl"></i>
-                            <span class="whitespace-nowrap text-[10px] md:text-base text-white"><i class="ph-fill ph-lightning text-solar"></i> Сразу</span>
-                            <i class="ph-bold ph-arrow-right text-white/30 text-[10px] md:text-2xl"></i>
-                            <span class="whitespace-nowrap text-[10px] md:text-base text-white/70"><i class="ph-fill ph-stop-circle text-solar"></i> стоп выкладки</span>
-                        </div>
+                    <div class="col-span-5 grid grid-cols-subgrid items-center justify-items-center text-center bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] px-2 py-2 md:px-5 md:py-3.5 a-in a-in-5">
+                        <span class="text-[8px] md:text-base text-white leading-tight whitespace-nowrap"><i class="ph-fill ph-siren text-solar"></i> Рост ошибок <br>в критическом сценарии</span>
+                        <i class="ph-bold ph-arrow-right text-orange-500 text-[10px] md:text-2xl leading-none"></i>
+                        <span class="text-[8px] md:text-base text-white leading-tight whitespace-nowrap"><i class="ph-fill ph-lightning text-solar"></i> Сразу</span>
+                        <i class="ph-bold ph-arrow-right text-orange-500 text-[10px] md:text-2xl leading-none"></i>
+                        <span class="text-[8px] md:text-base text-white/70 leading-tight md:whitespace-nowrap"><i class="ph-fill ph-stop-circle text-solar"></i>&nbsp;стоп выкладки</span>
                     </div>
                 </div>
             </div>
