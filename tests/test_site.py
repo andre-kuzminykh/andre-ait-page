@@ -774,6 +774,22 @@ def test_hero_has_no_glowing_blob_behind_it():
     assert "auraPulse" not in html, "и его анимация тоже"
 
 
+def test_ru_mode_leads_to_the_russian_product():
+    """FR-SITE86: главная в режиме RU ведёт в продукт на русском. Продукт
+    выбирает язык по браузеру, поэтому каждая кнопка в продукт несёт пару
+    data-href-en (прежний адрес) / data-href-ru (тот же с ?lang=ru), а setLang
+    переписывает href по языку — как ссылки «Обо мне» и лендинга."""
+    html = _html()
+    tags = re.findall(r'<a [^>]*href="https://(?:maturity|strategy)\.andre\.technology/[^"]*"[^>]*>', html)
+    assert len(tags) >= 4, tags
+    for tag in tags:
+        href = re.search(r' href="([^"]+)"', tag).group(1)
+        assert "?lang=" not in href, "по умолчанию (EN) — прежний адрес: " + tag[:120]
+        assert 'data-href-en="%s"' % href in tag, tag[:160]
+        assert 'data-href-ru="%s?lang=ru"' % href in tag, tag[:160]
+    assert "querySelectorAll('[data-href-ru]')" in html
+
+
 
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]

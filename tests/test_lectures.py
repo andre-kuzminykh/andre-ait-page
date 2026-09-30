@@ -22,7 +22,7 @@ _LECTURES = tuple(r for r in _ALL_LECTURES if os.path.exists(os.path.join(_ROOT,
 # с головами на Vimeo остался в теге lectures-2-8-archive. Лекции 7-8 ещё
 # играют головы с CDN.
 _NATIVE_CDN = {
-    # лекция 7 собрана заново на общем каноне (FR-SITE86): своих роликов
+    # лекция 7 собрана заново на общем каноне (FR-SITE87): своих роликов
     # пока нет, videoIds пуст — под это правило она больше не попадает
     "automation/8/index.html": "corp/8/videos",
 }
@@ -754,7 +754,7 @@ def test_locked_modules_closed():
     остаются в репозитории — из каркаса лекции 4 собирается лекция 3, общие
     блоки сверяются тестами, — но деплой их на сайт не выкладывает, и по их
     адресам, как у 8, отдаётся 404 «Модуль N ещё закрыт». Модуль 7 собран
-    (FR-SITE86) и закрыт так же, как 4–6. Модуля 8 в репозитории нет вовсе.
+    (FR-SITE87) и закрыт так же, как 4–6. Модуля 8 в репозитории нет вовсе.
     Архив контента — тег lectures-2-8-archive.
     """
     for n in (1, 2, 3):
@@ -1595,6 +1595,21 @@ def _css_classes(css):
     return out
 
 
+def test_ru_practice_pages_lead_to_the_russian_product():
+    """FR-SITE86: русские страницы практик курса ведут в продукт с ?lang=ru —
+    продукт выбирает язык по браузеру, и русский слушатель с английским
+    браузером попадал в английский кабинет. Практика 3 собирается из
+    build/l3/practice-src — адрес правится и в шаблоне."""
+    for rel in ("automation/1/practice/index.html", "automation/2/practice/index.html",
+                "automation/3/practice/index.html", "build/l3/practice-src/template.html"):
+        html = open(os.path.join(_ROOT, rel), encoding="utf-8").read()
+        hrefs = re.findall(r'href="(https://(?:maturity|strategy)\.andre\.technology[^"]*)"', html)
+        assert hrefs, rel
+        for h in hrefs:
+            assert h.endswith("?lang=ru"), (rel, h)
+
+
+
 def test_lecture_css_has_every_markup_class():
     """Слайд 37 лекции 3 («Полная архитектура») на сайте стоял столбиком: класс
     md:grid-cols-[1.035fr_auto_1fr] появился в разметке, а assets/lecture-3.css
@@ -1621,7 +1636,7 @@ def test_lecture_css_has_every_markup_class():
 
 
 def test_lecture7_deck():
-    """FR-SITE86: лекция 7 — 43 слайда, панель на каждом, тест, свой CSS,
+    """FR-SITE87: лекция 7 — 43 слайда, панель на каждом, тест, свой CSS,
     без латиницы «AI» (устоявшийся жаргон кириллицей — «фича», «релиз» — владелец разрешил)."""
     path = os.path.join(_ROOT, "automation/7/index.html")
     html = open(path, encoding="utf-8").read()
