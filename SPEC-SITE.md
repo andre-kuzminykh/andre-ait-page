@@ -3216,3 +3216,23 @@ Story: проверка после батча 49 продукта andre-ai-strat
 Тесты: `test_strategy.test_ru_page_leads_to_the_russian_product`,
 `test_about.test_ru_page_leads_to_the_russian_product`,
 `test_about.test_cta_button_text_and_target`.
+
+### FR-SITE86 — главная в режиме RU и практики курса ведут в продукт на русском
+
+Story: проверка прода как пользователь после FR-SITE85 (2026-09-30): на
+главной andre.technology в режиме RU кнопки «ИИ-диагностика», «Начать
+ИИ-трансформацию», «Получить ИИ-стратегию», «Бесплатная ИИ-диагностика» и
+кнопки продукта на русских страницах практик курса вели на адрес без языка —
+русскоязычный с английским браузером попадал в английский продукт.
+
+Требование:
+- Главная: у каждой кнопки в продукт пара `data-href-en` (прежний адрес) и
+  `data-href-ru` (тот же адрес с `?lang=ru`); `setLang` переписывает `href` по
+  языку, как ссылки «Обо мне» и лендинга. В режиме EN адреса прежние.
+- Практики лекций 1–3 (страницы на русском): ссылки в продукт — с `?lang=ru`.
+  Практика 3 собирается `build/l3/practice-src/gen.py` — адрес правится и в
+  шаблоне, сборка воспроизводит страницу байт в байт.
+
+Тесты: `test_site.test_ru_mode_leads_to_the_russian_product`,
+`test_lectures.test_ru_practice_pages_lead_to_the_russian_product`,
+`test_course_entry.test_diagnostic_button_opens_maturity`.

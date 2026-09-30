@@ -1593,6 +1593,21 @@ def _css_classes(css):
     return out
 
 
+def test_ru_practice_pages_lead_to_the_russian_product():
+    """FR-SITE86: русские страницы практик курса ведут в продукт с ?lang=ru —
+    продукт выбирает язык по браузеру, и русский слушатель с английским
+    браузером попадал в английский кабинет. Практика 3 собирается из
+    build/l3/practice-src — адрес правится и в шаблоне."""
+    for rel in ("automation/1/practice/index.html", "automation/2/practice/index.html",
+                "automation/3/practice/index.html", "build/l3/practice-src/template.html"):
+        html = open(os.path.join(_ROOT, rel), encoding="utf-8").read()
+        hrefs = re.findall(r'href="(https://(?:maturity|strategy)\.andre\.technology[^"]*)"', html)
+        assert hrefs, rel
+        for h in hrefs:
+            assert h.endswith("?lang=ru"), (rel, h)
+
+
+
 def test_lecture_css_has_every_markup_class():
     """Слайд 37 лекции 3 («Полная архитектура») на сайте стоял столбиком: класс
     md:grid-cols-[1.035fr_auto_1fr] появился в разметке, а assets/lecture-3.css

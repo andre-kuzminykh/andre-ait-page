@@ -451,7 +451,8 @@ def test_diagnostic_button_opens_maturity():
     assert i != -1, "кнопка диагностики пропала со страницы практики"
     a = html.rfind("<a ", 0, i)
     tag = html[a:i]
-    assert 'href="https://maturity.andre.technology/"' in tag, \
+    # FR-SITE86: страница практики русская — диагностика открывается на русском
+    assert 'href="https://maturity.andre.technology/?lang=ru"' in tag, \
         "диагностика должна открываться на maturity.andre.technology: " + tag[:120]
 
 
