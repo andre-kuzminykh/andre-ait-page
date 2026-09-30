@@ -1618,6 +1618,42 @@ def test_big_window_scales_the_mobile_layout():
     assert "function bandZoom()" in js and "Math.min(w / 600, h / 880, 1.8)" in js
     assert js.index("bandZoom();") < js.index("fitHeadings();"), "масштаб ставится до подгонки"
 
+
+def test_sign_in_link_next_to_the_main_button():
+    """FR-SITE87: у кого компания уже есть, идёт во вход, а не в новую —
+    ссылка «Уже есть компания? Войти» стоит сразу под главной кнопкой героя.
+    Это та же серая ссылка, что «Как это работает» (класс .hero-how): второй
+    кнопки на первом экране нет. Продукт по ?login=1 сразу открывает экран
+    входа (почта / Google); русская — с явным ?lang=ru, как и «Начать»."""
+    want = {"en": "https://strategy.andre.technology/?login=1",
+            "ru": "https://strategy.andre.technology/?login=1&amp;lang=ru"}
+    text = {"en": "Already have a company? <b>Sign in</b>", "ru": "Уже есть компания? <b>Войти</b>"}
+    for lang, html in _pages():
+        hero = html[html.index('id="top"'):html.index("</section>", html.index('id="top"'))]
+        cta = hero[hero.index('<div class="hero-cta">'):hero.index("</div>", hero.index('<div class="hero-cta">'))]
+        link = '<a class="hero-how hero-login" href="%s" rel="noopener">%s</a>' % (want[lang], text[lang])
+        assert link in cta, lang + ": нет ссылки «Войти» рядом с главной кнопкой"
+        assert cta.index('class="btn btn-primary"') < cta.index("hero-login") < cta.index('data-go="process"'), \
+            lang + ": порядок — кнопка, «Войти», «Как это работает»"
+        assert hero.count('class="btn btn-') == 1, lang + ": кнопка на первом экране по-прежнему одна"
+    css = _read("assets/strategy.css")
+    assert ".hero-login b { font-weight: 800; }" in css, "глагол чуть плотнее — видно, куда нажимать"
+    assert not re.search(r"\.hero-login \{", css), "свой вид у ссылки только у глагола — остальное от .hero-how"
+
+
+def test_pages_turn_native_inside_telegram():
+    """FR-SITE87: в <head> обеих страниц — проверка запуска Telegram Mini App
+    (tools/tg_miniapp.py) в режиме листающихся экранов; SDK Telegram
+    разметкой не подключается — вне Telegram лишних запросов нет. Подробно —
+    tests/test_tg_miniapp.py."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from tg_miniapp import head_snippet
+    for lang, html in ((l, _raw(r)) for l, r in (("en", "ai-strategy/index.html"), ("ru", "ai-strategy/ru/index.html"))):
+        head = html[:html.index("</head>")]
+        assert head.count(head_snippet("deck")) == 1, lang
+        assert '<script src="https://telegram.org' not in html, lang
+
 if __name__ == "__main__":
     import sys
     fails = 0

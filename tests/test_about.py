@@ -969,6 +969,20 @@ def test_ru_page_leads_to_the_russian_product():
     assert "?lang=" not in "".join(re.findall(r'href="https://maturity[^"]*"', en))
 
 
+
+def test_pages_turn_native_inside_telegram():
+    """FR-SITE87: русскую биографию бот открывает как Telegram Mini App. В
+    <head> обеих страниц — проверка запуска (tools/tg_miniapp.py) в режиме
+    листающихся экранов: свайп вниз листает назад, а не сворачивает окно.
+    SDK Telegram разметкой не подключается. Подробно — tests/test_tg_miniapp.py."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from tg_miniapp import head_snippet
+    for lang, html in _pages():
+        head = html[:html.index("</head>")]
+        assert head.count(head_snippet("deck")) == 1, lang
+        assert '<script src="https://telegram.org' not in html, lang
+
 if __name__ == "__main__":
     import sys
     fails = 0

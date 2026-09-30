@@ -3236,3 +3236,135 @@ Story: проверка прода как пользователь после FR
 Тесты: `test_site.test_ru_mode_leads_to_the_russian_product`,
 `test_lectures.test_ru_practice_pages_lead_to_the_russian_product`,
 `test_course_entry.test_diagnostic_button_opens_maturity`.
+
+### FR-SITE87 — страницы сайта внутри Telegram Mini App; «Уже есть компания? Войти»
+
+Story: Telegram-бот открывает `https://andre.technology/ai-strategy/ru/`,
+`/automation_ru/` и `/about/ru` как Mini App (кнопка `web_app`). Владелец:
+«должно быть максимально нативно». Параллельно в продукте делается вход в свою
+компанию: `https://strategy.andre.technology/?login=1` (с `&lang=ru|en`) без
+токена сразу открывает экран входа (почта / Google).
+
+Требование:
+- **Запуск в Telegram определяется по параметрам запуска в hash** —
+  `tgWebAppData` или `tgWebAppPlatform` (Telegram дописывает их к адресу,
+  в том числе после своего пути: `#/x?tgWebApp…`). Проверка — маленький
+  инлайновый скрипт в `<head>` шести страниц (`/ai-strategy/`,
+  `/ai-strategy/ru/`, `/about/`, `/about/ru/`, `/automation/`,
+  `/automation_ru/`), один на три генератора: `tools/tg_miniapp.py`
+  (`head_snippet("deck")` у лендинга и биографии, `head_snippet("page")` у входа
+  в курс). ТОЛЬКО при запуске из Telegram он ставит `html.tg` и
+  `data-tg="deck|page"` и вставляет `https://telegram.org/js/telegram-web-app.js`
+  и `/assets/tg-miniapp.js` (`async=false`: SDK выполняется первым, разбор
+  страницы не блокируется). Вне Telegram ничего не меняется и лишних запросов
+  нет: SDK и `tg-miniapp.js` разметкой не подключаются, preconnect к
+  telegram.org нет.
+- Параметры запуска (только `tgWebApp*`) запоминаются на вкладку —
+  `sessionStorage['ait_tg']`: переход по сайту внутри мини-аппа (EN|RU, «Обо
+  мне» → лендинг) теряет hash, а режим мини-аппа остаётся. Закрытый
+  sessionStorage страницу не ломает (try/catch).
+- **Поведение в Telegram** (`assets/tg-miniapp.js`):
+  - `ready()` и `expand()` сразу: экраны лендинга и биографии в половине окна
+    не помещаются;
+  - `disableVerticalSwipes()` (Bot API 7.7+) — только на листающихся страницах
+    (`deck`): там свайп вниз = предыдущий экран, а в Telegram тот же жест
+    сворачивал бы мини-апп. На `/automation*` (обычная прокрутка) жест Telegram
+    остаётся;
+  - **цвета.** Сайт тёмный по бренду, поэтому не страница перекрашивается в
+    тему Telegram, а шапка, фон и нижняя панель Telegram — в цвет страницы из
+    `meta theme-color` (`#050505`): `setBackgroundColor` (6.1+),
+    `setHeaderColor` (hex — с 6.9; на старых клиентах шапку не трогаем, иначе
+    ключ темы дал бы светлую полосу над тёмной страницей), `setBottomBarColor`
+    (7.10+). `themeParams.bg_color` — только запасной цвет, если у страницы
+    своего нет. На `/automation*` светлая тема переписывает `theme-color` —
+    скрипт следит за meta и перекрашивает шапку Telegram (`#FAFAFA`); на
+    `themeChanged` цвета ставятся заново;
+  - **безопасные отступы.** Стили берут нижний отступ из `--safe-b`
+    (по умолчанию `env(safe-area-inset-bottom, 0px)`, на `/automation*` — 0),
+    верхний — из `--safe-t` (по умолчанию 0). Задаёт их только скрипт:
+    `--safe-t` = `safeAreaInset.top + contentSafeAreaInset.top`,
+    `--safe-b` = `max(env(…), safeAreaInset.bottom + contentSafeAreaInset.bottom)`
+    (Bot API 8.0; обновляются по `safeAreaChanged`, `contentSafeAreaChanged`,
+    `fullscreenChanged`, `viewportChanged`). В Telegram `env()` бывает нулём, а
+    в полноэкранном режиме сверху лежат кнопки Telegram: шапка, слой экранов и
+    меню встают под них (замер: 59 + 46 → шапка с 105px), кружок с роликом и
+    точки — над полосой «домой» (+34px). В окне 600–1023px отступ делится на
+    `--z` (там шапка и экраны масштабируются zoom, FR-SITE84);
+  - **ссылки** (перехват клика, если страница не обработала его сама): свой
+    сайт — обычный переход внутри мини-аппа; продукт
+    (`strategy.andre.technology`, `maturity.andre.technology`) — тоже внутри, с
+    параметрами запуска Telegram в hash; `t.me` — `openTelegramLink` (канал
+    открывается в самом Telegram); прочие внешние домены — `openLink` (внешний
+    браузер: иначе чужой сайт открылся бы вместо страницы, и вернуться было бы
+    нечем); `mailto:` — как есть;
+  - **«Назад».** В мини-аппе нет кнопки «назад» браузера, поэтому скрипт ведёт
+    стек страниц вкладки и показывает `BackButton` Telegram, когда есть куда
+    вернуться (по нажатию — `history.back()`; на Android её же вызывает
+    системная «назад»). Запуск (параметры в hash) — всегда корень стека. Уходя
+    со страницы (`pagehide`), кнопка прячется: следующая страница может быть
+    без этого скрипта (главная, продукт), и там осталась бы неработающая
+    кнопка; из кэша «назад» (`pageshow.persisted`) стек пересчитывается;
+  - методы вызываются только если клиент их знает (`isVersionAtLeast`), всё —
+    в try/catch; SDK не загрузился — страница обычная; параметры запуска есть,
+    а моста Telegram нет (`TelegramWebviewProxy` / `external.notify` / iframe;
+    ссылку с hash открыли в обычном браузере) — поведение не включается, ссылки
+    работают как обычно.
+- **Что уходит в продукт и что ему нужно.** Переход в strategy./maturity.
+  несёт исходные параметры запуска: `…/?lang=ru#tgWebAppData=…&tgWebAppVersion=…&tgWebAppPlatform=…&tgWebAppThemeParams=…`.
+  Hash не уходит на сервер и в Referer; на чужие домены параметры не
+  передаются. Со своей стороны продукту (andre-ai-strategy) нужно:
+  1. определять мини-апп так же (hash / sessionStorage), только тогда грузить
+     `telegram-web-app.js` — SDK сам прочтёт параметры из hash, — и вызвать
+     `ready()`, `expand()`, покрасить шапку/фон в свой фон;
+  2. если нужен вход через Telegram — отправить `Telegram.WebApp.initData` на
+     сервер и проверить подпись (HMAC-SHA256, ключ = HMAC_SHA256("WebAppData",
+     токен бота), плюс свежесть `auth_date`); `initDataUnsafe` без проверки для
+     входа не годится. Если бот открывает страницы кнопкой обычной клавиатуры,
+     `tgWebAppData` пуст — вход по initData работает только с инлайн-кнопки и
+     кнопки меню;
+  3. вход Google внутри мини-аппа не сработает: Google запрещает OAuth во
+     встроенных веб-вью (`disallowed_useragent`) — в режиме мини-аппа вести его
+     через `openLink` во внешний браузер, либо показывать вход по почте/коду;
+     ссылка из письма тоже откроется во внешнем браузере, а не в мини-аппе;
+  4. показать `BackButton`, если пришли с сайта (`document.referrer` на
+     andre.technology), и по нажатию — `history.back()`: сайт свою кнопку,
+     уходя, прячет.
+- **«Уже есть компания? Войти» / «Already have a company? Sign in»** на
+  `/ai-strategy/ru/` и `/ai-strategy/` — сразу под главной кнопкой героя, над
+  «Как это работает»: `https://strategy.andre.technology/?login=1&lang=ru`
+  (EN — `?login=1`, язык по браузеру, как у «Start», FR-SITE85). Это та же
+  серая ссылка, что «Как это работает» (класс `.hero-how`: без овала, серая,
+  капитель с трекингом 0.12em), глагол — жирнее (`.hero-login b`); кнопка на
+  первом экране по-прежнему одна. Адреса и тексты — в `tools/strategy_copy.py`
+  (`login_href`, `login_q`, `login_do`), `&` в атрибуте — `&amp;`. В мини-аппе
+  ссылка, как и «Начать», ведёт в продукт внутри Telegram.
+
+Проверка в Chromium (`tools/tg_miniapp_check.py`, 1440×900, 1024×768, 390×844):
+вне Telegram — ни одного запроса к telegram.org и `tg-miniapp.js`, `html.tg` нет,
+раскладка шапки, экранов, кружка и точек совпадает с main до пикселя (кроме
+новой строки в герое лендинга); в эмуляции Telegram (заглушка
+`window.Telegram.WebApp` вместо SDK через route на telegram.org, мост
+`TelegramWebviewProxy`) — вызовы ready/expand/цветов, `disableVerticalSwipes`
+только на `deck`, `--safe-b` поднимает кружок и точки на 34px, t.me →
+`openTelegramLink`, YouTube → `openLink`, «Войти» и «Обо мне» → продукт с
+`#tgWebAppData=…`, EN|RU сохраняет режим и показывает «Назад», «Назад»
+возвращает и прячет кнопку, светлая тема `/automation/` → шапка `#FAFAFA`,
+полноэкранный режим → шапка с 105px, клиент 6.0 → только ready/expand, без SDK
+и без моста — без ошибок и без перехвата. Горизонтальное переполнение `/automation/`
+на 390px (слово героя шире колонки на запасном шрифте, когда Google Fonts
+закрыт сетью) — такое же на main, к FR-SITE87 не относится.
+
+Тесты: `tests/test_tg_miniapp.py` (`test_every_miniapp_page_checks_the_launch_in_head`,
+`test_telegram_sdk_is_never_loaded_outside_telegram`,
+`test_launch_check_only_fires_on_telegram_launch_params`,
+`test_generators_share_one_launch_check`, `test_miniapp_script_is_native`,
+`test_miniapp_links_open_natively`, `test_miniapp_back_button_and_safe_area`,
+`test_safe_area_defaults_keep_the_site_unchanged`, `test_spec_describes_fr_site87`),
+`test_strategy.test_sign_in_link_next_to_the_main_button`,
+`test_strategy.test_pages_turn_native_inside_telegram`,
+`test_about.test_pages_turn_native_inside_telegram`,
+`test_course_entry.test_pages_turn_native_inside_telegram`; обновлены под
+`--safe-b` / ссылку «Войти»: `test_strategy.test_ru_page_leads_to_the_russian_product`,
+`test_mobile_footer_stands_just_above_the_dots`, `test_video_circle_scales_with_the_window`,
+`test_about.test_finale_sits_in_the_middle_and_the_footer_at_the_bottom`,
+`test_chapter_marks_are_visible_on_phone`.
