@@ -1033,7 +1033,8 @@ def test_mobile_footer_stands_just_above_the_dots():
     # Правка владельца: подвал стоит у самого низа, кружку разрешено его
     # перекрывать — «кружок можно перемещать, поэтому пофигу что он там
     # закрывает» (FR-SITE55).
-    assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in mob, \
+    # FR-SITE87: нижний отступ — var(--safe-b, env(…)): вне Telegram то же env()
+    assert ".screen.final { padding-bottom: calc(2.4rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); }" in mob, \
         "подвал финала прижат к низу экрана"
     # правка владельца: подвал по центру, кружку разрешено его перекрывать
     assert "padding-left" not in mob.split(".final footer")[1][:160], \
@@ -1246,7 +1247,8 @@ def test_video_circle_scales_with_the_window():
     assert "36vw" not in css.split("--vid-d")[1][:80], "ширина больше не решает одна"
     # FR-SITE84: в большом окне экраны увеличены zoom, а кружок нет —
     # поэтому его диаметр в поле экрана делится на --z
-    assert "calc(var(--vid-d) * 0.82 / var(--z, 1) + 1.1rem + env(safe-area-inset-bottom, 0px))" in css, \
+    # FR-SITE87: нижний отступ — var(--safe-b, env(…)): вне Telegram то же env()
+    assert "calc(var(--vid-d) * 0.82 / var(--z, 1) + 1.1rem + var(--safe-b, env(safe-area-inset-bottom, 0px)))" in css, \
         "нижнее поле меньше диаметра — кружку разрешено перекрывать"
     mob = _mobile_block()
     assert "padding-left" not in mob.split(".final footer")[1][:160], \
@@ -1571,6 +1573,10 @@ def test_ru_page_leads_to_the_russian_product():
     без параметра, язык по браузеру."""
     ru, en = _raw("ai-strategy/ru/index.html"), _raw("ai-strategy/index.html")
     hrefs = re.findall(r'href="(https://strategy\.andre\.technology/[^"]*)"', ru)
+    # FR-SITE87: рядом с главной кнопкой — вход в свою компанию, тоже на русском
+    login = "https://strategy.andre.technology/?login=1&amp;lang=ru"
+    assert hrefs.count(login) == 1, hrefs
+    hrefs = [h for h in hrefs if h != login]
     assert len(hrefs) >= 8 and set(hrefs) == {"https://strategy.andre.technology/?lang=ru"}, hrefs
     assert "?lang=" not in "".join(re.findall(r'href="https://strategy[^"]*"', en))
 
