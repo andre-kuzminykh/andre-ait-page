@@ -68,7 +68,8 @@ def test_automation_ru_hero_four_lines():
     lines = re.findall(r'<span class="line">(.*?)</span>(?=<span class="line">|$)', h1)
     assert len(lines) == 4, lines
     assert lines[3].startswith('с <span class="flame">'), lines[3]
-    assert ".hero span.line{display:block;white-space:nowrap}" in html
+    # страница собирается tools/build_course_entry.py: nowrap — русским ключом
+    assert re.search(r"\.hero span\.line\{[^}]*white-space:nowrap", html)
     assert "container-type:inline-size" in html and "100cqi / 17.6" in html
 
 

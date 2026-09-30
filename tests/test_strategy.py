@@ -471,7 +471,9 @@ def test_cta_targets_the_product():
         hrefs = re.findall(r'class="btn btn-[a-z]+[^"]*" href="([^"]+)"', html)
         assert hrefs, lang + ": на странице должны быть кнопки"
         for h in hrefs:
-            assert h == "https://strategy.andre.technology/", lang + ": кнопка ведёт мимо продукта: " + h
+            # FR-SITE85: русская — с ?lang=ru, английская — без (язык по браузеру)
+            want = "https://strategy.andre.technology/" + ("?lang=ru" if lang == "ru" else "")
+            assert h == want, lang + ": кнопка ведёт мимо продукта: " + h
 
 
 # ── общие правила спеки и владельца ───────────────────────────────────────
@@ -1562,6 +1564,16 @@ def test_agent_passport_labels_are_bigger_on_the_web():
     # базовое правило (телефон) прежнее — там запаса нет
     assert "font-size: clamp(9px, 3.4cqmin, 13.5px);" in css
 
+def test_ru_page_leads_to_the_russian_product():
+    """FR-SITE85: все кнопки «Начать» русской страницы ведут в продукт с
+    ?lang=ru — продукт выбирает язык по браузеру, а страницу открывает
+    русский Telegram-бот (и кнопка «🔑 Ввести код на сайте»); английская —
+    без параметра, язык по браузеру."""
+    ru, en = _raw("ai-strategy/ru/index.html"), _raw("ai-strategy/index.html")
+    hrefs = re.findall(r'href="(https://strategy\.andre\.technology/[^"]*)"', ru)
+    assert len(hrefs) >= 8 and set(hrefs) == {"https://strategy.andre.technology/?lang=ru"}, hrefs
+    assert "?lang=" not in "".join(re.findall(r'href="https://strategy[^"]*"', en))
+
 
 def test_owner_landing_fixes_2026_09_27():
     """FR-SITE83. Правки владельца по лендингу: цепочка «Пришёл лид…» мелкая на
@@ -1616,3 +1628,4 @@ if __name__ == "__main__":
                 print("ERR  " + name + ": " + type(e).__name__ + ": " + str(e))
     print("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if not fails else "ПРОВАЛЕНО: %d" % fails)
     sys.exit(1 if fails else 0)
+

@@ -236,7 +236,7 @@ def test_cta_button_text_and_target():
     en, ru = _en(), _ru()
     assert re.search(r'<a class="btn-white" href="https://maturity\.andre\.technology/"[^>]*>Start AI Transformation', en), \
         "в конце английской страницы — кнопка Start AI Transformation на maturity"
-    assert re.search(r'<a class="btn-white" href="https://maturity\.andre\.technology/"[^>]*>Начать ИИ-трансформацию', ru), \
+    assert re.search(r'<a class="btn-white" href="https://maturity\.andre\.technology/\?lang=ru"[^>]*>Начать ИИ-трансформацию', ru), \
         "в конце русской страницы — кнопка «Начать ИИ-трансформацию» на maturity"
 
 
@@ -957,6 +957,15 @@ def test_big_window_scales_the_mobile_layout():
     assert RU["m2_head"] == u"AI-Native экосистема" and EN["m2_head"] == "AI-Native Ecosystem"
     assert u"Части одной экосистемы" not in _ru() and "Parts of the Same Ecosystem" not in _en()
 
+def test_ru_page_leads_to_the_russian_product():
+    """FR-SITE85: продукт выбирает язык по браузеру, поэтому каждая кнопка
+    русской страницы ведёт в диагностику с ?lang=ru (её открывает русский
+    Telegram-бот, веб-вью берёт язык системы); английская — без параметра."""
+    ru, en = _raw("about/ru/index.html"), _raw("about/index.html")
+    hrefs = re.findall(r'href="(https://maturity\.andre\.technology/[^"]*)"', ru)
+    assert len(hrefs) >= 2 and set(hrefs) == {"https://maturity.andre.technology/?lang=ru"}, hrefs
+    assert "?lang=" not in "".join(re.findall(r'href="https://maturity[^"]*"', en))
+
 
 if __name__ == "__main__":
     import sys
@@ -971,3 +980,4 @@ if __name__ == "__main__":
                 print("FAIL", name + ":", err)
     print("ПРОВАЛЕНО:", fails) if fails else print("ВСЕ ТЕСТЫ БИОГРАФИИ ПРОЙДЕНЫ")
     sys.exit(1 if fails else 0)
+
