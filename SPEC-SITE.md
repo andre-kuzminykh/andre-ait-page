@@ -3051,6 +3051,14 @@ Story: «а где здесь получается нет ИИ-агентов в
 Тест: `test_automation.test_montserrat_on_automation_ru_and_main` (плюс проверка в Chromium
 при правке).
 
+**Ред. 2 (2026-09-30).** `/automation_ru/` и `/automation/` собираются из одного шаблона
+`tools/build_course_entry.py`, а первая редакция правила собранный HTML руками —
+`test_course_entry.test_pages_match_the_template` и `…structurally_identical` упали.
+Шрифт теперь — ключи русской копии шаблона (`font_css`, `font_family`), английская
+`/automation/` остаётся на JetBrains Mono; проверка «стили одинаковые» сравнивает стили
+без этих ключей. Тесты: `test_course_entry.test_pages_match_the_template`,
+`test_course_entry.test_pages_are_structurally_identical`.
+
 ## FR-SITE81 — заголовок /automation_ru/: четыре строки, «с» — в последней
 
 **Story.** Владелец (2026-09-27, скриншот): «"с" перенеси и сделай, чтобы такой формат
@@ -3065,6 +3073,11 @@ Story: «а где здесь получается нет ИИ-агентов в
 - Проверено: 1440, 1024, 768, 390, 320 — каждая строка в один ряд, бокового скролла нет.
 
 Тест: `test_automation.test_automation_ru_hero_four_lines`.
+
+**Ред. 2 (2026-09-30).** Четыре строки, `nowrap` и подгонка кегля живут в шаблоне
+`tools/build_course_entry.py`: `hero` и `hero_fit_css` русской копии, обёртка
+`.hero-fit` ставится только там, где подгонка задана (английский заголовок — как был).
+Тесты: те же плюс `test_course_entry.test_pages_match_the_template`.
 ### FR-SITE82 — «Обо мне»: слитые главы, герой в две строки, значки глав
 
 Story: «„Я строю…“ в тайтле в любом случае в две строчки и одинакового шрифта
@@ -3179,3 +3192,27 @@ Story: «почему вот так получается на веб-экран�
 
 Тесты: `test_about.test_big_window_scales_the_mobile_layout`,
 `test_strategy.test_big_window_scales_the_mobile_layout`.
+
+### FR-SITE85 — русские страницы ведут в продукт на русском (`?lang=ru`)
+
+Story: проверка после батча 49 продукта andre-ai-strategy («английский —
+основной язык», v1.12.32). Продукт теперь выбирает язык по браузеру, а
+русский Telegram-бот открывает `/ai-strategy/ru/` и `/about/ru` в веб-вью, где
+язык — системный. Русский клиент с английским телефоном попадал из русской
+страницы (и из кнопки «🔑 Ввести код на сайте») в английский кабинет.
+
+Требование:
+- Все кнопки русских страниц, ведущие в продукт, несут `?lang=ru`:
+  `/ai-strategy/ru/` → `https://strategy.andre.technology/?lang=ru` (8 кнопок
+  «Начать…» и «Все типы бизнеса»), `/about/ru` →
+  `https://maturity.andre.technology/?lang=ru` (кнопка в шапке и финальная).
+  Продукт ставит язык из `?lang=` первым и запоминает его как явный выбор
+  (FR-W90 в andre-ai-strategy).
+- Английские страницы — без параметра: язык по браузеру, как задумано в
+  продукте.
+- Адреса живут в генераторах (`tools/strategy_copy.py`: `cta_href` русской
+  копии; `tools/build_about.py`: `app_href`); страницы пересобраны ими.
+
+Тесты: `test_strategy.test_ru_page_leads_to_the_russian_product`,
+`test_about.test_ru_page_leads_to_the_russian_product`,
+`test_about.test_cta_button_text_and_target`.

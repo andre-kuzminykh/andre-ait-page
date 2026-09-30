@@ -80,7 +80,13 @@ def test_pages_are_structurally_identical():
         assert re.findall(r'<section class="panel[^"]*" id="([^"]+)"', page) == \
             ["course", "roles", "skills"]
     style = lambda h: h[h.index("<style>"):h.index("</style>")]          # noqa: E731
-    assert style(en) == style(ru), "стили должны быть одинаковыми"
+    # FR-SITE80/81: у русской страницы свой шрифт (Montserrat) и подгонка
+    # заголовка под ширину — владелец просил только /automation_ru/; всё
+    # остальное в стилях общее
+    def typo(h, c):
+        s = style(h).replace(c["font_family"], "@")
+        return s.replace(c["hero_fit_css"], "") if c["hero_fit_css"] else s
+    assert typo(en, EN) == typo(ru, RU), "стили должны быть одинаковыми"
     body = lambda h: h[h.index("<script>\n    function storeGet"):h.index("</script>\n</body>")]  # noqa: E731
     # скрипт различается только кодом языка — его и обезличиваем
     blind = lambda s: s.replace("'en'", "'@'").replace("'ru'", "'@'")       # noqa: E731
