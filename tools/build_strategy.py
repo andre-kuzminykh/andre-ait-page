@@ -10,6 +10,10 @@ assets/strategy.js, тексты — tools/strategy_copy.py. Точек в ко�
 import math
 import os
 import re
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from tg_miniapp import head_snippet  # noqa: E402 — общий модуль рядом
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = "https://andre.technology"
@@ -377,6 +381,7 @@ def page(t, lang):
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
 <meta name="color-scheme" content="dark">
+{tg}
 <title>{title}</title>
 <meta name="description" content="{desc}">
 <link rel="canonical" href="{site}{self_href}">
@@ -461,6 +466,7 @@ def page(t, lang):
       <p class="lead">{hero_lead}</p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="{cta_href}" rel="noopener">{cta_main} <i class="fa-solid fa-arrow-right"></i></a>
+        <a class="hero-how hero-login" href="{login_href}" rel="noopener">{login_q} <b>{login_do}</b></a>
         <button class="hero-how" data-go="process" type="button">{cta_how}</button>
       </div>
     </div>
@@ -562,6 +568,10 @@ def page(t, lang):
                     ('<a class="lang-opt" href="%s">EN</a><span class="lang-sep">|</span>'
                      '<span class="lang-opt active">RU</span>' % other_href),
         h1=t["h1"], hero_lead=t["hero_lead"], cta_main=t["cta_main"], cta_how=t["cta_how"],
+        # в атрибуте «&» пишется как &amp;: адрес с двумя параметрами (?login=1&lang=ru)
+        login_href=t["login_href"].replace("&", "&amp;"), login_q=t["login_q"], login_do=t["login_do"],
+        # FR-SITE87: в Telegram Mini App — нативный режим (tools/tg_miniapp.py)
+        tg=head_snippet("deck"),
         n_eyebrow=t["n_eyebrow"], n_head=t["n_head"], nums=nums, n_foot=t["n_foot"],
         b_eyebrow=t["b_eyebrow"], b_head=t["b_head"], biz=biz, b_all=t["b_all"],
         d_eyebrow=t["d_eyebrow"], d_head=t["d_head"], d_sub=t["d_sub"], outs=outs,

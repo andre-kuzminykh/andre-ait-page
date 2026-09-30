@@ -20,6 +20,12 @@
     /* диаметр кружка с роликом на телефоне: от него считается нижнее поле глав */
     /* считается от МЕНЬШЕЙ стороны окна — см. комментарий в strategy.css */
     --vid-d: clamp(88px, min(34vw, 18vh), 168px); }
+  /* FR-SITE87: безопасные отступы — снизу --safe-b, сверху --safe-t. Вне
+     Telegram они не заданы, и работают значения по умолчанию (env() снизу,
+     0 сверху). В Telegram Mini App их ставит assets/tg-miniapp.js из
+     safeAreaInset: там env() бывает нулём, а в полноэкранном режиме сверху
+     лежат кнопки Telegram. Шапка, растушёвка и экраны в окне 600–1023px
+     масштабируются zoom, отступ от края окна — нет, поэтому он делится на --z. */
   a { color: inherit; text-decoration: none; }
   *:focus-visible { outline: 2px solid #8854F3; outline-offset: 2px; }
   ::selection { background: #8854F3; color: #ffffff; }
@@ -38,11 +44,11 @@
     background: linear-gradient(90deg, #8854F3 0%, #F97316 100%); box-shadow: 0 0 12px rgba(136,84,243,0.6); transition: width 0.1s linear; }
 
   /* ===== Header (повторяет главную) ===== */
-  header { position: fixed; top: 0; left: 0; right: 0; z-index: 30; pointer-events: none; padding: 1.1rem; }
+  header { position: fixed; top: calc(var(--safe-t, 0px) / var(--z, 1)); left: 0; right: 0; z-index: 30; pointer-events: none; padding: 1.1rem; }
   /* Текст уезжает ПОД шапку, и раньше он просвечивал сквозь неё. Плотная
      растушёвка в чёрное закрывает его строго над колонкой чтения: на десктопе
      она начинается там же, где колонка (44%), чтобы не затемнять лицо в ролике. */
-  .top-fade { position: fixed; top: 0; left: 0; right: 0; height: 6.5rem; z-index: 29; pointer-events: none;
+  .top-fade { position: fixed; top: calc(var(--safe-t, 0px) / var(--z, 1)); left: 0; right: 0; height: 6.5rem; z-index: 29; pointer-events: none;
     background: linear-gradient(to bottom, #050505 0%, #050505 46%, rgba(5,5,5,0.88) 66%, rgba(5,5,5,0) 100%); }
   @media (min-width:1024px) { .top-fade { left: var(--read-left); height: 9.5rem; } }
   @media (min-width:1024px) { header { padding: 2rem; } }
@@ -77,8 +83,8 @@
     .nav-tab { letter-spacing: 0; padding-left: 0.3rem; padding-right: 0.3rem; }
   }
   @media (max-width:1149px) {
-    .nav.open { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
-      padding: clamp(6rem, 12vh, 7.5rem) 1.75rem calc(8rem + env(safe-area-inset-bottom, 0px)); z-index: 50; background: #050505; overflow-y: auto; pointer-events: auto; }
+    .nav.open { position: fixed; inset: calc(var(--safe-t, 0px) / var(--z, 1)) 0 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+      padding: clamp(6rem, 12vh, 7.5rem) 1.75rem calc(8rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); z-index: 50; background: #050505; overflow-y: auto; pointer-events: auto; }
     .nav.open .nav-tab { display: flex; align-items: center; gap: 1.15rem; width: 100%; max-width: 23rem; text-align: left;
       border-top: 1px solid rgba(255,255,255,0.14); padding: clamp(0.7rem, 2.2vh, 1.4rem) 0.25rem;
       color: #ffffff; font-size: clamp(16px, 2.3vh, 20px); letter-spacing: 0.1em; }
@@ -93,7 +99,7 @@
     .nav.open .nav-close { display: flex; position: absolute; top: 1.35rem; right: 1.35rem; width: 2.6rem; height: 2.6rem; align-items: center; justify-content: center;
       background: transparent; border: 0; color: #ffffff; cursor: pointer; }
     .nav.open .nav-foot { display: flex; flex-direction: column; align-items: center; gap: 0.8rem;
-      position: absolute; left: 1.5rem; right: 1.5rem; bottom: calc(1.3rem + env(safe-area-inset-bottom, 0px)); }
+      position: absolute; left: 1.5rem; right: 1.5rem; bottom: calc(1.3rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); }
   }
   @media (max-width:1149px) and (max-height:700px) { .nav.open .nav-tab { padding-top: 0.5rem; padding-bottom: 0.5rem; } }
   .nav-brand, .nav-close, .nav-foot { display: none; }
@@ -175,7 +181,7 @@
     /* touch-action: none — кружок таскают пальцем; при manipulation браузер
        забирает жест себе и pointermove до элемента не доходит */
     .media { touch-action: none;
-      top: auto; left: clamp(0.85rem, 4vw, 1.4rem); bottom: calc(clamp(0.85rem, 4vw, 1.4rem) + env(safe-area-inset-bottom, 0px));
+      top: auto; left: clamp(0.85rem, 4vw, 1.4rem); bottom: calc(clamp(0.85rem, 4vw, 1.4rem) + var(--safe-b, env(safe-area-inset-bottom, 0px)));
       width: var(--vid-d); height: var(--vid-d); border-radius: 50%; z-index: 25; cursor: pointer;
       border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 14px 34px rgba(0,0,0,0.55); }
     .media video { object-position: center 18%; filter: blur(5px); transform: scale(1.08); transition: filter 0.25s ease, transform 0.25s ease; }
@@ -207,7 +213,7 @@
   @keyframes soundWave { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.9); opacity: 0; } }
 
   /* ===== Колонка чтения: слой с экранами ===== */
-  .read { position: fixed; inset: 0; z-index: 6; overflow: hidden; }
+  .read { position: fixed; inset: calc(var(--safe-t, 0px) / var(--z, 1)) 0 0; z-index: 6; overflow: hidden; }
   @media (min-width:1024px) { .read { left: var(--read-left); } }
   .article { position: absolute; inset: 0; }
 
@@ -223,7 +229,7 @@
   .screen { position: absolute; inset: 0; display: none; flex-direction: column;
     justify-content: center; justify-content: safe center;
     align-items: center; touch-action: manipulation;
-    padding: 5.5rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 / var(--z, 1) + 1rem + env(safe-area-inset-bottom, 0px));
+    padding: 5.5rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 / var(--z, 1) + 1rem + var(--safe-b, env(safe-area-inset-bottom, 0px)));
     overflow: hidden; scrollbar-width: none;
     /* контейнер: кегль заголовка первого экрана считается от ширины колонки
        (cqi), чтобы обе его строки влезали при любом окне (FR-SITE82) */
@@ -253,7 +259,7 @@
   /* точки-индикаторы: где мы внутри биографии */
   .dots { position: fixed; z-index: 20; display: flex; gap: 0.4rem; pointer-events: auto; }
   @media (min-width:1024px) { .dots { right: 1.6rem; top: 50%; transform: translateY(-50%); flex-direction: column; } }
-  @media (max-width:1023px) { .dots { left: 50%; transform: translateX(-50%); bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); } }
+  @media (max-width:1023px) { .dots { left: 50%; transform: translateX(-50%); bottom: calc(1rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); } }
   .dot { width: 6px; height: 6px; border-radius: 999px; border: 0; padding: 0; cursor: pointer;
     background: rgba(255,255,255,0.22); transition: background 0.3s ease, transform 0.3s ease; }
   .dot.on { background: linear-gradient(120deg, #a071ff, #ff8a33); transform: scale(1.5); }
@@ -284,7 +290,7 @@
        нижней растушёвкой (она закрашивала его в ноль), теперь растушёвки
        нет — FR-SITE82. Кружок с роликом слева, точки по центру — знак с
        ними не сталкивается. */
-    .wm { right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: calc(min(44vw, 30vh) / var(--z, 1)); }
+    .wm { right: 1rem; bottom: calc(1.2rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); font-size: calc(min(44vw, 30vh) / var(--z, 1)); }
     .screen.active .wm { opacity: 0.075; }
   }
   @media (min-width:1024px) and (max-width:1399px) { .wm { font-size: min(26vh, 13vw); } }
@@ -631,7 +637,7 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
        разрешено его перекрывать — владелец решил это прямо: «кружок можно
        перемещать, поэтому пофигу что он там закрывает». Пробовали поднимать
        подвал над кружком (запас var(--vid-d) + 1.5rem) — отменено. */
-    .screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }
+    .screen.final { padding-bottom: calc(2.4rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); }
   }
   /* На самом узком телефоне надпись кнопки финала ломалась пополам по дефису
      («НАЧАТЬ ИИ- / ТРАНСФОРМАЦИЮ»): виноват был разрядка 0.15em, она добавляла

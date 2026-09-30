@@ -6,6 +6,34 @@
 <meta name="theme-color" content="#050505">
 <meta name="color-scheme" content="dark light">
 <script>
+/* FR-SITE87: страница открыта как Telegram Mini App? Признак — параметры
+   запуска в hash (tgWebAppData / tgWebAppPlatform). Только тогда грузим SDK
+   Telegram и поведение мини-аппа; вне Telegram лишних запросов нет. */
+(function () {
+  try {
+    var p = location.hash.slice(1).split(/[?&]/).filter(function (x) {
+      return /^tgWebApp\w*=/.test(x);
+    }).join('&');
+    /* параметры живут на вкладку: переход по сайту внутри мини-аппа теряет
+       hash, а режим должен остаться */
+    if (/(^|&)tgWebApp(Data|Platform)=/.test(p)) sessionStorage.setItem('ait_tg', p);
+    else p = sessionStorage.getItem('ait_tg');
+    if (!p) return;
+    var r = document.documentElement;
+    r.classList.add('tg');
+    r.setAttribute('data-tg', 'page');
+    /* async=false: SDK выполняется раньше нашего скрипта, но разбор
+       страницы ни один из них не держит */
+    ['https://telegram.org/js/telegram-web-app.js', '/assets/tg-miniapp.js'].forEach(function (u) {
+      var s = document.createElement('script');
+      s.src = u;
+      s.async = false;
+      document.head.appendChild(s);
+    });
+  } catch (e) {}
+})();
+</script>
+<script>
 /* Тема — до первой отрисовки, чтобы светлая не мигала чёрным. */
 (function(){try{if(localStorage.getItem('welcome-theme')==='light')document.documentElement.classList.add('light');}catch(e){}})();
 /* Язык: страница у каждого языка своя (адрес без пометки — английский,
@@ -125,7 +153,10 @@
      тот же размер логотипа, тот же переключатель языка и та же правая кнопка.
      Роль бургера (круглая кнопка между языком и CTA) здесь играет переключатель
      темы — размеры у него бургерные, поэтому ряд собирается точно так же. */
-  header{position:fixed;top:0;left:0;right:0;z-index:40;pointer-events:none;padding:1.1rem}
+  /* FR-SITE87: --safe-t / --safe-b — безопасные отступы Telegram Mini App
+     (ставит assets/tg-miniapp.js); вне Telegram не заданы, и всё стоит как
+     раньше: сверху 0, снизу без добавки. */
+  header{position:fixed;top:var(--safe-t,0px);left:0;right:0;z-index:40;pointer-events:none;padding:1.1rem}
   @media(min-width:1024px){header{padding:2rem}}
   .header-row{position:relative;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
   .header-left{pointer-events:auto;display:flex;align-items:center;gap:.5rem;min-width:0}
@@ -202,7 +233,7 @@
     position:relative;display:flex;
     padding:clamp(1.8rem,4.5vh,2.8rem) 1rem;
   }
-  .panel:first-child{padding-top:clamp(6.5rem,17vh,9rem)}
+  .panel:first-child{padding-top:calc(clamp(6.5rem,17vh,9rem) + var(--safe-t,0px))}
   .panel:last-child{padding-bottom:clamp(3.5rem,9vh,5.5rem)}
   @media(min-width:640px){.panel{padding-left:2rem;padding-right:2rem}}
   .wrap{margin:auto;width:100%;max-width:68rem;text-align:center}
@@ -281,7 +312,7 @@
   /* Телефон: тот же ритм, только плотнее и с узкими полями. */
   @media (max-width:639px){
     .panel{padding:clamp(1.4rem,4vh,2.2rem) 1.4rem}
-    .panel:first-child{padding-top:clamp(5.2rem,13vh,6.4rem)}
+    .panel:first-child{padding-top:calc(clamp(5.2rem,13vh,6.4rem) + var(--safe-t,0px))}
     .panel:last-child{padding-bottom:clamp(2.6rem,7vh,3.6rem)}
     .desc{margin-top:1rem}
     .cta-row{margin-top:1.15rem}
@@ -487,8 +518,8 @@
      ▶; если звук включали раньше на пути (welcome-audio) — стартует сам. -->
 <style>
 /* ===== Video bubble (talking head): tap = sound / play-pause, draggable — same as welcome ===== */
-  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:clamp(1.5rem,5vh,3rem);z-index:40;width:clamp(170px,13.6vw,260px);height:clamp(170px,13.6vw,260px);touch-action:none;user-select:none;-webkit-user-select:none}
-  @media(max-width:768px){.bubble{left:15px;bottom:15px;width:170px;height:170px}}
+  .bubble{position:fixed;left:clamp(1.5rem,5vw,4rem);bottom:calc(clamp(1.5rem,5vh,3rem) + var(--safe-b,0px));z-index:40;width:clamp(170px,13.6vw,260px);height:clamp(170px,13.6vw,260px);touch-action:none;user-select:none;-webkit-user-select:none}
+  @media(max-width:768px){.bubble{left:15px;bottom:calc(15px + var(--safe-b,0px));width:170px;height:170px}}
   .bubble .inner{position:relative;height:100%;width:100%;border-radius:999px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.2);cursor:grab}
   .bubble.dragging .inner{cursor:grabbing}
   .bubble .grad{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,#8854F3 0%,#F97316 100%)}
