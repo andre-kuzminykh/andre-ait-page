@@ -94,6 +94,14 @@ SCREENS = [
 ]
 
 
+
+def app_href(c):
+    """Кнопки диагностики. FR-SITE85: продукт с v1.12.32 выбирает язык по
+    браузеру — русская страница (её открывает русский Telegram-бот) ведёт
+    явно на русский `?lang=ru`, иначе посетитель с английской системой
+    попадал в английский кабинет; английская — без параметра, по браузеру."""
+    return "https://maturity.andre.technology/" + ("?lang=ru" if c["lang"] == "ru" else "")
+
 def socials(cls="nav-social"):
     out = ['<div class="%s">' % cls]
     for href, label, icon, brand in SOCIALS:
@@ -142,9 +150,9 @@ def block_html(kind, key, c, screen):
         return '<div class="cards reveal">\n        %s\n      </div>' % "\n        ".join(items)
     if kind == "finale":
         return ('<div class="finale reveal">\n        <p>%s</p>\n        '
-                '<a class="btn-white" href="https://maturity.andre.technology/" rel="noopener">'
+                '<a class="btn-white" href="%s" rel="noopener">'
                 '%s <i class="fa-solid fa-arrow-right"></i></a>\n      </div>'
-                % (c["finale"], c["finale_btn"]))
+                % (c["finale"], app_href(c), c["finale_btn"]))
     if kind == "foot":
         return ('<div class="foot">\n          %s\n          '
                 '<p class="nav-copy">2026 &copy; Andre AI Technologies LTD</p>\n        </div>'
@@ -604,7 +612,7 @@ TEMPLATE = """<!DOCTYPE html>
         @@LANGSWITCH@@
       </div>
       <button class="menu-btn" id="menu-btn" aria-label="Menu"><i id="menu-icon" class="fa-solid fa-bars" style="font-size: clamp(14px, 4vw, 18px);"></i></button>
-      <a class="btn-white cta" href="https://maturity.andre.technology/" rel="noopener">@@CTA@@ <i class="fa-solid fa-arrow-right"></i></a>
+      <a class="btn-white cta" href="@@APP_HREF@@" rel="noopener">@@CTA@@ <i class="fa-solid fa-arrow-right"></i></a>
     </div>
   </div>
 </header>
@@ -637,6 +645,7 @@ def page(c):
     html = TEMPLATE
     for token, value in [
         ("@@LANG@@", c["lang"]),
+        ("@@APP_HREF@@", app_href(c)),
         ("@@TITLE@@", c["title"]),
         ("@@DESC@@", c["desc"]),
         ("@@OGDESC@@", c["og_desc"]),
