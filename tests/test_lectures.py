@@ -11,21 +11,18 @@ import re
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ALL_LECTURES = tuple("automation/%d/index.html" % n for n in range(1, 9))
-# Открыты модули 1-3; 4-6 выложены превью, 7-8 закрыты и НЕ опубликованы — их
-# файлов нет в репозитории, поэтому по их адресам отдаётся 404 и контент
-# недоступен даже прямой ссылкой (это стережёт test_locked_modules_closed).
+# Открыты модули 1-3; 4-8 закрыты: исходники лежат в репозитории, но деплой их
+# не выкладывает, поэтому по их адресам отдаётся 404 и контент недоступен даже
+# прямой ссылкой (это стережёт test_locked_modules_closed).
 # Проверки идут по фактически опубликованным лекциям, так что вернувшийся
 # модуль автоматически попадает под весь набор тестов — без правки списка.
 _LECTURES = tuple(r for r in _ALL_LECTURES if os.path.exists(os.path.join(_ROOT, r)))
-# Лекции 3-6 пересобраны на общем каноне: свой плеер и ролики со своего
-# домена, как у 1 и 2 (у лекции 6 роликов пока нет — videoIds пустой). Архив
-# с головами на Vimeo остался в теге lectures-2-8-archive. Лекции 7-8 ещё
-# играют головы с CDN.
-_NATIVE_CDN = {
-    # лекция 7 собрана заново на общем каноне (FR-SITE87): своих роликов
-    # пока нет, videoIds пуст — под это правило она больше не попадает
-    "automation/8/index.html": "corp/8/videos",
-}
+# Лекции 3-8 пересобраны на общем каноне: свой плеер и ролики со своего
+# домена, как у 1 и 2 (у лекций 6-8 роликов пока нет — videoIds пустой). Архив
+# с головами на Vimeo остался в теге lectures-2-8-archive. Лекции 7 (FR-SITE87)
+# и 8 (FR-SITE88) собраны заново, и головы с CDN больше не играет ни одна —
+# словарь оставлен пустым на случай, если такая колода вернётся.
+_NATIVE_CDN = {}
 
 
 def _pages(only=None):
@@ -78,7 +75,8 @@ def test_video_sources():
         if rel in _NATIVE_CDN:
             continue
         assert "player.vimeo.com" not in html, rel + ": голова должна играть своим плеером, не с Vimeo"
-    for rel, html in _pages(tuple(_NATIVE_CDN)):
+    # пустой кортеж _pages понял бы как «все лекции» — поэтому явная проверка
+    for rel, html in (_pages(tuple(_NATIVE_CDN)) if _NATIVE_CDN else ()):
         path = _NATIVE_CDN[rel]
         assert "raw.githubusercontent.com/andre-kuzminykh/automation/" in html and path in html, \
             "%s: лекции 6-8 играют головы с CDN (%s)" % (rel, path)
@@ -753,19 +751,16 @@ def test_locked_modules_closed():
     недоступны модули, как уже делал, чтобы никто не открыл»): их исходники
     остаются в репозитории — из каркаса лекции 4 собирается лекция 3, общие
     блоки сверяются тестами, — но деплой их на сайт не выкладывает, и по их
-    адресам, как у 8, отдаётся 404 «Модуль N ещё закрыт». Модуль 7 собран
-    (FR-SITE87) и закрыт так же, как 4–6. Модуля 8 в репозитории нет вовсе.
+    адресам отдаётся 404 «Модуль N ещё закрыт». Модули 7 (FR-SITE87) и 8
+    (FR-SITE88) собраны и закрыты так же, как 4–6.
     Архив контента — тег lectures-2-8-archive.
     """
     for n in (1, 2, 3):
         assert os.path.exists(os.path.join(_ROOT, "automation/%d/index.html" % n)), \
             "модуль %d открыт и должен быть опубликован" % n
-    for n in (8,):
-        assert not os.path.exists(os.path.join(_ROOT, "automation/%d" % n)), \
-            "модуль %d закрыт: каталога automation/%d не должно быть в репозитории" % (n, n)
     wf = open(os.path.join(_ROOT, ".github/workflows/deploy-pages-manual.yml"), encoding="utf-8").read()
     assert "path: ${{ runner.temp }}/site" in wf, "на сайт уходит весь репозиторий, закрытые модули в том числе"
-    for n in (4, 5, 6, 7):
+    for n in (4, 5, 6, 7, 8):
         assert "--exclude=./automation/%d " % n in wf, "модуль %d закрыт: деплой не должен его выкладывать" % n
     for n in (1, 2, 3):
         assert "--exclude=./automation/%d " % n not in wf, "модуль %d открыт, а деплой его вырезает" % n
@@ -788,7 +783,7 @@ def test_no_links_to_locked_modules():
     link = re.compile(r"automation/[4-8](?=[/\"'#?)\s]|$)")
     for rel, text in _published_pages():
         hits = link.findall(text)
-        for n in ("4", "5", "6", "7"):
+        for n in ("4", "5", "6", "7", "8"):
             if rel.startswith("automation/%s/" % n):
                 hits = [h for h in hits if h != "automation/%s" % n]
         assert not hits, "%s: ссылка на закрытый модуль (%s)" % (rel, hits[:3])
@@ -1655,6 +1650,33 @@ def test_lecture7_deck():
     visible = re.sub(r"<[^>]+>", " ", body) + json.dumps(notes, ensure_ascii=False)
     low = visible.lower()
     assert not re.search(r"(?<![A-Za-z])AI(?![A-Za-z])", visible), "«AI» вместо «ИИ» в лекции 7"
+
+
+def test_lecture8_deck():
+    """FR-SITE88: лекция 8 «Экономика ИИ-трансформации» — 43 слайда один к
+    одному с озвучкой (обложка и содержание — введение, 2–41 — темы 1–40, финал —
+    заключение), панель на каждом, тест, свой CSS. Латиница — только белый список
+    лекции (аббревиатуры, которые называет диктор), английские фразы диктора на
+    слайдах по-русски, «ИИ», не «AI»."""
+    path = os.path.join(_ROOT, "automation/8/index.html")
+    html = open(path, encoding="utf-8").read()
+    n = html.count('class="slide-container')
+    assert n == 43, "в лекции 8 43 слайда, сейчас %d" % n
+    assert "const totalSlides = 43;" in html
+    assert 'href="/assets/lecture-8.css"' in html
+    assert os.path.exists(os.path.join(_ROOT, "assets/lecture-8.css"))
+    assert "Модуль 8 — Оценка эффективности и экономического эффекта" in html
+    notes = json.loads(re.search(r'<script id="slide-notes" type="application/json">\n(.*?)\n</script>',
+                                 html, re.S).group(1))
+    assert len(notes) == 43, "панель «Текст» должна быть у каждого из 43 слайдов, сейчас %d" % len(notes)
+    quiz = re.search(r"const quizQuestions = \[(.*?)\n        \];", html, re.S).group(1)
+    assert quiz.count("correct:") >= 8, "в тесте лекции 8 не меньше восьми вопросов"
+    body = html[html.index('id="slide-0"'):html.index("<!-- Модальное окно теста -->")]
+    visible = re.sub(r"<[^>]+>", " ", body) + json.dumps(notes, ensure_ascii=False)
+    assert not re.search(r"(?<![A-Za-z])AI(?![A-Za-z])", visible), "«AI» вместо «ИИ» в лекции 8"
+    for phrase in ("hard savings", "cost avoidance", "capacity value", "throughput",
+                   "scalability ratio", "payback", "baseline", "churn", "human in the loop"):
+        assert phrase not in visible.lower(), "лекция 8: «%s» — на слайдах и в панели по-русски" % phrase
 
 if __name__ == "__main__":
     failed = 0

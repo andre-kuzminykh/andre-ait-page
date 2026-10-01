@@ -1,0 +1,120 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-32">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Паспорт и граф <span class="text-solar">навыков агента</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Роль агента: цель, вход, действия, результат, границы</p>
+
+            <!-- Слева паспорт агента, справа граф его навыков; под обоими — навыки инженерного агента.
+                 На телефоне паспорт над графом: рядом обе половины не читаются -->
+            <div class="grid grid-cols-1 md:grid-cols-[minmax(0,6fr)_minmax(0,7fr)] gap-2 md:gap-6 items-stretch w-full">
+
+                <!-- Паспорт: поле — значение строками, как в документе. Первые четыре поля — роль
+                     в процессе, остальные — чем работает и где кончаются полномочия. Значения —
+                     вопросы из озвучки: видно, за что агент отвечает и когда передаёт задачу.
+                     Строки делят высоту поровну (auto-rows-fr), поэтому значения короткие:
+                     перенос одного значения удвоил бы все восемь строк -->
+                <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:px-5 md:py-2 flex flex-col h-full a-in">
+                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 mb-1 md:mb-1.5 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-identification-card text-solar text-base md:text-3xl leading-none align-middle"></i> Паспорт агента</span></h3>
+                    <div class="grid grid-cols-[auto_minmax(0,1fr)] auto-rows-fr flex-1 w-full">
+                        <div class="flex items-center gap-1.5 md:gap-2.5 border-t border-grayBase py-px md:py-1 pr-3 md:pr-4"><i class="ph-fill ph-target text-sm md:text-xl leading-none text-solar shrink-0"></i><span class="text-[10px] md:text-base font-medium text-black leading-tight md:leading-tight whitespace-nowrap">Цель</span></div>
+                        <div class="flex items-center border-t border-grayBase py-px md:py-1"><p class="text-[9px] md:text-[15px] text-black/60 leading-tight m-0">за что отвечает</p></div>
+
+                        <div class="flex items-center gap-1.5 md:gap-2.5 border-t border-grayBase py-px md:py-1 pr-3 md:pr-4"><i class="ph-fill ph-sign-in text-sm md:text-xl leading-none text-solar shrink-0"></i><span class="text-[10px] md:text-base font-medium text-black leading-tight md:leading-tight whitespace-nowrap">Вход</span></div>
+                        <div class="flex items-center border-t border-grayBase py-px md:py-1"><p class="text-[9px] md:text-[15px] text-black/60 leading-tight m-0">что получает</p></div>
+
+                        <div class="flex items-center gap-1.5 md:gap-2.5 border-t border-grayBase py-px md:py-1 pr-3 md:pr-4"><i class="ph-fill ph-lightning text-sm md:text-xl leading-none text-solar shrink-0"></i><span class="text-[10px] md:text-base font-medium text-black leading-tight md:leading-tight whitespace-nowrap">Действия</span></div>
+                        <div class="flex items-center border-t border-grayBase py-px md:py-1"><p class="text-[9px] md:text-[15px] text-black/60 leading-tight m-0">какие допустимы</p></div>
+
+                        <div class="flex items-center gap-1.5 md:gap-2.5 border-t border-grayBase py-px md:py-1 pr-3 md:pr-4"><i class="ph-fill ph-flag-checkered text-sm md:text-xl leading-none text-solar shrink-0"></i><span class="text-[10px] md:text-base font-medium text-black leading-tight md:leading-tight whitespace-nowrap">Результат</span></div>
+                        <div class="flex items-center border-t border-grayBase py-px md:py-1"><p class="text-[9px] md:text-[15px] text-black/60 leading-tight m-0">что выдаёт</p></div>
+
+                        <div class="flex items-center gap-1.5 md:gap-2.5 border-t border-grayBase py-px md:py-1 pr-3 md:pr-4"><i class="ph-fill ph-wrench text-sm md:text-xl leading-none text-solar shrink-0"></i><span class="text-[10px] md:text-base font-medium text-black leading-tight md:leading-tight whitespace-nowrap">Инструменты</span></div>
+                        <div class="flex items-center border-t border-grayBase py-px md:py-1"><p class="text-[9px] md:text-[15px] text-black/60 leading-tight m-0">чем работает</p></div>
+
+                        <div class="flex items-center gap-1.5 md:gap-2.5 border-t border-grayBase py-px md:py-1 pr-3 md:pr-4"><i class="ph-fill ph-database text-sm md:text-xl leading-none text-solar shrink-0"></i><span class="text-[10px] md:text-base font-medium text-black leading-tight md:leading-tight whitespace-nowrap">Источники данных</span></div>
+                        <div class="flex items-center border-t border-grayBase py-px md:py-1"><p class="text-[9px] md:text-[15px] text-black/60 leading-tight m-0">откуда берёт</p></div>
+
+                        <div class="flex items-center gap-1.5 md:gap-2.5 border-t border-grayBase py-px md:py-1 pr-3 md:pr-4"><i class="ph-fill ph-lock text-sm md:text-xl leading-none text-solar shrink-0"></i><span class="text-[10px] md:text-base font-medium text-black leading-tight md:leading-tight whitespace-nowrap">Границы полномочий</span></div>
+                        <div class="flex items-center border-t border-grayBase py-px md:py-1"><p class="text-[9px] md:text-[15px] text-black/60 leading-tight m-0">когда передаёт задачу</p></div>
+
+                        <div class="flex items-center gap-1.5 md:gap-2.5 border-t border-grayBase py-px md:py-1 pr-3 md:pr-4"><i class="ph-fill ph-chart-bar text-sm md:text-xl leading-none text-solar shrink-0"></i><span class="text-[10px] md:text-base font-medium text-black leading-tight md:leading-tight whitespace-nowrap">Показатели</span></div>
+                        <div class="flex items-center border-t border-grayBase py-px md:py-1"><p class="text-[9px] md:text-[15px] text-black/60 leading-tight m-0">как измеряется работа</p></div>
+                    </div>
+                </div>
+
+                <!-- Граф навыков: агент в центре, восемь навыков сеткой 3×3 вокруг, к каждому от
+                     агента бежит пунктир. Узлы стоят по точкам сетки (x 16/50/84 %, y 14.5/50/85.5 %):
+                     края крайних узлов совпадают с краями графа — граф вровень с паспортом.
+                     Лучи идут из центра под углом, посчитанным от пропорции графа 2:1 (обе формы).
+                     Ширина графа ограничена в пикселях: иначе при ужатии подгонщиком холст
+                     расширяется, граф растёт в высоту и ужатие не сходится.
+                     Навыки загораются по часовой — в порядке озвучки -->
+                <div class="flex items-center justify-center w-full min-w-0">
+                    <div class="w-full max-w-[360px] md:max-w-[640px] mx-auto">
+                    <div class="relative w-full aspect-[2/1]">
+                        <div class="absolute left-1/2 top-1/2 h-[2px] w-[34%] origin-left rotate-0 text-solar/40 a-flow"></div>
+                        <div class="absolute left-1/2 top-1/2 h-[2px] w-[34%] origin-left rotate-180 text-solar/40 a-flow"></div>
+                        <div class="absolute left-1/2 top-1/2 h-[2px] w-[17.75%] origin-left rotate-90 text-solar/40 a-flow"></div>
+                        <div class="absolute left-1/2 top-1/2 h-[2px] w-[17.75%] origin-left -rotate-90 text-solar/40 a-flow"></div>
+                        <div class="absolute left-1/2 top-1/2 h-[2px] w-[38.35%] origin-left rotate-[27.57deg] text-solar/40 a-flow"></div>
+                        <div class="absolute left-1/2 top-1/2 h-[2px] w-[38.35%] origin-left -rotate-[27.57deg] text-solar/40 a-flow"></div>
+                        <div class="absolute left-1/2 top-1/2 h-[2px] w-[38.35%] origin-left rotate-[152.43deg] text-solar/40 a-flow"></div>
+                        <div class="absolute left-1/2 top-1/2 h-[2px] w-[38.35%] origin-left rotate-[207.57deg] text-solar/40 a-flow"></div>
+
+                        <div class="absolute left-[16%] top-[14.5%] -translate-x-1/2 -translate-y-1/2 w-[30%] h-[29%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 md:px-2 flex flex-col items-center justify-center gap-0.5 md:gap-1 text-center a-step">
+                            <i class="ph-fill ph-tag text-base md:text-3xl leading-none text-solar"></i>
+                            <p class="text-[9px] md:text-base font-medium text-black leading-tight md:leading-tight m-0">Классификация</p>
+                        </div>
+                        <div class="absolute left-1/2 top-[14.5%] -translate-x-1/2 -translate-y-1/2 w-[30%] h-[29%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 md:px-2 flex flex-col items-center justify-center gap-0.5 md:gap-1 text-center a-step">
+                            <i class="ph-fill ph-magnifying-glass text-base md:text-3xl leading-none text-solar"></i>
+                            <p class="text-[9px] md:text-base font-medium text-black leading-tight md:leading-tight m-0"><span class="whitespace-nowrap">Поиск</span> <span class="whitespace-nowrap">по знаниям</span></p>
+                        </div>
+                        <div class="absolute left-[84%] top-[14.5%] -translate-x-1/2 -translate-y-1/2 w-[30%] h-[29%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 md:px-2 flex flex-col items-center justify-center gap-0.5 md:gap-1 text-center a-step">
+                            <i class="ph-fill ph-address-book text-base md:text-3xl leading-none text-solar"></i>
+                            <p class="text-[9px] md:text-base font-medium text-black leading-tight md:leading-tight m-0"><span class="whitespace-nowrap">Работа с CRM</span></p>
+                        </div>
+                        <div class="absolute left-[84%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[29%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 md:px-2 flex flex-col items-center justify-center gap-0.5 md:gap-1 text-center a-step">
+                            <i class="ph-fill ph-chat-text text-base md:text-3xl leading-none text-solar"></i>
+                            <p class="text-[9px] md:text-base font-medium text-black leading-tight md:leading-tight m-0"><span class="whitespace-nowrap">Подготовка</span> <span class="whitespace-nowrap">ответа</span></p>
+                        </div>
+                        <div class="absolute left-[84%] top-[85.5%] -translate-x-1/2 -translate-y-1/2 w-[30%] h-[29%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 md:px-2 flex flex-col items-center justify-center gap-0.5 md:gap-1 text-center a-step">
+                            <i class="ph-fill ph-gauge text-base md:text-3xl leading-none text-solar"></i>
+                            <p class="text-[9px] md:text-base font-medium text-black leading-tight md:leading-tight m-0"><span class="whitespace-nowrap">Оценка</span> <span class="whitespace-nowrap">уверенности</span></p>
+                        </div>
+                        <div class="absolute left-1/2 top-[85.5%] -translate-x-1/2 -translate-y-1/2 w-[30%] h-[29%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 md:px-2 flex flex-col items-center justify-center gap-0.5 md:gap-1 text-center a-step">
+                            <i class="ph-fill ph-user-switch text-base md:text-3xl leading-none text-solar"></i>
+                            <p class="text-[9px] md:text-base font-medium text-black leading-tight md:leading-tight m-0">Эскалация</p>
+                        </div>
+                        <div class="absolute left-[16%] top-[85.5%] -translate-x-1/2 -translate-y-1/2 w-[30%] h-[29%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 md:px-2 flex flex-col items-center justify-center gap-0.5 md:gap-1 text-center a-step">
+                            <i class="ph-fill ph-scroll text-base md:text-3xl leading-none text-solar"></i>
+                            <p class="text-[9px] md:text-base font-medium text-black leading-tight md:leading-tight m-0">Логирование</p>
+                        </div>
+                        <div class="absolute left-[16%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[29%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 md:px-2 flex flex-col items-center justify-center gap-0.5 md:gap-1 text-center a-step">
+                            <i class="ph-fill ph-chart-line-up text-base md:text-3xl leading-none text-solar"></i>
+                            <p class="text-[9px] md:text-base font-medium text-black leading-tight md:leading-tight m-0"><span class="whitespace-nowrap">Аналитика</span> <span class="whitespace-nowrap">метрик</span></p>
+                        </div>
+
+                        <div class="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[17%] aspect-square rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center a-glow">
+                            <i class="ph-fill ph-robot text-lg md:text-4xl leading-none text-solar"></i>
+                            <span class="text-[10px] md:text-base font-black text-white leading-none mt-0.5">Агент</span>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- У инженерного агента навыки другие: серая строка под обеими половинами — для
+                 сравнения, не главный узел. Под одним графом она вставала в три ряда и удлиняла слайд -->
+            <div class="bg-grayBase/30 border border-grayBase rounded-[14px] md:rounded-[20px] px-2 py-1.5 md:px-3 md:py-2 flex flex-wrap items-center justify-center gap-1 md:gap-1.5 w-full mt-2 md:mt-4 a-in a-in-3">
+                <p class="w-full text-[10px] md:text-base font-medium text-black/60 leading-tight md:leading-tight text-center m-0 md:mb-0.5"><span class="whitespace-nowrap"><i class="ph-fill ph-code text-black/40"></i> Инженерный агент</span></p>
+                <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-0.5 md:px-2 md:py-1 text-[9px] md:text-sm font-medium text-black/70 whitespace-nowrap">анализ спецификации и кода</span>
+                <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-0.5 md:px-2 md:py-1 text-[9px] md:text-sm font-medium text-black/70 whitespace-nowrap">генерация тестов</span>
+                <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-0.5 md:px-2 md:py-1 text-[9px] md:text-sm font-medium text-black/70 whitespace-nowrap">архитектурная проверка</span>
+                <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-0.5 md:px-2 md:py-1 text-[9px] md:text-sm font-medium text-black/70 whitespace-nowrap">запрос на изменение</span>
+                <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-0.5 md:px-2 md:py-1 text-[9px] md:text-sm font-medium text-black/70 whitespace-nowrap">поиск по документации</span>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-4xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Каждый навык — к конкретной операции: <span class="whitespace-nowrap">какие способности нужны,</span> <span class="whitespace-nowrap">чем подтверждаются</span> <br><span class="font-black">и где кончается самостоятельная работа</span></p>
+            </div>
+        </div>
+    </div>

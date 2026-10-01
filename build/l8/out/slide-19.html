@@ -1,0 +1,89 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-19">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Валовая выгода <span class="text-solar">и чистый эффект</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Из месячной выгоды вычитаем месячные расходы</p>
+
+            <!-- Слева водопад: выгода − расходы = чистый эффект, высоты столбиков по данным
+                 (300 000 = 100 %, расходы висят от 80 000 до 300 000 = 73,33 %, эффект 26,67 %).
+                 Справа — откуда выгода, отдельные строки результата и разовые инвестиции.
+                 На телефоне водопад над правой колонкой: рядом три столбика не помещаются -->
+            <div class="flex flex-col md:flex-row items-stretch gap-3 md:gap-6 w-full">
+
+                <!-- Водопад: бегущие пунктиры в промежутках соединяют верх выгоды с верхом расходов
+                     и низ расходов с верхом эффекта. Пунктир живёт только в промежутке (и заходит
+                     на скругление углов): в тёмной теме столбики полупрозрачны, сквозной пунктир
+                     просвечивал по верху выгоды. Иконок в столбиках нет ни у одного — однородность -->
+                <div class="md:w-[48%] shrink-0 flex flex-col">
+                    <div class="relative grid grid-cols-[1fr_0.5rem_1fr_0.5rem_1fr] md:grid-cols-[1fr_1.75rem_1fr_1.75rem_1fr] flex-1 min-h-[220px] md:min-h-[300px] border-b-2 border-grayBase w-full">
+                        <div class="relative self-stretch bg-solar/20 rounded-t-[14px] md:rounded-t-[20px] px-1 py-2 md:px-2 md:py-4 flex flex-col items-center text-center a-in">
+                            <p class="text-[13px] md:text-xl font-black text-black leading-tight m-0 whitespace-nowrap">300&nbsp;000&nbsp;₽</p>
+                        </div>
+                        <div class="relative"><div class="absolute -left-1.5 -right-1.5 md:-left-3 md:-right-3 top-0 h-[2px] text-solar/40 a-flow"></div></div>
+                        <div class="relative self-start h-[73.33%] bg-grayBase/30 border border-grayBase rounded-[14px] md:rounded-[20px] px-1 py-2 md:px-2 md:py-4 flex flex-col items-center text-center a-in a-in-2">
+                            <!-- Сумма без минуса: минус уже стоит в формуле подписей под столбиками,
+                                 со вторым читалось «300 000 − (−220 000) = 80 000» -->
+                            <p class="text-[13px] md:text-xl font-black text-black/60 leading-tight m-0 whitespace-nowrap">220&nbsp;000&nbsp;₽</p>
+                            <div class="flex-1 flex flex-col justify-center gap-0.5 md:gap-1.5 mt-1 md:mt-2">
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 whitespace-nowrap">поддержка</p>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 whitespace-nowrap">API моделей</p>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 whitespace-nowrap">инфраструктура</p>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 whitespace-nowrap">проверка</p>
+                                <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 whitespace-nowrap">сопровождение</p>
+                            </div>
+                        </div>
+                        <div class="relative"><div class="absolute -left-1.5 -right-1.5 md:-left-3 md:-right-3 bottom-[26.67%] h-[2px] text-solar/40 a-flow"></div></div>
+                        <div class="relative self-end h-[26.67%] bg-solar rounded-t-[14px] md:rounded-t-[20px] px-1 py-1 md:px-2 md:py-2 flex flex-col items-center justify-center text-center a-in a-in-3 a-glow" style="color:#111;-webkit-text-fill-color:#111">
+                            <p class="text-[13px] md:text-xl font-black leading-tight m-0 whitespace-nowrap">80&nbsp;000&nbsp;₽</p>
+                            <p class="text-[9px] md:text-sm font-medium leading-tight m-0 whitespace-nowrap">в месяц</p>
+                        </div>
+                    </div>
+
+                    <!-- Подписи столбиков читаются формулой: выгода − расходы = чистый эффект.
+                         «Чистый эффект» занимает почти всю ширину столбика, и «=» по центру
+                         промежутка прилипал к нему — сдвинут на середину между «Расходы» и
+                         «Чистый эффект», как «−» стоит посередине между соседями -->
+                    <div class="grid grid-cols-[1fr_0.5rem_1fr_0.5rem_1fr] md:grid-cols-[1fr_1.75rem_1fr_1.75rem_1fr] items-center w-full mt-1.5 md:mt-2.5">
+                        <h3 class="font-black text-[9px] md:text-base text-black leading-tight tracking-tight text-center m-0 whitespace-nowrap">Выгода</h3>
+                        <i class="ph-bold ph-minus text-solar text-xs md:text-xl justify-self-center"></i>
+                        <h3 class="font-black text-[9px] md:text-base text-black/60 leading-tight tracking-tight text-center m-0 whitespace-nowrap">Расходы</h3>
+                        <i class="ph-bold ph-equals text-solar text-xs md:text-xl justify-self-center -translate-x-3 md:-translate-x-4"></i>
+                        <h3 class="font-black text-[9px] md:text-base text-black leading-tight tracking-tight text-center m-0 whitespace-nowrap">Чистый эффект</h3>
+                    </div>
+                </div>
+
+                <!-- Откуда выгода, отдельные строки результата, разовые инвестиции -->
+                <div class="flex-1 min-w-0 flex flex-col gap-2 md:gap-3">
+
+                    <!-- Развилка: сократились расходы — это деньги; высвободились часы — пользу ещё доказать -->
+                    <div class="grid grid-cols-2 gap-2 md:gap-3 items-stretch w-full flex-1">
+                        <div class="bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] px-1.5 py-2.5 md:px-2 md:py-3 flex flex-col items-center justify-center text-center h-full a-in a-in-4">
+                            <i class="ph-fill ph-currency-rub text-xl md:text-4xl text-solar mb-1 md:mb-2"></i>
+                            <h3 class="font-black text-[11px] md:text-lg text-solar mb-0.5 md:mb-1 leading-tight whitespace-nowrap">Расходы сократились</h3>
+                            <p class="text-[10px] md:text-base text-white/70 leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-arrow-right text-solar"></i> денежный результат</p>
+                        </div>
+                        <div class="bg-grayBase/30 border border-grayBase rounded-[14px] md:rounded-[20px] px-1.5 py-2.5 md:px-2 md:py-3 flex flex-col items-center justify-center text-center h-full a-in a-in-4">
+                            <i class="ph-fill ph-clock text-xl md:text-4xl text-black/40 mb-1 md:mb-2"></i>
+                            <h3 class="font-black text-[11px] md:text-lg text-black/60 mb-0.5 md:mb-1 leading-tight whitespace-nowrap">Высвободились часы</h3>
+                            <p class="text-[10px] md:text-base text-black/60 leading-tight m-0 whitespace-nowrap"><i class="ph-bold ph-arrow-right text-black/40"></i> ещё показать пользу</p>
+                        </div>
+                    </div>
+
+                    <!-- Три отдельные строки результата — как строки отчёта -->
+                    <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-0.5 md:px-5 md:py-1 flex flex-col w-full a-in a-in-5">
+                        <p class="text-[10px] md:text-base text-black/70 leading-tight m-0 py-1 md:py-1.5 flex items-center justify-center gap-2"><i class="ph-fill ph-coins text-solar text-[12px] md:text-xl shrink-0"></i>денежная экономия</p>
+                        <p class="text-[10px] md:text-base text-black/70 leading-tight m-0 py-1 md:py-1.5 border-t border-grayBase flex items-center justify-center gap-2"><i class="ph-fill ph-shield-check text-solar text-[12px] md:text-xl shrink-0"></i>предотвращённые расходы</p>
+                        <p class="text-[10px] md:text-base text-black/70 leading-tight m-0 py-1 md:py-1.5 border-t border-grayBase flex items-center justify-center gap-2"><i class="ph-fill ph-lightning text-solar text-[12px] md:text-xl shrink-0"></i>полезная мощность</p>
+                    </div>
+
+                    <!-- Разовые инвестиции в запуск не входят в месячный эффект -->
+                    <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-2.5 py-1.5 md:px-4 md:py-2 w-full text-center a-in a-in-6">
+                        <p class="text-[10px] md:text-base font-medium text-black/70 leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-rocket-launch text-solar"></i> Разовые инвестиции — отдельно,</span> <br><span class="whitespace-nowrap">в расчёте окупаемости и результата за период</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Не смешиваем бюджет, прогнозы роста <br><span class="font-black">и условную оценку времени</span></p>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,95 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-28">
+        <div class="content-z max-w-6xl w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Агентная система <span class="text-solar">разработки</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Каждое изменение — запрос с целью, рисками и проверками</p>
+
+            <!-- Слева круг цикла: запрос и пять агентов вокруг общего контекста, узлы загораются по очереди.
+                 Справа — из чего состоит запрос, проверка, знания, человек и обновление по завершении.
+                 На телефоне круг встаёт над колонкой: рядом подпись «Архитектура» не влезает в узел.
+                 Колонка круга 35 % — по ширине узлов, выступающих за кольцо: при 40 % пустой край слева
+                 сдвигал всю схему вправо от заголовка. Диаметр 330: высоту слайда задаёт круг с подписью -->
+            <div class="flex flex-col md:flex-row items-center md:items-stretch gap-2.5 md:gap-8 w-full">
+
+                <div class="w-full md:w-[35%] shrink-0 flex flex-col items-center justify-center">
+                    <!-- Обёртка держит диаметр: FR-LECTURE-24 задаёт самому aspect-square
+                         max-width:440px !important, и класс ширины на нём не работает.
+                         На телефоне узлы 44 % и центр 35 %: при 42/32 «Архитектура» упиралась
+                         в рамку узла, а «контекст» — в обод центрального круга -->
+                    <div class="w-full max-w-[230px] md:max-w-[330px] mx-auto">
+                    <div class="relative w-full aspect-square mx-auto">
+                        <div class="absolute inset-[14%] rounded-full border-2 border-dashed border-solar/40 a-orbit"></div>
+                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[35%] h-[35%] md:w-[32%] md:h-[32%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center">
+                            <i class="ph-fill ph-files text-lg md:text-3xl text-solar"></i>
+                            <span class="text-[10px] md:text-sm font-black text-white leading-tight mt-0.5">Общий <br>контекст</span>
+                        </div>
+                        <div class="absolute left-[50%] top-[9%] -translate-x-1/2 -translate-y-1/2 w-[44%] md:w-[40%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-2 md:py-2 text-center a-step">
+                            <i class="ph-fill ph-git-pull-request text-base md:text-2xl text-solar block"></i>
+                            <p class="text-[10px] md:text-sm font-black text-black leading-tight m-0">Запрос</p>
+                        </div>
+                        <div class="absolute left-[86%] top-[30%] -translate-x-1/2 -translate-y-1/2 w-[44%] md:w-[40%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-2 md:py-2 text-center a-step">
+                            <i class="ph-fill ph-tree-structure text-base md:text-2xl text-solar block"></i>
+                            <p class="text-[10px] md:text-sm font-black text-black leading-tight m-0">Архитектура</p>
+                        </div>
+                        <div class="absolute left-[86%] top-[70%] -translate-x-1/2 -translate-y-1/2 w-[44%] md:w-[40%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-2 md:py-2 text-center a-step">
+                            <i class="ph-fill ph-code text-base md:text-2xl text-solar block"></i>
+                            <p class="text-[10px] md:text-sm font-black text-black leading-tight m-0">Код</p>
+                        </div>
+                        <div class="absolute left-[50%] top-[91%] -translate-x-1/2 -translate-y-1/2 w-[44%] md:w-[40%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-2 md:py-2 text-center a-step">
+                            <i class="ph-fill ph-test-tube text-base md:text-2xl text-solar block"></i>
+                            <p class="text-[10px] md:text-sm font-black text-black leading-tight m-0">Тесты</p>
+                        </div>
+                        <div class="absolute left-[14%] top-[70%] -translate-x-1/2 -translate-y-1/2 w-[44%] md:w-[40%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-2 md:py-2 text-center a-step">
+                            <i class="ph-fill ph-magnifying-glass text-base md:text-2xl text-solar block"></i>
+                            <p class="text-[10px] md:text-sm font-black text-black leading-tight m-0">Ревью</p>
+                        </div>
+                        <div class="absolute left-[14%] top-[30%] -translate-x-1/2 -translate-y-1/2 w-[44%] md:w-[40%] bg-white border border-grayBase rounded-xl md:rounded-2xl px-0.5 py-1 md:px-2 md:py-2 text-center a-step">
+                            <i class="ph-fill ph-kanban text-base md:text-2xl text-solar block"></i>
+                            <p class="text-[10px] md:text-sm font-black text-black leading-tight m-0">Задачи</p>
+                        </div>
+                    </div>
+                    </div>
+                    <!-- Узлы — агенты: подпись называет их и путь цикла. Пример озвучки (зависимости, код, тесты)
+                         читается по узлам «Архитектура → Код → Тесты»: третья строка подписи роняла кегль телефона -->
+                    <p class="text-[10px] md:text-sm text-black/60 leading-snug m-0 mt-1.5 md:mt-3 text-center"><span class="whitespace-nowrap"><i class="ph-fill ph-robot text-solar"></i> агенты передают результат дальше —</span> <br>от цели до релиза и проверки</p>
+                </div>
+
+                <div class="w-full md:flex-1 min-w-0 flex flex-col gap-2 md:gap-3">
+                    <!-- Запрос на изменение: что и зачем, как сейчас и как станет, плюс четыре обязательных поля -->
+                    <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2 md:p-4 flex flex-col items-center justify-center text-center a-in">
+                        <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 mb-1 md:mb-1.5"><span class="whitespace-nowrap"><i class="ph-fill ph-git-pull-request text-solar"></i> Запрос на изменение</span></h3>
+                        <p class="text-[10px] md:text-sm text-black/60 leading-tight m-0 mb-1.5 md:mb-3"><span class="whitespace-nowrap">что меняется и зачем,</span> <span class="whitespace-nowrap">как сейчас <i class="ph-bold ph-arrow-right text-solar"></i> как станет</span></p>
+                        <div class="flex flex-row js-keep justify-center gap-1 md:gap-2 w-full max-w-[540px]">
+                            <span class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl flex-1 px-1 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-black text-center whitespace-nowrap">требования</span>
+                            <span class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl flex-1 px-1 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-black text-center whitespace-nowrap">компоненты</span>
+                            <span class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl flex-1 px-1 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-black text-center whitespace-nowrap">проверки</span>
+                            <span class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl flex-1 px-1 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-medium text-black text-center whitespace-nowrap">риски</span>
+                        </div>
+                    </div>
+
+                    <!-- Как цикл держит качество: проверка, знания, человек, обновление после завершения -->
+                    <div class="grid grid-cols-2 auto-rows-fr gap-1.5 md:gap-3 flex-1 items-stretch">
+                        <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2 md:p-3 flex flex-col items-center justify-center text-center h-full a-in a-in-2">
+                            <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 mb-0.5 md:mb-1"><span class="whitespace-nowrap"><i class="ph-fill ph-shield-check text-solar"></i> Проверка</span></h3>
+                            <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">по требованиям <br>и правилам архитектуры</p>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2 md:p-3 flex flex-col items-center justify-center text-center h-full a-in a-in-3">
+                            <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 mb-0.5 md:mb-1"><span class="whitespace-nowrap"><i class="ph-fill ph-books text-solar"></i> Поиск по знаниям</span></h3>
+                            <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">для документации, <br>в том числе RAG</p>
+                        </div>
+                        <div class="bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] p-2 md:p-3 flex flex-col items-center justify-center text-center h-full a-in a-in-4">
+                            <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0 mb-0.5 md:mb-1"><span class="whitespace-nowrap"><i class="ph-fill ph-user-check"></i> Человек</span></h3>
+                            <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0">утверждает <span class="whitespace-nowrap">ответственные решения</span> <br>и спорные случаи</p>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] p-2 md:p-3 flex flex-col items-center justify-center text-center h-full a-in a-in-5">
+                            <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 mb-0.5 md:mb-1"><span class="whitespace-nowrap"><i class="ph-fill ph-arrows-clockwise text-solar"></i> Обновление</span></h3>
+                            <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">спецификация, <br>документация и метрики</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Для экономики меряем время всего цикла — <br><span class="font-black">с исправлениями и контролем</span></p>
+            </div>
+        </div>
+    </div>

@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      # Закрытые модули (FR-SITE77, FR-SITE87): исходники 4–7 живут в репозитории — из
+      # Закрытые модули (FR-SITE77, FR-SITE87, FR-SITE88): исходники 4–8 живут в репозитории — из
       # каркаса лекции 4 собирается лекция 3, и общие блоки сверяются тестами, —
       # но на сайт они не выкладываются. По их адресам отдаётся 404.html:
       # «Модуль N ещё закрыт». Открыть модуль = убрать его строку отсюда.
@@ -47,6 +47,7 @@ jobs:
               --exclude=./automation/5 \
               --exclude=./automation/6 \
               --exclude=./automation/7 \
+              --exclude=./automation/8 \
               -cf - . | tar -xf - -C "$RUNNER_TEMP/site"
       - uses: actions/upload-pages-artifact@v3
         with:
