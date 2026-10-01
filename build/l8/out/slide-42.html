@@ -80,11 +80,13 @@
 
             <!-- Свой проект: пять действий по порядку. На ПК — один ряд со стрелками; на телефоне
                  ряды по два, стрелка в конце ряда смотрит вниз-влево — на начало следующего,
-                 последний шаг по центру. Левый отступ равен колонке стрелок справа — цепочка по центру -->
+                 последний шаг по центру и той же ширины, что соседи (половина трёх колонок минус
+                 стрелка с зазорами). Левый отступ равен колонке стрелок справа — цепочка по центру.
+                 Двухсловные шаги — в одну строку, перенос только у трёхсловных -->
             <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-1 md:gap-x-2 gap-y-1.5 items-stretch w-full pl-5 md:pl-0 mt-3 md:mt-4">
                 <div class="bg-white/10 border border-white/20 rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex items-center justify-center gap-1.5 md:gap-2 min-w-0 a-in a-in-4 a-step">
                     <i class="ph-fill ph-target text-solar text-base md:text-2xl leading-none shrink-0"></i>
-                    <p class="text-[10px] md:text-[15px] font-bold text-white leading-tight m-0 text-left">Выбрать <br>процесс</p>
+                    <p class="text-[10px] md:text-[15px] font-bold text-white leading-tight m-0 text-left">Выбрать процесс</p>
                 </div>
                 <i class="ph-bold ph-arrow-right text-white/40 text-xs md:text-xl w-4 md:w-6 text-center self-center"></i>
                 <div class="bg-white/10 border border-white/20 rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex items-center justify-center gap-1.5 md:gap-2 min-w-0 a-in a-in-4 a-step">
@@ -102,23 +104,29 @@
                     <p class="text-[10px] md:text-[15px] font-bold text-white leading-tight m-0 text-left">Проверить <br>на малом объёме</p>
                 </div>
                 <i class="ph-bold ph-arrow-right text-white/40 text-xs md:text-xl w-4 md:w-6 text-center self-center rotate-[135deg] md:rotate-0"></i>
-                <div class="bg-white/10 border border-white/20 rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex items-center justify-center gap-1.5 md:gap-2 min-w-0 col-span-3 md:col-span-1 w-1/2 md:w-full justify-self-center a-in a-in-6 a-step">
+                <div class="bg-white/10 border border-white/20 rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex items-center justify-center gap-1.5 md:gap-2 min-w-0 col-span-3 md:col-span-1 w-[calc(50%-0.75rem)] md:w-full justify-self-center a-in a-in-6 a-step">
                     <i class="ph-fill ph-calculator text-solar text-base md:text-2xl leading-none shrink-0"></i>
-                    <p class="text-[10px] md:text-[15px] font-bold text-white leading-tight m-0 text-left">Уточнить <br>расчёт</p>
+                    <p class="text-[10px] md:text-[15px] font-bold text-white leading-tight m-0 text-left">Уточнить расчёт</p>
                 </div>
             </div>
 
             <!-- Практика: демо-день — вся история проекта и её итог -->
-            <div class="bg-solar border-2 border-solar rounded-[20px] md:rounded-3xl p-2.5 md:px-6 md:py-3 mt-3 md:mt-4 w-full flex flex-row items-center justify-center gap-2.5 md:gap-5 a-in a-in-6 a-glow" style="color:#111;-webkit-text-fill-color:#111">
-                <span class="w-8 h-8 md:w-14 md:h-14 bg-black/10 rounded-full flex items-center justify-center shrink-0"><i class="ph-fill ph-presentation-chart text-lg md:text-2xl"></i></span>
+            <div class="bg-solar border-2 border-solar rounded-[20px] md:rounded-3xl p-2.5 md:px-6 md:py-3 mt-3 md:mt-4 w-full flex flex-row items-center justify-center gap-1.5 md:gap-5 a-in a-in-6 a-glow" style="color:#111;-webkit-text-fill-color:#111">
+                <span class="w-7 h-7 md:w-14 md:h-14 bg-black/10 rounded-full flex items-center justify-center shrink-0"><i class="ph-fill ph-presentation-chart text-lg md:text-2xl"></i></span>
                 <div class="min-w-0 text-center">
                     <h3 class="font-black text-[12px] md:text-xl leading-tight m-0"><span class="whitespace-nowrap">Демо-день: защита трансформации</span> <span class="whitespace-nowrap">своего процесса</span></h3>
                     <p class="text-[10px] md:text-base opacity-75 leading-snug m-0 mt-0.5"><span class="whitespace-nowrap">Процесс, агент, человек, данные,</span> <span class="whitespace-nowrap">метрики, экономика, путь масштабирования</span></p>
+                    <!-- Итоги парами: на телефоне ряд переносится 2 + 2, а не 3 + 1 с одиноким
+                         «Экономически устойчивее»; на ПК пары стоят в одну строку с тем же зазором -->
                     <div class="js-keep flex flex-row flex-wrap items-center justify-center gap-x-2.5 gap-y-0.5 md:gap-x-5 mt-1 md:mt-2">
-                        <span class="text-[10px] md:text-base font-medium whitespace-nowrap"><i class="ph-fill ph-check-circle"></i> Быстрее</span>
-                        <span class="text-[10px] md:text-base font-medium whitespace-nowrap"><i class="ph-fill ph-check-circle"></i> Качественнее</span>
-                        <span class="text-[10px] md:text-base font-medium whitespace-nowrap"><i class="ph-fill ph-check-circle"></i> Прозрачнее</span>
-                        <span class="text-[10px] md:text-base font-medium whitespace-nowrap"><i class="ph-fill ph-check-circle"></i> Экономически устойчивее</span>
+                        <span class="js-keep flex flex-row items-center gap-x-2.5 md:gap-x-5">
+                            <span class="text-[10px] md:text-base font-medium whitespace-nowrap"><i class="ph-fill ph-check-circle"></i> Быстрее</span>
+                            <span class="text-[10px] md:text-base font-medium whitespace-nowrap"><i class="ph-fill ph-check-circle"></i> Качественнее</span>
+                        </span>
+                        <span class="js-keep flex flex-row items-center gap-x-2.5 md:gap-x-5">
+                            <span class="text-[10px] md:text-base font-medium whitespace-nowrap"><i class="ph-fill ph-check-circle"></i> Прозрачнее</span>
+                            <span class="text-[10px] md:text-base font-medium whitespace-nowrap"><i class="ph-fill ph-check-circle"></i> Экономически устойчивее</span>
+                        </span>
                     </div>
                 </div>
             </div>
