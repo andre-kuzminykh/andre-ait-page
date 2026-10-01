@@ -617,7 +617,8 @@ def test_finale_sits_in_the_middle_and_the_footer_at_the_bottom():
         "группа главы с прощанием по центру свободного места, подвал внизу (FR-SITE82)"
     # Подвал у самого низа, кружку разрешено его перекрывать (FR-SITE55):
     # «кружок можно перемещать, поэтому пофигу что он там закрывает».
-    assert ".screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }" in css, \
+    # FR-SITE87: нижний отступ — var(--safe-b, env(…)): вне Telegram то же env()
+    assert ".screen.final { padding-bottom: calc(2.4rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); }" in css, \
         "на телефоне нижний запас под кружок финалу не нужен — подвал прижат к точкам"
     # Крупнее — ровно там, где колонка это позволяет. Кегли подобраны замером
     # предела, за которым появляется лишняя строка (см. FR-SITE43):
@@ -684,7 +685,8 @@ def test_chapter_marks_are_visible_on_phone():
     # знак в самом углу, нижней растушёвки, которая его закрашивала, больше нет
     # FR-SITE84: в большом окне экраны увеличены zoom, и размер знака от окна
     # делится на --z, чтобы знак не рос вдвое
-    assert ".wm { right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); font-size: calc(min(44vw, 30vh) / var(--z, 1)); }" in css, \
+    # FR-SITE87: нижний отступ — var(--safe-b, env(…)): вне Telegram то же env()
+    assert ".wm { right: 1rem; bottom: calc(1.2rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); font-size: calc(min(44vw, 30vh) / var(--z, 1)); }" in css, \
         "в портрете знак стоит в правом нижнем углу"
     assert ".screen.active .wm { opacity: 0.075; }" in css
     land = css[css.rindex("@media (max-width:1023px) and (min-width:600px) and (max-height:520px)"):]
@@ -966,6 +968,20 @@ def test_ru_page_leads_to_the_russian_product():
     assert len(hrefs) >= 2 and set(hrefs) == {"https://maturity.andre.technology/?lang=ru"}, hrefs
     assert "?lang=" not in "".join(re.findall(r'href="https://maturity[^"]*"', en))
 
+
+
+def test_pages_turn_native_inside_telegram():
+    """FR-SITE87: русскую биографию бот открывает как Telegram Mini App. В
+    <head> обеих страниц — проверка запуска (tools/tg_miniapp.py) в режиме
+    листающихся экранов: свайп вниз листает назад, а не сворачивает окно.
+    SDK Telegram разметкой не подключается. Подробно — tests/test_tg_miniapp.py."""
+    import sys, os
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from tg_miniapp import head_snippet
+    for lang, html in _pages():
+        head = html[:html.index("</head>")]
+        assert head.count(head_snippet("deck")) == 1, lang
+        assert '<script src="https://telegram.org' not in html, lang
 
 if __name__ == "__main__":
     import sys

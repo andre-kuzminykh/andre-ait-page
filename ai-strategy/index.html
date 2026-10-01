@@ -6,6 +6,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
 <meta name="color-scheme" content="dark">
+<script>
+/* FR-SITE87: страница открыта как Telegram Mini App? Признак — параметры
+   запуска в hash (tgWebAppData / tgWebAppPlatform). Только тогда грузим SDK
+   Telegram и поведение мини-аппа; вне Telegram лишних запросов нет. */
+(function () {
+  try {
+    var p = location.hash.slice(1).split(/[?&]/).filter(function (x) {
+      return /^tgWebApp\w*=/.test(x);
+    }).join('&');
+    /* параметры живут на вкладку: переход по сайту внутри мини-аппа теряет
+       hash, а режим должен остаться */
+    if (/(^|&)tgWebApp(Data|Platform)=/.test(p)) sessionStorage.setItem('ait_tg', p);
+    else p = sessionStorage.getItem('ait_tg');
+    if (!p) return;
+    var r = document.documentElement;
+    r.classList.add('tg');
+    r.setAttribute('data-tg', 'deck');
+    /* async=false: SDK выполняется раньше нашего скрипта, но разбор
+       страницы ни один из них не держит */
+    ['https://telegram.org/js/telegram-web-app.js', '/assets/tg-miniapp.js'].forEach(function (u) {
+      var s = document.createElement('script');
+      s.src = u;
+      s.async = false;
+      document.head.appendChild(s);
+    });
+  } catch (e) {}
+})();
+</script>
 <title>AI Strategy | Where should you start with AI in your business?</title>
 <meta name="description" content="AI Strategy shows how to transform your business with AI: describe how your company works and get an AI-First operating model, AI agent specifications and a roadmap">
 <link rel="canonical" href="https://andre.technology/ai-strategy/">
@@ -90,6 +118,7 @@
       <p class="lead"><span class="l">Tell me how your business works.</span><span class="l">Get your AI‑First model</span></p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="https://strategy.andre.technology/" rel="noopener">Start for free <i class="fa-solid fa-arrow-right"></i></a>
+        <a class="hero-how hero-login" href="https://strategy.andre.technology/?login=1" rel="noopener">Already have a company? <b>Sign in</b></a>
         <button class="hero-how" data-go="process" type="button">How it works</button>
       </div>
     </div>

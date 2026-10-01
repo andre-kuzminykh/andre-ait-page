@@ -12,6 +12,10 @@
 """
 import os
 import re
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from tg_miniapp import head_snippet  # noqa: E402 — общий модуль рядом
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = "https://andre.technology"
@@ -506,6 +510,7 @@ TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
 <meta name="color-scheme" content="dark">
+@@TG@@
 <title>@@TITLE@@</title>
 <meta name="description" content="@@DESC@@">
 <link rel="canonical" href="@@SITE@@@@PATH@@">
@@ -645,6 +650,9 @@ def page(c):
     html = TEMPLATE
     for token, value in [
         ("@@LANG@@", c["lang"]),
+        # FR-SITE87: в Telegram Mini App — нативный режим; биография листается
+        # экранами, поэтому свайп Telegram «свернуть» на ней выключается
+        ("@@TG@@", head_snippet("deck")),
         ("@@APP_HREF@@", app_href(c)),
         ("@@TITLE@@", c["title"]),
         ("@@DESC@@", c["desc"]),

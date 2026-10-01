@@ -21,6 +21,11 @@
      «голова должна подтягиваться под размер экрана, а не заходить за
      рамки»). */
   --vid-d: clamp(88px, min(34vw, 18vh), 168px);
+  /* FR-SITE87: безопасные отступы. Снизу — --safe-b, сверху — --safe-t; вне
+     Telegram они не заданы, и работают значения по умолчанию (env() снизу,
+     0 сверху). В Telegram Mini App их ставит assets/tg-miniapp.js из
+     safeAreaInset: там env() бывает нулём, а в полноэкранном режиме сверху
+     лежат кнопки Telegram. */
 }
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: var(--bg); color-scheme: dark;
@@ -86,7 +91,7 @@ img, svg { max-width: 100%; }
   .head video { transform: translateX(-6%); }
 }
 @media (max-width:1023px) {
-  .head { left: clamp(0.8rem, 3.5vw, 1.2rem); bottom: calc(clamp(0.8rem, 3.5vw, 1.2rem) + env(safe-area-inset-bottom, 0px));
+  .head { left: clamp(0.8rem, 3.5vw, 1.2rem); bottom: calc(clamp(0.8rem, 3.5vw, 1.2rem) + var(--safe-b, env(safe-area-inset-bottom, 0px)));
     width: var(--vid-d); height: var(--vid-d); border-radius: 50%;
     border-color: rgba(255,255,255,0.18); box-shadow: 0 14px 34px rgba(0,0,0,0.55); }
   .head .head-shade { display: none; }
@@ -105,7 +110,10 @@ img, svg { max-width: 100%; }
   background: #000; color: var(--w); font-size: 10px; }
 
 /* ===== Шапка: один в один с главной ===== */
-header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events: none; padding: 1.1rem; }
+/* FR-SITE87: top — под кнопками полноэкранного Telegram (--safe-t, вне
+   Telegram 0). Шапка и экраны в окне 600–1023px масштабируются zoom, а
+   отступ от края окна — нет, поэтому он делится на --z. */
+header { position: fixed; top: calc(var(--safe-t, 0px) / var(--z, 1)); left: 0; right: 0; z-index: 60; pointer-events: none; padding: 1.1rem; }
 @media (min-width:1024px) { header { padding: 2rem; } }
 .header-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
 .header-left, .header-right { pointer-events: auto; display: flex; align-items: center; gap: 0.4rem; }
@@ -135,8 +143,8 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
   .nav-tab { font-size: clamp(12.5px, 1.05vw, 14px); letter-spacing: 0; padding: 0.3rem; }
 }
 @media (max-width:1149px) {
-  .nav.open { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 0; padding: clamp(6rem, 12vh, 7.5rem) 1.75rem calc(6rem + env(safe-area-inset-bottom, 0px));
+  .nav.open { position: fixed; inset: calc(var(--safe-t, 0px) / var(--z, 1)) 0 0; z-index: 70; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0; padding: clamp(6rem, 12vh, 7.5rem) 1.75rem calc(6rem + var(--safe-b, env(safe-area-inset-bottom, 0px)));
     background: var(--bg); overflow-y: auto; pointer-events: auto; }
   .nav.open .nav-tab { display: flex; align-items: center; gap: 1.15rem; width: 100%; max-width: 23rem; background: none; border: 0;
     border-top: 1px solid rgba(255,255,255,0.14); padding: clamp(0.7rem, 2.2vh, 1.4rem) 0.25rem; color: var(--w); font: inherit;
@@ -220,14 +228,14 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
   .nav.open .nav-home i { font-size: clamp(17px, 2.3vh, 21px); color: var(--p); }
 
 /* ===== Экраны ===== */
-.deck { position: fixed; inset: 0; z-index: 6; overflow: hidden; }
+.deck { position: fixed; inset: calc(var(--safe-t, 0px) / var(--z, 1)) 0 0; z-index: 6; overflow: hidden; }
 @media (min-width:1024px) { .deck { left: var(--head-w); } }
 .screen { position: absolute; inset: 0; display: none; flex-direction: column;
   justify-content: center; justify-content: safe center;
   /* Нижнее поле меньше диаметра кружка: владелец разрешил ему перекрывать
      элементы, а прокрутки внутри экранов больше нет — высокие экраны иначе
      срезались бы краем. */
-  padding: 6.2rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 / var(--z, 1) + 1.1rem + env(safe-area-inset-bottom, 0px));
+  padding: 6.2rem clamp(1.1rem, 4vw, 1.8rem) calc(var(--vid-d) * 0.82 / var(--z, 1) + 1.1rem + var(--safe-b, env(safe-area-inset-bottom, 0px)));
   overflow: hidden; scrollbar-width: none; }
 .screen::-webkit-scrollbar { width: 0; }
 @media (min-width:1024px) { .screen { padding: 7rem clamp(1.4rem, 2.4vw, 2.6rem) 2.5rem; } }
@@ -252,7 +260,7 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 60; pointer-events
 /* точки-индикаторы справа */
 .dots { position: fixed; z-index: 50; display: flex; gap: 0.4rem; }
 @media (min-width:1024px) { .dots { right: 1.1rem; top: 50%; transform: translateY(-50%); flex-direction: column; } }
-@media (max-width:1023px) { .dots { left: 50%; transform: translateX(-50%); bottom: calc(0.8rem + env(safe-area-inset-bottom, 0px)); } }
+@media (max-width:1023px) { .dots { left: 50%; transform: translateX(-50%); bottom: calc(0.8rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); } }
 .dot { width: 6px; height: 6px; border-radius: 999px; border: 0; padding: 0; cursor: pointer;
   background: rgba(255,255,255,0.22); transition: background 0.3s ease, transform 0.3s ease; }
 .dot.on { background: linear-gradient(120deg, var(--p-l), var(--o-l)); transform: scale(1.5); }
@@ -300,6 +308,10 @@ strong { color: var(--w); font-weight: 700; }
   font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em;
   color: rgba(255,255,255,0.5); transition: color 0.3s ease; }
 @media (min-width:1024px) { .hero-how { font-size: clamp(12.5px, 1vw, 16.5px); } }
+/* FR-SITE87: «Уже есть компания? Войти» — та же серая ссылка, что «Как это
+   работает»: вторая кнопка на первом экране владельцу не нужна. Глагол чуть
+   плотнее — чтобы было видно, куда нажимать. */
+.hero-login b { font-weight: 800; }
 @media (hover:hover) { .hero-how:hover { color: var(--w); } }
 
 /* ===== Проблема: вопросы в одну строку каждый ===== */
@@ -793,7 +805,7 @@ html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spa
   .final .legal { display: none; }
   .nav.open .nav-legal { display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
     gap: 0.3rem 0.55rem; position: absolute; left: 1rem; right: 1rem;
-    bottom: calc(1.3rem + env(safe-area-inset-bottom, 0px)); }
+    bottom: calc(1.3rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); }
 }
 @media (hover:hover) { .legal a:hover { color: var(--w); } }
 
@@ -1071,7 +1083,7 @@ html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spa
   /* у экранов С ПАНЕЛЬЮ низ считается от полного диаметра кружка: на
      остальных (и на финале с подвалом) кружку по-прежнему разрешено
      перекрывать содержимое */
-  .screen:has(.stage-card) { padding-bottom: calc(var(--vid-d) / var(--z, 1) + 1rem + env(safe-area-inset-bottom, 0px)); }
+  .screen:has(.stage-card) { padding-bottom: calc(var(--vid-d) / var(--z, 1) + 1rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); }
   /* Большое окно в мобильной вёрстке (FR-SITE84): вёрстка та же, но
      целиком крупнее — --z ставит скрипт (min(ширина/600, высота/880),
      1…1.8). Кружок не масштабируется (его тащат пальцем), поэтому всё, что
@@ -1165,7 +1177,7 @@ html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spa
   /* Подвал финала прижат к самому низу, кружку разрешено его перекрывать:
      владелец решил это прямо — «кружок можно перемещать, поэтому пофигу что
      он там закрывает». Подъём подвала над кружком отменён. */
-  .screen.final { padding-bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); }
+  .screen.final { padding-bottom: calc(2.4rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); }
 }
 
 /* ===== Телефон в ГОРИЗОНТЕ ===============================================
