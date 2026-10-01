@@ -11,7 +11,7 @@
 ## Подзаголовок (вставить дословно, одна строка)
 
 ```html
-<p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Каждое изменение — запрос с целью, рисками и проверками</p>
+<p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Каждое значимое изменение — через запрос на изменение</p>
 ```
 
 ## Схема слайда
