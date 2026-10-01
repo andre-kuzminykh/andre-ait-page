@@ -4370,19 +4370,22 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                  вровень с нижним рядом. md:grid-cols рядом с grid-cols-3: голую сетку
                  телефонное правило складывает в столбик, а подписи здесь короткие.
                  Телефонный кегль 10px у всех трёх: «Криптопродукты» в трети ширины
-                 упирался в рамку карточки -->
+                 упирался в рамку карточки. На телефоне «Платёжная система» — в две
+                 строки, и при центровке иконка первой карточки вставала выше двух
+                 соседних: my-auto у названия оставляет иконки на одной высоте, а
+                 однострочные названия — по центру двух строк соседки -->
             <div class="grid grid-cols-3 md:grid-cols-3 gap-1 md:gap-4 w-full items-stretch">
                 <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-0.5 py-1 md:px-2.5 md:py-3 flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2.5 text-center h-full a-in">
                     <i class="ph-fill ph-credit-card text-lg md:text-3xl text-solar"></i>
-                    <h3 class="font-black text-[10px] md:text-lg text-black leading-tight m-0">Платёжная система</h3>
+                    <h3 class="font-black text-[10px] md:text-lg text-black leading-tight mx-0 my-auto">Платёжная система</h3>
                 </div>
                 <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-0.5 py-1 md:px-2.5 md:py-3 flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2.5 text-center h-full a-in a-in-2">
                     <i class="ph-fill ph-bank text-lg md:text-3xl text-solar"></i>
-                    <h3 class="font-black text-[10px] md:text-lg text-black leading-tight m-0">Банк</h3>
+                    <h3 class="font-black text-[10px] md:text-lg text-black leading-tight mx-0 my-auto">Банк</h3>
                 </div>
                 <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-0.5 py-1 md:px-2.5 md:py-3 flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2.5 text-center h-full a-in a-in-3">
                     <i class="ph-fill ph-currency-btc text-lg md:text-3xl text-solar"></i>
-                    <h3 class="font-black text-[10px] md:text-lg text-black leading-tight m-0">Криптопродукты</h3>
+                    <h3 class="font-black text-[10px] md:text-lg text-black leading-tight mx-0 my-auto">Криптопродукты</h3>
                 </div>
             </div>
 
@@ -4430,31 +4433,33 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                 <i class="ph-bold ph-arrow-right text-black/25 text-[10px] md:text-xl self-center shrink-0 rotate-90 md:rotate-0"></i>
 
                 <!-- Диагностика: куда уходит время, где очереди и чьи знания не переданы.
-                     Шесть статей: на ПК иконка над словом (3×2), на телефоне — слева от слова (2×3) -->
+                     Шесть статей: на ПК иконка над словом (3×2), на телефоне — слева от слова (2×3).
+                     На телефоне колонки — по ширине слов, сетка по центру, пары от левого края
+                     колонки: каждая пара по центру своей половины ставила иконки лесенкой -->
                 <div class="flex-1 min-w-0 bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2.5 py-1.5 md:px-3 md:py-3.5 flex flex-col items-center justify-center text-center a-in a-in-3">
                     <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0 mb-1 md:mb-3"><span class="whitespace-nowrap"><i class="ph-fill ph-clock text-solar"></i> Куда уходит время</span></h3>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-x-2 gap-y-1 md:gap-x-0 md:gap-y-3 w-full">
-                        <div class="flex flex-row md:flex-col items-center justify-center gap-1 md:gap-1 text-center">
+                    <div class="grid grid-cols-[auto_auto] md:grid-cols-3 justify-center gap-x-8 gap-y-1 md:gap-x-0 md:gap-y-3 w-full">
+                        <div class="flex flex-row md:flex-col items-center justify-start md:justify-center gap-1 md:gap-1 text-center">
                             <i class="ph-fill ph-magnifying-glass text-sm md:text-3xl text-solar"></i>
                             <p class="text-[9px] md:text-sm text-black leading-tight m-0">поиск контекста</p>
                         </div>
-                        <div class="flex flex-row md:flex-col items-center justify-center gap-1 md:gap-1 text-center">
+                        <div class="flex flex-row md:flex-col items-center justify-start md:justify-center gap-1 md:gap-1 text-center">
                             <i class="ph-fill ph-handshake text-sm md:text-3xl text-solar"></i>
                             <p class="text-[9px] md:text-sm text-black leading-tight m-0">согласования</p>
                         </div>
-                        <div class="flex flex-row md:flex-col items-center justify-center gap-1 md:gap-1 text-center">
+                        <div class="flex flex-row md:flex-col items-center justify-start md:justify-center gap-1 md:gap-1 text-center">
                             <i class="ph-fill ph-code text-sm md:text-3xl text-solar"></i>
                             <p class="text-[9px] md:text-sm text-black leading-tight m-0">разработка</p>
                         </div>
-                        <div class="flex flex-row md:flex-col items-center justify-center gap-1 md:gap-1 text-center">
+                        <div class="flex flex-row md:flex-col items-center justify-start md:justify-center gap-1 md:gap-1 text-center">
                             <i class="ph-fill ph-test-tube text-sm md:text-3xl text-solar"></i>
                             <p class="text-[9px] md:text-sm text-black leading-tight m-0">тестирование</p>
                         </div>
-                        <div class="flex flex-row md:flex-col items-center justify-center gap-1 md:gap-1 text-center">
+                        <div class="flex flex-row md:flex-col items-center justify-start md:justify-center gap-1 md:gap-1 text-center">
                             <i class="ph-fill ph-wrench text-sm md:text-3xl text-solar"></i>
                             <p class="text-[9px] md:text-sm text-black leading-tight m-0">исправления</p>
                         </div>
-                        <div class="flex flex-row md:flex-col items-center justify-center gap-1 md:gap-1 text-center">
+                        <div class="flex flex-row md:flex-col items-center justify-start md:justify-center gap-1 md:gap-1 text-center">
                             <i class="ph-fill ph-lifebuoy text-sm md:text-3xl text-solar"></i>
                             <p class="text-[9px] md:text-sm text-black leading-tight m-0">сопровождение</p>
                         </div>
@@ -4467,23 +4472,34 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
 
                 <i class="ph-bold ph-arrow-right text-black/25 text-[10px] md:text-xl self-center shrink-0 rotate-90 md:rotate-0"></i>
 
-                <!-- Решение после диагностики: где маршрут меняют агенты, а где — оргмеры -->
-                <div class="md:w-[28%] shrink-0 grid grid-cols-2 md:grid-cols-1 gap-1.5 md:gap-2.5">
-                    <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2 py-1.5 md:px-2 md:py-3.5 flex flex-col items-center justify-center text-center h-full a-in a-in-4">
-                        <i class="ph-fill ph-robot text-lg md:text-3xl text-solar mb-0.5 md:mb-1.5"></i>
-                        <h3 class="font-black text-[11px] md:text-lg text-black mb-0.5 md:mb-1 leading-tight">Агенты</h3>
-                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">изменят маршрут работы</p>
+                <!-- Решение после диагностики: где маршрут меняют агенты, а где — оргмеры.
+                     На телефоне — строками одна под другой: в половину ширины «Правила
+                     и документация» с пояснением шли в четыре строки (канон — до трёх), а иконки
+                     пары стояли на разной высоте. Колонка текста у обеих одной ширины — иначе
+                     каждая пара «иконка + слова» центрировалась по своей длине и иконки шли лесенкой -->
+                <div class="md:w-[28%] shrink-0 grid grid-cols-1 gap-1.5 md:gap-2.5">
+                    <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2.5 py-1.5 md:px-2 md:py-3.5 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-left md:text-center h-full a-in a-in-4">
+                        <i class="ph-fill ph-robot text-xl md:text-3xl text-solar shrink-0 md:mb-1.5"></i>
+                        <div class="min-w-0 w-[15rem] md:w-auto">
+                            <h3 class="font-black text-[11px] md:text-lg text-black mb-0.5 md:mb-1 leading-tight">Агенты</h3>
+                            <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">изменят маршрут работы</p>
+                        </div>
                     </div>
-                    <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2 py-1.5 md:px-2 md:py-3.5 flex flex-col items-center justify-center text-center h-full a-in a-in-5">
-                        <i class="ph-fill ph-list-checks text-lg md:text-3xl text-solar mb-0.5 md:mb-1.5"></i>
-                        <h3 class="font-black text-[11px] md:text-lg text-black mb-0.5 md:mb-1 leading-tight">Правила и&nbsp;документация</h3>
-                        <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">перераспределение ответственности</p>
+                    <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2.5 py-1.5 md:px-2 md:py-3.5 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-left md:text-center h-full a-in a-in-5">
+                        <i class="ph-fill ph-list-checks text-xl md:text-3xl text-solar shrink-0 md:mb-1.5"></i>
+                        <div class="min-w-0 w-[15rem] md:w-auto">
+                            <h3 class="font-black text-[11px] md:text-lg text-black mb-0.5 md:mb-1 leading-tight">Правила и&nbsp;документация</h3>
+                            <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">перераспределение ответственности</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Ударная часть — не «где агенты изменят маршрут»: это слово в слово карточка
+                 «Агенты» прямо над полосой. Вывод — из последней фразы озвучки: на этой основе
+                 строят будущую модель (пара к «исходной модели» заголовка) -->
             <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
-                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Сначала увидеть производственную систему целиком, <br><span class="font-black">потом решать, где агенты изменят маршрут</span></p>
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Сначала увидеть производственную систему целиком, <br><span class="font-black">потом проектировать будущую модель</span></p>
             </div>
         </div>
     </div>
@@ -4518,7 +4534,9 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                 <!-- Цепочка сборки: два агента, факт отделён от предположения, люди проверяют.
                      «факт», а не «установленный факт»: с ним пара плашек не влезала в колонку.
                      Стрелка во второй строке у всех трёх карточек цепочки (канон: однородность),
-                     у специалистов — как в задании: «неясное → владельцам знаний» -->
+                     у специалистов — как в задании: «неясное → владельцам знаний». Стрелка склеена
+                     только с «владельцам знаний»: строка целиком в nowrap поднимала подгонку ПК
+                     до 1.05, и «структурированное описание» вылезало за карточку -->
                 <div class="flex-1 min-w-0 flex flex-col items-stretch">
                     <div class="bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2.5 py-1.5 md:px-3 md:py-2.5 flex items-center gap-2.5 md:gap-2.5 a-in a-in-2">
                         <i class="ph-fill ph-shovel text-xl md:text-3xl text-solar shrink-0 w-6 md:w-8 text-center"></i>
@@ -4599,11 +4617,13 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
 
                 <div class="w-full md:w-[35%] shrink-0 flex flex-col items-center justify-center">
                     <!-- Обёртка держит диаметр: FR-LECTURE-24 задаёт самому aspect-square
-                         max-width:440px !important, и класс ширины на нём не работает -->
+                         max-width:440px !important, и класс ширины на нём не работает.
+                         На телефоне узлы 44 % и центр 35 %: при 42/32 «Архитектура» упиралась
+                         в рамку узла, а «контекст» — в обод центрального круга -->
                     <div class="w-full max-w-[230px] md:max-w-[330px] mx-auto">
                     <div class="relative w-full aspect-square mx-auto">
                         <div class="absolute inset-[14%] rounded-full border-2 border-dashed border-solar/40 a-orbit"></div>
-                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[32%] h-[32%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center">
+                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[35%] h-[35%] md:w-[32%] md:h-[32%] rounded-full bg-black border-2 border-solar flex flex-col items-center justify-center text-center">
                             <i class="ph-fill ph-files text-lg md:text-3xl text-solar"></i>
                             <span class="text-[10px] md:text-sm font-black text-white leading-tight mt-0.5">Общий <br>контекст</span>
                         </div>
@@ -4798,14 +4818,17 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                  Пунктир — в зазоре между карточками, только на ПК; на телефоне 2 + 2 + «План»
                  во всю ширину, зазор там слишком узкий. Пояснение стоит в коробке на три строки:
                  у «Контекста» их три, у остальных меньше — без коробки значки и заголовки ряда
-                 стояли лесенкой -->
+                 стояли лесенкой. Коробка — ровно три строки в обеих формах: на ПК строка 20px
+                 (md:text-sm задаёт её сам, leading-tight не действует), на телефоне 14.4px
+                 (11.5px из slide-polish); на 3.6rem «Контекст» стоял на 1px выше, без коробки
+                 на телефоне — на 7px выше «Исходной модели» -->
             <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-6 w-full items-stretch">
                 <div class="relative bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-2 py-2.5 md:px-2 md:py-4 flex flex-col items-center justify-center text-center h-full a-in a-step">
                     <div class="flex flex-row md:flex-col items-center justify-center gap-1 md:gap-2 mb-0.5 md:mb-1.5">
                         <i class="ph-fill ph-buildings text-lg md:text-4xl text-solar shrink-0"></i>
                         <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Контекст</h3>
                     </div>
-                    <div class="flex items-center justify-center md:min-h-[3.6rem]">
+                    <div class="flex items-center justify-center min-h-[2.7rem] md:min-h-[3.75rem]">
                         <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">что делаем и для кого, <br>что ограничивает <br>скорость, качество, рост</p>
                     </div>
                     <div class="absolute left-full top-1/2 -translate-y-1/2 h-[2px] md:w-6 text-solar/50 a-flow"></div>
@@ -4815,7 +4838,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <i class="ph-fill ph-flow-arrow text-lg md:text-4xl text-solar shrink-0"></i>
                         <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Исходная модель</h3>
                     </div>
-                    <div class="flex items-center justify-center md:min-h-[3.6rem]">
+                    <div class="flex items-center justify-center min-h-[2.7rem] md:min-h-[3.75rem]">
                         <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">процесс <br>и его экономика</p>
                     </div>
                     <div class="absolute left-full top-1/2 -translate-y-1/2 h-[2px] md:w-6 text-solar/50 a-flow"></div>
@@ -4825,7 +4848,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <i class="ph-fill ph-robot text-lg md:text-4xl text-solar shrink-0"></i>
                         <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Новая работа</h3>
                     </div>
-                    <div class="flex items-center justify-center md:min-h-[3.6rem]">
+                    <div class="flex items-center justify-center min-h-[2.7rem] md:min-h-[3.75rem]">
                         <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">роль агента <br>и участие человека</p>
                     </div>
                     <div class="absolute left-full top-1/2 -translate-y-1/2 h-[2px] md:w-6 text-solar/50 a-flow"></div>
@@ -4835,7 +4858,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <i class="ph-fill ph-chart-line-up text-lg md:text-4xl text-solar shrink-0"></i>
                         <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Подтверждение</h3>
                     </div>
-                    <div class="flex items-center justify-center md:min-h-[3.6rem]">
+                    <div class="flex items-center justify-center min-h-[2.7rem] md:min-h-[3.75rem]">
                         <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0">сценарий, <br>метрики и расчёт</p>
                     </div>
                     <div class="absolute left-full top-1/2 -translate-y-1/2 h-[2px] md:w-6 text-solar/50 a-flow"></div>
@@ -4845,16 +4868,20 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                         <i class="ph-fill ph-flag-checkered text-lg md:text-4xl text-solar shrink-0"></i>
                         <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0">План</h3>
                     </div>
-                    <div class="flex items-center justify-center md:min-h-[3.6rem]">
+                    <div class="flex items-center justify-center md:min-h-[3.75rem]">
                         <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0 whitespace-nowrap">следующие действия</p>
                     </div>
                 </div>
             </div>
 
-            <!-- «Одна линия» под главами; техника — серая оговорка на линии, а не отдельная глава -->
-            <div class="flex flex-row js-keep items-center gap-2 md:gap-3 w-full mt-2.5 md:mt-4">
+            <!-- «Одна линия» под главами; техника — серая оговорка на линии, а не отдельная глава.
+                 На телефоне пунктир схлопывается в ноль (каркас даёт flex-1 min-width:0), и зазоры
+                 сдвигали плашку внутрь от краёв карточек — там зазоров нет, плашка вровень с ними.
+                 Текст — как в обязательном содержании, без «только»: пояснение после тире уходит
+                 на телефоне второй строкой целиком (было три строки), на ПК всё в одну -->
+            <div class="flex flex-row js-keep items-center gap-0 md:gap-3 w-full mt-2.5 md:mt-4">
                 <div class="h-[2px] flex-1 min-w-3 text-solar/40 a-flow"></div>
-                <p class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[9px] md:text-sm font-medium text-black/60 text-center leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-cpu text-black/40"></i> технические детали —</span> <span class="whitespace-nowrap">только где помогают понять</span> <span class="whitespace-nowrap">надёжность или возможности</span></p>
+                <p class="bg-grayBase/30 border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[9px] md:text-sm font-medium text-black/60 text-center leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-cpu text-black/40"></i> технические детали —</span> <span class="whitespace-nowrap">где помогают понять надёжность или возможности</span></p>
                 <div class="h-[2px] flex-1 min-w-3 text-solar/40 a-flow"></div>
             </div>
 
@@ -5255,14 +5282,14 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
             <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Один случай от запроса до записи в метрики</p>
 
             <!-- Дорожка одного случая: шесть узлов загораются по очереди. Каждый узел — в обёртке
-                 с рамкой одной толщины: у пяти она прозрачная, у «Человека» — оранжевый пунктир
-                 зоны риска. Так зона не делает узел уже и ниже соседей, а ярлык «зона риска»
-                 садится на её верхний край в общий для всех обёрток верхний отступ.
-                 На ПК — ряд из одиннадцати дорожек (узлы 1fr, стрелки auto), под ним: слева —
+                 с рамкой одной толщины: у пяти она прозрачная, у «Человека» — оранжевый пунктир.
+                 Так выделение не делает узел уже и ниже соседей. Ярлык «зона риска» владелец
+                 убрал (2026-10-01): зоны риска — в панели «Текст».
+                 На ПК — ряд из одиннадцати дорожек (узлы 1fr, стрелки auto), под ним: по середине —
                  демо и пилот, под «Действием» — запись в метрики. На телефоне — столбик -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr] items-stretch gap-0 w-full">
-                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 md:pt-5 flex flex-col a-in">
-                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-7 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
+                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 flex flex-col a-in">
+                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-9 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
                         <i class="ph-fill ph-envelope text-xl md:text-5xl text-solar shrink-0 md:mb-3"></i>
                         <div class="min-w-0">
                             <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Запрос</h3>
@@ -5271,8 +5298,8 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                 </div>
                 <i class="ph-bold ph-arrow-right text-black/25 text-xs md:text-lg self-center justify-self-center rotate-90 md:rotate-0"></i>
-                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 md:pt-5 flex flex-col a-in a-in-2">
-                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-7 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
+                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 flex flex-col a-in a-in-2">
+                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-9 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
                         <i class="ph-fill ph-robot text-xl md:text-5xl text-solar shrink-0 md:mb-3"></i>
                         <div class="min-w-0">
                             <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Агент</h3>
@@ -5281,8 +5308,8 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                 </div>
                 <i class="ph-bold ph-arrow-right text-black/25 text-xs md:text-lg self-center justify-self-center rotate-90 md:rotate-0"></i>
-                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 md:pt-5 flex flex-col a-in a-in-3">
-                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-7 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
+                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 flex flex-col a-in a-in-3">
+                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-9 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
                         <i class="ph-fill ph-file-text text-xl md:text-5xl text-solar shrink-0 md:mb-3"></i>
                         <div class="min-w-0">
                             <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Результат</h3>
@@ -5291,8 +5318,8 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                 </div>
                 <i class="ph-bold ph-arrow-right text-black/25 text-xs md:text-lg self-center justify-self-center rotate-90 md:rotate-0"></i>
-                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 md:pt-5 flex flex-col a-in a-in-4">
-                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-7 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
+                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 flex flex-col a-in a-in-4">
+                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-9 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
                         <i class="ph-fill ph-gauge text-xl md:text-5xl text-solar shrink-0 md:mb-3"></i>
                         <div class="min-w-0">
                             <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Уверенность</h3>
@@ -5302,11 +5329,9 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                 </div>
                 <i class="ph-bold ph-arrow-right text-black/25 text-xs md:text-lg self-center justify-self-center rotate-90 md:rotate-0"></i>
 
-                <!-- Зона риска: здесь подключается человек. Ярлык — на верхнем крае пунктира
-                     (на телефоне — справа, чтобы не лечь на стрелку над зоной) -->
-                <div class="relative border-2 border-dashed border-solar rounded-[16px] md:rounded-[24px] p-1 pt-3 md:pt-5 flex flex-col a-in a-in-5">
-                    <span class="absolute z-10 right-3 top-0 -translate-y-1/2 md:right-auto md:left-1/2 md:-translate-x-1/2 bg-white border border-solar rounded-lg md:rounded-xl px-2 py-0.5 md:px-2.5 md:py-0.5 text-[10px] md:text-sm font-medium text-black whitespace-nowrap"><i class="ph-fill ph-warning text-solar"></i> зона риска</span>
-                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-7 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
+                <!-- Здесь подключается человек: узел обведён оранжевым пунктиром -->
+                <div class="border-2 border-dashed border-solar rounded-[16px] md:rounded-[24px] p-1 flex flex-col a-in a-in-5">
+                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-9 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
                         <i class="ph-fill ph-user-check text-xl md:text-5xl text-solar shrink-0 md:mb-3"></i>
                         <div class="min-w-0">
                             <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Человек</h3>
@@ -5315,8 +5340,8 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                 </div>
                 <i class="ph-bold ph-arrow-right text-black/25 text-xs md:text-lg self-center justify-self-center rotate-90 md:rotate-0"></i>
-                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 md:pt-5 flex flex-col a-in a-in-6">
-                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-7 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
+                <div class="border-2 border-transparent rounded-[16px] md:rounded-[24px] p-1 flex flex-col a-in a-in-6">
+                    <div class="flex-1 bg-white border border-grayBase rounded-[12px] md:rounded-[20px] px-2 py-1 md:px-1 md:py-9 flex flex-row md:flex-col items-center justify-start md:justify-center gap-2 md:gap-0 text-left md:text-center a-step">
                         <i class="ph-fill ph-paper-plane-tilt text-xl md:text-5xl text-solar shrink-0 md:mb-3"></i>
                         <div class="min-w-0">
                             <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Действие</h3>
@@ -5334,18 +5359,18 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     </div>
                 </div>
 
-                <!-- Чего хватает для демо и что показывает пилот — на ПК слева от записи в метрики:
-                     две плашки одной ширины под первыми четырьмя узлами, края — вровень с краями
-                     «Запроса» и «Уверенности» (тот же отступ 6px, что у карточек в обёртках),
-                     промежуток между плашками — как между карточками дорожки -->
-                <div class="md:row-start-2 md:col-start-1 md:col-span-7 md:self-end px-1.5 flex flex-col md:grid md:grid-cols-2 items-stretch gap-1.5 md:gap-[30px] mt-3 md:mt-0 a-in a-in-6">
-                    <div class="bg-white border-2 border-grayBase rounded-xl md:rounded-2xl px-2.5 py-1.5 md:px-4 md:py-3.5 flex flex-row items-center justify-start md:justify-center gap-2 md:gap-2.5">
+                <!-- Чего хватает для демо и что показывает пилот — по середине слайда (правка
+                     владельца 2026-10-01): на ПК две плашки одной ширины под четырьмя средними
+                     узлами (колонки 3–9 из 11 симметричны относительно центра), края — вровень
+                     с краями «Агента» и «Человека», промежуток — как между карточками дорожки -->
+                <div class="md:row-start-2 md:col-start-3 md:col-span-7 md:self-end px-1.5 flex flex-col md:grid md:grid-cols-2 items-stretch gap-1.5 md:gap-[30px] mt-3 md:mt-0 a-in a-in-6">
+                    <div class="bg-white border-2 border-grayBase rounded-xl md:rounded-2xl px-2.5 py-1.5 md:px-4 md:py-3.5 flex flex-row items-center justify-center gap-2 md:gap-2.5">
                         <i class="ph-fill ph-user-focus text-base md:text-3xl text-solar shrink-0"></i>
-                        <p class="text-[10px] md:text-base font-medium text-black leading-tight m-0">один представительный случай <br><span class="text-black/60">подтверждает возможность</span></p>
+                        <p class="text-[10px] md:text-base font-medium text-black leading-tight text-center m-0">один представительный случай <br><span class="text-black/60">подтверждает возможность</span></p>
                     </div>
-                    <div class="bg-white border-2 border-grayBase rounded-xl md:rounded-2xl px-2.5 py-1.5 md:px-4 md:py-3.5 flex flex-row items-center justify-start md:justify-center gap-2 md:gap-2.5">
+                    <div class="bg-white border-2 border-grayBase rounded-xl md:rounded-2xl px-2.5 py-1.5 md:px-4 md:py-3.5 flex flex-row items-center justify-center gap-2 md:gap-2.5">
                         <i class="ph-fill ph-stack text-base md:text-3xl text-solar shrink-0"></i>
-                        <p class="text-[10px] md:text-base font-medium text-black leading-tight m-0">устойчивость на потоке — <br><span class="text-black/60">отдельные данные пилота</span></p>
+                        <p class="text-[10px] md:text-base font-medium text-black leading-tight text-center m-0">устойчивость на потоке — <br><span class="text-black/60">отдельные данные пилота</span></p>
                     </div>
                 </div>
             </div>
@@ -5957,7 +5982,7 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                  на начало второго; левый отступ равен этой колонке стрелок, и раскадровка стоит по центру.
                  На телефоне ряды по две миниатюры, а стрелка перехода на следующий ряд занимает свою строку
                  по центру. Однострочное пояснение «Проблемы» держит коробку в две строки, а на телефоне
-                 соседи трёхстрочных «Агента» и «Экономики» — в три: иконки и названия в ряду стоят на одной
+                 соседи трёхстрочных «Агента» и «Экономики» (TO-BE и «План и запрос») — в три: иконки и названия в ряду стоят на одной
                  линии, а не лесенкой («выровняй по центру»). Строки пояснений не длиннее 23 знаков —
                  длиннее, и подгонщик телефона мельчит кегль ниже 10px.
                  Последняя миниатюра — тёмная: запрос на решение -->
@@ -5986,28 +6011,30 @@ window.__FIT = { mob: { bottom: 72 }, tightW: true };
                     <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 mt-0.5 md:mt-1 md:min-h-[2.5em]">входы · действия <br>результаты · границы <br>человек отвечает</p>
                 </div>
                 <i class="ph-bold ph-arrow-right text-black/25 text-sm md:text-xl w-4 md:w-5 text-center self-center justify-self-center col-span-3 md:col-span-1 rotate-[135deg]"></i>
+                <!-- Правка владельца 2026-10-01: «Инвестиции» убраны, после «Агента и человека» —
+                     «Демонстрация» (сквозной сценарий), за ней «Дашборд» с данными пилота -->
                 <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl w-full aspect-video px-1.5 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center a-in a-in-3 a-step">
                     <i class="ph-fill ph-monitor-play text-xl md:text-3xl leading-none text-solar mb-1 md:mb-1.5"></i>
-                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Дашборд</h3>
-                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 mt-0.5 md:mt-1 min-h-[3.75em] md:min-h-[2.5em]">сквозной сценарий <br>и данные пилота</p>
+                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Демонстрация</h3>
+                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 mt-0.5 md:mt-1 md:min-h-[2.5em]">один сквозной <br>сценарий</p>
                 </div>
                 <i class="ph-bold ph-arrow-right text-black/25 text-sm md:text-xl w-4 md:w-5 text-center self-center justify-self-center"></i>
                 <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl w-full aspect-video px-1.5 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center a-in a-in-3 a-step">
-                    <i class="ph-fill ph-calculator text-xl md:text-3xl leading-none text-solar mb-1 md:mb-1.5"></i>
-                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Экономика</h3>
-                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 mt-0.5 md:mt-1 md:min-h-[2.5em]">трудоёмкость · FTE <br>цена операции · выгоды <br>расходы · чистый эффект</p>
+                    <i class="ph-fill ph-chart-bar text-xl md:text-3xl leading-none text-solar mb-1 md:mb-1.5"></i>
+                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Дашборд</h3>
+                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 mt-0.5 md:mt-1 md:min-h-[2.5em]">метрики <br>и данные пилота</p>
                 </div>
                 <i class="ph-bold ph-arrow-right text-black/25 text-sm md:text-xl w-4 md:w-5 text-center self-center justify-self-center col-span-3 md:col-span-1 rotate-[135deg] md:rotate-0"></i>
                 <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl w-full aspect-video px-1.5 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center a-in a-in-4 a-step">
-                    <i class="ph-fill ph-chart-line-up text-xl md:text-3xl leading-none text-solar mb-1 md:mb-1.5"></i>
-                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Инвестиции</h3>
-                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 mt-0.5 md:mt-1 md:min-h-[2.5em]">оценка вложений <br>и сценарии масштаба</p>
+                    <i class="ph-fill ph-calculator text-xl md:text-3xl leading-none text-solar mb-1 md:mb-1.5"></i>
+                    <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Экономика</h3>
+                    <p class="text-[9px] md:text-sm text-black/60 leading-tight m-0 mt-0.5 md:mt-1 md:min-h-[2.5em]">трудоёмкость · FTE <br>цена операции · выгоды <br>расходы · чистый эффект</p>
                 </div>
                 <i class="ph-bold ph-arrow-right text-black/25 text-sm md:text-xl w-4 md:w-5 text-center self-center justify-self-center"></i>
                 <div class="bg-black border-2 border-solar rounded-xl md:rounded-2xl w-full aspect-video px-1.5 py-2 md:px-2 md:py-2 flex flex-col items-center justify-center text-center a-in a-in-4 a-step">
                     <i class="ph-fill ph-flag-checkered text-xl md:text-3xl leading-none text-solar mb-1 md:mb-1.5"></i>
                     <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0">План и запрос</h3>
-                    <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0 mt-0.5 md:mt-1 md:min-h-[2.5em]">месяц · квартал <br>ответственные · решение</p>
+                    <p class="text-[9px] md:text-sm text-white/70 leading-tight m-0 mt-0.5 md:mt-1 min-h-[3.75em] md:min-h-[2.5em]">месяц · квартал <br>ответственные · решение</p>
                 </div>
             </div>
 
