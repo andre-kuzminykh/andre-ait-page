@@ -46,13 +46,15 @@
                 </div>
 
                 <!-- Что есть у каждого шага: ответственный, срок, проверяемый результат.
-                     На телефоне подпись — своей строкой, три плашки — одним рядом, «срок» уже остальных
-                     (раньше «проверяемый результат» сползал один на вторую строку) -->
-                <div class="js-keep flex flex-row flex-wrap items-stretch md:items-center justify-center gap-1 md:gap-3 w-full mt-2 md:mt-4 a-in a-in-5">
-                    <span class="w-full md:w-auto text-center text-[10px] md:text-base font-medium text-black/60 whitespace-nowrap">у каждого шага</span>
-                    <span class="flex-[1.2_1_0%] md:flex-none flex items-center justify-center gap-1 md:gap-1.5 bg-white border border-grayBase rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 text-[10px] md:text-base font-medium text-black leading-tight text-center md:whitespace-nowrap"><i class="ph-fill ph-user text-solar shrink-0"></i>ответственный</span>
-                    <span class="flex-[0.6_1_0%] md:flex-none flex items-center justify-center gap-1 md:gap-1.5 bg-white border border-grayBase rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 text-[10px] md:text-base font-medium text-black leading-tight text-center md:whitespace-nowrap"><i class="ph-fill ph-calendar text-solar shrink-0"></i>срок</span>
-                    <span class="flex-[1.2_1_0%] md:flex-none flex items-center justify-center gap-1 md:gap-1.5 bg-white border border-grayBase rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 text-[10px] md:text-base font-medium text-black leading-tight text-center md:whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar shrink-0"></i>проверяемый результат</span>
+                     Плашка — одна строка (канон §3.7): на телефоне три плашки в ряд не помещаются
+                     (вместе на 38px шире рамки), и «проверяемый результат» ломался внутри плашки
+                     надвое. Поэтому на телефоне — сетка 2+1, как пятая карточка ряда из пяти:
+                     третья плашка во всю ширину, края всех трёх совпадают. На ПК — один ряд с подписью -->
+                <div class="grid grid-cols-2 md:flex md:flex-row md:flex-wrap md:items-center md:justify-center gap-1 md:gap-3 w-full mt-2 md:mt-4 a-in a-in-5">
+                    <span class="col-span-2 text-center text-[10px] md:text-base font-medium text-black/60 whitespace-nowrap">у каждого шага</span>
+                    <span class="flex items-center justify-center gap-1 md:gap-1.5 bg-white border border-grayBase rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 text-[10px] md:text-base font-medium text-black leading-tight whitespace-nowrap"><i class="ph-fill ph-user text-solar shrink-0"></i>ответственный</span>
+                    <span class="flex items-center justify-center gap-1 md:gap-1.5 bg-white border border-grayBase rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 text-[10px] md:text-base font-medium text-black leading-tight whitespace-nowrap"><i class="ph-fill ph-calendar text-solar shrink-0"></i>срок</span>
+                    <span class="col-span-2 flex items-center justify-center gap-1 md:gap-1.5 bg-white border border-grayBase rounded-lg md:rounded-xl px-1.5 py-1 md:px-3 md:py-1.5 text-[10px] md:text-base font-medium text-black leading-tight whitespace-nowrap"><i class="ph-fill ph-check-circle text-solar shrink-0"></i>проверяемый результат</span>
                 </div>
             </div>
 
