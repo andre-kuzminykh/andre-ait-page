@@ -760,6 +760,22 @@ def test_entry_has_no_video_circle():
         assert 'class="head"' not in page, rel + ": разметка кружка должна быть убрана"
 
 
+
+def test_pages_turn_native_inside_telegram():
+    """FR-SITE87: /automation_ru/ бот открывает как Telegram Mini App. В <head>
+    обеих страниц — проверка запуска (tools/tg_miniapp.py) в режиме обычной
+    прокрутки: жест Telegram «свернуть» здесь остаётся. Она стоит до скрипта
+    темы, SDK Telegram разметкой не подключается. Подробно —
+    tests/test_tg_miniapp.py."""
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    from tg_miniapp import head_snippet
+    for rel in _ENTRIES:
+        html = _read(rel)
+        head = html[:html.index("</head>")]
+        assert head.count(head_snippet("page")) == 1, rel
+        assert head.index("FR-SITE87") < head.index("Тема — до первой отрисовки"), rel
+        assert '<script src="https://telegram.org' not in html, rel
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:
