@@ -1,0 +1,80 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-8">
+        <div class="content-z max-w-[1300px] w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Перевод часов <span class="text-solar">в FTE</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Сколько полных ставок занимает высвобождённое время</p>
+
+            <!-- Цепочка-формула: месячная экономия → год → делим на фонд одного сотрудника → ставки.
+                 Девять дорожек: карточки 1fr, стрелки auto. Сноска о нормативе стоит во втором ряду
+                 на дорожках 5–9: они симметричны вокруг 7-й, поэтому сноска центрирована ровно под «2080».
+                 В разметке сноска идёт сразу за «2080» — на телефоне (столбик) она и встаёт под ним.
+                 Число с единицами — flex, прижатый книзу: строка не рвётся между «266 ч» и «40 мин» -->
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr] items-stretch gap-1 md:gap-x-2 md:gap-y-2 w-full">
+                <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:px-2 md:py-5 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-center h-full a-in">
+                    <i class="ph-fill ph-clock-countdown text-xl md:text-4xl text-solar shrink-0 md:mb-2"></i>
+                    <p class="flex items-end justify-center gap-x-1 md:gap-x-1.5 text-lg md:text-3xl font-black text-black leading-none m-0 whitespace-nowrap"><span>266</span><span class="text-sm md:text-xl">ч</span><span class="ml-0.5">40</span><span class="text-sm md:text-xl">мин</span></p>
+                    <p class="text-[10px] md:text-base text-black/60 leading-tight m-0 md:mt-1.5">в месяц</p>
+                </div>
+                <i class="ph-bold ph-arrow-right text-black/25 text-base md:text-2xl self-center justify-self-center rotate-90 md:rotate-0"></i>
+                <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:px-2 md:py-5 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-center h-full a-in a-in-2">
+                    <i class="ph-fill ph-calendar text-xl md:text-4xl text-solar shrink-0 md:mb-2"></i>
+                    <p class="flex items-center justify-center gap-x-1 md:gap-x-1.5 text-lg md:text-3xl font-black text-black leading-none m-0 whitespace-nowrap"><i class="ph-bold ph-x text-solar text-base md:text-2xl"></i><span>12</span></p>
+                    <p class="text-[10px] md:text-base text-black/60 leading-tight m-0 md:mt-1.5">месяцев</p>
+                </div>
+                <i class="ph-bold ph-arrow-right text-black/25 text-base md:text-2xl self-center justify-self-center rotate-90 md:rotate-0"></i>
+                <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:px-2 md:py-5 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-center h-full a-in a-in-3">
+                    <i class="ph-fill ph-hourglass-high text-xl md:text-4xl text-solar shrink-0 md:mb-2"></i>
+                    <p class="flex items-end justify-center gap-x-1 md:gap-x-1.5 text-lg md:text-3xl font-black text-black leading-none m-0 whitespace-nowrap"><span>3200</span><span class="text-sm md:text-xl">ч</span></p>
+                    <p class="text-[10px] md:text-base text-black/60 leading-tight m-0 md:mt-1.5">экономия за год</p>
+                </div>
+                <i class="ph-bold ph-arrow-right text-black/25 text-base md:text-2xl self-center justify-self-center rotate-90 md:rotate-0"></i>
+                <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:px-2 md:py-5 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-center h-full a-in a-in-4">
+                    <i class="ph-fill ph-briefcase text-xl md:text-4xl text-solar shrink-0 md:mb-2"></i>
+                    <p class="flex items-center justify-center gap-x-1 md:gap-x-1.5 text-lg md:text-3xl font-black text-black leading-none m-0 whitespace-nowrap"><i class="ph-bold ph-divide text-solar text-base md:text-2xl"></i><span>2080</span><span class="text-sm md:text-xl self-end">ч</span></p>
+                    <p class="text-[10px] md:text-base text-black/60 leading-tight m-0 md:mt-1.5">фонд на сотрудника</p>
+                </div>
+                <div class="md:col-start-5 md:col-span-5 md:row-start-2 flex flex-col items-center text-center">
+                    <i class="ph-bold ph-arrow-up text-black/25 text-sm md:text-xl"></i>
+                    <p class="text-[10px] md:text-sm text-black/60 leading-tight m-0"><span class="whitespace-nowrap">учебный норматив;</span> <span class="whitespace-nowrap">в компании — свой:</span> <span class="whitespace-nowrap">отпуска, праздники, доступность</span></p>
+                </div>
+                <i class="ph-bold ph-arrow-right text-black/25 text-base md:text-2xl self-center justify-self-center rotate-90 md:rotate-0"></i>
+                <div class="js-keep bg-solar rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:px-2 md:py-5 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-center h-full a-in a-in-5 a-pulse" style="color:#111;-webkit-text-fill-color:#111">
+                    <i class="ph-fill ph-identification-badge text-xl md:text-4xl shrink-0 md:mb-2"></i>
+                    <p class="flex items-center justify-center gap-x-1 md:gap-x-1.5 text-lg md:text-3xl font-black leading-none m-0 whitespace-nowrap"><i class="ph-bold ph-approximate-equals text-base md:text-2xl"></i><span>1,5</span><span class="text-sm md:text-xl self-end">ставки</span></p>
+                    <p class="text-[10px] md:text-base font-medium leading-tight m-0 md:mt-1.5">полной загрузки</p>
+                </div>
+            </div>
+
+            <!-- FTE описывает трудоёмкость; деньги появляются только после решения,
+                 куда направить освободившуюся загрузку, — три пути. «Результат зависит от решения»
+                 в тёмном блоке не пишем: это повтор полосы вывода. Стрелка — того же
+                 кегля, что в цепочке, чтобы все стрелки слайда были одинаковыми. Подписи — глаголами озвучки
+                 и все в две строки: иконки ряда стоят на одной высоте (с однострочной подписью
+                 средняя иконка проседала). На телефоне пути — строками «иконка + слово»,
+                 подпись в одну строку: вторая половина уходит вниз только с md:block -->
+            <div class="flex flex-col md:flex-row items-stretch gap-1.5 md:gap-3 w-full mt-3 md:mt-6">
+                <div class="md:w-[35%] shrink-0 bg-black border-2 border-solar rounded-[14px] md:rounded-[20px] p-2.5 md:p-4 flex flex-col items-center justify-center text-center a-in a-in-6">
+                    <h3 class="font-black text-[11px] md:text-lg text-solar leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-fill ph-hourglass-low"></i> FTE — эквивалент полной ставки</span></h3>
+                    <p class="text-[10px] md:text-base text-white/70 leading-tight m-0 mt-1 md:mt-1.5">снижение трудоёмкости, а не деньги</p>
+                </div>
+                <i class="ph-bold ph-arrow-right text-black/25 text-base md:text-2xl self-center shrink-0 rotate-90 md:rotate-0"></i>
+                <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-3 items-stretch">
+                    <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:p-4 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-center h-full a-in a-in-6">
+                        <i class="ph-fill ph-receipt text-xl md:text-4xl text-solar shrink-0 md:mb-2"></i>
+                        <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Сократить <span class="md:block whitespace-nowrap">внешние расходы</span></h3>
+                    </div>
+                    <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:p-4 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-center h-full a-in a-in-6">
+                        <i class="ph-fill ph-user-minus text-xl md:text-4xl text-solar shrink-0 md:mb-2"></i>
+                        <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0">Обойтись <span class="md:block whitespace-nowrap">без нового найма</span></h3>
+                    </div>
+                    <div class="js-keep bg-white border border-grayBase rounded-[14px] md:rounded-[20px] px-3 py-1.5 md:p-4 flex flex-row md:flex-col items-center justify-center gap-2 md:gap-0 text-center h-full a-in a-in-6">
+                        <i class="ph-fill ph-arrows-split text-xl md:text-4xl text-solar shrink-0 md:mb-2"></i>
+                        <h3 class="font-black text-[11px] md:text-lg text-black leading-tight m-0"><span class="whitespace-nowrap">Направить людей</span> <span class="md:block whitespace-nowrap">на другие задачи</span></h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0">Показатель не заменяет решения, <br><span class="font-black">как использовать освободившуюся загрузку</span></p>
+            </div>
+        </div>
+    </div>

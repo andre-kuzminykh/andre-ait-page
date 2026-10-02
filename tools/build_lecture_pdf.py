@@ -181,6 +181,44 @@ def static_montserrat_css():
     return "\n".join(out)
 
 
+# Размытая тень (`box-shadow` с blur, `filter: blur/drop-shadow`,
+# `backdrop-filter`) Chromium пишет в PDF мягкой маской (/SMask). pdfium её
+# размывает, а просмотрщик владельца рисовал вместо свечения плоский
+# фиолетовый прямоугольник до низа листа (LECTURE-GUIDE §13.3, грабля 3).
+# В печати размытых теней нет: остаются только слои без размытия (обводки),
+# размытые фильтры снимаются. Тот же приём, что в tools/lecture5/pdf.py —
+# скопирован, а не импортирован: тот модуль тянет за собой сборщик лекции 5.
+PRINT_SAFE_JS = """() => {
+  let n = 0;
+  const split = (v) => { const out = []; let d = 0, cur = '';
+    for (const ch of v) { if (ch === '(') d++; if (ch === ')') d--;
+      if (ch === ',' && !d) { out.push(cur.trim()); cur = ''; } else cur += ch; }
+    if (cur.trim()) out.push(cur.trim()); return out; };
+  const blurOf = (layer) => { const px = layer.replace(/rgba?\\([^)]*\\)/g, ' ')
+      .trim().split(/\\s+/).filter(t => /px$/.test(t)).map(parseFloat);
+    return px.length >= 3 ? px[2] : 0; };
+  document.querySelectorAll('body, body *').forEach(el => {
+    const c = getComputedStyle(el);
+    if (c.boxShadow && c.boxShadow !== 'none') {
+      const parts = split(c.boxShadow), keep = parts.filter(l => !(blurOf(l) > 0));
+      if (keep.length !== parts.length) {
+        el.style.setProperty('box-shadow', keep.length ? keep.join(', ') : 'none', 'important'); n++; }
+    }
+    if (c.textShadow && c.textShadow !== 'none') { el.style.setProperty('text-shadow', 'none', 'important'); n++; }
+    const f = c.filter || '';
+    if (/drop-shadow|blur/.test(f)) {
+      const b = /blur\\(([\\d.]+)px\\)/.exec(f);
+      el.style.setProperty('filter', 'none', 'important'); n++;
+      if (b && parseFloat(b[1]) > 0.5 && !(el.textContent || '').trim())
+        el.style.setProperty('visibility', 'hidden', 'important');
+    }
+    const bf = c.backdropFilter || c.webkitBackdropFilter || 'none';
+    if (bf !== 'none') { el.style.setProperty('backdrop-filter', 'none', 'important');
+      el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); n++; }
+  });
+  return n;
+}"""
+
 def build(lecture, out_path, theme):
     from playwright.sync_api import sync_playwright
     from pypdf import PdfReader, PdfWriter
@@ -242,6 +280,7 @@ def build(lecture, out_path, theme):
             # кегль и переносы уже посчитаны, меняются только заливки.
             for w0, w1 in (page.evaluate(JS_SPLIT_GRADIENT) or []):
                 drift = max(drift, abs(w1 - w0))
+            page.evaluate(PRINT_SAFE_JS)
             # Размер листа берётся ИЗ СТРАНИЦЫ (@page в PAGE_CSS), а не из
             # аргументов. С width/height Chromium раскладывал печать сам и
             # разъезжался с экраном: содержимое выходило шире листа, и обложку
@@ -259,6 +298,16 @@ def build(lecture, out_path, theme):
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "wb") as f:
         writer.write(f)
+    # Мягкие маски (/SMask в ExtGState) — след размытых теней: не каждый
+    # просмотрщик их отрабатывает, и свечение становится плоским прямоугольником.
+    masked = []
+    for i, pg in enumerate(PdfReader(out_path).pages):
+        gs = (pg.get("/Resources") or {}).get("/ExtGState") or {}
+        gs = gs.get_object() if hasattr(gs, "get_object") else gs
+        if any(str(v.get_object().get("/SMask", "/None")) != "/None" for v in gs.values()):
+            masked.append(i + 1)
+    if masked:
+        sys.exit("в PDF остались мягкие маски (размытые тени) на листах: %s" % masked[:10])
     size = os.path.getsize(out_path) / 1024 / 1024
     print("собран PDF: %s (%d страниц, %.1f МБ)" % (out_path, pages, size))
     return 0

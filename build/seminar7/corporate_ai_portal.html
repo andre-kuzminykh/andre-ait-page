@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Корпоративный ИИ-портал</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<style>
+/* Корпоративный ИИ-портал: сверху агенты выбранной роли, ниже дашборд роли,
+   под ним разворот подробностей, в самом низу — лента вебинаров. Инструкция
+   агента — отдельный экран. Всё содержимое — в блоке CONFIG. */
+:root{ --p:#8B5CF6; --o:#F97316; --soft:#F6F6F8; --ln:#E8E8EE; --mu:#6B6B76; --fg:#111114; --ok:#16a34a; }
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{ background:#fff; color:var(--fg); font-family:Montserrat,system-ui,sans-serif; font-size:15px; }
+main{ max-width:1200px; margin:0 auto; padding:36px 32px 70px; }
+@media (max-width:820px){ main{ padding:22px 16px 50px; } }
+h1{ font-size:34px; font-weight:900; letter-spacing:-.01em; } h1 span{ color:var(--p); }
+h2{ font-size:24px; font-weight:900; display:flex; align-items:center; gap:10px; } h3{ font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; }
+.top{ display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:26px; }
+.sec{ display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; margin:40px 0 16px; }
+.info{ position:relative; display:inline-flex; width:20px; height:20px; border-radius:50%; border:1.5px solid #A1A1AA; color:#A1A1AA; font-size:12px; font-weight:800; align-items:center; justify-content:center; cursor:help; font-style:normal; flex-shrink:0; }
+.info:hover::after, .info:focus::after{ content:attr(data-tip); position:absolute; left:50%; top:28px; transform:translateX(-50%); width:320px; background:var(--fg); color:#fff; font-size:13px; font-weight:500; line-height:1.5; padding:12px 14px; border-radius:12px; z-index:20; text-align:left; }
+.grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+.g2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width:820px){ .g2{ grid-template-columns:1fr; } }
+.card{ background:#fff; border:1px solid var(--ln); border-radius:20px; padding:20px; }
+.card.soft{ background:var(--soft); border-color:transparent; }
+.agent{ display:flex; flex-direction:column; gap:10px; transition:border-color .2s; } .agent:hover{ border-color:var(--p); }
+.agent h3 i{ color:var(--p); font-size:19px; }
+.tag{ display:inline-block; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-radius:999px; background:var(--soft); color:var(--mu); }
+.tag.p{ background:rgba(139,92,246,.12); color:var(--p); } .tag.o{ background:rgba(249,115,22,.12); color:var(--o); }
+.btn{ background:var(--p); color:#fff; border:0; border-radius:12px; padding:10px 16px; font:inherit; font-weight:800; font-size:13px; cursor:pointer; display:inline-flex; gap:8px; align-items:center; text-decoration:none; white-space:nowrap; }
+.btn.g{ background:var(--soft); color:var(--fg); } .btn.ok{ background:var(--ok); } .btn.o{ background:var(--o); color:#111; } .btn.ic{ padding:8px 12px; font-size:17px; }
+.row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.muted{ color:var(--mu); font-size:14px; line-height:1.55; }
+select,input,textarea{ background:#fff; color:var(--fg); border:1px solid var(--ln); border-radius:12px; padding:10px 12px; font:inherit; font-size:14px; }
+.rolesel{ font-weight:700; min-width:220px; } textarea{ width:100%; min-height:70px; }
+.kpi{ font-size:34px; font-weight:900; } .kpi small{ font-size:13px; color:var(--mu); font-weight:700; }
+.notif{ border-left:4px solid var(--o); } .notif.gone{ opacity:0; transform:translateX(30px); transition:.35s; }
+.chat{ height:300px; overflow:auto; display:flex; flex-direction:column; gap:10px; padding:4px; }
+.msg{ max-width:80%; padding:11px 15px; border-radius:16px; line-height:1.45; }
+.msg.u{ align-self:flex-end; background:var(--p); color:#fff; } .msg.a{ align-self:flex-start; background:var(--soft); }
+.fb{ margin-top:8px; display:flex; gap:6px; }
+table{ width:100%; border-collapse:collapse; font-size:13px; } td,th{ border-bottom:1px solid var(--ln); padding:9px 6px; text-align:left; vertical-align:middle; } th{ color:var(--mu); font-weight:700; }
+.step{ display:flex; gap:14px; padding:12px 0; line-height:1.55; border-bottom:1px solid var(--ln); } .step:last-child{ border:0; }
+.step b{ flex-shrink:0; width:30px; height:30px; border-radius:50%; background:rgba(139,92,246,.12); color:var(--p); display:flex; align-items:center; justify-content:center; }
+.back{ color:var(--p); font-weight:800; text-decoration:none; display:inline-flex; gap:6px; align-items:center; margin-bottom:14px; }
+.cnt{ font-size:13px; font-weight:800; background:rgba(139,92,246,.12); color:var(--p); border-radius:999px; padding:3px 10px; }
+.typing{ color:var(--mu); }
+.goal{ font-size:13px; font-weight:700; color:var(--mu); margin-top:auto; padding-top:6px; }
+.fold{ cursor:pointer; user-select:none; display:inline-flex; gap:8px; align-items:center; } .fold .cr{ color:var(--mu); font-size:18px; transition:transform .2s; } .fold.shut .cr{ transform:rotate(-90deg); } .fold:hover{ color:var(--p); }
+.lesson{ margin-top:14px; } .lh{ display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+.lh b{ width:30px; height:30px; border-radius:50%; background:var(--p); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.lp{ line-height:1.65; } .lesson ul{ padding-left:20px; line-height:1.6; } .lesson li{ margin:6px 0; }
+.split h4{ display:flex; gap:8px; align-items:center; font-size:15px; margin-bottom:6px; } .split h4 i{ color:var(--p); }
+.case{ padding:12px 0; border-bottom:1px solid var(--ln); } .case:last-child{ border:0; } .case p{ margin-top:6px; line-height:1.6; }
+.bad li::marker{ color:var(--o); }
+.more{ display:flex; justify-content:center; margin-top:16px; }
+.mat{ display:flex; gap:14px; align-items:flex-start; text-decoration:none; color:inherit; flex:1; }
+.mat i.pl{ font-size:30px; color:var(--p); } .mat h4{ font-size:15px; font-weight:800; margin-bottom:4px; } .mat:hover h4{ color:var(--p); }
+.del{ background:none; border:0; color:#A1A1AA; font-size:18px; cursor:pointer; }
+.modal{ position:fixed; inset:0; background:rgba(17,17,20,.45); display:none; align-items:center; justify-content:center; z-index:30; }
+.modal.on{ display:flex; } .modal .card{ width:min(520px,92vw); display:flex; flex-direction:column; gap:12px; }
+.toast{ position:fixed; right:20px; bottom:20px; background:var(--fg); color:#fff; font-weight:700; padding:10px 16px; border-radius:12px; display:none; z-index:40; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div class="modal" id="modal"><div class="card">
+  <h3>Добавить материал</h3>
+  <input id="mTitle" placeholder="Название">
+  <input id="mUrl" placeholder="Ссылка https://…">
+  <textarea id="mDesc" placeholder="Коротко: чему учит материал"></textarea>
+  <select id="mRole"></select>
+  <div class="row"><button class="btn" onclick="addMat()">Добавить</button><button class="btn g" onclick="modal(false)">Отмена</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+<script>
+/* ═══════════ КОНФИГ: ментор меняет только этот блок (см. инструкцию) ═══════════ */
+const N8N_WEBHOOK = '';           // вебхук n8n: каждая строка журнала уходит сюда (пусто — только в браузере)
+const DASHBOARD_URL = '';         // ссылка на Streamlit / DataLens — кнопка в развёрнутом дашборде
+const PORTAL_NAME = 'Корпоративный ИИ-портал';
+const CHAT_WEBHOOK = '';          // вебхук n8n с моделью (OpenAI): чат отвечает вживую; пусто — ответы-примеры из CONFIG.answers
+const CONFIG = {
+  processes:[
+    {id:'p1', name:'Подготовка коммерческого предложения'},
+    {id:'p2', name:'Первичная консультация клиента'},
+    {id:'p3', name:'Управление портфелем проектов'}],
+  // type: view — дашборд · decide — уведомления с решениями · recommend — рекомендации · chat — чат с агентом
+  roles:[
+    {id:'r1', name:'Консультант', type:'view'},
+    {id:'r2', name:'Партнёр', type:'decide'},
+    {id:'r3', name:'Менеджер проектов', type:'recommend'},
+    {id:'r4', name:'Методолог', type:'chat'}],
+  // steps — как работать пошагово; learn — обучение: why, agent, you, example{case,agent,you}, mistakes
+  agents:[
+    {id:'a1', name:'Агент квалификации сделок', roles:['r1','r2'], processes:['p1'], does:'Проверяет бюджет и срок сделки, заполняет карточку в CRM и передаёт сделку в работу.',
+     steps:['Новая сделка попадает в CRM — агент запускается сам, ничего нажимать не нужно.','Агент сверяет бюджет и срок с правилами компании и заполняет карточку: отрасль, задача, контакт, ограничения.','Если всё сходится, сделка уходит в этап «Готовим КП», и на дашборде растёт счётчик квалифицированных сделок.','Если бюджет или срок вне правил, агент не отказывает клиенту сам: карточка уходит партнёру уведомлением.','Консультант проверяет карточку на дашборде перед первым звонком: данные клиента, история, ограничения.'],
+     learn:{
+       why:'Раньше консультант тратил до часа на каждую входящую заявку: искал клиента в CRM, уточнял бюджет, заполнял карточку. Половина заявок оказывалась неподходящей. Агент делает первичную проверку за минуты, и люди тратят время только на сделки, которые можно взять в работу.',
+       agent:['Читает заявку и находит клиента в CRM.','Сверяет бюджет и срок с правилами компании.','Заполняет карточку сделки: отрасль, задача, контакт, ограничения.','Переводит подходящую сделку в этап «Готовим КП».','Отправляет партнёру спорные случаи — сам клиенту не отказывает.'],
+       you:['Консультант: проверяет карточку перед первым звонком и дополняет то, чего агент не знал.','Партнёр: решает спорные случаи из уведомлений — одобрить или отклонить и почему.','Оба: сообщают, если агент ошибся в карточке, — через журнал или методологу.'],
+       example:{case:'Заявка от сети клиник: «нужна стратегия цифровизации, бюджет 1,5 млн, срок — месяц».',
+         agent:'Находит клиента в CRM (был проект в 2024-м), заполняет карточку. Видит: по правилам стратегия стоит от 2,5 млн и делается от 6 недель. Сам не отказывает — отправляет партнёру уведомление «бюджет и срок ниже правил».',
+         you:'Партнёр смотрит историю клиента, выбирает причину «клиент стратегический» и одобряет: сделка идёт в работу с урезанным объёмом. Решение и причина попадают в журнал — в следующий раз агент учтёт такой случай.'},
+       mistakes:['Считать карточку агента окончательной и не читать её перед звонком.','Молча исправлять ошибки агента в CRM: в журнал они не попадают, и агент повторяет ошибку.','Одобрять спорные сделки без причины: без причины решение нельзя использовать для дообучения.']}},
+    {id:'a2', name:'Агент черновика КП', roles:['r2','r1'], processes:['p1'], does:'Собирает черновик КП и оценку трудозатрат по похожим кейсам; цену и объём утверждает партнёр.',
+     steps:['Когда сделка переходит в «Готовим КП», агент извлекает требования из протокола встречи.','Агент подбирает 2–3 похожих кейса и считает оценку часов с диапазоном и обоснованием.','Стоимость рассчитывается по ставкам ролей автоматически — без участия модели.','Черновик приходит партнёру уведомлением на дашборд: текст ситуации, оценка и варианты объёма.','Партнёр выбирает причину и нажимает «Одобрить» или «Отклонить». Одобренное КП агент сохраняет в CRM, отклонённое возвращается на доработку.','Решение можно изменить в журнале, если вы ошиблись или появились новые данные.'],
+     learn:{
+       why:'Черновик КП раньше собирали два-три дня: искали похожие проекты, считали часы, переписывали шаблон. Агент готовит черновик за час, опираясь на прошлые кейсы. Но цена и объём — это обязательства компании, поэтому последнее слово всегда за партнёром.',
+       agent:['Извлекает требования клиента из протокола встречи.','Находит 2–3 похожих прошлых проекта.','Оценивает трудозатраты диапазоном и объясняет, откуда цифры.','Собирает черновик КП по шаблону компании.','Присылает партнёру уведомление с вариантами объёма.'],
+       you:['Партнёр: проверяет оценку и объём, выбирает причину и одобряет или отклоняет.','Партнёр: при необходимости меняет решение в журнале.','Консультант: видит на дашборде, сколько КП в работе, и готовит клиента к встрече.'],
+       example:{case:'После встречи с «Ритейл Групп» нужно КП на стратегию.',
+         agent:'Находит похожие кейсы К-214 и К-287, оценивает 320–380 часов и предлагает два варианта: «только стратегия» и «стратегия с внедрением». Стоимость считается по ставкам автоматически.',
+         you:'Партнёр видит, что в К-287 внедрение заняло больше времени, чем планировали. Выбирает «оценка занижена» и отклоняет. Черновик уходит на доработку, а журнал запоминает причину.'},
+       mistakes:['Одобрять КП, не открыв кейсы, на которых построена оценка.','Отклонять без причины: агент не поймёт, что исправить.','Править цену прямо в документе после одобрения — расхождение не попадёт в журнал.']}},
+    {id:'a3', name:'Агент портфеля проектов', roles:['r3'], processes:['p3'], does:'Каждое утро приносит менеджеру риски сроков, загрузку команды и сделки без движения.',
+     steps:['Каждое утро в 9:00 агент собирает данные из трекера, CRM и таблицы загрузки.','На дашборде появляются рекомендации: что отстаёт, где перегрузка, какие сделки стоят.','Прочитайте рекомендацию и решите, что делать: агент только сообщает, действует менеджер.','Отметьте 👍, если рекомендация помогла, или 👎, если она лишняя или неточная.','Раз в неделю смотрите на дашборде долю полезных рекомендаций — по ней агента настраивают.'],
+     learn:{
+       why:'Менеджер проектов узнаёт о проблемах, когда они уже случились: срок сорван, команда перегружена, сделка остыла. Агент каждое утро просматривает трекер, CRM и загрузку и приносит то, на что стоит посмотреть сегодня. Агент только сообщает — действует менеджер.',
+       agent:['Каждое утро в 9:00 собирает данные из трекера, CRM и таблицы загрузки.','Находит отстающие задачи, перегруженных людей и сделки без движения.','Формулирует рекомендацию с цифрами и сроком.','Учится на ваших оценках: приносит больше полезного и меньше шума.'],
+       you:['Читаете рекомендации утром, до планёрки.','Решаете, что делать, и делаете это сами: переназначаете, звоните, двигаете сроки.','Ставите 👍 полезной рекомендации и 👎 лишней или неточной.'],
+       example:{case:'Утро понедельника. На дашборде три рекомендации.',
+         agent:'«Проект К-301 отстаёт на 4 дня: 6 задач без исполнителя. Перераспределите до среды».',
+         you:'Менеджер переназначает задачи на планёрке и ставит 👍. Вторая рекомендация о сделке, которую он уже закрыл вчера, — ставит 👎. В следующий раз агент проверит свежий статус.'},
+       mistakes:['Не ставить оценки: без них агент не понимает, что полезно.','Ждать, что агент сам переназначит задачи, — он только сообщает.','Ставить 👍 из вежливости: так агент будет приносить больше шума.']}},
+    {id:'a4', name:'Агент-методолог', roles:['r4','r1'], processes:['p2'], does:'Отвечает по методологии и прошлым кейсам; методолог оценивает ответы и исправляет плохие.',
+     steps:['Откройте чат на дашборде и задайте вопрос обычным языком: по методологии, этапам, прошлым кейсам.','Агент отвечает только по базе знаний и архиву кейсов и называет источник.','Если ответа в базе нет, агент честно пишет «передаю эксперту» и не додумывает.','Оцените ответ: 👍 — верно, 👎 — ошибка или неполный ответ.','К плохому ответу напишите правильный — он попадёт в журнал и станет примером для дообучения.'],
+     learn:{
+       why:'Методология компании живёт в десятках документов и в головах экспертов. Консультанты тратят часы на поиск ответа или отвлекают методолога. Агент отвечает сразу, но только по базе знаний. Методолог следит за качеством ответов и исправляет ошибки — так база и агент становятся лучше.',
+       agent:['Отвечает на вопросы по методологии, этапам и срокам.','Ищет похожие кейсы в архиве и называет источник.','Если ответа в базе нет — честно пишет «передаю эксперту» и не додумывает.'],
+       you:['Методолог: задаёт проверочные вопросы и оценивает ответы 👍/👎.','Методолог: к плохому ответу пишет правильный — это эталон для дообучения.','Консультант: пользуется ответами агента и сообщает методологу, если ответ вызывает сомнения.'],
+       example:{case:'Вопрос: «Сколько длится диагностика для ритейла?»',
+         agent:'«2–3 недели: интервью с руководителями, анализ данных, карта процессов AS-IS. Похожий кейс — К-287». Источник назван.',
+         you:'Методолог знает, что для сетей больше 50 магазинов диагностика идёт 4 недели. Ставит 👎 и пишет правильный ответ. Он попадает в журнал, и после дообучения агент будет отвечать точнее.'},
+       mistakes:['Ставить 👎 без правильного ответа: агент не узнает, как надо.','Доверять ответу без источника.','Считать «передаю эксперту» ошибкой: это правильное поведение, когда в базе нет ответа.']}}],
+  // метрики дашборда по ролям: donut — кольцо, kpi — число
+  metrics:{
+    r1:[{name:'Сделок квалифицировано',v:34,t:'40 / нед',kind:'kpi'},{name:'Решено с первого обращения',v:78,t:'≥ 80%',kind:'donut'},{name:'Ответы агента приняты',v:86,t:'≥ 85%',kind:'donut'},{name:'Среднее время ответа, мин',v:12,t:'≤ 15',kind:'kpi'}],
+    r2:[{name:'КП подготовлено агентом',v:27,t:'30 / нед',kind:'kpi'},{name:'Доля одобренных решений',v:82,t:'≥ 80%',kind:'donut'},{name:'Время решения, ч',v:3.4,t:'≤ 4',kind:'kpi'},{name:'Передано человеку',v:18,t:'≤ 20%',kind:'donut'}],
+    r3:[{name:'Проекты в срок',v:71,t:'≥ 80%',kind:'donut'},{name:'Полезные рекомендации',v:74,t:'≥ 70%',kind:'donut'},{name:'Рисков выявлено',v:9,t:'за неделю',kind:'kpi'},{name:'Загрузка команды',v:112,t:'≤ 100%',kind:'kpi'}],
+    r4:[{name:'Хорошие ответы агента',v:88,t:'≥ 85%',kind:'donut'},{name:'Исправлений за неделю',v:14,t:'для дообучения',kind:'kpi'},{name:'Вопросов в чате',v:63,t:'за неделю',kind:'kpi'},{name:'Передано эксперту',v:11,t:'≤ 15%',kind:'donut'}]},
+  week:{ labels:['пн','вт','ср','чт','пт','сб','вс'],
+    r1:[6,8,5,7,6,1,1], r2:[4,6,5,7,3,1,1], r3:[2,1,3,1,2,0,0], r4:[9,12,8,14,11,5,4] },
+  weekLabel:{ r1:'сделок в день', r2:'решений в день', r3:'рисков в день', r4:'вопросов в день' },
+  queue:[
+    {id:'D-1042', agent:'a2', text:'КП для «Ритейл Групп»: 320–380 ч, два варианта объёма — стратегия или стратегия с внедрением.'},
+    {id:'D-1047', agent:'a2', text:'Клиент просит скидку 15% — агент не вправе, нужно решение партнёра.'},
+    {id:'D-1051', agent:'a1', text:'Кейсов по отрасли нет — оценка по смежной отрасли с запасом 25%.'}],
+  reasons:['оценка верна','оценка завышена','оценка занижена','нарушено правило','не хватает данных'],
+  recs:['Проект «Логистика-2» отстаёт на 6 дней: не закрыт этап интервью, ответственный в отпуске до пятницы.',
+        'Загрузка аналитиков на следующей неделе 128% — два проекта стартуют одновременно.',
+        'Сделка D-1039 без движения 12 дней: последнее письмо клиента без ответа.'],
+  answers:['По методологии диагностика занимает 2–3 недели: интервью с руководителями, анализ данных и карта процессов AS-IS. Похожий кейс — K-287, ритейл.',
+           'Эффект считаем от базовой метрики до проекта; без базовой метрики эффект клиенту не обещаем.',
+           'Этого нет в базе знаний — передаю вопрос эксперту, чтобы не додумывать.'],
+  materials:[
+    {role:'all', title:'Официальный курс для начинающих (2 часа)', url:'https://youtu.be/4BVTkqbn_tY', desc:'Основы автоматизации: триггеры, фильтры и действия — и почему сначала нужно нарисовать процесс.'},
+    {role:'all', title:'Официальный продвинутый курс (2 часа)', url:'https://youtu.be/TFTLMQLozCI?list=PLlET0GsrLUL5bxmx5c1H1Ms_OtOPYZIEG', desc:'Как данные идут по веткам воркфлоу, узел Merge и циклы по элементам с учётом лимитов API.'},
+    {role:'all', title:'Официальный учебник n8n', url:'https://docs.n8n.io/courses/level-one/', desc:'Установка, интерфейс, структура данных, условия и расписание — на двух учебных воркфлоу.'},
+    {role:'all', title:'Мастер-класс n8n (1,5 часа)', url:'https://youtu.be/ZHH3sr234zY', desc:'От основ до ИИ-агентов: первая автоматизация «Google Таблицы → модель» и RAG.'},
+    {role:'all', title:'Gemini 101', url:'https://youtu.be/6nOrhMoYpgA', desc:'Что такое Gemini и как он ускоряет работу в Google Workspace.'},
+    {role:'all', title:'Gemini: полный курс для начинающих', url:'https://youtu.be/GUQNQnJrabk', desc:'Gemini в браузере и в Workspace: письма, планирование и повседневные задачи.'},
+    {role:'all', title:'Письма в Gmail с «Help me write»', url:'https://support.google.com/mail/answer/13955415', desc:'Черновик письма с нуля или правка готового текста: строже, подробнее, короче.'},
+    {role:'all', title:'Заметки встречи в Meet', url:'https://support.google.com/meet/answer/14754931', desc:'«Take notes for me»: конспект встречи сам сохраняется в Google Документ.'},
+    {role:'all', title:'Gemini в Документах', url:'https://support.google.com/docs/answer/13951448', desc:'Новый текст по запросу или переписать выделенное: тон, длина, формат.'},
+    {role:'all', title:'Gemini в Таблицах', url:'https://support.google.com/docs/answer/14356410', desc:'Таблицы, графики и сводки по файлам с Диска — запросами на обычном языке.'},
+    {role:'all', title:'Gemini в Презентациях', url:'https://support.google.com/docs/answer/14355071', desc:'Новые слайды, тексты и картинки, краткое содержание презентации.'}]
+};
+/* ═══════════ дальше ментору ничего менять не нужно ═══════════ */
+const C = CONFIG;
+const TYPE = { view:'дашборд', decide:'решения', recommend:'рекомендации', chat:'чат с агентом' };
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const role = id => C.roles.find(r => r.id === id) || C.roles[0];
+const agent = id => C.agents.find(a => a.id === id) || C.agents[0];
+const proc = id => (C.processes.find(p => p.id === id) || {}).name || '';
+const get = (k, d) => { try{ return JSON.parse(localStorage.getItem(k)) || d; }catch(e){ return d; } };
+const put = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+function toast(t){ const e = $('#toast'); e.textContent = t; e.style.display = 'block'; clearTimeout(e._t); e._t = setTimeout(() => e.style.display = 'none', 1500); }
+let curRole = get('ic-role', C.roles[0].id); if (!C.roles.find(r => r.id === curRole)) curRole = C.roles[0].id;
+function setRole(id){ curRole = id; put('ic-role', id); route(); }
+const info = t => `<i class="info" tabindex="0" data-tip="${esc(t)}">i</i>`;
+const roleSel = () => `<select class="rolesel" onchange="setRole(this.value)" aria-label="Роль">${C.roles.map(r => `<option value="${r.id}" ${r.id===curRole?'selected':''}>${esc(r.name)}</option>`).join('')}</select>`;
+const agentsOf = rid => C.agents.filter(a => a.roles.includes(rid));
+
+/* журнал */
+const logs = () => get('ic-log', []);
+function send(r){ if (N8N_WEBHOOK) fetch(N8N_WEBHOOK, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(r)}).catch(() => {}); }
+function addLog(r){ r.id = Date.now(); r.ts = new Date().toLocaleString('ru-RU'); const L = logs(); L.push(r); put('ic-log', L); send(r); toast('записано в журнал'); }
+
+/* диаграммы */
+function donut(v, color){ const r = 44, c = 2*Math.PI*r, d = Math.min(100, v) / 100 * c;
+  return `<svg width="112" height="112" viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" fill="none" stroke="#EEEEF2" stroke-width="12"/>
+  <circle cx="60" cy="60" r="${r}" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${d} ${c}" transform="rotate(-90 60 60)"/>
+  <text x="60" y="67" text-anchor="middle" font-size="22" font-weight="900" font-family="Montserrat,sans-serif" fill="#111114">${v}%</text></svg>`; }
+function bars(vals, labels){ const m = Math.max(...vals, 1), w = 560, h = 170, bw = w / vals.length;
+  return `<svg viewBox="0 -24 ${w} ${h + 54}" width="100%" style="max-height:250px">${vals.map((v,i) => { const bh = Math.max(4, v / m * h);
+    return `<rect x="${i*bw + bw*.22}" y="${h - bh}" width="${bw*.56}" height="${bh}" rx="8" fill="${v === m ? 'var(--o)' : 'var(--p)'}"/><text x="${i*bw + bw/2}" y="${h - bh - 7}" text-anchor="middle" font-size="13" font-weight="800" font-family="Montserrat,sans-serif" fill="#111114">${v}</text><text x="${i*bw + bw/2}" y="${h + 22}" text-anchor="middle" font-size="12" font-family="Montserrat,sans-serif" fill="#6B6B76">${labels[i]}</text>`; }).join('')}</svg>`; }
+function widget(m, n){ return `<div class="card soft" style="display:flex;flex-direction:column"><h3>${esc(m.name)}</h3><div class="row" style="justify-content:space-between;flex-wrap:nowrap;margin-top:10px">
+  <div class="kpi">${m.kind === 'donut' ? '' : esc(String(m.v).replace('.', ','))}</div>
+  ${m.kind === 'donut' ? donut(m.v, n % 2 ? 'var(--o)' : 'var(--p)') : `<i class="ph-fill ph-trend-up" style="font-size:38px;color:var(--p)"></i>`}</div><p class="goal">цель ${esc(m.t)}</p></div>`; }
+function widgets(M){ let n = 0; return M.map(m => widget(m, m.kind === 'donut' ? n++ : 0)).join(''); }
+
+/* ── главная ── */
+let detail = false, fold = get('ic-fold', {});
+// жалоба владельца: каждый блок главной сворачивается; состояние помнится в браузере
+function tg(k){ fold[k] = !fold[k]; put('ic-fold', fold); route(true); }
+function sec(k, title, tip, extra, top, n){ return `<div class="sec"${top ? ' style="margin-top:0"' : ''}><h2><span class="fold${fold[k] ? ' shut' : ''}" onclick="tg('${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tg('${k}')}" role="button" tabindex="0" aria-expanded="${!fold[k]}"><i class="ph-fill ph-caret-down cr"></i>${title}${n !== undefined ? `<span class="cnt">${n}</span>` : ''}</span> ${info(tip)}</h2>${extra || ''}</div>`; }
+function viewHome(){
+  const r = role(curRole), ags = agentsOf(r.id), M = C.metrics[r.id] || [], wk = C.week[r.id] || [];
+  let work = '', wt = [], wn;
+  if (r.type === 'decide'){ const done = get('ic-done', []), q = C.queue.filter(x => !done.includes(x.id)); wn = q.length;
+    wt = ['Решения', 'Выберите причину и нажмите «Одобрить» или «Отклонить» — решение уйдёт в журнал, уведомление исчезнет. Причина — разметка для дообучения. Изменить решение можно в журнале.'];
+    work = `<div class="card">
+    ${q.length ? q.map(x => `<div class="card soft notif" id="n-${x.id}" style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><b>${x.id}</b><span class="tag p">${esc(agent(x.agent).name)}</span></div><p style="margin:8px 0 12px;line-height:1.5">${esc(x.text)}</p>
+      <div class="row"><select id="w-${x.id}" aria-label="Причина">${C.reasons.map(t => `<option>${t}</option>`).join('')}</select><button class="btn ok" onclick="decide('${x.id}','одобрено')"><i class="ph-fill ph-check"></i>Одобрить</button><button class="btn o" onclick="decide('${x.id}','отклонено')"><i class="ph-fill ph-x"></i>Отклонить</button></div></div>`).join('')
+      : `<p class="muted">Новых уведомлений нет.</p>`}</div>`; }
+  if (r.type === 'recommend'){ wn = C.recs.length; wt = ['Рекомендации агента', 'Отметьте 👍 или 👎 — так агент учится приносить полезное. Действие выполняете вы.']; work = `<div class="card">${C.recs.map((t,i) => `<div class="card soft" style="margin-bottom:12px"><p style="line-height:1.5"><i class="ph-fill ph-lightbulb" style="color:var(--o)"></i> ${esc(t)}</p><div class="row" style="margin-top:10px"><button class="btn g ic" title="полезно" onclick="rate(${i},'полезно',this)">👍</button><button class="btn g ic" title="не полезно" onclick="rate(${i},'не полезно',this)">👎</button></div></div>`).join('')}</div>`; }
+  if (r.type === 'chat'){ wt = ['Чат с агентом', 'Оцените каждый ответ. К плохому ответу напишите правильный — исправление попадёт в набор для дообучения.']; work = `<div class="card"><div class="chat" id="chat">${msgs()}</div><div class="row" style="margin-top:10px;flex-wrap:nowrap"><input id="q" style="flex:1;min-width:0" placeholder="Вопрос агенту…" onkeydown="if(event.key==='Enter')ask()"><button class="btn" onclick="ask()">Отправить</button></div></div>`; }
+  const mats = get('ic-mats', []).map((m,i) => Object.assign({own:i}, m)).reverse().concat(C.materials).filter(m => m.role === 'all' || m.role === curRole);
+  return `<div class="top"><h1>${esc(PORTAL_NAME)}</h1><div class="row">${roleSel()}<a class="btn g" href="#/log"><i class="ph-fill ph-table"></i>Журнал</a></div></div>
+
+  ${sec('ag', 'Агенты', 'Агенты выбранной роли. «Инструкция» — подробно, как работать с агентом: что он делает сам, где нужен человек и что отмечать для дообучения.', '', true, ags.length)}
+  ${fold.ag ? '' : !ags.length ? `<div class="card"><p class="muted">Для этой роли агенты пока не назначены: добавьте id роли в поле roles нужного агента в CONFIG.</p></div>` : `<div class="grid">${ags.map(a => `<div class="card agent"><h3><i class="ph-fill ph-robot"></i>${esc(a.name)}</h3><p class="muted" style="flex:1">${esc(a.does)}</p>
+    <p class="muted" style="font-size:12px">${a.processes.map(proc).map(esc).join(' · ')}</p><div><div class="row"><a class="btn g" href="#/help/${a.id}"><i class="ph-fill ph-book-open"></i>Инструкция и обучение</a></div></div></div>`).join('')}</div>`}
+
+  ${sec('db', 'Дашборд · ' + esc(r.name), 'Дашборд роли по журналу действий. Живые данные подтягиваются из таблицы логов n8n; внешний дашборд Streamlit / DataLens открывается из развёрнутого вида.')}
+  ${fold.db ? '' : `<div class="g2">${widgets(M)}</div>
+  <div class="card" style="margin-top:16px"><h3>За неделю · ${esc(C.weekLabel[r.id] || '')}</h3>${bars(wk, C.week.labels)}</div>
+  <div class="more"><button class="btn g" onclick="detail=!detail;route(true)"><i class="ph-fill ${detail ? 'ph-caret-up' : 'ph-caret-down'}"></i>${detail ? 'Свернуть' : 'Раскрыть подробнее'}</button></div>
+  ${detail ? `<div class="g2" style="margin-top:16px">
+    <div class="card"><h3>По процессам</h3>${C.processes.map((p,i) => { const v = [62,48,35][i % 3]; return `<div style="margin:12px 0"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><span class="muted">${esc(p.name)}</span><b>${v}%</b></div><div style="height:10px;background:#EEEEF2;border-radius:5px;margin-top:6px"><i style="display:block;height:100%;width:${v}%;background:var(--p);border-radius:5px"></i></div></div>`; }).join('')}</div>
+    <div class="card"><h3>Запуски агентов</h3><table><tr><th>агент</th><th>запусков</th><th>передано человеку</th></tr>${ags.map((a,i) => `<tr><td>${esc(a.name)}</td><td>${[124,86,40,63][i % 4]}</td><td>${[14,22,9,11][i % 4]}%</td></tr>`).join('')}</table></div></div>
+    ${DASHBOARD_URL ? `<div class="more"><a class="btn g" href="${esc(DASHBOARD_URL)}" target="_blank"><i class="ph-fill ph-arrow-square-out"></i>Внешний дашборд</a></div>` : ''}` : ''}`}
+  ${work ? sec('wk', wt[0], wt[1], '', false, wn) + (fold.wk ? '' : work) : ''}
+
+  ${sec('mt', 'Вебинары и материалы', 'Материалы «для всех» видны каждой роли, добавленные под роль — только ей. Добавленное хранится в этом браузере; своё можно удалить.', '<button class="btn" onclick="modal(true)"><i class="ph-fill ph-plus-circle"></i>Добавить материал</button>', false, mats.length)}
+  ${fold.mt ? '' : `<div class="g2">${mats.map(m => `<div class="card row" style="flex-wrap:nowrap;align-items:flex-start"><a class="mat" href="${esc(m.url)}" target="_blank" rel="noopener"><i class="ph-fill ph-play-circle pl"></i><div><h4>${esc(m.title)}</h4><p class="muted">${esc(m.desc)}</p>
+    <span class="tag ${m.role==='all'?'':'p'}" style="margin-top:8px">${m.role === 'all' ? 'для всех' : esc(role(m.role).name)}</span></div></a>${m.own !== undefined ? `<button class="del" title="Удалить" onclick="delMat(${m.own})">✕</button>` : ''}</div>`).join('')}</div>`}`;
+}
+function decide(id, act){ const why = $('#w-'+id).value, x = C.queue.find(q => q.id === id);
+  addLog({role:role(curRole).name, agent:agent(x.agent).name, kind:'решение', object:id, action:act, label:why});
+  const done = get('ic-done', []); done.push(id); put('ic-done', done);
+  $('#n-'+id).classList.add('gone'); setTimeout(() => route(true), 350); }
+function rate(i, v, b){ addLog({role:role(curRole).name, agent:(agentsOf(curRole)[0]||{}).name, kind:'рекомендация', object:C.recs[i].slice(0,50)+'…', action:v, label:''});
+  b.parentNode.innerHTML = `<span class="tag ${v==='полезно'?'p':'o'}">${v==='полезно'?'👍 полезно':'👎 не полезно'}</span>`; }
+let ai = 0, chat = get('ic-chat', []);
+function chatAgent(){ const ags = agentsOf(curRole); return ags.find(a => a.id === 'a4') || ags[0] || {}; }
+function msgs(){ return chat.map(m => `<div class="msg u">${esc(m.q)}</div><div class="msg a" id="${m.id}"><span>${m.a === null ? '<i class="typing">агент печатает…</i>' : esc(m.a)}</span>${m.a === null || m.err ? '' : `<div class="fb">${m.mark ? `<span class="tag ${m.mark==='хорошо'?'p':'o'}">${m.mark==='хорошо'?'👍 хорошо':'👎 плохо'}</span>` : `<button class="btn g ic" onclick="mark('${m.id}','хорошо')">👍</button><button class="btn g ic" onclick="mark('${m.id}','плохо')">👎</button>`}</div>`}</div>`).join('') || '<p class="muted" style="margin:auto;text-align:center">Задайте вопрос агенту — например, «сколько длится диагностика?»</p>'; }
+function paint(){ const c = $('#chat'); if (!c) return; c.innerHTML = msgs(); c.scrollTop = c.scrollHeight; }
+// жалоба владельца: переписка не пропадает при сворачивании блоков — чат хранится отдельно от разметки
+async function ask(){ const q = $('#q'), t = q.value.trim(); if (!t) return; q.value = '';
+  const m = {id:'m' + Date.now(), q:t, a:null}, hist = chat.filter(x => x.a && !x.err).slice(-6).map(x => ({q:x.q, a:x.a}));
+  chat.push(m); paint();
+  if (!CHAT_WEBHOOK){ await new Promise(r => setTimeout(r, 500)); m.a = C.answers[ai++ % C.answers.length]; }
+  else try { const ag = chatAgent(), r = await fetch(CHAT_WEBHOOK, {method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:t, history:hist, role:role(curRole).name, agent:ag.name, agent_does:ag.does})});
+    if (!r.ok) throw 0; const txt = await r.text(); let a = txt;
+    try { const j = JSON.parse(txt), o = Array.isArray(j) ? j[0] : j; a = o.answer || o.output || o.text || (o.message && o.message.content) || txt; } catch(e){}
+    m.a = String(a).trim() || 'Пустой ответ.'; }
+  catch(e){ m.a = 'Агент сейчас недоступен. Проверьте вебхук n8n (CHAT_WEBHOOK) и попробуйте ещё раз.'; m.err = true; }
+  put('ic-chat', chat); paint(); }
+function mark(id, v){ const m = chat.find(x => x.id === id); let fix = '';
+  if (v === 'плохо') fix = prompt('Как должен звучать правильный ответ? Попадёт в набор для дообучения.') || '';
+  addLog({role:role(curRole).name, agent:chatAgent().name, kind:'оценка ответа', object:m.q.slice(0,60), action:v, label:fix});
+  m.mark = v; put('ic-chat', chat); paint(); }
+function modal(on){ $('#modal').classList.toggle('on', on);
+  if (on) $('#mRole').innerHTML = `<option value="all">Для всех</option>` + C.roles.map(r => `<option value="${r.id}" ${r.id===curRole?'selected':''}>${esc(r.name)}</option>`).join(''); }
+function addMat(){ const t = $('#mTitle').value.trim(), u = $('#mUrl').value.trim(); if (!t || !u) return toast('нужны название и ссылка');
+  const L = get('ic-mats', []); L.push({role:$('#mRole').value, title:t, url:u, desc:$('#mDesc').value.trim()}); put('ic-mats', L);
+  ['#mTitle','#mUrl','#mDesc'].forEach(s => $(s).value = ''); modal(false); route(true); toast('материал добавлен'); }
+function delMat(i){ const L = get('ic-mats', []); L.splice(i, 1); put('ic-mats', L); route(true); }
+
+/* ── инструкция ── */
+function viewHelp(id){ let a = agent(id); const ags = agentsOf(curRole);
+  if (!a.roles.includes(curRole) && ags.length) a = ags[0];
+  const L = a.learn || {}, ex = L.example, li = t => `<li>${esc(t)}</li>`;
+  // жалоба владельца: не «5 шагов», а обучалка — коротко как работать, затем урок с разбором и проверкой
+  const ch = (n, title, body) => `<div class="card lesson"><div class="lh"><b>${n}</b><h3>${title}</h3></div>${body}</div>`;
+  let n = 0;
+  return `<a class="back" href="#/"><i class="ph-fill ph-arrow-left"></i>${esc(PORTAL_NAME)}</a>
+  <div class="top"><h1>Инструкция и обучение</h1><div class="row">${roleSel()}<select onchange="location.hash='#/help/'+this.value" aria-label="Агент">${ags.map(x => `<option value="${x.id}" ${x.id===a.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div></div>
+  <div class="card hero"><div class="row" style="justify-content:space-between"><h2><i class="ph-fill ph-robot" style="color:var(--p)"></i>${esc(a.name)}</h2></div>
+    <p style="margin-top:8px;line-height:1.55">${esc(a.does)}</p>
+    <p class="muted" style="font-size:12px;margin-top:6px">${a.processes.map(proc).map(esc).join(' · ')} · ${a.roles.map(r => esc(role(r).name)).join(', ')}</p></div>
+
+  <div class="sec"><h2>Коротко: как работать</h2></div>
+  <div class="card">${(a.steps || []).map((s,i) => `<div class="step"><b>${i+1}</b><span>${esc(s)}</span></div>`).join('')}</div>
+
+  ${L.why ? `<div class="sec"><h2>Обучение</h2></div>
+  ${ch(++n, 'Зачем этот агент', `<p class="lp">${esc(L.why)}</p>`)}
+  ${L.agent ? ch(++n, 'Кто что делает', `<div class="g2 split"><div><h4><i class="ph-fill ph-robot"></i>Агент</h4><ul>${L.agent.map(li).join('')}</ul></div><div><h4><i class="ph-fill ph-user"></i>Вы</h4><ul>${L.you.map(li).join('')}</ul></div></div>`) : ''}
+  ${ex ? ch(++n, 'Разбор на примере', `<div class="case"><span class="tag">ситуация</span><p>${esc(ex.case)}</p></div><div class="case"><span class="tag p">что делает агент</span><p>${esc(ex.agent)}</p></div><div class="case"><span class="tag o">что делаете вы</span><p>${esc(ex.you)}</p></div>`) : ''}
+  ${L.mistakes ? ch(++n, 'Частые ошибки', `<ul class="bad">${L.mistakes.map(li).join('')}</ul>`) : ''}
+  ` : ''}`; }
+/* ── журнал ── */
+function viewLog(){ const isP = role(curRole).type === 'decide', L = logs().slice().reverse();
+  return `<a class="back" href="#/"><i class="ph-fill ph-arrow-left"></i>${esc(PORTAL_NAME)}</a>
+  <div class="top"><h1 style="display:flex;gap:10px;align-items:center">Журнал ${info('Это та самая таблица: решения партнёра, оценки рекомендаций, разметка ответов. Строки — датасет для дообучения и источник дашборда. Если задан вебхук n8n, каждая строка отправляется туда сразу. Менять решения может только роль, которая их принимает.')}</h1>
+  <div class="row">${roleSel()}<button class="btn g" onclick="csv()"><i class="ph-fill ph-download-simple"></i>CSV</button><button class="btn g" onclick="reset()" title="Очистить журнал, решения, чат и добавленные материалы"><i class="ph-fill ph-arrow-counter-clockwise"></i>Сбросить демо</button></div></div>
+  <div class="card" style="overflow-x:auto"><table style="min-width:760px"><tr><th>время</th><th>роль</th><th>агент</th><th>тип</th><th>объект</th><th>действие</th><th>метка</th></tr>
+  ${L.map(x => `<tr><td>${esc(x.ts)}</td><td>${esc(x.role)}</td><td>${esc(x.agent)}</td><td>${esc(x.kind)}</td><td>${esc(x.object)}</td>
+    <td>${isP && x.kind === 'решение' ? `<select onchange="edit(${x.id},'action',this.value)"><option ${x.action==='одобрено'?'selected':''} value="одобрено">одобрено</option><option ${x.action==='отклонено'?'selected':''} value="отклонено">отклонено</option></select>` : esc(x.action)}</td>
+    <td>${isP && x.kind === 'решение' ? `<select onchange="edit(${x.id},'label',this.value)">${C.reasons.map(t => `<option ${x.label===t?'selected':''}>${t}</option>`).join('')}</select>` : esc(x.label)}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Пока пусто.</td></tr>'}</table></div>`; }
+function edit(id, f, v){ const L = logs(), x = L.find(r => r.id === id); x[f] = v; x.edited = new Date().toLocaleString('ru-RU'); put('ic-log', L); send(Object.assign({update:true}, x)); toast('решение изменено'); }
+// перед каждым показом портал снова «как новый»: уведомления возвращаются, журнал и чат пустые
+function reset(){ if (!confirm('Сбросить демо? Журнал, решения, чат и добавленные материалы будут удалены из этого браузера.')) return;
+  ['ic-log','ic-done','ic-mats','ic-chat','ic-fold'].forEach(k => localStorage.removeItem(k)); chat = []; fold = {}; detail = false; location.hash = '#/'; route(); toast('демо сброшено'); }
+function csv(){ const cols = ['ts','role','agent','kind','object','action','label'];
+  const t = '﻿' + [cols.join(';')].concat(logs().map(r => cols.map(c => '"' + String(r[c] || '').replace(/"/g, '""') + '"').join(';'))).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], {type:'text/csv'})); a.download = 'journal.csv'; a.click(); }
+
+/* ── маршруты ── */
+function route(keep){ const h = location.hash.replace(/^#\/?/, '').split('/'), y = scrollY;
+  $('#app').innerHTML = h[0] === 'help' ? viewHelp(h[1]) : h[0] === 'log' ? viewLog() : viewHome();
+  scrollTo(0, keep === true ? y : 0); paint(); }
+addEventListener('hashchange', route); route();
+</script>
+</body>
+</html>

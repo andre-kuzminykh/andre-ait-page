@@ -1,0 +1,151 @@
+    <div class="slide-container px-3 sm:px-6 md:px-12 opacity-0 pointer-events-none translate-y-8" id="slide-35">
+        <div class="content-z max-w-[1300px] w-full">
+            <h2 class="text-xl sm:text-3xl md:text-5xl font-black mb-3 md:mb-5 text-center text-black">Дашборд <span class="text-solar">трансформации</span></h2>
+            <p class="text-center text-black/60 mb-4 md:mb-7 text-[10px] md:text-lg font-medium max-w-3xl mx-auto">Как система работает за пределами одного примера</p>
+
+            <!-- Слева — макет панели, справа — разбор роста исключений. Блоки на одном уровне
+                 по верху и низу: правая колонка тянется по высоте экрана с плашкой под ним -->
+            <div class="flex flex-col md:flex-row items-stretch gap-3 md:gap-6 w-full">
+
+                <!-- Экран дашборда: процесс на всём объёме, показатели без выдуманных чисел —
+                     только полосы-индикаторы; слева работа процесса, справа экономика.
+                     Все плитки одной ширины (разделитель — отдельный элемент), у всех подпись
+                     в две строки — иконки ряда на одной высоте. На телефоне плитка ложится
+                     строкой «иконка + подпись» в две колонки: столбиком слайд мельчал до 9px -->
+                <!-- Исключения подсвечены — от них идёт разбор справа -->
+                <div class="flex-1 min-w-0 flex flex-col gap-2 md:gap-3">
+                    <div class="bg-black border-2 border-solar rounded-[16px] md:rounded-[24px] p-2 md:p-3.5 flex flex-col gap-2 md:gap-3 flex-1 a-in">
+                        <div class="flex flex-row items-center justify-between gap-2">
+                            <span class="bg-white/10 rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-sm font-medium text-white/80 whitespace-nowrap"><i class="ph-fill ph-stack text-solar"></i> процесс на всём объёме</span>
+                            <span class="bg-white/10 rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-sm font-medium text-white/80 whitespace-nowrap"><i class="ph-fill ph-chart-bar text-solar"></i> сравнение по периодам</span>
+                        </div>
+                        <div class="flex flex-col md:flex-row items-stretch gap-2 md:gap-3 flex-1">
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-1.5 md:gap-2 md:flex-[3] items-stretch">
+                                <div class="bg-white/5 border border-white/15 rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-timer text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">Время <br>обработки</p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[45%] rounded-full bg-solar/70"></div></div>
+                                </div>
+                                <div class="bg-white/5 border border-white/15 rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-robot text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">Сделано <br>автоматически</p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[70%] rounded-full bg-solar/70"></div></div>
+                                </div>
+                                <div class="bg-white/5 border border-white/15 rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-user text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">С участием <br>человека</p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[30%] rounded-full bg-solar/70"></div></div>
+                                </div>
+                                <div class="bg-white/10 border-2 border-solar rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full a-glow">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-warning text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">Доля <br><span class="whitespace-nowrap">исключений <i class="ph-bold ph-trend-up text-solar"></i></span></p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[85%] rounded-full bg-solar"></div></div>
+                                </div>
+                                <div class="bg-white/5 border border-white/15 rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-arrow-u-up-left text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">Ошибки <br>и возвраты</p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[25%] rounded-full bg-solar/70"></div></div>
+                                </div>
+                                <div class="bg-white/5 border border-white/15 rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-calendar-check text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">Сроки <br>обслуживания</p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[80%] rounded-full bg-solar/70"></div></div>
+                                </div>
+                            </div>
+                            <div class="h-px md:h-auto w-full md:w-px bg-white/15 shrink-0"></div>
+                            <div class="grid grid-cols-2 gap-1.5 md:gap-2 md:flex-[2] items-stretch">
+                                <div class="bg-solar/15 border border-solar/40 rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-clock text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">Время <br>людей</p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[40%] rounded-full bg-solar/70"></div></div>
+                                </div>
+                                <div class="bg-solar/15 border border-solar/40 rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-currency-rub text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">Стоимость <br>операции</p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[35%] rounded-full bg-solar/70"></div></div>
+                                </div>
+                                <div class="bg-solar/15 border border-solar/40 rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-cpu text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">Расходы <br>на ИИ</p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[50%] rounded-full bg-solar/70"></div></div>
+                                </div>
+                                <div class="bg-solar/15 border border-solar/40 rounded-xl md:rounded-2xl px-2 py-1 md:px-1 md:py-3 flex flex-col items-center justify-center text-center h-full">
+                                    <div class="flex flex-row md:flex-col items-center justify-center gap-1.5">
+                                        <i class="ph-fill ph-seal-check text-xl md:text-3xl text-solar shrink-0"></i>
+                                        <p class="text-[10px] md:text-sm font-medium text-white leading-tight m-0 text-left md:text-center">Подтверждённый <br>эффект</p>
+                                    </div>
+                                    <div class="w-[70%] h-1 md:h-1.5 rounded-full bg-white/15 mt-1 md:mt-2.5"><div class="h-full w-[65%] rounded-full bg-solar/70"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center a-in a-in-2">
+                        <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-sm font-medium text-black whitespace-nowrap"><i class="ph-fill ph-list-checks text-solar"></i> у каждого показателя: определение, источник, период</span>
+                    </div>
+                </div>
+
+                <!-- Разбор: выросла доля исключений — открыть случаи, найти причину, решить, что менять.
+                     На ПК иконка над словом, как в плитках панели: строкой иконки столбца прыгали
+                     по горизонтали за разной длиной подписей -->
+                <div class="w-full md:w-[29%] shrink-0 flex flex-col">
+                    <div class="bg-solar rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 flex items-center justify-center text-center a-in a-in-3" style="color:#111;-webkit-text-fill-color:#111">
+                        <h3 class="font-black text-[11px] md:text-lg leading-tight m-0"><span class="whitespace-nowrap"><i class="ph-bold ph-trend-up"></i> Доля исключений растёт</span></h3>
+                    </div>
+                    <div class="w-[2px] h-2 md:h-3 mx-auto text-solar/40 a-flow-y"></div>
+                    <div class="flex justify-center a-in a-in-3">
+                        <span class="bg-white border border-grayBase rounded-lg md:rounded-xl px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-sm font-medium text-black whitespace-nowrap"><i class="ph-fill ph-magnifying-glass text-solar"></i> разбор конкретных случаев</span>
+                    </div>
+                    <div class="w-[2px] h-2 md:h-3 mx-auto text-solar/40 a-flow-y"></div>
+                    <div class="grid grid-cols-[1fr_auto_1fr] grid-rows-3 gap-x-1.5 md:gap-x-2 gap-y-1.5 md:gap-y-2 flex-1 items-stretch">
+                        <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 a-in a-in-4">
+                            <i class="ph-fill ph-question text-base md:text-2xl text-black/40 shrink-0"></i>
+                            <p class="text-[10px] md:text-sm text-black/60 leading-tight m-0 text-left md:text-center">Новый тип <br>запросов</p>
+                        </div>
+                        <i class="ph-bold ph-arrow-right row-span-3 self-center text-black/25 text-base md:text-2xl"></i>
+                        <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 a-in a-in-5">
+                            <i class="ph-fill ph-book-open text-base md:text-2xl text-solar shrink-0"></i>
+                            <p class="text-[10px] md:text-sm text-black leading-tight m-0 text-left md:text-center">Обновить <br>базу знаний</p>
+                        </div>
+                        <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 a-in a-in-4">
+                            <i class="ph-fill ph-database text-base md:text-2xl text-black/40 shrink-0"></i>
+                            <p class="text-[10px] md:text-sm text-black/60 leading-tight m-0 text-left md:text-center">Недостаток <br>данных</p>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 a-in a-in-5">
+                            <i class="ph-fill ph-plugs-connected text-base md:text-2xl text-solar shrink-0"></i>
+                            <p class="text-[10px] md:text-sm text-black leading-tight m-0 text-left md:text-center">Исправить <br>интеграцию</p>
+                        </div>
+                        <div class="bg-grayBase/30 border border-grayBase rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 a-in a-in-4">
+                            <i class="ph-fill ph-gauge text-base md:text-2xl text-black/40 shrink-0"></i>
+                            <p class="text-[10px] md:text-sm text-black/60 leading-tight m-0 text-left md:text-center">Качество <br>системы</p>
+                        </div>
+                        <div class="bg-white border border-grayBase rounded-xl md:rounded-2xl px-2 py-1.5 md:px-2.5 md:py-2 flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 a-in a-in-5">
+                            <i class="ph-fill ph-shield-check text-base md:text-2xl text-solar shrink-0"></i>
+                            <p class="text-[10px] md:text-sm text-black leading-tight m-0 text-left md:text-center">Усилить <br>проверку</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-solar/20 border-l-4 border-solar p-2.5 md:p-4 rounded-r-xl md:rounded-r-2xl w-full max-w-3xl mx-auto text-center mt-4 md:mt-8">
+                <p class="text-[10px] md:text-base text-black font-medium leading-snug m-0"><span class="whitespace-nowrap">Дашборд — приборная панель процесса:</span> <span class="font-black whitespace-nowrap">качество, экономика и загрузка</span></p>
+            </div>
+        </div>
+    </div>
