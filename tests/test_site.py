@@ -129,10 +129,10 @@ def test_nav_font_readable():
 
 def test_nav_dividers_never_hidden_on_desktop():
     html = _html()
-    # разделители «·» видны на всех десктоп-ширинах: внутри мид-брейкпоинта
-    # 1024–1319 НЕТ правила `.nav-divider { display: none }`
-    mid = html.split("@media (min-width:1150px) and (max-width:1319px) {", 1)[1].split("}")[0]
-    assert "display: none" not in mid, \
+    # разделители «·» видны на всех десктоп-ширинах: в правилах плавного
+    # уплотнения пилюли (FR-SITE89, 1150–1480px) НЕТ `.nav-divider { display: none }`
+    mid = html.split("FR-SITE89: уплотнение ПЛАВНОЕ", 1)[1].split("/* Menu footer")[0]
+    assert ".nav-divider" in mid and "display: none" not in mid, \
         "на узком десктопе разделители не должны пропадать (нет display:none)"
 
 
@@ -452,8 +452,9 @@ def test_hero_sub_always_one_line():
     assert 'html[lang="ru"] .desc.hero-sub' not in html, \
         "отдельного RU-кегля быть не должно — шрифт совпадает с английским"
     assert "'hero.sub': 'Помогаю адаптироваться к новой ИИ-экономике'" in html
-    # и в десктопном, и в ландшафтном блоке есть свои клампы (перебивают .desc)
-    assert html.count(".desc.hero-sub { font-size: clamp(") >= 4
+    # и в десктопном, и в ландшафтном блоке есть свои клампы (перебивают .desc);
+    # три зум-корзины слились в одно правило с непрерывным --z (FR-SITE89)
+    assert html.count(".desc.hero-sub { font-size: clamp(") >= 3
 
 
 def test_lang_switch_sits_next_to_cta():
@@ -556,15 +557,23 @@ def test_desktop_content_optically_centred():
         "герой контакта получает тот же сдвиг через top"
 
 
-def test_zoom_buckets_divide_vw_type():
-    """FR-SITE35: body{zoom} (≥1600) раздувает vw-кегль, а панель (в %) — нет:
-    nowrap-строки вылезали за экран. В зум-корзинах vw-часть кегля делится на
-    коэффициент зума для .desc, .h2-size и .contact-title."""
+def test_zoom_is_continuous_and_divides_vw_type():
+    """FR-SITE35/89: body{zoom} раздувает vw-кегль, а панель (в %) — нет:
+    nowrap-строки вылезали за экран, поэтому vw-часть кегля делится на
+    коэффициент зума. FR-SITE89: коэффициент НЕПРЕРЫВНЫЙ (ширина/1480, 1…1.5,
+    ставит скрипт в <head>) — корзины 1.15/1.3/1.5 давали скачок всего макета
+    при растягивании окна через 1600/1900/2300px."""
     html = _html()
     for k in ("1.15", "1.3", "1.5"):
-        assert "calc(1.3vw / %s)" % k in html, ".desc должен делить vw на %s" % k
-        assert "calc(2.75vw / %s)" % k in html, ".h2-size должен делить vw на %s" % k
-        assert "calc(2.6vw / %s)" % k in html, ".contact-title должен делить vw на %s" % k
+        assert "zoom: %s;" % k not in html, "ступени зума %s быть не должно" % k
+        assert "/ %s)" % k not in html, "деления на ступень %s быть не должно" % k
+    assert "@media (min-width:1480px) { body { zoom: var(--z, 1); } }" in html
+    head = html.split("</head>")[0]
+    assert "root.style.setProperty('--z', w >= 1480 ? Math.min(w / 1480, 1.5).toFixed(4) : '1');" in head, \
+        "коэффициент ставится до первой отрисовки"
+    assert "calc(1.3vw / var(--z, 1))" in html, ".desc делит vw на зум"
+    assert "calc(2.75vw / var(--z, 1))" in html, ".h2-size делит vw на зум"
+    assert "calc(2.6vw / var(--z, 1))" in html, ".contact-title делит vw на зум"
 
 
 def test_desktop_typography_scaled_up():
@@ -803,6 +812,52 @@ def test_no_cookie_banner_because_no_cookies():
     assert "document.cookie" not in html, "сайт не ставит куки"
     for tracker in ("googletagmanager", "google-analytics", "mc.yandex", "connect.facebook.net", "<iframe"):
         assert tracker not in html, "на главной нет счётчиков и встраиваний: " + tracker
+
+
+# ── FR-SITE89: шапка и масштаб без скачков ───────────────────────────────
+
+def test_header_sizes_are_continuous():
+    """FR-SITE89. «Вверху кнопки скачет размер, хотя когда более растянуто было,
+    кнопка была меньше … растяжение несущественное — скачет всё». Размеры
+    шапки — непрерывные и неубывающие функции ширины окна: потолки телефонных
+    клампов равны десктопным, уплотнение на узком десктопе плавное (1150→1480),
+    ступеней 1319/1320, 1479/1480, 1600/1700/1900 нет."""
+    html = _html()
+    assert ".logo-img { width: clamp(2.85rem, 12vw, 3.6rem);" in html, "лого телефона ≤ десктопного 3.6rem"
+    assert "width: clamp(2.5rem, 11vw, 2.85rem); height: clamp(2.5rem, 11vw, 2.85rem);" in html, \
+        "бургер телефона ≤ десктопного 2.85rem"
+    assert ".cta { height: clamp(2.05rem, 8.7vw, 2.85rem);" in html and "font-size: clamp(9px, 2.7vw, 10.5px)" in html, \
+        "CTA телефона не крупнее десктопной на 1024px"
+    for step in ("(min-width:1024px) and (max-width:1319px)", "(min-width:1150px) and (max-width:1319px)",
+                 "(min-width:1320px) and (max-width:1479px)", "(min-width:1600px) and (max-width:1699px)",
+                 "(min-width:1700px) and (max-width:1899px)", "(min-width:1900px) and (max-width:2299px)"):
+        assert step not in html, "ступень шапки %s должна уйти" % step
+    # уплотнение интерполируется и упирается в полные значения на 1480px
+    for rule in ("font-size: clamp(13.2px, calc(10.412px + 0.2424vw), 14px)",       # пункты меню
+                 "font-size: clamp(10.5px, calc(0.30303vw + 7.015px), 11.5px)",    # CTA
+                 "font-size: clamp(11px, calc(0.30303vw + 7.515px), 12px)",        # EN | RU
+                 "left: calc(50% - clamp(3.5rem, calc(163.64px - 7.273vw), 5rem))"):  # центр пилюли
+        assert rule in html, "нет плавного правила шапки: " + rule
+    # компактная шапка — только у ТЕЛЕФОНА боком (≤520px), не у окна браузера
+    land = html.split("FR-SITE89: только для НИЗКИХ окон", 1)[1].split("}\n  }", 1)[0]
+    assert "@media (max-width:1023px) and (orientation: landscape) and (max-height:520px) {" in land
+    assert ".logo-img { width: 2.3rem; height: 2.3rem; }" in land
+
+
+def test_subpages_header_and_zoom_match_main():
+    """FR-SITE89 «надо везде проверить и лого, и кнопки»: у биографии и
+    лендинга та же шапка без скачков и тот же непрерывный зум."""
+    root = os.path.join(os.path.dirname(__file__), "..")
+    for css_name, page in (("assets/about.css", "about/index.html"), ("assets/strategy.css", "ai-strategy/index.html")):
+        css = open(os.path.join(root, css_name), encoding="utf-8").read()
+        head = open(os.path.join(root, page), encoding="utf-8").read().split("</head>")[0]
+        assert "clamp(2.85rem, 12vw, 3.6rem)" in css and "clamp(2.5rem, 11vw, 2.85rem)" in css, css_name
+        assert "(max-width:1319px)" not in css and "(max-width:1439px)" not in css, css_name + ": ступени шапки"
+        for k in ("1.15", "1.3", "1.5"):
+            assert "zoom: %s;" % k not in css, css_name + ": корзина зума " + k
+        assert "@media (min-width:1480px) { body { zoom: var(--zb, 1); } }" in css, css_name
+        assert "root.style.setProperty('--zb', w >= 1480 ? Math.min(w / 1480, 1.5).toFixed(4) : '1');" in head, page
+
 
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
