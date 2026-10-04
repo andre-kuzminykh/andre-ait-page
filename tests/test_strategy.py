@@ -898,7 +898,8 @@ def test_final_screen_is_a_question_and_an_answer():
     assert ('<span class="l">С чего начать</span>'
             '<span class="l"><span class="hl-o">внедрять</span> '
             '<span class="hl-p">ИИ</span>?</span>') in _ru()
-    assert '<span class="hl-p">AI</span> Strategy shows <span class="hl-o">you</span>' in _en()
+    # FR-SITE91: продукт называется AI Playbook
+    assert '<span class="hl-p">AI</span> Playbook shows <span class="hl-o">you</span>' in _en()
     # и в шапке по-русски «начать» тоже оранжевым
     assert '<span class="l">С чего <span class="hl-o">начать</span></span>' in _ru()
 

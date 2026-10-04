@@ -495,6 +495,22 @@
   .roadmap-col { width: 100%; align-items: center; gap: 1.6rem; max-width: 36rem; }
   @media (min-width:1024px) { .roadmap-col { gap: 0.8rem; max-width: 34rem; } }
 
+  /* FR-SITE91: на первом и последнем слайде заглавные «светятся» (правка
+     владельца «пусть буквы светятся красиво») — мягкий ореол цвета самих
+     букв, который медленно дышит. Белые слова светятся белым с фиолетовым,
+     фиолетовые (.gp) — фиолетовым, оранжевые (.go) — оранжевым. Сам
+     заголовок больше не подпрыгивает: анимация floatSlow с героя снята. */
+  .glow-title { text-shadow: 0 0 10px rgba(255,255,255,0.22), 0 0 26px rgba(160,113,255,0.28), 0 2px 8px rgba(0,0,0,0.45);
+    animation: glowW 5s ease-in-out infinite; }
+  .glow-title .gp { text-shadow: 0 0 10px rgba(160,113,255,0.75), 0 0 28px rgba(136,84,243,0.5), 0 2px 8px rgba(0,0,0,0.45);
+    animation: glowP 5s ease-in-out infinite; }
+  .glow-title .go { text-shadow: 0 0 10px rgba(255,138,51,0.7), 0 0 28px rgba(249,115,22,0.45), 0 2px 8px rgba(0,0,0,0.45);
+    animation: glowO 5s ease-in-out infinite; }
+  @keyframes glowW { 50% { text-shadow: 0 0 14px rgba(255,255,255,0.34), 0 0 38px rgba(160,113,255,0.42), 0 2px 8px rgba(0,0,0,0.45); } }
+  @keyframes glowP { 50% { text-shadow: 0 0 14px rgba(160,113,255,0.95), 0 0 42px rgba(136,84,243,0.7), 0 2px 8px rgba(0,0,0,0.45); } }
+  @keyframes glowO { 50% { text-shadow: 0 0 14px rgba(255,138,51,0.9), 0 0 42px rgba(249,115,22,0.62), 0 2px 8px rgba(0,0,0,0.45); } }
+  @media (prefers-reduced-motion: reduce) { .glow-title, .glow-title .gp, .glow-title .go { animation: none; } }
+
   .hero-size { font-size: clamp(1.5rem, 8.6vw, 2.6rem); }
   /* FR-SITE26: десктоп «мелко» — клампы контентной колонки подняты, растут с окном */
   @media (min-width:1024px) { .hero-size { font-size: clamp(1.7rem, 3.3vw, 3rem); } }
@@ -913,6 +929,82 @@
     .scroll { transform: none; max-height: calc(100dvh - 6rem); }
   }
 
+  /* ===== FR-SITE90: контент экранов во всю ширину тёмной панели =====
+     Правка владельца: «справа всё очень мелко — надо, чтобы на всё, что может,
+     по ширине заходило на чёрное … красиво масштабировалось под экран и на
+     мобиле … кнопки все одного размера; вот на втором слайде хорошо, а на
+     третьем перенос — так не очень».
+     Шрифт моноширинный: ширина строки = число знаков × кегль × 0.6 (+ трекинг).
+     Поэтому всё считается от ширины панели --pw, а не от ступенек:
+       --u  — кегль заголовка, при котором САМЫЙ длинный заголовок языка
+              (EN 13 знаков «Dataist Media», RU 15 «Антрополис Сити») занимает
+              90% панели. Один на все экраны: при листании ничего не меняет
+              размер, при растягивании окна всё растёт плавно. Сверху --u
+              ограничен высотой (--ucap), чтобы блок целиком помещался в окно
+              (у телефона в портрете — между плашкой «Andre AI» и низом);
+       подзаголовок — самый длинный (EN 34, RU 37 знаков) занимает 95%
+              панели, поэтому ни один не переносится;
+       --bf — кегль ВСЕХ кнопок экранов: ширина кнопки фиксирована и равна
+              ширине самой длинной надписи языка (EN 23 знака, RU 25) — кнопки
+              одинаковые на всех экранах, текст по центру.
+     Плитки, зазоры и ссылки под кнопкой — в долях --u/--bf. Заголовок героя
+     и его подзаголовок («первый ок») остаются со своими клампами.
+     Откат — удалить этот блок. */
+  :root { --tn: 13; --dn: 34; --bn: 23; --cn: 17;
+    --pw: calc(100vw - 2rem); --ucap: calc((40dvh - 8.2rem) / 4.9); }
+  html[lang="ru"] { --tn: 15; --dn: 37; --bn: 25; --cn: 16; }
+  /* Телефон в портрете: всё должно встать между плашкой «Andre AI» (низ на
+     60dvh) и низом экрана. Самые высокие экраны — первый и последний (две
+     строки заголовка + плитки с роботом), по ним и посчитан потолок модуля;
+     их двухстрочные заголовки на НИЗКИХ телефонах ужимаются вместе с ним
+     (на обычных телефонах потолок не достигается — «первый ок» не меняется). */
+  @media (max-width:1023px) and (orientation: portrait) {
+    .hero-size { font-size: min(clamp(1.5rem, 8.6vw, 2.6rem), calc(var(--ucap) * 0.87)); } }
+  /* низкий телефон: панель ниже прижата к краю (см. FR-SITE37) */
+  @media (max-width:1023px) and (orientation: portrait) and (max-height:700px) {
+    :root { --ucap: calc((40dvh - 7.6rem) / 5); }
+    .hero-size { font-size: min(clamp(1.35rem, 7.6vw, 2rem), calc(var(--ucap) * 0.87)); } }
+  @media (max-width:1023px) and (orientation: landscape) {
+    :root { --pw: calc(44vw - 3.3rem); --ucap: calc((100dvh - 8.4rem) / 6.4); } }
+  /* на десктопе панель — 40% ширины ЗУМИРОВАННОГО body, а vw/dvh зум не
+     учитывают — делим на --z */
+  @media (min-width:1024px) {
+    :root { --pw: calc(40vw / var(--z, 1) - 4.5rem); --ucap: calc((100dvh / var(--z, 1) - 16.5rem) / 6.4); } }
+  @media (min-width:1024px) and (max-height:660px) {
+    :root { --ucap: calc((100dvh / var(--z, 1) - 9.6rem) / 6.4); } }
+  :root { --u: min(calc(var(--pw) * 0.9 / (var(--tn) * 0.64)), var(--ucap));
+    --bf: min(calc(var(--pw) * 0.78 / (var(--bn) * 0.75 + 5.6)), calc(var(--u) * 0.35)); }
+
+  /* плитки — от модуля, без ужатия scale'ом (на всех экранах одного размера,
+     в том числе робот на первом и последнем) */
+  .float-row { transform: none; margin: 0; gap: calc(var(--u) * 0.26); }
+  .tile.sm { width: calc(var(--u) * 1.02); height: calc(var(--u) * 1.02); border-radius: calc(var(--u) * 0.31); }
+  .tile.lg { width: calc(var(--u) * 1.3); height: calc(var(--u) * 1.3); border-radius: calc(var(--u) * 0.34); }
+  .tile.sm i { font-size: calc(var(--u) * 0.39); }
+  .tile.lg i { font-size: calc(var(--u) * 0.58); }
+
+  /* ритм один на все экраны: зазор 0.42u, подзаголовок подтянут к заголовку,
+     ссылка — к кнопке (!important — у экранов и подзаголовков есть инлайн-
+     и !important-правила по брейкпоинтам) */
+  .screen.sec { max-width: none; gap: calc(var(--u) * 0.42) !important; }
+  .screen[data-screen="overview"], .contact-hero { gap: calc(var(--u) * 0.42) !important; }
+  .screen.sec .h2-size { font-size: var(--u); white-space: nowrap; }
+  .screen .desc:not(.hero-sub) { font-size: min(calc(var(--pw) * 0.95 / (var(--dn) * 0.6)), calc(var(--u) * 0.46)); max-width: none; }
+  .screen.sec .desc, .contact-hero .desc, .desc.hero-sub { margin-top: calc(var(--u) * -0.2) !important; }
+  .sec-link, .about-link { margin-top: calc(var(--u) * -0.1); font-size: calc(var(--bf) * 0.95); }
+  /* последний экран: «AI Transformation» на всю ширину, как заголовок героя */
+  .contact-title { font-size: min(calc(var(--pw) * 0.93 / (var(--cn) * 0.64)), calc(var(--ucap) * 0.8)); }
+
+  /* подзаголовок героя в горизонте самых маленьких телефонов (568×320):
+     нижний край клампа 10.5px давал строку шире панели — режем по ширине */
+  @media (max-width:1023px) and (orientation: landscape) {
+    .desc.hero-sub { font-size: min(clamp(10.5px, calc((44vw - 48px) / 26.5), 16px), calc(var(--pw) / 26.6)); } }
+
+  /* кнопки всех экранов — одного размера */
+  .screen .btn-white { box-sizing: border-box; max-width: 100%; justify-content: center;
+    width: calc(var(--bf) * (var(--bn) * 0.75 + 5.6)) !important; font-size: var(--bf) !important;
+    letter-spacing: 0.15em !important; gap: 0.75em !important; padding: max(1.05em, 0.9rem) 0 !important; }
+
   /* ===== Early-access popup ===== */
   /* overlay scrolls and the card uses margin:auto so it stays fully reachable
      even when taller than a short (landscape / keyboard-open) viewport */
@@ -1015,7 +1107,7 @@
         </div>
         <button class="nav-tab" data-action="tab" data-target="overview"  style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-user"></i></span><span class="nav-label" data-i18n="nav.about">About Me</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
         <span class="nav-divider" aria-hidden="true">|</span>
-        <button class="nav-tab" data-action="tab" data-target="strategy"  style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-chess-knight"></i></span><span class="nav-label" data-i18n="nav.strategy">AI Strategy</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
+        <button class="nav-tab" data-action="tab" data-target="strategy"  style="--ul:#F97316; --hover:#F97316; --ic:#F97316;"><span class="nav-ic"><i class="fa-solid fa-chess-knight"></i></span><span class="nav-label" data-i18n="nav.strategy">AI Playbook</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
         <span class="nav-divider" aria-hidden="true">|</span>
         <button class="nav-tab" data-action="tab" data-target="neuronium" style="--ul:#8854F3; --hover:#8854F3; --ic:#8854F3;"><span class="nav-ic"><i class="fa-solid fa-brain"></i></span><span class="nav-label" data-i18n="nav.neuronium">Neuronium</span><span class="nav-go"><i class="fa-solid fa-arrow-right"></i></span></button>
         <span class="nav-divider" aria-hidden="true">|</span>
@@ -1069,9 +1161,15 @@
 
         <!-- OVERVIEW -->
         <section class="screen active" data-screen="overview" style="position: relative; gap: 1.75rem; max-width: 38rem; text-align: center;">
-          <h1 class="hero-size" style="position: relative; z-index: 1; margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.12; color: #ffffff; animation: floatSlow 6s ease-in-out infinite;">
-            <span style="display: block; white-space: nowrap;" data-i18n="hero.l1"><span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">AI</span> <span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">Transformation</span></span>
-            <span style="display: block; white-space: nowrap;" data-i18n="hero.l2">of your <span style="color: #ff8a33; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">Business</span></span>
+          <!-- Плитки с роботом — как на остальных слайдах (правка владельца) -->
+          <div class="float-row">
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-building" style="color: #F97316;"></i></div>
+            <div class="tile lg" style="border: 1px solid rgba(136,84,243,0.5); box-shadow: 0 10px 30px rgba(136,84,243,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-robot" style="color: #8854F3;"></i></div>
+            <div class="tile sm" style="border: 1px solid rgba(249,115,22,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-chart-line" style="color: #F97316;"></i></div>
+          </div>
+          <h1 class="hero-size glow-title" style="position: relative; z-index: 1; margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.12; color: #ffffff;">
+            <span style="display: block; white-space: nowrap;" data-i18n="hero.l1"><span class="gp" style="color: #a071ff;">AI</span> <span class="gp" style="color: #a071ff;">Transformation</span></span>
+            <span style="display: block; white-space: nowrap;" data-i18n="hero.l2">of your <span class="go" style="color: #ff8a33;">Business</span></span>
           </h1>
           <p class="desc hero-sub" data-i18n="hero.sub" style="position: relative; z-index: 1; margin: 0; text-shadow: 0 1px 6px rgba(0,0,0,0.6);">I Help Companies Adapt to the New AI Economy</p>
           <!-- Первый шаг воронки — бесплатная диагностика ИИ-зрелости (maturity.) -->
@@ -1082,17 +1180,17 @@
              data-href-en="https://andre.technology/about/" data-href-ru="https://andre.technology/about/ru/">About me</a>
         </section>
 
-        <!-- AI STRATEGY -->
+        <!-- AI PLAYBOOK (бывш. AI Strategy) -->
         <section class="screen sec" data-screen="strategy" style="text-align: center;">
           <div class="float-row">
             <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-magnifying-glass-chart" style="color: #8854F3;"></i></div>
             <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-network-wired" style="color: #F97316;"></i></div>
             <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-chess-knight" style="color: #8854F3;"></i></div>
           </div>
-          <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);" data-i18n="strategy.h2">AI Strategy</h2>
+          <h2 class="h2-size" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);" data-i18n="strategy.h2">AI Playbook</h2>
           <p class="desc" data-i18n="strategy.desc">AI Transformation Roadmap</p>
           <!-- Кабинет ИИ-стратегии (strategy.) -->
-          <a class="btn-white" href="https://strategy.andre.technology/" rel="noopener" data-href-en="https://strategy.andre.technology/" data-href-ru="https://strategy.andre.technology/?lang=ru" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="strategy.cta">Get Your AI Strategy <i class="fa-solid fa-arrow-right"></i></a>
+          <a class="btn-white" href="https://strategy.andre.technology/" rel="noopener" data-href-en="https://strategy.andre.technology/" data-href-ru="https://strategy.andre.technology/?lang=ru" style="padding: clamp(0.9rem, 0.95vw, 1.4rem) clamp(1.8rem, 1.9vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(11.5px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;" data-i18n="strategy.cta">Get Your AI Playbook <i class="fa-solid fa-arrow-right"></i></a>
           <!-- Лендинг «с чего начать»: свой раздел сайта, на каждом языке своя страница -->
           <a class="sec-link" href="https://andre.technology/ai-strategy/" rel="noopener" data-i18n="strategy.link"
              data-href-en="https://andre.technology/ai-strategy/" data-href-ru="https://andre.technology/ai-strategy/ru/">Where to start with AI</a>
@@ -1169,7 +1267,13 @@
         <!-- CONTACT -->
         <section class="screen contact-screen" data-screen="contact" style="text-align: center;">
           <div class="contact-hero">
-            <h2 class="h2-size contact-title" data-i18n="contact.title" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.12; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);"><span style="color: #ffffff;">Start</span><br><span style="white-space: nowrap;"><span style="color: #8854F3;">AI</span> <span style="color: #F97316;">Transformation</span></span></h2>
+            <!-- Плитки с роботом — как на остальных слайдах (правка владельца) -->
+            <div class="float-row">
+              <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);"><i class="fa-solid fa-comments" style="color: #8854F3;"></i></div>
+              <div class="tile lg" style="border: 1px solid rgba(249,115,22,0.5); box-shadow: 0 10px 30px rgba(249,115,22,0.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.2s;"><i class="fa-solid fa-robot" style="color: #F97316;"></i></div>
+              <div class="tile sm" style="border: 1px solid rgba(136,84,243,0.3); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation-delay: 0.4s;"><i class="fa-solid fa-rocket" style="color: #8854F3;"></i></div>
+            </div>
+            <h2 class="h2-size contact-title glow-title" data-i18n="contact.title" style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.12; color: #ffffff;"><span style="color: #ffffff;">Start</span><br><span style="white-space: nowrap;"><span class="gp" style="color: #8854F3;">AI</span> <span class="go" style="color: #F97316;">Transformation</span></span></h2>
             <p class="desc" data-i18n="contact.sub" style="margin: 0;">Ready to Manage AI Company?</p>
             <!-- Бесплатная диагностика ИИ-зрелости (maturity.) -->
             <a class="btn-white" href="https://maturity.andre.technology/" rel="noopener" data-href-en="https://maturity.andre.technology/" data-href-ru="https://maturity.andre.technology/?lang=ru" data-i18n="contact.cta" style="padding: clamp(1.05rem, 0.9vw, 1.4rem) clamp(2.1rem, 1.8vw, 2.8rem); letter-spacing: 0.15em; font-size: clamp(13px, 0.95vw, 16px); width: fit-content; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;">Free AI Diagnosis <i class="fa-solid fa-arrow-right"></i></a>
@@ -1525,8 +1629,8 @@
     'nav.contact': 'Контакты',
     'cta.diagnostic': 'ИИ-диагностика <i class="fa-solid fa-arrow-right"></i>',
     'speaker.role': 'ИИ-консультант',
-    'hero.l1': '<span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">ИИ</span><span style="color: #a071ff; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">-трансформация</span>',
-    'hero.l2': 'вашего <span style="color: #ff8a33; text-shadow: 0 2px 8px rgba(0,0,0,0.45);">бизнеса</span>',
+    'hero.l1': '<span class="gp" style="color: #a071ff;">ИИ</span><span class="gp" style="color: #a071ff;">-трансформация</span>',
+    'hero.l2': 'вашего <span class="go" style="color: #ff8a33;">бизнеса</span>',
     'hero.sub': 'Помогаю адаптироваться к новой ИИ-экономике',
     'overview.cta': 'Начать ИИ-трансформацию <i class="fa-solid fa-arrow-right"></i>',
     'overview.about': 'Обо мне',
@@ -1554,7 +1658,7 @@
     'dataist.desc': 'Новости, инсайты <span class="nb">и ИИ-технологии</span>',
     'dataist.cta': 'Перейти на Dataist AI <i class="fa-solid fa-arrow-right"></i>',
     'dataist.link': 'Главные материалы',
-    'contact.title': '<span style="color: #ffffff;">Начните</span><br><span style="white-space: nowrap;"><span style="color: #8854F3;">ИИ</span><span style="color: #F97316;">-трансформацию</span></span>',
+    'contact.title': '<span style="color: #ffffff;">Начните</span><br><span style="white-space: nowrap;"><span class="gp" style="color: #8854F3;">ИИ</span><span class="go" style="color: #F97316;">-трансформацию</span></span>',
     'contact.sub': 'Готовы возглавить ИИ-компанию?',
     'contact.cta': 'Бесплатная ИИ-диагностика <i class="fa-solid fa-arrow-right"></i>',
     'legal.privacy': 'Политика конфиденциальности',

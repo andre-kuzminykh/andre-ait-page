@@ -598,7 +598,7 @@ def page(t, lang):
 
 
 MOVED_TEXT = {
-    "en": ("AI Strategy has moved", "This page has moved to"),
+    "en": ("AI Playbook has moved", "This page has moved to"),
     "ru": ("Страница ИИ-стратегии переехала", "Страница переехала"),
 }
 

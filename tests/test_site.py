@@ -164,10 +164,12 @@ def test_about_me_link():
 
 # ── FR-SITE8 ──────────────────────────────────────────────────────────────
 
-def test_get_ai_strategy_label():
+def test_get_ai_playbook_label():
+    """FR-SITE91: «давай не AI Strategy, а AI Playbook везде»."""
     html = _html()
-    assert "Get Your AI Strategy" in html, "кнопка стратегии должна называться «Get Your AI Strategy»"
-    assert "Open AI Strategy" not in html, "старого названия «Open AI Strategy» быть не должно"
+    assert "Get Your AI Playbook" in html, "кнопка раздела должна называться «Get Your AI Playbook»"
+    for old in ("Open AI Strategy", "Get Your AI Strategy", ">AI Strategy<"):
+        assert old not in html, "старого названия «%s» быть не должно" % old
 
 
 def test_product_buttons_link_out():
@@ -175,7 +177,7 @@ def test_product_buttons_link_out():
     Landao, Antropolis) — кнопки Coming soon (попап сбора ранних заявок)."""
     html = _html()
     for label, host in (("Start AI Transformation", "https://maturity.andre.technology/"),
-                        ("Get Your AI Strategy", "https://strategy.andre.technology/"),
+                        ("Get Your AI Playbook", "https://strategy.andre.technology/"),
                         ("Explore Courses", "https://academy.andre.technology/"),
                         ("Visit Dataist AI", "https://dataist.ai/"),
                         ("Free AI Diagnosis", "https://maturity.andre.technology/")):
@@ -488,8 +490,8 @@ def test_mobile_menu_brand_and_higher_items():
 
 def test_strategy_h2_is_short():
     html = _html()
-    assert re.search(r'data-i18n="strategy\.h2">AI Strategy</h2>', html), \
-        "заголовок экрана стратегии — «AI Strategy» (без Transformation)"
+    assert re.search(r'data-i18n="strategy\.h2">AI Playbook</h2>', html), \
+        "заголовок экрана — «AI Playbook» (FR-SITE91, без Transformation)"
     assert "AI Transformation Strategy</h2>" not in html
     assert "'strategy.h2': 'ИИ-стратегия'" in html
 
@@ -858,6 +860,55 @@ def test_subpages_header_and_zoom_match_main():
         assert "@media (min-width:1480px) { body { zoom: var(--zb, 1); } }" in css, css_name
         assert "root.style.setProperty('--zb', w >= 1480 ? Math.min(w / 1480, 1.5).toFixed(4) : '1');" in head, page
 
+
+# ── FR-SITE90: контент экранов во всю ширину панели ─────────────────────
+
+def test_screen_content_fills_the_panel():
+    """FR-SITE90. «Справа всё очень мелко — надо, чтобы на всё, что может, по
+    ширине заходило на чёрное … кнопки все одного размера … на третьем
+    перенос — так не очень». Модуль --u — кегль, при котором самый длинный
+    заголовок языка занимает 90% панели; подзаголовки — по самому длинному
+    (в одну строку); кнопки всех экранов одной ширины."""
+    html = _html()
+    block = html.split("FR-SITE90: контент экранов во всю ширину", 1)[1].split("/* ===== Early-access popup", 1)[0]
+    assert ':root { --tn: 13; --dn: 34; --bn: 23; --cn: 17;' in block
+    assert 'html[lang="ru"] { --tn: 15; --dn: 37; --bn: 25; --cn: 16; }' in block
+    # длины в знаках совпадают с самыми длинными текстами экранов
+    en_titles = re.findall(r'data-i18n="(?:strategy|neuronium|landao|antropolis|academy|dataist)\.h2">([^<]+)<', html)
+    ru_titles = re.findall(r"'(?:strategy|neuronium|landao|antropolis|academy|dataist)\.h2': '([^']+)'", html)
+    assert max(map(len, en_titles)) == 13 and max(map(len, ru_titles)) == 15, (en_titles, ru_titles)
+    strip = lambda t: re.sub(r"<[^>]+>", "", t).replace("&rsquo;", "'").replace("&amp;", "&")
+    en_desc = [strip(d) for d in re.findall(r'data-i18n="(?:strategy|neuronium|landao|antropolis|academy|dataist)\.desc"[^>]*>(.*?)</p>', html)]
+    ru_desc = [strip(d) for d in re.findall(r"'(?:strategy|neuronium|landao|antropolis|academy|dataist)\.desc': '([^']+)'", html)]
+    assert max(map(len, en_desc)) == 34 and max(map(len, ru_desc)) == 37, (en_desc, ru_desc)
+    assert "--u: min(calc(var(--pw) * 0.9 / (var(--tn) * 0.64)), var(--ucap));" in block
+    assert ".screen.sec .h2-size { font-size: var(--u); white-space: nowrap; }" in block
+    assert "min(calc(var(--pw) * 0.95 / (var(--dn) * 0.6)), calc(var(--u) * 0.46))" in block
+    # кнопки: фиксированная ширина под самую длинную надпись языка
+    assert "width: calc(var(--bf) * (var(--bn) * 0.75 + 5.6)) !important; font-size: var(--bf) !important;" in block
+    # плитки — от модуля, без scale-ужатия; на десктопе панель делится на зум
+    assert ".float-row { transform: none; margin: 0; gap: calc(var(--u) * 0.26); }" in block
+    assert "--pw: calc(40vw / var(--z, 1) - 4.5rem);" in block
+
+
+# ── FR-SITE91: первый и последний слайд ─────────────────────────────────
+
+def test_first_and_last_slides_robot_and_glow():
+    """FR-SITE91. «„AI Transformation of your Business“ — давай не будет
+    прыгать; на первом и последнем блоке иконка с роботом, как во всех
+    остальных; пусть буквы светятся красиво»."""
+    html = _html()
+    ov = html.split('data-screen="overview"', 1)[1].split("</section>", 1)[0]
+    ct = html.split('data-screen="contact"', 1)[1].split("</section>", 1)[0]
+    for name, sec in (("первый", ov), ("последний", ct)):
+        assert '<div class="float-row">' in sec, name + " слайд: ряд плиток"
+        assert sec.count('class="tile sm"') == 2 and sec.count('class="tile lg"') == 1, name
+        assert "fa-robot" in sec, name + " слайд: робот в большой плитке"
+        assert "glow-title" in sec, name + " слайд: заглавные светятся"
+    h1 = re.search(r'<h1 class="hero-size glow-title" style="([^"]*)"', html)
+    assert h1 and "animation" not in h1.group(1), "заголовок героя больше не подпрыгивает"
+    assert "@keyframes glowP" in html and "@keyframes glowO" in html
+    assert "@media (prefers-reduced-motion: reduce) { .glow-title, .glow-title .gp, .glow-title .go { animation: none; } }" in html
 
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
