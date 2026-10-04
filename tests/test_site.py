@@ -791,6 +791,19 @@ def test_ru_mode_leads_to_the_russian_product():
 
 
 
+def test_no_cookie_banner_because_no_cookies():
+    """FR-SITE88. «Мы используем какие-нибудь куки? Может, ничего не будем
+    использовать — и тогда уберём „We use cookies…“». Сайт не ставит ни одной
+    куки (нет счётчиков, пикселей и встраиваний); в localStorage — только
+    настройки, которые человек выбрал сам (язык, место кружка), и очередь
+    отправки заявки. Баннер согласия поэтому убран целиком."""
+    html = _html()
+    for dead in ("cookie-banner", "cookie.text", "acceptCookies", "ait_cookie_ok", "We use cookies"):
+        assert dead not in html, "баннер про куки убран: " + dead
+    assert "document.cookie" not in html, "сайт не ставит куки"
+    for tracker in ("googletagmanager", "google-analytics", "mc.yandex", "connect.facebook.net", "<iframe"):
+        assert tracker not in html, "на главной нет счётчиков и встраиваний: " + tracker
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:

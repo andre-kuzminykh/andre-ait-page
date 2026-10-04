@@ -3371,3 +3371,21 @@ Story: Telegram-бот открывает `https://andre.technology/ai-strategy/
 `test_mobile_footer_stands_just_above_the_dots`, `test_video_circle_scales_with_the_window`,
 `test_about.test_finale_sits_in_the_middle_and_the_footer_at_the_bottom`,
 `test_chapter_marks_are_visible_on_phone`.
+
+### FR-SITE88 — без баннера про куки: сайт их не ставит
+
+Story: «мы используем какие-нибудь куки? может, ничего не будем использовать
+и тогда можем убрать „We use cookies to improve your experience…“?»
+
+Требование:
+- Сайт не ставит куки: нет счётчиков, рекламных пикселей и встраиваний
+  (iframe), `document.cookie` нигде не пишется. Шрифты и иконки грузятся с
+  Google Fonts и cdnjs без кук.
+- В localStorage — только то, что человек выбрал сам: язык, место кружка,
+  тема и звук на страницах курса, и очередь повторной отправки заявки. Это
+  функциональное хранение, согласия на него не требуется.
+- Поэтому баннер «We use cookies…» на главной убран целиком: разметка,
+  стили, тексты RU/EN и ключ `ait_cookie_ok`. Если когда-нибудь появится
+  аналитика (Метрика, GA), баннер с согласием нужно вернуть ДО её запуска.
+
+Тест: `test_site.test_no_cookie_banner_because_no_cookies`.
