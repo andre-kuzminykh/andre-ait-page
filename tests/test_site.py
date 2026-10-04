@@ -889,6 +889,14 @@ def test_screen_content_fills_the_panel():
     # плитки — от модуля, без scale-ужатия; на десктопе панель делится на зум
     assert ".float-row { transform: none; margin: 0; gap: calc(var(--u) * 0.26); }" in block
     assert "--pw: calc(40vw / var(--z, 1) - 4.5rem);" in block
+    # потолок модуля в портрете — по замеру на сетке окон 360…1000 × 600…1400:
+    # прежняя «телефонная» формула в окне ≈1000×1200 пускала плитки на плашку
+    # «Andre AI» (скрин владельца «наслоение»)
+    assert "--ucap: calc((40dvh - 96px) / 6.17);" in block
+    assert ":root { --ucap: calc((40dvh - 124px) / 5); }" in block
+    # у героя контакта нет потолка 32rem: на высоких окнах подзаголовок упирался
+    # в него, переносился, и экран скачком вырастал
+    assert ".contact-hero { max-width: none; }" in block
 
 
 # ── FR-SITE91: первый и последний слайд ─────────────────────────────────
