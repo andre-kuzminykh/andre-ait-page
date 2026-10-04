@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Andre AIT — cookie consent + early-access lead capture (redeploy 2026-07-06) -->
+<!-- Andre AIT — early-access lead capture (redeploy 2026-07-06) -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
@@ -914,17 +914,6 @@
     .scroll { transform: none; max-height: calc(100dvh - 6rem); }
   }
 
-  /* ===== Cookie consent banner ===== */
-  @keyframes bannerIn { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
-  .cookie-banner { position: fixed; left: 50%; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
-    z-index: 40; display: flex; align-items: center; gap: 0.9rem; width: min(92vw, 34rem); box-sizing: border-box;
-    background: rgba(21,21,27,0.92); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.12); border-radius: 1rem; padding: 0.85rem 1rem;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5); animation: bannerIn 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
-  .cookie-banner[hidden] { display: none; }
-  .cookie-banner p { margin: 0; flex: 1; font-size: 11.5px; line-height: 1.5; color: #cbd5e1; text-align: left; }
-  .cookie-ok { padding: 0.55rem 1.35rem; font-size: 11px; letter-spacing: 0.12em; flex-shrink: 0; }
-
   /* ===== Early-access popup ===== */
   /* overlay scrolls and the card uses margin:auto so it stays fully reachable
      even when taller than a short (landscape / keyboard-open) viewport */
@@ -1195,12 +1184,6 @@
     </div>
   </div>
 
-  <!-- ===== Cookie consent banner (shown once per user) ===== -->
-  <div class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Cookie notice" hidden>
-    <p data-i18n="cookie.text">We use cookies to improve your experience. By continuing to use this website, you agree to our use of cookies.</p>
-    <button class="btn-white cookie-ok" data-action="cookie-ok" type="button">OK</button>
-  </div>
-
   <!-- ===== Early-access lead popup ===== -->
   <div class="modal-overlay" id="lead-modal" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="lead-title">
@@ -1241,7 +1224,6 @@
   /* Leads are e-mailed via FormSubmit; first submission triggers a one-time
      activation e-mail to this address — confirm it once and leads flow in. */
   var LEAD_ENDPOINT = 'https://formsubmit.co/ajax/admin@andre.technology';
-  var COOKIE_KEY = 'ait_cookie_ok';
   var LEADS_KEY = 'ait_leads';
   var QUEUE_KEY = 'ait_lead_queue';
   /* FR-SITE34: субтитры под новые ролики — фразы из закадрового текста,
@@ -1565,7 +1547,6 @@
     'contact.cta': 'Бесплатная ИИ-диагностика <i class="fa-solid fa-arrow-right"></i>',
     'legal.privacy': 'Политика конфиденциальности',
     'legal.terms': 'Условия использования',
-    'cookie.text': 'Мы используем cookie, чтобы улучшить работу сайта. Продолжая пользоваться сайтом, вы соглашаетесь с использованием cookie.',
     'lead.title': 'Скоро запуск',
     'lead.sub': 'Оставьте email, чтобы получить ранний доступ.',
     'lead.error': 'Введите корректный email.',
@@ -1606,18 +1587,6 @@
     setVideoLang(lang);
     /* и меняет высоту текстов — пересчёт маски прокрутки (FR-SITE36) */
     updateScrollFade();
-  }
-
-  /* ---- cookie consent (shown once per user) ---- */
-  var cookieBanner = document.getElementById('cookie-banner');
-  function initCookieBanner() {
-    if (!cookieBanner || storeGet(COOKIE_KEY) === '1') return;
-    /* the banner overlays the bottom of the page; it must NOT shift any content */
-    setTimeout(function () { cookieBanner.hidden = false; }, 500);
-  }
-  function acceptCookies() {
-    storeSet(COOKIE_KEY, '1');
-    if (cookieBanner) cookieBanner.hidden = true;
   }
 
   /* ---- early-access lead popup ---- */
@@ -1810,7 +1779,6 @@
     else if (a === 'contact') { if (e) e.stopPropagation(); openLead(el.getAttribute('data-source') || (el.textContent || '').trim()); }
     else if (a === 'lead-open') { if (e) e.stopPropagation(); openLead(el.getAttribute('data-source') || (el.textContent || '').trim()); }
     else if (a === 'lead-close') closeLead();
-    else if (a === 'cookie-ok') acceptCookies();
     else if (a === 'lang') setLang(el.getAttribute('data-lang'));
     else if (a === 'tab') openTab(el.getAttribute('data-target'));
     else if (a === 'toggle-employees') toggleExpand('employees');
@@ -1902,7 +1870,6 @@
       if (SCREENS.indexOf(id) >= 0) openTab(id);
     });
 
-    initCookieBanner();
     flushLeadQueue();
   }
 
