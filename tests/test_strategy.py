@@ -1584,10 +1584,6 @@ def test_ru_page_leads_to_the_russian_product():
     без параметра, язык по браузеру."""
     ru, en = _raw("ai-strategy/ru/index.html"), _raw("ai-strategy/index.html")
     hrefs = re.findall(r'href="(https://strategy\.andre\.technology/[^"]*)"', ru)
-    # FR-SITE87: рядом с главной кнопкой — вход в свою компанию, тоже на русском
-    login = "https://strategy.andre.technology/?login=1&amp;lang=ru"
-    assert hrefs.count(login) == 1, hrefs
-    hrefs = [h for h in hrefs if h != login]
     assert len(hrefs) >= 8 and set(hrefs) == {"https://strategy.andre.technology/?lang=ru"}, hrefs
     assert "?lang=" not in "".join(re.findall(r'href="https://strategy[^"]*"', en))
 
@@ -1630,26 +1626,19 @@ def test_big_window_scales_the_mobile_layout():
     assert js.index("bandZoom();") < js.index("fitHeadings();"), "масштаб ставится до подгонки"
 
 
-def test_sign_in_link_next_to_the_main_button():
-    """FR-SITE87: у кого компания уже есть, идёт во вход, а не в новую —
-    ссылка «Уже есть компания? Войти» стоит сразу под главной кнопкой героя.
-    Это та же серая ссылка, что «Как это работает» (класс .hero-how): второй
-    кнопки на первом экране нет. Продукт по ?login=1 сразу открывает экран
-    входа (почта / Google); русская — с явным ?lang=ru, как и «Начать»."""
-    want = {"en": "https://strategy.andre.technology/?login=1",
-            "ru": "https://strategy.andre.technology/?login=1&amp;lang=ru"}
-    text = {"en": "Already have a company? <b>Sign in</b>", "ru": "Уже есть компания? <b>Войти</b>"}
+def test_no_sign_in_link_on_the_hero():
+    """FR-SITE92: «„Уже есть компания? Войти“ — убери это». Под главной
+    кнопкой героя снова только «Как это работает»; вход в продукт — с его
+    собственного экрана, а не с лендинга."""
     for lang, html in _pages():
         hero = html[html.index('id="top"'):html.index("</section>", html.index('id="top"'))]
         cta = hero[hero.index('<div class="hero-cta">'):hero.index("</div>", hero.index('<div class="hero-cta">'))]
-        link = '<a class="hero-how hero-login" href="%s" rel="noopener">%s</a>' % (want[lang], text[lang])
-        assert link in cta, lang + ": нет ссылки «Войти» рядом с главной кнопкой"
-        assert cta.index('class="btn btn-primary"') < cta.index("hero-login") < cta.index('data-go="process"'), \
-            lang + ": порядок — кнопка, «Войти», «Как это работает»"
-        assert hero.count('class="btn btn-') == 1, lang + ": кнопка на первом экране по-прежнему одна"
-    css = _read("assets/strategy.css")
-    assert ".hero-login b { font-weight: 800; }" in css, "глагол чуть плотнее — видно, куда нажимать"
-    assert not re.search(r"\.hero-login \{", css), "свой вид у ссылки только у глагола — остальное от .hero-how"
+        for gone in ("hero-login", "?login=1", "Уже есть компания", "Already have a company", "Войти</b>", "Sign in"):
+            assert gone not in html, "%s: ссылка входа убрана (%s)" % (lang, gone)
+        assert cta.index('class="btn btn-primary"') < cta.index('data-go="process"'), lang
+        assert hero.count('class="btn btn-') == 1, lang + ": кнопка на первом экране одна"
+    assert "hero-login" not in _read("assets/strategy.css"), "стили убранной ссылки тоже убраны"
+    assert "login" not in _read("tools/strategy_copy.py"), "и тексты в копирайте"
 
 
 def test_pages_turn_native_inside_telegram():
