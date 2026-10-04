@@ -186,7 +186,7 @@ def test_header_matches_the_main_site():
     """Кнопки сверху — того же размера и на тех же местах, что на главной."""
     css = _read("assets/strategy.css")
     site = _read("index.html")
-    for rule in ("width: clamp(2.85rem, 12vw, 3.7rem)",     # лого
+    for rule in ("width: clamp(2.85rem, 12vw, 3.6rem)",     # лого (FR-SITE89: = десктопному)
                  "height: 2.85rem",                          # пилюля меню и кнопка
                  "font-size: clamp(12.5px, 1.05vw, 14px); font-weight: 500",        # пункты меню
                  "padding: 0 1.4rem; font-size: 11.5px"):    # кнопка действия
@@ -203,13 +203,23 @@ def test_header_matches_the_main_site():
 
 
 def test_page_scales_like_the_main_site():
-    """Масштабирование body zoom — как на главной, чтобы вид совпадал."""
+    """Масштабирование body zoom — как на главной, чтобы вид совпадал.
+    FR-SITE89: коэффициент непрерывный (ширина/1480, 1…1.5) — без корзин
+    1.15/1.3/1.5, на которых при растягивании окна прыгал весь макет; пороги
+    плотности по высоте пересчитаны под него точно (соотношение сторон)."""
     css = _read("assets/strategy.css")
     site = _read("index.html")
+    assert "@media (min-width:1480px) { body { zoom: var(--zb, 1); } }" in css
+    assert "@media (min-width:1480px) { body { zoom: var(--z, 1); } }" in site, "на главной тот же зум"
+    for k in ("1.15", "1.3", "1.5"):
+        assert "zoom: %s;" % k not in css and "zoom: %s;" % k not in site, "корзина зума " + k
     for w in ("1600px", "1900px", "2300px"):
-        assert re.search(r"min-width: ?%s" % w, css), "нет ступени масштаба " + w
-        assert re.search(r"min-width: ?%s" % w, site), "ступень %s пропала на главной" % w
-    assert css.count("zoom:") >= 3, "масштаб задаётся через zoom, как на главной"
+        assert not re.search(r"min-width: ?%s" % w, css), "осталась ступень масштаба " + w
+    for x in (700, 760, 880):
+        assert ("(min-width:1480px) and (max-width:2219.98px) and (min-aspect-ratio:1480/%d)" % x) in css, x
+    for lang, html in _pages():
+        head = html.split("</head>")[0]
+        assert "root.style.setProperty('--zb', w >= 1480 ? Math.min(w / 1480, 1.5).toFixed(4) : '1');" in head, lang
 
 
 # ── первый экран ──────────────────────────────────────────────────────────

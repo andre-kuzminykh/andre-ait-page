@@ -543,6 +543,19 @@ TEMPLATE = """<!DOCTYPE html>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </noscript>
 
+<script>
+  /* FR-SITE89: непрерывный body{zoom} больших экранов, как на главной: --zb =
+     ширина окна / 1480 (1…1.5); ставится до первой отрисовки */
+  (function () {
+    var root = document.documentElement;
+    function setZoom() {
+      var w = window.innerWidth;
+      root.style.setProperty('--zb', w >= 1480 ? Math.min(w / 1480, 1.5).toFixed(4) : '1');
+    }
+    setZoom();
+    window.addEventListener('resize', setZoom);
+  })();
+</script>
 <link rel="stylesheet" href="/assets/about.css">
 </head>
 <body>
