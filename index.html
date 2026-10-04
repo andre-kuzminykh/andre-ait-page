@@ -951,18 +951,23 @@
      и его подзаголовок («первый ок») остаются со своими клампами.
      Откат — удалить этот блок. */
   :root { --tn: 13; --dn: 34; --bn: 23; --cn: 17;
-    --pw: calc(100vw - 2rem); --ucap: calc((40dvh - 8.2rem) / 4.9); }
+    --pw: calc(100vw - 2rem); --ucap: calc((40dvh - 96px) / 6.17); }
   html[lang="ru"] { --tn: 15; --dn: 37; --bn: 25; --cn: 16; }
   /* Телефон в портрете: всё должно встать между плашкой «Andre AI» (низ на
      60dvh) и низом экрана. Самые высокие экраны — первый и последний (две
      строки заголовка + плитки с роботом), по ним и посчитан потолок модуля;
      их двухстрочные заголовки на НИЗКИХ телефонах ужимаются вместе с ним
-     (на обычных телефонах потолок не достигается — «первый ок» не меняется). */
+     (на обычных телефонах потолок не достигается — «первый ок» не меняется).
+     Коэффициенты сняты замером, а не на глаз: бинарным поиском наибольшего
+     модуля, при котором ни один экран не заходит на плашку (зазор ≥ 8px сверх
+     покачивания плиток), на сетке окон 360…1000 × 600…1400, EN и RU. Прежняя
+     формула была подобрана по телефонам и в высоком окне (≈1000×1200)
+     пускала плитки на плашку (правка владельца со скрином «наслоение»). */
   @media (max-width:1023px) and (orientation: portrait) {
     .hero-size { font-size: min(clamp(1.5rem, 8.6vw, 2.6rem), calc(var(--ucap) * 0.87)); } }
   /* низкий телефон: панель ниже прижата к краю (см. FR-SITE37) */
   @media (max-width:1023px) and (orientation: portrait) and (max-height:700px) {
-    :root { --ucap: calc((40dvh - 7.6rem) / 5); }
+    :root { --ucap: calc((40dvh - 124px) / 5); }
     .hero-size { font-size: min(clamp(1.35rem, 7.6vw, 2rem), calc(var(--ucap) * 0.87)); } }
   @media (max-width:1023px) and (orientation: landscape) {
     :root { --pw: calc(44vw - 3.3rem); --ucap: calc((100dvh - 8.4rem) / 6.4); } }
@@ -988,6 +993,10 @@
      и !important-правила по брейкпоинтам) */
   .screen.sec { max-width: none; gap: calc(var(--u) * 0.42) !important; }
   .screen[data-screen="overview"], .contact-hero { gap: calc(var(--u) * 0.42) !important; }
+  /* у героя контакта был потолок 32rem: в высоком окне (≈800×1300) подзаголовок
+     упирался в него и переносился — экран скачком вырастал на строку и
+     заезжал на плашку «Andre AI». Ширину и так держат формулы выше. */
+  .contact-hero { max-width: none; }
   .screen.sec .h2-size { font-size: var(--u); white-space: nowrap; }
   .screen .desc:not(.hero-sub) { font-size: min(calc(var(--pw) * 0.95 / (var(--dn) * 0.6)), calc(var(--u) * 0.46)); max-width: none; }
   .screen.sec .desc, .contact-hero .desc, .desc.hero-sub { margin-top: calc(var(--u) * -0.2) !important; }
