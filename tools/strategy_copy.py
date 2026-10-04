@@ -6,11 +6,11 @@ tools/build_strategy.py, вёрстка — assets/strategy.css.
 """
 
 EN = {
-    "title": "AI Strategy | Where should you start with AI in your business?",
-    "meta_desc": "AI Strategy shows how to transform your business with AI: describe how your company works and get an AI-First operating model, AI agent specifications and a roadmap",
-    "video_aria": "Andre explains AI Strategy",
-    "role": "AI Strategy",
-    "brand": "AI Strategy",
+    "title": "AI Playbook | Where should you start with AI in your business?",
+    "meta_desc": "AI Playbook shows how to transform your business with AI: describe how your company works and get an AI-First operating model, AI agent specifications and a roadmap",
+    "video_aria": "Andre explains AI Playbook",
+    "role": "AI Playbook",
+    "brand": "AI Playbook",
     "back": "Back",
     "home": "Home",
     "sections": "Sections",
@@ -162,11 +162,11 @@ EN = {
     ],
     "best_value": "Best value",
     "compare": [("Consulting firm — $100K+", True), ("AI consultant — $10K+", True),
-                ("Build your AI strategy yourself", False)],
+                ("Build your AI playbook yourself", False)],
 
     # ── 9. Финал ──
     "f_1": 'Where to <span class="hl-o">start</span> with <span class="hl-p">AI</span>?',
-    "f_3": '<span class="hl-p">AI</span> Strategy shows <span class="hl-o">you</span>',
+    "f_3": '<span class="hl-p">AI</span> Playbook shows <span class="hl-o">you</span>',
     "f_cta": "Start AI transformation",
     "legal": ["Privacy Policy", "Terms of Use"],
     "company": "Andre AI Technologies",
