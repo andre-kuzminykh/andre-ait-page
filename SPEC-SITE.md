@@ -3332,7 +3332,7 @@ Story: Telegram-бот открывает `https://andre.technology/ai-strategy/
   4. показать `BackButton`, если пришли с сайта (`document.referrer` на
      andre.technology), и по нажатию — `history.back()`: сайт свою кнопку,
      уходя, прячет.
-- **«Уже есть компания? Войти» / «Already have a company? Sign in»** на
+- *(Убрано по правке владельца — FR-SITE92.)* **«Уже есть компания? Войти» / «Already have a company? Sign in»** на
   `/ai-strategy/ru/` и `/ai-strategy/` — сразу под главной кнопкой героя, над
   «Как это работает»: `https://strategy.andre.technology/?login=1&lang=ru`
   (EN — `?login=1`, язык по браузеру, как у «Start», FR-SITE85). Это та же
@@ -3491,3 +3491,16 @@ Story: «„AI Transformation of your Business“ — давай не будет
 Тесты: `test_site.test_first_and_last_slides_robot_and_glow`,
 `test_site.test_get_ai_playbook_label`, `test_site.test_strategy_h2_is_short`,
 `test_strategy.test_final_screen_is_a_question_and_an_answer`.
+
+### FR-SITE92 — без «Уже есть компания? Войти» на лендинге
+
+Story: «„Уже есть компания? Войти“ — убери это».
+
+Требование:
+- Под главной кнопкой героя `/ai-strategy/` и `/ai-strategy/ru/` снова
+  только «Как это работает»: ссылка входа в продукт (`?login=1`) из FR-SITE87
+  убрана вместе с текстами (`login_href`, `login_q`, `login_do` в
+  `tools/strategy_copy.py`) и стилем `.hero-login`. Кнопка на первом экране
+  по-прежнему одна.
+
+Тест: `test_strategy.test_no_sign_in_link_on_the_hero`.

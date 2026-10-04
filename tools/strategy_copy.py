@@ -22,11 +22,6 @@ EN = {
     "cta_top": "Start free",
     "cta_main": "Start for free",
     "cta_how": "How it works",
-    # FR-SITE87: у кого компания уже заведена, идёт не в новую, а во вход —
-    # продукт по ?login=1 сразу открывает экран входа (почта / Google)
-    "login_href": "https://strategy.andre.technology/?login=1",
-    "login_q": "Already have a company?",
-    "login_do": "Sign in",
 
     # ── 1. Первый экран ──
     # Две строки и на вебе, и на телефоне (правка владельца). Раньше строка
@@ -191,10 +186,6 @@ RU = {
     "cta_top": "Начать бесплатно",
     "cta_main": "Начать бесплатно",
     "cta_how": "Как это работает",
-    # FR-SITE87: вход в свою компанию; язык — явно, как у cta_href (FR-SITE85)
-    "login_href": "https://strategy.andre.technology/?login=1&lang=ru",
-    "login_q": "Уже есть компания?",
-    "login_do": "Войти",
 
     "h1": ('<span class="l">С чего <span class="hl-o">начать</span></span>'
            '<span class="l">внедрять <span class="hl-p">ИИ</span>?</span>'),

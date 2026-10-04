@@ -479,7 +479,6 @@ def page(t, lang):
       <p class="lead">{hero_lead}</p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="{cta_href}" rel="noopener">{cta_main} <i class="fa-solid fa-arrow-right"></i></a>
-        <a class="hero-how hero-login" href="{login_href}" rel="noopener">{login_q} <b>{login_do}</b></a>
         <button class="hero-how" data-go="process" type="button">{cta_how}</button>
       </div>
     </div>
@@ -581,8 +580,6 @@ def page(t, lang):
                     ('<a class="lang-opt" href="%s">EN</a><span class="lang-sep">|</span>'
                      '<span class="lang-opt active">RU</span>' % other_href),
         h1=t["h1"], hero_lead=t["hero_lead"], cta_main=t["cta_main"], cta_how=t["cta_how"],
-        # в атрибуте «&» пишется как &amp;: адрес с двумя параметрами (?login=1&lang=ru)
-        login_href=t["login_href"].replace("&", "&amp;"), login_q=t["login_q"], login_do=t["login_do"],
         # FR-SITE87: в Telegram Mini App — нативный режим (tools/tg_miniapp.py)
         tg=head_snippet("deck"),
         n_eyebrow=t["n_eyebrow"], n_head=t["n_head"], nums=nums, n_foot=t["n_foot"],
