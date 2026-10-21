@@ -918,6 +918,27 @@ def test_first_and_last_slides_robot_and_glow():
     assert "@keyframes glowP" in html and "@keyframes glowO" in html
     assert "@media (prefers-reduced-motion: reduce) { .glow-title, .glow-title .gp, .glow-title .go { animation: none; } }" in html
 
+
+# ── FR-SITE93: лента прогресса внизу ───────────────────────────────────
+
+def test_progress_bar_fills_with_screens():
+    """FR-SITE93. «Поставим снизу градиентную ленту с фиолетового на оранжевый,
+    которая заполняется по мере листания страницы». Лента прибита к низу окна,
+    градиент натянут на всю ширину, а заполнение открывает его clip-path'ом
+    до текущего экрана: на первом — 1/8, на последнем — целиком."""
+    html = _html()
+    assert '<div class="progress" id="progress" aria-hidden="true"><div class="progress-fill"></div></div>' in html
+    css = html.split("FR-SITE93: лента прогресса внизу экрана", 1)[1].split("/* ===== Early-access popup", 1)[0]
+    assert ".progress { position: fixed; left: 0; right: 0; bottom: 0; z-index: 35;" in css
+    assert "linear-gradient(90deg, #8854F3 0%" in css and "#F97316 100%)" in css
+    assert "clip-path: inset(-12px calc(100% - var(--p, 0%)) -12px 0);" in css
+    assert "@media (prefers-reduced-motion: reduce) { .progress-fill { transition: none; } }" in css
+    js = html.split("function setProgress(id)", 1)[1]
+    assert "((i + 1) / SCREENS.length * 100)" in js.split("}", 2)[0] + js.split("}", 2)[1]
+    open_tab = html.split("function openTab(id) {", 1)[1].split("swapT = setTimeout", 1)[0]
+    assert "setProgress(id);" in open_tab, "лента едет сразу при переходе, вместе с уходом панели"
+    assert "setProgress(start);" in html, "и выставлена при загрузке на экран из адреса"
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:

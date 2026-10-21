@@ -1014,6 +1014,25 @@
     width: calc(var(--bf) * (var(--bn) * 0.75 + 5.6)) !important; font-size: var(--bf) !important;
     letter-spacing: 0.15em !important; gap: 0.75em !important; padding: max(1.05em, 0.9rem) 0 !important; }
 
+  /* ===== FR-SITE93: лента прогресса внизу экрана =====
+     Правка владельца: «на всех страницах сайта поставим снизу градиентную
+     ленту с фиолетового на оранжевый, которая заполняется по мере листания
+     страницы, — вместо кружочков сбоку». Градиент натянут на ВСЮ ширину окна,
+     а заполнение открывает его clip-path'ом слева направо: в начале сайта
+     видна фиолетовая часть, к последнему экрану — вся лента до оранжевого.
+     clip-path, а не ширина: иначе градиент сжимался бы вместе с полосой и
+     всегда шёл бы от фиолетового к оранжевому целиком. Сверху и снизу у
+     обрезки запас, чтобы мягкое свечение ленты не срезалось. Лента лежит
+     под шапкой и полноэкранным меню, над содержимым. */
+  .progress { position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; height: 3px;
+    background: rgba(255,255,255,0.07); pointer-events: none; }
+  .progress-fill { position: absolute; inset: 0; background: linear-gradient(90deg, #8854F3 0%, #a071ff 30%, #F97316 100%);
+    box-shadow: 0 0 10px rgba(160,113,255,0.55), 0 0 18px rgba(249,115,22,0.25);
+    clip-path: inset(-12px calc(100% - var(--p, 0%)) -12px 0);
+    transition: clip-path 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+  @media (min-width:1024px) { .progress { height: 4px; } }
+  @media (prefers-reduced-motion: reduce) { .progress-fill { transition: none; } }
+
   /* ===== Early-access popup ===== */
   /* overlay scrolls and the card uses margin:auto so it stays fully reachable
      even when taller than a short (landscape / keyboard-open) viewport */
@@ -1162,6 +1181,9 @@
 
   <!-- ===== Caption ===== -->
   <div class="caption"><span id="caption-text"></span></div>
+
+  <!-- ===== Лента прогресса: заполняется по мере листания экранов (FR-SITE93) ===== -->
+  <div class="progress" id="progress" aria-hidden="true"><div class="progress-fill"></div></div>
 
   <!-- ===== Content ===== -->
   <div class="content-layer">
@@ -1443,9 +1465,18 @@
 
   /* ---- screen switching with leave/enter animation ---- */
   var swapT, enterT;
+  /* FR-SITE93: лента заполняется до текущего экрана: на первом — 1/8, на
+     последнем — целиком. Ставится сразу при переходе, вместе с уходом панели,
+     а не после её смены — лента и слайд движутся одновременно. */
+  function setProgress(id) {
+    var bar = document.getElementById('progress');
+    var i = SCREENS.indexOf(id);
+    if (bar && i >= 0) bar.style.setProperty('--p', ((i + 1) / SCREENS.length * 100).toFixed(2) + '%');
+  }
   function openTab(id) {
     if (SCREENS.indexOf(id) < 0) return;
     if (id === state.tab) { closeMenu(); return; }
+    setProgress(id);
     closeMenu();
     panel.classList.add('leaving');
     clearTimeout(swapT); clearTimeout(enterT);
@@ -1964,6 +1995,7 @@
     state.tab = start;
     showScreen(start);
     setActiveNav(start);
+    setProgress(start);
     applyExpanded();
     setMuted(true);
     applyVideoMask();
