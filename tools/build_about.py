@@ -210,7 +210,7 @@ JS = r"""
   var video = document.getElementById('hero-video');
   var micIcon = document.getElementById('mic-icon');
   var micWave = document.getElementById('mic-wave');
-  var dotsBox = document.getElementById('dots');
+  var progress = document.getElementById('progress');
 
   /* язык страницы синхронизирован с главной: вернувшись на «/», посетитель
      увидит сайт на том же языке */
@@ -227,16 +227,13 @@ JS = r"""
   }
   bandZoom();
 
-  /* ---------- точки-индикаторы ---------- */
-  var dots = screens.map(function (s, i) {
-    var b = document.createElement('button');
-    b.className = 'dot';
-    b.type = 'button';
-    b.setAttribute('aria-label', String(i + 1));
-    b.addEventListener('click', function () { go(i); });
-    dotsBox.appendChild(b);
-    return b;
-  });
+  /* ---------- лента прогресса внизу (FR-SITE93) ----------
+     Заменила точки сбоку (правка владельца «вместо кружочков сбоку»):
+     заполняется до текущего экрана — на первом 1/N, на последнем целиком.
+     Ставится в начале перехода, чтобы лента ехала вместе со сменой экрана. */
+  function setProgress(i) {
+    if (progress) progress.style.setProperty('--p', ((i + 1) / screens.length * 100).toFixed(2) + '%');
+  }
 
   /* ---------- заголовки: перенос авторский, подгоняем только кегль ----------
      Заголовок главы на вебе не переносится: если строка чуть шире колонки,
@@ -330,7 +327,7 @@ JS = r"""
     screens.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
     var chapter = screens[cur].getAttribute('data-chapter');
     navTabs.forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-chapter') === chapter); });
-    dots.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
+    setProgress(cur);
     fitCurrent();
     revealIn(screens[cur]);
     countUpIn(screens[cur]);
@@ -340,6 +337,7 @@ JS = r"""
     closeMenu();
     busy = true;
     clearTimeout(swapT); clearTimeout(enterT);
+    setProgress(i);
     if (reduce) { cur = i; paint(); busy = false; return; }
     article.classList.add('leaving');
     swapT = setTimeout(function () {
@@ -453,23 +451,26 @@ JS = r"""
   document.getElementById('mic-btn').addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
 
   /* Кружок с роликом можно ТАСКАТЬ — как на лендинге (правка владельца).
-     Точка хранится как отступы от ЛЕВОГО-НИЖНЕГО угла, а не как `top`: у
+     Точка хранится как отступы от ПРАВОГО-НИЖНЕГО угла, а не как `top`: у
      мобильного браузера при показе адресной строки видимая область и
      координаты position:fixed расходятся, и сохранённый `top` выбрасывал
-     кружок на середину экрана. Любая точка прижимается к окну. */
-  var POS_KEY = 'ait_about_head';
+     кружок на середину экрана. Любая точка прижимается к окну.
+     FR-SITE94: кружок живёт СПРАВА (правка владельца «чтобы голова-кружок
+     была всегда справа»); ключ новый — прежние места от левого края
+     сбрасываются. */
+  var POS_KEY = 'ait_about_head_r';
   var drag = null;
   function clampPos(p) {
-    if (!p || typeof p.l !== 'number' || typeof p.b !== 'number') return null;
+    if (!p || typeof p.r !== 'number' || typeof p.b !== 'number') return null;
     var w = media.offsetWidth || 120, h = media.offsetHeight || 120;
-    return { l: Math.min(Math.max(8, window.innerWidth - w - 8), Math.max(8, p.l)),
+    return { r: Math.min(Math.max(8, window.innerWidth - w - 8), Math.max(8, p.r)),
              b: Math.min(Math.max(8, window.innerHeight - h - 8), Math.max(8, p.b)) };
   }
   function applyPos(p) {
-    if (mqDesktop.matches) { media.style.left = ''; media.style.bottom = ''; media.style.top = ''; return; }
+    if (mqDesktop.matches) { media.style.right = ''; media.style.bottom = ''; media.style.top = ''; return; }
     p = clampPos(p);
     if (!p) return;
-    media.style.left = p.l + 'px';
+    media.style.right = p.r + 'px';
     media.style.bottom = p.b + 'px';
     media.style.top = 'auto';
   }
@@ -477,7 +478,7 @@ JS = r"""
   media.addEventListener('pointerdown', function (e) {
     if (mqDesktop.matches) return;
     var r = media.getBoundingClientRect();
-    drag = { dx: e.clientX - r.left, dy: r.bottom - e.clientY, moved: 0, sx: e.clientX, sy: e.clientY };
+    drag = { dx: r.right - e.clientX, dy: r.bottom - e.clientY, moved: 0, sx: e.clientX, sy: e.clientY };
     media.setPointerCapture(e.pointerId);
   });
   media.addEventListener('pointermove', function (e) {
@@ -485,7 +486,7 @@ JS = r"""
     /* путь считаем от точки касания: у событий пальца movementX всегда 0 */
     drag.moved = Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy);
     if (drag.moved < 8) return;
-    drag.last = { l: e.clientX - drag.dx, b: window.innerHeight - e.clientY - drag.dy };
+    drag.last = { r: window.innerWidth - e.clientX - drag.dx, b: window.innerHeight - e.clientY - drag.dy };
     applyPos(drag.last);
   });
   media.addEventListener('pointerup', function () {
@@ -636,7 +637,7 @@ TEMPLATE = """<!DOCTYPE html>
 </header>
 
 <!-- ===== Колонка чтения ===== -->
-<div class="dots" id="dots" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"><div class="progress-fill"></div></div>
 <main class="read" id="read">
   <article class="article">
 

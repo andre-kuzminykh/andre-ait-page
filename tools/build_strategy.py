@@ -467,7 +467,7 @@ def page(t, lang):
   </div>
 </header>
 
-<div class="dots" id="dots" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"><div class="progress-fill"></div></div>
 
 <main class="deck" id="deck">
 

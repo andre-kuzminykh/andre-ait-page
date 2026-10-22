@@ -1023,8 +1023,9 @@
      clip-path, а не ширина: иначе градиент сжимался бы вместе с полосой и
      всегда шёл бы от фиолетового к оранжевому целиком. Сверху и снизу у
      обрезки запас, чтобы мягкое свечение ленты не срезалось. Лента лежит
-     под шапкой и полноэкранным меню, над содержимым. */
-  .progress { position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; height: 3px;
+     под шапкой и полноэкранным меню, над содержимым. Над полосой «домой»
+     iPhone лента стоит на safe-area отступе (обычно он нулевой). */
+  .progress { position: fixed; left: 0; right: 0; bottom: env(safe-area-inset-bottom, 0px); z-index: 35; height: 3px;
     background: rgba(255,255,255,0.07); pointer-events: none; }
   .progress-fill { position: absolute; inset: 0; background: linear-gradient(90deg, #8854F3 0%, #a071ff 30%, #F97316 100%);
     box-shadow: 0 0 10px rgba(160,113,255,0.55), 0 0 18px rgba(249,115,22,0.25);

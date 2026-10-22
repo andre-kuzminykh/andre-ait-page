@@ -929,7 +929,7 @@ def test_progress_bar_fills_with_screens():
     html = _html()
     assert '<div class="progress" id="progress" aria-hidden="true"><div class="progress-fill"></div></div>' in html
     css = html.split("FR-SITE93: лента прогресса внизу экрана", 1)[1].split("/* ===== Early-access popup", 1)[0]
-    assert ".progress { position: fixed; left: 0; right: 0; bottom: 0; z-index: 35;" in css
+    assert ".progress { position: fixed; left: 0; right: 0; bottom: env(safe-area-inset-bottom, 0px); z-index: 35;" in css
     assert "linear-gradient(90deg, #8854F3 0%" in css and "#F97316 100%)" in css
     assert "clip-path: inset(-12px calc(100% - var(--p, 0%)) -12px 0);" in css
     assert "@media (prefers-reduced-motion: reduce) { .progress-fill { transition: none; } }" in css
