@@ -22,18 +22,15 @@
   var menuIcon = $('#menu-icon');
   var head = $('#head');
   var video = $('#head-video');
-  var dotsBox = $('#dots');
+  var progress = document.getElementById('progress');
 
-  /* ---------- точки-индикаторы ---------- */
-  var dots = screens.map(function (s, i) {
-    var b = document.createElement('button');
-    b.className = 'dot';
-    b.type = 'button';
-    b.setAttribute('aria-label', String(i + 1));
-    b.addEventListener('click', function () { go(i); });
-    dotsBox.appendChild(b);
-    return b;
-  });
+  /* ---------- лента прогресса внизу (FR-SITE93) ----------
+     Заменила точки сбоку (правка владельца «вместо кружочков сбоку»):
+     заполняется до текущего экрана — на первом 1/N, на последнем целиком.
+     Ставится в начале перехода, чтобы лента ехала вместе со сменой экрана. */
+  function setProgress(i) {
+    if (progress) progress.style.setProperty('--p', ((i + 1) / screens.length * 100).toFixed(2) + '%');
+  }
 
   /* ---------- большое окно в мобильной вёрстке: всё крупнее ----------
      FR-SITE84: окно 600–1023px (не телефон) масштабируется целиком, --z
@@ -304,7 +301,7 @@
     screens.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
     var chapter = screens[cur].getAttribute('data-chapter');
     navTabs.forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-go') === chapter); });
-    dots.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
+    setProgress(cur);
     screens[cur].scrollTop = 0;
     fitHeadings(screens[cur]);
     fitScreen(screens[cur]);
@@ -317,6 +314,7 @@
     closeMenu();
     busy = true;
     clearTimeout(swapT); clearTimeout(enterT);
+    setProgress(i);
     if (reduce) { cur = i; paint(); busy = false; return; }
     /* соседние шаги процесса связаны перелётом блоков, а не сменой экрана */
     var from = Math.abs(i - cur) === 1 && screens[i].classList.contains('step-screen')
@@ -448,26 +446,29 @@
   }
   if (head) {
   /* Кружок с роликом можно ТАСКАТЬ (правка владельца: «с хуя ли я не могу
-     кружок двигать»). Точка хранится как отступы от ЛЕВОГО-НИЖНЕГО угла, а не
+     кружок двигать»). Точка хранится как отступы от ПРАВОГО-НИЖНЕГО угла, а не
      как `top`: у мобильного браузера при показе адресной строки видимая
      область и координаты position:fixed расходятся, и сохранённый `top`
-     выбрасывал кружок на середину экрана. Снизу-слева он ведёт себя так же,
+     выбрасывал кружок на середину экрана. Снизу-справа он ведёт себя так же,
      как заданный в CSS, и остаётся на месте. Любая точка прижимается к окну,
-     поэтому с широкого окна на узком кружок не пропадает. */
-  var POS_KEY = 'ait_strategy_head';
+     поэтому с широкого окна на узком кружок не пропадает.
+     FR-SITE94: кружок живёт СПРАВА (правка владельца «чтобы голова-кружок
+     была всегда справа»); ключ новый — прежние места, сохранённые от левого
+     края, сбрасываются, и у всех кружок встаёт вправо. */
+  var POS_KEY = 'ait_strategy_head_r';
   var drag = null;
   function clampPos(p) {
-    if (!p || typeof p.l !== 'number' || typeof p.b !== 'number') return null;
+    if (!p || typeof p.r !== 'number' || typeof p.b !== 'number') return null;
     var w = head.offsetWidth || 120, h = head.offsetHeight || 120;
-    return { l: Math.min(Math.max(8, window.innerWidth - w - 8), Math.max(8, p.l)),
+    return { r: Math.min(Math.max(8, window.innerWidth - w - 8), Math.max(8, p.r)),
              b: Math.min(Math.max(8, window.innerHeight - h - 8), Math.max(8, p.b)) };
   }
-  function clearPos() { head.style.left = ''; head.style.bottom = ''; head.style.top = ''; }
+  function clearPos() { head.style.right = ''; head.style.bottom = ''; head.style.top = ''; }
   function applyPos(p) {
     if (mqDesk.matches) { clearPos(); return; }
     p = clampPos(p);
     if (!p) return;
-    head.style.left = p.l + 'px';
+    head.style.right = p.r + 'px';
     head.style.bottom = p.b + 'px';
     head.style.top = 'auto';
   }
@@ -475,7 +476,7 @@
   head.addEventListener('pointerdown', function (e) {
     if (mqDesk.matches) return;
     var r = head.getBoundingClientRect();
-    drag = { dx: e.clientX - r.left, dy: r.bottom - e.clientY, moved: 0,
+    drag = { dx: r.right - e.clientX, dy: r.bottom - e.clientY, moved: 0,
              sx: e.clientX, sy: e.clientY, w: r.width, h: r.height };
     head.setPointerCapture(e.pointerId);
   });
@@ -486,7 +487,7 @@
        месте (жалоба владельца «кружочки нихуя не двигаются») */
     drag.moved = Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy);
     if (drag.moved < 8) return;
-    drag.last = { l: e.clientX - drag.dx, b: window.innerHeight - e.clientY - drag.dy };
+    drag.last = { r: window.innerWidth - e.clientX - drag.dx, b: window.innerHeight - e.clientY - drag.dy };
     applyPos(drag.last);
   });
   head.addEventListener('pointerup', function () {

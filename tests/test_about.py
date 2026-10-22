@@ -457,11 +457,17 @@ def test_ai_employee_areas_cover_ten_roles():
 
 
 def test_no_gradient_strip_above_headings():
-    """«Без градиентных полосок сверху»: ни линии над заголовком, ни полосы прогресса."""
+    """«Без градиентных полосок сверху»: ни линии над заголовком, ни полосы
+    прогресса СВЕРХУ. FR-SITE93: лента прогресса теперь есть — но только
+    внизу окна, вместо точек сбоку (правка владельца)."""
     css = _css()
     assert "h2::before" not in css, "над заголовком главы полоски быть не должно"
+    assert ".progress { position: fixed; top: 0" not in css, "верхней полосы прогресса нет"
+    assert ".progress { position: fixed; left: 0; right: 0; bottom: var(--safe-b, env(safe-area-inset-bottom, 0px));" in css, \
+        "лента — у нижнего края, над полосой «домой»"
     for lang, html in _pages():
-        assert 'class="progress"' not in html, lang + ": верхняя полоса прогресса убрана"
+        assert '<div class="progress" id="progress" aria-hidden="true"><div class="progress-fill"></div></div>' in html, lang
+        assert 'id="dots"' not in html, lang + ": точки сбоку заменила лента"
 
 
 def test_biography_is_a_deck_of_screens():
@@ -949,7 +955,8 @@ def test_big_window_scales_the_mobile_layout():
     его тащат пальцем, — поэтому его диаметр и размеры от окна делятся на --z.
     Последний экран называется «AI-Native экосистема» (правка владельца)."""
     css = _css()
-    assert "@media (min-width:600px) and (max-width:1023px) and (min-height:521px) {\n    header, .read, .dots, .top-fade { zoom: var(--z, 1); }" in css
+    # точек больше нет — их заменила лента внизу (FR-SITE93), она не масштабируется
+    assert "@media (min-width:600px) and (max-width:1023px) and (min-height:521px) {\n    header, .read, .top-fade { zoom: var(--z, 1); }" in css
     assert "calc(var(--vid-d) * 0.82 / var(--z, 1) + 1rem" in css, "поле под кружок не растёт вместе с экраном"
     for lang, html in _pages():
         assert "function bandZoom()" in html and "Math.min(w / 600, h / 880, 1.8)" in html, lang
@@ -983,6 +990,20 @@ def test_pages_turn_native_inside_telegram():
         head = html[:html.index("</head>")]
         assert head.count(head_snippet("deck")) == 1, lang
         assert '<script src="https://telegram.org' not in html, lang
+
+
+def test_head_circle_lives_on_the_right():
+    """FR-SITE94: «чтобы голова-кружок была всегда справа и на компе, и на
+    мобилке». Кружок по умолчанию в правом нижнем углу; перетаскивание
+    хранит отступы от ПРАВОГО-нижнего угла под новым ключом — прежние места,
+    сохранённые от левого края, сброшены."""
+    css = _css()
+    mob = css[css.index("    .media { touch-action: none;"):]
+    assert mob.split("}", 1)[0].count("left: auto; right: clamp(0.85rem, 4vw, 1.4rem);") == 1, "кружок справа"
+    for lang, html in _pages():
+        assert "var POS_KEY = 'ait_about_head_r';" in html, lang
+        assert "media.style.right = p.r + 'px';" in html and "media.style.left" not in html, lang
+        assert "r: window.innerWidth - e.clientX - drag.dx" in html, lang
 
 if __name__ == "__main__":
     import sys

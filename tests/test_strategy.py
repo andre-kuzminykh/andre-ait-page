@@ -100,7 +100,8 @@ def test_face_keeps_the_proportions_of_the_main_site():
 
 def test_head_can_be_dragged_and_keeps_its_corner():
     """Правка владельца: «с хуя ли я не могу кружок двигать». Кружок таскают
-    снова, но точка хранится как отступы от ЛЕВОГО-НИЖНЕГО угла, а не как
+    снова, но точка хранится как отступы от ПРАВОГО-НИЖНЕГО угла (FR-SITE94:
+    «голова-кружок всегда справа»), а не как
     `top`: у мобильного браузера при показе адресной строки видимая область и
     координаты position:fixed расходятся, и сохранённый `top` выбрасывал
     кружок на середину экрана."""
@@ -116,8 +117,11 @@ def test_head_can_be_dragged_and_keeps_its_corner():
         "тап с дрожанием пальца не считается перетаскиванием"
     css = _read("assets/strategy.css")
     mob = css[css.index("@media (max-width:1023px)"):]
-    assert ".head { left: clamp(" in mob and "bottom: calc(clamp(" in mob, \
-        "исходное место кружка — левый нижний угол, задано в CSS"
+    assert ".head { left: auto; right: clamp(" in mob and "bottom: calc(clamp(" in mob, \
+        "исходное место кружка — правый нижний угол, задано в CSS"
+    assert "head.style.right = p.r + 'px';" in js and "r: window.innerWidth - e.clientX - drag.dx" in js, \
+        "точка считается от правого края"
+    assert "var POS_KEY = 'ait_strategy_head_r';" in js, "новый ключ: прежние места от левого края сброшены"
 
 
 # ── лендинг листается экранами, как биография ─────────────────────────────
@@ -1621,7 +1625,8 @@ def test_big_window_scales_the_mobile_layout():
     экранов и точек); кружок и размеры от окна поделены на --z."""
     css = _read("assets/strategy.css")
     js = _read("assets/strategy.js")
-    assert "@media (min-width:600px) and (min-height:521px) {\n    header, .deck, .dots { zoom: var(--z, 1); }" in css
+    # точек больше нет — их заменила лента внизу (FR-SITE93), она не масштабируется
+    assert "@media (min-width:600px) and (min-height:521px) {\n    header, .deck { zoom: var(--z, 1); }" in css
     assert "function bandZoom()" in js and "Math.min(w / 600, h / 880, 1.8)" in js
     assert js.index("bandZoom();") < js.index("fitHeadings();"), "масштаб ставится до подгонки"
 

@@ -41,10 +41,6 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     background-size: 180px 180px; }
 
-  /* ===== Прогресс чтения ===== */
-  .progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 60; pointer-events: none;
-    background: linear-gradient(90deg, #8854F3 0%, #F97316 100%); box-shadow: 0 0 12px rgba(136,84,243,0.6); transition: width 0.1s linear; }
-
   /* ===== Header (повторяет главную) ===== */
   header { position: fixed; top: calc(var(--safe-t, 0px) / var(--z, 1)); left: 0; right: 0; z-index: 30; pointer-events: none; padding: 1.1rem; }
   /* Текст уезжает ПОД шапку, и раньше он просвечивал сквозь неё. Плотная
@@ -194,9 +190,11 @@
   /* селекторы с .media — чтобы правила бейджа/затемнения ниже их не перебили */
   @media (max-width:1023px) {
     /* touch-action: none — кружок таскают пальцем; при manipulation браузер
-       забирает жест себе и pointermove до элемента не доходит */
+       забирает жест себе и pointermove до элемента не доходит.
+       FR-SITE94: кружок справа внизу (правка владельца «чтобы голова-кружок
+       была всегда справа и на компе, и на мобилке») */
     .media { touch-action: none;
-      top: auto; left: clamp(0.85rem, 4vw, 1.4rem); bottom: calc(clamp(0.85rem, 4vw, 1.4rem) + var(--safe-b, env(safe-area-inset-bottom, 0px)));
+      top: auto; left: auto; right: clamp(0.85rem, 4vw, 1.4rem); bottom: calc(clamp(0.85rem, 4vw, 1.4rem) + var(--safe-b, env(safe-area-inset-bottom, 0px)));
       width: var(--vid-d); height: var(--vid-d); border-radius: 50%; z-index: 25; cursor: pointer;
       border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 14px 34px rgba(0,0,0,0.55); }
     .media video { object-position: center 18%; filter: blur(5px); transform: scale(1.08); transition: filter 0.25s ease, transform 0.25s ease; }
@@ -271,14 +269,22 @@
   .article.entering .screen.active { animation: slideInScreen 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
   @keyframes slideInScreen { from { opacity: 0; transform: translateY(44px); } to { opacity: 1; transform: none; } }
 
-  /* точки-индикаторы: где мы внутри биографии */
-  .dots { position: fixed; z-index: 20; display: flex; gap: 0.4rem; pointer-events: auto; }
-  @media (min-width:1024px) { .dots { right: 1.6rem; top: 50%; transform: translateY(-50%); flex-direction: column; } }
-  @media (max-width:1023px) { .dots { left: 50%; transform: translateX(-50%); bottom: calc(1rem + var(--safe-b, env(safe-area-inset-bottom, 0px))); } }
-  .dot { width: 6px; height: 6px; border-radius: 999px; border: 0; padding: 0; cursor: pointer;
-    background: rgba(255,255,255,0.22); transition: background 0.3s ease, transform 0.3s ease; }
-  .dot.on { background: linear-gradient(120deg, #a071ff, #ff8a33); transform: scale(1.5); }
-  @media (hover:hover) { .dot:hover { background: rgba(255,255,255,0.5); } }
+  /* FR-SITE93: лента прогресса внизу вместо точек сбоку — как на главной
+     (правка владельца «на всех страницах — градиентная лента с фиолетового на
+     оранжевый, которая заполняется по мере листания, вместо кружочков»).
+     Градиент натянут на всю ширину окна, заполнение открывает его clip-path'ом
+     до текущего экрана; ширина заливки не меняется, поэтому цвет в каждой
+     точке ленты постоянен.
+     Над полосой «домой» iPhone лента стоит на safe-area отступе (вне PWA и
+     Telegram он нулевой — лента у самого края). */
+  .progress { position: fixed; left: 0; right: 0; bottom: var(--safe-b, env(safe-area-inset-bottom, 0px)); z-index: 24; height: 3px;
+    background: rgba(255,255,255,0.07); pointer-events: none; }
+  .progress-fill { position: absolute; inset: 0; background: linear-gradient(90deg, #8854F3 0%, #a071ff 30%, #F97316 100%);
+    box-shadow: 0 0 10px rgba(160,113,255,0.55), 0 0 18px rgba(249,115,22,0.25);
+    clip-path: inset(-12px calc(100% - var(--p, 0%)) -12px 0);
+    transition: clip-path 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+  @media (min-width:1024px) { .progress { height: 4px; } }
+  @media (prefers-reduced-motion: reduce) { .progress-fill { transition: none; } }
 
   /* ===== Фоновые знаки глав (тигр, шапочка, монеты, ракета, процессор) =====
      Еле заметные, серые, по очереди слева и справа, с разным наклоном.
@@ -677,7 +683,7 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
      всё, что внутри увеличенных слоёв считается от его диаметра и от окна
      (vw/vh), делится на --z. Телефоны (уже 600px) и горизонт не трогаем. */
   @media (min-width:600px) and (max-width:1023px) and (min-height:521px) {
-    header, .read, .dots, .top-fade { zoom: var(--z, 1); }
+    header, .read, .top-fade { zoom: var(--z, 1); }
   }
 
   /* ===== Телефон в ГОРИЗОНТЕ ============================================
@@ -699,13 +705,12 @@ html[lang="ru"] .nav-legal-sep { font-size: 10px; }
     .cta { height: 1.8rem; padding: 0 0.85rem; font-size: 9.5px; letter-spacing: 0.06em; }
     /* всё по центру, справа — вертикальная колонка точек (правка владельца) */
     /* поля СИММЕТРИЧНЫЕ и равны кружку: содержимое стоит ровно по центру
-       экрана и при этом не заезжает на кружок слева и на точки справа */
+       экрана и при этом не заезжает на кружок (FR-SITE94: он теперь справа,
+       а точки заменила лента внизу — симметрия полей осталась той же) */
     /* поля сверху и снизу одинаковые — глава ровно по центру окна */
     /* 3.3rem сверху ровно перекрывают ужатую шапку горизонта (замер ~51px),
        а симметрия держит главу по центру окна */
     .screen { padding: 3.3rem calc(var(--vid-d) + 1.6rem); }
-    .dots { left: auto; right: 0.7rem; top: 50%; bottom: auto;
-      transform: translateY(-50%); flex-direction: column; }
     .screen > *:not(.wm) { max-width: none; }
     h1 { font-size: calc(min(2.3rem, 8vh, 5.58cqi) * var(--k, 1)); line-height: 1.14; }
     h2 { font-size: calc(clamp(1.1rem, 5.8vh, 1.75rem) * var(--k, 1)); margin-bottom: 0.3rem; }
