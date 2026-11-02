@@ -378,6 +378,8 @@
     .split > :first-child, .pr-h > div:first-child, .faq > .st { text-align: center; }
     .split .kicker, .split .actions, .pr-h .kicker, .faq .kicker { justify-content: center; }
     .pr-h { justify-content: center; } .pr-h > div:first-child { width: 100%; } .pr-h .sizes { margin: 0 auto; }
+    /* «Кейсы»: обёртка заголовка — flex, её блок ужимался по тексту и стоял слева («тайтл влево уехал») */
+    .cases-h { justify-content: center; } .cases-h > div { width: 100%; }
     .faq .tabs { margin-left: auto; margin-right: auto; }
   }
   /* телефон: дорожная карта — кружки чуть меньше; высоту по свободному месту до кружка-аватарки задаёт mobLayout() */
@@ -666,9 +668,14 @@
   .frame > .inner.foot { margin: 0 auto; flex: 1; display: grid; grid-template-rows: 1fr auto 1fr; justify-items: center; width: 100%; }
   .foot .f-top, .foot .f-mid, .foot .f-bot { display: flex; flex-direction: column; align-items: center; width: 100%; }
   .foot .f-top { justify-content: center; } .foot .f-bot { justify-content: flex-start; }
-  /* середина — по центру всего экрана, а не области под шапкой: поднимаем на половину разницы верхнего и нижнего полей */
-  .foot .f-top, .foot .f-mid, .foot .f-bot .news { position: relative; top: calc((var(--hdr) + clamp(0.4rem, 2cqh, 1.4rem) - 2rem) / -2); }
-  .foot .f-bot .news { margin-top: clamp(0.9rem, 2.4cqh, 1.5rem); margin-bottom: clamp(1.2rem, 3cqh, 2rem); }
+  /* середина — по центру всего экрана, а не области под шапкой: поднимаем на половину разницы верхнего и нижнего полей.
+     FR-SITE99: по центру стоит ПАРА «ANDRE AI + форма» — поднимаем обе ещё на половину высоты формы с её отступом (--fx);
+     AI for Human Good и иконки — почти под меню, с отступом (владелец: «ещё выше их поднять почти под меню, но с отступом;
+     выровнять тогда по центру Andre AI и строку поиска чуть повыше») */
+  .foot { --fgap: clamp(0.55rem, 1.5cqh, 0.95rem); --fx: calc((2.5rem + var(--fgap)) / 2); }
+  .foot .f-mid, .foot .f-bot .news { position: relative; top: calc((var(--hdr) + clamp(0.4rem, 2cqh, 1.4rem) - 2rem) / -2 - var(--fx)); }
+  .foot .f-top { justify-content: flex-start !important; padding-top: clamp(0.45rem, 1.4cqh, 0.95rem); }
+  .foot .f-bot .news { margin-top: var(--fgap) !important; margin-bottom: clamp(1.2rem, 3cqh, 2rem); }
   .foot .f-hg { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem 1.1rem; }
   .foot .f-hg .mission, .foot .f-hg .antro { margin: 0; } .foot .f-mid .wordmark { margin-top: 0; } .foot .f-bot .flinks { margin-top: auto; padding-top: 0; }
   .foot .antro { margin-top: auto; } .foot .mission { margin-top: clamp(1rem, 2.8cqh, 1.6rem); } .foot .flinks { margin-top: auto; padding-top: clamp(1.2rem, 3cqh, 2rem); }
@@ -1761,9 +1768,10 @@
       var ov = fr.scrollHeight - fr.clientHeight; if (ov > 0 && ov < 6) vis.style.marginTop = Math.round((parseFloat(vis.style.marginTop) || 0) - ov) + 'px';
       /* рисунок — по центру ширины по видимым краям */
       var dx = (vis.offsetWidth - vb.r - vb.l) / 2; if (Math.abs(dx) > 1) vis.style.left = Math.round(dx) + 'px';
-      /* пара «заголовок + анимация» — по центру и по середине экрана под шапкой (владелец: «по центру, по середине»),
-         но не ниже кружка-аватарки; над кружком не помещается — остаётся у верха: так кружок закрывает её меньше всего */
-      var bh = off(vis) + vb.b - t0, sh = Math.floor(Math.min((lim - t0 - bh) / 2, bt - t0 - bh));
+      /* пара «заголовок + анимация» — по центру и ровно по середине экрана под шапкой (владелец: «по центру, по середине»;
+         «тут не по середине, а к верху» — прежний потолок «не ниже кружка» прижимал высокие рисунки к шапке).
+         Кружок перетаскивается, поэтому места под него не держим — как на компьютере */
+      var bh = off(vis) + vb.b - t0, sh = Math.floor((lim - t0 - bh) / 2);
       if (sh > 0) { sp.style.marginTop = sh + 'px'; var ov2 = fr.scrollHeight - fr.clientHeight; if (ov2 > 0) sp.style.marginTop = Math.max(0, sh - ov2) + 'px'; }
     });
   }

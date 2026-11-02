@@ -13,6 +13,7 @@ FR-SITE96 — политика конфиденциальности и усло�
             на двух языках (tools/build_legal.py), подвал ведёт на них.
 FR-SITE97 — соцсети в подвале: у русской и английской версии свои аккаунты.
 FR-SITE98 — телефон: заголовки и анимации по центру и по середине экрана.
+FR-SITE99 — подвал: иконки почти под меню, «ANDRE AI» с формой — по центру.
 """
 import os
 import re
@@ -229,16 +230,34 @@ def test_no_cookie_banner():
 def test_phone_titles_and_animations_are_centred():
     """FR-SITE98. Владелец: «по середине пусть тайтлы и анимации будут всё же на
     мобиле … по центру, по середине». На телефоне заголовки — по центру ширины;
-    пара «заголовок + анимация» — по середине экрана под шапкой, но не ниже
-    кружка-аватарки (над кружком не помещается — у верха)."""
+    пара «заголовок + анимация» — ровно по середине экрана под шапкой
+    («тут не по середине, а к верху» — потолок по кружку снят)."""
     html = _html()
     css = re.search(r"@container stage \(max-width:767px\) \{\n    \.split > :first-child, \.pr-h > div:first-child, \.faq > \.st \{ text-align: center; \}(.*?)\n  \}", html, re.S)
     assert css, "правило центровки заголовков на телефоне"
     assert ".split .kicker, .split .actions, .pr-h .kicker, .faq .kicker { justify-content: center; }" in css.group(1)
     assert "bub = $('#bubble-probe'), bt = (bub ? rr(bub).top : lim) - 12" in html
-    assert "sh = Math.floor(Math.min((lim - t0 - bh) / 2, bt - t0 - bh))" in html, "по середине, но не ниже кружка"
+    assert "sh = Math.floor((lim - t0 - bh) / 2)" in html, "ровно по середине экрана под шапкой"
+    assert "bt - t0 - bh" not in html, "потолок «не ниже кружка» прижимал высокие рисунки к верху"
     assert "if (sh > 0) { sp.style.marginTop = sh + 'px';" in html
     assert "sp.style.marginTop = ''" in html, "сдвиг сбрасывается при каждом пересчёте"
+
+
+def test_phone_cases_title_is_centred_too():
+    """FR-SITE98 ред. 2: «следующий блок тоже — тайтл влево уехал». У «Кейсов»
+    обёртка заголовка — flex: её блок ужимался по тексту и стоял слева."""
+    assert ".cases-h { justify-content: center; } .cases-h > div { width: 100%; }" in _html()
+
+
+def test_footer_icons_under_menu_and_wordmark_with_form_centred():
+    """FR-SITE99. Владелец: «в последнем блоке иконки ещё выше поднять — почти
+    под меню, но с отступом; по центру — Andre AI, строку подписки чуть выше».
+    Верх подвала — сразу под шапкой; по середине экрана — пара «ANDRE AI + форма»."""
+    html = _html()
+    assert ".foot .f-top { justify-content: flex-start !important; padding-top: clamp(0.45rem, 1.4cqh, 0.95rem); }" in html
+    assert ".foot { --fgap: clamp(0.55rem, 1.5cqh, 0.95rem); --fx: calc((2.5rem + var(--fgap)) / 2); }" in html
+    assert ".foot .f-mid, .foot .f-bot .news { position: relative; top: calc((var(--hdr) + clamp(0.4rem, 2cqh, 1.4rem) - 2rem) / -2 - var(--fx)); }" in html
+    assert ".foot .f-bot .news { margin-top: var(--fgap) !important;" in html
 
 # ── FR-SITE96: политика и условия ──────────────────────────────────────────
 
