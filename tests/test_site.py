@@ -14,6 +14,8 @@ FR-SITE96 — политика конфиденциальности и усло�
 FR-SITE97 — соцсети в подвале: у русской и английской версии свои аккаунты.
 FR-SITE98 — телефон: заголовки и анимации по центру и по середине экрана.
 FR-SITE99 — подвал: иконки почти под меню, «ANDRE AI» с формой — по центру.
+FR-SITE100 — составные слова с «ИИ-» — обычный дефис и запрет переноса, без
+            неразрывного дефиса U+2011 (его нет в JetBrains Mono).
 """
 import os
 import re
@@ -322,6 +324,21 @@ def test_socials_follow_the_language():
     assert '<i class="fa-solid fa-paper-plane"></i></a>' in html[html.index('aria-label="Telegram"'):][:200], \
         "Telegram в подвале — простой самолётик"
     assert _attr(_tag(html, 'aria-label="LinkedIn"'), "href") == "https://www.linkedin.com/in/andre-kuzminykh/"
+
+
+
+def test_compound_words_use_a_glyph_the_font_has():
+    """FR-SITE100: «ИИ_Старатегия» вместо «ИИ-стратегия» (владелец 2026-11-02).
+    Заголовки набраны JetBrains Mono, а в нём нет неразрывного дефиса U+2011
+    (`&#8209;`) — браузер дорисовывал знак из чужого шрифта, и на части
+    устройств он выглядел подчёркиванием. Теперь дефис обычный, а от
+    переноса слово держит класс `.nw` (white-space: nowrap)."""
+    html = _read("index.html")
+    assert "&#8209;" not in html and "\u2011" not in html
+    assert ".nw { white-space: nowrap; }" in html
+    for word in ("ИИ-экономику", "ИИ-диагностики", "ИИ-компании", "ИИ-операционная",
+                 "ИИ-стратегии", "ИИ-трансформации", "ИИ-трансформацию"):
+        assert re.search(r'class="[^"]*\bnw\b[^"]*">' + word, html), word
 
 
 if __name__ == "__main__":
