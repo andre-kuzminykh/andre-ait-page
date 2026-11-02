@@ -1,947 +1,299 @@
 # -*- coding: utf-8 -*-
-"""Тесты сайта andre.technology (index.html). Без зависимостей — запускается
-и как `python3 tests/test_site.py`, и через pytest.
+"""Тесты главной andre.technology (index.html) — лендинг-слайды (FR-SITE95..97).
 
-FR-SITE1/24 — все кнопки диагностики («Free AI Diagnostic/Diagnosis») ведут
-           на maturity.andre.technology (первый шаг воронки).
-FR-SITE2 — роль/подпись «AI Consultant», а не «Chief AI Officer».
-FR-SITE24 — меню из 8 разделов: About Me, AI Strategy, Neuronium, Landao,
-            Antropolis, Academy, Dataist, My contacts.
+Без зависимостей — запускается и как `python3 tests/test_site.py`, и через pytest.
+
+Прежняя главная (FR-SITE1..12, 17..26, 89..94 в части index.html) заменена
+целиком; её тесты остались в истории git и возвращаются вместе с откатом
+(точка отката — в AGENTS.md, чекпоинт pr93).
+
+FR-SITE95 — главная: одиннадцать слайдов, холст фиксированной ширины, ИИ-мозг
+            из графа, переходы видео ↔ кружок ↔ полоса ↔ «Andre AI».
+FR-SITE96 — политика конфиденциальности и условия использования: свои страницы
+            на двух языках (tools/build_legal.py), подвал ведёт на них.
+FR-SITE97 — соцсети в подвале: у русской и английской версии свои аккаунты.
 """
 import os
 import re
+import sys
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _ROOT)
 
 
-def _html():
-    with open(os.path.join(_ROOT, "index.html"), encoding="utf-8") as f:
+def _read(rel):
+    with open(os.path.join(_ROOT, rel), encoding="utf-8") as f:
         return f.read()
 
 
-# ── FR-SITE1 ──────────────────────────────────────────────────────────────
+def _html():
+    return _read("index.html")
 
-def test_diagnostic_buttons_link_to_maturity():
+
+def _tag(html, pattern):
+    """Первый открывающий тег <a …>, внутри которого есть pattern."""
+    for m in re.finditer(r"<a\s[^>]*>", html):
+        if pattern in m.group(0):
+            return m.group(0)
+    return None
+
+
+def _attr(tag, name):
+    m = re.search(r'\b%s="([^"]*)"' % re.escape(name), tag)
+    return m and m.group(1)
+
+
+# ── FR-SITE95: устройство главной ──────────────────────────────────────────
+
+SLIDES = ["hero", "change", "maturity", "strategy", "neuronium", "training",
+          "cases", "pricing", "faq", "start", "footer"]
+
+
+def test_slides_in_order():
+    ids = re.findall(r'<section class="slide[^"]*" id="([a-z]+)"', _html())
+    assert ids == SLIDES, ids
+
+
+def test_no_dead_links():
+    """Владелец: «ты всё заполни» — на проде ни одной ссылки в никуда."""
     html = _html()
-    # каждая кнопка диагностики («Free AI Diagnostic» в шапке, «Free AI
-    # Diagnosis» на контактах) — это ссылка <a> на maturity.andre.technology
-    hits = [m.start() for m in re.finditer(r"Free AI Diagnos(?:tic|is)", html)]
-    assert hits, "на сайте должны быть кнопки диагностики"
-    for pos in hits:
-        tag_start = html.rfind("<", 0, pos)
-        el = html[tag_start:pos]
-        if el.strip().startswith("<!--"):
-            continue  # комментарий, не элемент
-        assert el.lstrip().startswith("<a "), \
-            "кнопка диагностики должна быть ссылкой <a>: " + el[:60]
-        assert "https://maturity.andre.technology/" in el, \
-            "диагностика должна вести на maturity.andre.technology: " + el[:80]
+    assert 'href="#"' not in html, "осталась ссылка-заглушка href=\"#\""
+    assert not re.search(r"<a\s[^>]*\bdata-todo\b", html), "осталась ссылка с пометкой data-todo"
+    assert "заглушк" not in html.lower(), "в разметке остались пометки про заглушки"
 
 
-def test_no_free_diagnostic_button_with_contact():
+def test_diagnostic_buttons_lead_to_maturity_in_the_visitor_language():
+    """Первый шаг воронки — бесплатная ИИ-диагностика; русская версия ведёт в
+    продукт на русском (FR-SITE85/86)."""
     html = _html()
-    # не должно быть <button ... data-action="contact" ...>Free AI Diagnostic
-    bad = re.search(r'<button[^>]*data-action="contact"[^>]*>\s*Free AI Diagnostic', html)
-    assert bad is None, "«Free AI Diagnostic» не должна быть кнопкой contact"
+    tags = [m.group(0) for m in re.finditer(r"<a\s[^>]*maturity\.andre\.technology[^>]*>", html)]
+    assert len(tags) >= 4, "кнопки диагностики: шапка, первый слайд, зрелость, финал"
+    for t in tags:
+        assert _attr(t, "data-href-en") == "https://maturity.andre.technology/", t
+        assert _attr(t, "data-href-ru") == "https://maturity.andre.technology/?lang=ru", t
 
 
-# ── FR-SITE2 ──────────────────────────────────────────────────────────────
-
-def test_no_chief_ai_officer():
-    assert "Chief AI Officer" not in _html(), "подпись «Chief AI Officer» должна быть убрана"
-
-
-def test_role_and_subtitle_are_ai_consultant():
+def test_strategy_and_landing_links_follow_the_language():
     html = _html()
-    # бейдж-роль
-    assert re.search(r'class="role"[^>]*>\s*AI Consultant\s*<', html), \
-        "бейдж-роль должен быть «AI Consultant»"
-    # FR-SITE34: субтитры под новые ролики — начинаются с представления Dataist
-    assert re.search(r'text:\s*"also known as Dataist"', html), \
-        "субтитры должны представлять Андре как Dataist (новый ролик)"
-    assert re.search(r'text:\s*"также известный как Датаист"', html), \
-        "RU-субтитры должны представлять Андре как Датаиста (новый ролик)"
+    st = _tag(html, 'data-href-en="https://strategy.andre.technology/"')
+    assert st and _attr(st, "data-href-ru") == "https://strategy.andre.technology/?lang=ru"
+    land = _tag(html, 'data-href-en="https://andre.technology/ai-strategy/"')
+    assert land and _attr(land, "data-href-ru") == "https://andre.technology/ai-strategy/ru/"
+    about = _tag(html, 'data-href-en="https://andre.technology/about/"')
+    assert about and _attr(about, "data-href-ru") == "https://andre.technology/about/ru/"
+    assert "querySelectorAll('[data-href-ru]')" in html or "$$('[data-href-ru]')" in html, \
+        "ссылки переставляются вместе с языком"
 
 
-# ── FR-SITE3 ──────────────────────────────────────────────────────────────
-
-def test_apply_expanded_toggles_list_open():
+def test_ai_brain_link_goes_to_neuronium():
+    """Владелец: «где переход в ИИ-брейн — там neuronium.ai»."""
     html = _html()
-    # applyExpanded помечает раскрытый список классом body.list-open
-    body = html[html.find("function applyExpanded"):html.find("function toggleExpand")]
-    assert "anyOpen" in body, "applyExpanded должен считать, открыт ли хоть один список"
-    assert re.search(r"classList\.toggle\(\s*'list-open'\s*,\s*anyOpen\s*\)", body), \
-        "applyExpanded должен тогглить body.list-open по anyOpen"
+    m = re.search(r'<a class="link" href="([^"]+)"><span data-i18n="s5\.link">', html)
+    assert m and m.group(1) == "https://neuronium.ai/", m and m.group(1)
+    assert "'s5.link': 'Discover AI Brain'" in html
 
 
-def test_list_open_scroll_is_full_viewport():
+def test_language_switch_and_shared_key():
     html = _html()
-    # правило full-viewport для раскрытого списка — внутри @media (min-width:1024px)
-    assert "body.list-open .scroll" in html, "нужно правило body.list-open .scroll"
-    rule = html.split("body.list-open .scroll {")[1].split("}")[0]
-    # box-sizing:border-box обязателен — иначе бокс с padding вылезает за края экрана
-    assert "box-sizing: border-box" in rule
-    assert "max-height: 100dvh" in rule and "height: 100dvh" in rule
-    # паддинги СИММЕТРИЧНЫ: auto-поля центрируют помещающийся список ровно
-    # по центру вьюпорта (см. test_list_open_content_centered_when_fits)
-    assert "padding-top: 6rem" in rule and "padding-bottom: 6rem" in rule
-    assert "justify-content: flex-start" in rule
-    # правило действует ТОЛЬКО на десктопе: ближайший @media перед ним — min-width:1024px
-    before = html.split("body.list-open .scroll {")[0]
-    nearest_media = before.rfind("@media (")
-    assert "min-width:1024px" in before[nearest_media:nearest_media + 40], \
-        "body.list-open .scroll должно быть в @media (min-width:1024px)"
+    assert 'data-lang="en"' in html and 'data-lang="ru"' in html
+    assert "localStorage.getItem('ait_lang')" in html, "язык общий с биографией и курсом — ключ ait_lang"
+    assert "[?&]lang=(ru|en)" in html, "адрес ?lang= выбирает язык"
 
 
-def test_list_open_content_centered_when_fits():
+def test_head_metadata_is_complete():
+    """Набор иконок, превью для соцсетей и разметка организации — как на
+    прежней главной (курс сверяет свои фавиконы с главной)."""
     html = _html()
-    # раскрытый список, помещающийся в экран, центрируется по вертикали
-    # auto-полями активного экрана (приём .modal: margin auto = safe center);
-    # при переполнении поля схлопываются в 0 и остаётся режим FR-SITE3
-    assert re.search(
-        r"body\.list-open \.scroll > \.screen\.active\s*\{\s*margin-top:\s*auto;\s*margin-bottom:\s*auto;",
-        html), "нужно правило body.list-open .scroll > .screen.active { margin-top/bottom: auto }"
-    # правило действует ТОЛЬКО на десктопе: ближайший @media перед ним — min-width:1024px
-    before = html.split("body.list-open .scroll > .screen.active")[0]
-    nearest_media = before.rfind("@media (")
-    assert "min-width:1024px" in before[nearest_media:nearest_media + 40], \
-        "центрирование list-open должно быть в @media (min-width:1024px)"
-
-
-# ── FR-SITE4 ──────────────────────────────────────────────────────────────
-
-def test_nav_font_readable():
-    html = _html()
-    # базовый размер пункта меню на десктопе — 14px, НЕ жирный (font-weight:500)
-    assert re.search(r"\.nav-tab\s*\{\s*font-size:\s*14px;\s*font-weight:\s*500;", html), \
-        "десктопный .nav-tab должен быть font-size:14px; font-weight:500 (не жирный)"
-    assert "font-size: 12px; letter-spacing: 0.03em;" not in html, \
-        "старый мелкий десктоп-размер 12px должен быть заменён"
-    # НИКАКОГО transform:scale на .nav — он менял высоту и ронял шрифт до 8px
-    for s in ("scale(0.66)", "scale(0.85)", "scale(0.86)", "scale(0.95)"):
-        assert s not in html, "transform:scale на nav убран (%s), высота бара постоянна" % s
-    # бар навигации и CTA — ОДНОЙ высоты (обе 2.85rem, box-sizing:border-box)
-    assert re.search(r"\.nav\s*\{[^}]*height:\s*2\.85rem;[^}]*box-sizing:\s*border-box", html), \
-        ".nav должен иметь фиксированную высоту 2.85rem и border-box"
-    assert re.search(r"\.cta\s*\{\s*height:\s*2\.85rem;\s*box-sizing:\s*border-box;", html), \
-        "десктопный .cta должен быть той же высоты 2.85rem"
-
-
-def test_nav_dividers_never_hidden_on_desktop():
-    html = _html()
-    # разделители «·» видны на всех десктоп-ширинах: в правилах плавного
-    # уплотнения пилюли (FR-SITE89, 1150–1480px) НЕТ `.nav-divider { display: none }`
-    mid = html.split("FR-SITE89: уплотнение ПЛАВНОЕ", 1)[1].split("/* Menu footer")[0]
-    assert ".nav-divider" in mid and "display: none" not in mid, \
-        "на узком десктопе разделители не должны пропадать (нет display:none)"
-
-
-# ── FR-SITE7 ──────────────────────────────────────────────────────────────
-
-def test_start_transformation_links_to_maturity():
-    html = _html()
-    # «Start AI Transformation» — ссылка на maturity. (первый шаг воронки), НЕ кнопка contact
-    bad = re.search(r'<button[^>]*data-action="contact"[^>]*>\s*Start AI Transformation', html)
-    assert bad is None, "«Start AI Transformation» не должна быть кнопкой contact (coming soon)"
-    pos = html.find("Start AI Transformation")
-    assert pos > 0, "на сайте должна быть кнопка «Start AI Transformation»"
-    tag_start = html.rfind("<", 0, pos)
-    el = html[tag_start:pos]
-    assert el.lstrip().startswith("<a "), \
-        "«Start AI Transformation» должна быть ссылкой <a>: " + el[:60]
-    assert "https://maturity.andre.technology/" in el, \
-        "«Start AI Transformation» должна вести на maturity.andre.technology"
-
-
-def test_about_me_link():
-    html = _html()
-    # серая текстовая ссылка «About me» под hero-CTA → /about/
-    m = re.search(r'<a class="about-link" href="https://andre\.technology/about/"[^>]*>About me</a>', html)
-    assert m, "под «Start AI Transformation» должна быть ссылка «About me» на /about/"
-    assert re.search(r"\.about-link\s*\{[^}]*color:\s*rgba\(255,255,255,0\.5\)", html), \
-        "ссылка «About me» должна быть серой (rgba(255,255,255,0.5))"
-
-
-# ── FR-SITE8 ──────────────────────────────────────────────────────────────
-
-def test_get_ai_playbook_label():
-    """FR-SITE91: «давай не AI Strategy, а AI Playbook везде»."""
-    html = _html()
-    assert "Get Your AI Playbook" in html, "кнопка раздела должна называться «Get Your AI Playbook»"
-    for old in ("Open AI Strategy", "Get Your AI Strategy", ">AI Strategy<"):
-        assert old not in html, "старого названия «%s» быть не должно" % old
-
-
-def test_product_buttons_link_out():
-    """FR-SITE24/29: запущенные продукты — кнопки-ссылки; незапущенные (Neuronium,
-    Landao, Antropolis) — кнопки Coming soon (попап сбора ранних заявок)."""
-    html = _html()
-    for label, host in (("Start AI Transformation", "https://maturity.andre.technology/"),
-                        ("Get Your AI Playbook", "https://strategy.andre.technology/"),
-                        ("Explore Courses", "https://academy.andre.technology/"),
-                        ("Visit Dataist AI", "https://dataist.ai/"),
-                        ("Free AI Diagnosis", "https://maturity.andre.technology/")):
-        pos = html.find(label)
-        assert pos > 0, "должна быть кнопка «%s»" % label
-        el = html[html.rfind("<", 0, pos):pos]
-        assert el.lstrip().startswith("<a "), "«%s» должна быть ссылкой <a>: %s" % (label, el[:80])
-        assert host in el, "«%s» должна вести на %s: %s" % (label, host, el[:120])
-    for label, source in (("Get Neuronium", "Neuronium AI"),
-                          ("Meet Landao", "Landao AI"),
-                          ("Enter Antropolis", "Antropolis")):
-        pos = html.find(label)
-        assert pos > 0, "должна быть кнопка «%s»" % label
-        el = html[html.rfind("<", 0, pos):pos]
-        assert el.lstrip().startswith("<button ") and 'data-action="lead-open"' in el, \
-            "«%s» должна открывать попап Coming soon: %s" % (label, el[:120])
-        assert 'data-source="%s"' % source in el, \
-            "у «%s» должен быть data-source=«%s»" % (label, source)
-    assert html.count('data-action="lead-open"') == 3, \
-        "попап Coming soon открывают ровно три кнопки незапущенных продуктов"
-
-
-def test_sec_links_under_buttons():
-    """FR-SITE24: под кнопкой каждого экрана — серая текстовая ссылка."""
-    html = _html()
-    for label in ("Where to start with AI", "Learn More", "Project History",
-                  "Manifesto", "Skill Map", "Top Stories"):
-        m = re.search(r'<a class="sec-link"[^>]*>' + re.escape(label) + r'</a>', html)
-        assert m, "нужна серая ссылка «%s» (class=sec-link)" % label
-    assert re.search(r"\.sec-link\s*\{[^}]*color:\s*rgba\(255,255,255,0\.5\)", html), \
-        "ссылки .sec-link должны быть серыми, как «About me»"
-
-
-def test_nav_has_eight_sections():
-    """FR-SITE24: меню = ровно 8 разделов в заданном порядке."""
-    html = _html()
-    targets = re.findall(r'<button class="nav-tab" data-action="tab" data-target="([a-z]+)"', html)
-    assert targets == ["overview", "strategy", "neuronium", "landao",
-                       "antropolis", "academy", "dataist", "contact"], targets
-    for gone in ("platform", "employees", "products", "education"):
-        assert 'data-screen="%s"' % gone not in html, "экран «%s» должен быть удалён" % gone
-
-
-# ── FR-SITE9 ──────────────────────────────────────────────────────────────
-
-def test_nav_label_contacts():
-    """FR-SITE33: пункт называется просто «Contacts» / «Контакты»."""
-    html = _html()
-    assert re.search(r'<span class="nav-label"[^>]*>Contacts</span>', html), \
-        "пункт навигации должен называться «Contacts»"
-    assert "My contacts" not in html and "Мои контакты" not in html
-
-
-# ── FR-SITE10 ─────────────────────────────────────────────────────────────
-
-def test_lang_switch_is_text_between_nav_and_cta():
-    html = _html()
-    # текстовый переключатель EN | RU: два «текстовых» пункта + разделитель
-    assert '<button class="lang-opt active" data-action="lang" data-lang="en">EN</button>' in html
-    assert '<button class="lang-opt" data-action="lang" data-lang="ru">RU</button>' in html
-    # не кнопка: без фона и рамки
-    assert re.search(r"\.lang-opt \{ background: none; border: 0;", html), \
-        "пункты переключателя должны выглядеть текстом (без фона/рамки)"
-    # позиция: в header-right ПЕРЕД CTA «Free AI Diagnostic» → визуально между меню и CTA
-    i_hr = html.find('<div class="header-right">')
-    i_ls = html.find('class="lang-switch"')
-    i_cta = html.find('class="btn-white cta"')
-    assert 0 < i_hr < i_ls < i_cta, "переключатель должен стоять в header-right перед CTA"
-
-
-def test_lang_switch_positioning():
-    """Переключатель сдвинут влево: на десктопе — в промежуток между пилюлей и
-    CTA, на мобилке — к логотипу (auto-отступ), на ≤380px — компактный режим,
-    иначе он наезжает на лого."""
-    html = _html()
-    assert re.search(r"@media \(min-width:1024px\) \{.*\.lang-switch \{ margin-right: 2rem; \}", html), \
-        "на десктопе переключатель должен отступать от CTA на 2rem"
-    assert re.search(r"\.header-right \{ flex: 1 0 auto; \}", html), \
-        "на мобилке header-right должен растягиваться, иначе margin-right:auto не сработает"
-    assert re.search(r"\.lang-switch \{ margin-left: clamp\([^)]+\); margin-right: auto; \}", html), \
-        "на мобилке переключатель прижимается влево к логотипу"
-    assert "@media (max-width:380px)" in html, \
-        "нужен компактный режим ≤380px, иначе переключатель наезжает на логотип"
-    # пилюля смещена левее центра, чтобы освободить место справа
-    assert re.search(r"\.nav \{[^}]*left: calc\(50% - 3\.5rem\)", html), \
-        ".nav должен быть смещён левее геометрического центра"
-
-
-def test_lang_ru_dictionary_complete():
-    html = _html()
-    assert "var RU_TEXT" in html and "'ait_lang'" in html and "var CUES_RU" in html, \
-        "нужны словарь RU_TEXT, ключ ait_lang и RU-подписи CUES_RU"
-    # каждый размеченный ключ имеет перевод
-    for k in set(re.findall(r'data-i18n(?:-ph)?="([^"]+)"', html)):
-        assert ("'%s':" % k) in html, "нет перевода для ключа " + k
-
-
-# ── FR-SITE11 ─────────────────────────────────────────────────────────────
-
-LOGO_URL = "https://i.ibb.co/gn7SmgY/866f2500-dd81-4d09-8c0f-2b55c25a3464-removalai-preview.png"
-
-
-def test_logo_url():
-    html = _html()
-    assert 'src="%s"' % LOGO_URL in html, "лого должно грузиться с рабочего адреса " + LOGO_URL
-    assert "/assets/_ait_logo.png" not in html, \
-        "путь с ведущим «_» Jekyll не публикует — лого отдаёт 404 (см. FR-SITE11)"
-
-
-def test_no_underscore_asset_paths():
-    """GitHub Pages собирает сайт Jekyll'ом, а он НЕ публикует файлы и папки,
-    чьи имена начинаются с «_» → такой ресурс отдаёт 404 (см. FR-SITE11)."""
-    html = _html()
-    for m in re.finditer(r'(?:src|href)="(/[^"]*)"', html):
-        parts = [p for p in m.group(1).split("/") if p]
-        assert not any(p.startswith("_") for p in parts), \
-            "ресурс с «_» в пути не будет опубликован Jekyll: " + m.group(1)
-
-
-# ── FR-SITE12 ─────────────────────────────────────────────────────────────
-
-_MOBILE_SCREENS = ("overview", "strategy", "neuronium", "landao",
-                   "antropolis", "academy", "dataist")
-
-
-def test_mobile_screens_share_one_offset():
-    """На мобилке контент прижат к низу панели, поэтому ОДИН общий сдвиг для всех
-    экранов = одинаковая нижняя линия (кнопки на одном уровне) и одинаковый
-    воздух под плашкой «Andre AI»."""
-    html = _html()
-    m = re.search(r"@media \(max-width:1023px\) \{\s*(\[data-screen[^{]+)\{ transform: translateY\(1\.5rem\); \}", html)
-    assert m, "нужно ОДНО общее правило translateY(1.5rem) для мобильных экранов"
-    for s in _MOBILE_SCREENS:
-        assert '[data-screen="%s"]' % s in m.group(1), \
-            "экран «%s» должен быть в общем правиле сдвига" % s
-    assert "translateY(-1.8rem)" not in html, \
-        "старого подъёма первого экрана быть не должно — из-за него заголовок упирался в плашку"
-
-
-def test_landscape_resets_mobile_offsets():
-    """В ландшафте телефона сдвиги сбрасываются — иначе контент лезет на плашку."""
-    html = _html()
-    m = re.search(r"(\[data-screen[^{]+)\{ transform: none; \}", html)
-    assert m, "в ландшафтном блоке должен быть сброс сдвигов"
-    for s in _MOBILE_SCREENS:
-        assert '[data-screen="%s"]' % s in m.group(1), \
-            "экран «%s» должен сбрасывать сдвиг в ландшафте" % s
-
-
-# ── FR-SITE17 ─────────────────────────────────────────────────────────────
-
-def _mobile_shadow_stops():
-    """Стопы мобильного градиента затемнения: [(альфа, позиция %)]."""
-    html = _html()
-    m = re.search(r"\.video-shadow \{[^}]*?background: linear-gradient\(to bottom,(.*?)\); \}", html, re.S)
-    assert m, "не найден мобильный градиент .video-shadow"
-    stops = []
-    for a, p, solid in re.findall(r"rgba\(5,5,5,([\d.]+)\)\s+([\d.]+)%|#050505\s+([\d.]+)%", m.group(1)):
-        stops.append((1.0, float(solid)) if solid else (float(a), float(p)))
-    return stops
-
-
-def test_video_shadow_has_vh_fallback():
-    """Без vh-фолбэка браузеры без поддержки dvh получали height:auto → затемнение
-    схлопывалось и переход «видео → чёрное» был резким."""
-    html = _html()
-    for sel in ("#hero-video", r"\.video-shadow"):
-        assert re.search(sel + r" \{[^}]*height: 64vh; height: 64dvh;", html), \
-            "%s должен объявлять height в vh ПЕРЕД dvh" % sel
-    # ландшафт телефона — тот же приём
-    assert re.search(r"#hero-video \{[^}]*height: 100vh; height: 100dvh;", html)
-    assert re.search(r"\.video-shadow \{[^}]*height: 100vh; height: 100dvh;", html)
-
-
-def test_portrait_video_mask_fades_the_video_itself():
-    """В части мобильных браузеров (Samsung Internet) видео композитится отдельным
-    слоем и оверлей затемнения под него не попадает. В портретной мобилке низ
-    растворяет МАСКА на самом видео — её композитор обойти не может."""
-    html = _html()
-    assert "@media (max-width:1023px) and (orientation: portrait) {" in html, \
-        "нужен портретный мобильный блок с маской видео"
-    for prop in ("-webkit-mask-image", "mask-image"):
-        assert re.search(re.escape(prop) + r": linear-gradient\(to bottom, rgba\(0,0,0,1\) 45%", html), \
-            "нужна вертикальная маска %s, начинающаяся с непрозрачного 45%%" % prop
-    assert html.count("rgba(0,0,0,0) 100%)") >= 2, \
-        "маска должна доходить до полной прозрачности ровно на 100%"
-    # оверлей гасим ТОЛЬКО там, где маски поддерживаются — иначе он остаётся рабочим
-    assert re.search(
-        r"@supports \(mask-image: linear-gradient\(#000, transparent\)\)[^{]*\{\s*\.video-shadow \{ background: none; \}",
-        html), "гашение оверлея должно быть внутри @supports (иначе старые браузеры останутся без затемнения)"
-    # JS не должен ставить mask:none на мобилке — это перебило бы CSS-маску
-    fn = html[html.find("function applyVideoMask"):html.find("/* ---- captions")]
-    assert ": '';" in fn and ": 'none';" not in fn, \
-        "applyVideoMask на мобилке снимает инлайн-маску пустой строкой, а не ставит none"
-
-
-def test_video_shadow_is_short_and_smooth():
-    stops = _mobile_shadow_stops()
-    assert len(stops) >= 12, "мало стопов (%d) — на слабых экранах будут полосы" % len(stops)
-    # затемнение КОРОТКОЕ: до 40% высоты видео его нет (раньше начиналось с 6%)
-    first_dark = next(p for a, p in stops if a > 0)
-    assert first_dark >= 40, "затемнение начинается слишком высоко (%.0f%%) и темнит бороду" % first_dark
-    # сплошной чёрный ровно на нижней кромке → бесшовный стык со страницей
-    assert stops[-1] == (1.0, 100.0), "градиент должен доходить до #050505 ровно на 100%%, а не %s" % (stops[-1],)
-    # монотонность и плавность
-    alphas = [a for a, _ in stops]
-    assert alphas == sorted(alphas), "альфа должна расти монотонно"
-    steps = [round(b - a, 3) for a, b in zip(alphas, alphas[1:])]
-    assert max(steps) <= 0.12, "слишком резкий скачок альфы: %.2f" % max(steps)
-
-
-# ── FR-SITE18 ─────────────────────────────────────────────────────────────
-
-def test_bottom_always_black():
-    html = _html()
-    assert re.search(r"html, body \{[^}]*overscroll-behavior: none;", html), \
-        "overscroll-behavior: none гасит «оттяжку», из-за которой снизу светился фон браузера"
-    assert re.search(r"body::after \{[^}]*position: fixed;[^}]*bottom: 0;", html), \
-        "нужна фиксированная полоса, закрывающая зону системной панели"
-    assert re.search(r"body::after \{[^}]*height: env\(safe-area-inset-bottom, 0px\);[^}]*background: #050505;", html), \
-        "полоса должна быть высотой safe-area-inset-bottom и чёрной"
-
-
-# ── FR-SITE19 ─────────────────────────────────────────────────────────────
-
-def test_mic_pulses_on_mobile():
-    html = _html()
-    assert re.search(r"\.mic-wave \{[^}]*display: none;", html), \
-        "по умолчанию кольцо скрыто"
-    assert re.search(r"\.mic-wave\.on \{ display: block; \}", html), \
-        "со звуком кольцо включается классом .on"
-    assert re.search(r"@media \(max-width:1023px\) \{ \.mic-wave \{ display: block; \} \}", html), \
-        "на мобилке кольцо должно пульсировать всегда"
-    assert "micWave.classList.toggle('on', !m)" in html, \
-        "видимостью управляет класс, а не инлайн-стиль (иначе media-правило не перебить)"
-    assert not re.search(r'id="mic-wave"[^>]*style="display: none;"', html), \
-        "инлайн-стиля display:none у #mic-wave быть не должно"
-    assert re.search(r"\.mic-wave::before, \.mic-wave::after \{[^}]*border: 1px solid #8854F3;[^}]*animation: soundWave", html), \
-        "кольцо — фиолетовое (#8854F3) с анимацией soundWave"
-
-
-# ── FR-SITE26: правки по скринам нового меню ─────────────────────────────
-
-def test_sec_link_gap_matches_hero():
-    """Зазор «кнопка → серая ссылка» одинаковый на всех экранах (как у героя):
-    1.1rem = gap секции + margin-top ссылки."""
-    html = _html()
-    # герой: gap 1.75rem − 0.65rem = 1.1rem
-    assert re.search(r"\.about-link \{[^}]*margin-top: -0\.65rem;", html)
-    # секции: моб gap 0.85rem + 0.25rem = 1.1rem; десктоп 1.35rem − 0.25rem = 1.1rem
-    assert re.search(r"\.sec-link \{[^}]*margin-top: 0\.25rem;", html), \
-        "на мобилке .sec-link добирает зазор до 1.1rem (+0.25rem)"
-    assert re.search(r"@media \(min-width:1024px\) \{ \.sec-link \{ margin-top: -0\.25rem;", html), \
-        "на десктопе .sec-link сокращает зазор до 1.1rem (−0.25rem)"
-
-
-def test_landao_desc_mindful_living():
-    html = _html()
-    # FR-SITE34: подписи короткие — влезают одной строкой без переноса
-    assert ">AI Assistant for Mindful Living<" in html, \
-        "описание Landao: «AI Assistant for Mindful Living»"
-    assert 'ИИ-ассистент <span class="nb">для осознанной жизни</span>' in html, \
-        "RU-описание Landao: «ИИ-ассистент для осознанной жизни» (хвост не рвётся)"
-
-
-def test_hero_sub_always_one_line():
-    """Подзаголовок героя в одну строку на мобилке и вебе: nowrap + кегль от vw.
-    FR-SITE34: длины EN (44) и RU (43) сравнялись — кегль ЕДИНЫЙ для языков."""
-    html = _html()
-    assert re.search(r'<p class="desc hero-sub" data-i18n="hero\.sub"', html), \
-        "подзаголовку героя нужен класс hero-sub"
-    assert re.search(r"\.desc\.hero-sub \{ white-space: nowrap; max-width: none;", html), \
-        "hero-sub должен запрещать перенос"
-    assert 'html[lang="ru"] .desc.hero-sub' not in html, \
-        "отдельного RU-кегля быть не должно — шрифт совпадает с английским"
-    assert "'hero.sub': 'Помогаю адаптироваться к новой ИИ-экономике'" in html
-    # и в десктопном, и в ландшафтном блоке есть свои клампы (перебивают .desc);
-    # три зум-корзины слились в одно правило с непрерывным --z (FR-SITE89)
-    assert html.count(".desc.hero-sub { font-size: clamp(") >= 3
-
-
-def test_lang_switch_sits_next_to_cta():
-    """FR-SITE33: EN | RU стоит РЯДОМ с кнопкой CTA (отступ 2rem от неё),
-    без JS-центрирования по промежутку — как в исходной шапке."""
-    html = _html()
-    assert "placeLangSwitch" not in html, \
-        "JS-центрирования переключателя быть не должно — позицию задаёт CSS"
-    assert re.search(r"@media \(min-width:1024px\) \{.*\.lang-switch \{ margin-right: 2rem; \}", html), \
-        "на десктопе переключатель отступает от CTA на 2rem"
-
-
-def test_mobile_menu_brand_and_higher_items():
-    html = _html()
-    # бренд-шапка: тот же значок, что в хедере, + надпись
-    m = re.search(r'<div class="nav-brand"[^>]*>\s*<img class="nav-brand-img" src="([^"]+)"', html)
-    assert m and m.group(1) == LOGO_URL, "в меню сверху слева — тот же логотип, что на главной"
-    assert re.search(r'<span class="nav-brand-name">Andre AI Technologies</span>', html)
-    # FR-SITE31: бренд по центру (left+right растяжка, justify-content:center),
-    # крупная надпись — строкой ниже крестика
-    assert re.search(r"\.nav\.open \.nav-brand \{[^}]*justify-content: center;[^}]*position: absolute;[^}]*left: 1\.1rem; right: 1\.1rem;", html)
-    assert re.search(r"\.nav\.open \.nav-brand-name \{ font-size: clamp\(14px", html), \
-        "надпись бренда в меню должна быть крупной (от 14px)"
-    # FR-SITE32: список по середине зоны между брендом и футером
-    assert re.search(r"\.nav\.open \{[^}]*justify-content: center;[^}]*padding: clamp\(", html), \
-        "список меню центрируется в зоне между брендом и футером"
-    # FR-SITE32: на русском пункт называется просто «Контакты»
-    assert "'nav.contact': 'Контакты'" in html
-    assert "Мои контакты" not in html
-
-
-def test_strategy_h2_is_short():
-    html = _html()
-    assert re.search(r'data-i18n="strategy\.h2">AI Playbook</h2>', html), \
-        "заголовок экрана — «AI Playbook» (FR-SITE91, без Transformation)"
-    assert "AI Transformation Strategy</h2>" not in html
-    assert "'strategy.h2': 'ИИ-стратегия'" in html
-
-
-def test_ru_legal_links_fit_one_line():
-    """«Политика конфиденциальности» и «Условия использования» на RU — каждая в
-    одну строку: nowrap + уменьшенный кегль только для русского."""
-    html = _html()
-    assert re.search(r"\.nav-legal-link \{[^}]*white-space: nowrap;", html)
-    assert re.search(r'html\[lang="ru"\] \.nav-legal-link \{ font-size: clamp\(', html), \
-        "на RU кегль юр-ссылок меню меньше — иначе они не помещаются в строку"
-    assert re.search(r'html\[lang="ru"\] \.legal-link \{ font-size: clamp\(', html), \
-        "на RU кегль юр-ссылок футера контактов тоже уменьшается"
-    assert re.search(r"\.legal-link \{[^}]*white-space: nowrap;", html)
-
-
-def test_tiles_are_small_squares_without_bars():
-    """FR-SITE27: плитки-иконки — квадратные, меньше и БЕЗ полосок-«подчёркиваний»;
-    на мобилке дополнительно ужаты scale'ом, чтобы не вылезать на видео."""
-    html = _html()
-    assert 'class="bar"' not in html and ".tile .bar" not in html, \
-        "цветных полосок под иконками (.bar) быть не должно"
-    m = re.search(r"\.tile\.sm \{ width: ([\d.]+)rem; height: ([\d.]+)rem; \}", html)
-    assert m and m.group(1) == m.group(2), "малая плитка должна быть квадратной"
-    m = re.search(r"\.tile\.lg \{ width: ([\d.]+)rem; height: ([\d.]+)rem;", html)
-    assert m and m.group(1) == m.group(2), "большая плитка должна быть квадратной"
-    m = re.search(r"\.float-row \{[^}]*transform: scale\(([\d.]+)\);", html)
-    assert m and float(m.group(1)) <= 0.72, \
-        "на мобилке плитки дополнительно ужимаются (scale ≤ 0.72)"
-    # размер иконок задаёт CSS, а не инлайн-стили (инлайн его не перебьёт)
-    assert re.search(r"\.tile\.sm i \{ font-size: \d+px; \}", html)
-    assert re.search(r"\.tile\.lg i \{ font-size: \d+px; \}", html)
-    assert not re.search(r'\.tile[^<]*<i[^>]*style="font-size', html)
-
-
-def test_desc_breaks_are_semantic():
-    """FR-SITE27: двухстрочные подписи переносятся ПО СМЫСЛУ — хвостовая группа
-    («для вашего бизнеса», «for Mindful Living»…) обёрнута в .nb и не рвётся."""
-    html = _html()
-    assert re.search(r"\.nb \{ white-space: nowrap; \}", html), "нужен класс .nb (nowrap)"
-    for tail in ("for Human Good", "AI Can&rsquo;t Replace", "Insights &amp; Technologies",
-                 "для бизнеса", "во благо человека", "которые ИИ не заменит",
-                 "и ИИ-технологии", "для осознанной жизни"):
-        assert '<span class="nb">%s</span>' % tail in html, \
-            "хвост «%s» должен быть неразрывной группой .nb" % tail
-    # FR-SITE34/35: короткие подписи — одной строкой, без .nb
-    assert ">AI Transformation Roadmap<" in html
-    assert "'strategy.desc': 'Дорожная карта ИИ-трансформации'" in html
-    assert ">AI Business Operating System<" in html, \
-        "подпись Нейрония: «AI Business Operating System» одной строкой"
-    assert ">Ready to Manage AI Company?<" in html, \
-        "подпись контакта: «Ready to Manage AI Company?» одной строкой"
-    assert "'contact.sub': 'Готовы возглавить ИИ-компанию?'" in html
-    assert "с помощью ИИ?" not in html and "для вашего бизнеса" not in html
-
-
-def test_desktop_content_optically_centred():
-    """Контент тёмной панели на десктопе сдвинут чуть вниз — в зрительную середину
-    (шапка съедает верх). Экран контакта не сдвигается: у него футер у низа."""
-    html = _html()
-    assert re.search(r"@media \(min-width:1024px\) \{ \.scroll \{[^}]*transform: translateY\(1\.4rem\);", html)
-    assert re.search(r"\.scroll:has\(\.contact-screen\.active\) \{[^}]*transform: none;", html)
-    assert re.search(r"\.contact-hero \{[^}]*top: 1\.4rem;[^}]*\} \}", html) or \
-        re.search(r"@media \(min-width:1024px\) \{ \.contact-hero \{[^}]*top: 1\.4rem;", html), \
-        "герой контакта получает тот же сдвиг через top"
-
-
-def test_zoom_is_continuous_and_divides_vw_type():
-    """FR-SITE35/89: body{zoom} раздувает vw-кегль, а панель (в %) — нет:
-    nowrap-строки вылезали за экран, поэтому vw-часть кегля делится на
-    коэффициент зума. FR-SITE89: коэффициент НЕПРЕРЫВНЫЙ (ширина/1480, 1…1.5,
-    ставит скрипт в <head>) — корзины 1.15/1.3/1.5 давали скачок всего макета
-    при растягивании окна через 1600/1900/2300px."""
-    html = _html()
-    for k in ("1.15", "1.3", "1.5"):
-        assert "zoom: %s;" % k not in html, "ступени зума %s быть не должно" % k
-        assert "/ %s)" % k not in html, "деления на ступень %s быть не должно" % k
-    assert "@media (min-width:1480px) { body { zoom: var(--z, 1); } }" in html
     head = html.split("</head>")[0]
-    assert "root.style.setProperty('--z', w >= 1480 ? Math.min(w / 1480, 1.5).toFixed(4) : '1');" in head, \
-        "коэффициент ставится до первой отрисовки"
-    assert "calc(1.3vw / var(--z, 1))" in html, ".desc делит vw на зум"
-    assert "calc(2.75vw / var(--z, 1))" in html, ".h2-size делит vw на зум"
-    assert "calc(2.6vw / var(--z, 1))" in html, ".contact-title делит vw на зум"
+    assert '<link rel="canonical" href="https://andre.technology/">' in head
+    icons = re.findall(r'<link rel="(?:icon|apple-touch-icon|manifest)"[^>]*>', head)
+    assert len(icons) >= 7, icons
+    for rel in re.findall(r'href="/((?:favicon|apple-touch|site\.web)[^"]*)"', head):
+        assert os.path.exists(os.path.join(_ROOT, rel)), "нет файла " + rel
+    for prop in ("og:title", "og:description", "og:image", "og:image:width", "og:image:height", "og:url"):
+        assert 'property="%s"' % prop in head, prop
+    for name in ("twitter:card", "twitter:title", "twitter:image"):
+        assert 'name="%s"' % name in head, name
+    assert os.path.exists(os.path.join(_ROOT, "assets/og/andre-ai-technologies.png"))
+    assert '"@type": "Organization"' in head and '"legalName": "Andre AI Technologies LTD"' in head
+    for alt in ('hreflang="ru"', 'hreflang="en"', 'hreflang="x-default"'):
+        assert alt in head, alt
 
 
-def test_desktop_typography_scaled_up():
-    """Жалоба «на компе мелко»: клампы контентной колонки подняты и растут с окном."""
+def test_video_and_poster_are_served_from_the_site():
+    """Ролик и постер — с корня сайта: живые и на проде, и в локальном превью."""
     html = _html()
-    assert ".desc { font-size: clamp(15px, 1.3vw, 23px); max-width: 34rem; }" in html
-    assert ".h2-size { font-size: clamp(2.2rem, 2.75vw, 3.7rem); }" in html
-    assert ".hero-size { font-size: clamp(1.7rem, 3.3vw, 3rem); }" in html
-    assert html.count("font-size: clamp(11.5px, 0.95vw, 16px)") == 6, \
-        "кнопки шести секций должны использовать общий увеличенный кламп"
+    for rel in ("assets/Andre_AIT_video_compressed.mp4", "assets/Andre_AIT_video_compressed_ru.mp4", "andre_ai.jpg"):
+        assert "'/%s'" % rel in html or '"/%s"' % rel in html, rel
+        assert os.path.exists(os.path.join(_ROOT, rel)), "нет файла " + rel
+    assert "https://andre.technology/assets/Andre_AIT" not in html
 
 
-# ── FR-SITE30: русские названия продуктов ────────────────────────────────
-
-def test_ru_product_names():
-    """На русском продукты называются по-русски: заголовки экранов и пункты меню."""
+def test_fixed_canvas_and_single_column_for_small_square_windows():
+    """Холст: телефон — 390, компьютер — 1180…1280; небольшое почти квадратное
+    окно (браузер на пол-экрана) получает одну колонку, а не ужатый до ~0,6
+    компьютерный холст («всё сильно мелко»)."""
     html = _html()
-    for key, ru in (("'nav.neuronium'", "Нейроний"), ("'nav.landao'", "Ландао"),
-                    ("'nav.antropolis'", "Антрополис"), ("'nav.dataist'", "Датаист"),
-                    ("'neuronium.h2'", "Нейроний ИИ"), ("'landao.h2'", "Ландао ИИ"),
-                    ("'antropolis.h2'", "Антрополис Сити"), ("'dataist.h2'", "Датаист Медиа")):
-        assert re.search(key + r":\s*'" + ru + r"'", html), \
-            "в RU_TEXT должен быть %s: «%s»" % (key, ru)
-    # ключи привязаны к разметке (меню и заголовкам)
-    for k in ("nav.neuronium", "nav.landao", "nav.antropolis", "nav.dataist",
-              "neuronium.h2", "landao.h2", "antropolis.h2", "dataist.h2"):
-        assert 'data-i18n="%s"' % k in html, "ключ %s должен стоять в разметке" % k
-    # русские названия и в RU-кнопках; в кнопках Нейрония и Ландао — без «AI/ИИ»
-    assert "Получить Нейроний <i" in html
-    assert "Познакомиться с Ландао <i" in html
-    assert "Войти в Антрополис" in html
-    assert "с Landao AI" not in html and "в Antropolis" not in html
-    assert "Get Neuronium AI" not in html and "Meet Landao AI" not in html
+    assert "m = w / h < 0.9 || (w / h <= 1 && w < 900)" in html
+    assert "Math.max(1180, Math.min(1280," in html
 
 
-# ── FR-SITE36: масштабы окон — бургер, vh-ландшафт, маска прокрутки ──────
-
-def test_nav_pill_starts_at_1150_burger_below():
-    """Пилюля из 8 пунктов читаемо помещается с ~1150px; на 1024–1149 вместо
-    «замощения» — бургер с полноэкранным меню."""
+def test_typewriter_caret_takes_no_room():
+    """«Когда текст допечатался, его подбивает вправо»: каретка не занимает
+    места в строке и не даёт переноса посреди слова."""
     html = _html()
-    assert re.search(r"@media \(min-width:1150px\) \{[^@]*\.nav \{ display: flex;", html), \
-        "десктоп-пилюля должна включаться с 1150px"
-    assert "@media (min-width:1150px) { .menu-btn { display: none; } }" in html, \
-        "бургер скрывается только с 1150px"
-    assert re.search(r"@media \(max-width:1149px\) \{[^@]*\.nav\.open \{ position: fixed;", html), \
-        "полноэкранное меню должно работать до 1149px включительно"
-    assert ".nav.open .nav-divider { display: none; }" in html, \
-        "в полноэкранном меню десктопные разделители «|» не показываются"
+    rule = re.search(r"\.tw-car \{[^}]*\}", html).group(0)
+    assert "display: inline;" in rule and "padding-left: 0.1em;" in rule and "margin-right: -0.1em;" in rule, rule
+    assert "inline-block" not in rule
 
 
-def test_landscape_type_scales_with_height():
-    """Ландшафтное окно в пол-экрана — не телефон: кегль растёт с высотой (vh),
-    min() не даёт nowrap-строкам вылезти за узкую панель."""
+def test_brain_route_runs_strictly_along_graph_edges():
+    """Владелец: «двигалось именно по выстроенным связям». Каждая нога пути —
+    цепочка СОСЕДНИХ точек графа; после ТЗ две ветки идут параллельно и
+    сходятся в «Коде»."""
     html = _html()
-    block = html.split("@media (max-width:1023px) and (orientation: landscape) {", 1)[1] \
-                .split("/* FR-SITE36: рослый ландшафт")[0]
-    # Правка владельца: «всё очень мелко блять везде, не надо так мелко» —
-    # кегли подняты, но по-прежнему считаются от ВЫСОТЫ окна, а min() держит
-    # nowrap-строки внутри узкой панели.
-    assert "min(clamp(1.35rem, 7.6vh, 2.6rem)" in block, "hero-кегль ландшафта — от vh"
-    assert "min(clamp(1.3rem, 7.2vh, 2.5rem)" in block, "h2-кегль ландшафта — от vh"
-    assert "min(clamp(12.5px, 3.4vh, 18px)" in block, "desc-кегль ландшафта — от vh"
-    assert "font-size: clamp(11px, 2.6vh, 15px) !important" in block, \
-        "кегль кнопок ландшафта — от vh"
-    # Ритм: подзаголовок прижат к заголовку, перед кнопкой воздуха больше
-    # (правка владельца «подтайтл должен быть под тайтлом»). Замер: 5–7px
-    # против 11px.
-    assert ".screen .desc { margin-top: calc(-1 * clamp(0.4rem, 1.6vh, 0.85rem)) !important; }" in block
-    assert ".about-link, .sec-link { margin-top: 0; }" in block, \
-        "ссылка под кнопкой больше не налезает на неё"
-    # Содержимое ровно по центру экрана: поля сверху и снизу одинаковые
-    assert "padding: 4.2rem 0.25rem; overflow: hidden;" in block, \
-        "контент по центру и без прокрутки"
-    # Затемнение ролика начинается ПРАВЕЕ лица (замер: лицо 51..331 из 915)
-    assert "rgba(5,5,5,0) 58%" in block, "тень не заходит на лицо"
-    # Кадр вертикальный, а ниша широкая: обрезка идёт только по высоте, и
-    # object-position по горизонтали ничего не двигает (замер: 64 → 72 → 90%
-    # — картинка на месте). Лицо сдвигает сам элемент.
-    assert "#hero-video { width: 60%; height: 100vh; height: 100dvh; transform: translateX(-7%); }" in block, \
-        "голова сдвинута левее самим элементом"
-    assert "#050505 90%" in block, \
-        "затемнение добирает до чёрного раньше правого края ролика — шва не видно"
-    assert re.search(r"@media \(max-width:1023px\) and \(orientation: landscape\) and \(min-height:520px\)", html), \
-        "рослый ландшафт возвращает плиткам нормальный масштаб"
+    nums = lambda s: [float(x) for x in re.findall(r"-?\d+(?:\.\d+)?", s)]
+    verts = re.search(r"var BRV = \[(.*?)\],\n", html, re.S).group(1)
+    edges = nums(re.search(r"BRE = \[([^\]]*)\]", html).group(1))
+    n_v = len(re.findall(r"\[[^\[\]]+\]", verts))
+    assert 30 <= n_v <= 60, "мозг из небольшого числа точек: %d" % n_v
+    E = set()
+    for i in range(0, len(edges), 2):
+        a, b = int(edges[i]), int(edges[i + 1])
+        E.add((a, b)); E.add((b, a))
+    legs = re.findall(r"\[(\d+), (\d+), \[([\d, ]+)\]\]", re.search(r"var BRL = \[(.*?)\];", html, re.S).group(1))
+    assert len(legs) == 7, legs
+    nodes = [int(v) for v in re.findall(r"\[(\d+), \d\]", re.search(r"var BRN = \[(.*?)\];", html).group(1))]
+    into = {}
+    for fr, to, path in legs:
+        pts = [int(x) for x in path.split(",")]
+        assert pts[0] == nodes[int(fr)] and pts[-1] == nodes[int(to)], (fr, to, pts)
+        for a, b in zip(pts, pts[1:]):
+            assert (a, b) in E, "нога %s→%s идёт не по связи %d-%d" % (fr, to, a, b)
+        into[int(to)] = into.get(int(to), 0) + 1
+    outs = {}
+    for fr, _to, _p in legs:
+        outs[int(fr)] = outs.get(int(fr), 0) + 1
+    assert max(outs.values()) == 2 and max(into.values()) == 2, "одна развилка и одно слияние"
 
 
-def test_short_desktop_fits_and_scroll_fades():
-    """Невысокое десктоп-окно: контент ужимается, чтобы влезать без прокрутки;
-    если всё же прокручивается — края растворяются градиентом, а не режутся."""
+def test_brain_icons_names_and_loop():
     html = _html()
-    assert "@media (min-width:1024px) and (max-height:820px) {" in html
-    assert "@media (min-width:1024px) and (max-height:660px) {" in html
-    assert re.search(r"\.scroll\.can-scroll \{\s*-webkit-mask-image: linear-gradient\(to bottom, transparent 0, #000 2\.2rem", html), \
-        "маска прокрутки: плавный градиент сверху и снизу"
-    assert "function updateScrollFade()" in html
-    assert "scrollBox.classList.toggle('can-scroll'" in html
-    assert html.count("updateScrollFade();") >= 4, \
-        "пересчёт маски: init, ресайз, смена экрана и языка"
-    # FR-SITE37: маска ТОЛЬКО там, где бокс реально прокручивается. На мобилке у
-    # .scroll overflow:visible — контент виден за боксом, и маска резала бы видимое
-    assert "var ov = getComputedStyle(scrollBox).overflowY;" in html
-    assert "(ov === 'auto' || ov === 'scroll')" in html, \
-        "can-scroll не должен включаться при overflow:visible"
+    assert html.count("'os.n") >= 7 and "data-i18n=\"os.n' + ai + '\"" in html, "имена артефактов"
+    assert "BRI = ['\\uf0e0', '\\uf0ae', '\\uf1c0', '\\uf15c', '\\uf5ae', '\\uf121', '\\uf135']" in html, "значки артефактов"
+    assert "c = c % B.CL" in html, "сценарий мозга зациклен"
+    assert "os.ro1" not in html, "имён ролей в мозге больше нет"
 
 
-def test_speaker_emoji_sits_on_the_text_line():
-    """FR-SITE39: глиф 🤖 рисуется выше строки текста, поэтому при кегле 15px он
-    торчал вверх и свисал вниз. Кегль приведён к высоте строки «Andre AI»
-    (замер: центры совпадают, выступ симметричный ±1.2px)."""
+def test_final_strip_slides_to_the_wordmark():
+    """Финал: видео → полоса → полоса едет к середине и раскрывается в «Andre AI»
+    (без растяжки на всю ширину); обратно — наоборот."""
     html = _html()
-    m = re.search(r"\.speaker-emoji \{ font-size: ([\d.]+)px;[^}]*position: relative; top: (-?[\d.]+)em;", html)
-    assert m, "у эмодзи должен быть кегль по строке и точная доводка top"
-    assert float(m.group(1)) <= 12.5, \
-        "кегль эмодзи (%s px) должен быть соразмерен строке, иначе он свисает" % m.group(1)
-    assert abs(float(m.group(2))) <= 0.1, "доводка top — микросдвиг, а не смещение строки"
+    assert "x0 = lerp(S.x, wline.x, kb), x1 = lerp(S.x + S.w, wline.x + wline.w, kb);" in html
+    assert "SW(), kb)" not in html, "полоса больше не растягивается на всю ширину экрана"
 
 
-def test_short_mobile_fits_without_overlap():
-    """FR-SITE37: невысокие телефоны в портрете — контент ужимается, чтобы
-    помещаться в панель; сдвиг героя контакта снят, иначе он наезжал на футер."""
+def test_case_cards_are_the_same_size_and_two_lines_at_most():
     html = _html()
-    assert "@media (max-width:1023px) and (orientation: portrait) and (max-height:700px) {" in html
-    assert "@media (max-width:1023px) and (orientation: portrait) and (max-height:600px) {" in html
-    short = html.split("(orientation: portrait) and (max-height:600px) {", 1)[1].split("\n  }")[0]
-    assert ".contact-hero { gap: 0.6rem; top: 0; }" in short, \
-        "на самых низких экранах сдвиг героя контакта снят (наезжал на футер)"
-    # тот же дефект на низких десктоп-окнах
-    low = html.split("(min-width:1024px) and (max-height:820px) {", 1)[1].split("\n  }")[0]
-    assert ".contact-hero { top: 0;" in low
+    assert ".mc { width: clamp(18.5rem, 23.5cqw, 20rem); height:" in html
+    assert "-webkit-line-clamp: 2;" in html
+    ru = re.findall(r'<span data-i18n="c\d">([^<]+)</span>', html)
+    assert len(ru) == 9 and all(t.startswith("ИИ-агент ") for t in ru), ru
+    en = re.findall(r"'c\d': '([^']+)'", html)
+    assert len(en) == 9 and all(t.startswith("AI agent ") for t in en), en
 
 
-def test_landscape_phone_menu_flows():
-    """FR-SITE37: в ландшафте телефона 8 пунктов + бренд + футер не помещаются —
-    меню становится прокручиваемым столбцом (бренд и футер в потоке, крестик fixed),
-    иначе они накладывались на список."""
+def test_custom_price_does_not_grow_the_cards():
+    """«Почему когда Custom выбираю, увеличиваются блоки»: колонки не растут от
+    содержимого, а у «Индивидуально / Custom» строка той же высоты, что у цифры."""
     html = _html()
-    key = "@media (max-width:1149px) and (orientation: landscape) and (max-height:520px) {"
-    assert key in html
-    block = html.split(key, 1)[1].split("\n  }")[0]
-    assert ".nav.open .nav-brand { position: static;" in block
-    assert ".nav.open .nav-foot { position: static;" in block
-    assert ".nav.open .nav-close { position: fixed;" in block
-    # блок должен стоять ПОСЛЕ правил .nav-foot, иначе они перебивают position
-    assert html.find(".nav.open .nav-foot { display: flex;") < html.find(key), \
-        "ландшафтный блок должен идти после базовых правил футера меню"
+    assert ".tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));" in html
+    assert "#pricing .t-pr .num { font-size: 54px; } #pricing .t-pr .num.txt { font-size: 32px; line-height: 54px; }" in html
+    assert ".t-pr .num.txt { font-size: 26px; line-height: 40px; }" in html
 
 
-# ── FR-SITE28: видео на языке интерфейса + постер-заглушка ───────────────
-
-def test_video_per_language_with_poster():
+def test_footer_antropolis_mark_is_centred_over_the_socials():
     html = _html()
-    m = re.search(r'<video id="hero-video" src="([^"]+)" poster="([^"]+)"[^>]*>', html)
-    assert m, "нужен тег видео с src и poster"
-    assert m.group(1) == "/assets/Andre_AIT_video_compressed.mp4", \
-        "по умолчанию (EN) — новый ролик из assets этого репозитория"
-    assert m.group(2) == "/andre_ai.jpg", \
-        "постер-заглушка andre_ai.jpg — чёрного фона не бывает"
-    assert "loop muted autoplay playsinline" in m.group(0)
-    assert "'/assets/Andre_AIT_video_compressed_ru.mp4'" in html, \
-        "у русского языка свой ролик"
-    assert "function setVideoLang(" in html and "setVideoLang(lang);" in html, \
-        "смена языка должна переключать ролик"
-    assert "videoBlobs[lang] = URL.createObjectURL(b);" in html, \
-        "каждый ролик кэшируется в blob (цикл без сети, FR-SITE25)"
-    assert '<link rel="preload" as="image" href="/andre_ai.jpg" fetchpriority="high">' in html, \
-        "постер грузится первым приоритетом"
-    assert "hero-poster.jpg" not in html, "ссылок на старый постер быть не должно"
+    assert ".foot .f-hg { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);" in html
+    assert ".foot .f-hg .antro { justify-self: start; white-space: nowrap; gap: 0.55rem; margin: 0 0 0 -0.675rem; }" in html
 
 
-
-def test_subtitle_hugs_the_title_on_every_screen():
-    """FR-SITE56. Правка владельца «чуть поближе поставь подтайтл к тайтлу».
-
-    !important обязателен: у подзаголовка героя и у подзаголовка контактов
-    margin задан ИНЛАЙНОМ, и без него правка молча не применялась ровно на
-    тех двух экранах, ради которых её просили (замер: зазор 28px и 23–24px
-    против 4.8–10.4px на остальных шести).
-
-    Подтяг пересчитан под каждую высотную ступень: на коротких телефонах
-    щели экрана ужимаются (1.75rem → 1.05rem → 0.85rem), и фиксированный
-    подтяг оказывался БОЛЬШЕ самой щели — строки наезжали друг на друга
-    (замер на 360×568: −9.6px). Цель везде одна: зазор около 4.8px."""
+def test_no_cookie_banner():
+    """FR-SITE88: сайт не ставит cookie — баннера нет; язык живёт в localStorage."""
     html = _html()
-    # базовая вертикаль
-    assert ".screen .desc { margin-top: -0.55rem !important; }" in html
-    assert ".desc.hero-sub { margin-top: -1.45rem !important; }" in html
-    assert ".contact-hero .desc { margin-top: -1.2rem !important; }" in html
-    # веб
-    assert ".screen .desc { margin-top: -0.7rem !important; }" in html
-    assert ".desc.hero-sub { margin-top: -1.1rem !important; }" in html
-    assert ".contact-hero .desc { margin-top: -0.79rem !important; }" in html
-    # короткие телефоны: ≤700px и ≤600px
-    assert ".screen .desc { margin-top: -0.3rem !important; }" in html
-    assert ".desc.hero-sub { margin-top: -0.75rem !important; }" in html
-    assert ".contact-hero .desc { margin-top: -0.55rem !important; }" in html
-    assert ".screen .desc { margin-top: -0.2rem !important; }" in html
-    assert ".desc.hero-sub { margin-top: -0.55rem !important; }" in html
-    assert ".contact-hero .desc { margin-top: -0.3rem !important; }" in html
+    assert "document.cookie" not in html and "cookie-banner" not in html
 
 
-def test_hero_has_no_glowing_blob_behind_it():
-    """FR-SITE46: «убери это странное свечение везде» — кроме цветных теней
-    у букв убран и размытый фиолетово-оранжевый блоб под героем."""
+# ── FR-SITE96: политика и условия ──────────────────────────────────────────
+
+LEGAL = {"privacy": ("/privacy/", "/privacy/ru/"), "terms": ("/terms/", "/terms/ru/")}
+
+
+def test_footer_links_to_legal_pages_in_the_visitor_language():
     html = _html()
-    assert "overview-aura" not in html, "блоб под героем удалён вместе с разметкой"
-    assert "auraPulse" not in html, "и его анимация тоже"
+    for key, (en, ru) in LEGAL.items():
+        t = _tag(html, 'data-href-en="%s"' % en)
+        assert t and _attr(t, "data-href-ru") == ru and _attr(t, "href") == ru, (key, t)
+        assert os.path.exists(os.path.join(_ROOT, en.strip("/"), "index.html"))
+        assert os.path.exists(os.path.join(_ROOT, ru.strip("/"), "index.html"))
 
 
-def test_ru_mode_leads_to_the_russian_product():
-    """FR-SITE86: главная в режиме RU ведёт в продукт на русском. Продукт
-    выбирает язык по браузеру, поэтому каждая кнопка в продукт несёт пару
-    data-href-en (прежний адрес) / data-href-ru (тот же с ?lang=ru), а setLang
-    переписывает href по языку — как ссылки «Обо мне» и лендинга."""
+def test_legal_pages_are_built_from_the_generator():
+    """Страницы собирает tools/build_legal.py; сборка воспроизводит файлы в git
+    байт в байт — правка текста только через генератор."""
+    from tools import build_legal
+    before = {}
+    for en, ru in LEGAL.values():
+        for p in (en, ru):
+            rel = p.strip("/") + "/index.html"
+            before[rel] = _read(rel)
+    build_legal.build()
+    for rel, txt in before.items():
+        assert _read(rel) == txt, rel + ": файл в git расходится с генератором"
+
+
+def test_legal_pages_content():
+    for kind, (en, ru) in LEGAL.items():
+        for path, lang in ((en, "en"), (ru, "ru")):
+            html = _read(path.strip("/") + "/index.html")
+            assert '<html lang="%s">' % lang in html
+            assert '<link rel="canonical" href="https://andre.technology%s">' % path in html
+            assert "admin@andre.technology" in html and "Andre AI Technologies LTD" in html
+            assert "localStorage.setItem('ait_lang', '%s')" % lang in html
+            assert 'href="#"' not in html
+    assert "no cookies" in _read("privacy/index.html") and "не ставит cookie" in _read("privacy/ru/index.html"), \
+        "политика совпадает с FR-SITE88: cookie нет"
+
+
+# ── FR-SITE97: соцсети по языку ─────────────────────────────────────────────
+
+SOCIAL = {
+    "YouTube": ("https://www.youtube.com/@andre_dataist", "https://www.youtube.com/@andre.dataist"),
+    "Instagram": ("https://www.instagram.com/andre_dataist", "https://www.instagram.com/andre.dataist"),
+    "TikTok": ("https://www.tiktok.com/@andre_dataist", "https://www.tiktok.com/@andre.dataist"),
+}
+
+
+def test_socials_follow_the_language():
     html = _html()
-    tags = re.findall(r'<a [^>]*href="https://(?:maturity|strategy)\.andre\.technology/[^"]*"[^>]*>', html)
-    assert len(tags) >= 4, tags
-    for tag in tags:
-        href = re.search(r' href="([^"]+)"', tag).group(1)
-        assert "?lang=" not in href, "по умолчанию (EN) — прежний адрес: " + tag[:120]
-        assert 'data-href-en="%s"' % href in tag, tag[:160]
-        assert 'data-href-ru="%s?lang=ru"' % href in tag, tag[:160]
-    assert "querySelectorAll('[data-href-ru]')" in html
+    for label, (ru, en) in SOCIAL.items():
+        t = _tag(html, 'aria-label="%s"' % label)
+        assert t, label
+        assert _attr(t, "data-href-ru") == ru and _attr(t, "data-href-en") == en and _attr(t, "href") == ru, t
+    x = _tag(html, 'aria-label="X"')
+    assert _attr(x, "href") == "https://x.com/andre_dataist" and 'data-only="en"' in x
+    tg = _tag(html, 'aria-label="Telegram"')
+    assert _attr(tg, "href") == "https://t.me/andre_dataist" and 'data-only="ru"' in tg
+    assert '<i class="fa-solid fa-paper-plane"></i></a>' in html[html.index('aria-label="Telegram"'):][:200], \
+        "Telegram в подвале — простой самолётик"
+    assert _attr(_tag(html, 'aria-label="LinkedIn"'), "href") == "https://www.linkedin.com/in/andre-kuzminykh/"
 
-
-
-def test_no_cookie_banner_because_no_cookies():
-    """FR-SITE88. «Мы используем какие-нибудь куки? Может, ничего не будем
-    использовать — и тогда уберём „We use cookies…“». Сайт не ставит ни одной
-    куки (нет счётчиков, пикселей и встраиваний); в localStorage — только
-    настройки, которые человек выбрал сам (язык, место кружка), и очередь
-    отправки заявки. Баннер согласия поэтому убран целиком."""
-    html = _html()
-    for dead in ("cookie-banner", "cookie.text", "acceptCookies", "ait_cookie_ok", "We use cookies"):
-        assert dead not in html, "баннер про куки убран: " + dead
-    assert "document.cookie" not in html, "сайт не ставит куки"
-    for tracker in ("googletagmanager", "google-analytics", "mc.yandex", "connect.facebook.net", "<iframe"):
-        assert tracker not in html, "на главной нет счётчиков и встраиваний: " + tracker
-
-
-# ── FR-SITE89: шапка и масштаб без скачков ───────────────────────────────
-
-def test_header_sizes_are_continuous():
-    """FR-SITE89. «Вверху кнопки скачет размер, хотя когда более растянуто было,
-    кнопка была меньше … растяжение несущественное — скачет всё». Размеры
-    шапки — непрерывные и неубывающие функции ширины окна: потолки телефонных
-    клампов равны десктопным, уплотнение на узком десктопе плавное (1150→1480),
-    ступеней 1319/1320, 1479/1480, 1600/1700/1900 нет."""
-    html = _html()
-    assert ".logo-img { width: clamp(2.85rem, 12vw, 3.6rem);" in html, "лого телефона ≤ десктопного 3.6rem"
-    assert "width: clamp(2.5rem, 11vw, 2.85rem); height: clamp(2.5rem, 11vw, 2.85rem);" in html, \
-        "бургер телефона ≤ десктопного 2.85rem"
-    assert ".cta { height: clamp(2.05rem, 8.7vw, 2.85rem);" in html and "font-size: clamp(9px, 2.7vw, 10.5px)" in html, \
-        "CTA телефона не крупнее десктопной на 1024px"
-    for step in ("(min-width:1024px) and (max-width:1319px)", "(min-width:1150px) and (max-width:1319px)",
-                 "(min-width:1320px) and (max-width:1479px)", "(min-width:1600px) and (max-width:1699px)",
-                 "(min-width:1700px) and (max-width:1899px)", "(min-width:1900px) and (max-width:2299px)"):
-        assert step not in html, "ступень шапки %s должна уйти" % step
-    # уплотнение интерполируется и упирается в полные значения на 1480px
-    for rule in ("font-size: clamp(13.2px, calc(10.412px + 0.2424vw), 14px)",       # пункты меню
-                 "font-size: clamp(10.5px, calc(0.30303vw + 7.015px), 11.5px)",    # CTA
-                 "font-size: clamp(11px, calc(0.30303vw + 7.515px), 12px)",        # EN | RU
-                 "left: calc(50% - clamp(3.5rem, calc(163.64px - 7.273vw), 5rem))"):  # центр пилюли
-        assert rule in html, "нет плавного правила шапки: " + rule
-    # компактная шапка — только у ТЕЛЕФОНА боком (≤520px), не у окна браузера
-    land = html.split("FR-SITE89: только для НИЗКИХ окон", 1)[1].split("}\n  }", 1)[0]
-    assert "@media (max-width:1023px) and (orientation: landscape) and (max-height:520px) {" in land
-    assert ".logo-img { width: 2.3rem; height: 2.3rem; }" in land
-
-
-def test_subpages_header_and_zoom_match_main():
-    """FR-SITE89 «надо везде проверить и лого, и кнопки»: у биографии и
-    лендинга та же шапка без скачков и тот же непрерывный зум."""
-    root = os.path.join(os.path.dirname(__file__), "..")
-    for css_name, page in (("assets/about.css", "about/index.html"), ("assets/strategy.css", "ai-strategy/index.html")):
-        css = open(os.path.join(root, css_name), encoding="utf-8").read()
-        head = open(os.path.join(root, page), encoding="utf-8").read().split("</head>")[0]
-        assert "clamp(2.85rem, 12vw, 3.6rem)" in css and "clamp(2.5rem, 11vw, 2.85rem)" in css, css_name
-        assert "(max-width:1319px)" not in css and "(max-width:1439px)" not in css, css_name + ": ступени шапки"
-        for k in ("1.15", "1.3", "1.5"):
-            assert "zoom: %s;" % k not in css, css_name + ": корзина зума " + k
-        assert "@media (min-width:1480px) { body { zoom: var(--zb, 1); } }" in css, css_name
-        assert "root.style.setProperty('--zb', w >= 1480 ? Math.min(w / 1480, 1.5).toFixed(4) : '1');" in head, page
-
-
-# ── FR-SITE90: контент экранов во всю ширину панели ─────────────────────
-
-def test_screen_content_fills_the_panel():
-    """FR-SITE90. «Справа всё очень мелко — надо, чтобы на всё, что может, по
-    ширине заходило на чёрное … кнопки все одного размера … на третьем
-    перенос — так не очень». Модуль --u — кегль, при котором самый длинный
-    заголовок языка занимает 90% панели; подзаголовки — по самому длинному
-    (в одну строку); кнопки всех экранов одной ширины."""
-    html = _html()
-    block = html.split("FR-SITE90: контент экранов во всю ширину", 1)[1].split("/* ===== Early-access popup", 1)[0]
-    assert ':root { --tn: 13; --dn: 34; --bn: 23; --cn: 17;' in block
-    assert 'html[lang="ru"] { --tn: 15; --dn: 37; --bn: 25; --cn: 16; }' in block
-    # длины в знаках совпадают с самыми длинными текстами экранов
-    en_titles = re.findall(r'data-i18n="(?:strategy|neuronium|landao|antropolis|academy|dataist)\.h2">([^<]+)<', html)
-    ru_titles = re.findall(r"'(?:strategy|neuronium|landao|antropolis|academy|dataist)\.h2': '([^']+)'", html)
-    assert max(map(len, en_titles)) == 13 and max(map(len, ru_titles)) == 15, (en_titles, ru_titles)
-    strip = lambda t: re.sub(r"<[^>]+>", "", t).replace("&rsquo;", "'").replace("&amp;", "&")
-    en_desc = [strip(d) for d in re.findall(r'data-i18n="(?:strategy|neuronium|landao|antropolis|academy|dataist)\.desc"[^>]*>(.*?)</p>', html)]
-    ru_desc = [strip(d) for d in re.findall(r"'(?:strategy|neuronium|landao|antropolis|academy|dataist)\.desc': '([^']+)'", html)]
-    assert max(map(len, en_desc)) == 34 and max(map(len, ru_desc)) == 37, (en_desc, ru_desc)
-    assert "--u: min(calc(var(--pw) * 0.9 / (var(--tn) * 0.64)), var(--ucap));" in block
-    assert ".screen.sec .h2-size { font-size: var(--u); white-space: nowrap; }" in block
-    assert "min(calc(var(--pw) * 0.95 / (var(--dn) * 0.6)), calc(var(--u) * 0.46))" in block
-    # кнопки: фиксированная ширина под самую длинную надпись языка
-    assert "width: calc(var(--bf) * (var(--bn) * 0.75 + 5.6)) !important; font-size: var(--bf) !important;" in block
-    # плитки — от модуля, без scale-ужатия; на десктопе панель делится на зум
-    assert ".float-row { transform: none; margin: 0; gap: calc(var(--u) * 0.26); }" in block
-    assert "--pw: calc(40vw / var(--z, 1) - 4.5rem);" in block
-    # потолок модуля в портрете — по замеру на сетке окон 360…1000 × 600…1400:
-    # прежняя «телефонная» формула в окне ≈1000×1200 пускала плитки на плашку
-    # «Andre AI» (скрин владельца «наслоение»)
-    assert "--ucap: calc((40dvh - 96px) / 6.17);" in block
-    assert ":root { --ucap: calc((40dvh - 124px) / 5); }" in block
-    # у героя контакта нет потолка 32rem: на высоких окнах подзаголовок упирался
-    # в него, переносился, и экран скачком вырастал
-    assert ".contact-hero { max-width: none; }" in block
-
-
-# ── FR-SITE91: первый и последний слайд ─────────────────────────────────
-
-def test_first_and_last_slides_robot_and_glow():
-    """FR-SITE91. «„AI Transformation of your Business“ — давай не будет
-    прыгать; на первом и последнем блоке иконка с роботом, как во всех
-    остальных; пусть буквы светятся красиво»."""
-    html = _html()
-    ov = html.split('data-screen="overview"', 1)[1].split("</section>", 1)[0]
-    ct = html.split('data-screen="contact"', 1)[1].split("</section>", 1)[0]
-    for name, sec in (("первый", ov), ("последний", ct)):
-        assert '<div class="float-row">' in sec, name + " слайд: ряд плиток"
-        assert sec.count('class="tile sm"') == 2 and sec.count('class="tile lg"') == 1, name
-        assert "fa-robot" in sec, name + " слайд: робот в большой плитке"
-        assert "glow-title" in sec, name + " слайд: заглавные светятся"
-    h1 = re.search(r'<h1 class="hero-size glow-title" style="([^"]*)"', html)
-    assert h1 and "animation" not in h1.group(1), "заголовок героя больше не подпрыгивает"
-    assert "@keyframes glowP" in html and "@keyframes glowO" in html
-    assert "@media (prefers-reduced-motion: reduce) { .glow-title, .glow-title .gp, .glow-title .go { animation: none; } }" in html
-
-
-# ── FR-SITE93: лента прогресса внизу ───────────────────────────────────
-
-def test_progress_bar_fills_with_screens():
-    """FR-SITE93. «Поставим снизу градиентную ленту с фиолетового на оранжевый,
-    которая заполняется по мере листания страницы». Лента прибита к низу окна,
-    градиент натянут на всю ширину, а заполнение открывает его clip-path'ом
-    до текущего экрана: на первом — 1/8, на последнем — целиком."""
-    html = _html()
-    assert '<div class="progress" id="progress" aria-hidden="true"><div class="progress-fill"></div></div>' in html
-    css = html.split("FR-SITE93: лента прогресса внизу экрана", 1)[1].split("/* ===== Early-access popup", 1)[0]
-    assert ".progress { position: fixed; left: 0; right: 0; bottom: env(safe-area-inset-bottom, 0px); z-index: 35;" in css
-    assert "linear-gradient(90deg, #8854F3 0%" in css and "#F97316 100%)" in css
-    assert "clip-path: inset(-12px calc(100% - var(--p, 0%)) -12px 0);" in css
-    assert "@media (prefers-reduced-motion: reduce) { .progress-fill { transition: none; } }" in css
-    js = html.split("function setProgress(id)", 1)[1]
-    assert "((i + 1) / SCREENS.length * 100)" in js.split("}", 2)[0] + js.split("}", 2)[1]
-    open_tab = html.split("function openTab(id) {", 1)[1].split("swapT = setTimeout", 1)[0]
-    assert "setProgress(id);" in open_tab, "лента едет сразу при переходе, вместе с уходом панели"
-    assert "setProgress(start);" in html, "и выставлена при загрузке на экран из адреса"
 
 if __name__ == "__main__":
-    fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
-    for fn in fns:
-        fn()
-        print("PASS", fn.__name__)
-    print("\nВсе тесты сайта пройдены:", len(fns))
+    n = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            fn()
+            print("ok  ", name)
+            n += 1
+    print("\nВсе тесты сайта пройдены:", n)

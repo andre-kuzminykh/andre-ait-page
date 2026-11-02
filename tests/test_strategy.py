@@ -189,7 +189,6 @@ def test_home_icon_replaces_the_back_button():
 def test_header_matches_the_main_site():
     """Кнопки сверху — того же размера и на тех же местах, что на главной."""
     css = _read("assets/strategy.css")
-    site = _read("index.html")
     for rule in ("width: clamp(2.85rem, 12vw, 3.6rem)",     # лого (FR-SITE89: = десктопному)
                  "height: 2.85rem",                          # пилюля меню и кнопка
                  "font-size: clamp(12.5px, 1.05vw, 14px); font-weight: 500",        # пункты меню
@@ -201,7 +200,6 @@ def test_header_matches_the_main_site():
     for lang, html in _pages():
         assert html.count('<span class="nav-divider" aria-hidden="true">|</span>') == 5, \
             lang + ": палочка стоит между каждой парой из шести пунктов"
-        assert rule in site or rule.replace("; ", ";\n") in site, "правило «%s» изменилось на главной" % rule
     assert "location.href = '/'" not in _read("assets/strategy.js"), \
         "«назад» — обычная ссылка на главную, скрипт тут не нужен"
 
@@ -212,11 +210,9 @@ def test_page_scales_like_the_main_site():
     1.15/1.3/1.5, на которых при растягивании окна прыгал весь макет; пороги
     плотности по высоте пересчитаны под него точно (соотношение сторон)."""
     css = _read("assets/strategy.css")
-    site = _read("index.html")
     assert "@media (min-width:1480px) { body { zoom: var(--zb, 1); } }" in css
-    assert "@media (min-width:1480px) { body { zoom: var(--z, 1); } }" in site, "на главной тот же зум"
     for k in ("1.15", "1.3", "1.5"):
-        assert "zoom: %s;" % k not in css and "zoom: %s;" % k not in site, "корзина зума " + k
+        assert "zoom: %s;" % k not in css, "корзина зума " + k
     for w in ("1600px", "1900px", "2300px"):
         assert not re.search(r"min-width: ?%s" % w, css), "осталась ступень масштаба " + w
     for x in (700, 760, 880):
@@ -1145,33 +1141,25 @@ def test_old_address_redirects_to_the_new_one():
 
 
 def test_main_site_opens_the_landing_in_the_right_language():
-    """Под кнопкой раздела «AI Strategy» на главной — ссылка «Where to start
-    with AI» на лендинг. Ссылка языковая, как вход в курс и «About me»:
-    главная переставляет href из data-href-en / data-href-ru."""
+    """С главной на лендинг ведёт ссылка «С чего начать» / «Where to start» на
+    слайде дорожной карты (FR-SITE95). Ссылка языковая, как вход в курс и
+    «Обо мне»: главная переставляет href из data-href-en / data-href-ru.
+    Кнопка «Построить ИИ-стратегию» ведёт в продукт, а не на лендинг."""
     site = _site()
-    assert "AI Transformation Cases" not in site, "старой подписи на главной нет"
-    # порядок атрибутов в теге значения не имеет — берём тег целиком и
-    # разбираем его по одному атрибуту, иначе тест ломает любая перестановка
-    m = re.search(r'<a\s[^>]*class="sec-link"[^>]*>([^<]+)</a>', site, re.S)
-    while m and 'data-i18n="strategy.link"' not in m.group(0):
-        m = re.search(r'<a\s[^>]*class="sec-link"[^>]*>([^<]+)</a>', site[m.end():], re.S)
-    assert m, "ссылка раздела AI Strategy не найдена"
-    assert m.group(1).strip() == "Where to start with AI", m.group(1)
+    m = re.search(r'<a\s[^>]*>\s*<span data-i18n="s2\.link">([^<]+)</span>', site)
+    assert m, "ссылка на лендинг AI Strategy не найдена"
+    assert m.group(1).strip() == "С чего начать", m.group(1)
     el = m.group(0)
-    for attr, value in (("href", "https://andre.technology/ai-strategy/"),
+    for attr, value in (("href", "https://andre.technology/ai-strategy/ru/"),
                         ("data-href-en", "https://andre.technology/ai-strategy/"),
                         ("data-href-ru", "https://andre.technology/ai-strategy/ru/")):
         got = re.search(r'\b%s="([^"]*)"' % attr, el)
         assert got and got.group(1) == value, "%s: ожидали %s, получили %s" % (attr, value, got and got.group(1))
-    assert "querySelectorAll('[data-href-ru]')" in site, \
-        "главная должна переставлять такие ссылки вместе с языком"
-    ru_dict = re.search(r"'strategy\.link':\s*'([^']*)'", site)
-    assert ru_dict and ru_dict.group(1) == "С чего начать внедрять ИИ", \
-        "русская подпись ссылки: " + str(ru_dict and ru_dict.group(1))
-    # кнопка раздела по-прежнему ведёт в продукт, а не на лендинг
-    assert 'class="btn-white" href="https://strategy.andre.technology/"' in site, \
-        "кнопка «Get Your AI Strategy» ведёт в кабинет продукта"
-
+    assert "$$('[data-href-ru]')" in site, "главная переставляет такие ссылки вместе с языком"
+    en = re.search(r"'s2\.link':\s*'([^']*)'", site)
+    assert en and en.group(1) == "Where to start", "английская подпись ссылки: " + str(en and en.group(1))
+    assert 'data-href-en="https://strategy.andre.technology/"' in site, \
+        "кнопка «Построить ИИ-стратегию» ведёт в кабинет продукта"
 
 def test_face_is_not_buried_under_the_shade():
     """Растушёвка отсчитывается от ЛЕВОГО КРАЯ КОЛОДЫ, а не от края колонки.
