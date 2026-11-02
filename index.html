@@ -372,6 +372,14 @@
   .road { position: relative; width: min(100%, 36rem); height: min(64cqh, 34rem); margin: 0 auto; --lx: 1.9rem; }
   /* телефон: блок «текст + анимация» у верха; рисунок сразу под текстом и по центру ширины ставит mobLayout() */
   @container stage (max-width:767px) { .frame > .inner.split { margin-top: 0; } }
+  /* телефон: заголовки — по центру ширины, как на первом и последнем экране (владелец: «по середине пусть тайтлы и анимации будут
+     всё же на мобиле»); по высоте пару «заголовок + анимация» ставит mobLayout() — по середине свободного места */
+  @container stage (max-width:767px) {
+    .split > :first-child, .pr-h > div:first-child, .faq > .st { text-align: center; }
+    .split .kicker, .split .actions, .pr-h .kicker, .faq .kicker { justify-content: center; }
+    .pr-h { justify-content: center; } .pr-h > div:first-child { width: 100%; } .pr-h .sizes { margin: 0 auto; }
+    .faq .tabs { margin-left: auto; margin-right: auto; }
+  }
   /* телефон: дорожная карта — кружки чуть меньше; высоту по свободному месту до кружка-аватарки задаёт mobLayout() */
   @container stage (max-width:767px) { .road { height: 18rem; --lx: 1.35rem; } }
   /* телефон: у заголовка одинаковые отступы сверху (надзаголовок) и снизу (ссылка) */
@@ -1738,9 +1746,11 @@
       if (!phone) { if (SW() >= 1024) { var vb0 = visBox(vis), vl = vb0.l; if (Math.abs(vl) > 1) vis.style.left = Math.round(-vl) + 'px'; deskCenter(sp, txt, vis, vb0); } return; }
       /* координаты внутри слайда без его анимационного сдвига: offsetTop от рамки слайда (рамка = весь холст) */
       var fr = sp.closest('.frame'), off = function (el) { var y = 0; while (el && el !== fr) { y += el.offsetTop; el = el.offsetParent; } return y; };
-      /* всё у верха: текст сразу под шапкой, рисунок сразу под текстом (видимый отступ GAP) */
-      var H = fr.clientHeight, GAP = 30, lim = H - parseFloat(getComputedStyle(fr).paddingBottom), t0 = off(txt), tH = txt.offsetHeight;
-      if (road) road.style.height = Math.round(Math.max(270, Math.min(440, lim - (t0 + tH + GAP) - 8))) + 'px';
+      /* рисунок сразу под текстом (видимый отступ GAP); потом пара целиком встаёт по середине свободного места (ниже) */
+      var H = fr.clientHeight, GAP = 30, lim = H - parseFloat(getComputedStyle(fr).paddingBottom), t0 = off(txt), tH = txt.offsetHeight,
+          bub = $('#bubble-probe'), bt = (bub ? rr(bub).top : lim) - 12;
+      /* дорожная карта — по свободному месту до кружка-аватарки (кружок не закрывает нижний этап); места мало — до низа экрана */
+      if (road) road.style.height = Math.round(Math.max(270, Math.min(440, (bt - (t0 + tH + GAP) - 8 >= 270 ? bt : lim) - (t0 + tH + GAP) - 8))) + 'px';
       var vb = visBox(vis), v0 = off(vis), m = t0 + tH + GAP - (v0 + vb.t);
       /* не выходим за экран (и рамкой рисунка тоже) — иначе он начнёт прокручиваться; отступ от текста не меньше 12 px */
       var over = Math.max(v0 + m + vb.b - lim, v0 + m + vb.ext - H + 1); if (over > 0) m = Math.max(m - over, t0 + tH + 12 - (v0 + vb.t));
@@ -1751,6 +1761,10 @@
       var ov = fr.scrollHeight - fr.clientHeight; if (ov > 0 && ov < 6) vis.style.marginTop = Math.round((parseFloat(vis.style.marginTop) || 0) - ov) + 'px';
       /* рисунок — по центру ширины по видимым краям */
       var dx = (vis.offsetWidth - vb.r - vb.l) / 2; if (Math.abs(dx) > 1) vis.style.left = Math.round(dx) + 'px';
+      /* пара «заголовок + анимация» — по центру и по середине экрана под шапкой (владелец: «по центру, по середине»),
+         но не ниже кружка-аватарки; над кружком не помещается — остаётся у верха: так кружок закрывает её меньше всего */
+      var bh = off(vis) + vb.b - t0, sh = Math.floor(Math.min((lim - t0 - bh) / 2, bt - t0 - bh));
+      if (sh > 0) { sp.style.marginTop = sh + 'px'; var ov2 = fr.scrollHeight - fr.clientHeight; if (ov2 > 0) sp.style.marginTop = Math.max(0, sh - ov2) + 'px'; }
     });
   }
   function buildRoad() {

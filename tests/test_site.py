@@ -12,6 +12,7 @@ FR-SITE95 — главная: одиннадцать слайдов, холст 
 FR-SITE96 — политика конфиденциальности и условия использования: свои страницы
             на двух языках (tools/build_legal.py), подвал ведёт на них.
 FR-SITE97 — соцсети в подвале: у русской и английской версии свои аккаунты.
+FR-SITE98 — телефон: заголовки и анимации по центру и по середине экрана.
 """
 import os
 import re
@@ -223,6 +224,21 @@ def test_no_cookie_banner():
     html = _html()
     assert "document.cookie" not in html and "cookie-banner" not in html
 
+
+
+def test_phone_titles_and_animations_are_centred():
+    """FR-SITE98. Владелец: «по середине пусть тайтлы и анимации будут всё же на
+    мобиле … по центру, по середине». На телефоне заголовки — по центру ширины;
+    пара «заголовок + анимация» — по середине экрана под шапкой, но не ниже
+    кружка-аватарки (над кружком не помещается — у верха)."""
+    html = _html()
+    css = re.search(r"@container stage \(max-width:767px\) \{\n    \.split > :first-child, \.pr-h > div:first-child, \.faq > \.st \{ text-align: center; \}(.*?)\n  \}", html, re.S)
+    assert css, "правило центровки заголовков на телефоне"
+    assert ".split .kicker, .split .actions, .pr-h .kicker, .faq .kicker { justify-content: center; }" in css.group(1)
+    assert "bub = $('#bubble-probe'), bt = (bub ? rr(bub).top : lim) - 12" in html
+    assert "sh = Math.floor(Math.min((lim - t0 - bh) / 2, bt - t0 - bh))" in html, "по середине, но не ниже кружка"
+    assert "if (sh > 0) { sp.style.marginTop = sh + 'px';" in html
+    assert "sp.style.marginTop = ''" in html, "сдвиг сбрасывается при каждом пересчёте"
 
 # ── FR-SITE96: политика и условия ──────────────────────────────────────────
 
