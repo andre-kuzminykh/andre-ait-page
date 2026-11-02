@@ -153,8 +153,11 @@ def test_language_switch_matches_main_site_markup():
     site = _read(_MAIN_SITE)
     for marker in ('class="lang-switch"', 'class="lang-opt"', 'data-lang="en"', 'data-lang="ru"'):
         for rel in _ENTRIES:
-            assert marker in _read(rel), "разметка переключателя должна повторять главную: " + marker
-        assert marker in site
+            assert marker in _read(rel), "разметка переключателя одна на обеих страницах курса: " + marker
+    # FR-SITE95: главная — лендинг-слайды со своим переключателем (кнопки EN | RU);
+    # общими с курсом остаются коды языков и ключ выбора ait_lang
+    for marker in ('data-lang="en"', 'data-lang="ru"', "'ait_lang'"):
+        assert marker in site, "главная: " + marker
     for rel in _ENTRIES:
         html = _read(rel)
         assert "'ait_lang'" in html, "ключ выбора языка общий с главной"
