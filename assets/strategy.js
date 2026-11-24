@@ -304,6 +304,7 @@
     setProgress(cur);
     screens[cur].scrollTop = 0;
     fitHeadings(screens[cur]);
+    fitCalcPrice();
     fitScreen(screens[cur]);
     sceneIn(screens[cur]);
     typeIn(screens[cur]);
@@ -413,6 +414,8 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { closeMenu(); return; }
     if (nav.classList.contains('open')) return;
+    /* FR-SITE102: в поле ввода (ползунок тарифов) клавиши — его, экран не листается */
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) return;
     if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); step(1); }
     else if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); step(-1); }
     else if (e.key === 'Home') { go(0); }
@@ -501,6 +504,71 @@
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPlaying(video.muted); }
     });
   }
+
+  /* ---------- тарифы: ползунок «сколько сотрудников» (FR-SITE102) ----------
+     Решение владельца 24.11: не карточки тарифов, а ползунок 1 … 1000+. Тариф выбирается сам
+     (1 — Соло, 2–9 — Микро, 10–49 — Малый, 50–249 — Средний, 250+ — Крупный), под числом — одна
+     цена: помесячно или за год (год = 10 месяцев), в $ или ₽. У 250+ — «от …» и «Связаться».
+     Деления, сетка цен и подписи — в разметке (data-calc собирает tools/build_strategy.py). */
+  var calc = $('#calc'), CD = calc && JSON.parse(calc.getAttribute('data-calc')),
+      calcSt = { period: 'month', cur: calc && calc.getAttribute('data-cur0') === 'rub' ? 'rub' : 'usd' };
+  function calcPlan(n) {
+    for (var i = 0; i < CD.plans.length; i++) if (CD.plans[i].max == null || n <= CD.plans[i].max) return CD.plans[i];
+    return CD.plans[CD.plans.length - 1];
+  }
+  function calcMoney(v, cur) {
+    var s = String(v).replace(/\B(?=(\d{3})+(?!\d))/g, CD.txt.sep);
+    return cur === 'rub' ? s + '\u00a0₽' : '$' + s;
+  }
+  function calcWord(n) {
+    var w = CD.txt.emp;
+    if (w.length === 2) return n === 1 ? w[0] : w[1];
+    var d = n % 10, h = n % 100;
+    return d === 1 && h !== 11 ? w[0] : (d >= 2 && d <= 4 && (h < 12 || h > 14) ? w[1] : w[2]);
+  }
+  function renderCalc() {
+    var TX = CD.txt, rng = $('#calc-n', calc), i = +rng.value, n = CD.emp[i], p = calcPlan(n), big = p.max == null,
+        more = n >= CD.emp[CD.emp.length - 1], v = p[calcSt.cur][calcSt.period === 'year' ? 1 : 0];
+    calc.classList.toggle('big', big);
+    rng.style.setProperty('--fill', (i / (CD.emp.length - 1) * 100).toFixed(2) + '%');
+    rng.setAttribute('aria-valuetext', n + (more ? '+ ' + TX.emp[TX.emp.length - 1] : ' ' + calcWord(n)) + ' — ' + TX.name[p.id]);
+    $('#calc-v', calc).textContent = n + (more ? '+' : '');
+    $('.calc-plan', calc).innerHTML = '<b>' + TX.name[p.id] + '</b> · ' + TX.seg[p.id];
+    $('.calc-from', calc).hidden = !big;
+    $('.calc-num', calc).textContent = calcMoney(v, calcSt.cur);
+    $('.calc-per', calc).textContent = TX.per[calcSt.period];
+    /* «Связаться» — только у 250+; место под кнопкой занято всегда, блок не прыгает */
+    var ct = $('.calc-contact', calc);
+    ct.tabIndex = big ? 0 : -1;
+    if (big) ct.removeAttribute('aria-hidden'); else ct.setAttribute('aria-hidden', 'true');
+    $$('[data-period]', calc).forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-period') === calcSt.period ? 'true' : 'false'); });
+    $$('[data-cur]', calc).forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-cur') === calcSt.cur ? 'true' : 'false'); });
+    fitCalcPrice();
+  }
+  /* Длинная цена (рубли за год у 250+) ужимается по ширине карточки, а не переносится; высота строки
+     прежняя. Скрытый экран (display: none) мерить нечем — поэтому ещё и в paint(), когда экран показан. */
+  function fitCalcPrice() {
+    var pr = calc && $('.calc-price', calc);
+    if (!pr || !pr.clientWidth) return;
+    pr.style.fontSize = ''; pr.style.minHeight = '';
+    var h = pr.offsetHeight;
+    for (var k = 0; k < 3; k++) {
+      var over = pr.scrollWidth - pr.clientWidth;
+      if (over <= 0) break;
+      var fs = parseFloat(getComputedStyle(pr).fontSize);
+      pr.style.fontSize = Math.max(fs * 0.6, fs * (pr.scrollWidth - over - 1) / pr.scrollWidth).toFixed(2) + 'px';
+    }
+    if (pr.style.fontSize) pr.style.minHeight = h + 'px';
+  }
+  if (calc) {
+    $('#calc-n', calc).addEventListener('input', renderCalc);
+    $$('[data-period]', calc).forEach(function (b) { b.addEventListener('click', function () { calcSt.period = b.getAttribute('data-period'); renderCalc(); }); });
+    $$('[data-cur]', calc).forEach(function (b) { b.addEventListener('click', function () { calcSt.cur = b.getAttribute('data-cur'); renderCalc(); }); });
+    window.addEventListener('resize', fitCalcPrice);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCalcPrice);
+    renderCalc();
+  }
+
   setPlaying(false);
 
   paint();

@@ -7,6 +7,8 @@
 друга анимацией, а не прокруткой. Вёрстка — assets/strategy.css, поведение —
 assets/strategy.js, тексты — tools/strategy_copy.py. Точек в конце строк нет.
 """
+import html
+import json
 import math
 import os
 import re
@@ -44,6 +46,23 @@ BIZ_ICONS = ["fa-briefcase", "fa-user-tie", "fa-bullhorn", "fa-pen-nib",
              "fa-headset", "fa-life-ring", "fa-palette", "fa-code"]
 OUT_ICONS = ["fa-gauge-high", "fa-diagram-project", "fa-brain", "fa-lightbulb",
              "fa-people-arrows", "fa-wand-magic-sparkles", "fa-robot", "fa-route"]
+
+# FR-SITE102 — тарифы ИИ-стратегии (решение владельца 24.11). Сотрудник — подключённый к компании
+# человек; тариф по их числу выбирается сам, год = 10 месяцев (2 в подарок). Строка: id, сотрудников
+# не больше, $ в месяц, $ за год, ₽ в месяц, ₽ за год. У крупного верхней границы нет — цена «от …»
+# и кнопка «Связаться». Та же сетка — в калькуляторе главной (index.html, TARIFF): сверяет тест.
+TARIFFS = [
+    ("solo", 1, 29, 290, 2900, 29000),
+    ("micro", 9, 100, 1000, 9900, 99000),
+    ("small", 49, 500, 5000, 49900, 499000),
+    ("medium", 249, 1000, 10000, 99900, 999000),
+    ("large", None, 2500, 25000, 249000, 2490000),
+]
+# Деления ползунка «сколько сотрудников»: до 10 — по одному, дальше шаг растёт, последнее — «1000+».
+# Нижняя граница каждого тарифа (1, 2, 10, 50, 250) — деление ползунка. Те же деления — на главной (EMP).
+EMP_STOPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100,
+             125, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000]
+EMP_START = 5   # ползунок стоит на «Микро» — как прежний размер «1–10» на главной
 
 
 def flip_key(name):
@@ -291,6 +310,69 @@ def stages(t):
     return out
 
 
+def tariff_of(n):
+    """Тариф по числу сотрудников: первый, в чью границу число помещается."""
+    for row in TARIFFS:
+        if row[1] is None or n <= row[1]:
+            return row
+
+
+def money(v, cur, sep):
+    """$1,000 / $1 000 и 9 900 ₽: разряды — по языку страницы, рубль — после числа."""
+    s = "{:,}".format(v).replace(",", sep)
+    return s + u"\u00a0₽" if cur == "rub" else "$" + s
+
+
+def emp_word(n, words):
+    """«5 сотрудников» / «5 employees»: у русского три формы, у английского две."""
+    if len(words) == 2:
+        return words[0] if n == 1 else words[1]
+    d, h = n % 10, n % 100
+    if d == 1 and h != 11:
+        return words[0]
+    if 2 <= d <= 4 and not 12 <= h <= 14:
+        return words[1]
+    return words[2]
+
+
+def calc(t):
+    """Тарифы (FR-SITE102): ползунок «сколько сотрудников» сам выбирает тариф и показывает одну цену;
+    рядом — период (месяц / год) и валюта ($ / ₽, по умолчанию — валюта языка). Разметка собрана в
+    состоянии по умолчанию, поэтому без скрипта страница тоже читается; деления, сетка цен и подписи
+    для скрипта лежат в data-calc (assets/strategy.js), скрипт общий на оба языка."""
+    c, cur = t["pr_calc"], t["pr_cur"]
+    n = EMP_START
+    tid, _mx, usd_m, _usd_y, rub_m, _rub_y = tariff_of(n)
+    data = {"emp": EMP_STOPS, "txt": c,
+            "plans": [{"id": r[0], "max": r[1], "usd": [r[2], r[3]], "rub": [r[4], r[5]]} for r in TARIFFS]}
+    price = money(rub_m if cur == "rub" else usd_m, cur, c["sep"])
+    return """
+      <div class="calc" id="calc" data-cur0="{cur}" data-calc="{data}">
+        <div class="calc-sw">
+          <div class="seg" role="group" aria-label="{period_aria}"><button type="button" data-period="month" aria-pressed="true">{month}</button><button type="button" data-period="year" aria-pressed="false">{year}</button></div>
+          <div class="seg" role="group" aria-label="{cur_aria}"><button type="button" data-cur="usd" aria-pressed="{usd}">$</button><button type="button" data-cur="rub" aria-pressed="{rub}">₽</button></div>
+        </div>
+        <div class="calc-card">
+          <label class="calc-q" for="calc-n"><span>{q}</span><output class="calc-v" id="calc-v" for="calc-n">{n}</output></label>
+          <input class="calc-rng" id="calc-n" type="range" min="0" max="{imax}" step="1" value="{i0}" aria-valuetext="{vt}" style="--fill: {fill}%">
+          <p class="calc-plan"><b>{name}</b> · {seg}</p>
+          <div class="calc-res">
+            <p class="calc-price"><span class="calc-from" hidden>{from_}</span> <b class="calc-num">{price}</b> <span class="calc-per">{per}</span></p>
+            <a class="btn btn-ghost btn-sm calc-contact" href="{contact_href}" tabindex="-1" aria-hidden="true">{contact} <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+      <a class="btn btn-primary calc-free" href="{cta_href}" rel="noopener">{free} <i class="fa-solid fa-arrow-right"></i></a>""".format(
+        cur=cur, data=html.escape(json.dumps(data, ensure_ascii=False, separators=(",", ":")), quote=True),
+        period_aria=t["pr_period_aria"], cur_aria=t["pr_cur_aria"], month=t["pr_month"], year=t["pr_year"],
+        usd="true" if cur == "usd" else "false", rub="true" if cur == "rub" else "false",
+        q=t["pr_q"], n=n, imax=len(EMP_STOPS) - 1, i0=EMP_STOPS.index(n),
+        fill="%.2f" % (EMP_STOPS.index(n) * 100.0 / (len(EMP_STOPS) - 1)),
+        vt="%d %s — %s" % (n, emp_word(n, c["emp"]), c["name"][tid]),
+        name=c["name"][tid], seg=c["seg"][tid], from_=c["from"], price=price, per=c["per"]["month"],
+        contact_href=t["pr_contact_href"], contact=t["pr_contact"], cta_href=t["cta_href"], free=t["pr_free"])
+
+
 def page(t, lang):
     other_href = PATH_RU if lang == "en" else PATH_EN
     self_href = PATH_EN if lang == "en" else PATH_RU
@@ -348,20 +430,9 @@ def page(t, lang):
 
     roles = "".join('<span class="role"><i class="fa-solid %s"></i>%s</span>' % (ic, name) for name, ic in t["roles"])
 
-    plans = "".join("""
-          <article class="plan{best}">
-            {badge}
-            <h3>{name}</h3>
-            <div class="plan-price">{price}</div>
-            <div class="plan-scope">{scope}</div>
-            <a class="btn btn-{style} btn-sm" href="{href}" rel="noopener">{cta} <i class="fa-solid fa-arrow-right"></i></a>
-          </article>""".format(
-        best=" best" if p[0] == "best" else "", name=p[1], price=p[2], scope=p[3], cta=p[4],
-        badge='<span class="plan-badge">%s</span>' % t["best_value"] if p[0] == "best" else "",
-        # кнопка одинаковая у всех четырёх: у «Компании» она была белой, а
-        # владелец просил «как в первых трёх»
-        style="ghost", href=t["cta_href"])
-        for p in t["plans"])
+    # FR-SITE102: вместо четырёх карточек разовых пакетов — ползунок «сколько сотрудников», одна цена
+    # под число, период и валюта; главная кнопка — бесплатный процесс
+    calc_html = calc(t)
 
     # Разделитель ставится ТОЛЬКО между зачёркнутыми ценами: строка
     # переносилась по ширине колонки, и точка повисала в конце первой строки
@@ -534,8 +605,7 @@ def page(t, lang):
     <div class="wrap center">
       <p class="eyebrow">{pr_eyebrow}</p>
       <h2 class="one-line">{pr_head}</h2>
-      <p class="lead">{pr_sub}</p>
-      <div class="plans">{plans}</div>
+      <p class="lead">{pr_sub}</p>{calc}
       <p class="compare">{compare}</p>
     </div>
   </section>
@@ -587,7 +657,7 @@ def page(t, lang):
         d_eyebrow=t["d_eyebrow"], d_head=t["d_head"], d_sub=t["d_sub"], outs=outs,
         steps=steps,
         l_eyebrow=t["l_eyebrow"], l_head=t["l_head"], l_sub=t["l_sub"], l_note=t["l_note"], roles=roles,
-        pr_eyebrow=t["pr_eyebrow"], pr_head=t["pr_head"], pr_sub=t["pr_sub"], plans=plans, compare=compare,
+        pr_eyebrow=t["pr_eyebrow"], pr_head=t["pr_head"], pr_sub=t["pr_sub"], calc=calc_html, compare=compare,
         coins="".join('<i class="fa-solid fa-coins" style="--d:%.2fs"></i>' % (k * 0.8) for k in range(3)),
         f_1=t["f_1"], f_3=t["f_3"], f_cta=t["f_cta"],
         company=t["company"], legal0=t["legal"][0], legal1=t["legal"][1],

@@ -16,6 +16,10 @@ FR-SITE98 — телефон: заголовки и анимации по цен
 FR-SITE99 — подвал: иконки почти под меню, «ANDRE AI» с формой — по центру.
 FR-SITE100 — составные слова с «ИИ-» — обычный дефис и запрет переноса, без
             неразрывного дефиса U+2011 (его нет в JetBrains Mono).
+FR-SITE101 — цены: ползунок «сколько сотрудников» сам выбирает тариф, месяц / год,
+            $ / ₽, бесплатный процесс — главная кнопка, у 250+ «от …» и «Связаться»;
+            пакеты прежние. В браузере (1440×900 и 390×844, RU и EN, переключатели,
+            прокрутка, ошибки консоли, высота кнопок) это проверяет tools/pricing_check.py.
 """
 import os
 import re
@@ -209,11 +213,173 @@ def test_case_cards_are_the_same_size_and_two_lines_at_most():
 
 def test_custom_price_does_not_grow_the_cards():
     """«Почему когда Custom выбираю, увеличиваются блоки»: колонки не растут от
-    содержимого, а у «Индивидуально / Custom» строка той же высоты, что у цифры."""
+    содержимого. С FR-SITE101 «Индивидуально / Custom» нет — у 250+ цена «от …»,
+    а самая длинная строка — рубли за год: строка цены не переносится, цифры
+    ужимает скрипт по ширине карточки, высота строки остаётся прежней."""
     html = _html()
     assert ".tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));" in html
-    assert "#pricing .t-pr .num { font-size: 54px; } #pricing .t-pr .num.txt { font-size: 32px; line-height: 54px; }" in html
-    assert ".t-pr .num.txt { font-size: 26px; line-height: 40px; }" in html
+    assert "grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr);" in html, \
+        "колонка карточки не шире самой карточки"
+    assert ".t-pr .pr-row { display: flex; align-items: flex-start; flex-wrap: nowrap; white-space: nowrap; }" in html
+    assert ".t-inc { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr);" in html
+    assert "function fitPrices()" in html and "r.style.minHeight = getComputedStyle(n).fontSize; shrink(r, n, 0.55);" in html
+    assert "num.txt" not in html, "строки «Индивидуально / Custom» больше нет"
+
+
+# ── FR-SITE101: цены — ползунок «сколько сотрудников», месяц / год, $ / ₽ ──
+
+# сетка владельца 24.11: $ в месяц, $ за год, ₽ в месяц, ₽ за год; год = 10 месяцев
+OWNER_GRID = {"solo": (29, 290, 2900, 29000), "micro": (100, 1000, 9900, 99000),
+              "small": (500, 5000, 49900, 499000), "medium": (1000, 10000, 99900, 999000),
+              "large": (2500, 25000, 249000, 2490000)}
+
+
+def _pricing():
+    html = _html()
+    return html[html.index('<section class="slide" id="pricing"'):html.index('<section class="slide" id="faq"')]
+
+
+def test_pricing_slider_picks_the_plan_by_headcount():
+    """FR-SITE101. Владелец 24.11: «не карточки тарифов, а ползунок „сколько
+    сотрудников“ (1 … 1000+): по выбранному числу сам определяется тариф (1 — Соло,
+    2–9 — Микро, 10–49 — Малый, 50–249 — Средний, 250+ — Крупный)». Деления —
+    те же, что на лендинге ИИ-стратегии (tools/build_strategy.py, FR-SITE102)."""
+    from tools import build_strategy as B
+    html, sec = _html(), _pricing()
+    assert '<input class="rng" id="emp-n" type="range" min="0" max="38" step="1" value="4">' in sec
+    assert 'data-size=' not in html and "1–10</button>" not in html and "10–100" not in html, \
+        "прежних размеров 1–10 / 10–100 / 100–250 нет"
+    emp = [int(x) for x in re.search(r"var EMP = \[([^\]]+)\];", html).group(1).split(",")]
+    assert emp == B.EMP_STOPS and emp[0] == 1 and emp[-1] == 1000 and len(emp) == 39
+    assert emp[4] == 5, "ползунок стоит на 5 сотрудниках — «Микро»"
+    for lo in (1, 2, 10, 50, 250):
+        assert lo in emp, "нижняя граница тарифа — деление ползунка: %d" % lo
+    assert ("function tariffOf(n) { return n <= 1 ? 'solo' : n <= 9 ? 'micro' : n <= 49 ? 'small' : "
+            "n <= 249 ? 'medium' : 'large'; }") in html
+    assert "$('#emp-n').addEventListener('input', function (e) { state.emp = +e.target.value; renderCalc(); });" in html
+    # рядом с ползунком — число и тариф, экранному диктору — словами
+    assert "$('#emp-v').innerHTML = '<b>' + n + (n >= 1000 ? '+' : '') + '</b> · ' + P.name[k];" in html
+    assert "rg.setAttribute('aria-valuetext', P.emp(n, n >= 1000) + ', ' + tl);" in html
+    for word in ("name: { solo: 'Соло', micro: 'Микро', small: 'Малый', medium: 'Средний', large: 'Крупный' }",
+                 "name: { solo: 'Solo', micro: 'Micro', small: 'Small', medium: 'Medium', large: 'Large' }"):
+        assert word in html, word
+
+
+def test_pricing_grid_is_the_owners_and_matches_the_ai_strategy_page():
+    """FR-SITE101/102: цены — сетка владельца 24.11 (год = 10 месяцев, 2 в подарок);
+    главная и лендинг ИИ-стратегии считают по одной сетке."""
+    from tools import build_strategy as B
+    html = _html()
+    grid = dict((k, tuple(int(x) for x in v)) for k, *v in re.findall(
+        r"(\w+): \{ usd: \[(\d+), (\d+)\], rub: \[(\d+), (\d+)\] \}", html))
+    assert grid == OWNER_GRID, grid
+    assert dict((r[0], r[2:]) for r in B.TARIFFS) == OWNER_GRID, "лендинг ИИ-стратегии — та же сетка"
+    for k, (um, uy, rm, ry) in OWNER_GRID.items():
+        assert uy == 10 * um and ry == 10 * rm, k + ": год = 10 месяцев"
+
+
+def test_pricing_switches_month_year_and_currency():
+    """FR-SITE101: рядом с ползунком — «Месяц / Год — 2 месяца в подарок» и валюта
+    $ / ₽; переключение меняет все цены; русская версия по умолчанию в рублях,
+    английская — в долларах."""
+    html, sec = _html(), _pricing()
+    assert ('<button type="button" data-period="month" aria-pressed="true" data-i18n="s8.month">Месяц</button>'
+            '<button type="button" data-period="year" aria-pressed="false" data-i18n="s8.year">Год <em>— 2 месяца в подарок</em></button>') in sec
+    assert "'s8.month': 'Month', 's8.year': 'Year <em>— 2 months free</em>'" in html
+    assert ('<button type="button" data-cur="usd" aria-pressed="false">$</button>'
+            '<button type="button" data-cur="rub" aria-pressed="true">₽</button>') in sec
+    assert "function curOf() { return state.cur || (state.lang === 'en' ? 'usd' : 'rub'); }" in html
+    assert "emp: 4, period: 'month', cur: null," in html, "по умолчанию — месяц, валюта по языку"
+    assert "T = TARIFF[k][cur][y], M = MENTOR[cur]" in html, "цена — по тарифу, периоду и валюте"
+    assert "$('#period').addEventListener('click'" in html and "$('#cur').addEventListener('click'" in html
+    assert "function money(n, cur) { return cur === 'rub' ? digits(n) + '\\u00a0₽' : '$' + digits(n); }" in html, \
+        "рубль — после числа, доллар — перед"
+    assert "period: 'Оплата: помесячно или за год', cur: 'Валюта'" in html
+    assert "period: 'Billing: monthly or yearly', cur: 'Currency'" in html
+
+
+def test_free_process_is_the_main_button():
+    """FR-SITE101: «бесплатный процесс — главная кнопка»: белая кнопка `.btn` в
+    продукт (тот же адрес, что у «Построить ИИ-стратегию», русская — с ?lang=ru).
+    На компьютере она под пакетами, на телефоне — сразу под заголовком: кружок
+    с роликом внизу справа её не закрывает."""
+    html, sec = _html(), _pricing()
+    links = re.findall(r'<a class="btn pr-go( pr-go-m)?" href="([^"]+)" data-href-en="([^"]+)" data-href-ru="([^"]+)">'
+                       r'<span data-i18n="s8.free">Начать бесплатно — 1 процесс</span>', sec)
+    assert len(links) == 2 and {l[0] for l in links} == {"", " pr-go-m"}, links
+    for _m, href, en, ru in links:
+        assert (href, en, ru) == ("https://strategy.andre.technology/?lang=ru", "https://strategy.andre.technology/",
+                                  "https://strategy.andre.technology/?lang=ru")
+    assert "'s8.free': 'Start free — 1 process'" in html
+    assert ".pr-go-m { display: none; }" in html
+    assert ".pr-go-m { display: flex; width: 100%; min-height: 48px; margin-top: 0.9rem; }" in html
+    assert ".pr-free .pr-go { display: none; }" in html
+
+
+def test_large_plan_shows_from_and_contact():
+    """FR-SITE101: у 250+ цена «от …», а кнопки пакетов — «Связаться» (та же заявка,
+    что и раньше у пакетов, — канал сайта FormSubmit на admin@andre.technology)."""
+    html = _html()
+    assert "from: 'от', contact: 'Связаться'" in html and "from: 'from', contact: 'Contact us'" in html
+    assert "(big ? '<span class=\"from\">' + P.from + '</span>' : '')" in html
+    assert "go.innerHTML = big ? P.contact : t(go.getAttribute('data-i18n'));" in html
+    assert "openLead('Pricing: ' + n + (n >= 1000 ? '+' : '') + ' (' + tariffOf(n) + ') / ' + state.period + ' / ' + curOf() + ' / ' + state.pkg, 'quote');" in html
+
+
+def test_process_pool_note_replaces_per_employee_limits():
+    """FR-SITE101, владелец 24.11: «убери тексты „при оплате помесячно запас
+    открывается частями“ и „10 процессов на сотрудника сразу + 1 каждый месяц“ —
+    запас процессов общий на компанию, кому сколько раздаёт админ»."""
+    html, sec = _html(), _pricing()
+    assert ('<p class="pr-lim" data-i18n="s8.lim">Первый процесс — бесплатно. Запас процессов — общий на компанию, '
+            'админ раздаёт кому сколько</p>') in sec
+    assert ("'s8.lim': 'First process free. One process pool for the whole company — the admin decides who gets how many'"
+            in html)
+    for gone in ("на сотрудника", "на подключённого", "открывается частями", "копятся до", "per employee",
+                 "opens in parts", "carry over"):
+        assert gone not in html, gone
+
+
+def test_packages_stay_as_they_were():
+    """FR-SITE101: пакеты «стратегия / инструменты / ментор» не трогаем — те же три
+    карточки, состав, «Рекомендуем» и обучение $2 900 в месяц; от тарифа берётся
+    только цена: стратегия — по тарифу, Нейроний — подписка на ту же сумму."""
+    html, sec = _html(), _pricing()
+    assert re.findall(r'<article class="tier( hot)?" data-pkg="(\w+)"', sec) == [("", "strategy"), ("", "tools"), (" hot", "mentor")]
+    assert '<em class="t-badge" data-i18n="rec">Рекомендуем</em>' in sec
+    for key, name in (("p1", "ИИ-стратегия"), ("p2", "ИИ-платформа"), ("p3", "ИИ-трансформация")):
+        assert '<p class="t-name" data-i18n="%s">%s</p>' % (key, name) in sec
+    assert [sec.count('data-c="%s"' % c) for c in "aspt"] == [3, 3, 2, 1], "состав пакетов прежний"
+    assert sec.count('<span data-i18n="s8.c.') == 3
+    assert "var MENTOR = { usd: 2900, rub: 289000 };" in html
+    assert "if (key === 'strategy') v = row(T, per)" in html and "else if (key === 'tools') v = row(2 * T, per)" in html
+    assert "else v = row(M + 2 * T, per)" in html
+
+
+def test_pricing_slide_never_scrolls_inside():
+    """FR-SITE95: внутри слайдов прокрутки нет. Новые строки цен выше прежних —
+    на коротком окне (телефон 375×667, планшет, очень широкое окно) содержимое
+    ужимается целиком, как экраны лендинга ИИ-стратегии (fitScreen)."""
+    html = _html()
+    assert "function fitPricing()" in html
+    assert "inn.style.zoom = (z * room / now * 0.995).toFixed(4);" in html
+    assert "buildRoad(); fitPricing(); });" in html, "после загрузки шрифта"
+    assert "placeLang(); fitPricing(); if (ORDER[state.i] === 'pricing')" in html, "при смене размера окна"
+    # телефон: переключатели и кнопки под палец
+    assert ".pr-sw .sizes button { min-height: 44px; } #cur button { min-width: 44px; }" in html
+    assert ".tier .t-go { min-height: 44px; }" in html
+    assert ".rng { flex: 1 1 auto; min-width: 0; height: 44px;" in html
+
+
+def test_faq_prices_follow_the_plans():
+    """FR-SITE101: ответы FAQ о цене — по новой сетке, без разовой стратегии и
+    прежних размеров «10–100» / «250+ — индивидуально»."""
+    html = _html()
+    for gone in ("Разово:", "разовая стратегия", "one-time", "$3 400", "$3,400", "10–100", "индивидуально", "custom for 250+"):
+        assert gone not in html, gone
+    assert "от 2 900 ₽ в месяц за одного до 99 900 ₽ за 50–249 человек, для 250+ — от 249 000 ₽" in html
+    assert "from $29/month for one person to $1,000 for 50–249 people, from $2,500 for 250+" in html
+    assert '<p data-i18n="fa.o6">Подписка от 2 900 ₽ в месяц' in html and "'fa.o6': 'A subscription from $29/month" in html
 
 
 def test_footer_antropolis_mark_is_centred_over_the_socials():

@@ -566,10 +566,28 @@
   /* ===== 8. пакеты ===== */
   .pr-h { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 2rem; margin-bottom: clamp(1.4rem, 3.6cqh, 2.4rem); }
   .sizes { display: flex; align-items: center; align-self: flex-end; gap: 0.2rem; padding: 0.3rem; border: 1px solid var(--line2); border-radius: 999px; }
-  .sizes .sz-l { padding: 0 0.55rem 0 0.75rem; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tx3); }
+  .sz-l { padding: 0 0.55rem 0 0.75rem; font-family: var(--fm); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tx3); }
   .sizes button { background: none; border: 0; border-radius: 999px; padding: 0.55rem 0.85rem; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--tx3); transition: color 0.25s, background 0.25s; }
   .sizes button:hover { color: #fff; }
   .sizes button[aria-pressed="true"] { color: #fff; background: rgba(255,255,255,0.1); }
+  /* FR-SITE101: справа от заголовка — ползунок «сколько сотрудников» (тариф выбирается сам: число и тариф рядом с ним), под ним — период
+     оплаты и валюта; «2 месяца в подарок» оранжевым, как бейдж «Рекомендуем» */
+  .pr-ctl { display: flex; flex-direction: column; align-self: flex-end; gap: 0.5rem; width: min(100%, 28rem); }
+  .emp { display: flex; align-items: center; gap: 0.6rem; padding: 0 1.1rem 0 0.3rem; border: 1px solid var(--line2); border-radius: 999px; }
+  .emp .sz-l { flex: 0 0 auto; white-space: nowrap; }
+  .emp-v { flex: 0 0 auto; min-width: 8.2em; text-align: right; font-family: var(--fm); font-size: 12px; color: var(--tx3); white-space: nowrap; }
+  .emp-v b { color: #fff; font-weight: 700; }
+  .pr-sw { display: flex; justify-content: flex-end; gap: 0.5rem; }
+  .pr-sw .sizes { align-self: auto; }
+  #period em { font-style: normal; color: var(--o2); }
+  /* ползунок: тонкая дорожка с заливкой до бегунка (--fill ставит скрипт), белый бегунок; поле высотой 44 px — под палец */
+  .rng { flex: 1 1 auto; min-width: 0; height: 44px; margin: 0; padding: 0; background: none; -webkit-appearance: none; appearance: none; cursor: pointer; --fill: 10%; }
+  .rng::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(90deg, #8854F3, #F97316) 0 0 / var(--fill) 100% no-repeat, rgba(255,255,255,0.16); }
+  .rng::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; margin-top: -7px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px rgba(136,84,243,0.32); transition: box-shadow 0.2s; }
+  .rng::-moz-range-track { height: 4px; border-radius: 4px; background: rgba(255,255,255,0.16); }
+  .rng::-moz-range-progress { height: 4px; border-radius: 4px; background: linear-gradient(90deg, #8854F3, #F97316); }
+  .rng::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px rgba(136,84,243,0.32); }
+  .rng:focus-visible { outline: none; } .rng:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 6px rgba(136,84,243,0.7); } .rng:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 6px rgba(136,84,243,0.7); }
   .tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(0.8rem, 1.4cqw, 1.2rem); align-items: stretch; }
   .tier { position: relative; display: flex; flex-direction: column; gap: 0.8rem; padding: clamp(1.1rem, 2.6cqh, 1.7rem) clamp(1.1rem, 1.8cqw, 1.6rem); border-radius: 26px;
     background: linear-gradient(170deg, rgba(255,255,255,0.045), rgba(255,255,255,0.01)); border: 1px solid var(--line);
@@ -581,26 +599,30 @@
   @container stage (min-width:1024px) or ((min-width:768px) and (orientation: portrait)) {
     @supports (grid-template-rows: subgrid) {
       .tiers { grid-template-rows: repeat(4, auto); row-gap: 0; }
-      .tier { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 0.8rem; }
+      /* колонка карточки не шире самой карточки: длинная цена ужимается скриптом, а не раздвигает содержимое за край (FR-SITE101) */
+      .tier { display: grid; grid-row: span 4; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); row-gap: 0.8rem; }
       .tier .t-pr { margin-top: 0; } .tier .t-act { align-self: end; }
     }
   }
   .tier > p { min-height: 3em; }
+  .tier > * { min-width: 0; }
   .t-top { display: flex; align-items: center; gap: 0.8rem; }
   .t-ic { width: 2.4rem; height: 2.4rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--p2); background: rgba(136,84,243,0.12); }
   .hot .t-ic { color: #fff; background: #8854F3; }
   .t-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; white-space: nowrap; background: #0d0b12; font-style: normal; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--o2); padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid rgba(249,115,22,0.55); white-space: nowrap; }
   .t-name { margin: 0; font-family: var(--fm); font-size: 13px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #c4a6ff; }
   .t-pr { margin: 0; color: #fff; }
-  .t-pr .pr-row { display: flex; align-items: flex-start; flex-wrap: wrap; }
+  .t-pr .pr-row { display: flex; align-items: flex-start; flex-wrap: nowrap; white-space: nowrap; }
   .t-pr .cur { font-size: 24px; color: var(--tx3); margin: 0.35rem 0.25rem 0 0; }
   .t-pr .num { font-size: 52px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
-  /* «Индивидуально / Custom»: строка той же высоты, что у цифры, шрифт мельче — карточка не растёт ни вширь, ни ввысь при выборе 250+ */
-  .t-pr .num.txt { font-size: 28px; line-height: 52px; letter-spacing: -0.02em; margin-top: 0; white-space: nowrap; }
+  /* FR-SITE101: у 250+ цена «от …» — приставка мелко, как «$»; строка цены не переносится, а пояснение под ней — в одну строку:
+     карточки не растут ни вширь, ни ввысь ни при каком размере команды и периоде (как прежде с «Индивидуально / Custom») */
+  .t-pr .from { font-size: 15px; color: var(--tx3); margin: 0.55rem 0.4rem 0 0; }
+  .t-pr .cur.rub { margin: 0.35rem 0 0 0.3rem; } /* рубль — после числа */
   .t-pr .per { align-self: flex-end; font-size: 15px; color: var(--tx3); margin: 0 0 0.3rem 0.5rem; }
   @container stage (min-width:1024px) { .t-pr .num { font-size: 60px; } }
-  .t-pr .t-add { margin: 0.7rem 0 0; } .t-pr .t-add + .t-add { margin-top: 0.25rem; } .t-pr .t-add { font-size: 13px; color: var(--tx3); } .t-pr .t-add b { color: #fff; font-weight: 700; }
-  .t-inc { list-style: none; margin: 0; padding: 0; display: grid; align-content: center; gap: 0.2rem; flex: 1 1 auto; }
+  .t-pr .t-add { margin: 0.7rem 0 0; } .t-pr .t-add + .t-add { margin-top: 0.25rem; } .t-pr .t-add { font-size: 13px; color: var(--tx3); white-space: nowrap; } .t-pr .t-add b { color: #fff; font-weight: 700; }
+  .t-inc { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; gap: 0.2rem; flex: 1 1 auto; }
   .t-inc button { display: flex; align-items: center; gap: 0.8rem; width: 100%; padding: 0.3rem 0; background: none; border: 0; color: #fff; font: 600 13.5px var(--fm); letter-spacing: 0.01em; text-align: left; cursor: pointer; transition: color 0.2s; }
   .t-inc button i { width: 1.1rem; text-align: center; color: var(--p2); font-size: 13px; }
   .t-pr .th, .t-inc .th { display: inline-block; width: 0.32em; }
@@ -611,7 +633,9 @@
   /* телефон невысокий: цены прижаты к верху, чтобы кружок внизу справа не закрывал строки чека */
   @container stage (max-width:767px) and (max-height:760px) { #pricing .frame > .inner { margin-top: 0; } }
   .t-inc .t-c { margin-left: auto; padding-left: 0.8rem; white-space: nowrap; font-weight: 500; color: rgba(255,255,255,0.42); }
-  @container stage (min-width:1024px) { #pricing .frame > .inner { padding-right: calc(var(--bs) + var(--bm) + 14px - var(--gut)); } #pricing .t-pr .num { font-size: 54px; } #pricing .t-pr .num.txt { font-size: 32px; line-height: 54px; } }
+  /* строка чека не переносится: длинную цену ужимает скрипт (fitPrices), карточка не растёт */
+  .t-inc button > span[data-i18n] { white-space: nowrap; }
+  @container stage (min-width:1024px) { #pricing .frame > .inner { padding-right: calc(var(--bs) + var(--bm) + 14px - var(--gut)); } #pricing .t-pr .num { font-size: 54px; } }
   .t-inc button:hover { color: var(--p2); }
   .t-act { align-self: stretch; display: flex; flex-direction: column; gap: 0.8rem; }
   .tier .t-go { display: flex; align-items: center; justify-content: center; gap: 0.7rem; width: 100%; padding: 1rem 1.2rem; border: 0; border-radius: 16px; background: #f3eef8; color: #0d0b12;
@@ -619,8 +643,13 @@
   @media (hover:hover) { .tier .t-go:hover { background: linear-gradient(100deg, #8854F3 0%, #F97316 50%, #8854F3 100%); background-size: 250% 250%; color: #fff;
       box-shadow: 0 10px 25px -5px rgba(136,84,243,0.45); transform: translateY(-2px); animation: gradientShimmer 4.5s ease infinite; } }
   .t-foot { margin: 0; text-align: center; font-size: 11.5px; color: var(--tx3); }
+  /* FR-SITE101: под пакетами — главная кнопка «Начать бесплатно — 1 процесс», рядом — строка про общий запас процессов */
+  .pr-free { display: flex; align-items: center; gap: 0.7rem 1.8rem; margin-top: clamp(1rem, 2.6cqh, 1.7rem); }
+  .pr-free .btn { flex: 0 0 auto; }
+  .pr-go-m { display: none; } /* копия главной кнопки под заголовком — только на телефоне */
+  .pr-lim { margin: 0; max-width: 44rem; font-size: 12.5px; line-height: 1.55; color: var(--tx3); text-wrap: balance; }
   /* телефон: карточка компактнее, чтобы блок помещался без прокрутки */
-  @container stage (max-width:767px) { .tier { gap: 0.6rem; padding: 1rem 1rem 0.9rem; } .t-pr .num { font-size: 40px; } .t-pr .num.txt { font-size: 26px; line-height: 40px; } .t-pr .cur { font-size: 18px; } .t-pr .t-add { margin-top: 0.35rem; font-size: 11.5px; }
+  @container stage (max-width:767px) { .tier { gap: 0.6rem; padding: 1rem 1rem 0.9rem; } .t-pr .num { font-size: 40px; } .t-pr .cur { font-size: 18px; } .t-pr .from { font-size: 12.5px; margin-top: 0.4rem; } .t-pr .t-add { margin-top: 0.35rem; font-size: 11.5px; }
     .t-inc button { padding: 0.18rem 0; font-size: 12px; } .tier .t-go { padding: 0.75rem 1rem; font-size: 12px; } .t-act { gap: 0.5rem; } .t-foot { font-size: 10.5px; } }
   .hot .btn { border-color: rgba(255,255,255,0.5); }
   /* телефон: пакеты листаются вбок, следующий виден краем */
@@ -635,8 +664,23 @@
     .tiers::-webkit-scrollbar { display: none; }
     .tier { scroll-snap-align: center; }
     .sizes { width: auto; align-self: flex-start; justify-content: flex-start; padding: 0.2rem; gap: 0.1rem; }
-    .sizes .sz-l { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0 0.2rem 0 0.5rem; font-size: 9.5px; letter-spacing: 0.1em; white-space: nowrap; }
+    .sz-l { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0 0.2rem 0 0.5rem; font-size: 9.5px; letter-spacing: 0.1em; white-space: nowrap; }
     .sizes button { padding: 0.4rem 0.6rem; font-size: 10.5px; }
+    /* FR-SITE101: главная кнопка — сразу под заголовком: кружок внизу справа её не закрывает; ползунок во всю ширину (подпись и число —
+       строкой над ним), период и валюта — по центру под ним; переключатели и кнопки слайда — не ниже 44 px под палец */
+    #pricing .frame > .inner { margin-top: 0; }
+    .pr-h { margin-bottom: 0.9rem; }
+    .pr-go-m { display: flex; width: 100%; min-height: 48px; margin-top: 0.9rem; }
+    .pr-h .pr-ctl { align-self: center; width: 100%; gap: 0.45rem; }
+    .emp { flex-wrap: wrap; justify-content: space-between; gap: 0 0.5rem; padding: 0.5rem 1rem 0; border-radius: 22px; }
+    .emp .sz-l { padding: 0; } .emp-v { min-width: 0; font-size: 11.5px; } .emp .rng { order: 1; flex: 1 1 100%; }
+    .pr-sw { justify-content: center; } .pr-h .pr-sw .sizes { margin: 0; }
+    .pr-sw .sizes button { min-height: 44px; } #cur button { min-width: 44px; }
+    .tier .t-go { min-height: 44px; }
+    /* строка про запас процессов — слева от кружка, под пакетами */
+    .pr-free { margin-top: 0.75rem; }
+    .pr-free .pr-go { display: none; }
+    .pr-lim { max-width: calc(100% - var(--bs) - var(--bm)); font-size: 11px; line-height: 1.5; }
   }
 
   /* ===== 9. вопросы ===== */
@@ -983,17 +1027,29 @@
     </div></div>
   </section>
 
-  <!-- 8. Пакеты: размер компании сверху, три пакета рядом -->
+  <!-- 8. Пакеты: сверху ползунок «сколько сотрудников» (тариф выбирается сам), период и валюта; три пакета рядом; под ними — бесплатный процесс (FR-SITE101) -->
   <section class="slide" id="pricing" data-head="bubble">
     <div class="frame"><div class="inner">
       <div class="pr-h st">
         <div>
           <p class="kicker"><span data-i18n="s8.k">Цены</span></p>
           <h2 class="h2" data-i18n="s8.h"><span class="l">Выберите свой <span class="go">путь</span></span><span class="l">к <span class="pv nw">ИИ-трансформации</span></span></h2>
+          <a class="btn pr-go pr-go-m" href="https://strategy.andre.technology/?lang=ru" data-href-en="https://strategy.andre.technology/" data-href-ru="https://strategy.andre.technology/?lang=ru"><span data-i18n="s8.free">Начать бесплатно — 1 процесс</span><i class="fa-solid fa-arrow-right"></i></a>
         </div>
-        <div class="sizes" id="sizes" role="group" aria-label="Размер компании" data-i18n-aria="size">
-          <span class="sz-l"><i class="fa-solid fa-arrows-left-right"></i> <span data-i18n="s8.step1">Сотрудников</span></span>
-          <button type="button" data-size="micro">1–10</button><button type="button" data-size="small">10–100</button><button type="button" data-size="medium">100–250</button><button type="button" data-size="large">250+</button>
+        <div class="pr-ctl">
+          <div class="emp">
+            <label class="sz-l" for="emp-n"><i class="fa-solid fa-arrows-left-right"></i> <span data-i18n="s8.step1">Сотрудников</span></label>
+            <input class="rng" id="emp-n" type="range" min="0" max="38" step="1" value="4">
+            <output class="emp-v" id="emp-v" for="emp-n"><b>5</b> · Микро</output>
+          </div>
+          <div class="pr-sw">
+            <div class="sizes" id="period" role="group" aria-label="Оплата: помесячно или за год" data-i18n-aria="period">
+              <button type="button" data-period="month" aria-pressed="true" data-i18n="s8.month">Месяц</button><button type="button" data-period="year" aria-pressed="false" data-i18n="s8.year">Год <em>— 2 месяца в подарок</em></button>
+            </div>
+            <div class="sizes" id="cur" role="group" aria-label="Валюта" data-i18n-aria="cur">
+              <button type="button" data-cur="usd" aria-pressed="false">$</button><button type="button" data-cur="rub" aria-pressed="true">₽</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="tiers st d1" id="pkgs">
@@ -1015,6 +1071,12 @@
             <ul class="t-inc"><li><button type="button" data-go="maturity"><i class="fa-solid fa-gauge-high"></i><span data-i18n="sv.a">ИИ-диагностика</span><span class="t-c" data-c="a"></span></button></li><li><button type="button" data-go="strategy"><i class="fa-solid fa-chess-knight"></i><span data-i18n="sv.s">ИИ-стратегия</span><span class="t-c" data-c="s"></span></button></li><li><button type="button" data-go="neuronium"><i class="fa-solid fa-microchip"></i><span data-i18n="sv.p">ИИ-платформа</span><span class="t-c" data-c="p"></span></button></li><li><button type="button" data-go="training"><i class="fa-solid fa-user-graduate"></i><span data-i18n="sv.t">ИИ-обучение</span><span class="t-c" data-c="t"></span></button></li></ul>
             <div class="t-act"><button class="t-go" type="button" data-pick="mentor"><span data-i18n="s8.c.mentor">Начать ИИ-трансформацию</span><i class="fa-solid fa-arrow-right"></i></button></div>
           </article>
+      </div>
+      <!-- FR-SITE101: бесплатный процесс — главная кнопка слайда (в продукт, как «Построить ИИ-стратегию»): на компьютере — здесь, на телефоне — под
+           заголовком (.pr-go-m); рядом — одна строка про запас процессов -->
+      <div class="pr-free st d2">
+        <a class="btn pr-go" href="https://strategy.andre.technology/?lang=ru" data-href-en="https://strategy.andre.technology/" data-href-ru="https://strategy.andre.technology/?lang=ru"><span data-i18n="s8.free">Начать бесплатно — 1 процесс</span><i class="fa-solid fa-arrow-right"></i></a>
+        <p class="pr-lim" data-i18n="s8.lim">Первый процесс — бесплатно. Запас процессов — общий на компанию, админ раздаёт кому сколько</p>
       </div>
     </div></div>
   </section>
@@ -1052,7 +1114,7 @@
           <details><summary><span data-i18n="fq.s1">Что входит в ИИ-стратегию?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.s1">Процессы «как есть» и «как будет»: где работают ИИ-агенты, где решают люди, новые роли и дорожная карта.</p></details>
           <details><summary><span data-i18n="fq.s2">Как она строится?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.s2">Онлайн: вы рассказываете о процессах, ИИ-консультант рисует схемы, я проверяю и дорабатываю.</p></details>
           <details><summary><span data-i18n="fq.s3">Сколько времени это занимает?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.s3">От нескольких дней до двух недель — зависит от числа процессов.</p></details>
-          <details><summary><span data-i18n="fq.s5">Сколько стоит стратегия?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.s5">Разово: от $100 до $1 000 в зависимости от размера команды; для 250+ — индивидуально.</p></details>
+          <details><summary><span data-i18n="fq.s5">Сколько стоит стратегия?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.s5">Подписка по тарифу — по числу сотрудников: от 2 900 ₽ в месяц за одного до 99 900 ₽ за 50–249 человек, для 250+ — от 249 000 ₽. За год — как за 10 месяцев. Первый процесс — бесплатно.</p></details>
           <details><summary><span data-i18n="fq.s6">Можно ли внедрить её самим?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.s6">Да, стратегия — готовый план. С платформой и обучением команды внедрение идёт быстрее.</p></details>
         </div>
         <div class="qa" id="faq-o" role="tabpanel" aria-labelledby="tab-o" data-panel="o" hidden>
@@ -1060,13 +1122,13 @@
           <details><summary><span data-i18n="fq.o3">Что такое навыки?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.o3">Отработанные workflow сохраняются как навыки — их переиспользуют агенты и люди на рабочих местах.</p></details>
           <details><summary><span data-i18n="fq.o4">Как агенты используют знания компании?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.o4">Подключаются к базе знаний — документам, регламентам и данным — и опираются на неё в каждом решении.</p></details>
           <details><summary><span data-i18n="fq.o5">Нужна ли своя IT-команда?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.o5">Нет: платформа готова, процессы настраиваются по вашей стратегии.</p></details>
-          <details><summary><span data-i18n="fq.o6">Сколько стоит платформа?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.o6">Подписка от $100 в месяц в зависимости от размера команды, плюс разовая стратегия.</p></details>
+          <details><summary><span data-i18n="fq.o6">Сколько стоит платформа?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.o6">Подписка от 2 900 ₽ в месяц в зависимости от размера команды, плюс стратегия по тарифу.</p></details>
         </div>
         <div class="qa" id="faq-t" role="tabpanel" aria-labelledby="tab-t" data-panel="t" hidden>
           <details><summary><span data-i18n="fq.t1">Чему научится команда?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.t1">Работать вместе с ИИ-агентами: ставить задачи, проверять результат и управлять процессами.</p></details>
           <details><summary><span data-i18n="fq.t2">Как проходит обучение?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.t2">Три месяца с консультантом: практика на ваших процессах в Нейронии, а не теория.</p></details>
           <details><summary><span data-i18n="fq.t3">Что будет через три месяца?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.t3">Компания работает в режиме AI-First: агенты ведут процессы, люди управляют и развивают их.</p></details>
-          <details><summary><span data-i18n="fq.t4">Сколько стоит обучение?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.t4">Обучение — $2 900 в месяц. В тарифе «ИИ-трансформация» к нему добавляются платформа и разовая стратегия: для 10–100 человек — $3 400 в месяц и $500 разово.</p></details>
+          <details><summary><span data-i18n="fq.t4">Сколько стоит обучение?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.t4">Обучение — $2 900 в месяц. В пакете «ИИ-трансформация» к нему добавляются платформа и стратегия по тарифу команды — цену под ваше число сотрудников показывает калькулятор в «Ценах».</p></details>
           <details><summary><span data-i18n="fq.t5">Можно ли учиться самостоятельно?</span><i class="fa-solid fa-plus"></i></summary><p data-i18n="fa.t5">Да: в Академии есть бесплатные материалы, а с консультантом — быстрее.</p></details>
         </div>
       </div>
@@ -1176,17 +1238,30 @@
     en: [[0.69,"Hi, I'm Andre AI"],[2.11,"also known as Dataist"],[3.93,"I help companies adapt"],[5.31,"to the new AI economy"],[7.53,"and scale without growing headcount"],[9.71,"I start by assessing"],[10.89,"where your business is today"],[12.93,"then build a clear"],[14.11,"AI transformation strategy"],[15.45,"and redesign how your company operates"],[18.05,"with AI employees working"],[20.01,"alongside your team"],[21.71,"Beyond business"],[22.91,"I'm building a personal AI assistant"],[24.81,"for a more mindful life"],[26.85,"And I teach people how to build"],[28.07,"AI agents, AI products"],[30.69,"and even AI companies"],[31.89,"on their own, without a team"],[34.27,"Because I believe the new economy"],[36.23,"will be built by people"],[37.17,"who create real value"],[38.83,"and take responsibility"],[39.67,"for what they build"],[41.47,"Through my media"],[42.77,"I share the news, technologies"],[44.41,"and insights shaping what comes next"],[46.95,"Everything I do"],[47.91,"is connected by one mission"],[49.77,"AI for Human Good"],[51.77,"The new AI economy is coming"],[53.97,"Let's build it together"]],
     ru: [[0.49,"Привет, я Андре AI"],[1.65,"также известный как Датаист"],[3.13,"Я помогаю компаниям адаптироваться"],[4.81,"к новой AI-экономике"],[6.15,"и масштабироваться без роста штата"],[8.09,"Сначала я оцениваю"],[9.51,"текущее состояние бизнеса"],[10.79,"затем выстраиваю"],[11.61,"понятную стратегию AI-трансформации"],[13.81,"и перестраиваю работу компании"],[15.49,"так, чтобы AI-сотрудники"],[17.29,"работали вместе с вашей командой"],[19.23,"Помимо бизнеса"],[20.15,"я создаю персонального AI-ассистента"],[22.59,"для более осознанной жизни"],[24.13,"А ещё я учу людей самостоятельно"],[25.87,"создавать AI-агентов, AI-продукты"],[28.53,"и даже AI-компании — без команды"],[30.85,"Я верю, что новую экономику"],[32.59,"будут строить люди"],[33.43,"которые создают реальную ценность"],[35.11,"и берут ответственность"],[36.29,"за то, что они делают"],[37.55,"В своих медиа я рассказываю"],[39.19,"о новостях, технологиях и идеях"],[41.19,"которые формируют наше будущее"],[43.01,"Всё, что я делаю"],[43.99,"объединяет одна миссия"],[45.43,"AI во благо людей"],[46.81,"Новая AI-экономика уже зарождается"],[49.65,"давайте строить её вместе"]]
   };
-  /* Калькулятор. ЦЕНЫ: впишите строки вида 'от 150 000 ₽' / 'from $1,500'; null — «по запросу» */
-  /* Цены: стратегия — разово, Нейроний — подписка в месяц на ту же сумму; «Всё с ментором» — $2 900 в месяц за всё, 3 месяца; 250+ — индивидуально */
-  var BASE = { micro: 100, small: 500, medium: 1000, large: 0 }, MENTOR = 2900, MENTOR_M = 3;
-  function money(n) { return '$' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0'); }
+  /* Калькулятор цен (FR-SITE101, решение владельца 24.11). Ползунок «сколько сотрудников» (1 … 1000+) сам выбирает тариф ИИ-стратегии:
+     1 — Соло, 2–9 — Микро, 10–49 — Малый, 50–249 — Средний, 250+ — Крупный («от …», в карточках — «Связаться»). Цена — помесячно или за год
+     (год = 10 месяцев, 2 в подарок), в $ или ₽ (русская версия по умолчанию в рублях, английская — в долларах; сотрудник — подключённый
+     к компании человек). Пакеты прежние: стратегия — по тарифу, Нейроний — подписка на ту же сумму, обучение — $2 900 в месяц; в рублях
+     обучения в сетке владельца нет — оно пересчитано так же, как ближайший тариф ($2 500 → 249 000 ₽): ×100 и вниз до тысячи */
+  var EMP = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000];
+  var TARIFF = { solo: { usd: [29, 290], rub: [2900, 29000] }, micro: { usd: [100, 1000], rub: [9900, 99000] }, small: { usd: [500, 5000], rub: [49900, 499000] },
+                 medium: { usd: [1000, 10000], rub: [99900, 999000] }, large: { usd: [2500, 25000], rub: [249000, 2490000] } };
+  var MENTOR = { usd: 2900, rub: 289000 };
+  function tariffOf(n) { return n <= 1 ? 'solo' : n <= 9 ? 'micro' : n <= 49 ? 'small' : n <= 249 ? 'medium' : 'large'; }
+  function digits(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0'); }
+  function money(n, cur) { return cur === 'rub' ? digits(n) + '\u00a0₽' : '$' + digits(n); }
   var PRICE_TXT = {
-    ru: { free: 'Бесплатно', ot: 'разово', mos: '/мес', mo: '/ мес', custom: 'Индивидуально', big: 'для 250+ сотрудников', once: 'Один платёж, без подписки', bigf: 'Объём и цена — под вашу компанию', oncef: 'Один платёж, без подписки',
-          add: function (b) { return '+ ' + b + ' разово'; }, first: function (a, b) { return a + ' за первый месяц · ' + b + '/мес дальше'; },
-          incl2: function (t, p) { return 'обучение ' + t + ' + платформа ' + p + ' в месяц'; }, total: function (t) { return '3 месяца · итого ' + t; } },
-    en: { free: 'Free', ot: 'one-time', mos: '/mo', mo: '/ month', custom: 'Custom', big: 'for 250+ people', once: 'One payment, no subscription', bigf: 'Scope and price tailored to you', oncef: 'One payment, no subscription',
-          add: function (b) { return '+ ' + b + ' one-time'; }, first: function (a, b) { return a + ' for the first month · ' + b + '/month after'; },
-          incl2: function (t, p) { return 'training ' + t + ' + platform ' + p + ' a month'; }, total: function (t) { return '3 months · ' + t + ' total'; } }
+    ru: { free: 'Бесплатно', per: { month: '/ мес', year: '/ год' }, pers: { month: '/мес', year: '/год' }, from: 'от', contact: 'Связаться',
+          name: { solo: 'Соло', micro: 'Микро', small: 'Малый', medium: 'Средний', large: 'Крупный' },
+          seg: { solo: '1 человек', micro: '2–9 сотрудников', small: '10–49 сотрудников', medium: '50–249 сотрудников', large: '250+ сотрудников' },
+          plan: function (n, s) { return 'Тариф «' + n + '» · ' + s; }, train: function (m) { return '+ ' + m + ' / мес за обучение'; },
+          emp: function (n, more) { var d = n % 10, h = n % 100;
+            return n + (more ? '+' : '') + ' ' + (!more && d === 1 && h !== 11 ? 'сотрудник' : !more && d >= 2 && d <= 4 && (h < 12 || h > 14) ? 'сотрудника' : 'сотрудников'); } },
+    en: { free: 'Free', per: { month: '/ month', year: '/ year' }, pers: { month: '/mo', year: '/yr' }, from: 'from', contact: 'Contact us',
+          name: { solo: 'Solo', micro: 'Micro', small: 'Small', medium: 'Medium', large: 'Large' },
+          seg: { solo: '1 person', micro: '2–9 employees', small: '10–49 employees', medium: '50–249 employees', large: '250+ employees' },
+          plan: function (n, s) { return n + ' plan · ' + s; }, train: function (m) { return '+ ' + m + ' / month for training'; },
+          emp: function (n, more) { return n + (more ? '+' : '') + (n === 1 && !more ? ' employee' : ' employees'); } }
   };
   var DIMS = { ru: ['Стратегия', 'Люди', 'Инфраструктура', 'Данные', 'Модели', 'Внедрение', 'R&D'], en: ['Strategy', 'People', 'Infrastructure', 'Data', 'Models', 'Deployment', 'R&D'] };
   var SHAPES = [[1, 1, 0.6, 1, 0.6, 0.8, 0.5], [2, 2, 1.2, 2, 1.2, 1.8, 1], [3, 3, 3.6, 3, 2.8, 3, 2], [4, 4, 4.4, 3.8, 3.8, 4.4, 3.2], [5, 4.8, 5, 4.8, 4.7, 5, 4.6]];
@@ -1212,6 +1287,8 @@
     'c4a': 'Finance', 'c4': 'AI agent reconciles payments', 'c5': 'AI agent onboards newcomers', 'c6a': 'Operations', 'c6': 'AI agent watches the stock',
     'c7a': 'Legal', 'c7': 'AI agent reviews contracts', 'c8a': 'Analytics', 'c8': 'AI agent builds the reports', 'c9a': 'Logistics', 'c9': 'AI agent plans deliveries',
     's8.k': 'Pricing', 's8.h': '<span class="l">Choose your <span class="go">path</span> to</span><span class="l"><span class="pv">AI transformation</span></span>', 's8.step1': 'Team size',
+    's8.month': 'Month', 's8.year': 'Year <em>— 2 months free</em>', 's8.free': 'Start free — 1 process',
+    's8.lim': 'First process free. One process pool for the whole company — the admin decides who gets how many',
     'p1': 'AI Strategy', 'p2': 'AI Platform', 'p3': 'AI Transformation', 'rec': 'Recommended',
     'pd1': 'Processes, roles and a roadmap', 'pd2': 'Strategy plus an AI operating system', 'pd3': 'Team training in AI skills with a mentor',
     'i0': 'AI assessment', 'i1': 'AI strategy', 'i2': 'Neuronium AI platform', 'i3': 'Team training',
@@ -1266,7 +1343,7 @@
     'fq.s3': 'How long does it take?',
     'fa.s3': 'From a few days to two weeks, depending on the number of processes.',
     'fq.s5': 'How much does it cost?',
-    'fa.s5': 'A one-time fee from $100 to $1,000 depending on team size; custom for 250+.',
+    'fa.s5': 'A subscription by plan, based on headcount: from $29/month for one person to $1,000 for 50–249 people, from $2,500 for 250+. A year costs 10 months. Your first process is free.',
     'fq.s6': 'Can we implement it ourselves?',
     'fa.s6': 'Yes, the strategy is a ready plan. With the platform and team training it goes faster.',
     'ft.o': 'Business OS',
@@ -1279,7 +1356,7 @@
     'fq.o5': 'Do I need an IT team?',
     'fa.o5': 'No: the platform is ready, and processes are set up from your strategy.',
     'fq.o6': 'How much is the platform?',
-    'fa.o6': 'A subscription from $100/month depending on team size, plus the one-time strategy.',
+    'fa.o6': 'A subscription from $29/month depending on team size, plus the strategy plan.',
     'ft.t': 'Training',
     'fq.t1': 'What will the team learn?',
     'fa.t1': 'To work alongside AI agents: set tasks, review results and run processes.',
@@ -1288,7 +1365,7 @@
     'fq.t3': 'What happens after three months?',
     'fa.t3': 'Your company runs AI-First: agents run the processes, people manage and improve them.',
     'fq.t4': 'How much is the training?',
-    'fa.t4': 'Training is $2,900/month. The AI Transformation plan adds the platform and the one-time strategy: for 10–100 people it’s $3,400/month plus $500 one-time.',
+    'fa.t4': 'Training is $2,900/month. The AI Transformation package adds the platform and the strategy at your team’s plan — the calculator under Pricing shows the price for your headcount.',
     'fq.t5': 'Can we learn on our own?',
     'fa.t5': 'Yes: the Academy has free materials; with a consultant it’s faster.',
     'f.l1': 'AI Roadmap',
@@ -1349,9 +1426,9 @@
     'ph.name': 'Your name', 'ph.email': 'Your email *', 'lead.err': 'Please enter a valid email.', 'lead.btn': 'Contact me', 'lead.thx': 'Thank you!', 'lead.thxs': 'We’ll contact you soon.'
   };
   var ARIA = {
-    ru: { send: 'Отправить', write: 'Написать Андрею', prev: 'Предыдущий блок', next: 'Следующий блок', size: 'Размер компании', topics: 'Темы', path: 'Путь', road: 'Путь: диагностика, план ИИ-трансформации, ИИ-сотрудники, обучение команды, ИИ-бизнес', sound: 'Звук', sections: 'Разделы', menu: 'Меню', close: 'Закрыть', hero: 'ИИ-трансформация бизнеса', radar: '7 измерений ИИ-зрелости', flow: 'Процесс как есть и как будет',
+    ru: { send: 'Отправить', write: 'Написать Андрею', prev: 'Предыдущий блок', next: 'Следующий блок', period: 'Оплата: помесячно или за год', cur: 'Валюта', topics: 'Темы', path: 'Путь', road: 'Путь: диагностика, план ИИ-трансформации, ИИ-сотрудники, обучение команды, ИИ-бизнес', sound: 'Звук', sections: 'Разделы', menu: 'Меню', close: 'Закрыть', hero: 'ИИ-трансформация бизнеса', radar: '7 измерений ИИ-зрелости', flow: 'Процесс как есть и как будет',
           os: 'ИИ-мозг: запрос бежит по связям и превращается в план, данные, ТЗ, макет, код и релиз', start: 'Начать ИИ-трансформацию', products: 'Продукты' },
-    en: { send: 'Send', write: 'Message Andre', prev: 'Previous block', next: 'Next block', size: 'Company size', topics: 'Topics', path: 'Path', road: 'Path: AI assessment, AI playbook, AI employees, team training, AI business', sound: 'Sound', sections: 'Sections', menu: 'Menu', close: 'Close', hero: 'AI transformation for business', radar: '7 dimensions of AI maturity', flow: 'Process as-is and to-be',
+    en: { send: 'Send', write: 'Message Andre', prev: 'Previous block', next: 'Next block', period: 'Billing: monthly or yearly', cur: 'Currency', topics: 'Topics', path: 'Path', road: 'Path: AI assessment, AI playbook, AI employees, team training, AI business', sound: 'Sound', sections: 'Sections', menu: 'Menu', close: 'Close', hero: 'AI transformation for business', radar: '7 dimensions of AI maturity', flow: 'Process as-is and to-be',
           os: 'AI brain: a request runs along the connections and turns into a plan, data, specs, a mockup, code and a release', start: 'Start your AI transformation', products: 'Products' }
   };
   var LEAD_TXT = {
@@ -1381,7 +1458,7 @@
   }
   function rr(el) { var r = el.getBoundingClientRect(), c = CV(); return { left: (r.left - c.x) / c.k, top: (r.top - c.y) / c.k, width: r.width / c.k, height: r.height / c.k }; }
   var slides = $$('.slide'), ORDER = slides.map(function (s) { return s.id; });
-  var state = { lang: root.lang === 'en' ? 'en' : 'ru', muted: true, i: 0, busy: false, size: 'micro', pkg: 'mentor', lead: 'General', leadOpen: false, leadGen: 0, pos: null, headKind: 'big', side: 'left' };
+  var state = { lang: root.lang === 'en' ? 'en' : 'ru', muted: true, i: 0, busy: false, emp: 4, period: 'month', cur: null, pkg: 'mentor', lead: 'General', leadOpen: false, leadGen: 0, pos: null, headKind: 'big', side: 'left' };
   var RU = null, RU_PH = null;
   function t(k) { return state.lang === 'en' ? (EN[k] != null ? EN[k] : RU[k]) : RU[k]; }
 
@@ -2178,30 +2255,70 @@
     var d = vid.duration; if (d && isFinite(d)) ringBar.style.strokeDashoffset = (307.9 * (1 - ct / d)).toFixed(1);
   }
 
-  /* ---------- калькулятор ---------- */
+  /* ---------- калькулятор (FR-SITE101) ---------- */
+  function curOf() { return state.cur || (state.lang === 'en' ? 'usd' : 'rub'); }
   function renderCalc() {
-    var L = state.lang;
-    $$('#sizes button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-size') === state.size ? 'true' : 'false'); });
+    var L = state.lang, P = PRICE_TXT[L], n = EMP[state.emp], k = tariffOf(n), big = k === 'large', y = state.period === 'year' ? 1 : 0, cur = curOf(),
+        T = TARIFF[k][cur][y], M = MENTOR[cur], per = P.per[state.period], pers = P.pers[state.period], tl = P.plan(P.name[k], P.seg[k]);
+    /* ползунок: заливка до бегунка, рядом — число и тариф; экранному диктору — словами */
+    var rg = $('#emp-n'); rg.value = String(state.emp); rg.style.setProperty('--fill', (state.emp / (EMP.length - 1) * 100).toFixed(2) + '%');
+    rg.setAttribute('aria-valuetext', P.emp(n, n >= 1000) + ', ' + tl);
+    $('#emp-v').innerHTML = '<b>' + n + (n >= 1000 ? '+' : '') + '</b> · ' + P.name[k];
+    $$('#period button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-period') === state.period ? 'true' : 'false'); });
+    $$('#cur button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-cur') === cur ? 'true' : 'false'); });
     /* разряды — узким промежутком (обычный пробел в моноширинном шрифте шириной с цифру) */
     function thin(t) { return String(t).replace(/\u00a0/g, '<span class="th"></span>'); }
-    function num(n) { return thin(money(n).slice(1)); }
-    function row(n, per) { return '<div class="pr-row"><span class="cur">$</span><span class="num">' + num(n) + '</span>' + (per ? '<span class="per">' + per + '</span>' : '') + '</div>'; }
+    function row(v, p) { var d = '<span class="num">' + thin(digits(v)) + '</span>';
+      return '<div class="pr-row">' + (big ? '<span class="from">' + P.from + '</span>' : '') +
+        (cur === 'rub' ? d + '<span class="cur rub">₽</span>' : '<span class="cur">$</span>' + d) + '<span class="per">' + p + '</span></div>'; }
+    function amt(v, p) { return (big ? P.from + ' ' : '') + money(v, cur) + p; }
     $$('#pkgs .tier').forEach(function (c) {
-      var k = c.getAttribute('data-pkg'), b = BASE[state.size], P = PRICE_TXT[L], v, f;
-      if (!b) { v = '<div class="pr-row"><span class="num txt">' + P.custom + '</span></div><p class="t-add">' + P.big + '</p>'; f = P.bigf; }
-      else if (k === 'strategy') { v = row(b, '') + '<p class="t-add">' + P.once + '</p>'; f = P.oncef; }
-      else if (k === 'tools') { v = row(b, P.mo) + '<p class="t-add">' + thin(P.add(money(b))) + '</p>'; f = P.first(money(2 * b), money(b)); }
-      /* ИИ-трансформация = обучение + платформа каждый месяц, стратегия разово */
-      /* цена ИИ-трансформации = обучение + платформа в месяц; стратегия — разово */
-      else { v = row(MENTOR + b, P.mo) + '<p class="t-add">' + thin(P.add(money(b))) + '</p>'; f = P.total(money((MENTOR + b) * MENTOR_M + b)); }
+      var key = c.getAttribute('data-pkg'), v;
+      /* стратегия — тариф; платформа — подписка на ту же сумму; трансформация — ещё и обучение помесячно (при оплате за год — отдельной строкой) */
+      if (key === 'strategy') v = row(T, per) + '<p class="t-add">' + tl + '</p>';
+      else if (key === 'tools') v = row(2 * T, per) + '<p class="t-add">' + tl + '</p>';
+      else if (y) v = row(2 * T, per) + '<p class="t-add">' + thin(P.train(money(M, cur))) + '</p>';
+      else v = row(M + 2 * T, per) + '<p class="t-add">' + tl + '</p>';
       c.querySelector('[data-price]').innerHTML = v;
-      /* чек: у каждой строки своя цена — диагностика бесплатно, стратегия разово, платформа и трансформация помесячно */
-      var CC = { a: P.free, s: b ? money(b) + ' ' + P.ot : '', p: b ? money(b) + P.mos : '', t: b ? money(MENTOR) + P.mos : '' };
+      /* чек: у каждой строки своя цена — диагностика бесплатно, стратегия и платформа по тарифу за период, обучение помесячно */
+      var CC = { a: P.free, s: amt(T, pers), p: amt(T, pers), t: money(M, cur) + P.pers.month };
       $$('[data-c]', c).forEach(function (x) { x.innerHTML = thin(CC[x.getAttribute('data-c')]); });
+      /* 250+: вместо «Начать ИИ-трансформацию» — «Связаться» (та же заявка) */
+      var go = c.querySelector('.t-go [data-i18n]'); go.innerHTML = big ? P.contact : t(go.getAttribute('data-i18n'));
     });
+    fitPricing();
   }
-  $('#sizes').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.size = b.getAttribute('data-size'); renderCalc(); });
-  $('#pkgs').addEventListener('click', function (e) { var b = e.target.closest('[data-pick]'); if (!b) return; state.pkg = b.getAttribute('data-pick'); openLead('Pricing: ' + state.size + ' / ' + state.pkg, 'quote'); });
+  /* длинная цена (рубли за год у 250+) не переносится и не распирает карточку: цифры ужимаются по ширине карточки, высота строки цены прежняя */
+  function shrink(box, el, min) {
+    el.style.fontSize = '';
+    for (var i = 0; i < 3; i++) {
+      var over = box.scrollWidth - box.clientWidth; if (over <= 0) return;
+      var fs = parseFloat(getComputedStyle(el).fontSize), w = box === el ? box.scrollWidth : el.offsetWidth;
+      el.style.fontSize = Math.max(fs * min, fs * (w - over - 1) / w).toFixed(2) + 'px';
+    }
+  }
+  function fitPrices() {
+    $$('#pkgs .pr-row').forEach(function (r) { var n = $('.num', r); n.style.fontSize = ''; r.style.minHeight = getComputedStyle(n).fontSize; shrink(r, n, 0.55); });
+    $$('#pkgs .t-add').forEach(function (a) { shrink(a, a, 0.7); });
+    $$('#pkgs .t-inc button').forEach(function (b) { var c = $('.t-c', b); if (c) shrink(b, c, 0.7); });
+  }
+  /* слайд цен не листается внутри (FR-SITE95): если содержимое выше рамки — короткий телефон, планшет, очень широкое окно, — оно ужимается
+     целиком, как экраны лендинга ИИ-стратегии (fitScreen, FR-SITE41) */
+  function fitPricing() {
+    var fr = $('#pricing .frame'), inn = fr && fr.firstElementChild; if (!inn) return;
+    inn.style.zoom = ''; fitPrices();
+    var cs = getComputedStyle(fr), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    for (var i = 0; i < 3; i++) {
+      var room = fr.clientHeight - pad, now = fr.scrollHeight - pad, z = parseFloat(inn.style.zoom) || 1;
+      if (now <= room + 0.5) return;
+      inn.style.zoom = (z * room / now * 0.995).toFixed(4);
+    }
+  }
+  $('#emp-n').addEventListener('input', function (e) { state.emp = +e.target.value; renderCalc(); });
+  $('#period').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.period = b.getAttribute('data-period'); renderCalc(); });
+  $('#cur').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.cur = b.getAttribute('data-cur'); renderCalc(); });
+  $('#pkgs').addEventListener('click', function (e) { var b = e.target.closest('[data-pick]'); if (!b) return; state.pkg = b.getAttribute('data-pick');
+    var n = EMP[state.emp]; openLead('Pricing: ' + n + (n >= 1000 ? '+' : '') + ' (' + tariffOf(n) + ') / ' + state.period + ' / ' + curOf() + ' / ' + state.pkg, 'quote'); });
 
   /* ---------- заявки и рассылка (FormSubmit, как на текущем сайте) ---------- */
   var LEAD_ENDPOINT = 'https://formsubmit.co/ajax/admin@andre.technology';
@@ -2315,16 +2432,16 @@
   /* ---------- запуск ---------- */
   buildMarquee(); buildRoad(); buildBrain();
   setLang(state.lang, true);
-  placeLang(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { placeLang(); mobLayout(); buildRoad(); });
+  placeLang(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { placeLang(); mobLayout(); buildRoad(); fitPricing(); });
   /* шрифт приходит позже fonts.ready (таблица стилей грузится отложенно) — когда он загрузится, раскладку считаем заново */
-  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', function () { placeLang(); mobLayout(); buildRoad(); });
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', function () { placeLang(); mobLayout(); buildRoad(); fitPricing(); });
   measure(); mobLayout(); buildRoad();
   var start = ORDER.indexOf((location.hash || '').slice(1)); if (start < 0) start = 0;
   state.i = -1; state.headKind = slides[start].getAttribute('data-head');
   go(start, true);
   window.addEventListener('resize', function () {
     if (BR && BR.ph !== (SW() < 768)) { buildBrain(); runBrain(ORDER[state.i] === 'neuronium'); }
-    measure(); cancelAnimationFrame(anim); paint(rectOf(state.headKind)); settle(state.headKind); mobLayout(); buildRoad(); placeLang(); if (ORDER[state.i] === 'pricing') $('#pkgs').scrollLeft = 0;
+    measure(); cancelAnimationFrame(anim); paint(rectOf(state.headKind)); settle(state.headKind); mobLayout(); buildRoad(); placeLang(); fitPricing(); if (ORDER[state.i] === 'pricing') $('#pkgs').scrollLeft = 0;
     if (state.flowVert !== ($('#flow').parentNode.clientWidth < 470)) buildFlow();
   });
   window.addEventListener('orientationchange', function () { setTimeout(function () { measure(); paint(rectOf(state.headKind)); placeAux(); }, 250); });

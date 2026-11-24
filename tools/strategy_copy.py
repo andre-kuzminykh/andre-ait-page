@@ -144,18 +144,30 @@ EN = {
         ("Data Scientist", "fa-flask"), ("ML Engineer", "fa-diagram-project"),
     ],
 
-    # ── 8. Тарифы ──
+    # ── 8. Тарифы (FR-SITE102, решение владельца 24.11): ползунок «сколько сотрудников» сам
+    # выбирает тариф, одна цена под число; месяц / год и $ / ₽; главная кнопка — бесплатный процесс ──
     "pr_eyebrow": "Pricing",
     "pr_head": ('<span class="l">Start <span class="hl-p">free</span></span>'
                 '<span class="l">Scale as you <span class="hl-o">grow</span></span>'),
-    "pr_sub": "One-time purchase. No subscription",
-    "plans": [
-        ("", "Free", "$0", "1 process", "Start"),
-        ("", "Startup", "$59", "60 operations", "Start"),
-        ("", "SMB", "$199", "300 operations", "Start"),
-        ("best", "Company", "$499", "1,000 operations", "Start"),
-    ],
-    "best_value": "Best value",
+    "pr_sub": "First process free. One process pool for the whole company — the admin decides who gets how many",
+    "pr_cur": "usd",
+    "pr_q": "How many employees?",
+    "pr_month": "Month",
+    "pr_year": "Year <em>— 2 months free</em>",
+    "pr_period_aria": "Billing: monthly or yearly",
+    "pr_cur_aria": "Currency",
+    "pr_free": "Start free — 1 process",
+    "pr_contact": "Contact us",
+    "pr_contact_href": "mailto:admin@andre.technology",
+    "pr_calc": {
+        "name": {"solo": "Solo", "micro": "Micro", "small": "Small", "medium": "Medium", "large": "Large"},
+        "seg": {"solo": "1 person", "micro": "2–9 employees", "small": "10–49 employees",
+                "medium": "50–249 employees", "large": "250+ employees"},
+        "per": {"month": "/ mo", "year": "/ yr"},
+        "from": "from",
+        "emp": ["employee", "employees"],
+        "sep": ",",
+    },
     "compare": [("Consulting firm — $100K+", True), ("AI consultant — $10K+", True),
                 ("Build your AI playbook yourself", False)],
 
@@ -291,14 +303,26 @@ RU = {
     "pr_eyebrow": "Тарифы",
     "pr_head": ('<span class="l">Начните <span class="hl-p">бесплатно</span></span>'
                 '<span class="l"><span class="hl-o">Масштабируйтесь</span> дальше</span>'),
-    "pr_sub": "Разовая покупка. Без подписки",
-    "plans": [
-        ("", "Бесплатно", "$0", "1 процесс", "Начать"),
-        ("", "Стартап", "$59", "60 операций", "Начать"),
-        ("", "SMB", "$199", "300 операций", "Начать"),
-        ("best", "Компания", "$499", "1 000 операций", "Начать"),
-    ],
-    "best_value": "Лучшее предложение",
+    "pr_sub": "Первый процесс — бесплатно. Запас процессов — общий на компанию, админ раздаёт кому сколько",
+    # русская версия по умолчанию в рублях (владелец 24.11), переключатель $ / ₽ — рядом
+    "pr_cur": "rub",
+    "pr_q": "Сколько у вас сотрудников?",
+    "pr_month": "Месяц",
+    "pr_year": "Год <em>— 2 месяца в подарок</em>",
+    "pr_period_aria": "Оплата: помесячно или за год",
+    "pr_cur_aria": "Валюта",
+    "pr_free": "Начать бесплатно — 1 процесс",
+    "pr_contact": "Связаться",
+    "pr_contact_href": "mailto:admin@andre.technology",
+    "pr_calc": {
+        "name": {"solo": "Соло", "micro": "Микро", "small": "Малый", "medium": "Средний", "large": "Крупный"},
+        "seg": {"solo": "1 человек", "micro": "2–9 сотрудников", "small": "10–49 сотрудников",
+                "medium": "50–249 сотрудников", "large": "250+ сотрудников"},
+        "per": {"month": "/ мес", "year": "/ год"},
+        "from": "от",
+        "emp": ["сотрудник", "сотрудника", "сотрудников"],
+        "sep": u"\u00a0",
+    },
     "compare": [("Консалтинговая компания — $100K+", True), ("ИИ-консультант — $10K+", True),
                 ("Собрать ИИ-стратегию самому", False)],
 
