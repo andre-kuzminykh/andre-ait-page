@@ -437,82 +437,6 @@
   @keyframes lvm { from { left: 10%; } to { left: 90%; } }
   @keyframes lvf { from { width: 10%; } to { width: 90%; } }
 
-  /* ===== 3а. как закрываем ИИ-трансформацию (FR-SITE103) =====
-     владелец 24.11: «чтобы было понятно, что закроет каждую часть». Слева — семь измерений ИИ-зрелости, те же, что на радаре
-     диагностики, справа — что закрывает каждое: стратегию — Andre AI, людей — обучение, инфраструктуру, данные и модели — Нейроний,
-     внедрение — консультант, R&D — работа под задачу. Над схемой — пакет и его цена по ползунку «Цен», под схемой — путь продукта */
-  .cvr-pk { display: flex; }
-  .cvr-pk .sizes { align-self: auto; }
-  .cvr-pk .sizes button { white-space: nowrap; }
-  .cvr-pk .tsh { display: none; }
-  /* цена — кнопка на «Цены»: там тот же ползунок, период и валюта */
-  .cvr-pr { display: block; margin: 0.55rem 0 clamp(0.8rem, 2.2cqh, 1.3rem); padding: 0; background: none; border: 0; cursor: pointer; text-align: left;
-    font-family: var(--fm); font-size: 12.5px; line-height: 1.5; color: var(--tx3); transition: color 0.25s; }
-  .cvr-pr i { font-style: normal; margin-left: 0.5rem; color: var(--o2); transition: margin 0.25s; }
-  @media (hover:hover) { .cvr-pr:hover { color: #fff; } .cvr-pr:hover i { margin-left: 0.7rem; } }
-  .cvr-pr b { color: #fff; font-weight: 700; font-size: 15px; }
-  /* две строки, как в карточке пакета: цена, под ней — число сотрудников и тариф (у трансформации за год — обучение помесячно);
-     строки не переносятся — высота блока не зависит от ползунка, и слайд не надо раскладывать заново */
-  .cvr-pr span { display: block; white-space: nowrap; }
-  .cvr-pr .th { display: inline-block; width: 0.32em; }
-  /* схема шире текста: заголовок короткий, а строкам решений нужно место под описание. Ширина — по холсту: пара «текст + схема» стоит
-     левее кружка с роликом и на холсте 1180 (FR-SITE95: пару ставит deskCenter — от левого поля до кружка) */
-  @container stage (min-width:1024px) { .cvr-split { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 3cqw; }
-    .cvr-split > .vis { width: min(100%, 37.5rem, calc(100cqw - 680px)); } }
-  /* колонки: измерения, связи, решения. Строки одной высоты — скобка «Нейрония» приходит ровно в середины своих трёх строк */
-  .cvr-map { --rg: 0.4rem; display: grid; grid-template-columns: max-content 2.4rem minmax(0, 1fr); grid-template-rows: repeat(7, minmax(2.9rem, 1fr)); column-gap: 0.7rem; row-gap: var(--rg); }
-  .cvr-g { display: contents; }
-  .cvr-d { grid-column: 1; grid-row: var(--row); display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; font-family: var(--fm); font-size: 11.5px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--tx2); white-space: nowrap; transition: opacity 0.35s; }
-  .cvr-d i { flex: none; display: flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; font-size: 11.5px; color: #fff;
-    background: color-mix(in srgb, var(--c) 30%, #0e0c14); border: 1.5px solid rgba(255,255,255,0.12); }
-  .cvr-l { grid-column: 2; grid-row: var(--row) / span var(--n, 1); position: relative; pointer-events: none; transition: opacity 0.35s; }
-  .cvr-l::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; border-radius: 2px; background: var(--c);
-    box-shadow: 0 0 10px color-mix(in srgb, var(--c) 65%, transparent); transform-origin: left center; }
-  /* скобка: три измерения сходятся в одну линию к «Нейронию» */
-  .cvr-l3::after { content: ''; position: absolute; left: 0; right: 50%; top: calc((100% - 2 * var(--rg)) / 6 - 1px); bottom: calc((100% - 2 * var(--rg)) / 6 - 1px);
-    border: 2px solid var(--c); border-left: 0; border-radius: 0 12px 12px 0; box-shadow: 0 0 10px color-mix(in srgb, var(--c) 45%, transparent); transform-origin: left center; }
-  .cvr-s { grid-column: 3; grid-row: var(--row) / span var(--n, 1); position: relative; display: flex; flex-direction: column; justify-content: center; gap: 0.15rem; min-width: 0;
-    padding: 0.45rem 0.9rem; border-radius: 14px; cursor: pointer; text-align: left; color: #fff; font: inherit;
-    background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015)); border: 1px solid rgba(255,255,255,0.1); transition: border-color 0.3s, opacity 0.35s, transform 0.3s; }
-  .cvr-s::before { content: ''; position: absolute; left: -1px; top: 50%; margin: -5px 0 0 -6px; border-style: solid; border-width: 5px 0 5px 6px; border-color: transparent transparent transparent var(--c); }
-  .cvr-s b { font-size: 15px; font-weight: 700; line-height: 1.3; }
-  .cvr-s .cvr-x { color: var(--tx3); font-weight: 500; }
-  .cvr-t { font-size: 12px; line-height: 1.45; color: var(--tx3); }
-  @media (hover:hover) { .cvr-s:hover { border-color: color-mix(in srgb, var(--c) 70%, transparent); transform: translateX(2px); } }
-  /* пакет не закрывает часть — она приглушена; R&D — под задачу, ни в один пакет не входит, поэтому не гаснет */
-  .cvr-g.off > * { opacity: 0.3; }
-  /* вход: связи прорисовываются слева направо, решения выезжают за ними — по очереди сверху вниз */
-  .slide.on .cvr-l::before, .slide.on .cvr-l3::after { animation: cvDraw 0.55s var(--ease) backwards; animation-delay: calc(0.65s + var(--i) * 0.12s); }
-  .slide.on .cvr-s { animation: cvIn 0.6s var(--ease) backwards; animation-delay: calc(0.8s + var(--i) * 0.12s); }
-  @keyframes cvDraw { from { transform: scaleX(0); } }
-  @keyframes cvIn { from { opacity: 0; transform: translateX(-10px); } }
-  /* путь продукта: диагностика → интервью и схемы → план → Нейроний → внедрение */
-  .cvr-path { margin: clamp(0.9rem, 2.2cqh, 1.3rem) 0 0; font-family: var(--fm); font-size: 11.5px; letter-spacing: 0.04em; line-height: 1.7; color: var(--tx2); }
-  .cvr-path b { color: var(--tx3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; }
-  .cvr-path span { white-space: nowrap; }
-  .cvr-path i { font-style: normal; color: var(--o2); }
-  /* телефон: короткие имена пакетов, кнопки не ниже 44 px; решения — именем (описание остаётся у «Нейрония», у него три строки),
-     путь — левее кружка с роликом. Слайд прижат к верху, как «Цены»: внизу справа кружок, схема не уходит под него */
-  @container stage (max-width:767px) {
-    .cvr-split { gap: 1.1rem; } #cover .split .kicker { margin-bottom: 1rem; }
-    .cvr-pk { justify-content: center; }
-    .cvr-pk .sizes { padding: 0.2rem; }
-    .cvr-pk .sizes button { min-height: 44px; padding: 0.4rem 0.75rem; font-size: 11px; }
-    .cvr-pk .tl { display: none; } .cvr-pk .tsh { display: inline; }
-    .cvr-pr { display: flex; flex-direction: column; justify-content: center; min-height: 44px; margin: 0.3rem auto 0.5rem; font-size: 11.5px; text-align: center; } .cvr-pr b { font-size: 14px; }
-    /* ссылка «Пакеты и цены» под заголовком ведёт туда же, куда цена-кнопка над схемой: на телефоне её нет — схема помещается выше кружка */
-    #cover .actions { display: none; }
-    .cvr-map { --rg: 0.2rem; grid-template-columns: max-content 1.2rem minmax(0, 1fr); grid-template-rows: repeat(7, minmax(44px, 1fr)); column-gap: 0.4rem; }
-    .cvr-d { gap: 0.4rem; font-size: 10px; letter-spacing: 0.06em; }
-    .cvr-d i { width: 1.55rem; height: 1.55rem; font-size: 10px; }
-    .cvr-s { padding: 0.35rem 0.65rem; border-radius: 12px; }
-    .cvr-s b { font-size: 13px; }
-    .cvr-s .cvr-x, .cvr-s:not(.cvr-s3) .cvr-t { display: none; }
-    .cvr-t { font-size: 11px; line-height: 1.4; }
-    .cvr-path { max-width: calc(100% - var(--bs) - var(--bm)); font-size: 10.5px; line-height: 1.6; }
-  }
-
   /* ===== 5. ИИ-мозг: граф из точек и связей; работа бежит строго по связям, связи на её пути светятся и толстеют,
      узлы-артефакты набухают, в них возникает значок, имя артефакта показывается и уходит в темноту — значок остаётся ===== */
   #osv { width: 100%; height: auto; max-height: 64cqh; overflow: visible; display: block; }
@@ -957,7 +881,6 @@
   <nav>
     <a href="#change" data-go="change" style="--ic:#8854F3"><i class="fa-solid fa-people-arrows"></i><span data-i18n="nav.change">Дорожная карта</span><i class="fa-solid fa-arrow-right"></i></a>
     <a href="#maturity" data-go="maturity" style="--ic:#F97316"><i class="fa-solid fa-gauge-high"></i><span data-i18n="nav.maturity">Диагностика</span><i class="fa-solid fa-arrow-right"></i></a>
-    <a href="#cover" data-go="cover" style="--ic:#c06bc9"><i class="fa-solid fa-puzzle-piece"></i><span data-i18n="nav.cover">Решения</span><i class="fa-solid fa-arrow-right"></i></a>
     <a href="#strategy" data-go="strategy" style="--ic:#8854F3"><i class="fa-solid fa-chess-knight"></i><span data-i18n="nav.strategy">Стратегия</span><i class="fa-solid fa-arrow-right"></i></a>
     <a href="#neuronium" data-go="neuronium" style="--ic:#F97316"><i class="fa-solid fa-brain"></i><span data-i18n="nav.neuronium">Платформа</span><i class="fa-solid fa-arrow-right"></i></a>
     <a href="#training" data-go="training" style="--ic:#8854F3"><i class="fa-solid fa-user-graduate"></i><span data-i18n="nav.training">Обучение</span><i class="fa-solid fa-arrow-right"></i></a>
@@ -1016,58 +939,6 @@
           <svg id="radar" viewBox="-268 -160 536 312" role="img" aria-label="7 измерений ИИ-зрелости" data-i18n-aria="radar"></svg>
           <div class="lvbar" aria-hidden="true"><span style="--c:#F97316;--k:0"></span><span style="--c:#ef6d45;--k:1"></span><span style="--c:#d672a0;--k:2"></span><span style="--c:#a865e0;--k:3"></span><span style="--c:#8854F3;--k:4"></span><b></b><i></i></div>
         </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- 3а. Как закрываем ИИ-трансформацию (FR-SITE103): семь измерений ИИ-зрелости — те же, что на радаре, — и что закрывает каждое.
-       Пакет подсвечивает свою часть схемы и показывает цену по ползунку «Цен» (тот же расчёт, что в карточке пакета); под схемой — путь продукта.
-       data-top — на телефоне прижат к верху (внизу справа кружок), data-fit — не листается внутри: выше рамки — ужимается целиком;
-       на телефоне схема (.cvr-map) ещё и кончается выше кружка -->
-  <section class="slide" id="cover" data-head="bubble">
-    <div class="frame"><div class="inner split cvr-split" data-top data-fit=".cvr-map">
-      <div>
-        <p class="kicker st"><span data-i18n="cv.k">Как закрываем <span class="nw">ИИ-трансформацию</span></span></p>
-        <h2 class="h2 st" data-i18n="cv.h"><span class="l">Своё <span class="pv">решение</span></span><span class="l">для каждой <span class="go">части</span></span></h2>
-        <div class="actions st d1"><a class="link" href="#pricing" data-go="pricing"><span data-i18n="cv.link">Пакеты и цены</span><i class="fa-solid fa-arrow-right"></i></a></div>
-      </div>
-      <div class="vis st d2">
-        <div class="cvr-pk">
-          <div class="sizes" id="cvr-pkg" role="group" aria-label="Пакет" data-i18n-aria="cvpkg">
-            <button type="button" data-cvr-pkg="strategy" aria-pressed="false"><span class="tl" data-i18n="cv.b1">ИИ-стратегия</span><span class="tsh" data-i18n="cv.b1s">Стратегия</span></button><button type="button" data-cvr-pkg="tools" aria-pressed="false"><span class="tl" data-i18n="cv.b2">ИИ-платформа</span><span class="tsh" data-i18n="cv.b2s">Платформа</span></button><button type="button" data-cvr-pkg="mentor" aria-pressed="true"><span class="tl" data-i18n="cv.b3">ИИ-трансформация</span><span class="tsh" data-i18n="cv.b3s">Трансформация</span></button>
-          </div>
-        </div>
-        <button class="cvr-pr" type="button" id="cvr-pr" data-go="pricing" aria-live="polite"><span class="cvr-p1"><b>308<span class="th"></span>800<span class="th"></span>₽</b> / мес<i aria-hidden="true">→</i></span><span class="cvr-p2">5 сотрудников · Микро</span></button>
-        <div class="cvr-map" role="list" aria-label="Семь измерений ИИ-зрелости и что закрывает каждое" data-i18n-aria="cvmap">
-          <div class="cvr-g" role="listitem" data-cv="s" style="--i:0;--c:#8854F3">
-            <span class="cvr-d" style="--row:1"><span data-i18n="cv.d1">Стратегия</span><i class="fa-solid fa-chess-knight" aria-hidden="true"></i></span>
-            <i class="cvr-l" style="--row:1" aria-hidden="true"></i>
-            <button class="cvr-s" type="button" data-go="strategy" style="--row:1"><b data-i18n="cv.s1">Andre AI<span class="cvr-x"> · <span class="nw">ИИ-стратегия</span></span></b><span class="cvr-t" data-i18n="cv.t1">что делать: схемы «как есть → как будет» и план</span></button>
-          </div>
-          <div class="cvr-g" role="listitem" data-cv="t" style="--i:1;--c:#9d63e8">
-            <span class="cvr-d" style="--row:2"><span data-i18n="cv.d2">Люди</span><i class="fa-solid fa-users" aria-hidden="true"></i></span>
-            <i class="cvr-l" style="--row:2" aria-hidden="true"></i>
-            <button class="cvr-s" type="button" data-go="training" style="--row:2"><b data-i18n="cv.s2">Обучение<span class="cvr-x"> команды</span></b><span class="cvr-t" data-i18n="cv.t2">люди работают вместе с ИИ-агентами</span></button>
-          </div>
-          <div class="cvr-g" role="listitem" data-cv="p" style="--i:2;--c:#c06bc9">
-            <span class="cvr-d" style="--row:3"><span data-i18n="cv.d3">Инфраструктура</span><i class="fa-solid fa-server" aria-hidden="true"></i></span>
-            <span class="cvr-d" style="--row:4"><span data-i18n="cv.d4">Данные</span><i class="fa-solid fa-database" aria-hidden="true"></i></span>
-            <span class="cvr-d" style="--row:5"><span data-i18n="cv.d5">Модели</span><i class="fa-solid fa-brain" aria-hidden="true"></i></span>
-            <i class="cvr-l cvr-l3" style="--row:3;--n:3" aria-hidden="true"></i>
-            <button class="cvr-s cvr-s3" type="button" data-go="neuronium" style="--row:3;--n:3"><b data-i18n="cv.s3">Нейроний<span class="cvr-x"> · <span class="nw">ИИ-платформа</span></span></b><span class="cvr-t" data-i18n="cv.t3">«Разработать в Нейроний» — без второго входа: те же процессы, но с агентами; граф артефактов — документы, системы и данные связаны; переключение на операции</span></button>
-          </div>
-          <div class="cvr-g" role="listitem" data-cv="c" style="--i:3;--c:#e0708f">
-            <span class="cvr-d" style="--row:6"><span data-i18n="cv.d6">Внедрение</span><i class="fa-solid fa-rocket" aria-hidden="true"></i></span>
-            <i class="cvr-l" style="--row:6" aria-hidden="true"></i>
-            <button class="cvr-s" type="button" data-go="training" style="--row:6"><b data-i18n="cv.s4">Консультант<span class="cvr-x"> по стратегии</span></b><span class="cvr-t" data-i18n="cv.t4">внедряет ваш план <span class="nw">ИИ-трансформации</span></span></button>
-          </div>
-          <div class="cvr-g" role="listitem" style="--i:4;--c:#F97316">
-            <span class="cvr-d" style="--row:7"><span>R&amp;D</span><i class="fa-solid fa-flask" aria-hidden="true"></i></span>
-            <i class="cvr-l" style="--row:7" aria-hidden="true"></i>
-            <button class="cvr-s" type="button" data-lead="R&amp;D" style="--row:7"><b data-i18n="cv.s5">Под вашу задачу</b><span class="cvr-t" data-i18n="cv.t5">свои модели и ИИ-продукты — по запросу</span></button>
-          </div>
-        </div>
-        <p class="cvr-path"><b data-i18n="cv.path">Путь:</b> <span data-i18n="cv.w1">ИИ-диагностика</span> <i aria-hidden="true">→</i> <span data-i18n="cv.w2">интервью и схемы</span> <i aria-hidden="true">→</i> <span data-i18n="cv.w3">план</span> <i aria-hidden="true">→</i> <span data-i18n="cv.w4">Нейроний</span> <i aria-hidden="true">→</i> <span data-i18n="cv.w5">внедрение</span></p>
       </div>
     </div></div>
   </section>
@@ -1305,7 +1176,6 @@
       <nav class="flinks st d3" aria-label="Разделы" data-i18n-aria="sections">
         <a href="#change" data-go="change" data-i18n="f.l1">Дорожная карта</a>
         <a href="#maturity" data-go="maturity" data-i18n="f.l2">ИИ-диагностика</a>
-        <a href="#cover" data-go="cover" data-i18n="nav.cover">Решения</a>
         <a href="#strategy" data-go="strategy" data-i18n="f.l3">ИИ-стратегия</a>
         <a href="#neuronium" data-go="neuronium" data-i18n="f.l4">ИИ-платформа</a>
         <a href="#training" data-go="training" data-i18n="f.l5">Обучение ИИ</a>
@@ -1359,7 +1229,7 @@
   /* Голова на каждом слайде: когда ролик слайда записан, добавьте src: { ru: '…', en: '…' } (и cues) */
   var HEADS = {
     hero: { label: { ru: 'Знакомство', en: 'Intro' } }, change: { label: { ru: 'Что меняется', en: 'What changes' } },
-    maturity: { label: { ru: 'ИИ-зрелость', en: 'AI maturity' } }, cover: { label: { ru: 'Решения', en: 'Solutions' } }, strategy: { label: { ru: 'ИИ-стратегия', en: 'AI strategy' } },
+    maturity: { label: { ru: 'ИИ-зрелость', en: 'AI maturity' } }, strategy: { label: { ru: 'ИИ-стратегия', en: 'AI strategy' } },
     neuronium: { label: { ru: 'Нейроний', en: 'Neuronium' } }, training: { label: { ru: 'Обучение', en: 'Training' } },
     cases: { label: { ru: 'Кейсы', en: 'Use cases' } }, pricing: { label: { ru: 'Пакеты', en: 'Packages' } },
     faq: { label: { ru: 'Вопросы', en: 'FAQ' } }, start: { label: { ru: 'Старт', en: 'Start' } }, footer: { label: { ru: 'Связь', en: 'Contact' } }
@@ -1400,24 +1270,13 @@
   var MONTHS = { ru: ['1 месяц', '3 месяца', '3+ месяца'], en: ['1 month', '3 months', '3+ months'] };
 
   var EN = {
-    'nav.change': 'Roadmap', 'nav.maturity': 'Assessment', 'nav.cover': 'Solutions', 'nav.strategy': 'Strategy', 'nav.neuronium': 'Platform', 'nav.training': 'Training', 'nav.cases': 'Cases', 'nav.pricing': 'Pricing', 'nav.faq': 'FAQ',
+    'nav.change': 'Roadmap', 'nav.maturity': 'Assessment', 'nav.strategy': 'Strategy', 'nav.neuronium': 'Platform', 'nav.training': 'Training', 'nav.cases': 'Cases', 'nav.pricing': 'Pricing', 'nav.faq': 'FAQ',
     'cta.diag': 'Free <span class="pv">AI Assessment</span>', 'speaker.role': 'AI Consultant',
     'hero.l1': '<span class="pv">AI Transformation</span>', 'hero.l2': 'of Your <span class="go">Business</span>', 'hero.sub': 'I help companies move into the new AI economy',
     'hero.cta': 'Free <span class="pv">AI Assessment</span>', 'hero.about': 'About me', 'hero.scroll': 'Scroll',
     'rm1': 'Run an AI assessment', 'rm1s': 'free', 'rm2': 'Build the AI playbook', 'rm3': 'Hire AI employees', 'rm4': 'Train your team', 'rm5': 'Launch AI business', 'lv0': 'Starter',
     's2.k': 'How AI transformation works', 's2.link': 'Where to start', 's2.h': '<span class="l">From an <span class="pv">AI assessment</span></span><span class="l">to a <span class="gp">new AI company</span></span>', 
     's3.k': 'AI Maturity Index', 's3.h': '<span class="l">How <span class="pv">AI-ready</span></span><span class="l">is your <span class="go">business</span></span>', 's3.meta': '35 questions · <b>free</b>', 's3.cta': 'Take the AI assessment',
-    /* FR-SITE103: как закрываем ИИ-трансформацию */
-    'cv.k': 'How we cover AI transformation', 'cv.h': '<span class="l">A <span class="pv">solution</span></span><span class="l">for every <span class="go">part</span></span>',
-    'cv.b1': 'AI Strategy', 'cv.b2': 'AI Platform', 'cv.b3': 'AI Transformation', 'cv.b1s': 'Strategy', 'cv.b2s': 'Platform', 'cv.b3s': 'Transformation', 'cv.link': 'Packages and pricing',
-    'cv.d1': 'Strategy', 'cv.d2': 'People', 'cv.d3': 'Infrastructure', 'cv.d4': 'Data', 'cv.d5': 'Models', 'cv.d6': 'Deployment',
-    'cv.s1': 'Andre AI<span class="cvr-x"> · AI strategy</span>', 'cv.t1': 'what to do: as-is → to-be maps and a plan',
-    'cv.s2': 'Training<span class="cvr-x"> for your team</span>', 'cv.t2': 'people work alongside AI agents',
-    'cv.s3': 'Neuronium<span class="cvr-x"> · AI platform</span>',
-    'cv.t3': '“Build in Neuronium” — no second sign-in: the same processes, now with agents; an artifact graph linking documents, systems and data; switch to the operations view',
-    'cv.s4': 'Consultant<span class="cvr-x"> on your strategy</span>', 'cv.t4': 'rolls out your AI transformation plan',
-    'cv.s5': 'Built for your task', 'cv.t5': 'custom models and AI products — on request',
-    'cv.path': 'Path:', 'cv.w1': 'AI assessment', 'cv.w2': 'interview &amp; maps', 'cv.w3': 'plan', 'cv.w4': 'Neuronium', 'cv.w5': 'rollout',
     's4.k': 'AI transformation strategy', 's4.h': '<span class="l">Your <span class="go">business</span></span><span class="l">redesigned for <span class="pv">AI</span></span>', 's4.meta': 'New processes · New roles', 's4.cta': 'Get your strategy', 's4.link': 'Build AI Strategy',
     's5.k': 'Neuronium', 's5.h': '<span class="l"><span class="pv">AI operating system</span></span><span class="l">for your <span class="go">business</span></span>', 's5.c1': 'AI platform · AI employees', 's5.cta': 'Get early access', 's5.link': 'Discover AI Brain', 's5.core': 'AI OS',
     's5.t1': 'Knowledge', 's5.t2': 'Skills', 's5.t3': 'AI processes', 's5.t4': 'AI agents', 's5.t5': 'AI workflows', 's5.t6': 'AI workplaces',
@@ -1568,11 +1427,9 @@
   };
   var ARIA = {
     ru: { send: 'Отправить', write: 'Написать Андрею', prev: 'Предыдущий блок', next: 'Следующий блок', period: 'Оплата: помесячно или за год', cur: 'Валюта', topics: 'Темы', path: 'Путь', road: 'Путь: диагностика, план ИИ-трансформации, ИИ-сотрудники, обучение команды, ИИ-бизнес', sound: 'Звук', sections: 'Разделы', menu: 'Меню', close: 'Закрыть', hero: 'ИИ-трансформация бизнеса', radar: '7 измерений ИИ-зрелости', flow: 'Процесс как есть и как будет',
-          os: 'ИИ-мозг: запрос бежит по связям и превращается в план, данные, ТЗ, макет, код и релиз', start: 'Начать ИИ-трансформацию', products: 'Продукты',
-          cvpkg: 'Пакет', cvmap: 'Семь измерений ИИ-зрелости и что закрывает каждое' },
+          os: 'ИИ-мозг: запрос бежит по связям и превращается в план, данные, ТЗ, макет, код и релиз', start: 'Начать ИИ-трансформацию', products: 'Продукты' },
     en: { send: 'Send', write: 'Message Andre', prev: 'Previous block', next: 'Next block', period: 'Billing: monthly or yearly', cur: 'Currency', topics: 'Topics', path: 'Path', road: 'Path: AI assessment, AI playbook, AI employees, team training, AI business', sound: 'Sound', sections: 'Sections', menu: 'Menu', close: 'Close', hero: 'AI transformation for business', radar: '7 dimensions of AI maturity', flow: 'Process as-is and to-be',
-          os: 'AI brain: a request runs along the connections and turns into a plan, data, specs, a mockup, code and a release', start: 'Start your AI transformation', products: 'Products',
-          cvpkg: 'Package', cvmap: 'Seven dimensions of AI maturity and what covers each' }
+          os: 'AI brain: a request runs along the connections and turns into a plan, data, specs, a mockup, code and a release', start: 'Start your AI transformation', products: 'Products' }
   };
   var LEAD_TXT = {
     ru: { early: ['Скоро запуск', 'Оставьте email — пришлём ранний доступ.'], base: ['Оставьте контакт', 'Я свяжусь с вами и всё расскажу.'], quote: ['Расчёт пакета', 'Оставьте контакт — пришлю расчёт для вашей компании.'], sending: 'Отправка…' },
@@ -1601,7 +1458,7 @@
   }
   function rr(el) { var r = el.getBoundingClientRect(), c = CV(); return { left: (r.left - c.x) / c.k, top: (r.top - c.y) / c.k, width: r.width / c.k, height: r.height / c.k }; }
   var slides = $$('.slide'), ORDER = slides.map(function (s) { return s.id; });
-  var state = { lang: root.lang === 'en' ? 'en' : 'ru', muted: true, i: 0, busy: false, emp: 4, period: 'month', cur: null, pkg: 'mentor', cov: 'mentor', lead: 'General', leadOpen: false, leadGen: 0, pos: null, headKind: 'big', side: 'left' };
+  var state = { lang: root.lang === 'en' ? 'en' : 'ru', muted: true, i: 0, busy: false, emp: 4, period: 'month', cur: null, pkg: 'mentor', lead: 'General', leadOpen: false, leadGen: 0, pos: null, headKind: 'big', side: 'left' };
   var RU = null, RU_PH = null;
   function t(k) { return state.lang === 'en' ? (EN[k] != null ? EN[k] : RU[k]) : RU[k]; }
 
@@ -1960,28 +1817,7 @@
         vl = X(vr.left) + vb.l, vrr = X(vr.left) + vb.r, L = Math.min(tl, vl), R = Math.max(tr, vrr),
         a0 = parseFloat(getComputedStyle(fr).paddingLeft) || 0, bub = $('#bubble-probe'), a1 = (bub ? rr(bub).left : SW()) - 24,
         dx = Math.max((a0 + a1) / 2 - (L + R) / 2, a0 - L);
-    /* ужатый целиком слайд (data-fit, FR-SITE103): его собственный сдвиг тоже ужимается — делим на масштаб */
-    if (Math.abs(dx) > 0.5) sp.style.left = Math.round(dx / (parseFloat(sp.style.zoom) || 1)) + 'px';
-  }
-  /* FR-SITE103: плотный слайд (data-fit) не листается внутри — если содержимое выше рамки (планшет в портрете, телефон 375×667, очень
-     широкое окно), оно ужимается целиком, как «Цены» (fitPricing) */
-  function fitDense(inn) {
-    var fr = inn.parentNode, cs = getComputedStyle(fr), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom), i;
-    for (i = 0; i < 3; i++) {
-      var room = fr.clientHeight - pad, now = fr.scrollHeight - pad, z = parseFloat(inn.style.zoom) || 1;
-      if (now <= room + 0.5) break;
-      inn.style.zoom = (z * room / now * 0.995).toFixed(4);
-    }
-    /* телефон: то, что названо в data-fit, кончается выше кружка с роликом (он внизу справа и закрыл бы нижние кнопки на коротком
-       телефоне 375×667); слайд прижат к верху, поэтому низ этого блока сдвигается вместе с масштабом */
-    /* не мельче 0,8: на планшете в портрете (холст 480×640) кружок закроет только пустой правый край нижней строки */
-    var sel = inn.getAttribute('data-fit'), keep = SW() < 768 && sel && $(sel, inn), bub = $('#bubble-probe');
-    if (!keep || !bub) return;
-    for (i = 0; i < 3; i++) {
-      var top = rr(inn).top, kb = rr(keep), bot = kb.top + kb.height, lim = rr(bub).top - 10, z2 = parseFloat(inn.style.zoom) || 1;
-      if (bot <= lim + 0.5 || bot <= top || lim <= top || z2 <= 0.8) return;
-      inn.style.zoom = Math.max(0.8, z2 * (lim - top) / (bot - top)).toFixed(4);
-    }
+    if (Math.abs(dx) > 0.5) sp.style.left = Math.round(dx) + 'px';
   }
   function mobLayout() {
     var phone = SW() < 768;
@@ -1989,13 +1825,9 @@
       var vis = null, i; for (i = 0; i < sp.children.length; i++) if (sp.children[i].classList.contains('vis')) vis = sp.children[i];
       var txt = vis && vis.previousElementSibling; if (!vis || !txt) return;
       var road = vis.querySelector('.road'); sp.style.marginTop = ''; sp.style.left = ''; vis.style.marginTop = ''; vis.style.marginBottom = ''; vis.style.left = ''; if (road) road.style.height = '';
-      var dense = sp.hasAttribute('data-fit'); if (dense) sp.style.zoom = '';
       if (!G) return;
-      /* компьютер: видимый левый край рисунка — ровно у начала колонки, у середины экрана (плотный слайд сначала ужимается, потом встаёт) */
-      if (!phone) { if (dense) fitDense(sp); if (SW() >= 1024) { var vb0 = visBox(vis), vl = vb0.l; if (Math.abs(vl) > 1) vis.style.left = Math.round(-vl) + 'px'; deskCenter(sp, txt, vis, vb0); } return; }
-      /* FR-SITE103: плотный слайд (data-top) на телефоне прижат к верху, как «Цены» (внизу справа кружок), и раскладывается CSS:
-         замер по видимым краям видит только текст кнопок, не рамку переключателя, и подтянул бы схему под заголовок */
-      if (sp.hasAttribute('data-top')) { if (dense) fitDense(sp); return; }
+      /* компьютер: видимый левый край рисунка — ровно у начала колонки, у середины экрана */
+      if (!phone) { if (SW() >= 1024) { var vb0 = visBox(vis), vl = vb0.l; if (Math.abs(vl) > 1) vis.style.left = Math.round(-vl) + 'px'; deskCenter(sp, txt, vis, vb0); } return; }
       /* координаты внутри слайда без его анимационного сдвига: offsetTop от рамки слайда (рамка = весь холст) */
       var fr = sp.closest('.frame'), off = function (el) { var y = 0; while (el && el !== fr) { y += el.offsetTop; el = el.offsetParent; } return y; };
       /* рисунок сразу под текстом (видимый отступ GAP); потом пара целиком встаёт по середине свободного места (ниже) */
@@ -2018,7 +1850,6 @@
          Кружок перетаскивается, поэтому места под него не держим — как на компьютере */
       var bh = off(vis) + vb.b - t0, sh = Math.floor((lim - t0 - bh) / 2);
       if (sh > 0) { sp.style.marginTop = sh + 'px'; var ov2 = fr.scrollHeight - fr.clientHeight; if (ov2 > 0) sp.style.marginTop = Math.max(0, sh - ov2) + 'px'; }
-      if (dense) fitDense(sp);
     });
   }
   function buildRoad() {
@@ -2455,7 +2286,6 @@
       /* 250+: вместо «Начать ИИ-трансформацию» — «Связаться» (та же заявка) */
       var go = c.querySelector('.t-go [data-i18n]'); go.innerHTML = big ? P.contact : t(go.getAttribute('data-i18n'));
     });
-    renderCover();
     fitPricing();
   }
   /* длинная цена (рубли за год у 250+) не переносится и не распирает карточку: цифры ужимаются по ширине карточки, высота строки цены прежняя */
@@ -2489,28 +2319,6 @@
   $('#cur').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.cur = b.getAttribute('data-cur'); renderCalc(); });
   $('#pkgs').addEventListener('click', function (e) { var b = e.target.closest('[data-pick]'); if (!b) return; state.pkg = b.getAttribute('data-pick');
     var n = EMP[state.emp]; openLead('Pricing: ' + n + (n >= 1000 ? '+' : '') + ' (' + tariffOf(n) + ') / ' + state.period + ' / ' + curOf() + ' / ' + state.pkg, 'quote'); });
-
-  /* ---------- как закрываем ИИ-трансформацию (FR-SITE103) ---------- */
-  /* что закрывает пакет — тот же состав, что в чеке «Цен» (data-c): стратегия — Andre AI; платформа — ещё Нейроний; трансформация — ещё
-     обучение с консультантом (люди и внедрение). R&D — под задачу: ни в один пакет не входит и не гаснет */
-  var COVER = { strategy: ['s'], tools: ['s', 'p'], mentor: ['s', 'p', 't', 'c'] };
-  function renderCover() {
-    var P = PRICE_TXT[state.lang], n = EMP[state.emp], k = tariffOf(n), big = k === 'large', y = state.period === 'year' ? 1 : 0, cur = curOf(),
-        T = TARIFF[k][cur][y], M = MENTOR[cur], pk = state.cov, has = COVER[pk];
-    $$('#cvr-pkg [data-cvr-pkg]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-cvr-pkg') === pk ? 'true' : 'false'); });
-    $$('#cover [data-cv]').forEach(function (g) { g.classList.toggle('off', has.indexOf(g.getAttribute('data-cv')) < 0); });
-    /* цена — как в карточке пакета: стратегия — тариф, платформа — вдвое, трансформация — ещё обучение помесячно (за год — отдельно);
-       ползунок, период и валюта — те же, что в «Ценах» */
-    var v = pk === 'strategy' ? T : (pk === 'tools' || y) ? 2 * T : M + 2 * T, th = function (s) { return String(s).replace(/\u00a0/g, '<span class="th"></span>'); };
-    $('#cvr-pr').innerHTML = '<span class="cvr-p1"><b>' + th((big ? P.from + ' ' : '') + money(v, cur)) + '</b> ' + P.per[state.period] + '<i aria-hidden="true">→</i></span><span class="cvr-p2">' +
-      (pk === 'mentor' && y ? th(P.train(money(M, cur))) : P.emp(n, n >= 1000) + ' · ' + P.name[k]) + '</span>';
-  }
-  $('#cvr-pkg').addEventListener('click', function (e) { var b = e.target.closest('[data-cvr-pkg]'); if (!b) return; state.cov = b.getAttribute('data-cvr-pkg'); renderCover(); });
-  /* цена и «Пакеты и цены» ведут на «Цены»; на телефоне лента пакетов открывается на выбранном здесь пакете (без этого — с рекомендованного) */
-  $$('#cover [data-go="pricing"]').forEach(function (el) { el.addEventListener('click', function () {
-    setTimeout(function () { var tw = $('#pkgs'), c = $('#pkgs [data-pkg="' + state.cov + '"]');
-      if (tw && c && tw.scrollWidth > tw.clientWidth + 2) { var a = rr(c), b = rr(tw); tw.scrollLeft += a.left - b.left - (b.width - a.width) / 2; } }, 60);
-  }); });
 
   /* ---------- заявки и рассылка (FormSubmit, как на текущем сайте) ---------- */
   var LEAD_ENDPOINT = 'https://formsubmit.co/ajax/admin@andre.technology';
