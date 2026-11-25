@@ -7,8 +7,8 @@
 целиком; её тесты остались в истории git и возвращаются вместе с откатом
 (точка отката — в AGENTS.md, чекпоинт pr93).
 
-FR-SITE95 — главная: одиннадцать слайдов, холст фиксированной ширины, ИИ-мозг
-            из графа, переходы видео ↔ кружок ↔ полоса ↔ «Andre AI».
+FR-SITE95 — главная: слайды (с FR-SITE103 — двенадцать), холст фиксированной
+            ширины, ИИ-мозг из графа, переходы видео ↔ кружок ↔ полоса ↔ «Andre AI».
 FR-SITE96 — политика конфиденциальности и условия использования: свои страницы
             на двух языках (tools/build_legal.py), подвал ведёт на них.
 FR-SITE97 — соцсети в подвале: у русской и английской версии свои аккаунты.
@@ -20,6 +20,10 @@ FR-SITE101 — цены: ползунок «сколько сотруднико�
             $ / ₽, бесплатный процесс — главная кнопка, у 250+ «от …» и «Связаться»;
             пакеты прежние. В браузере (1440×900 и 390×844, RU и EN, переключатели,
             прокрутка, ошибки консоли, высота кнопок) это проверяет tools/pricing_check.py.
+FR-SITE103 — «Как закрываем ИИ-трансформацию»: семь измерений ИИ-зрелости → пять
+            решений (Andre AI, обучение, Нейроний, консультант, R&D под задачу),
+            пакет подсвечивает свою часть и показывает цену по ползунку «Цен», путь
+            продукта. В браузере (12 размеров, RU и EN) — tools/cover_check.py.
 """
 import os
 import re
@@ -53,7 +57,7 @@ def _attr(tag, name):
 
 # ── FR-SITE95: устройство главной ──────────────────────────────────────────
 
-SLIDES = ["hero", "change", "maturity", "strategy", "neuronium", "training",
+SLIDES = ["hero", "change", "maturity", "cover", "strategy", "neuronium", "training",
           "cases", "pricing", "faq", "start", "footer"]
 
 
@@ -505,6 +509,184 @@ def test_compound_words_use_a_glyph_the_font_has():
     for word in ("ИИ-экономику", "ИИ-диагностики", "ИИ-компании", "ИИ-операционная",
                  "ИИ-стратегии", "ИИ-трансформации", "ИИ-трансформацию"):
         assert re.search(r'class="[^"]*\bnw\b[^"]*">' + word, html), word
+
+
+# ── FR-SITE103: как закрываем ИИ-трансформацию ─────────────────────────────
+
+def _cover():
+    html = _html()
+    return html[html.index('<section class="slide" id="cover"'):html.index('<section class="slide" id="strategy"')]
+
+
+def _en(key):
+    """Английская строка словаря EN по ключу (русская — в самой разметке)."""
+    m = re.search(r"'%s': '((?:[^'\\]|\\.)*)'" % re.escape(key), _html())
+    return m and m.group(1)
+
+
+# что закрывает каждая группа схемы: измерения ИИ-зрелости → слайд решения (или заявка) и его имя
+COVER_GROUPS = [
+    ("s", ["Стратегия"], 'data-go="strategy"', "Andre AI"),
+    ("t", ["Люди"], 'data-go="training"', "Обучение"),
+    ("p", ["Инфраструктура", "Данные", "Модели"], 'data-go="neuronium"', "Нейроний"),
+    ("c", ["Внедрение"], 'data-go="training"', "Консультант"),
+    (None, ["R&amp;D"], 'data-lead="R&amp;D"', "Под вашу задачу"),
+]
+
+
+def _groups():
+    return _cover().split('<div class="cvr-g" role="listitem"')[1:]
+
+
+def test_cover_slide_follows_the_maturity_index():
+    """FR-SITE103. Владелец 24.11: «чтобы было понятно, что закроет каждую часть». Слайд «Как закрываем
+    ИИ-трансформацию» стоит сразу за «Индексом ИИ-зрелости»: там семь измерений диагностики, здесь — что
+    закрывает каждое."""
+    assert SLIDES.index("cover") == SLIDES.index("maturity") + 1
+    sec = _cover()
+    assert '<section class="slide" id="cover" data-head="bubble">' in sec
+    assert '<span data-i18n="cv.k">Как закрываем <span class="nw">ИИ-трансформацию</span></span>' in sec
+    assert _en("cv.k") == "How we cover AI transformation"
+    assert _en("cv.h") == '<span class="l">A <span class="pv">solution</span></span><span class="l">for every <span class="go">part</span></span>'
+    assert ('<h2 class="h2 st" data-i18n="cv.h"><span class="l">Своё <span class="pv">решение</span></span>'
+            '<span class="l">для каждой <span class="go">части</span></span></h2>') in sec
+    assert "cover: { label: { ru: 'Решения', en: 'Solutions' } }" in _html()
+
+
+def test_cover_maps_the_seven_dimensions_to_five_solutions():
+    """FR-SITE103: стратегия — Andre AI (ИИ-стратегия: что делать); люди — обучение; инфраструктура, данные и
+    модели — Нейроний; внедрение — консультант по стратегии; R&D — под вашу задачу. Измерения те же и в том же
+    порядке, что на радаре диагностики (DIMS), по-русски и по-английски; каждое решение ведёт на свой слайд,
+    R&D — в заявку."""
+    html, groups = _html(), _groups()
+    assert len(groups) == len(COVER_GROUPS) == 5
+    dims = []
+    for (key, want, target, title), g in zip(COVER_GROUPS, groups):
+        assert (' data-cv="%s"' % key in g.split(">")[0]) if key else "data-cv" not in g.split(">")[0], (key, g[:80])
+        got = re.findall(r'<span class="cvr-d" style="--row:\d"><span[^>]*>([^<]+)</span>', g)
+        assert got == want, (key, got)
+        dims += got
+        btn = re.search(r'<button class="cvr-s[^"]*" type="button" ([^>]+)><b[^>]*>([^<]+)', g)
+        assert btn and btn.group(1).startswith(target) and btn.group(2) == title, (key, btn and btn.groups())
+    radar = re.search(r"var DIMS = \{ ru: \[([^\]]+)\], en: \[([^\]]+)\] \};", html)
+    assert [d.replace("&amp;", "&") for d in dims] == [x.strip(" '") for x in radar.group(1).split(",")]
+    assert [_en("cv.d%d" % i) for i in range(1, 7)] + ["R&D"] == [x.strip(" '") for x in radar.group(2).split(",")]
+    # три измерения сходятся скобкой в одно решение — Нейроний на три строки
+    assert '<i class="cvr-l cvr-l3" style="--row:3;--n:3" aria-hidden="true"></i>' in groups[2]
+    assert '<button class="cvr-s cvr-s3" type="button" data-go="neuronium" style="--row:3;--n:3">' in groups[2]
+    for k, en in (("cv.s1", "Andre AI"), ("cv.s2", "Training"), ("cv.s3", "Neuronium"), ("cv.s4", "Consultant"),
+                  ("cv.s5", "Built for your task")):
+        assert _en(k).startswith(en), (k, _en(k))
+    assert "'R&amp;D'" not in html and 'data-lead="R&amp;D"' in _cover(), "источник заявки — «R&D»"
+
+
+def test_cover_packages_are_the_pricing_packages():
+    """FR-SITE103: «свяжи с существующими пакетами». Переключатель над схемой — те же три пакета, что в «Ценах»;
+    пакет подсвечивает то, что в нём есть, — по составу чека его карточки (data-c): стратегия — Andre AI,
+    платформа — ещё Нейроний, трансформация — ещё обучение с консультантом (люди и внедрение). R&D — под задачу,
+    ни в один пакет не входит и не гаснет. По умолчанию — рекомендованная «ИИ-трансформация»."""
+    html, sec, price = _html(), _cover(), _pricing()
+    assert "var COVER = { strategy: ['s'], tools: ['s', 'p'], mentor: ['s', 'p', 't', 'c'] };" in html
+    cover = {"strategy": ["s"], "tools": ["s", "p"], "mentor": ["s", "p", "t", "c"]}
+    line = {"s": "s", "p": "p", "t": "t", "c": "t"}  # обучение и внедрение — одна строка чека «ИИ-обучение»
+    for pkg, parts in cover.items():
+        card = price[price.index('data-pkg="%s"' % pkg):]
+        card = card[:card.index("</article>")]
+        assert set(re.findall(r'data-c="(\w)"', card)) - {"a"} == {line[p] for p in parts}, pkg
+    assert re.findall(r'data-cvr-pkg="(\w+)" aria-pressed="(\w+)"', sec) == [("strategy", "false"), ("tools", "false"), ("mentor", "true")]
+    assert "pkg: 'mentor', cov: 'mentor'," in html
+    for k, ru, en in (("cv.b1", "ИИ-стратегия", "AI Strategy"), ("cv.b2", "ИИ-платформа", "AI Platform"),
+                      ("cv.b3", "ИИ-трансформация", "AI Transformation")):
+        assert '<span class="tl" data-i18n="%s">%s</span>' % (k, ru) in sec and _en(k) == en, k
+    assert "g.classList.toggle('off', has.indexOf(g.getAttribute('data-cv')) < 0)" in html
+    assert ".cvr-g.off > * { opacity: 0.3; }" in html
+
+
+def test_cover_price_is_the_package_price_from_the_pricing_slider():
+    """FR-SITE103: «…и ценами ползунком (не ломай их)». Цена выбранного пакета — тот же расчёт, что в его
+    карточке, по тому же ползунку, периоду и валюте; пересчитывается при каждом их изменении (renderCalc);
+    цена — кнопка на «Цены». Разметка по умолчанию — «ИИ-трансформация» на 5 сотрудников за месяц в рублях."""
+    html, sec = _html(), _cover()
+    assert "    renderCover();\n    fitPricing();\n  }" in html, "renderCalc пересчитывает и этот слайд"
+    assert "T = TARIFF[k][cur][y], M = MENTOR[cur], pk = state.cov, has = COVER[pk];" in html
+    # стратегия — тариф; платформа — вдвое; трансформация — ещё обучение помесячно, за год — отдельной строкой (как в карточке)
+    assert "var v = pk === 'strategy' ? T : (pk === 'tools' || y) ? 2 * T : M + 2 * T" in html
+    assert "(pk === 'mentor' && y ? th(P.train(money(M, cur))) : P.emp(n, n >= 1000) + ' · ' + P.name[k])" in html
+    assert "th((big ? P.from + ' ' : '') + money(v, cur))" in html, "у 250+ — «от …»"
+    assert '<button class="cvr-pr" type="button" id="cvr-pr" data-go="pricing" aria-live="polite">' in sec
+    rub = OWNER_GRID["micro"][2]
+    default = 289000 + 2 * rub
+    assert default == 308800
+    assert '<b>308<span class="th"></span>800<span class="th"></span>₽</b> / мес' in sec
+    assert '<span class="cvr-p2">5 сотрудников · Микро</span>' in sec
+    assert "$$('#cover [data-go=\"pricing\"]').forEach(" in html, "на телефоне лента «Цен» открывается на выбранном пакете"
+
+
+def test_cover_tells_the_product_path():
+    """FR-SITE103: путь продукта — ИИ-диагностика → интервью и схемы «как есть / как будет» → план → «Разработать
+    в Нейроний» (без второго входа: те же процессы с агентами, граф артефактов, переключение на операции) →
+    внедрение с консультантом."""
+    sec = _cover()
+    path = re.findall(r'<span data-i18n="cv\.w(\d)">([^<]+)</span>', sec)
+    assert [w for _, w in path] == ["ИИ-диагностика", "интервью и схемы", "план", "Нейроний", "внедрение"]
+    assert [_en("cv.w%s" % i) for i, _ in path] == ["AI assessment", "interview &amp; maps", "plan", "Neuronium", "rollout"]
+    assert sec.count('<i aria-hidden="true">→</i>') == 4 + 1, "стрелки пути + стрелка у цены"
+    assert ' <i aria-hidden="true">→</i> ' in sec, "между шагами — пробелы: строка пути переносится"
+    t3 = re.search(r'data-i18n="cv\.t3">([^<]+)<', sec).group(1)
+    for part in ("«Разработать в Нейроний»", "без второго входа", "те же процессы, но с агентами", "граф артефактов",
+                 "документы, системы и данные связаны", "переключение на операции"):
+        assert part in t3, part
+    for part in ("Build in Neuronium", "no second sign-in", "the same processes, now with agents", "artifact graph",
+                 "documents, systems and data", "operations view"):
+        assert part in _en("cv.t3"), part
+    assert 'data-i18n="cv.t1">что делать: схемы «как есть → как будет» и план<' in sec and _en("cv.t1").startswith("what to do")
+    assert "внедряет ваш план" in sec and _en("cv.t4") == "rolls out your AI transformation plan"
+    assert "по запросу" in sec and _en("cv.t5").endswith("on request")
+
+
+def test_cover_fits_without_scrolling_and_keeps_buttons_out_from_under_the_bubble():
+    """FR-SITE95/103: слайд не листается внутри. Он плотнее остальных — как «Цены»: на телефоне прижат к верху
+    (внизу справа кружок с роликом), выше рамки — ужимается целиком; на телефоне схема ещё и кончается выше
+    кружка (не мельче 0,8). Кнопки на телефоне — не ниже 44px. В браузере — tools/cover_check.py."""
+    html = _html()
+    assert '<div class="inner split cvr-split" data-top data-fit=".cvr-map">' in html
+    assert "function fitDense(inn)" in html and "lim = rr(bub).top - 10" in html and "Math.max(0.8, z2 * (lim - top) / (bot - top))" in html
+    assert "var dense = sp.hasAttribute('data-fit'); if (dense) sp.style.zoom = '';" in html, "ужатие сбрасывается перед замером"
+    assert "if (!phone) { if (dense) fitDense(sp);" in html
+    assert "if (sp.hasAttribute('data-top')) { if (dense) fitDense(sp); return; }" in html
+    assert "sp.style.left = Math.round(dx / (parseFloat(sp.style.zoom) || 1)) + 'px'" in html, "сдвиг ужатого слайда — в его масштабе"
+    # компьютер: пара «текст + схема» левее кружка и на холсте 1180
+    assert ".cvr-split > .vis { width: min(100%, 37.5rem, calc(100cqw - 680px)); }" in html
+    # телефон: кнопки под палец, путь — левее кружка, решения — именем
+    for rule in (".cvr-pk .sizes button { min-height: 44px;", "justify-content: center; min-height: 44px; margin: 0.3rem auto 0.5rem;",
+                 "grid-template-rows: repeat(7, minmax(44px, 1fr));", ".cvr-path { max-width: calc(100% - var(--bs) - var(--bm));",
+                 ".cvr-s .cvr-x, .cvr-s:not(.cvr-s3) .cvr-t { display: none; }", "#cover .actions { display: none; }"):
+        assert rule in html, rule
+    assert os.path.exists(os.path.join(_ROOT, "tools", "cover_check.py"))
+
+
+def test_cover_is_in_the_phone_menu_and_footer_but_not_the_header():
+    """FR-SITE103: в шапке девятый пункт не помещается — на холсте 1180 (окно 1024×768, 1280×1024) он налезает
+    на EN|RU и кнопку диагностики; слайд стоит в потоке между «Диагностикой» и «Стратегией», а в меню телефона
+    и в ссылках подвала у него свой пункт."""
+    html = _html()
+    hdr = html[html.index('<nav class="nav"'):html.index("</nav>", html.index('<nav class="nav"'))]
+    assert 'data-go="cover"' not in hdr
+    assert ('<a href="#cover" data-go="cover" style="--ic:#c06bc9"><i class="fa-solid fa-puzzle-piece"></i>'
+            '<span data-i18n="nav.cover">Решения</span><i class="fa-solid fa-arrow-right"></i></a>') in html
+    assert '<a href="#cover" data-go="cover" data-i18n="nav.cover">Решения</a>' in html
+    assert _en("nav.cover") == "Solutions"
+
+
+def test_slide_classes_do_not_clash_with_canvas_mode_classes():
+    """FR-SITE103, грабли: скрипт холста ставит <html> класс cv-d (компьютер) или cv-m (телефон). Черновик слайда
+    назвал подписи схемы .cv-d — и правило «.cv-d i» превратило в кружки все значки страницы, а меню стало
+    заглавным. Префикс слайда — cvr-; классов cv-… в разметке и CSS нет."""
+    html = _html()
+    assert "dE.className = dE.className.replace(/\\s*cv-[dm]\\b/g, '') + (m ? ' cv-m' : ' cv-d');" in html
+    assert not re.search(r'class="[^"]*\bcv-', html)
+    css = html[html.index("<style>"):html.index("</style>")]
+    assert not re.search(r"\.cv-[a-z]", css)
 
 
 if __name__ == "__main__":
