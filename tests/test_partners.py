@@ -18,6 +18,11 @@ FR-SITE134…136 — как стать партнёром: шаги, зараб�
 FR-SITE137/138 — partners.json по схеме, встроенная копия, три примера.
 FR-SITE139 — русский и английский по правилу главной.
 NFR-SITE106…110 — клавиатура, телефон, движение, качество, хостинг.
+FR-SITE143…148, NFR-SITE111…113 — партнёры через продукт: каталог сначала из продукта
+            (/api/partners/public), запасной — partners.json; заявки — POST в продукт, при
+            сбое — прежнее письмо FormSubmit; ступень после заявки в партнёры; промокод
+            партнёра и «Пригласить клиента». Продукт на столе — заглушка tools/api_stub.py
+            (CORS как у продукта), адрес подставляется строкой window.AIT_API.
 """
 import atexit
 import hashlib
@@ -440,6 +445,120 @@ def test_js_syntax_and_escaping():
     # всё, что вставляется как HTML из профиля, проходит через esc()/nb() — это проверяет test_render_partner_text_is_escaped
 
 
+# ── FR-SITE143…148, NFR-SITE111…113: партнёры через продукт ────────────────
+
+def test_product_address_is_one_constant_a_page_script_may_replace():
+    """FR-SITE143, NFR-SITE112/113: адрес продукта — одна строка; подменить его может только
+    скрипт страницы (window.AIT_API — стенд и тесты), а не адрес страницы; к продукту —
+    без кук; ждём каталог 3,5 с, заявку 8 с."""
+    js = _js()
+    assert ("var PRODUCT_API = (typeof window.AIT_API === 'string' && /^https?:\\/\\/[^\\s\"'<>]+$/.test(window.AIT_API) ? window.AIT_API : "
+            "'https://strategy.andre.technology').replace(/\\/+$/, '');") in js
+    assert "var API_WAIT = 3500, POST_WAIT = 8000;" in js
+    assert "opt.credentials = 'omit'; opt.mode = 'cors';" in js
+    assert "if (ctl) ctl.abort(); reject(new Error('timeout'));" in js, "молчание дольше ожидания — сбой, запрос обрывается"
+    assert "product('/api/partners/public?lang=' + state.lang," in js
+    assert "'/api/partners/requests'" in js and "'/api/partners/applications'" in js
+    assert js.count("AIT_API") == 4, "адрес продукта нигде больше не берётся (три — в строке PRODUCT_API, одно — в пояснении)"
+    assert "location.search" not in js[js.index("var PRODUCT_API"):js.index("var API_WAIT")]
+
+
+def test_catalog_order_is_product_then_file_then_inline_copy():
+    """FR-SITE143, NFR-SITE111: сначала продукт, затем partners.json, затем встроенная копия;
+    пустой список продукта — примеры; на file:// продукт не спрашиваем."""
+    js = _js()
+    load = js[js.index("function load(cb) {"):js.index("/* ---------- адрес: фильтры")]
+    assert "if (api && api.some(function (p) { return !problem(p); })) { finish(api, 'api'); return; }" in load
+    assert "if (file) finish(file, 'fetch'); else if (file === null) finish(inlineData(), 'inline');" in load
+    assert "if (location.protocol === 'file:' || !window.fetch) { finish(inlineData(), 'inline'); return; }" in load
+    assert "api = j && j.ok === true && Array.isArray(j.partners) ? j.partners : null;" in load
+    assert load.index("if (location.protocol === 'file:'") < load.index("product('/api/partners/public"), "на file:// — ни одного запроса"
+    assert "}, API_WAIT);" in load, "общее ожидание — 3,5 с, как у partners.json прежде"
+
+
+def test_request_and_application_bodies_follow_the_contract():
+    """FR-SITE144/145: в продукт — ровно поля договорённости §3; письмо FormSubmit — прежнее;
+    у примера профиля — сразу письмо."""
+    js = _js()
+    assert ("var body = p.example ? null : { partner_slug: p.slug, name: n.value.trim(), email: em.value.trim(), company: company, "
+            "message: msg, lang: state.lang };") in js
+    assert ("var body = { name: n.value.trim(), email: em.value.trim(), linkedin: inUrl, experience: ex.value.trim(), "
+            "rate_usd: rate, lang: state.lang };") in js
+    assert "headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(body) }, POST_WAIT)" in js
+    assert "if (j && j.ok === false) throw new Error('not accepted'); return 'product';" in js
+    assert ("toProduct(path, body).catch(function () { return send(payload).then(function () { return 'mail'; }, "
+            "function () { queue(payload); return 'queue'; }); })") in js, "продукт не принял — письмо, письмо не ушло — очередь"
+    assert "company: company || '—', message: msg || '—'" in js, "письмо FormSubmit — как прежде"
+
+
+def test_application_stage_is_shown_only_when_the_product_accepted():
+    """FR-SITE146: «Заявка принята — следующий шаг: Академия; письмо придёт на …» — только если
+    заявку принял продукт; ушла письмом — прежний текст."""
+    js, html, i18n = _js(), _html(), _i18n()
+    assert "function (via) { appStage = via === 'product' ? body.email : ''; stageUI(); }" in js
+    assert "st.innerHTML = appStage ? fmt(esc(tx('app.stage')), { email: '<b>' + esc(appStage) + '</b>' }) : '';" in js
+    assert '<p class="m-sub" id="app-ok-p" data-i18n="app.ok.p">' in html and '<p class="m-sub" id="app-stage" hidden></p>' in html
+    assert i18n["ru"]["app.stage"] == "Следующий шаг — Академия. Письмо придёт на %email"
+    assert i18n["en"]["app.stage"] == "Next step — the Academy. An email is on its way to %email"
+    assert "if (appStage) stageUI();" in js, "смена языка переписывает и ступень"
+
+
+def test_promo_code_is_optional_and_has_the_product_format():
+    """FR-SITE147: promo_code — необязательное поле профиля, вид — как у кода партнёра в продукте
+    (4–32 знака: латиница, цифры, «_», «-»); у примеров кода нет — ссылка с вымышленным кодом
+    в продукте не сработала бы."""
+    from tools import build_partners
+    data = _data()
+    assert not any("promo_code" in p for p in data), "примеры — без промокода"
+    ok = json.loads(json.dumps(data[0]))
+    for code in ("NIKA10", "nika_10-x", "A1B2", "X" * 32):
+        ok["promo_code"] = code
+        assert build_partners.validate([ok]) == [], code
+    for code in ("x", "NIK", "NIKA 10", "-NIKA", "Ника10", 10, "X" * 33, ""):
+        ok["promo_code"] = code
+        assert any("promo_code" in e for e in build_partners.validate([ok])), code
+    assert build_partners.PROMO_RE.pattern == "^[A-Za-z0-9][A-Za-z0-9_-]{3,31}$"
+    assert "var PROMO_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{3,31}$/;" in _js(), "та же проверка на странице"
+    spec = _read("SPEC-SITE.md")
+    assert "| `promo_code` | строка `^[A-Za-z0-9][A-Za-z0-9_-]{3,31}$` | нет |" in spec
+
+
+def test_invite_link_is_the_main_page_with_code_and_partner():
+    """FR-SITE148: «Пригласить клиента» — только у партнёра с промокодом; копирует
+    https://andre.technology/?promo=<код>&partner=<slug> — главная понесёт их в продукт."""
+    js, i18n = _js(), _i18n()
+    assert "var SITE_HOME = 'https://andre.technology/';" in js
+    assert "function inviteUrl(p) { return SITE_HOME + '?promo=' + encodeURIComponent(promoOf(p)) + '&partner=' + encodeURIComponent(p.slug); }" in js
+    assert "(promoOf(p) ? '<button class=\"btn btn-ghost btn-invite\" type=\"button\" data-invite aria-describedby=\"pf-invite-d\">'" in js
+    assert (i18n["ru"]["pf.invite"], i18n["en"]["pf.invite"]) == ("Пригласить клиента", "Invite a client")
+    assert "%code" in i18n["ru"]["pf.invite.d"] and "%code" in i18n["en"]["pf.invite.d"]
+    assert '<symbol id="i-invite" viewBox="0 0 24 24">' in _html()
+    css = _css()
+    assert ".pf-invite { flex: 1 1 100%;" in css and ".pf-act .btn-invite { flex: 1 1 100%; }" in css
+
+
+def test_stub_speaks_the_product_contract():
+    """NFR-SITE113: заглушка продукта отвечает форматом договорённости и открывает CORS только
+    своим адресам — как продукт."""
+    import urllib.request
+    from api_stub import ApiStub
+    st = ApiStub(origins=["http://site.test"], partners=_data()[:1])
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    try:
+        r = opener.open(urllib.request.Request(st.url + "/api/partners/public?lang=ru", headers={"Origin": "http://site.test"}), timeout=5)
+        assert r.status == 200 and r.headers.get("Access-Control-Allow-Origin") == "http://site.test"
+        assert json.loads(r.read()) == {"ok": True, "partners": _data()[:1]}
+        r = opener.open(urllib.request.Request(st.url + "/api/partners/public?lang=ru", headers={"Origin": "http://evil.test"}), timeout=5)
+        assert r.headers.get("Access-Control-Allow-Origin") is None, "чужому адресу CORS не открыт"
+        body = json.dumps({"name": "x"}).encode()
+        r = opener.open(urllib.request.Request(st.url + "/api/partners/applications", data=body, method="POST",
+                                               headers={"Content-Type": "application/json", "Origin": "http://site.test"}), timeout=5)
+        assert r.status == 201 and json.loads(r.read()) == {"ok": True, "id": 1}
+        assert st.posts("/api/partners/applications") == [{"name": "x"}]
+    finally:
+        st.stop()
+
+
 # ── проверки в браузере ─────────────────────────────────────────────────────
 
 class Skip(Exception):
@@ -460,21 +579,20 @@ def _env():
     if "browser" in _B:
         return _B
     try:
-        from playwright.sync_api import sync_playwright
+        import playwright.sync_api  # noqa: F401
     except ImportError:
         _skip("нет Playwright")
     import partners_check as C
     if not os.path.exists(C.CHROMIUM):
         _skip("нет Chromium: " + C.CHROMIUM)
     base, base2, site, sub, stop = C.servers()
-    pw = sync_playwright().start()
+    pw = C.playwright()          # один на процесс: в том же прогоне браузер нужен и test_site, и test_strategy
     browser = C.launch(pw)
-    _B.update(C=C, pw=pw, browser=browser, site=site, sub=sub, stop=stop)
+    _B.update(C=C, pw=pw, browser=browser, site=site, sub=sub, stop=stop, base=base, base2=base2)
 
     def close():
         try:
             browser.close()
-            pw.stop()
         finally:
             stop()
     atexit.register(close)
@@ -1101,6 +1219,284 @@ def test_render_loads_json_and_falls_back_to_the_inline_copy():
     pg.wait_for_selector("#profile:not([hidden])")
     ctx.close()
 
+
+
+# ── в браузере: партнёры через продукт (FR-SITE143…148, NFR-SITE111…113) ────
+
+def _stub():
+    """Заглушка продукта (tools/api_stub.py): CORS для обоих адресов страницы, как у продукта; одна на файл."""
+    e = _env()
+    if "stub" not in e:
+        from api_stub import ApiStub
+        e["stub"] = ApiStub(origins=[e["base"], e["base2"]])
+        atexit.register(e["stub"].stop)
+    return e["stub"]
+
+
+def _product_partners():
+    """Партнёры «из продукта»: профили примеров со своим slug, без пометки примера; у Ники — промокод."""
+    d = _data()
+    nika = json.loads(json.dumps(d[0]))
+    nika.update(slug="nika-vetrova", example=False, promo_code="NIKA10")
+    aru = json.loads(json.dumps(d[2]))
+    aru.update(slug="aruzhan-seitova", example=False)
+    return [aru, nika]
+
+
+def _api_page(size=(1440, 900), lang="ru", url=None, query="", api=None, **kw):
+    """Страница партнёров, которая спрашивает продукт у заглушки (window.AIT_API ставится до загрузки скрипта)."""
+    e = _env()
+    ctx, pg = e["C"].new_page(e["browser"], size, lang=lang, **kw)
+    ctx.add_init_script("window.AIT_API = %s;" % json.dumps(api or _stub().url))
+    target = (url or e["sub"]) + (query or "")
+    if lang and "lang=" not in target:
+        target += ("&" if "?" in target else "?") + "lang=" + lang
+    pg.goto(target, wait_until="load")
+    e["C"].wait_ready(pg)
+    return ctx, pg
+
+
+def _page_errors(pg):
+    """Ошибки страницы, кроме ожидаемых сбоев самого запроса к продукту (код ответа, закрытый CORS)."""
+    return [x for x in pg.errors if "Failed to load resource" not in x and "CORS policy" not in x]
+
+
+def test_render_catalog_comes_from_the_product_first():
+    """FR-SITE143: каталог — из продукта (`/api/partners/public?lang=` на языке страницы), на обоих
+    адресах (CORS продукта открыт обоим); у партнёров продукта нет пометки примера."""
+    e, st = _env(), _stub()
+    st.partners = _product_partners()
+    for url, origin in ((e["sub"], e["base2"]), (e["site"], e["base"])):
+        for lang in ("ru", "en"):
+            st.reset("ok")
+            ctx, pg = _api_page(lang=lang, url=url)
+            assert pg.evaluate("window.AndrePartners.source") == "api", (url, lang)
+            assert _order(pg) == ["nika-vetrova", "aruzhan-seitova"], "из продукта, от лучших к худшим"
+            assert st.seen == [("GET", "/api/partners/public?lang=" + lang, origin, None)], st.seen
+            assert pg.evaluate("document.querySelectorAll('#grid .bdg-ex').length") == 0 and pg.is_hidden("#ex-note")
+            _clean(pg, "каталог из продукта %s %s" % (url, lang))
+            ctx.close()
+
+
+def test_render_catalog_falls_back_to_the_examples_when_the_product_fails():
+    """FR-SITE143, NFR-SITE111: пустой список, ошибка, закрытый CORS, не JSON, {ok: false}, только
+    профили с ошибками, продукт недоступен или молчит дольше 3,5 с — примеры из partners.json, как
+    прежде; продукт лежит и partners.json не грузится — встроенная копия; file:// — продукт не
+    спрашивается."""
+    e, st, C = _env(), _stub(), _env()["C"]
+    broken = json.loads(json.dumps(_product_partners()[1]))
+    broken["linkedin"] = "https://example.com/not-linkedin"
+    for mode in ("empty", "error", "nocors", "badjson", "notok", "invalid"):
+        st.partners = [broken] if mode == "invalid" else _product_partners()
+        st.reset("ok" if mode == "invalid" else mode)
+        ctx, pg = _api_page()
+        assert pg.evaluate("window.AndrePartners.source") == "fetch" and _order(pg) == BEST, mode
+        assert [x[:2] for x in st.seen] == [("GET", "/api/partners/public?lang=ru")], (mode, st.seen)
+        assert not _page_errors(pg), (mode, pg.errors)
+        ctx.close()
+    # продукт недоступен: по адресу никто не слушает
+    import socket
+    sk = socket.socket()
+    sk.bind(("127.0.0.1", 0))
+    dead = "http://127.0.0.1:%d" % sk.getsockname()[1]
+    sk.close()
+    ctx, pg = _api_page(api=dead)
+    assert pg.evaluate("window.AndrePartners.source") == "fetch" and _order(pg) == BEST and not _page_errors(pg)
+    ctx.close()
+    # молчит: ответ позже 3,5 с — не ждём его, показываем примеры
+    st.partners = _product_partners()
+    st.reset("slow")
+    t0 = time.time()
+    ctx, pg = _api_page()
+    took = time.time() - t0
+    assert pg.evaluate("window.AndrePartners.source") == "fetch" and _order(pg) == BEST
+    assert 3.3 < took < 6.5, "ждём продукт 3,5 с, не дольше: %.1f с" % took
+    ctx.close()
+    # продукт лежит и partners.json не грузится — встроенная копия
+    st.reset("error")
+    ctx, pg = C.new_page(e["browser"], (1440, 900), lang="ru")
+    ctx.add_init_script("window.AIT_API = %s;" % json.dumps(st.url))
+    pg.route("**/partners.json*", lambda r: r.abort())
+    pg.goto(e["sub"] + "?lang=ru", wait_until="load")
+    C.wait_ready(pg)
+    assert pg.evaluate("window.AndrePartners.source") == "inline" and _order(pg) == BEST
+    ctx.close()
+    # file:// — как прежде: встроенная копия, продукт не спрашиваем
+    st.reset("ok")
+    ctx, pg = C.new_page(e["browser"], (1440, 900), lang="ru")
+    ctx.add_init_script("window.AIT_API = %s;" % json.dumps(st.url))
+    pg.goto("file://" + os.path.join(_ROOT, "partners/index.html") + "?lang=ru", wait_until="load")
+    C.wait_ready(pg)
+    assert pg.evaluate("window.AndrePartners.source") == "inline" and _order(pg) == BEST and st.seen == []
+    assert not pg.errors, pg.errors
+    ctx.close()
+
+
+def _fill_request(pg, company="Форма", msg="Нужна проверка схем"):
+    pg.fill("#req-name", "Наталья")
+    pg.fill("#req-email", "natalia@example.com")
+    pg.fill("#req-company", company)
+    pg.fill("#req-msg", msg)
+    pg.click("#req-btn")
+    pg.wait_for_selector("#req-done:not([hidden])", timeout=15000)
+
+
+def test_render_request_goes_to_the_product_then_to_mail():
+    """FR-SITE144: «Выбрать консультанта» → POST /api/partners/requests с полями договорённости;
+    продукт не принял (500, 404 без флага, {ok: false}) — прежнее письмо FormSubmit; у примера
+    профиля — сразу письмо, продукт не спрашиваем."""
+    st = _stub()
+    st.partners = _product_partners()
+    for post_mode, company, msg in (("ok", "Форма", "Нужна проверка схем"), ("error", "", ""), ("off", "Форма", "Буткемп"), ("notok", "Форма", "Буткемп")):
+        st.reset("ok", post_mode)
+        ctx, pg = _api_page(query="?p=nika-vetrova")
+        sent = _capture_formsubmit(pg)
+        pg.wait_for_selector("#profile:not([hidden])")
+        pg.click("#profile [data-choose]")
+        pg.wait_for_selector("#req:not([hidden])")
+        assert pg.is_hidden("#req-ex"), "не пример: заявку получит сам консультант"
+        _fill_request(pg, company, msg)
+        body = {"partner_slug": "nika-vetrova", "name": "Наталья", "email": "natalia@example.com", "company": company, "message": msg, "lang": "ru"}
+        assert st.posts("/api/partners/requests") == [body], (post_mode, st.posts())
+        assert st.seen[-1][2] == _env()["base2"], "Origin — адрес страницы"
+        if post_mode == "ok":
+            assert sent == [] and pg.evaluate("window.AndrePartners.sent") == "product"
+            _clean(pg, "заявка консультанту в продукт")
+        else:
+            assert len(sent) == 1 and pg.evaluate("window.AndrePartners.sent") == "mail", post_mode
+            s = sent[0]
+            assert s["type"] == "consultant_request" and s["partner"] == "nika-vetrova" and s["partner_example"] is False
+            assert (s["company"], s["message"]) == ((company or "—"), (msg or "—")) and s["_subject"] == "Consultant request — partners.andre.technology"
+            assert not _page_errors(pg), pg.errors
+        ctx.close()
+    # пример профиля (продукт отдал пустой список) — сразу письмом
+    st.reset("empty", "ok")
+    ctx, pg = _api_page(query="?p=" + LUKAS)
+    sent = _capture_formsubmit(pg)
+    pg.click("#profile [data-choose]")
+    pg.wait_for_selector("#req:not([hidden])")
+    assert pg.is_visible("#req-ex")
+    _fill_request(pg)
+    assert st.posts() == [] and len(sent) == 1 and sent[0]["partner"] == LUKAS and sent[0]["partner_example"] is True
+    ctx.close()
+
+
+def _fill_application(pg, lang="ru"):
+    pg.evaluate("document.querySelector('#become').scrollIntoView()")
+    pg.click("#apply")
+    pg.wait_for_selector("#app:not([hidden])")
+    pg.fill("#app-name", "Мария Пример")
+    pg.fill("#app-email", "maria@example.com")
+    pg.fill("#app-in", "linkedin.com/in/maria-example")
+    pg.fill("#app-exp", "Пять лет в операционном консалтинге, BPMN, n8n")
+    pg.fill("#app-rate", "150")
+    pg.click("#app-btn")
+    pg.wait_for_selector("#app-done:not([hidden])", timeout=15000)
+
+
+def test_render_application_goes_to_the_product_and_shows_the_next_stage():
+    """FR-SITE145/146: «Подать заявку» → POST /api/partners/applications с полями договорённости;
+    продукт принял — «Заявка принята — следующий шаг: Академия; письмо придёт на …» (RU и EN,
+    телефон и компьютер); не принял — прежнее письмо и прежний текст."""
+    st = _stub()
+    body = {"name": "Мария Пример", "email": "maria@example.com", "linkedin": "https://linkedin.com/in/maria-example",
+            "experience": "Пять лет в операционном консалтинге, BPMN, n8n", "rate_usd": 150}
+    for size, lang in (((390, 844), "ru"), ((1440, 900), "en")):
+        st.reset("empty", "ok")
+        ctx, pg = _api_page(size, lang, touch=size[0] < 600)
+        sent = _capture_formsubmit(pg)
+        _fill_application(pg, lang)
+        assert st.posts("/api/partners/applications") == [dict(body, lang=lang)], st.posts()
+        assert sent == [] and pg.is_visible("#app-stage") and pg.is_hidden("#app-ok-p")
+        stage = pg.inner_text("#app-stage")
+        assert stage == ("Следующий шаг — Академия. Письмо придёт на maria@example.com" if lang == "ru" else
+                         "Next step — the Academy. An email is on its way to maria@example.com"), stage
+        assert pg.inner_text("#app-done .m-h").lower() == ("заявка принята" if lang == "ru" else "application received")
+        assert pg.evaluate("document.querySelector('#app-stage b').textContent") == "maria@example.com"
+        if size[0] < 600:
+            assert pg.evaluate("() => { const p = document.querySelector('#app'); return p.scrollWidth - p.clientWidth; }") <= 0
+        _clean(pg, "заявка в партнёры %s" % lang)
+        ctx.close()
+    st.reset("empty", "error")
+    ctx, pg = _api_page()
+    sent = _capture_formsubmit(pg)
+    _fill_application(pg)
+    assert len(st.posts("/api/partners/applications")) == 1 and len(sent) == 1 and sent[0]["type"] == "partner_application"
+    assert pg.is_hidden("#app-stage") and pg.inner_text("#app-ok-p").startswith("Спасибо! Ответим на почту")
+    # следующая заявка начинается чистой: прежней ступени в окне нет
+    pg.click("#app-done [data-close]")
+    pg.click("#apply")
+    pg.wait_for_selector("#app-step:not([hidden])")
+    assert pg.is_hidden("#app-stage") and pg.inner_text("#app-stage") == ""
+    ctx.close()
+
+
+def test_render_real_cors_preflight_and_the_queue():
+    """NFR-SITE111/113: без перехвата запросов браузер сам шлёт продукту предзапрос CORS (POST с
+    JSON) — открыт: заявка в продукте; закрыт: до продукта она не доходит, уходит письмом, а без
+    сети — в очередь ait_lead_queue (уйдёт при следующем заходе, как у главной)."""
+    e, st = _env(), _stub()
+    st.partners = _product_partners()
+    for post_mode in ("ok", "nocors"):
+        st.reset("ok", post_mode)
+        ctx = e["browser"].new_context(viewport={"width": 1440, "height": 900}, locale="ru-RU", reduced_motion="reduce")
+        ctx.add_init_script("window.AIT_API = %s;" % json.dumps(st.url))
+        pg = ctx.new_page()
+        pg.goto(e["sub"] + "?lang=ru&p=nika-vetrova", wait_until="load")
+        e["C"].wait_ready(pg)
+        assert pg.evaluate("window.AndrePartners.source") == "api"
+        pg.wait_for_selector("#profile:not([hidden])")
+        pg.click("#profile [data-choose]")
+        pg.wait_for_selector("#req:not([hidden])")
+        _fill_request(pg)
+        assert [x[:2] for x in st.preflights] == [("/api/partners/requests", e["base2"])], st.preflights
+        assert "content-type" in (st.preflights[0][2] or "").lower()
+        queued = pg.evaluate("JSON.parse(localStorage.getItem('ait_lead_queue') || '[]')")
+        if post_mode == "ok":
+            assert len(st.posts("/api/partners/requests")) == 1 and queued == [] and pg.evaluate("window.AndrePartners.sent") == "product"
+        else:
+            assert st.posts() == [], "закрытый CORS: POST до продукта не доходит"
+            assert pg.evaluate("window.AndrePartners.sent") == "queue"
+            assert len(queued) == 1 and queued[0]["type"] == "consultant_request" and queued[0]["partner"] == "nika-vetrova"
+        ctx.close()
+
+
+def test_render_invite_copies_the_partner_link():
+    """FR-SITE147/148: у партнёра с промокодом — «Пригласить клиента» и строка, что даёт ссылка;
+    нажатие копирует https://andre.technology/?promo=<код>&partner=<slug>; без кода или с неверным
+    кодом кнопки нет (профиль показывается); на телефоне — своей строкой, без прокрутки вбок и не
+    меньше 44 px."""
+    e, st = _env(), _stub()
+    odd = json.loads(json.dumps(_product_partners()[0]))
+    odd.update(slug="lukas-brenner", promo_code="NI KA")
+    st.partners = _product_partners() + [odd]
+    for size, lang in (((1440, 900), "ru"), ((390, 844), "en")):
+        st.reset("ok")
+        ctx, pg = _api_page(size, lang, query="?p=nika-vetrova", touch=size[0] < 600)
+        ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=e["base2"])
+        pg.wait_for_selector("#profile [data-invite]")
+        label = "Пригласить клиента" if lang == "ru" else "Invite a client"
+        assert pg.inner_text("#profile [data-invite] span").lower() == label.lower()
+        assert "NIKA10" in pg.inner_text("#pf-invite-d")
+        pg.click("#profile [data-invite]")
+        pg.wait_for_function("document.querySelector('#profile [data-invite] span').textContent === %s" %
+                             json.dumps("Ссылка скопирована" if lang == "ru" else "Link copied"))
+        assert pg.evaluate("navigator.clipboard.readText()") == "https://andre.technology/?promo=NIKA10&partner=nika-vetrova"
+        if size[0] < 600:
+            _settle(pg)
+            assert pg.evaluate("() => { const p = document.querySelector('#profile'); return p.scrollWidth - p.clientWidth; }") <= 0
+            small = [t for t in pg.evaluate(e["C"].TAPS) if (t["h"] < 44 or t["w"] < 44) and not t["what"].startswith("pc-link")]
+            assert not small, small[:6]
+            w = pg.evaluate("[...document.querySelectorAll('#profile .pf-act .btn')].map(b => Math.round(b.getBoundingClientRect().width))")
+            assert w[0] == w[-1], "«Выбрать консультанта» и «Пригласить клиента» — во всю ширину: %s" % w
+        _clean(pg, "пригласить клиента %s" % lang)
+        for slug in ("aruzhan-seitova", "lukas-brenner"):
+            pg.keyboard.press("Escape")
+            pg.wait_for_selector("#profile", state="hidden")
+            pg.click('#grid .pc[data-slug="%s"]' % slug)
+            pg.wait_for_selector("#profile:not([hidden])")
+            assert pg.evaluate("document.querySelectorAll('#profile [data-invite], #pf-invite-d').length") == 0, slug
+        ctx.close()
 
 if __name__ == "__main__":
     failed = skipped = 0

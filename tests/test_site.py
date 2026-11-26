@@ -25,6 +25,10 @@ FR-SITE113…119, NFR-SITE103…105 — цены 26.11: только долла�
             бесплатно»; 250+ — «По запросу» и заявка. В браузере (RU и EN, компьютер и
             телефон, ползунок через границы групп, ошибки консоли, высота кнопок) это
             проверяет tools/pricing_check.py.
+FR-SITE140…142 — вход с сайта в продукт: до 250 сотрудников кнопка пакета — ссылка на
+            strategy.andre.technology/?pkg=…&emp=…&period=…&lang=… (та же вкладка), промокод и
+            партнёр из ссылки партнёра идут дальше; у 250+ — прежняя заявка. В браузере
+            (test_render_*: Playwright и Chromium, нет их — пропуск) — стенд tools/entry_check.py.
 """
 import os
 import re
@@ -430,11 +434,72 @@ def test_large_company_is_on_request_and_opens_the_lead_form():
     assert "ask: 'On request', ask2: 'on request', contact: 'Contact us'," in js
     assert "if (b.a == null) return null;" in js and "row.classList.toggle('ask', !p);" in js
     assert "go.innerHTML = p ? t(go.getAttribute('data-i18n')) : P.contact;" in js
-    assert ("openLead('Pricing: ' + n + (n >= EMP[EMP.length - 1] ? '+' : '') + ' (' + BANDS[bandOf(n)].id + ') / ' + "
-            "state.period + ' / ' + state.pkg, 'quote');") in js
+    assert ("function leadSource(pkg) { var n = EMP[state.emp]; return 'Pricing: ' + n + (n >= EMP[EMP.length - 1] ? '+' : '') + ' (' + "
+            "BANDS[bandOf(n)].id + ') / ' + state.period + ' / ' + pkg; }") in js
+    assert "e.preventDefault(); openLead(leadSource(state.pkg), 'quote'); });" in js, "FR-SITE142: у 250+ — прежняя заявка"
     assert re.findall(r'data-pick="(\w+)"', html) == ["strategy", "platform", "transformation"]
     assert ".t-pr .ask .cur, .t-pr .ask .per { display: none; }" in html
     assert "var LEAD_ENDPOINT = 'https://formsubmit.co/ajax/admin@andre.technology';" in html
+
+
+def test_package_buttons_are_links_into_the_product():
+    """FR-SITE140 (отчёт сквозного прохода 26.11, P1 №1: «Начать ИИ-трансформацию» открывала
+    заявку, пакет и размер терялись): до 250 сотрудников кнопка пакета — ссылка в продукт по
+    контракту входа (Andre AI, §1) — пакет, размер, период и язык; та же вкладка (без target);
+    в разметке — адрес состояния по умолчанию (5 сотрудников, «Месяц», русский); тот же адрес
+    собирает лендинг ИИ-стратегии."""
+    from tools import build_strategy as B
+    sec, js = _pricing(), _calc_js()
+    for k in B.PACKAGES:
+        tag = '<a class="t-go" href="%s" data-pick="%s">' % (B.entry_href(k, 5, "month", "ru").replace("&", "&amp;"), k)
+        assert tag in sec, k
+    assert '<button class="t-go"' not in sec and "target=" not in sec
+    assert "var PRODUCT = 'https://strategy.andre.technology/';" in js and B.PRODUCT_ENTRY == "https://strategy.andre.technology/"
+    assert ("function entryUrl(pkg, n) { return PRODUCT + '?pkg=' + pkg + '&emp=' + n + '&period=' + state.period + '&lang=' + state.lang + REF; }"
+            in js)
+    assert "a.setAttribute('href', p ? entryUrl(key, n) : 'mailto:admin@andre.technology?subject=' + encodeURIComponent(leadSource(key)));" in js
+    assert "if (p) a.removeAttribute('aria-haspopup'); else a.setAttribute('aria-haspopup', 'dialog');" in js
+    assert "if (BANDS[bandOf(EMP[state.emp])].a != null) return;" in js, "до 250 нажатие — обычный переход по ссылке"
+    assert B.entry_href("platform", 50, "year", "en") == "https://strategy.andre.technology/?pkg=platform&emp=50&period=year&lang=en"
+
+
+def test_partner_promo_is_read_before_the_address_is_rewritten():
+    """FR-SITE141: промокод и партнёр (ссылка партнёра andre.technology/?promo=…&partner=…)
+    берутся из адреса при разборе скрипта — до первого показа слайда, который переписывает адрес
+    на ?lang=… (syncUrl остаётся прежним); только латиница, цифры, «_» и «-», до 64 знаков; та же
+    выборка — на лендинге ИИ-стратегии."""
+    html, land = _html(), _read("assets/strategy.js")
+    assert html.index("var REF = (function () {") < html.index("go(start, true);")
+    assert "history.replaceState(null, '', location.pathname + '?lang=' + state.lang + (state.i > 0 ? '#' + ORDER[state.i] : ''));" in html
+    for line in ("['promo', 'partner'].forEach(function (k) {",
+                 "var m = new RegExp('[?&]' + k + '=([^&#]*)').exec(location.search), v = '';",
+                 "if (m) { try { v = decodeURIComponent(m[1].replace(/\\+/g, ' ')); } catch (e) {} }",
+                 "if (/^[A-Za-z0-9_-]{1,64}$/.test(v)) out += '&' + k + '=' + encodeURIComponent(v);"):
+        assert line in html and line in land, line
+
+
+def test_lead_form_payload_is_unchanged():
+    """FR-SITE142: заявка 250+ — прежняя: тот же канал FormSubmit и те же поля, промокода в ней нет."""
+    html = _html()
+    assert ("var payload = { name: (ln.value || '').trim() || '—', email: em, interested_in: state.lead, page: location.href, "
+            "submitted_at: new Date().toISOString(), _subject: 'New lead — andre.technology', _template: 'table', _captcha: 'false' };") in html
+
+
+def test_spec_lists_the_entry_requirements_and_their_tests():
+    """Трассировка FR-SITE140…148, NFR-SITE111…113: у каждого — раздел в спеке, каждый названный
+    там тест есть в своём файле (test_site, test_strategy, test_partners)."""
+    spec = _read("SPEC-SITE.md")
+    sec = spec[spec.index("## Вход с сайта в продукт и партнёры через продукт"):]
+    for n in range(140, 149):
+        assert "### FR-SITE%d — " % n in sec, "нет FR-SITE%d" % n
+    for n in range(111, 114):
+        assert "### NFR-SITE%d — " % n in sec, "нет NFR-SITE%d" % n
+    for mod in ("test_site", "test_strategy", "test_partners"):
+        src = _read("tests/%s.py" % mod)
+        named = set(re.findall(r"%s\.(test_\w+)" % mod, sec))
+        assert named, mod
+        missing = sorted(t for t in named if "\ndef %s(" % t not in src)
+        assert not missing, (mod, missing)
 
 
 def test_packages_stay_as_they_were():
@@ -618,11 +683,138 @@ def test_compound_words_use_a_glyph_the_font_has():
         assert re.search(r'class="[^"]*\bnw\b[^"]*">' + word, html), word
 
 
+# ── в браузере: вход в продукт (FR-SITE140…142) ───────────────────────────
+# Playwright и Chromium (/opt/pw-browsers/chromium или CHROMIUM_PATH); нет их — проверки пропускаются, а не валят прогон.
+
+class Skip(Exception):
+    pass
+
+
+_B = {}
+
+
+def _skip(msg):
+    """Под pytest — его пропуск; при запуске файлом — Skip, его ловит блок запуска внизу."""
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        import pytest
+        pytest.skip(msg)
+    raise Skip(msg)
+
+
+def _stand():
+    """Стенд tools/entry_check.py: сервер сайта и Chromium без выхода наружу — один на файл."""
+    if "stand" in _B:
+        return _B["E"], _B["stand"]
+    try:
+        import playwright.sync_api  # noqa: F401
+    except ImportError:
+        _skip("нет Playwright")
+    from tools import entry_check as E
+    if not os.path.exists(E.PC.CHROMIUM):
+        _skip("нет Chromium: " + E.PC.CHROMIUM)
+    st = E.Stand(E.PC.playwright())     # Playwright — один на процесс (tools/partners_check.py), браузер — свой
+    _B.update(E=E, stand=st)
+    import atexit
+    atexit.register(st.close)
+    return E, st
+
+
+def test_render_package_buttons_lead_into_the_product():
+    """FR-SITE140 в Chromium: компьютер и телефон, RU и EN — у каждой границы групп (1, 10 | 11, 100 |
+    101, 249) и на 5, 50, 150 в «Месяц» и «Год» кнопка каждого пакета — ссылка на вход в продукт с
+    пакетом, размером, периодом и языком; EN | RU на странице меняет язык и в адресе."""
+    E, st = _stand()
+    from tools import build_strategy as B
+    for size in (E.DESKTOP, E.PHONE):
+        for lang in ("ru", "en"):
+            ctx, pg = st.page(size, lang, touch=size == E.PHONE)
+            E.open_home(pg, st.base, lang)
+            for period in E.PERIODS:
+                for n in (1, 5, 10, 11, 50, 100, 101, 150, 249):
+                    E.home_set(pg, n, period)
+                    got = E.home_links(pg)
+                    for pkg in B.PACKAGES:
+                        assert got[pkg] == (E.expected(pkg, n, period, lang), None, "A"), (size, lang, n, period, pkg, got[pkg])
+            other = "en" if lang == "ru" else "ru"
+            pg.click('.lang [data-lang="%s"]' % other)
+            assert E.home_links(pg)["platform"][0] == E.expected("platform", 249, "year", other)
+            assert not [x for x in pg.errors if "Failed to load resource" not in x], pg.errors
+            ctx.close()
+
+
+def test_render_partner_link_promo_reaches_the_product():
+    """FR-SITE141 в Chromium: главная, открытая по ссылке партнёра (?promo=NIKA10&partner=…), несёт
+    их в продукт — и после того как переписала адрес на ?lang=…, и после перехода по слайдам;
+    посторонние значения отбрасываются; нажатие — переход в продукт в той же вкладке."""
+    E, st = _stand()
+    from tools import build_strategy as B
+    for lang in ("ru", "en"):
+        ctx, pg = st.page(lang=lang)
+        E.open_home(pg, st.base, lang, E.PROMO_QS)
+        assert "promo=" not in pg.url and "lang=" + lang in pg.url, "главная переписала адрес — промокод взят до этого"
+        for n, period in ((5, "month"), (50, "year"), (150, "month")):
+            E.home_set(pg, n, period)
+            got = E.home_links(pg)
+            assert all(got[k][0] == E.expected(k, n, period, lang, E.PROMO_REF) for k in B.PACKAGES), got
+        pg.evaluate("location.hash = '#faq'")
+        pg.wait_for_function("document.querySelector('#faq').classList.contains('on')")
+        pg.evaluate("location.hash = '#pricing'")
+        pg.wait_for_function("document.querySelector('#pricing').classList.contains('on')")
+        pg.click('#pkgs .t-go[data-pick="platform"]')
+        pg.wait_for_url(E.PRODUCT + "**")
+        assert pg.url == E.expected("platform", 150, "month", lang, E.PROMO_REF) and len(ctx.pages) == 1, pg.url
+        ctx.close()
+    for qs, ref in (("promo=%3Cb%3Ex%3C%2Fb%3E&partner=nika-vetrova", "&partner=nika-vetrova"),
+                    ("promo=NIKA10&partner=" + "a" * 65, "&promo=NIKA10"),
+                    ("promo=NIKA%2010&partner=", ""), ("utm_source=newsletter", "")):
+        ctx, pg = st.page()
+        E.open_home(pg, st.base, "ru", qs)
+        assert E.home_links(pg)["strategy"][0] == E.expected("strategy", 5, "month", "ru", ref), qs
+        ctx.close()
+
+
+def test_render_large_company_keeps_the_lead_form():
+    """FR-SITE142, FR-SITE118 в Chromium: с 250 — «Связаться»: нажатие открывает прежнюю заявку и в
+    продукт не уводит; FormSubmit получает прежние поля с источником «Pricing: …» (без промокода);
+    адрес кнопки — письмо с той же темой, кнопка отмечена aria-haspopup; на 249 — снова ссылка."""
+    E, st = _stand()
+    from tools import build_strategy as B
+    for lang in ("ru", "en"):
+        ctx, pg = st.page(lang=lang)
+        E.open_home(pg, st.base, lang, E.PROMO_QS)
+        for n, period, pkg in ((250, "month", "strategy"), (1000, "year", "platform"), (300, "month", "transformation")):
+            E.home_set(pg, n, period)
+            src = E.lead_source(n, period, pkg)
+            assert E.home_links(pg)[pkg] == ("mailto:admin@andre.technology?subject=" + B.mail_quote(src), "dialog", "A")
+            assert pg.inner_text('#pkgs .t-go[data-pick="%s"]' % pkg).strip() == ("Связаться" if lang == "ru" else "Contact us")
+            pg.click('#pkgs .t-go[data-pick="%s"]' % pkg)
+            pg.wait_for_selector("#lead:not([hidden])")
+            assert pg.url.startswith(st.base), "в продукт не ушли"
+            pg.fill("#lead-name", "Big Co")
+            pg.fill("#lead-email", "big@example.com")
+            pg.evaluate("document.querySelector('#lead-form').requestSubmit()")
+            pg.wait_for_selector("#lead-done:not([hidden])")
+            lead = pg.leads[-1]
+            assert sorted(lead) == sorted(["name", "email", "interested_in", "page", "submitted_at", "_subject", "_template", "_captcha"]), lead
+            assert lead["interested_in"] == src and lead["_subject"] == "New lead — andre.technology" and lead["name"] == "Big Co"
+            pg.evaluate("document.querySelector('[data-lead-close]').click()")
+            pg.wait_for_selector("#lead", state="hidden")
+        E.home_set(pg, 249, "month")
+        assert E.home_links(pg)["strategy"] == (E.expected("strategy", 249, "month", lang, E.PROMO_REF), None, "A")
+        assert len(pg.leads) == 3
+        ctx.close()
+
+
 if __name__ == "__main__":
-    n = 0
-    for name, fn in sorted(globals().items()):
+    n = skipped = 0
+    for name, fn in sorted(globals().items(), key=lambda kv: (kv[0].startswith("test_render"), kv[0])):
         if name.startswith("test_") and callable(fn):
-            fn()
+            try:
+                fn()
+            except Skip as e:
+                skipped += 1
+                print("skip", name + ":", e)
+                continue
             print("ok  ", name)
             n += 1
-    print("\nВсе тесты сайта пройдены:", n)
+    print("\nВсе тесты сайта пройдены:", n, "(пропущено: %d)" % skipped if skipped else "")

@@ -1,7 +1,7 @@
-/* Партнёры Andre AI — каталог, публичная карточка партнёра, заявки (FR-SITE120…139, NFR-SITE106…110).
-   Vanilla ES5 без сборки и зависимостей, как главная andre.technology. Данные — partners.json (fetch), при сбое и на file:// —
-   встроенная копия #partners-data. Все адреса внутри сайта относительные: страница одна и та же на andre.technology/partners/
-   и на partners.andre.technology (NFR-SITE110). */
+/* Партнёры Andre AI — каталог, публичная карточка партнёра, заявки (FR-SITE120…139, NFR-SITE106…110; через продукт — FR-SITE143…148).
+   Vanilla ES5 без сборки и зависимостей, как главная andre.technology. Данные — публичный каталог продукта, при сбое и пустом ответе —
+   partners.json (fetch), при сбое и на file:// — встроенная копия #partners-data; заявки — в продукт, при сбое — письмом через FormSubmit.
+   Все адреса внутри сайта относительные: страница одна и та же на andre.technology/partners/ и на partners.andre.technology (NFR-SITE110). */
 (function () {
   'use strict';
   window.__pjs = 1;
@@ -142,6 +142,8 @@
       "pf.choose": "Choose this consultant",
       "pf.copy": "Copy link",
       "pf.copied": "Link copied",
+      "pf.invite": "Invite a client",
+      "pf.invite.d": "A link to andre.technology with promo code %code: the client gets 10% off the AI strategy and the first Neuronium month",
       "svcl.review": "Process map review",
       "svcl.bootcamp": "Team bootcamp",
       "svcl.neuronium": "Neuronium implementation",
@@ -157,6 +159,7 @@
       "pf.note": "Service price = rate × hours ÷ 0.70: the consultant gets 70%, Andre AI 30%. The final amount is shown in the order before payment.",
       "req.sub": "%name · rate %rate",
       "sending": "Sending…",
+      "app.stage": "Next step — the Academy. An email is on its way to %email",
       "calc.l.client": "Client:",
       "calc.l.you": "You:",
       "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
@@ -231,6 +234,8 @@
       "pf.choose": "Выбрать консультанта",
       "pf.copy": "Скопировать ссылку",
       "pf.copied": "Ссылка скопирована",
+      "pf.invite": "Пригласить клиента",
+      "pf.invite.d": "Ссылка на andre.technology с промокодом %code: клиенту −10 % на ИИ-стратегию и первый месяц Нейрония",
       "svc.review": "Проверка схем",
       "svc.bootcamp": "Буткемп",
       "svc.neuronium": "Внедрение в Нейронии",
@@ -249,6 +254,7 @@
       "pf.note": "Цена услуги = ставка × часы ÷ 0,70: 70 % получает консультант, 30 % — Andre AI. Итоговая сумма — в заказе до оплаты.",
       "req.sub": "%name · ставка %rate",
       "sending": "Отправляем…",
+      "app.stage": "Следующий шаг — Академия. Письмо придёт на %email",
       "calc.l.client": "Клиент:",
       "calc.l.you": "Вам:",
       "months": ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"],
@@ -301,6 +307,15 @@
   var CERT_ID = 'andre-ai-certified';
   var ENDPOINT = 'https://formsubmit.co/ajax/admin@andre.technology';  // FR-SITE133/136: тот же канал, что у заявок главной
   var SORTS_LIST = ['best', 'rate_up', 'rate_down', 'projects'];
+  /* FR-SITE143…145: каталог и заявки — у продукта Andre AI (договорённость 26.11, §2–§3): публичный список активных партнёров, заявка партнёру,
+     заявка в партнёры; CORS продукт открывает для andre.technology и partners.andre.technology. Адрес продукта можно подменить строкой
+     window.AIT_API до загрузки скрипта — так стенд и тесты ставят заглушку продукта на 127.0.0.1 (NFR-SITE113); из адреса страницы он не
+     подменяется. Сколько ждём продукт: каталог — 3,5 с (как partners.json прежде), заявку — 8 с; дольше — запасной путь (NFR-SITE111) */
+  var PRODUCT_API = (typeof window.AIT_API === 'string' && /^https?:\/\/[^\s"'<>]+$/.test(window.AIT_API) ? window.AIT_API : 'https://strategy.andre.technology').replace(/\/+$/, '');
+  var API_WAIT = 3500, POST_WAIT = 8000;
+  /* FR-SITE147: промокод партнёра — того же вида, что принимает продукт (код партнёра в ценовой политике v3) */
+  var PROMO_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{3,31}$/;
+  var SITE_HOME = 'https://andre.technology/';
 
   /* FR-SITE132: цены услуг — по ценовой политике Andre AI (§4): клиент платит вознаграждение консультанта ÷ 0,70.
      Деньги — в центах, каждая позиция округляется до цента вверх от половины (half-up). Проверка: 10 схем = 1 час;
@@ -410,15 +425,39 @@
     return out;
   }
   function inlineData() { try { return JSON.parse($('#partners-data').textContent || '[]'); } catch (e) { return []; } }
-  /* сначала partners.json (его опубликует и будущий кабинет партнёра), при сбое, долгом ответе и на file:// — встроенная копия */
+  /* запрос к продукту: без кук, не дольше wait мс — дольше считается сбоем (запрос обрывается, где браузер умеет). Ответ — разобранный JSON
+     или null, если тело не JSON; код не 2xx — сбой */
+  function product(path, opt, wait) {
+    var ctl = window.AbortController ? new AbortController() : null;
+    opt.credentials = 'omit'; opt.mode = 'cors'; if (ctl) opt.signal = ctl.signal;
+    return new Promise(function (resolve, reject) {
+      var t = setTimeout(function () { if (ctl) ctl.abort(); reject(new Error('timeout')); }, wait);
+      fetch(PRODUCT_API + path, opt).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json().catch(function () { return null; });
+      }).then(function (j) { clearTimeout(t); resolve(j); }, function (e) { clearTimeout(t); reject(e); });
+    });
+  }
+  /* FR-SITE143: сначала публичный каталог продукта (только активные партнёры — прошедшие собеседование), запасной — partners.json, затем
+     встроенная копия. Оба запроса уходят сразу: если продукт молчит, к концу ожидания файл уже на месте. Пустой список продукта (партнёров ещё
+     нет или флаг выключен) — показываем примеры из partners.json. На file:// и без fetch — встроенная копия, продукт не спрашиваем (NFR-SITE111) */
   function load(cb) {
-    var finished = false;
-    function finish(list, src) { if (finished) return; finished = true; API.source = src; cb(list); }
+    var done = false, api, file, t;
+    function finish(list, src) { if (done) return; done = true; clearTimeout(t); API.source = src; cb(list); }
+    function decide() {
+      if (done) return;
+      if (api && api.some(function (p) { return !problem(p); })) { finish(api, 'api'); return; }
+      if (api === undefined) return;                                   // продукт ещё не ответил
+      if (file) finish(file, 'fetch'); else if (file === null) finish(inlineData(), 'inline');
+    }
     if (location.protocol === 'file:' || !window.fetch) { finish(inlineData(), 'inline'); return; }
-    var t = setTimeout(function () { finish(inlineData(), 'inline'); }, 3500);
+    t = setTimeout(function () { if (api === undefined) api = null; if (file === undefined) file = null; decide(); }, API_WAIT);
+    product('/api/partners/public?lang=' + state.lang, { method: 'GET', headers: { 'Accept': 'application/json' } }, API_WAIT)
+      .then(function (j) { api = j && j.ok === true && Array.isArray(j.partners) ? j.partners : null; }, function () { api = null; })
+      .then(decide);
     fetch('partners.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (j) { clearTimeout(t); if (!Array.isArray(j)) throw new Error('partners.json: not an array'); finish(j, 'fetch'); })
-      .catch(function () { clearTimeout(t); finish(inlineData(), 'inline'); });
+      .then(function (j) { file = Array.isArray(j) ? j : null; }, function () { file = null; })
+      .then(decide);
   }
 
   /* ---------- адрес: фильтры, язык и открытый профиль (FR-SITE129, FR-SITE130) ---------- */
@@ -744,7 +783,9 @@
             '<span>' + icon('globe') + esc(p.languages.map(lngLabel).join(', ')) + '</span></div></div>' +
         '<div class="pf-act"><button class="btn" type="button" data-choose>' + esc(tx('pf.choose')) + icon('arrow') + '</button>' +
           inHTML(p, 'btn btn-ghost btn-in', true) +
-          '<button class="btn btn-ghost" type="button" data-copy>' + icon('link') + '<span>' + esc(tx('pf.copy')) + '</span></button></div>' +
+          '<button class="btn btn-ghost" type="button" data-copy>' + icon('link') + '<span>' + esc(tx('pf.copy')) + '</span></button>' +
+          (promoOf(p) ? '<button class="btn btn-ghost btn-invite" type="button" data-invite aria-describedby="pf-invite-d">' + icon('invite') + '<span>' + esc(tx('pf.invite')) + '</span></button>' +
+            '<p class="pf-invite" id="pf-invite-d">' + esc(fmt(tx('pf.invite.d'), { code: promoOf(p) })) + '</p>' : '') + '</div>' +
       '</div>' +
       '<div class="pf-cols"><div class="pf-main">' +
         sec('pf.about', '<p class="pf-about">' + nb(L(p.about)) + '</p>') +
@@ -792,13 +833,19 @@
     if (openProfile(slug, a)) { try { history.pushState({ pf: slug }, '', urlWith({ p: slug })); state.pushed = true; } catch (er) {} }
   });
   pfBody.addEventListener('click', function (e) {
-    var t = e.target.closest ? e.target.closest('[data-choose], [data-copy]') : null; if (!t) return;
+    var t = e.target.closest ? e.target.closest('[data-choose], [data-copy], [data-invite]') : null; if (!t) return;
     var p = bySlug(state.open); if (!p) return;
-    if (t.hasAttribute('data-choose')) openReq(p, t); else copyLink(p, t);
+    if (t.hasAttribute('data-choose')) openReq(p, t);
+    else if (t.hasAttribute('data-invite')) copyText(inviteUrl(p), t, 'pf.invite');
+    else copyText(location.href.split('#')[0].split('?')[0] + '?p=' + encodeURIComponent(p.slug), t, 'pf.copy');
   });
-  function copyLink(p, btn) {
-    var url = location.href.split('#')[0].split('?')[0] + '?p=' + encodeURIComponent(p.slug), span = $('span', btn);
-    function ok() { span.textContent = tx('pf.copied'); setTimeout(function () { if (D.contains(span)) span.textContent = tx('pf.copy'); }, 2000); }
+  /* FR-SITE147/148: у партнёра с промокодом — «Пригласить клиента»: ссылка на главную с его кодом и slug; по ней клиент приходит на
+     andre.technology, и кнопка пакета несёт код и партнёра в продукт (FR-SITE141) — там скидка клиенту и 10 % партнёру */
+  function promoOf(p) { return typeof p.promo_code === 'string' && PROMO_RE.test(p.promo_code) ? p.promo_code : ''; }
+  function inviteUrl(p) { return SITE_HOME + '?promo=' + encodeURIComponent(promoOf(p)) + '&partner=' + encodeURIComponent(p.slug); }
+  function copyText(url, btn, key) {
+    var span = $('span', btn);
+    function ok() { span.textContent = tx('pf.copied'); setTimeout(function () { if (D.contains(span)) span.textContent = tx(key); }, 2000); }
     function legacy() { var t = D.createElement('textarea'); t.value = url; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0'; btn.parentNode.appendChild(t); t.select();
       try { D.execCommand('copy'); ok(); } catch (e) {} t.parentNode.removeChild(t); btn.focus(); }
     if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(ok, legacy); else legacy();
@@ -827,11 +874,21 @@
     return ok;
   }
   function clearForm(form) { form.reset(); $$('[aria-invalid]', form).forEach(function (x) { x.removeAttribute('aria-invalid'); }); $$('.err', form).forEach(function (x) { x.hidden = true; }); }
-  function submitFlow(form, btn, gen, getGen, payload, step, doneEl, ov) {
+  /* FR-SITE144/145: заявка — сначала в продукт (поля договорённости §3, ответ 201 {ok, id}): там её видят партнёр и админ. Продукт не принял —
+     выключен флагом (404), лимит частоты (429), сбой, нет сети, CORS, дольше 8 с — та же заявка уходит прежним письмом через FormSubmit, а при
+     сбое и его — в очередь: заявка не теряется (NFR-SITE111). Без тела для продукта (пример профиля) — сразу письмом */
+  function toProduct(path, body) {
+    if (!body || !window.fetch) return Promise.reject(new Error('mail only'));
+    return product(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(body) }, POST_WAIT)
+      .then(function (j) { if (j && j.ok === false) throw new Error('not accepted'); return 'product'; });
+  }
+  function submitFlow(btn, gen, getGen, path, body, payload, step, doneEl, ov, onDone) {
     var keep = btn.innerHTML; btn.disabled = true; btn.textContent = tx('sending');
-    send(payload).catch(function () { queue(payload); }).then(function () {
+    toProduct(path, body).catch(function () { return send(payload).then(function () { return 'mail'; }, function () { queue(payload); return 'queue'; }); }).then(function (via) {
       btn.disabled = false; btn.innerHTML = keep;
+      API.sent = via;
       if (gen !== getGen() || ov.hidden) return;
+      if (onDone) onDone(via);
       step.hidden = true; doneEl.hidden = false;
       var b = $('[data-close]', doneEl); if (b) b.focus();
     });
@@ -857,18 +914,27 @@
     var n = $('#req-name'), em = $('#req-email');
     var okN = mark(n, n.value.trim().length >= 2), okE = mark(em, validEmail(em.value.trim()));
     if (!okN || !okE) { (okN ? em : n).focus(); return; }
-    var p = reqFor;
+    var p = reqFor, company = $('#req-company').value.trim(), msg = $('#req-msg').value.trim();
     var payload = stamp({ _subject: 'Consultant request — partners.andre.technology', type: 'consultant_request',
       partner: p.slug, partner_name: p.name.en + ' / ' + p.name.ru, partner_rate_usd: p.rate_usd, partner_example: !!p.example,
-      name: n.value.trim(), email: em.value.trim(), company: $('#req-company').value.trim() || '—', message: $('#req-msg').value.trim() || '—' });
-    submitFlow(reqForm, $('#req-btn'), gen, function () { return reqGen; }, payload, $('#req-step'), $('#req-done'), reqOv);
+      name: n.value.trim(), email: em.value.trim(), company: company || '—', message: msg || '—' });
+    /* FR-SITE144: у примера профиля партнёра в продукте нет — заявка сразу письмом команде, как обещает окно (FR-SITE133) */
+    var body = p.example ? null : { partner_slug: p.slug, name: n.value.trim(), email: em.value.trim(), company: company, message: msg, lang: state.lang };
+    submitFlow($('#req-btn'), gen, function () { return reqGen; }, '/api/partners/requests', body, payload, $('#req-step'), $('#req-done'), reqOv);
   });
 
-  var appOv = $('#app'), appForm = $('#app-form'), appGen = 0;
+  var appOv = $('#app'), appForm = $('#app-form'), appGen = 0, appStage = '';
   function openApp(opener) {
-    appGen++; clearForm(appForm);
+    appGen++; clearForm(appForm); appStage = ''; stageUI();
     $('#app-step').hidden = false; $('#app-done').hidden = true;
     openDlg(appOv, opener, $('#app-name'));
+  }
+  /* FR-SITE146: заявку принял продукт — кандидат на первой ступени (applied → academy → certified → interview → active), показываем следующую:
+     «Заявка принята — следующий шаг: Академия; письмо придёт на …». Ушла письмом через FormSubmit — ступени ещё нет, текст прежний */
+  function stageUI() {
+    var st = $('#app-stage');
+    st.hidden = !appStage; $('#app-ok-p').hidden = !!appStage;
+    st.innerHTML = appStage ? fmt(esc(tx('app.stage')), { email: '<b>' + esc(appStage) + '</b>' }) : '';
   }
   $('#apply').addEventListener('click', function () { openApp(this); });
   appForm.addEventListener('submit', function (e) {
@@ -890,7 +956,9 @@
     li.value = inUrl;
     var payload = stamp({ _subject: 'Partner application — partners.andre.technology', type: 'partner_application',
       name: n.value.trim(), email: em.value.trim(), linkedin: inUrl, experience: ex.value.trim(), rate_usd: rate });
-    submitFlow(appForm, $('#app-btn'), gen, function () { return appGen; }, payload, $('#app-step'), $('#app-done'), appOv);
+    var body = { name: n.value.trim(), email: em.value.trim(), linkedin: inUrl, experience: ex.value.trim(), rate_usd: rate, lang: state.lang };
+    submitFlow($('#app-btn'), gen, function () { return appGen; }, '/api/partners/applications', body, payload, $('#app-step'), $('#app-done'), appOv,
+      function (via) { appStage = via === 'product' ? body.email : ''; stageUI(); });
   });
 
   /* ---------- калькулятор заработка (FR-SITE135) ---------- */
@@ -935,6 +1003,7 @@
       if (p) renderProfile(p);
       if (reqFor && !reqOv.hidden) $('#req-sub').textContent = fmt(tx('req.sub'), { name: L(reqFor.name), rate: money(Math.round(reqFor.rate_usd * 100)) + tx('per.h') });
     }
+    if (appStage) stageUI();
     root.className = root.className.replace(/\s*i18n-wait\b/g, '');
   }
   $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { setLang(b.getAttribute('data-lang')); }); });

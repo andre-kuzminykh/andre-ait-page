@@ -4,6 +4,9 @@ FR-SITE102 — тарифы: ползунок «сколько сотрудни�
 FR-SITE113…119, NFR-SITE103…105 — цены 26.11: только доллары, «Месяц | Год −17%» над
 ползунком, три пакета главной по ценовой политике, «Первый процесс — бесплатно» под
 каждым, 250+ — «По запросу» и письмо; в браузере их проверяет tools/pricing_check.py.
+FR-SITE140…142 — до 250 сотрудников кнопка пакета ведёт прямо в продукт: пакет, размер,
+период и язык страницы, промокод и партнёр из ссылки партнёра; у 250+ — письмо. В браузере
+(test_render_*: Playwright и Chromium, нет их — пропуск) — стенд tools/entry_check.py.
 
 Страница листается экранами, как биография и главная. Без зависимостей:
 `python3 tests/test_strategy.py` или через pytest.
@@ -718,15 +721,45 @@ def test_large_company_is_on_request_and_writes_to_the_owner():
     assert B.lead_subject(300, False, B.band_of(300), "year", "platform") == "Pricing: 300 (250+) / year / platform"
     assert B.lead_subject(1000, True, B.band_of(1000), "month", "transformation") == "Pricing: 1000+ (250+) / month / transformation"
     t = dict(EN, pr_calc=EN["pr_calc"])
-    card = B.package_html(t, "platform", 300, "year")
+    card = B.package_html(t, "platform", 300, "year", "en")
     assert 'class="pk ask"' in card and '<b class="pk-num">On request</b>' in card
     assert 'href="mailto:admin@andre.technology?subject=Pricing%3A%20300%20(250%2B)%20%2F%20year%20%2F%20platform"' in card, \
         "тема кодируется как encodeURIComponent в скрипте"
     js = _read("assets/strategy.js")
-    assert ("go.setAttribute('href', p ? CD.go : 'mailto:' + CD.mail + '?subject=' +\n"
+    assert ("go.setAttribute('href', p ? calcEntry(key, n) : 'mailto:' + CD.mail + '?subject=' +\n"
             "        encodeURIComponent('Pricing: ' + n + (more ? '+' : '') + ' (' + b.id + ') / ' + calcSt.period + ' / ' + key));") in js
     assert "pk.classList.toggle('ask', !p);" in js
     assert ".pk.ask" not in _read("assets/strategy.css"), "«По запросу» тем же кеглем, что цена: строка не меняет высоту"
+
+
+def test_package_buttons_lead_into_the_product_with_the_choice():
+    """FR-SITE140: до 250 сотрудников кнопки пакетов — вход в продукт по контракту (Andre AI, §1):
+    пакет, размер, период и язык страницы (у английской — тоже, lang=en: витрина откроется на
+    языке страницы, где выбран пакет); собрано в состоянии по умолчанию, адрес собирает
+    assets/strategy.js из data-calc.entry — тот же, что у главной."""
+    B = _builder()
+    assert B.PRODUCT_ENTRY == "https://strategy.andre.technology/"
+    assert B.entry_href("transformation", 150, "year", "ru") == \
+        "https://strategy.andre.technology/?pkg=transformation&emp=150&period=year&lang=ru"
+    for lang, raw in (("en", _raw("ai-strategy/index.html")), ("ru", _raw("ai-strategy/ru/index.html"))):
+        hrefs = re.findall(r'class="btn btn-[a-z]+ btn-sm pk-go" href="([^"]+)"', raw)
+        assert hrefs == [B.entry_href(k, 5, "month", lang).replace("&", "&amp;") for k in B.PACKAGES], (lang, hrefs)
+        data = _calc_data(raw)
+        assert data["entry"] == B.PRODUCT_ENTRY and "go" not in data, sorted(data)
+    js = _read("assets/strategy.js")
+    assert ("function calcEntry(key, n) { return CD.entry + '?pkg=' + key + '&emp=' + n + '&period=' + calcSt.period + '&lang=' + lang + "
+            "calcRef; }") in js
+    assert "var lang = document.documentElement.lang === 'ru' ? 'ru' : 'en';" in js
+    assert 'target="_blank"' not in _pricing_sec(_raw("ai-strategy/index.html")), "та же вкладка"
+
+
+def test_partner_promo_passes_through_on_the_landing():
+    """FR-SITE141: промокод и партнёр из адреса лендинга дописываются к адресу входа — та же
+    выборка, что на главной (латиница, цифры, «_», «-», до 64 знаков)."""
+    js, home = _read("assets/strategy.js"), _read("index.html")
+    a, b = js.index("var calcRef = (function () {"), home.index("var REF = (function () {")
+    body = lambda src, i: src[src.index("var out = '';", i):src.index("return out;", i)]  # noqa: E731
+    assert " ".join(body(js, a).split()) == " ".join(body(home, b).split()), "выборка промокода — одна на двух страницах"
 
 
 def test_pricing_keys_and_phone_targets():
@@ -760,13 +793,18 @@ def test_final_screen_carries_the_footer():
 def test_cta_targets_the_product():
     """Все кнопки — в продукт. Единственное исключение — «Связаться» у пакетов при
     250+ (FR-SITE102, FR-SITE118): её адрес ставит скрипт — на почту из подвала, как
-    значок письма; в собранной странице (5 сотрудников) все кнопки ведут в продукт."""
+    значок письма; в собранной странице (5 сотрудников) все кнопки ведут в продукт.
+    FR-SITE140: кнопки пакетов — во вход с выбранным пакетом, размером, периодом и языком."""
+    B = _builder()
     for lang, html in _pages():
         hrefs = re.findall(r'class="btn btn-[a-z]+[^"]*" href="([^"]+)"', html)
         assert hrefs, lang + ": на странице должны быть кнопки"
-        assert len(re.findall(r'class="btn btn-[a-z]+ btn-sm pk-go" href="https://strategy', html)) == 3, \
-            lang + ": кнопки трёх пакетов — в продукт"
+        pk = re.findall(r'class="btn btn-[a-z]+ btn-sm pk-go" href="([^"]+)"', html)
+        assert pk == [B.entry_href(k, 5, "month", lang).replace("&", "&amp;") for k in B.PACKAGES], \
+            lang + ": кнопки трёх пакетов — вход в продукт с выбором"
         for h in hrefs:
+            if h in pk:
+                continue
             # FR-SITE85: русская — с ?lang=ru, английская — без (язык по браузеру)
             want = "https://strategy.andre.technology/" + ("?lang=ru" if lang == "ru" else "")
             assert h == want, lang + ": кнопка ведёт мимо продукта: " + h
@@ -1867,9 +1905,14 @@ def test_ru_page_leads_to_the_russian_product():
     без параметра, язык по браузеру."""
     ru, en = _raw("ai-strategy/ru/index.html"), _raw("ai-strategy/index.html")
     hrefs = re.findall(r'href="(https://strategy\.andre\.technology/[^"]*)"', ru)
-    # с FR-SITE119 на экране тарифов — кнопки трёх пакетов в продукт
-    assert len(hrefs) >= 5 and set(hrefs) == {"https://strategy.andre.technology/?lang=ru"}, hrefs
-    assert "?lang=" not in "".join(re.findall(r'href="https://strategy[^"]*"', en))
+    # FR-SITE140: кнопки трёх пакетов на экране тарифов — вход с выбором, язык в нём же (&lang=ru)
+    plain = [h for h in hrefs if "pkg=" not in h]
+    assert len(plain) >= 4 and set(plain) == {"https://strategy.andre.technology/?lang=ru"}, hrefs   # шапка, первый экран, кейсы, финал
+    assert len(hrefs) - len(plain) == 3 and all(h.endswith("&amp;lang=ru") for h in hrefs if "pkg=" in h), hrefs
+    en_hrefs = re.findall(r'href="(https://strategy[^"]*)"', en)
+    assert "lang=" not in "".join(h for h in en_hrefs if "pkg=" not in h), "прочие кнопки английской — без языка"
+    assert [h for h in en_hrefs if "pkg=" in h] and all(h.endswith("&amp;lang=en") for h in en_hrefs if "pkg=" in h), \
+        "кнопки пакетов — с языком страницы (контракт входа §1)"
 
 
 def test_owner_landing_fixes_2026_09_27():
@@ -1939,20 +1982,91 @@ def test_pages_turn_native_inside_telegram():
         assert head.count(head_snippet("deck")) == 1, lang
         assert '<script src="https://telegram.org' not in html, lang
 
+# ── в браузере: вход в продукт (FR-SITE140…142) ───────────────────────────
+# Playwright и Chromium (/opt/pw-browsers/chromium или CHROMIUM_PATH); нет их — проверка пропускается, а не валит прогон.
+
+class Skip(Exception):
+    pass
+
+
+_B = {}
+
+
+def _skip(msg):
+    """Под pytest — его пропуск; при запуске файлом — Skip, его ловит блок запуска внизу."""
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        import pytest
+        pytest.skip(msg)
+    raise Skip(msg)
+
+
+def _stand():
+    """Стенд tools/entry_check.py: сервер сайта и Chromium без выхода наружу — один на файл."""
+    if "stand" in _B:
+        return _B["E"], _B["stand"]
+    try:
+        import playwright.sync_api  # noqa: F401
+    except ImportError:
+        _skip("нет Playwright")
+    import sys
+    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+    import entry_check as E
+    if not os.path.exists(E.PC.CHROMIUM):
+        _skip("нет Chromium: " + E.PC.CHROMIUM)
+    st = E.Stand(E.PC.playwright())     # Playwright — один на процесс (tools/partners_check.py), браузер — свой
+    _B.update(E=E, stand=st)
+    import atexit
+    atexit.register(st.close)
+    return E, st
+
+
+def test_render_package_buttons_carry_size_period_language_and_promo():
+    """FR-SITE140…142 в Chromium: RU и EN, компьютер и телефон — при 5, 50, 150 сотрудниках в
+    «Месяц» и «Год» кнопка каждого пакета ведёт во вход в продукт; страница, открытая по ссылке
+    партнёра, — с промокодом и партнёром; у 250+ — письмо с темой заявки; нажатие — переход в
+    продукт в той же вкладке."""
+    E, st = _stand()
+    B = _builder()
+    for size in (E.DESKTOP, E.PHONE):
+        for lang in ("ru", "en"):
+            for query, ref in (("", ""), (E.PROMO_QS, E.PROMO_REF)):
+                ctx, pg = st.page(size, lang, touch=size == E.PHONE)
+                E.open_landing(pg, st.base, lang, query)
+                for period in E.PERIODS:
+                    for n in E.PROBES:
+                        E.landing_set(pg, n, period)
+                        got = E.landing_links(pg)
+                        for pkg in B.PACKAGES:
+                            assert got[pkg] == E.expected(pkg, n, period, lang, ref), (size, lang, query, n, period, pkg, got[pkg])
+                E.landing_set(pg, 300, "year")
+                got = E.landing_links(pg)
+                for pkg in B.PACKAGES:
+                    assert got[pkg] == "mailto:admin@andre.technology?subject=" + B.mail_quote(E.lead_source(300, "year", pkg)), got[pkg]
+                E.landing_set(pg, 50, "month")
+                pg.click('#calc .pk[data-pkg="platform"] .pk-go')
+                pg.wait_for_url(E.PRODUCT + "**")
+                assert pg.url == E.expected("platform", 50, "month", lang, ref) and len(ctx.pages) == 1, pg.url
+                assert not [x for x in pg.errors if "Failed to load resource" not in x], pg.errors
+                ctx.close()
+
+
 if __name__ == "__main__":
     import sys
-    fails = 0
+    fails = skipped = 0
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):
             try:
                 fn()
                 print("ok   " + name)
+            except Skip as e:
+                skipped += 1
+                print("skip " + name + ": " + str(e))
             except AssertionError as e:
                 fails += 1
                 print("FAIL " + name + ": " + str(e))
             except Exception as e:
                 fails += 1
                 print("ERR  " + name + ": " + type(e).__name__ + ": " + str(e))
-    print("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if not fails else "ПРОВАЛЕНО: %d" % fails)
+    print(("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if not fails else "ПРОВАЛЕНО: %d" % fails) + (" (пропущено: %d)" % skipped if skipped else ""))
     sys.exit(1 if fails else 0)
 

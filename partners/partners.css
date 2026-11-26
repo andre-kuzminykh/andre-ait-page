@@ -429,6 +429,12 @@ html.rv-on .rv { transition: opacity 0.8s ease, transform 0.9s var(--ease); }
 .pf-act .btn { padding: 0.85rem 1.3rem; }
 .pf-act .btn .ic { width: 15px; height: 15px; }
 @media (max-width: 599px) { .pf-act .btn:first-child { flex: 1 1 100%; } .pf-act .btn-ghost { flex: 1 1 0; padding: 0.85rem 0.8rem; font-size: 11px; } }
+/* FR-SITE148: «Пригласить клиента» (только у партнёра с промокодом) и под кнопками — что даёт ссылка; на телефоне — своей строкой во всю ширину,
+   третья кнопка в ряд с LinkedIn и «Скопировать ссылку» не помещается */
+.pf-invite { flex: 1 1 100%; margin: 0.1rem 0 0; font-size: 11.5px; line-height: 1.55; color: var(--tx3); }
+/* FR-SITE143: у партнёра из продукта нет плашки примера, и шапка профиля (сетка) стояла рядом с плавающим крестиком — на телефоне вся,
+   с кнопками, становилась уже на ширину крестика. Шапка начинается под ним, как под плашкой примера */
+@media (max-width: 599px) { .pf-act .btn-invite { flex: 1 1 100%; } .pf-top { clear: right; } }
 @media (hover: hover) { .btn-in:hover { background: #0a66c2; animation: none; box-shadow: 0 10px 25px -8px rgba(10,102,194,0.7); } }
 .pf-cols { display: grid; gap: 2rem; margin-top: 2rem; }
 @media (min-width: 860px) { .pf-cols { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 2.6rem; } }

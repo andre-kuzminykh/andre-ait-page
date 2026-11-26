@@ -19,7 +19,8 @@
   * клавиши на ползунке (End / Home) двигают ползунок, слайд при этом стоит;
   * главная: кнопка пакета у 250+ открывает заявку, и FormSubmit получает
     «Pricing: 1000+ (250+) / year / platform»; лендинг: «Связаться» — письмо с той
-    же темой;
+    же темой; до 250 кнопка пакета на обеих страницах — вход в продукт с пакетом,
+    размером, периодом и языком (FR-SITE140; подробно — tools/entry_check.py);
   * ни ₽, ни «Start free — 1 process» в блоке цен; под каждой карточкой —
     «Первый процесс — бесплатно»; карточки не меняют размер ни в одном состоянии,
     цена не вылезает за карточку; на телефоне переключатель, ползунок и кнопки не
@@ -122,7 +123,8 @@ MAIN = r"""() => {
       return { key: c.getAttribute('data-pkg'), now: (ask ? '' : row.querySelector('.cur').textContent) + row.querySelector('.num').textContent,
         per: row.querySelector('.per').textContent, was: c.querySelector('.t-was').textContent, struck: !!c.querySelector('.t-was s'),
         next: c.querySelector('.t-next').textContent, emp: c.querySelector('.t-emp').textContent,
-        go: c.querySelector('.t-go').textContent.trim(), foot: (c.querySelector('.t-foot') || {}).textContent || '', size: box(c) }; }),
+        go: c.querySelector('.t-go').textContent.trim(), href: c.querySelector('.t-go').getAttribute('href'),
+        foot: (c.querySelector('.t-foot') || {}).textContent || '', size: box(c) }; }),
     text: sl.innerText,
     over: [...sl.querySelectorAll('.pr-row, .t-add, .t-was, .t-inc button')].filter(e => e.scrollWidth > e.clientWidth + 1).length,
     spill: [...sl.querySelectorAll('.tier')].filter(c => { const b = c.getBoundingClientRect();
@@ -226,12 +228,12 @@ class Check:
                 self.bad("%s (%s): %s — кнопка %r" % (tag, state, card["key"], card["go"]))
             if norm(card["foot"]) != norm(TXT[lang]["first"]):
                 self.bad("%s (%s): под %s нет «%s»: %r" % (tag, state, card["key"], TXT[lang]["first"], card["foot"]))
-            if landing:
-                subj = B.lead_subject(n, more, B.band_of(n), period, card["key"])
-                want_href = ("mailto:%s?subject=%s" % (B.CONTACT_MAIL, B.mail_quote(subj))) if ask else \
-                    ("https://strategy.andre.technology/" + ("?lang=ru" if lang == "ru" else ""))
-                if card["href"] != want_href:
-                    self.bad("%s (%s): %s ведёт на %r, а не %r" % (tag, state, card["key"], card["href"], want_href))
+            # FR-SITE140, FR-SITE118: до 250 — вход в продукт с пакетом, размером, периодом и языком; у 250+ — письмо с темой заявки
+            # (на главной нажатие открывает заявку, адрес — для Ctrl-клика)
+            subj = B.lead_subject(n, more, B.band_of(n), period, card["key"])
+            want_href = ("mailto:%s?subject=%s" % (B.CONTACT_MAIL, B.mail_quote(subj))) if ask else B.entry_href(card["key"], n, period, lang)
+            if card["href"] != want_href:
+                self.bad("%s (%s): %s ведёт на %r, а не %r" % (tag, state, card["key"], card["href"], want_href))
         if "₽" in s["text"] or any(x in s["text"] for x in TXT[lang]["free"]):
             self.bad("%s (%s): в блоке цен рубли или «Начать бесплатно — 1 процесс»" % (tag, state))
         if s["over"] or s.get("spill"):

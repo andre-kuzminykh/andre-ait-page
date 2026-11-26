@@ -72,6 +72,11 @@ EMP_STOPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 20, 25, 30, 35, 40, 45, 50, 
 EMP_START = 5   # по умолчанию — 5 сотрудников, первая группа
 PACKAGES = ("strategy", "platform", "transformation")
 CONTACT_MAIL = "admin@andre.technology"   # тот же адрес, что у значка письма в подвале
+# FR-SITE140: вход с сайта в продукт — контракт входа (Andre AI, §1): ?pkg=<пакет>&emp=<число>&period=month|year&lang=ru|en
+# [&promo=<код>][&partner=<slug>]. Продукт запоминает выбор и ведёт гостя во вход стратегии, а не в тест зрелости (отчёт сквозного
+# прохода 26.11, P1 №1). Тот же адрес собирают assets/strategy.js (calcEntry) и главная (entryUrl); промокод и партнёр из адреса
+# страницы дописывает скрипт (FR-SITE141).
+PRODUCT_ENTRY = "https://strategy.andre.technology/"
 
 
 def half_up(x):
@@ -387,7 +392,12 @@ def mail_quote(s):
     return quote(s, safe="!*'()")
 
 
-def package_html(t, pkg, n, period):
+def entry_href(pkg, n, period, lang):
+    """FR-SITE140: адрес кнопки пакета до 250 сотрудников — вход в продукт с пакетом, размером, периодом и языком страницы."""
+    return "%s?pkg=%s&emp=%d&period=%s&lang=%s" % (PRODUCT_ENTRY, pkg, n, period, lang)
+
+
+def package_html(t, pkg, n, period, lang):
     """Карточка пакета (FR-SITE119) в заданном состоянии: та же разметка, что дорисовывает assets/strategy.js."""
     c = t["pr_calc"]
     more = n >= EMP_STOPS[-1]
@@ -399,7 +409,7 @@ def package_html(t, pkg, n, period):
         per = c["per"]["strategy"] if pkg == "strategy" else c["per"]["year" if period == "year" else pkg]
         num, ren = m(p["now"]), (c["next"][period].replace("{m}", m(p["next"])) if p["next"] else "")
         emp = c["emp_line"].replace("{m}", m(100 * per_employee(band, period, n))) if p["next"] else ""
-        go, href = c["go"], t["cta_href"]
+        go, href = c["go"], entry_href(pkg, n, period, lang)
     else:
         per, num, ren, emp = "", c["ask"], "", ""
         go = c["contact"]
@@ -417,15 +427,16 @@ def package_html(t, pkg, n, period):
         ren=ren, emp=emp, btn="btn-primary" if hot else "btn-ghost", href=html.escape(href, quote=True), go=go, free=t["pr_first"])
 
 
-def calc(t):
+def calc(t, lang):
     """Тарифы (FR-SITE113…119): «Месяц | Год −17%» → ползунок «сколько сотрудников» с группами размеров → три пакета
     (стратегия, платформа, трансформация) по ценовой политике, только доллары. Разметка собрана в состоянии по
     умолчанию (5 сотрудников, «Месяц») — без скрипта страница тоже читается; сетка, буткемп, деления и подписи
-    для скрипта лежат в data-calc (assets/strategy.js), скрипт общий на оба языка."""
+    для скрипта лежат в data-calc (assets/strategy.js), скрипт общий на оба языка. Кнопки пакетов до 250 — вход
+    в продукт с выбором (FR-SITE140): адрес собирается из entry, язык скрипт берёт у страницы."""
     c = t["pr_calc"]
     n, period = EMP_START, "month"
     band = band_of(n)
-    data = {"emp": EMP_STOPS, "txt": c, "boot": BOOTCAMP_CENTS, "yearPaid": YEAR_PAID, "go": t["cta_href"], "mail": CONTACT_MAIL,
+    data = {"emp": EMP_STOPS, "txt": c, "boot": BOOTCAMP_CENTS, "yearPaid": YEAR_PAID, "entry": PRODUCT_ENTRY, "mail": CONTACT_MAIL,
             "bands": [{"id": b[0], "lo": b[1], "hi": b[2], "a": b[3] and b[3] * 100, "n": b[4] and b[4] * 100} for b in BANDS]}
     bands = "".join('<li%s>%s</li>' % (' class="on"' if b is band else "", b[0]) for b in BANDS)
     return """
@@ -446,7 +457,7 @@ def calc(t):
         q=t["pr_q"], n=n, imax=len(EMP_STOPS) - 1, i0=EMP_STOPS.index(n),
         fill="%.2f" % (EMP_STOPS.index(n) * 100.0 / (len(EMP_STOPS) - 1)),
         vt="%d %s (%s)" % (n, emp_word(n, c["emp"]), band[0]), bands=bands,
-        pkgs="".join(package_html(t, k, n, period) for k in PACKAGES))
+        pkgs="".join(package_html(t, k, n, period, lang) for k in PACKAGES))
 
 
 def page(t, lang):
@@ -507,7 +518,7 @@ def page(t, lang):
     roles = "".join('<span class="role"><i class="fa-solid %s"></i>%s</span>' % (ic, name) for name, ic in t["roles"])
 
     # FR-SITE119: ползунок «сколько сотрудников» и те же три пакета, что на главной (только доллары, «Месяц | Год −17%»)
-    calc_html = calc(t)
+    calc_html = calc(t, lang)
 
     # Разделитель ставится ТОЛЬКО между зачёркнутыми ценами: строка
     # переносилась по ширине колонки, и точка повисала в конце первой строки

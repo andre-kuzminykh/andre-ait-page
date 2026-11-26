@@ -42,6 +42,9 @@ CERTIFIED = "andre-ai-certified"
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 LINKEDIN_RE = re.compile(r"^https://(?:[a-z]{2,3}\.)?linkedin\.com/in/[A-Za-z0-9\-_%.]+/?$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# FR-SITE147: промокод партнёра — необязательное поле; вид — как у кода партнёра в продукте (ценовая политика v3: 4–32 знака, латиница,
+# цифры, «_» и «-», первый — буква или цифра). По нему «Пригласить клиента» собирает ссылку andre.technology/?promo=…&partner=…
+PROMO_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{3,31}$")
 INLINE_RE = re.compile(r'(<script type="application/json" id="partners-data">)(.*?)(</script>)', re.S)
 VER_RE = re.compile(r'(partners\.(?:css|js))\?v=[0-9a-f]{8}')
 
@@ -109,6 +112,8 @@ def validate(partners, i18n=None):
         seen.add(slug)
         if "example" in p and not isinstance(p["example"], bool):
             errs.append(tag + ": example — true/false")
+        if "promo_code" in p and (not isinstance(p["promo_code"], str) or not PROMO_RE.match(p["promo_code"])):
+            errs.append(tag + ": promo_code — код партнёра: 4–32 знака, латиница, цифры, «_» и «-», первый — буква или цифра")
         for k in ("name", "headline", "about"):
             if not _both(p.get(k)):
                 errs.append(tag + ": %s — {ru, en}, оба непустые" % k)

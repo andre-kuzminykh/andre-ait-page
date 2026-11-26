@@ -11,8 +11,9 @@
       http://127.0.0.1:M/            — как partners.andre.technology: маленький прокси
                                        переписывает /x → /partners/x, как блок Caddy из
                                        SPEC-SITE.md (NFR-SITE110);
-    в обоих — каталог из partners.json (не из встроенной копии), значки и данные
-    без 404, в консоли пусто;
+    в обоих — каталог из partners.json (не из встроенной копии; настоящий продукт со
+    стола не спрашивается — каталог через продукт проверяет tools/entry_check.py с
+    заглушкой tools/api_stub.py), значки и данные без 404, в консоли пусто;
   * --shots DIR — снимки: каталог, открытая карточка, «Как стать партнёром»,
     заявка; компьютер 1440×900 и телефон 390×844, RU и EN;
   * --video DIR — ролик сценария «поиск → фильтр → карточка → как стать
@@ -26,6 +27,7 @@
     python3 tools/partners_check.py --net --shots DIR --video DIR
 """
 import argparse
+import atexit
 import functools
 import http.server
 import os
@@ -104,11 +106,29 @@ def servers():
     return base, base2, base + "/partners/", base2 + "/", stop
 
 
+_PW = {}
+
+
+def playwright():
+    """Один Playwright на процесс для тестов: второй sync_playwright().start(), пока жив первый, Playwright не даёт («Sync API
+    inside the asyncio loop»), а в одном прогоне pytest браузер нужен нескольким файлам (test_partners, test_site, test_strategy).
+    Останавливается при выходе — после того как файлы закрыли свои браузеры (atexit — в обратном порядке)."""
+    if "pw" not in _PW:
+        from playwright.sync_api import sync_playwright
+        _PW["pw"] = sync_playwright().start()
+        atexit.register(_PW["pw"].stop)
+    return _PW["pw"]
+
+
 def launch(pw, net=False):
     opts = {"executable_path": CHROMIUM, "args": ["--no-sandbox"]}
     proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
     if net and proxy:
         opts["proxy"] = {"server": proxy, "bypass": "127.0.0.1,localhost"}
+    elif not net:
+        # без --net наружу не ходим и там, где страница открыта без перехвата запросов (проверка настоящего предзапроса CORS у
+        # заглушки продукта, NFR-SITE113): прокси окружения не берём, чужие имена не разрешаются — запрос падает сразу
+        opts["args"] += ["--no-proxy-server", "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"]
     return pw.chromium.launch(**opts)
 
 
@@ -125,6 +145,9 @@ def new_page(browser, size, net=False, lang=None, reduced=False, touch=False, re
         kw["record_video_size"] = {"width": size[0], "height": size[1]}
     ctx = browser.new_context(**kw)
     ctx.route("**/*", lambda r: r.continue_() if (net or r.request.url.startswith(("http://127.0.0.1", "file:"))) else r.abort())
+    # настоящий продукт со стола не спрашиваем и с --net (FR-SITE143): каталог — из partners.json; продукт на столе — заглушка
+    # tools/api_stub.py (tools/entry_check.py), её маршруты, заданные позже, главнее этого
+    ctx.route("https://strategy.andre.technology/**", lambda r: r.abort())
     pg = ctx.new_page()
     pg.errors, pg.bad = [], []
 

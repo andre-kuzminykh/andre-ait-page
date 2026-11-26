@@ -528,6 +528,19 @@
     var y = calcSt.period === 'year', B = key === 'transformation' ? CD.boot : 0;
     return { now: b.a + (y ? CD.yearPaid : key === 'platform' ? 1 : 3) * b.n + B, was: y ? b.a + 12 * b.n + B : null, next: y ? CD.yearPaid * b.n : b.n };
   }
+  /* FR-SITE140, FR-SITE141: до 250 кнопка пакета ведёт прямо в продукт — адрес контракта входа (Andre AI, §1): пакет, размер, период и язык
+     страницы; продукт запоминает выбор и ведёт гостя во вход стратегии, а не в тест зрелости. Промокод и партнёр из адреса страницы (ссылка
+     партнёра) идут дальше — только латиница, цифры, «_» и «-», до 64 знаков, как на главной */
+  var calcRef = (function () {
+    var out = '';
+    ['promo', 'partner'].forEach(function (k) {
+      var m = new RegExp('[?&]' + k + '=([^&#]*)').exec(location.search), v = '';
+      if (m) { try { v = decodeURIComponent(m[1].replace(/\+/g, ' ')); } catch (e) {} }
+      if (/^[A-Za-z0-9_-]{1,64}$/.test(v)) out += '&' + k + '=' + encodeURIComponent(v);
+    });
+    return out;
+  })();
+  function calcEntry(key, n) { return CD.entry + '?pkg=' + key + '&emp=' + n + '&period=' + calcSt.period + '&lang=' + lang + calcRef; }
   function calcWord(n) {
     var w = CD.txt.emp;
     if (w.length === 2) return n === 1 ? w[0] : w[1];
@@ -560,9 +573,10 @@
       /* продление — своей строкой; «≈ $X на сотрудника в месяц» меняется на каждом шаге ползунка (FR-SITE116) */
       calcRoll($('.pk-ren', pk), p && p.next ? TX.next[calcSt.period].replace('{m}', calcMoney(p.next)) : '');
       calcRoll($('.pk-emp', pk), p && p.next ? TX.emp_line.replace('{m}', calcMoney(pe * 100)) : '');
-      /* FR-SITE118: до 250 — «Начать» в продукт; у 250+ — «Связаться» на почту, тема — тот же источник заявки, что на главной */
+      /* FR-SITE118, FR-SITE140: до 250 — «Начать» прямо в продукт с выбором; у 250+ — «Связаться» на почту, тема — тот же источник заявки,
+         что на главной */
       go.innerHTML = (p ? TX.go : TX.contact) + ' <i class="fa-solid fa-arrow-right"></i>';
-      go.setAttribute('href', p ? CD.go : 'mailto:' + CD.mail + '?subject=' +
+      go.setAttribute('href', p ? calcEntry(key, n) : 'mailto:' + CD.mail + '?subject=' +
         encodeURIComponent('Pricing: ' + n + (more ? '+' : '') + ' (' + b.id + ') / ' + calcSt.period + ' / ' + key));
     });
     calcReady = true;
