@@ -633,12 +633,15 @@ def test_footer_icons_under_menu_and_wordmark_with_form_centred():
 
 # ── FR-SITE96: политика и условия ──────────────────────────────────────────
 
-LEGAL = {"privacy": ("/privacy/", "/privacy/ru/"), "terms": ("/terms/", "/terms/ru/")}
+LEGAL = {"privacy": ("/privacy/", "/privacy/ru/"), "terms": ("/terms/", "/terms/ru/"),
+         "partner_terms": ("/partners/terms/", "/partners/terms/ru/")}   # FR-SITE152
 
 
 def test_footer_links_to_legal_pages_in_the_visitor_language():
     html = _html()
     for key, (en, ru) in LEGAL.items():
+        if key == "partner_terms":
+            continue  # условия партнёров — в подвале сайта партнёров (tests/test_legal.py), главная не меняется
         t = _tag(html, 'data-href-en="%s"' % en)
         assert t and _attr(t, "data-href-ru") == ru and _attr(t, "href") == ru, (key, t)
         assert os.path.exists(os.path.join(_ROOT, en.strip("/"), "index.html"))
@@ -664,12 +667,17 @@ def test_legal_pages_content():
         for path, lang in ((en, "en"), (ru, "ru")):
             html = _read(path.strip("/") + "/index.html")
             assert '<html lang="%s">' % lang in html
-            assert '<link rel="canonical" href="https://andre.technology%s">' % path in html
+            # условия партнёров — на поддомене, как весь сайт партнёров (NFR-SITE110, NFR-SITE114)
+            canon = "https://partners.andre.technology" + path[len("/partners"):] if kind == "partner_terms" \
+                else "https://andre.technology" + path
+            assert '<link rel="canonical" href="%s">' % canon in html
             assert "admin@andre.technology" in html and "Andre AI Technologies LTD" in html
             assert "localStorage.setItem('ait_lang', '%s')" % lang in html
             assert 'href="#"' not in html
-    assert "no cookies" in _read("privacy/index.html") and "не ставит cookie" in _read("privacy/ru/index.html"), \
-        "политика совпадает с FR-SITE88: cookie нет"
+    # FR-SITE88 и ред. 26.11 (FR-SITE150): сайт cookie не ставит; у продукта — одна cookie языка, и политика это говорит
+    en, ru = (_read(p).replace("\u00a0", " ") for p in ("privacy/index.html", "privacy/ru/index.html"))
+    assert "set no cookies" in en and "не ставят cookie" in ru, "политика совпадает с FR-SITE88: у сайтов cookie нет"
+    assert "one cookie, amx_lang" in en and "одну cookie — amx_lang" in ru
 
 
 # ── FR-SITE97: соцсети по языку ─────────────────────────────────────────────

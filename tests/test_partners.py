@@ -147,7 +147,8 @@ def test_paths_are_relative_and_main_site_links_are_absolute():
     for m in re.finditer(r'\b(?:src|href)="([^"]+)"', html):
         url = m.group(1)
         assert not url.startswith("/") and not url.startswith("../"), "путь от корня не сработает на поддомене: " + url
-        assert re.match(r"^(https://|mailto:|#|\?p=|partners\.(css|js)\?v=|favicon|apple-touch-icon)", url), url
+        # terms/ и terms/ru/ — условия партнёрской программы в своей папке (FR-SITE152, NFR-SITE114)
+        assert re.match(r"^(https://|mailto:|#|\?p=|partners\.(css|js)\?v=|favicon|apple-touch-icon|terms/(ru/)?$)", url), url
     assert "fetch('partners.json'" in js and "'/partners" not in js and '"/partners' not in js
     assert "href=\"?p=' + encodeURIComponent(p.slug)" in js, "адрес профиля — относительный ?p=<slug>"
     for path in re.findall(r'(?:src|href)="(/[^"]*)"', html):
