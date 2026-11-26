@@ -635,6 +635,11 @@
   .t-inc button { display: flex; align-items: center; gap: 0.8rem; width: 100%; padding: 0.3rem 0; background: none; border: 0; color: #fff; font: 600 13.5px var(--fm); letter-spacing: 0.01em; text-align: left; cursor: pointer; transition: color 0.2s; }
   .t-inc button i { width: 1.1rem; text-align: center; color: var(--p2); font-size: 13px; }
   .t-pr .th, .t-inc .th { display: inline-block; width: 0.32em; }
+  /* FR-SITE149 (ред. NFR-SITE103): подгонка цены (fitPricing → shrink) меняет кегль и тут же меряет — у того, что она ужимает, и у рамки, которую
+     масштабирует, переходов нет. Иначе при prefers-reduced-motion общее правило (transition-duration 0.001s у всех элементов при transition-property
+     all по умолчанию) делало смену кегля переходом в 1 мс: замер в том же кадре видел прежнюю раскладку, подгонки чередовали «влезло» и
+     «вылезло», и цена «ИИ-трансформации» выходила за карточку */
+  #pkgs .t-pr, #pkgs .t-pr *, #pkgs .t-c, #pkgs .t-c *, #pricing .frame > .inner { transition: none !important; }
   /* компьютер с холстом уже 1280 (высокое окно): строки чека и кнопка — в одну строку */
   @container stage (min-width:1024px) and (max-width:1279px) { .t-inc button { font-size: 12px; gap: 0.6rem; } .tier .t-go { font-size: 12px; padding: 0.9rem 0.8rem; gap: 0.5rem; white-space: nowrap; } }
   /* телефон: тарифы листаются вбок — первым рекомендованный (ИИ-трансформация), дальше платформа и стратегия */

@@ -213,8 +213,7 @@ class Check:
                     want = expected(pkg, n, period, lang, PROMO_REF)
                     if got[pkg][0] != want:
                         self.bad("%s (%d %s): %s ведёт на %r, а не %r" % (tag, n, period, pkg, got[pkg][0], want))
-        # снимок — 50 сотрудников, «Месяц» («Год» — на снимке лендинга): с шрифтом из Google Fonts цена «ИИ-трансформации» на компьютере
-        # в «Год» бывает не ужата под ширину карточки — так и на 8bc935c (подгонка цены, FR-SITE116), к входу в продукт отношения не имеет
+        # снимок — 50 сотрудников, «Месяц» («Год» — на снимке лендинга); подгонку цены по ширине карточки проверяет pricing_check.py --fit
         home_set(pg, 50, "month")
         pg.wait_for_timeout(300)
         self.caption(pg, '#pkgs .t-go[data-pick="%s"]' % ("transformation" if size == PHONE else "platform"),

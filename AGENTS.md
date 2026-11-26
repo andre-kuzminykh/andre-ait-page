@@ -62,7 +62,10 @@
    (FR-SITE101/102, с 26.11 — FR-SITE113…119) проверяет `python3 tools/pricing_check.py`
    (→ «PRICING OK»; `--net --shots DIR` — со шрифтами и снимками, `--table` — цены
    на 5, 50, 150, 300 сотрудниках). Сетка цен — одна: `BANDS` в
-   `tools/build_strategy.py` и в `index.html`, их сверяет тест.
+   `tools/build_strategy.py` и в `index.html`, их сверяет тест. Подгонку цены по ширине
+   карточки (FR-SITE149) — `python3 tools/pricing_check.py --fit` (→ «FIT OK»; `--net` — со
+   шрифтом Google): проверяй и с уменьшением движения — там всякое свойство без своего
+   `transition` получает переход в 1 мс, и замер сразу после смены стиля видит прежнюю раскладку.
    Сайт партнёров на обоих адресах (`/partners/` и поддомен через переписывающий прокси) —
    `python3 tools/partners_check.py` (→ «PARTNERS OK»; `--net --shots DIR --video DIR` — снимки и ролик).
    Вход с сайта в продукт (кнопки пакетов → `strategy.andre.technology/?pkg=…&emp=…&period=…&lang=…`,

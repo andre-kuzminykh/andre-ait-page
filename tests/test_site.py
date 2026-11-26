@@ -25,6 +25,9 @@ FR-SITE113…119, NFR-SITE103…105 — цены 26.11: только долла�
             бесплатно»; 250+ — «По запросу» и заявка. В браузере (RU и EN, компьютер и
             телефон, ползунок через границы групп, ошибки консоли, высота кнопок) это
             проверяет tools/pricing_check.py.
+FR-SITE149 (ред. NFR-SITE103) — подгонка цены детерминированная и с уменьшением движения: у того, что
+            она ужимает и меряет, нет переходов; цена всегда внутри карточки (в браузере —
+            tools/pricing_check.py --fit и test_render_price_fit_is_deterministic_and_inside_the_card).
 FR-SITE140…142 — вход с сайта в продукт: до 250 сотрудников кнопка пакета — ссылка на
             strategy.andre.technology/?pkg=…&emp=…&period=…&lang=… (та же вкладка), промокод и
             партнёр из ссылки партнёра идут дальше; у 250+ — прежняя заявка. В браузере
@@ -502,6 +505,31 @@ def test_spec_lists_the_entry_requirements_and_their_tests():
         assert not missing, (mod, missing)
 
 
+def test_price_fit_has_no_transitions_to_wait_for():
+    """FR-SITE149 (ред. NFR-SITE103): подгонка цены меняет кегль и в том же кадре меряет ширину. При
+    prefers-reduced-motion общее правило сайта даёт каждому элементу переход в 1 мс (transition-property
+    по умолчанию all) — смена кегля шла переходом, замер видел прежнюю раскладку, подгонки чередовали
+    «влезло» и «вылезло». Поэтому у ужимаемого и меряемого переходов нет, а общее правило — прежнее."""
+    html = _html()
+    rule = "#pkgs .t-pr, #pkgs .t-pr *, #pkgs .t-c, #pkgs .t-c *, #pricing .frame > .inner { transition: none !important; }"
+    assert rule in html
+    assert ("*, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; "
+            "transition-duration: 0.001s !important; transition-delay: 0s !important; }") in html, "общее правило не трогаем"
+    js = _calc_js()
+    for line in ("$$('#pkgs .pr-row').forEach(function (r) { shrink(r, $('.num', r), 0.55); });",
+                 "$$('#pkgs .t-add, #pkgs .t-was').forEach(function (a) { shrink(a, a, 0.7); });",
+                 "$$('#pkgs .t-inc button').forEach(function (b) { var c = $('.t-c', b); if (c) shrink(b, c, 0.7); });",
+                 "inn.style.zoom = ''; fitPrices();"):
+        assert line in js, "ужимаются ровно те элементы, у которых нет переходов: " + line
+    assert "document.fonts.ready.then(function () { placeLang(); mobLayout(); buildRoad(); fitPricing(); });" in html
+    assert "document.fonts.addEventListener('loadingdone', function () { placeLang(); mobLayout(); buildRoad(); fitPricing(); });" in html
+    spec = _read("SPEC-SITE.md")
+    sec = spec[spec.index("### FR-SITE149 — "):]
+    sec = sec[:sec.index("\n## ")]
+    named = set(re.findall(r"test_site\.(test_\w+)", sec))
+    assert len(named) >= 2 and all("\ndef %s(" % t in _read("tests/test_site.py") for t in named), named
+
+
 def test_packages_stay_as_they_were():
     """FR-SITE101/114: те же три карточки, состав, «Рекомендуем» и кнопки-заявки;
     пакеты — стратегия, платформа, трансформация."""
@@ -803,6 +831,23 @@ def test_render_large_company_keeps_the_lead_form():
         assert E.home_links(pg)["strategy"] == (E.expected("strategy", 249, "month", lang, E.PROMO_REF), None, "A")
         assert len(pg.leads) == 3
         ctx.close()
+
+
+def test_render_price_fit_is_deterministic_and_inside_the_card():
+    """FR-SITE149 в Chromium (tools/pricing_check.py: fit_page): 1440, 1280, 1024 и 390, RU и EN — после
+    загрузки шрифтов, на каждой границе групп 1/5/10/11/50/100/101/150/249 в «Месяц» и «Год» и после
+    смены языка цена, продление, «было» и строки чека не выходят за карточку, слайд не листается, а
+    повторная подгонка (как при смене размера окна) даёт тот же результат. С уменьшением движения — на
+    всех размерах (до правки здесь чередовалось «влезло» / «вылезло»), без него — на компьютере и телефоне."""
+    E, st = _stand()
+    from tools import pricing_check as PRC
+    runs = [(size, lang, True) for size in PRC.FIT_SIZES for lang in ("ru", "en")] + [((1440, 900), "ru", False), ((390, 844), "en", False)]
+    problems = []
+    for size, lang, reduced in runs:
+        ctx, pg = st.page(size, lang, touch=size[0] < 600, reduced=reduced)
+        problems += ["%dx%d %s %s: %s" % (size[0], size[1], lang, "reduce" if reduced else "motion", p) for p in PRC.fit_page(pg, st.base, lang)]
+        ctx.close()
+    assert not problems, "\n".join(problems[:12])
 
 
 if __name__ == "__main__":

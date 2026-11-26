@@ -33,6 +33,8 @@
     python3 tools/pricing_check.py                        → «PRICING OK»
     python3 tools/pricing_check.py --net --shots DIR      # и снимки состояний
     python3 tools/pricing_check.py --table                # и цены на 5, 50, 150, 300 сотрудниках
+    python3 tools/pricing_check.py --fit [--net]          → «FIT OK»: только подгонка цены главной (FR-SITE149) —
+                                                            1440, 1280, 1024, 390, RU и EN, с уменьшением движения и без
 """
 import argparse
 import json
@@ -360,6 +362,92 @@ class Check:
         print("  ok %-28s %s → %s" % (tag, norm(s0["cards"][2]["now"]), norm(s3["cards"][2]["now"])))
 
 
+# ── FR-SITE149 (ред. NFR-SITE103): подгонка цены главной — детерминированная и всегда внутри карточки ──
+# Подгонку (fitPricing → shrink) меряют сразу после смены кегля. При prefers-reduced-motion общее правило сайта давало каждому
+# элементу переход в 1 мс по всем свойствам, замер видел прежнюю раскладку, и подгонки чередовали «влезло» / «вылезло». Проверка: на
+# каждой границе групп в «Месяц» и «Год», после загрузки шрифтов и после смены языка цена, продление и строки чека не выходят за
+# карточку, слайд не листается, а повторная подгонка (как при смене размера окна) ничего не меняет — с уменьшением движения и без.
+FIT_SIZES = [(1440, 900), (1280, 800), (1024, 768), (390, 844)]
+FIT_PROBES = (1, 5, 10, 11, 50, 100, 101, 150, 249)
+FIT = r"""async () => {
+  const raf = () => new Promise(r => requestAnimationFrame(() => r()));
+  await raf(); await raf();
+  const fr = document.querySelector('#pricing .frame'), inn = fr.firstElementChild, pk = document.querySelector('#pkgs');
+  const sizes = [...pk.querySelectorAll('.num, .t-add, .t-was, .t-c')].map(e => e.style.fontSize || '-');
+  const over = [...pk.querySelectorAll('.pr-row, .t-add, .t-was, .t-inc button')].filter(e => e.scrollWidth > e.clientWidth + 1)
+    .map(e => e.closest('.tier').dataset.pkg + ':' + e.className + '+' + (e.scrollWidth - e.clientWidth));
+  const spill = [...pk.querySelectorAll('.tier')].filter(c => { const b = c.getBoundingClientRect();
+    return [...c.querySelectorAll('.pr-row > *, .t-add, .t-was, .t-inc button > *')].some(e => { const r = e.getBoundingClientRect();
+      return r.width && (r.left < b.left - 1 || r.right > b.right + 1); }); }).map(c => c.dataset.pkg);
+  return { state: sizes.join(' ') + ' zoom=' + (inn.style.zoom || '-'), over: over, spill: spill, scroll: fr.scrollHeight - fr.clientHeight };
+}"""
+WEBFONT = "[...document.fonts].some(f => /JetBrains Mono/.test(f.family) && f.status === 'loaded') && document.fonts.status === 'loaded'"
+
+
+def fit_page(pg, base, lang, net=False):
+    """Одна открытая вкладка (размер окна и уменьшение движения задаёт контекст): главная на слайде цен. Возвращает список проблем."""
+    problems = []
+    pg.goto(base + "/?lang=%s#pricing" % lang, wait_until="load")
+    pg.wait_for_function("document.querySelector('#pricing').classList.contains('on')")
+    if net:   # шрифт Google, как у посетителя: подгонка должна пройти после его загрузки
+        try:
+            pg.wait_for_function(WEBFONT, timeout=10000)
+        except Exception:
+            problems.append("%s: шрифт JetBrains Mono из Google Fonts не загрузился" % lang)
+    pg.evaluate("document.fonts.ready.then(() => true)")
+    pg.wait_for_timeout(300)
+
+    def probe(tag):
+        first = pg.evaluate(FIT)
+        snaps = [first]
+        for _ in range(2):
+            pg.evaluate("window.dispatchEvent(new Event('resize'))")
+            snaps.append(pg.evaluate(FIT))
+        states = [s["state"] for s in snaps]
+        if len(set(states)) > 1:
+            problems.append("%s: повторная подгонка меняет результат: %s" % (tag, " → ".join(states)))
+        for s in snaps:
+            if s["over"] or s["spill"]:
+                problems.append("%s: за край карточки: %s %s (%s)" % (tag, s["over"], s["spill"], s["state"]))
+                break
+        if first["scroll"] > 1:
+            problems.append("%s: слайд листается внутри на %dpx" % (tag, first["scroll"]))
+    probe("%s после загрузки шрифтов" % lang)
+    for period in ("month", "year"):
+        pg.click("#period [data-period=%s]" % period)
+        for n in FIT_PROBES:
+            pg.evaluate("i => { const r = document.querySelector('#emp-n'); r.value = i; r.dispatchEvent(new Event('input', { bubbles: true })); }",
+                        B.EMP_STOPS.index(n))
+            probe("%s %d %s" % (lang, n, period))
+    other = "en" if lang == "ru" else "ru"
+    for to in (other, lang):     # язык меняет подписи периода и чека — подгонка та же
+        pg.click('.lang [data-lang="%s"]' % to)
+        probe("%s → язык %s (249, год)" % (lang, to))
+    return problems
+
+
+def fit_context(browser, size, lang, reduced, net):
+    ctx = browser.new_context(viewport={"width": size[0], "height": size[1]}, locale="en-US" if lang == "en" else "ru-RU",
+                              reduced_motion="reduce" if reduced else "no-preference",
+                              **({"has_touch": True, "is_mobile": True, "device_scale_factor": 2} if size[0] < PHONE_W else {}))
+    ctx.route("**/*", lambda r: r.continue_() if (net or r.request.url.startswith("http://127.0.0.1")) else r.abort())
+    return ctx, ctx.new_page()
+
+
+def fit(browser, base, sizes, net):
+    problems = []
+    for size in sizes:
+        for reduced in (True, False):
+            for lang in ("ru", "en"):
+                ctx, pg = fit_context(browser, size, lang, reduced, net)
+                got = fit_page(pg, base, lang, net)
+                tag = "%dx%d %s %s" % (size[0], size[1], lang, "reduce" if reduced else "motion")
+                print(("  ok " if not got else "  !! ") + tag + ("" if not got else ": %d" % len(got)))
+                problems += ["%s: %s" % (tag, p) for p in got]
+                ctx.close()
+    return problems
+
+
 def main():
     from playwright.sync_api import sync_playwright
 
@@ -368,10 +456,11 @@ def main():
     ap.add_argument("--shots", help="папка для снимков состояний")
     ap.add_argument("--sizes", help="размеры окна через запятую, например 1440x900,390x844")
     ap.add_argument("--table", action="store_true", help="напечатать цены на 5, 50, 150, 300 сотрудниках")
+    ap.add_argument("--fit", action="store_true", help="только подгонку цены главной (FR-SITE149): 1440, 1280, 1024, 390 — с уменьшением движения и без")
     args = ap.parse_args()
     if args.table:
         table()
-    sizes = [tuple(map(int, s.split("x"))) for s in args.sizes.split(",")] if args.sizes else VIEWPORTS
+    sizes = [tuple(map(int, s.split("x"))) for s in args.sizes.split(",")] if args.sizes else (FIT_SIZES if args.fit else VIEWPORTS)
     proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
 
     srv, base = serve(ROOT)
@@ -382,6 +471,16 @@ def main():
             if args.net and proxy:
                 opts["proxy"] = {"server": proxy, "bypass": "127.0.0.1,localhost"}
             browser = pw.chromium.launch(**opts)
+            if args.fit:
+                problems = fit(browser, base, sizes, args.net)
+                browser.close()
+                for p in problems:
+                    print("  !!", p)
+                if problems:
+                    print("\nПРОБЛЕМ: %d" % len(problems))
+                    sys.exit(1)
+                print("\nFIT OK")
+                return
             check = Check(browser, base, args.net, args.shots)
             for w, h in sizes:
                 print("== %dx%d" % (w, h))
