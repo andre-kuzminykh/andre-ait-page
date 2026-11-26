@@ -12,8 +12,11 @@
   (`<section class="slide" id=…>`, порядок = `ORDER`) на холсте фиксированной
   ширины (`#stage`, масштаб ставит скрипт в `<head>`); ИИ-мозг — граф
   `BRV`/`BRE`, путь работы — `BRL`.
-- `privacy/`, `terms/` (+ `ru/`) — юридические страницы, собирает
-  `tools/build_legal.py` (FR-SITE96); руками не правятся.
+- `privacy/`, `terms/` (+ `ru/`) и `partners/terms/` (+ `ru/`) — юридические страницы: политика,
+  условия использования и условия партнёрской программы; собирает `tools/build_legal.py`
+  (FR-SITE96, с 26.11 — FR-SITE150…152, NFR-SITE114); руками не правятся. Тексты — только то, что
+  продукт делает на самом деле, реквизиты — только прежние (Andre AI Technologies LTD, admin@andre.technology).
+  Условия партнёров отдают оба адреса сайта партнёров — пути внутри только относительные.
 - `automation/` — страницы курса по автоматизации:
   - `index.html` (+ статические копии `roles/`, `skills/`) — SPA-визард из 3 шагов;
   - `main/index.html` — дорожная карта курса;
@@ -54,6 +57,7 @@
    python3 tests/test_automation.py
    python3 tests/test_lectures.py
    python3 tests/test_partners.py   # сайт партнёров; проверки в Chromium — если есть Playwright
+   python3 tests/test_legal.py      # политика, условия, условия партнёров; в Chromium — tools/legal_check.py
    ```
 5. **Вёрстку проверяй в реальном браузере** (Playwright/Chromium): десктоп
    1440×900 и 1024×768, мобилка 390×844; для automation-страниц — обе темы
@@ -68,6 +72,8 @@
    `transition` получает переход в 1 мс, и замер сразу после смены стиля видит прежнюю раскладку.
    Сайт партнёров на обоих адресах (`/partners/` и поддомен через переписывающий прокси) —
    `python3 tools/partners_check.py` (→ «PARTNERS OK»; `--net --shots DIR --video DIR` — снимки и ролик).
+   Юридические страницы (шесть, условия партнёров — на обоих адресах) — `python3 tools/legal_check.py`
+   (→ «LEGAL OK»; `--net --shots DIR` — снимки).
    Вход с сайта в продукт (кнопки пакетов → `strategy.andre.technology/?pkg=…&emp=…&period=…&lang=…`,
    FR-SITE140…142) и партнёры через продукт (FR-SITE143…148) — `python3 tools/entry_check.py`
    (→ «ENTRY OK»; `--urls` — адреса кнопок, `--net --shots DIR` — снимки); продукт на столе —
