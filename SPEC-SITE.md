@@ -3200,6 +3200,10 @@ Story: «почему вот так получается на веб-экран�
 
 ### FR-SITE85 — русские страницы ведут в продукт на русском (`?lang=ru`)
 
+Ред. 26.11 (FR-SITE140): кнопки пакетов на экране тарифов лендинга ведут во вход в продукт с выбранным
+пакетом, размером и периодом, и язык в этом адресе есть у обеих версий (`lang=ru` / `lang=en`, контракт
+входа); остальные кнопки — по правилу ниже.
+
 Story: проверка после батча 49 продукта andre-ai-strategy («английский —
 основной язык», v1.12.32). Продукт теперь выбирает язык по браузеру, а
 русский Telegram-бот открывает `/ai-strategy/ru/` и `/about/ru` в веб-вью, где
@@ -3991,6 +3995,10 @@ FR-SITE102 (ред. 26.11) — экран тарифов лендинга ИИ-�
 
 ### FR-SITE118 — 250+: «По запросу» и заявка с размером, периодом и пакетом
 
+Ред. 26.11 (FR-SITE140…142): до 250 сотрудников кнопки пакетов на главной и на лендинге ведут прямо в
+продукт (`?pkg=…&emp=…&period=…&lang=…`, а не на `strategy.andre.technology` без выбора и не в заявку); у
+250+ всё ниже — без изменений, на главной у кнопки ещё и адрес-письмо с той же темой (для Ctrl-клика).
+
 Требование:
 - С 250 сотрудников цены всех пакетов — «По запросу» / “On request”, строки
   продления, зачёркнутой цены и «на сотрудника» пусты (место держится — карточки не
@@ -4315,6 +4323,9 @@ Story: «можно их карточки открывать и у них пуб
 
 ### FR-SITE133 — «Выбрать консультанта» → заявка
 
+Ред. 26.11 (FR-SITE144): заявка партнёру из продукта сначала уходит в продукт; письмо FormSubmit ниже — запасной
+путь и путь заявок к примерам профилей.
+
 Требование: кнопка в профиле открывает окно заявки: имя и email (обязательны),
 компания, сообщение. Неверный email или пустое имя — подсказка у поля, фокус на
 поле, ничего не отправляется. Отправка — как заявки главной: POST JSON на
@@ -4360,6 +4371,9 @@ Story: «ниже листаешь — как стать партнёром: н�
 
 ### FR-SITE136 — «Подать заявку» → форма партнёра
 
+Ред. 26.11 (FR-SITE145, FR-SITE146): заявка сначала уходит в продукт, принятая — со следующей ступенью в окне;
+FormSubmit ниже — запасной путь.
+
 Требование: окно с полями «Имя», «Email», «Профиль LinkedIn» (`linkedin.com/in/…`,
 без https:// — допишется), «Опыт» (от 20 символов), «Ставка, $ в час» (целое
 50…300). Ошибка — подсказка у поля и фокус на первом неверном. Отправка — тем же
@@ -4370,6 +4384,9 @@ Story: «ниже листаешь — как стать партнёром: н�
 `test_partners.test_render_application_form_validates`.
 
 ### FR-SITE137 — данные: partners/partners.json
+
+Ред. 26.11 (FR-SITE143, FR-SITE147): каталог сначала берётся из продукта (`/api/partners/public`, тот же формат),
+`partners.json` и встроенная копия — запасные; в схеме — необязательное поле `promo_code`.
 
 Требование:
 - `partners/partners.json` — массив публичных профилей. Тот же файл (или тот же
@@ -4407,6 +4424,7 @@ Story: «ниже листаешь — как стать партнёром: н�
 | `certificates` | `[{id, year, title {ru,en}}]` | да | обязателен `andre-ai-certified`; ещё `andre-ai-academy`, `andre-ai-bootcamp-trainer` |
 | `reviews` | `[{author {ru,en}, company {ru,en}?, rating 1…5, date ГГГГ-ММ-ДД, text {ru,en}}]` | да (может быть пуст) | опубликованные отзывы, новые сверху |
 | `joined` | ГГГГ-ММ-ДД | да | «В каталоге с …» |
+| `promo_code` | строка `^[A-Za-z0-9][A-Za-z0-9_-]{3,31}$` | нет | промокод партнёра в продукте — «Пригласить клиента» (FR-SITE147, FR-SITE148); у примеров его нет |
 
 Тесты: `test_partners.test_partners_json_follows_the_schema`,
 `test_partners.test_inline_copy_and_versions_are_built_from_the_files`,
@@ -4546,3 +4564,242 @@ server {
 `test_partners.test_head_has_canonical_og_hreflang_and_icons`,
 `test_partners.test_spec_has_the_caddy_block`,
 `test_partners.test_render_both_addresses_work_without_errors`.
+
+## Вход с сайта в продукт и партнёры через продукт (FR-SITE140…148, NFR-SITE111…113)
+
+Story (волна 26.11; отчёт сквозного прохода экосистемы, P1 №1): «„Начать ИИ-трансформацию“ на главной
+открывает форму заявки; „Начать“ на лендинге стратегии отправляет гостя в тест зрелости на 35 вопросов —
+пакет и размер теряются». Синтетический клиент выбирал на сайте «ИИ-трансформацию» на 25 человек, а в
+продукте начинал с нуля. Сайт партнёров при этом показывал только примеры и слал заявки письмом команде —
+консультант о них не узнавал.
+
+Договорённости сайтов и продукта Andre AI 26.11: §1 — вход с сайта в продукт, §2 — публичный каталог
+партнёров, §3 — заявки с сайта партнёров. Правило владельца — «на лендинге andre.technology не трогай ничего
+кроме цен»: на главной меняются только кнопки пакетов блока цен (и код калькулятора), на лендинге ИИ-стратегии —
+кнопки пакетов экрана тарифов; сайт партнёров (`partners/`) — наш.
+
+Вход в продукт (§1):
+
+```
+https://strategy.andre.technology/?pkg=strategy|platform|transformation&emp=<число>&period=month|year&lang=ru|en[&promo=<КОД>][&partner=<slug>]
+```
+
+Продукт запоминает выбор (до входа — в своём localStorage, после входа — у компании), гость с `pkg` идёт во вход
+стратегии (не в тест зрелости), после входа — витрина с этим пакетом, размером и кодом. 250+ — заявка на сайте.
+
+Примеры (полная таблица — `python3 tools/entry_check.py --urls`):
+
+| Где | Сотрудников | Период | Пакет | Адрес кнопки |
+|---|---:|---|---|---|
+| главная RU | 5 | Месяц | ИИ-стратегия | `https://strategy.andre.technology/?pkg=strategy&emp=5&period=month&lang=ru` |
+| главная RU | 50 | Год | ИИ-платформа | `https://strategy.andre.technology/?pkg=platform&emp=50&period=year&lang=ru` |
+| лендинг EN | 150 | Month | AI Transformation | `https://strategy.andre.technology/?pkg=transformation&emp=150&period=month&lang=en` |
+| по ссылке партнёра | 50 | Месяц | ИИ-трансформация | `https://strategy.andre.technology/?pkg=transformation&emp=50&period=month&lang=ru&promo=NIKA10&partner=nika-vetrova` |
+
+| Файл | Что в нём |
+|---|---|
+| `index.html` | кнопки пакетов — ссылки `<a class="t-go">`; `PRODUCT`, `REF`, `entryUrl`, `leadSource` в коде калькулятора |
+| `assets/strategy.js`, `tools/build_strategy.py` | `calcRef`, `calcEntry`; `PRODUCT_ENTRY`, `entry_href`, `data-calc.entry`; страницы пересобраны |
+| `partners/partners.js`, `partners/index.html`, `partners/partners.css` | каталог и заявки через продукт, ступень заявки, «Пригласить клиента» |
+| `tools/build_partners.py` | `promo_code` в схеме |
+| `tools/api_stub.py` | заглушка продукта (§2–§3) для проверок на столе |
+| `tools/entry_check.py` | стенд и проверка в Chromium, снимки (→ «ENTRY OK») |
+
+### FR-SITE140 — до 250 сотрудников кнопка пакета ведёт прямо в продукт
+
+Требование:
+- Главная (слайд «Цены», RU и EN) и лендинг ИИ-стратегии (`/ai-strategy/`, `/ai-strategy/ru/`): при 1–249
+  сотрудниках кнопка каждого пакета («Начать ИИ-трансформацию» / “Start AI Transformation”, «Начать» / “Start”) —
+  ссылка на `https://strategy.andre.technology/?pkg=<strategy|platform|transformation>&emp=<n>&period=<month|year>&lang=<ru|en>`:
+  пакет карточки, число с ползунка (как рядом с ним), выбранный период и язык страницы. Переход — в той же
+  вкладке (ссылка без `target`; Ctrl/Cmd-клик — новая вкладка, как у любой ссылки).
+- Адрес меняется вместе с ползунком, «Месяц | Год» и EN | RU (главная — `renderCalc`, лендинг —
+  `assets/strategy.js`); в разметке — адрес состояния по умолчанию (5 сотрудников, «Месяц»; главная — русский,
+  лендинг — язык страницы): без скрипта лендинг ведёт туда же.
+- `lang` в этом адресе есть и у английских страниц (`lang=en`): витрина продукта открывается на языке страницы,
+  где выбран пакет. Остальные кнопки в продукт — как прежде (FR-SITE85).
+- На главной кнопка пакета стала ссылкой (`<a class="t-go">` вместо `<button>`), вид прежний — сверено
+  попиксельно (отличается только кадр ролика в кружке).
+- Адрес собирают главная (`entryUrl`), лендинг (`calcEntry`) и сборщик лендинга (`PRODUCT_ENTRY`, `entry_href`) —
+  одинаково, сверяет тест.
+
+Тесты: `test_site.test_package_buttons_are_links_into_the_product`,
+`test_site.test_render_package_buttons_lead_into_the_product`,
+`test_strategy.test_package_buttons_lead_into_the_product_with_the_choice`,
+`test_strategy.test_cta_targets_the_product` (ред.), `test_strategy.test_ru_page_leads_to_the_russian_product` (ред.),
+`test_strategy.test_render_package_buttons_carry_size_period_language_and_promo`.
+
+### FR-SITE141 — промокод и партнёр из ссылки партнёра доезжают до продукта
+
+Требование:
+- Страницу (главную или лендинг ИИ-стратегии) открыли с `promo` и/или `partner` в адресе — например, по ссылке
+  партнёра `https://andre.technology/?promo=NIKA10&partner=nika-vetrova` (FR-SITE148): адрес кнопки пакета до 250
+  дополняется `&promo=<код>&partner=<slug>` (после `lang`).
+- Значения берутся из адреса один раз, при разборе скрипта: главная при первом же показе слайда переписывает
+  адрес на `?lang=…` (`syncUrl` не меняется — правило владельца), и к нажатию их там уже нет. Переход по слайдам и
+  смена языка код не теряют.
+- Берутся только латиница, цифры, «_» и «-», до 64 знаков (коды и slug продукта — такие); разметка, пробелы,
+  длинные и пустые значения отбрасываются; значение кодируется `encodeURIComponent`. Чужие метки (`utm_*`) в
+  продукт не идут.
+- Ограничение: после того как главная переписала адрес, перезагрузка код теряет — хранить его сайт не может
+  (FR-SITE88: в localStorage — только выбор самого человека); продукт запоминает код сам, как только нажата кнопка
+  пакета.
+
+Тесты: `test_site.test_partner_promo_is_read_before_the_address_is_rewritten`,
+`test_site.test_render_partner_link_promo_reaches_the_product`,
+`test_strategy.test_partner_promo_passes_through_on_the_landing`,
+`test_strategy.test_render_package_buttons_carry_size_period_language_and_promo`.
+
+### FR-SITE142 — 250+ — заявка, как прежде
+
+Требование:
+- С 250 сотрудников — FR-SITE118 без изменений: «По запросу» и «Связаться» / “Contact us”. На главной нажатие
+  открывает прежнюю заявку и в продукт не уводит: FormSubmit на admin@andre.technology, источник
+  `Pricing: <n> (250+) / <период> / <пакет>`, те же поля (`name`, `email`, `interested_in`, `page`, `submitted_at`,
+  `_subject`, `_template`, `_captcha`), промокода в заявке нет.
+- Адрес этой кнопки на главной — письмо с той же темой (`mailto:admin@andre.technology?subject=…`, как на
+  лендинге): на него ведут только Ctrl/Cmd-клик и средняя кнопка; кнопка отмечена `aria-haspopup="dialog"`.
+- Лендинг ИИ-стратегии — как прежде: «Связаться» — письмо с той же темой.
+
+Тесты: `test_site.test_large_company_is_on_request_and_opens_the_lead_form` (ред.),
+`test_site.test_lead_form_payload_is_unchanged`, `test_site.test_render_large_company_keeps_the_lead_form`,
+`test_strategy.test_large_company_is_on_request_and_writes_to_the_owner` (ред.),
+`test_strategy.test_render_package_buttons_carry_size_period_language_and_promo`.
+
+### FR-SITE143 — каталог партнёров — сначала из продукта
+
+Требование:
+- Сайт партнёров сначала спрашивает публичный каталог продукта:
+  `GET https://strategy.andre.technology/api/partners/public?lang=<язык страницы>` → `{ok: true, partners: [...]}` —
+  формат `partners/partners.json` (FR-SITE137), только активные партнёры (прошедшие собеседование). Каждый профиль
+  проходит ту же проверку схемы; профиль с ошибкой не показывается.
+- Запасной путь — прежний: `partners.json`, затем встроенная копия. Оба запроса уходят сразу, продукт ждём не
+  дольше 3,5 с. Пустой список (партнёров ещё нет, флаг выключен), ошибка, не JSON, `{ok: false}`, только профили с
+  ошибками, закрытый CORS, продукт недоступен или молчит — каталог из `partners.json` (сейчас — три примера,
+  FR-SITE138), а не пустой экран. На `file://` и без `fetch` продукт не спрашиваем — встроенная копия, как прежде.
+- `window.AndrePartners.source` — откуда каталог: `api` | `fetch` (`partners.json`) | `inline`.
+- У партнёров продукта нет пометки «Пример профиля» и строки «Пока в каталоге — примеры профилей». На телефоне шапка
+  их профиля — во всю ширину: без плашки примера она стояла рядом с плавающим крестиком и вместе с кнопками
+  становилась уже на его ширину.
+
+Тесты: `test_partners.test_product_address_is_one_constant_a_page_script_may_replace`,
+`test_partners.test_catalog_order_is_product_then_file_then_inline_copy`,
+`test_partners.test_render_catalog_comes_from_the_product_first`,
+`test_partners.test_render_catalog_falls_back_to_the_examples_when_the_product_fails`,
+`test_partners.test_render_loads_json_and_falls_back_to_the_inline_copy`,
+`test_partners.test_render_both_addresses_work_without_errors`.
+
+### FR-SITE144 — «Выбрать консультанта» → заявка в продукт, при сбое — письмо
+
+Требование:
+- Заявка партнёру из продукта — `POST https://strategy.andre.technology/api/partners/requests`, JSON ровно из полей
+  договорённости `{partner_slug, name, email, company, message, lang}` (компания и сообщение — как введены, пустые —
+  пустой строкой) → `201 {ok, id}`: заявку видит партнёр в кабинете и получает письмо, копия — админу.
+- Продукт не принял — ответ не 2xx (без флага — 404, лимит частоты — 429, сбой — 5xx), `{ok: false}`, нет сети,
+  закрыт CORS или ответа нет 8 с — та же заявка уходит прежним письмом FormSubmit (FR-SITE133: поля и тема прежние),
+  не ушло и оно — очередь `ait_lead_queue`. Посетитель в любом случае видит «Заявка отправлена».
+- У примера профиля партнёра в продукте нет: заявка сразу письмом команде, как обещает окно (FR-SITE133).
+- `window.AndrePartners.sent` — куда ушла последняя заявка: `product` | `mail` | `queue`.
+
+Тесты: `test_partners.test_request_and_application_bodies_follow_the_contract`,
+`test_partners.test_render_request_goes_to_the_product_then_to_mail`,
+`test_partners.test_render_request_form_validates_and_sends_the_slug`,
+`test_partners.test_render_real_cors_preflight_and_the_queue`.
+
+### FR-SITE145 — «Подать заявку» → заявка в партнёры в продукт, при сбое — письмо
+
+Требование: `POST https://strategy.andre.technology/api/partners/applications`, JSON
+`{name, email, linkedin, experience, rate_usd, lang}` (LinkedIn — уже с `https://`, ставка — число) → `201 {ok, id}`;
+ступени заявки — applied → academy → certified → interview → active (или rejected), двигает админ, кандидат видит
+ступень в кабинете. Продукт не принял — прежнее письмо FormSubmit (FR-SITE136), затем очередь.
+
+Тесты: `test_partners.test_request_and_application_bodies_follow_the_contract`,
+`test_partners.test_render_application_goes_to_the_product_and_shows_the_next_stage`,
+`test_partners.test_render_application_form_validates`.
+
+### FR-SITE146 — после заявки в партнёры — следующая ступень
+
+Требование: заявку принял продукт — в окне «Заявка принята» и «Следующий шаг — Академия. Письмо придёт на
+<email>» (почта — жирным) / “Application received”, “Next step — the Academy. An email is on its way to <email>”;
+текст ставит скрипт и переписывает при смене языка. Заявка ушла письмом — ступени ещё нет, текст прежний:
+«Спасибо! Ответим на почту и расскажем про Академию и собеседование». Новая заявка открывается без прежней ступени.
+
+Тесты: `test_partners.test_application_stage_is_shown_only_when_the_product_accepted`,
+`test_partners.test_render_application_goes_to_the_product_and_shows_the_next_stage`.
+
+### FR-SITE147 — промокод партнёра в профиле
+
+Требование: в схеме профиля (FR-SITE137) — необязательное поле `promo_code`, строка
+`^[A-Za-z0-9][A-Za-z0-9_-]{3,31}$` — вид кода партнёра в продукте (ценовая политика v3: по коду клиент получает
+−10 % на стратегию и первый месяц Нейрония, партнёр — 10 % от оплаты). Неверный код профиль не прячет — пропадает
+только «Пригласить клиента»; сборщик (`tools/build_partners.py`) неверный код не пропускает. У трёх примеров кода
+нет: ссылка с вымышленным кодом в продукте не сработала бы («Код не найден»).
+
+Тесты: `test_partners.test_promo_code_is_optional_and_has_the_product_format`,
+`test_partners.test_render_invite_copies_the_partner_link`.
+
+### FR-SITE148 — «Пригласить клиента» копирует ссылку партнёра
+
+Требование:
+- В публичной карточке партнёра с промокодом — кнопка «Пригласить клиента» / “Invite a client” рядом со
+  «Скопировать ссылку», под кнопками — строка «Ссылка на andre.technology с промокодом <код>: клиенту −10 % на
+  ИИ-стратегию и первый месяц Нейрония» (она же — описание кнопки для экранного диктора).
+- Нажатие копирует `https://andre.technology/?promo=<код>&partner=<slug>` (как «Скопировать ссылку»: буфер обмена,
+  без него — через выделение; надпись на 2 с — «Ссылка скопирована»). По этой ссылке клиент приходит на главную, и
+  кнопка пакета несёт код и партнёра в продукт (FR-SITE141).
+- Без кода (и у примеров) нет ни кнопки, ни строки. На телефоне кнопка — своей строкой во всю ширину (в ряд с
+  LinkedIn и «Скопировать ссылку» не помещается), не меньше 44 px, без прокрутки вбок.
+
+Тесты: `test_partners.test_invite_link_is_the_main_page_with_code_and_partner`,
+`test_partners.test_render_invite_copies_the_partner_link`.
+
+### NFR-SITE111 — продукт недоступен — сайт работает как прежде
+
+Требование: офлайн, `file://`, продукт лежит, молчит, отвечает ошибкой или закрыт CORS — главная и лендинг ведут в
+продукт обычной ссылкой (до нажатия продукт им не нужен); сайт партнёров показывает каталог из `partners.json` (или
+встроенной копии) не позже чем через 3,5 с; заявки уходят письмом или ложатся в очередь — ни одна не теряется;
+ошибок страницы нет (в консоли — только сообщения браузера о самом неудачном запросе).
+
+Тесты: `test_partners.test_render_catalog_falls_back_to_the_examples_when_the_product_fails`,
+`test_partners.test_render_real_cors_preflight_and_the_queue`,
+`test_partners.test_render_request_goes_to_the_product_then_to_mail`,
+`test_partners.test_render_loads_json_and_falls_back_to_the_inline_copy`.
+
+### NFR-SITE112 — безопасность и приватность
+
+Требование:
+- В продукт — только поля договорённости, без кук (`credentials: 'omit'`); CORS продукт открывает только
+  `https://andre.technology` и `https://partners.andre.technology`.
+- Профили из продукта выводятся, как из `partners.json`: с той же проверкой схемы и только экранированными
+  (NFR-SITE109).
+- Адрес продукта на сайте партнёров — одна строка (`PRODUCT_API`); подменить его может только скрипт самой страницы
+  до загрузки `partners.js` (строка `window.AIT_API` — для стенда и тестов), из адреса страницы он не берётся: чужая
+  ссылка не подсунет каталог с чужого сервера.
+- Промокод и партнёр в адрес продукта — только из `[A-Za-z0-9_-]{1,64}` и через `encodeURIComponent` (FR-SITE141).
+
+Тесты: `test_partners.test_product_address_is_one_constant_a_page_script_may_replace`,
+`test_partners.test_render_partner_text_is_escaped`, `test_partners.test_stub_speaks_the_product_contract`,
+`test_site.test_partner_promo_is_read_before_the_address_is_rewritten`,
+`test_site.test_render_partner_link_promo_reaches_the_product`.
+
+### NFR-SITE113 — проверка на столе: заглушка продукта и Chromium без выхода наружу
+
+Требование:
+- `tools/api_stub.py` — заглушка продукта на 127.0.0.1 по договорённости §2–§3 (формат ответов, `201 {ok, id}`, CORS
+  только для заданных адресов, предзапрос OPTIONS) и её поломки: пустой список, 500, 404 без флага, `{ok: false}`,
+  не JSON, молчание дольше ожидания, закрытый CORS. Сайт и заглушка — на разных портах, браузер проверяет CORS
+  по-настоящему; страница берёт заглушку из `window.AIT_API` (в Playwright — `add_init_script`).
+- С перехватом запросов Playwright сам отвечает на предзапрос CORS, поэтому настоящий предзапрос проверяется на
+  странице без перехвата. Браузер тестов запускается без прокси окружения и с закрытым разрешением имён
+  (`tools/partners_check.py`: `launch`), поэтому и без перехвата наружу не уходит ни один запрос (FormSubmit
+  недоступен — заявка ложится в очередь).
+- `python3 tools/entry_check.py` (→ «ENTRY OK») — главная, лендинг и сайт партнёров на компьютере и телефоне, RU и EN;
+  `--urls` — адреса кнопок на 5, 50, 150 сотрудниках; `--net --shots DIR` — снимки. `tools/pricing_check.py` сверяет
+  адреса кнопок пакетов во всех состояниях цен.
+
+Проверено в Chromium: `python3 tools/entry_check.py --net --shots DIR` — 1440×900 и 390×844, RU и EN → «ENTRY OK»;
+`python3 tools/pricing_check.py` → «PRICING OK».
+
+Тесты: `test_partners.test_stub_speaks_the_product_contract`, `test_partners.test_render_real_cors_preflight_and_the_queue`,
+`test_site.test_spec_lists_the_entry_requirements_and_their_tests`; в Chromium — `tools/entry_check.py`,
+`tools/pricing_check.py`.
