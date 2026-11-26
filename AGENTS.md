@@ -25,6 +25,12 @@
   плюс статьи панели): колода собирается из них `tools/lecture5/assemble.py`.
   Лежат в git намеренно, хотя `build/` в `.gitignore`, — иначе следующий
   круг правок пришлось бы вносить прямо в собранный HTML на 8800 строк;
+- `partners/` — сайт партнёров partners.andre.technology (FR-SITE120…139): каталог
+  сертифицированных консультантов, публичная карточка `?p=<slug>`, «Как стать
+  партнёром». Данные — `partners/partners.json` (схема — SPEC-SITE.md); встроенную
+  копию в `index.html` и метки версий вписывает `python3 tools/build_partners.py`,
+  руками не правится. Пути внутри — только относительные: те же файлы отдаёт
+  поддомен через Caddy (`/x` → `/partners/x`, блок — в SPEC-SITE.md, NFR-SITE110);
 - `backup/` — ручные бэкапы состояний (не трогать);
 - `tests/` — тесты без зависимостей (см. ниже);
 - `SPEC-SITE.md` — **спека: как всё должно работать**. Источник правды.
@@ -45,6 +51,7 @@
    python3 tests/test_site.py
    python3 tests/test_automation.py
    python3 tests/test_lectures.py
+   python3 tests/test_partners.py   # сайт партнёров; проверки в Chromium — если есть Playwright
    ```
 5. **Вёрстку проверяй в реальном браузере** (Playwright/Chromium): десктоп
    1440×900 и 1024×768, мобилка 390×844; для automation-страниц — обе темы
@@ -54,6 +61,8 @@
    (→ «PRICING OK»; `--net --shots DIR` — со шрифтами и снимками, `--table` — цены
    на 5, 50, 150, 300 сотрудниках). Сетка цен — одна: `BANDS` в
    `tools/build_strategy.py` и в `index.html`, их сверяет тест.
+   Сайт партнёров на обоих адресах (`/partners/` и поддомен через переписывающий прокси) —
+   `python3 tools/partners_check.py` (→ «PARTNERS OK»; `--net --shots DIR --video DIR` — снимки и ролик).
 6. **Комментарии в коде объясняют «почему»** (со ссылкой на FR-SITE-N или
    жалобу пользователя), а не «что». Стиль — как в существующем коде.
 
