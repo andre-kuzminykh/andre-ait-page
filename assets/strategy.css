@@ -726,10 +726,11 @@ strong { color: var(--w); font-weight: 700; }
 .role i { color: var(--p-l); font-size: 11.5px; }
 .role:nth-child(even) i { color: var(--o-l); }
 
-/* ===== Тарифы (FR-SITE102) =====
-   Не карточки тарифов, а ползунок «сколько сотрудников» (решение владельца 24.11): тариф выбирается
-   сам, под числом — одна цена; над ползунком — период (месяц / год) и валюта ($ / ₽). У 250+ цена
-   «от …» и кнопка «Связаться» — её место занято всегда, поэтому блок не прыгает при смене тарифа. */
+/* ===== Тарифы (FR-SITE113…119) =====
+   Владелец 26.11: только доллары; «Месяц | Год −17%» над ползунком «сколько сотрудников», под ползунком — группы размеров
+   (активная подсвечена); ниже — те же три пакета, что на главной, компактными строками: название и кнопка, цена с периодом
+   (в «Год» — зачёркнутая прежняя), продление и «≈ на сотрудника», «Первый процесс — бесплатно». Строки держат место и пустыми —
+   карточки не прыгают при смене размера и периода (NFR-SITE103). */
 .calc { width: 100%; max-width: 34rem; margin: 1rem auto 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; }
 .calc-sw { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
 .seg { display: inline-flex; gap: 0.2rem; padding: 0.22rem; border: 1px solid var(--line); border-radius: 999px; }
@@ -737,9 +738,10 @@ strong { color: var(--w); font-weight: 700; }
   font: inherit; font-size: clamp(11px, 0.85vw, 13px); font-weight: 700; color: var(--tx-d); transition: color 0.25s, background 0.25s; }
 @media (hover:hover) { .seg button:hover { color: var(--w); } }
 .seg button[aria-pressed="true"] { color: var(--w); background: rgba(255,255,255,0.1); }
-.seg em { font-style: normal; color: var(--o-l); }
-.calc-card { padding: 0.95rem 1.1rem 1rem; border-radius: 1rem; text-align: left;
-  border: 1px solid rgba(136,84,243,0.55); background: linear-gradient(170deg, rgba(136,84,243,0.16), rgba(249,115,22,0.05)); }
+/* значок экономии у «Года» — оранжевым, как акценты лендинга */
+.seg em { display: inline-block; margin-left: 0.35rem; padding: 0.1rem 0.4rem; border-radius: 999px; font-style: normal; font-size: 0.88em;
+  color: var(--o-l); background: rgba(249,115,22,0.14); }
+.calc-card { padding: 0.85rem 1.1rem 0.8rem; border-radius: 1rem; text-align: left; border: 1px solid var(--line); background: var(--card); }
 .calc-q { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
   font-size: clamp(12px, 0.95vw, 14.5px); color: var(--tx-d); }
 .calc-v { font-size: clamp(1.15rem, 1.6vw, 1.45rem); font-weight: 800; color: var(--w); }
@@ -756,16 +758,37 @@ strong { color: var(--w); font-weight: 700; }
 .calc-rng:focus-visible { outline: none; }
 .calc-rng:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 6px rgba(136,84,243,0.7); }
 .calc-rng:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 6px rgba(136,84,243,0.7); }
-/* тариф — своей строкой во всю ширину; ниже — цена и место под «Связаться»: ни перенос названия,
-   ни появление кнопки не меняют высоту карточки */
-.calc-plan { margin: 0.1rem 0 0.45rem; white-space: nowrap; font-size: clamp(12px, 0.95vw, 14.5px); line-height: 1.4; color: var(--p-l); font-weight: 700; letter-spacing: 0.04em; }
-.calc-plan b { color: var(--w); text-transform: uppercase; letter-spacing: 0.14em; }
-.calc-res { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.calc-price { flex: 1 1 auto; min-width: 0; margin: 0; white-space: nowrap; font-size: clamp(1.45rem, 2.45vw, 2rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; color: var(--w); }
-.calc-from, .calc-per { font-size: 0.5em; font-weight: 700; letter-spacing: 0; color: var(--tx-d); }
-.calc-contact { flex: 0 0 auto; visibility: hidden; }
-.calc.big .calc-contact { visibility: visible; }
-.calc-free { margin: 0 auto 0.9rem; }
+/* FR-SITE116: группы размеров под ползунком — активная белая, жирная и с полосой бренда (не только цветом) */
+.calc-bands { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+.calc-bands li { position: relative; padding-top: 0.4rem; text-align: center; white-space: nowrap; font-size: clamp(10.5px, 0.8vw, 12px);
+  line-height: 1.3; color: var(--tx-d); transition: color 0.25s; }
+.calc-bands li::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; border-radius: 2px;
+  background: rgba(255,255,255,0.12); transition: background 0.25s; }
+.calc-bands li.on { color: var(--w); font-weight: 700; }
+.calc-bands li.on::before { background: linear-gradient(90deg, var(--p), var(--o)); }
+/* три пакета строками: слева название, цена, продление и «на сотрудника», «Первый процесс — бесплатно»; справа кнопка */
+.pks { display: flex; flex-direction: column; gap: 0.45rem; }
+.pk { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name go" "price go" "next next" "free free";
+  align-items: center; column-gap: 0.8rem; row-gap: 0.12rem; padding: 0.6rem 0.95rem 0.55rem; border-radius: 1rem; text-align: left;
+  border: 1px solid var(--line); background: var(--card); }
+.pk.hot { border-color: rgba(136,84,243,0.55); background: linear-gradient(170deg, rgba(136,84,243,0.16), rgba(249,115,22,0.05)); }
+.pk > * { min-width: 0; }
+.pk-name { grid-area: name; margin: 0; white-space: nowrap; font-size: clamp(10.5px, 0.8vw, 12px); line-height: 1.35; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--p-l); }
+.pk-price { grid-area: price; margin: 0; white-space: nowrap; font-size: clamp(11px, 0.85vw, 13px); line-height: 1.3; color: var(--tx-d); }
+.pk-was { margin-right: 0.55em; text-decoration-thickness: 1.5px; text-decoration-color: rgba(249,115,22,0.85); }
+.pk-was:empty { margin: 0; }
+.pk-num { font-size: 1.75em; font-weight: 800; letter-spacing: -0.02em; color: var(--w); }
+.pk-next { grid-area: next; margin: 0; min-height: 1.4em; white-space: nowrap; font-size: clamp(10.5px, 0.8vw, 12px); line-height: 1.4; color: var(--tx-d); }
+.pk-ren:not(:empty) + .pk-emp:not(:empty)::before { content: '·'; margin: 0 0.55em; color: rgba(255,255,255,0.3); }
+/* у стратегии продления нет ни в одном периоде и размере — пустую строку она не держит */
+.pk[data-pkg="strategy"] { grid-template-areas: "name go" "price go" "free free"; }
+.pk[data-pkg="strategy"] .pk-next { display: none; }
+.pk .pk-go { grid-area: go; padding: 0.6rem 0.95rem; font-size: clamp(10.5px, 0.78vw, 12px); white-space: nowrap; }
+/* FR-SITE117 (владелец 26.11: «эту кнопку убери, просто должно быть снизу под каждой написано First process free») */
+.pk-free { grid-area: free; margin: 0; white-space: nowrap; font-size: clamp(10px, 0.75vw, 11.5px); line-height: 1.35; color: var(--tx-d); }
+.sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space: nowrap; border: 0; }
 .compare { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem 0.8rem; text-align: center;
   font-size: clamp(11.5px, 1.05vw, 15px); }
 .compare .cmp.old { color: var(--tx-d); text-decoration: line-through; }
@@ -892,7 +915,7 @@ html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spa
 
 /* На центрированных экранах карточки и ленты сохраняют левую выключку текста:
    центрируется блок целиком, а не каждая строка внутри него. */
-.wrap.center .biz, .wrap.center .ui, .wrap.center .calc-card { text-align: left; }
+.wrap.center .biz, .wrap.center .ui, .wrap.center .calc-card, .wrap.center .pk { text-align: left; }
 
 /* ===== Мобилка: цепочки процессов и паутина не должны вылезать за экран ===== */
 @media (max-width:620px) {
@@ -1185,20 +1208,20 @@ html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spa
   .role i { font-size: 12px; }
   .l-note { font-size: 13.5px; }
 
-  /* ── тарифы и сравнение (FR-SITE102): переключатели и кнопки — не ниже 44px под палец ── */
-  .calc { gap: 0.55rem; margin: 0.8rem auto 0.7rem; }
-  /* подпись тарифов — длинная строка про запас процессов: мельче обычного подзаголовка, чтобы стояла в две строки */
-  #pricing .lead { font-size: 12.5px; line-height: 1.5; }
-  /* период и валюта — одной строкой и на 360px: кегль как у переключателей главной */
+  /* ── тарифы и сравнение (FR-SITE113…119, NFR-SITE103): переключатель и кнопки пакетов — не ниже 44px под палец ── */
+  .calc { gap: 0.4rem; margin: 0.4rem auto 0.45rem; }
   .calc-sw { gap: 0.35rem; }
-  .seg button { min-height: 44px; padding: 0.45rem 0.55rem; font-size: 10.5px; }
-  .seg [data-cur] { min-width: 36px; }
-  .calc-card { padding: 0.8rem 1rem 0.9rem; }
-  .calc-q, .calc-plan { font-size: 13px; }
-  .calc-v { font-size: 1.3rem; }
-  .calc-price { font-size: clamp(1.4rem, 6.6vw, 1.8rem); }
-  .btn-sm { font-size: 12px; padding: 0.7rem 0.6rem; }
-  .calc-contact { min-height: 44px; }
+  .seg button { min-height: 44px; padding: 0.45rem 0.85rem; font-size: 11px; }
+  .calc-card { padding: 0.5rem 0.95rem 0.5rem; }
+  .calc-q { font-size: 13px; }
+  .calc-v { font-size: 1.25rem; }
+  .calc-bands li { font-size: 11px; }
+  .pks { gap: 0.35rem; }
+  .pk { padding: 0.4rem 0.8rem 0.35rem; column-gap: 0.6rem; row-gap: 0.08rem; }
+  .pk-name, .pk-next { font-size: 11px; line-height: 1.28; }
+  .pk-price { font-size: 12px; line-height: 1.15; }
+  .pk-free { font-size: 10.5px; line-height: 1.25; }
+  .pk .pk-go { min-height: 44px; padding: 0.55rem 0.85rem; font-size: 11.5px; }
   .compare { font-size: 13px; line-height: 1.55; flex-direction: column; gap: 0.3rem; }
   .compare i { display: none; }
 
@@ -1278,7 +1301,7 @@ html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spa
   .step-copy h2 { font-size: clamp(1.1rem, 5.8vh, 1.75rem); }
   .step-copy p { font-size: clamp(11.5px, 3.3vh, 14px); }
   .score b { font-size: clamp(1.3rem, 6.4vh, 2rem); }
-  .calc-price { font-size: clamp(1.05rem, 5.2vh, 1.6rem); }
+  .pk-price { font-size: clamp(9.5px, 2.6vh, 12px); }
   .final-1, .final-3 { font-size: clamp(1.3rem, 7vh, 2rem); }
   .typing { font-size: clamp(13px, 3.6vh, 17px); }
   .node, .pnode, .opnode, .fnode { font-size: clamp(10px, 2.8vh, 12.5px); padding: 0.4rem 0.6rem; }
@@ -1293,14 +1316,20 @@ html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spa
   .nums, .outs, .biz-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .nums { margin: 0.4rem auto 0.35rem; gap: 0.36rem; }
   /* в горизонте места мало по высоте: период и валюта — столбиком слева от карточки, ползунок ниже */
-  .calc { flex-direction: row; align-items: center; margin: 0.35rem auto 0.3rem; gap: 0.5rem; }
+  /* в горизонте места мало по высоте: период — слева от карточки с ползунком, пакеты — тремя колонками под ними */
+  .calc { flex-direction: row; flex-wrap: wrap; align-items: center; margin: 0.35rem auto 0.3rem; gap: 0.4rem 0.5rem; }
   .calc-sw { flex: 0 0 auto; flex-direction: column; align-items: stretch; gap: 0.3rem; }
   .calc-sw .seg { justify-content: center; }
-  .calc-card { flex: 1 1 auto; min-width: 0; }
+  .calc-card { flex: 1 1 0; min-width: 0; }
   .calc-rng { height: 30px; }
-  .calc-plan { margin: 0 0 0.2rem; }
-  #pricing .lead { margin-bottom: 0.4rem; }
-  .btn-primary.calc-free { padding: 0.6rem 1.3rem; margin-bottom: 0.45rem; font-size: clamp(9px, 2.4vh, 11px); }
+  .pks { flex: 1 1 100%; flex-direction: row; gap: 0.4rem; }
+  .pk { flex: 1 1 0; grid-template-columns: minmax(0, 1fr); grid-template-areas: "name" "price" "next" "go" "free"; row-gap: 0.15rem; padding: 0.4rem 0.6rem; }
+  /* у стратегии строка продления пустая, но в колонке держит место — кнопки трёх пакетов на одной линии */
+  .pk[data-pkg="strategy"] { grid-template-areas: "name" "price" "next" "go" "free"; }
+  .pk[data-pkg="strategy"] .pk-next { display: block; }
+  .pk-name, .pk-next, .pk-free { font-size: clamp(8.5px, 2.2vh, 10.5px); }
+  .pk-price { font-size: clamp(9px, 2.4vh, 11px); }
+  .pk .pk-go { min-height: 0; padding: 0.3rem 0.5rem; font-size: clamp(8.5px, 2.2vh, 10.5px); }
   .outs { gap: 0.32rem; margin-top: 0.2rem; }
   /* содержимое карточек ужимается вместе с сеткой: восемь карточек в две
      строки иначе не укладывались в 360px высоты */
@@ -1312,11 +1341,10 @@ html[lang="ru"] .nav-legal-link { font-size: clamp(9px, 2.7vw, 11px); letter-spa
   .out h3 { font-size: clamp(9.5px, 2.75vh, 12px); margin-bottom: 0.05rem; }
   .out p { font-size: clamp(9px, 2.45vh, 11px); line-height: 1.22; }
   .calc-card { padding: 0.45rem 0.75rem 0.5rem; }
-  .calc-q, .calc-plan { font-size: clamp(9px, 2.3vh, 11px); }
+  .calc-q, .calc-bands li { font-size: clamp(9px, 2.3vh, 11px); }
   .calc-v { font-size: clamp(0.9rem, 4.6vh, 1.2rem); }
   .seg button { min-height: 0; padding: 0.3rem 0.65rem; font-size: clamp(9px, 2.3vh, 11px); }
   .btn-sm { padding: 0.34rem 0.45rem; font-size: clamp(8.5px, 2.2vh, 10.5px); }
-  .calc-contact { min-height: 0; }
   .compare { font-size: clamp(9px, 2.3vh, 11px); line-height: 1.35; }
   .biz-grid { gap: 0.25rem; margin: 0.5rem auto 0.45rem; }
   .compare { flex-direction: row; gap: 0.3rem 0.7rem; }

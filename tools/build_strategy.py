@@ -10,9 +10,11 @@ assets/strategy.js, тексты — tools/strategy_copy.py. Точек в ко�
 import html
 import json
 import math
+from decimal import Decimal, ROUND_HALF_UP
 import os
 import re
 import sys
+from urllib.parse import quote
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from tg_miniapp import head_snippet  # noqa: E402 — общий модуль рядом
@@ -47,22 +49,38 @@ BIZ_ICONS = ["fa-briefcase", "fa-user-tie", "fa-bullhorn", "fa-pen-nib",
 OUT_ICONS = ["fa-gauge-high", "fa-diagram-project", "fa-brain", "fa-lightbulb",
              "fa-people-arrows", "fa-wand-magic-sparkles", "fa-robot", "fa-route"]
 
-# FR-SITE102 — тарифы ИИ-стратегии (решение владельца 24.11). Сотрудник — подключённый к компании
-# человек; тариф по их числу выбирается сам, год = 10 месяцев (2 в подарок). Строка: id, сотрудников
-# не больше, $ в месяц, $ за год, ₽ в месяц, ₽ за год. У крупного верхней границы нет — цена «от …»
-# и кнопка «Связаться». Та же сетка — в калькуляторе главной (index.html, TARIFF): сверяет тест.
-TARIFFS = [
-    ("solo", 1, 29, 290, 2900, 29000),
-    ("micro", 9, 100, 1000, 9900, 99000),
-    ("small", 49, 500, 5000, 49900, 499000),
-    ("medium", 249, 1000, 10000, 99900, 999000),
-    ("large", None, 2500, 25000, 249000, 2490000),
+# FR-SITE114 — сетка цен по размеру компании (ценовая политика §2–§3, владелец 26.11). Только доллары (FR-SITE113).
+# Строка: подпись группы, сотрудников от, до (границы включены), A — стратегия разово, N — Нейроний в месяц, $. У 250+
+# цены нет — «По запросу» и заявка (FR-SITE118). Та же сетка — в калькуляторе главной (index.html, BANDS): сверяет тест.
+BANDS = [
+    ("1–10", 1, 10, 100, 100),
+    ("11–100", 11, 100, 500, 500),
+    ("101–249", 101, 249, 1000, 1000),
+    ("250+", 250, None, None, None),
 ]
-# Деления ползунка «сколько сотрудников»: до 10 — по одному, дальше шаг растёт, последнее — «1000+».
-# Нижняя граница каждого тарифа (1, 2, 10, 50, 250) — деление ползунка. Те же деления — на главной (EMP).
-EMP_STOPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100,
-             125, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000]
-EMP_START = 5   # ползунок стоит на «Микро» — как прежний размер «1–10» на главной
+# Буткемп (политика §4): 12 занятий по часу; клиент платит вознаграждение консультанта ÷ 0,70, публичная ставка — $50/ч.
+BOOTCAMP_HOURS = 12
+BOOTCAMP_RATE = 50
+EXPERT_SHARE = Decimal("0.70")
+# Год Нейрония — 12 месяцев по цене 10 (FR-SITE115): значок «−17%» у «Года»; стратегия и буткемп разовые, без скидки.
+YEAR_PAID = 10
+YEAR_SAVE = 17   # 2 / 12 = 16,7 % → 17
+# Деления ползунка «сколько сотрудников»: прежняя ступенчатая шкала 1 … 1000+ и обе границы каждой группы (10 | 11, 100 | 101,
+# 249 | 250) — цена меняется ровно на границе (FR-SITE116). Те же деления — на главной (EMP).
+EMP_STOPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100,
+             101, 125, 150, 175, 200, 225, 249, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000]
+EMP_START = 5   # по умолчанию — 5 сотрудников, первая группа
+PACKAGES = ("strategy", "platform", "transformation")
+CONTACT_MAIL = "admin@andre.technology"   # тот же адрес, что у значка письма в подвале
+
+
+def half_up(x):
+    """Округление до целого «половина вверх» (политика §4: деньги — half-up), а не банковское round()."""
+    return int(Decimal(x).quantize(Decimal(1), rounding=ROUND_HALF_UP))
+
+
+# буткемп в центах: 12 ч × $50 ÷ 0,70 = 857,142… → $857,14
+BOOTCAMP_CENTS = half_up(Decimal(BOOTCAMP_HOURS * BOOTCAMP_RATE * 100) / EXPERT_SHARE)
 
 
 def flip_key(name):
@@ -310,17 +328,41 @@ def stages(t):
     return out
 
 
-def tariff_of(n):
-    """Тариф по числу сотрудников: первый, в чью границу число помещается."""
-    for row in TARIFFS:
-        if row[1] is None or n <= row[1]:
+def band_of(n):
+    """Группа размера компании: первая, в чью верхнюю границу число помещается (границы включены)."""
+    for row in BANDS:
+        if row[2] is None or n <= row[2]:
             return row
 
 
-def money(v, cur, sep):
-    """$1,000 / $1 000 и 9 900 ₽: разряды — по языку страницы, рубль — после числа."""
-    s = "{:,}".format(v).replace(",", sep)
-    return s + u"\u00a0₽" if cur == "rub" else "$" + s
+def package_price(pkg, band, period):
+    """FR-SITE114/115: цена пакета в центах — now (в шапке карточки), was (зачёркнутая: тот же пакет помесячно
+    за 12 месяцев — только «Год»), next (продление: N в месяц или 10N за год). У 250+ — None («По запросу»)."""
+    a, n = band[3], band[4]
+    if a is None:
+        return None
+    a, n = a * 100, n * 100
+    if pkg == "strategy":
+        return {"now": a, "was": None, "next": None}
+    year = period == "year"
+    boot = BOOTCAMP_CENTS if pkg == "transformation" else 0
+    months = YEAR_PAID if year else (1 if pkg == "platform" else 3)
+    return {"now": a + months * n + boot, "was": a + 12 * n + boot if year else None,
+            "next": YEAR_PAID * n if year else n}
+
+
+def per_employee(band, period, n):
+    """FR-SITE116: «≈ $X на сотрудника в месяц» — месячная часть Нейрония (за год — 10N / 12) ÷ сотрудников, до доллара."""
+    if band[4] is None:
+        return None
+    month = Decimal(band[4] * YEAR_PAID) / 12 if period == "year" else Decimal(band[4])
+    return half_up(month / n)
+
+
+def money(cents, sep, dec):
+    """$1 257,14 / $1,257.14 (FR-SITE113): разряды и центы — по языку страницы, целые — без центов."""
+    d, r = divmod(cents, 100)
+    return "$" + "{:,}".format(d).replace(",", sep) + ((dec + "%02d" % r) if r else "")
 
 
 def emp_word(n, words):
@@ -335,42 +377,76 @@ def emp_word(n, words):
     return words[2]
 
 
-def calc(t):
-    """Тарифы (FR-SITE102): ползунок «сколько сотрудников» сам выбирает тариф и показывает одну цену;
-    рядом — период (месяц / год) и валюта ($ / ₽, по умолчанию — валюта языка). Разметка собрана в
-    состоянии по умолчанию, поэтому без скрипта страница тоже читается; деления, сетка цен и подписи
-    для скрипта лежат в data-calc (assets/strategy.js), скрипт общий на оба языка."""
-    c, cur = t["pr_calc"], t["pr_cur"]
-    n = EMP_START
-    tid, _mx, usd_m, _usd_y, rub_m, _rub_y = tariff_of(n)
-    data = {"emp": EMP_STOPS, "txt": c,
-            "plans": [{"id": r[0], "max": r[1], "usd": [r[2], r[3]], "rub": [r[4], r[5]]} for r in TARIFFS]}
-    price = money(rub_m if cur == "rub" else usd_m, cur, c["sep"])
+def lead_subject(n, more, band, period, pkg):
+    """FR-SITE118: тот же источник заявки, что на главной, — без валюты: «Pricing: 5 (1–10) / month / platform»."""
+    return "Pricing: %d%s (%s) / %s / %s" % (n, "+" if more else "", band[0], period, pkg)
+
+
+def mail_quote(s):
+    """Тема письма — как encodeURIComponent в assets/strategy.js: «( ) ! * '» не кодируются."""
+    return quote(s, safe="!*'()")
+
+
+def package_html(t, pkg, n, period):
+    """Карточка пакета (FR-SITE119) в заданном состоянии: та же разметка, что дорисовывает assets/strategy.js."""
+    c = t["pr_calc"]
+    more = n >= EMP_STOPS[-1]
+    band = band_of(n)
+    p = package_price(pkg, band, period)
+    m = lambda v: money(v, c["sep"], c["dec"])  # noqa: E731
+    was = ('<span class="sr">%s </span>%s' % (c["was"], m(p["was"]))) if p and p["was"] else ""
+    if p:
+        per = c["per"]["strategy"] if pkg == "strategy" else c["per"]["year" if period == "year" else pkg]
+        num, ren = m(p["now"]), (c["next"][period].replace("{m}", m(p["next"])) if p["next"] else "")
+        emp = c["emp_line"].replace("{m}", m(100 * per_employee(band, period, n))) if p["next"] else ""
+        go, href = c["go"], t["cta_href"]
+    else:
+        per, num, ren, emp = "", c["ask"], "", ""
+        go = c["contact"]
+        href = "mailto:%s?subject=%s" % (CONTACT_MAIL, mail_quote(lead_subject(n, more, band, period, pkg)))
+    hot = pkg == "transformation"
     return """
-      <div class="calc" id="calc" data-cur0="{cur}" data-calc="{data}">
+          <article class="pk{hot}{ask}" data-pkg="{pkg}">
+            <p class="pk-name">{name}</p>
+            <p class="pk-price"><s class="pk-was">{was}</s><b class="pk-num">{num}</b> <span class="pk-per">{per}</span></p>
+            <p class="pk-next"><span class="pk-ren">{ren}</span><span class="pk-emp">{emp}</span></p>
+            <a class="btn {btn} btn-sm pk-go" href="{href}" rel="noopener">{go} <i class="fa-solid fa-arrow-right"></i></a>
+            <p class="pk-free">{free}</p>
+          </article>""".format(
+        hot=" hot" if hot else "", ask="" if p else " ask", pkg=pkg, name=t["pr_pkgs"][pkg], was=was, num=num, per=per,
+        ren=ren, emp=emp, btn="btn-primary" if hot else "btn-ghost", href=html.escape(href, quote=True), go=go, free=t["pr_first"])
+
+
+def calc(t):
+    """Тарифы (FR-SITE113…119): «Месяц | Год −17%» → ползунок «сколько сотрудников» с группами размеров → три пакета
+    (стратегия, платформа, трансформация) по ценовой политике, только доллары. Разметка собрана в состоянии по
+    умолчанию (5 сотрудников, «Месяц») — без скрипта страница тоже читается; сетка, буткемп, деления и подписи
+    для скрипта лежат в data-calc (assets/strategy.js), скрипт общий на оба языка."""
+    c = t["pr_calc"]
+    n, period = EMP_START, "month"
+    band = band_of(n)
+    data = {"emp": EMP_STOPS, "txt": c, "boot": BOOTCAMP_CENTS, "yearPaid": YEAR_PAID, "go": t["cta_href"], "mail": CONTACT_MAIL,
+            "bands": [{"id": b[0], "lo": b[1], "hi": b[2], "a": b[3] and b[3] * 100, "n": b[4] and b[4] * 100} for b in BANDS]}
+    bands = "".join('<li%s>%s</li>' % (' class="on"' if b is band else "", b[0]) for b in BANDS)
+    return """
+      <div class="calc" id="calc" data-calc="{data}">
         <div class="calc-sw">
           <div class="seg" role="group" aria-label="{period_aria}"><button type="button" data-period="month" aria-pressed="true">{month}</button><button type="button" data-period="year" aria-pressed="false">{year}</button></div>
-          <div class="seg" role="group" aria-label="{cur_aria}"><button type="button" data-cur="usd" aria-pressed="{usd}">$</button><button type="button" data-cur="rub" aria-pressed="{rub}">₽</button></div>
         </div>
         <div class="calc-card">
           <label class="calc-q" for="calc-n"><span>{q}</span><output class="calc-v" id="calc-v" for="calc-n">{n}</output></label>
           <input class="calc-rng" id="calc-n" type="range" min="0" max="{imax}" step="1" value="{i0}" aria-valuetext="{vt}" style="--fill: {fill}%">
-          <p class="calc-plan"><b>{name}</b> · {seg}</p>
-          <div class="calc-res">
-            <p class="calc-price"><span class="calc-from" hidden>{from_}</span> <b class="calc-num">{price}</b> <span class="calc-per">{per}</span></p>
-            <a class="btn btn-ghost btn-sm calc-contact" href="{contact_href}" tabindex="-1" aria-hidden="true">{contact} <i class="fa-solid fa-arrow-right"></i></a>
-          </div>
+          <ol class="calc-bands" aria-hidden="true">{bands}</ol>
         </div>
-      </div>
-      <a class="btn btn-primary calc-free" href="{cta_href}" rel="noopener">{free} <i class="fa-solid fa-arrow-right"></i></a>""".format(
-        cur=cur, data=html.escape(json.dumps(data, ensure_ascii=False, separators=(",", ":")), quote=True),
-        period_aria=t["pr_period_aria"], cur_aria=t["pr_cur_aria"], month=t["pr_month"], year=t["pr_year"],
-        usd="true" if cur == "usd" else "false", rub="true" if cur == "rub" else "false",
+        <div class="pks">{pkgs}
+        </div>
+      </div>""".format(
+        data=html.escape(json.dumps(data, ensure_ascii=False, separators=(",", ":")), quote=True),
+        period_aria=t["pr_period_aria"], month=t["pr_month"], year=t["pr_year"],
         q=t["pr_q"], n=n, imax=len(EMP_STOPS) - 1, i0=EMP_STOPS.index(n),
         fill="%.2f" % (EMP_STOPS.index(n) * 100.0 / (len(EMP_STOPS) - 1)),
-        vt="%d %s — %s" % (n, emp_word(n, c["emp"]), c["name"][tid]),
-        name=c["name"][tid], seg=c["seg"][tid], from_=c["from"], price=price, per=c["per"]["month"],
-        contact_href=t["pr_contact_href"], contact=t["pr_contact"], cta_href=t["cta_href"], free=t["pr_free"])
+        vt="%d %s (%s)" % (n, emp_word(n, c["emp"]), band[0]), bands=bands,
+        pkgs="".join(package_html(t, k, n, period) for k in PACKAGES))
 
 
 def page(t, lang):
@@ -430,8 +506,7 @@ def page(t, lang):
 
     roles = "".join('<span class="role"><i class="fa-solid %s"></i>%s</span>' % (ic, name) for name, ic in t["roles"])
 
-    # FR-SITE102: вместо четырёх карточек разовых пакетов — ползунок «сколько сотрудников», одна цена
-    # под число, период и валюта; главная кнопка — бесплатный процесс
+    # FR-SITE119: ползунок «сколько сотрудников» и те же три пакета, что на главной (только доллары, «Месяц | Год −17%»)
     calc_html = calc(t)
 
     # Разделитель ставится ТОЛЬКО между зачёркнутыми ценами: строка
@@ -604,8 +679,7 @@ def page(t, lang):
   <section class="screen" data-chapter="pricing" id="pricing">
     <div class="wrap center">
       <p class="eyebrow">{pr_eyebrow}</p>
-      <h2 class="one-line">{pr_head}</h2>
-      <p class="lead">{pr_sub}</p>{calc}
+      <h2 class="one-line">{pr_head}</h2>{calc}
       <p class="compare">{compare}</p>
     </div>
   </section>
@@ -657,7 +731,7 @@ def page(t, lang):
         d_eyebrow=t["d_eyebrow"], d_head=t["d_head"], d_sub=t["d_sub"], outs=outs,
         steps=steps,
         l_eyebrow=t["l_eyebrow"], l_head=t["l_head"], l_sub=t["l_sub"], l_note=t["l_note"], roles=roles,
-        pr_eyebrow=t["pr_eyebrow"], pr_head=t["pr_head"], pr_sub=t["pr_sub"], calc=calc_html, compare=compare,
+        pr_eyebrow=t["pr_eyebrow"], pr_head=t["pr_head"], calc=calc_html, compare=compare,
         coins="".join('<i class="fa-solid fa-coins" style="--d:%.2fs"></i>' % (k * 0.8) for k in range(3)),
         f_1=t["f_1"], f_3=t["f_3"], f_cta=t["f_cta"],
         company=t["company"], legal0=t["legal"][0], legal1=t["legal"][1],

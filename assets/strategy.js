@@ -505,20 +505,28 @@
     });
   }
 
-  /* ---------- тарифы: ползунок «сколько сотрудников» (FR-SITE102) ----------
-     Решение владельца 24.11: не карточки тарифов, а ползунок 1 … 1000+. Тариф выбирается сам
-     (1 — Соло, 2–9 — Микро, 10–49 — Малый, 50–249 — Средний, 250+ — Крупный), под числом — одна
-     цена: помесячно или за год (год = 10 месяцев), в $ или ₽. У 250+ — «от …» и «Связаться».
-     Деления, сетка цен и подписи — в разметке (data-calc собирает tools/build_strategy.py). */
-  var calc = $('#calc'), CD = calc && JSON.parse(calc.getAttribute('data-calc')),
-      calcSt = { period: 'month', cur: calc && calc.getAttribute('data-cur0') === 'rub' ? 'rub' : 'usd' };
-  function calcPlan(n) {
-    for (var i = 0; i < CD.plans.length; i++) if (CD.plans[i].max == null || n <= CD.plans[i].max) return CD.plans[i];
-    return CD.plans[CD.plans.length - 1];
+  /* ---------- тарифы: размер команды → три пакета (FR-SITE113…119) ----------
+     Владелец 26.11: только доллары, «Месяц | Год» над размером команды, у «Года» — экономия −17% и зачёркнутая прежняя цена, цена
+     меняется на ходу при движении ползунка. Группы размеров (границы включены): 1–10, 11–100, 101–249, 250+ («По запросу»). Пакеты по
+     ценовой политике: стратегия = A разово; платформа = A + N за первый месяц, дальше N; трансформация = A + 3N + B (буткемп) за три
+     месяца, дальше N; год — 12 месяцев Нейрония по цене 10. Сетка, буткемп, деления и подписи — в разметке (data-calc собирает
+     tools/build_strategy.py), деньги — в центах. */
+  var calc = $('#calc'), CD = calc && JSON.parse(calc.getAttribute('data-calc')), calcSt = { period: 'month' }, calcReady = false;
+  function calcBand(n) {
+    for (var i = 0; i < CD.bands.length; i++) if (CD.bands[i].hi == null || n <= CD.bands[i].hi) return CD.bands[i];
+    return CD.bands[CD.bands.length - 1];
   }
-  function calcMoney(v, cur) {
-    var s = String(v).replace(/\B(?=(\d{3})+(?!\d))/g, CD.txt.sep);
-    return cur === 'rub' ? s + '\u00a0₽' : '$' + s;
+  /* $1 257,14 / $1,257.14: разряды и центы — по языку страницы, целые — без центов (FR-SITE113) */
+  function calcMoney(c) {
+    var d = Math.floor(c / 100), r = c % 100;
+    return '$' + String(d).replace(/\B(?=(\d{3})+(?!\d))/g, CD.txt.sep) + (r ? CD.txt.dec + (r < 10 ? '0' : '') + r : '');
+  }
+  /* цена пакета в центах: now — в карточке, was — зачёркнутая (только «Год»: те же 12 месяцев помесячно), next — продление; у 250+ — null */
+  function calcPrice(key, b) {
+    if (b.a == null) return null;
+    if (key === 'strategy') return { now: b.a, was: null, next: null };
+    var y = calcSt.period === 'year', B = key === 'transformation' ? CD.boot : 0;
+    return { now: b.a + (y ? CD.yearPaid : key === 'platform' ? 1 : 3) * b.n + B, was: y ? b.a + 12 * b.n + B : null, next: y ? CD.yearPaid * b.n : b.n };
   }
   function calcWord(n) {
     var w = CD.txt.emp;
@@ -526,44 +534,62 @@
     var d = n % 10, h = n % 100;
     return d === 1 && h !== 11 ? w[0] : (d >= 2 && d <= 4 && (h < 12 || h > 14) ? w[1] : w[2]);
   }
+  /* FR-SITE116, NFR-SITE104: изменившееся число коротко «прокатывается» (240 мс), при prefers-reduced-motion — сразу */
+  function calcRoll(el, html) {
+    if (el.innerHTML === html) return;
+    el.innerHTML = html;
+    if (calcReady && html && !reduce && el.animate)
+      el.animate([{ opacity: 0, transform: 'translateY(0.35em)' }, { opacity: 1, transform: 'none' }], { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+  }
   function renderCalc() {
-    var TX = CD.txt, rng = $('#calc-n', calc), i = +rng.value, n = CD.emp[i], p = calcPlan(n), big = p.max == null,
-        more = n >= CD.emp[CD.emp.length - 1], v = p[calcSt.cur][calcSt.period === 'year' ? 1 : 0];
-    calc.classList.toggle('big', big);
+    var TX = CD.txt, rng = $('#calc-n', calc), i = +rng.value, n = CD.emp[i], more = n >= CD.emp[CD.emp.length - 1], b = calcBand(n),
+        y = calcSt.period === 'year';
     rng.style.setProperty('--fill', (i / (CD.emp.length - 1) * 100).toFixed(2) + '%');
-    rng.setAttribute('aria-valuetext', n + (more ? '+ ' + TX.emp[TX.emp.length - 1] : ' ' + calcWord(n)) + ' — ' + TX.name[p.id]);
+    rng.setAttribute('aria-valuetext', n + (more ? '+ ' + TX.emp[TX.emp.length - 1] : ' ' + calcWord(n)) + ' (' + b.id + ')');
     $('#calc-v', calc).textContent = n + (more ? '+' : '');
-    $('.calc-plan', calc).innerHTML = '<b>' + TX.name[p.id] + '</b> · ' + TX.seg[p.id];
-    $('.calc-from', calc).hidden = !big;
-    $('.calc-num', calc).textContent = calcMoney(v, calcSt.cur);
-    $('.calc-per', calc).textContent = TX.per[calcSt.period];
-    /* «Связаться» — только у 250+; место под кнопкой занято всегда, блок не прыгает */
-    var ct = $('.calc-contact', calc);
-    ct.tabIndex = big ? 0 : -1;
-    if (big) ct.removeAttribute('aria-hidden'); else ct.setAttribute('aria-hidden', 'true');
-    $$('[data-period]', calc).forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-period') === calcSt.period ? 'true' : 'false'); });
-    $$('[data-cur]', calc).forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-cur') === calcSt.cur ? 'true' : 'false'); });
+    $$('.calc-bands li', calc).forEach(function (li, k) { li.classList.toggle('on', CD.bands[k] === b); });
+    $$('[data-period]', calc).forEach(function (bt) { bt.setAttribute('aria-pressed', bt.getAttribute('data-period') === calcSt.period ? 'true' : 'false'); });
+    $$('.pk', calc).forEach(function (pk) {
+      var key = pk.getAttribute('data-pkg'), p = calcPrice(key, b), go = $('.pk-go', pk),
+          pe = b.n == null ? 0 : Math.round((y ? CD.yearPaid * b.n / 12 : b.n) / n / 100);
+      pk.classList.toggle('ask', !p);
+      /* FR-SITE115: в «Год» — зачёркнутая прежняя цена, экранному диктору — «было $X» */
+      calcRoll($('.pk-was', pk), p && p.was ? '<span class="sr">' + TX.was + ' </span>' + calcMoney(p.was) : '');
+      calcRoll($('.pk-num', pk), p ? calcMoney(p.now) : TX.ask);
+      $('.pk-per', pk).textContent = !p ? '' : key === 'strategy' ? TX.per.strategy : y ? TX.per.year : TX.per[key];
+      /* продление — своей строкой; «≈ $X на сотрудника в месяц» меняется на каждом шаге ползунка (FR-SITE116) */
+      calcRoll($('.pk-ren', pk), p && p.next ? TX.next[calcSt.period].replace('{m}', calcMoney(p.next)) : '');
+      calcRoll($('.pk-emp', pk), p && p.next ? TX.emp_line.replace('{m}', calcMoney(pe * 100)) : '');
+      /* FR-SITE118: до 250 — «Начать» в продукт; у 250+ — «Связаться» на почту, тема — тот же источник заявки, что на главной */
+      go.innerHTML = (p ? TX.go : TX.contact) + ' <i class="fa-solid fa-arrow-right"></i>';
+      go.setAttribute('href', p ? CD.go : 'mailto:' + CD.mail + '?subject=' +
+        encodeURIComponent('Pricing: ' + n + (more ? '+' : '') + ' (' + b.id + ') / ' + calcSt.period + ' / ' + key));
+    });
+    calcReady = true;
     fitCalcPrice();
   }
-  /* Длинная цена (рубли за год у 250+) ужимается по ширине карточки, а не переносится; высота строки
-     прежняя. Скрытый экран (display: none) мерить нечем — поэтому ещё и в paint(), когда экран показан. */
-  function fitCalcPrice() {
-    var pr = calc && $('.calc-price', calc);
-    if (!pr || !pr.clientWidth) return;
-    pr.style.fontSize = ''; pr.style.minHeight = '';
-    var h = pr.offsetHeight;
+  /* Длинная цена не переносится и не распирает карточку — ужимается по ширине (NFR-SITE103). Скрытый экран (display: none) мерить
+     нечем — поэтому ещё и в paint(), когда экран показан. */
+  function fitLine(el) {
+    el.style.fontSize = ''; el.style.minHeight = '';
+    var h = el.offsetHeight;
     for (var k = 0; k < 3; k++) {
-      var over = pr.scrollWidth - pr.clientWidth;
+      var over = el.scrollWidth - el.clientWidth;
       if (over <= 0) break;
-      var fs = parseFloat(getComputedStyle(pr).fontSize);
-      pr.style.fontSize = Math.max(fs * 0.6, fs * (pr.scrollWidth - over - 1) / pr.scrollWidth).toFixed(2) + 'px';
+      var fs = parseFloat(getComputedStyle(el).fontSize);
+      el.style.fontSize = Math.max(fs * 0.6, fs * (el.scrollWidth - over - 1) / el.scrollWidth).toFixed(2) + 'px';
     }
-    if (pr.style.fontSize) pr.style.minHeight = h + 'px';
+    /* высота строки прежняя — карточка не прыгает */
+    if (el.style.fontSize) el.style.minHeight = h + 'px';
+  }
+  function fitCalcPrice() {
+    if (!calc || !calc.clientWidth) return;
+    $$('.pk-price, .pk-next, .pk-name', calc).forEach(fitLine);
   }
   if (calc) {
+    /* FR-SITE116: цена меняется во время перетаскивания — событие input, а не change */
     $('#calc-n', calc).addEventListener('input', renderCalc);
     $$('[data-period]', calc).forEach(function (b) { b.addEventListener('click', function () { calcSt.period = b.getAttribute('data-period'); renderCalc(); }); });
-    $$('[data-cur]', calc).forEach(function (b) { b.addEventListener('click', function () { calcSt.cur = b.getAttribute('data-cur'); renderCalc(); }); });
     window.addEventListener('resize', fitCalcPrice);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCalcPrice);
     renderCalc();

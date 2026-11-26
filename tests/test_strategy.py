@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """FR-SITE41 — лендинг AI Strategy (/ai-strategy/ и /ai-strategy/ru/).
-FR-SITE102 — тарифы: ползунок «сколько сотрудников», месяц / год, $ / ₽; в браузере
-их проверяет tools/pricing_check.py.
+FR-SITE102 — тарифы: ползунок «сколько сотрудников» (ред. 26.11 — FR-SITE119).
+FR-SITE113…119, NFR-SITE103…105 — цены 26.11: только доллары, «Месяц | Год −17%» над
+ползунком, три пакета главной по ценовой политике, «Первый процесс — бесплатно» под
+каждым, 250+ — «По запросу» и письмо; в браузере их проверяет tools/pricing_check.py.
 
 Страница листается экранами, как биография и главная. Без зависимостей:
 `python3 tests/test_strategy.py` или через pytest.
@@ -454,10 +456,10 @@ def test_learning_has_an_endless_roles_ticker():
 # ── Pricing ───────────────────────────────────────────────────────────────
 
 def test_pricing_is_one_block_with_strikethrough_comparison():
-    """FR-SITE102 (владелец 24.11): «не карточки тарифов, а ползунок» — на экране
-    тарифов один блок-калькулятор и прежнее зачёркнутое сравнение с консалтингом."""
+    """FR-SITE102/119: на экране тарифов один блок-калькулятор (ползунок и три
+    пакета) и прежнее зачёркнутое сравнение с консалтингом."""
     for lang, html in _pages():
-        sec = html[html.index('id="pricing"'):html.index("</section>", html.index('id="pricing"'))]
+        sec = _pricing_sec(html)
         assert '<article class="plan' not in html and sec.count('class="calc"') == 1, lang + ": один калькулятор"
         assert sec.count('class="cmp old"') >= 1, lang + ": сравнение зачёркнуто"
         for gone in ("$59", "$199", "$499", "operations", "операций", "One-time purchase", "Разовая покупка"):
@@ -469,107 +471,277 @@ def test_pricing_is_one_block_with_strikethrough_comparison():
     assert ".calc { width: 100%; max-width: 34rem; margin: 1rem auto 0.9rem;" in css, "калькулятор не вылезает за экран"
 
 
+def _pricing_sec(html):
+    a = html.index('id="pricing"')
+    return html[a:html.index("</section>", a)]
+
+
 def _calc_data(raw):
     import html as H
     import json
-    m = re.search(r'<div class="calc" id="calc" data-cur0="(usd|rub)" data-calc="([^"]+)">', raw)
+    m = re.search(r'<div class="calc" id="calc" data-calc="([^"]+)">', raw)
     assert m, "нет калькулятора тарифов"
-    return m.group(1), json.loads(H.unescape(m.group(2)))
+    return json.loads(H.unescape(m.group(1)))
 
 
-def test_pricing_slider_picks_the_plan_and_shows_one_price():
-    """FR-SITE102. Владелец 24.11: «не карточки тарифов, а ползунок „сколько
-    сотрудников“ (1 … 1000+): по выбранному числу сам определяется тариф (1 — Соло,
-    2–9 — Микро, 10–49 — Малый, 50–249 — Средний, 250+ — Крупный) и показывается
-    одна цена под это число». Деления и сетка — одни в генераторе, в разметку
-    уходят через data-calc (главная считает по той же сетке — test_site)."""
+def _builder():
     import sys
     sys.path.insert(0, os.path.join(_ROOT, "tools"))
     import build_strategy as B
-    assert [(r[0], r[1]) for r in B.TARIFFS] == [("solo", 1), ("micro", 9), ("small", 49), ("medium", 249), ("large", None)]
-    for r in B.TARIFFS:
-        assert r[3] == 10 * r[2] and r[5] == 10 * r[4], r[0] + ": год = 10 месяцев, 2 в подарок"
+    return B
+
+
+# цены ценовой политики (§3, R = 0, ставка $50/ч), центы: (группа, сотрудников) → пакет → период → (сейчас, зачёркнуто, продление)
+POLICY = {
+    5: {"strategy": {"month": (10000, None, None), "year": (10000, None, None)},
+        "platform": {"month": (20000, None, 10000), "year": (110000, 130000, 100000)},
+        "transformation": {"month": (125714, None, 10000), "year": (195714, 215714, 100000)}},
+    50: {"strategy": {"month": (50000, None, None), "year": (50000, None, None)},
+         "platform": {"month": (100000, None, 50000), "year": (550000, 650000, 500000)},
+         "transformation": {"month": (285714, None, 50000), "year": (635714, 735714, 500000)}},
+    150: {"strategy": {"month": (100000, None, None), "year": (100000, None, None)},
+          "platform": {"month": (200000, None, 100000), "year": (1100000, 1300000, 1000000)},
+          "transformation": {"month": (485714, None, 100000), "year": (1185714, 1385714, 1000000)}},
+}
+
+
+def test_bands_and_packages_follow_the_pricing_policy():
+    """FR-SITE114, NFR-SITE105: группы 1–10 / 11–100 / 101–249 / 250+ (A и N по
+    политике: $100 / $500 / $1 000), буткемп — 12 ч × $50 ÷ 0,70 = $857,14 в центах,
+    год — 10 месяцев; в data-calc уходит та же сетка (главная считает по ней же —
+    test_site)."""
+    B = _builder()
+    assert B.BANDS == [("1–10", 1, 10, 100, 100), ("11–100", 11, 100, 500, 500), ("101–249", 101, 249, 1000, 1000),
+                       ("250+", 250, None, None, None)]
+    assert B.BOOTCAMP_HOURS == 12 and B.BOOTCAMP_RATE == 50 and str(B.EXPERT_SHARE) == "0.70"
+    assert B.BOOTCAMP_CENTS == 85714 and B.YEAR_PAID == 10
+    assert B.half_up("0.5") == 1 and B.half_up("2.5") == 3, "half-up, а не банковское округление"
+    for lang, raw in (("en", _raw("ai-strategy/index.html")), ("ru", _raw("ai-strategy/ru/index.html"))):
+        data = _calc_data(raw)
+        assert data["emp"] == B.EMP_STOPS and data["boot"] == 85714 and data["yearPaid"] == 10, lang
+        assert [(b["id"], b["lo"], b["hi"], b["a"], b["n"]) for b in data["bands"]] == \
+            [(r[0], r[1], r[2], r[3] and r[3] * 100, r[4] and r[4] * 100) for r in B.BANDS], lang
+        assert data["mail"] == "admin@andre.technology", lang
+    for gone in ("Solo", "Micro", "Small", "Medium", "Large", "Соло", "Микро", "Малый", "Средний", "Крупный", "TARIFFS"):
+        assert gone not in _read("tools/build_strategy.py") + _read("tools/strategy_copy.py"), gone
+        for lang, html in _pages():
+            assert gone not in _pricing_sec(html), lang + ": " + gone
+
+
+def test_package_formulas_in_both_periods():
+    """FR-SITE114/115: стратегия = A в обоих периодах; «Месяц»: платформа A + N,
+    трансформация A + 3N + B, продление N; «Год»: платформа A + 10N (зачёркнуто
+    A + 12N), трансформация A + 10N + B (зачёркнуто A + 12N + B), продление 10N.
+    Сверка с ценами «от» политики на 5, 50 и 150 сотрудниках; 300 — «По запросу»."""
+    B = _builder()
+    for n, pkgs in POLICY.items():
+        band = B.band_of(n)
+        for pkg, periods in pkgs.items():
+            for period, want in periods.items():
+                p = B.package_price(pkg, band, period)
+                assert (p["now"], p["was"], p["next"]) == want, (n, pkg, period, p)
+    assert all(B.package_price(k, B.band_of(300), per) is None for k in B.PACKAGES for per in ("month", "year"))
+    js = _read("assets/strategy.js")
+    assert "if (key === 'strategy') return { now: b.a, was: null, next: null };" in js
+    assert ("return { now: b.a + (y ? CD.yearPaid : key === 'platform' ? 1 : 3) * b.n + B, was: y ? b.a + 12 * b.n + B : null, "
+            "next: y ? CD.yearPaid * b.n : b.n };") in js
+    assert "B = key === 'transformation' ? CD.boot : 0;" in js
+
+
+def test_band_bounds_are_inclusive():
+    """FR-SITE114/116: 10 — первая группа, 11 — вторая, 100 — вторая, 101 — третья,
+    249 — третья, 250 — «по запросу»; обе границы каждой группы — деления ползунка."""
+    B = _builder()
+    for n, band in ((1, "1–10"), (10, "1–10"), (11, "11–100"), (100, "11–100"), (101, "101–249"), (249, "101–249"),
+                    (250, "250+"), (1000, "250+")):
+        assert B.band_of(n)[0] == band, (n, band)
+        assert n in B.EMP_STOPS, "граница — деление ползунка: %d" % n
     assert B.EMP_STOPS[0] == 1 and B.EMP_STOPS[-1] == 1000 and B.EMP_STOPS == sorted(B.EMP_STOPS)
-    for lo in (1, 2, 10, 50, 250):
-        assert lo in B.EMP_STOPS, "нижняя граница тарифа — деление ползунка: %d" % lo
-    for lang in ("en", "ru"):
-        raw = _raw("ai-strategy/index.html" if lang == "en" else "ai-strategy/ru/index.html")
-        cur, data = _calc_data(raw)
-        assert cur == ("rub" if lang == "ru" else "usd"), lang + ": по умолчанию валюта языка (RU — ₽, EN — $)"
-        assert data["emp"] == B.EMP_STOPS
-        assert [(p["id"], p["max"], p["usd"], p["rub"]) for p in data["plans"]] == \
-            [(r[0], r[1], [r[2], r[3]], [r[4], r[5]]) for r in B.TARIFFS]
-        assert '<input class="calc-rng" id="calc-n" type="range" min="0" max="38" step="1" value="4"' in raw, \
-            lang + ": ползунок 1 … 1000+ стоит на 5 сотрудниках"
-    # без скрипта страница показывает состояние по умолчанию: «Микро», месяц, валюта языка
-    en, ru = _en(), _ru()
-    assert '<p class="calc-plan"><b>Micro</b> · 2–9 employees</p>' in en
-    assert '<b class="calc-num">$100</b> <span class="calc-per">/ mo</span>' in en
-    assert '<p class="calc-plan"><b>Микро</b> · 2–9 сотрудников</p>' in ru
-    assert '<b class="calc-num">9 900 ₽</b> <span class="calc-per">/ мес</span>' in ru
+    js = _read("assets/strategy.js")
+    assert "if (CD.bands[i].hi == null || n <= CD.bands[i].hi) return CD.bands[i];" in js
 
 
-def test_pricing_switches_month_year_and_currency():
-    """FR-SITE102: рядом — «Месяц / Год — 2 месяца в подарок» и валюта $ / ₽;
-    переключатель меняет цену (скрипт берёт её из сетки data-calc)."""
+def test_pricing_is_dollars_only():
+    """FR-SITE113. Владелец 26.11: «прайсинг на сайте убери рубли и выбор валют» —
+    и у русской версии: ни ₽, ни переключателя валюты, ни рублёвой валюты по умолчанию."""
+    for lang, html in _pages():
+        sec = _pricing_sec(html)
+        assert "₽" not in html, lang + ": рублей нет"
+        for gone in ("data-cur", "Currency", "Валюта", "rub"):
+            assert gone not in sec, lang + ": " + gone
+    for src in ("tools/build_strategy.py", "tools/strategy_copy.py", "assets/strategy.js", "assets/strategy.css"):
+        body = _read(src)
+        for gone in ("₽", "data-cur", "pr_cur", "calcSt.cur", "'rub'", '"rub"'):
+            assert gone not in body, src + ": " + gone
+
+
+def test_money_format_follows_the_language():
+    """FR-SITE113: «$1 257,14» по-русски (разряды неразрывным пробелом, центы через
+    запятую), «$1,257.14» по-английски; целые — без центов."""
+    B = _builder()
+    from strategy_copy import EN, RU
+    assert (EN["pr_calc"]["sep"], EN["pr_calc"]["dec"]) == (",", ".")
+    assert (RU["pr_calc"]["sep"], RU["pr_calc"]["dec"]) == (u"\u00a0", ",")
+    assert B.money(125714, ",", ".") == "$1,257.14" and B.money(125714, u"\u00a0", ",") == u"$1\u00a0257,14"
+    assert B.money(100000, ",", ".") == "$1,000" and B.money(10000, u"\u00a0", ",") == "$100"
+    assert B.money(1385714, ",", ".") == "$13,857.14" and B.money(70, ",", ".") == "$0.70"
+    js = _read("assets/strategy.js")
+    assert ("return '$' + String(d).replace(/\\B(?=(\\d{3})+(?!\\d))/g, CD.txt.sep) + "
+            "(r ? CD.txt.dec + (r < 10 ? '0' : '') + r : '');") in js
+
+
+def test_period_switch_is_above_the_team_size_with_savings_badge():
+    """FR-SITE115. Владелец 26.11: «month и year поставь у года процент экономии»,
+    «год/месяц — выше, а размер команды ниже»: «Месяц | Год −17%» стоит над карточкой
+    с ползунком; прежних «2 месяца в подарок» нет."""
+    B = _builder()
     en, ru = _en(), _ru()
     assert ('<button type="button" data-period="month" aria-pressed="true">Month</button>'
-            '<button type="button" data-period="year" aria-pressed="false">Year <em>— 2 months free</em></button>') in en
+            '<button type="button" data-period="year" aria-pressed="false">Year <em>−17%</em></button>') in en
     assert ('<button type="button" data-period="month" aria-pressed="true">Месяц</button>'
-            '<button type="button" data-period="year" aria-pressed="false">Год <em>— 2 месяца в подарок</em></button>') in ru
-    assert ('<button type="button" data-cur="usd" aria-pressed="true">$</button>'
-            '<button type="button" data-cur="rub" aria-pressed="false">₽</button>') in en
-    assert ('<button type="button" data-cur="usd" aria-pressed="false">$</button>'
-            '<button type="button" data-cur="rub" aria-pressed="true">₽</button>') in ru
+            '<button type="button" data-period="year" aria-pressed="false">Год <em>−17%</em></button>') in ru
+    assert B.YEAR_SAVE == 17 == round(100.0 * (12 - B.YEAR_PAID) / 12)
+    for lang, html in _pages():
+        sec = _pricing_sec(html)
+        assert sec.index('class="calc-sw"') < sec.index('class="calc-card"') < sec.index('class="pks"'), lang
+        assert "2 months free" not in html and "2 месяца в подарок" not in html, lang
     js = _read("assets/strategy.js")
-    assert "v = p[calcSt.cur][calcSt.period === 'year' ? 1 : 0]" in js
-    assert "$('#calc-n', calc).addEventListener('input', renderCalc);" in js
     assert "calcSt.period = b.getAttribute('data-period'); renderCalc();" in js
-    assert "calcSt.cur = b.getAttribute('data-cur'); renderCalc();" in js
-    assert "return cur === 'rub' ? s + '\\u00a0₽' : '$' + s;" in js, "рубль — после числа, доллар — перед"
+    assert ".seg em { display: inline-block;" in _read("assets/strategy.css")
 
 
-def test_free_process_is_the_main_button_and_large_says_contact():
-    """FR-SITE102: главная кнопка экрана — бесплатный процесс (белая, в продукт);
-    у 250+ — цена «от …» и «Связаться» на почту из подвала. Место под «Связаться»
-    занято всегда — карточка не прыгает при смене тарифа."""
+def test_three_packages_replace_the_single_tariff_card():
+    """FR-SITE119: вместо одной карточки тарифа — те же три пакета, что на главной:
+    название и кнопка, цена с периодом, продление и «на сотрудника», «Первый
+    процесс — бесплатно»; «ИИ-трансформация» выделена рамкой и белой кнопкой."""
+    B = _builder()
     for lang, html in _pages():
-        want = "https://strategy.andre.technology/" + ("?lang=ru" if lang == "ru" else "")
-        text = "Начать бесплатно — 1 процесс" if lang == "ru" else "Start free — 1 process"
-        assert '<a class="btn btn-primary calc-free" href="%s" rel="noopener">%s <i' % (want, text) in html, lang
-        contact = "Связаться" if lang == "ru" else "Contact us"
-        assert ('<a class="btn btn-ghost btn-sm calc-contact" href="mailto:admin@andre.technology" tabindex="-1" '
-                'aria-hidden="true">%s <i' % contact) in html, lang
-        assert '<span class="calc-from" hidden>%s</span>' % ("от" if lang == "ru" else "from") in html, lang
-    css, js = _read("assets/strategy.css"), _read("assets/strategy.js")
-    assert ".calc-contact { flex: 0 0 auto; visibility: hidden; }" in css and ".calc.big .calc-contact { visibility: visible; }" in css
-    assert "calc.classList.toggle('big', big);" in js and "$('.calc-from', calc).hidden = !big;" in js
-    assert "ct.tabIndex = big ? 0 : -1;" in js, "невидимая кнопка не ловит фокус"
+        sec = _pricing_sec(html)
+        assert re.findall(r'<article class="pk( hot)?" data-pkg="(\w+)">', sec) == \
+            [("", "strategy"), ("", "platform"), (" hot", "transformation")], lang
+        assert sec.count('class="pk-was"') == sec.count('class="pk-num"') == sec.count('class="pk-ren"') == 3, lang
+        for gone in ("calc-plan", "calc-price", "calc-contact", "calc-free", "calc-from"):
+            assert gone not in sec, lang + ": " + gone
+    en, ru = _en(), _ru()
+    for name in ("AI Strategy", "AI Platform", "AI Transformation"):
+        assert '<p class="pk-name">%s</p>' % name in en, name
+    for name in ("ИИ-стратегия", "ИИ-платформа", "ИИ-трансформация"):
+        assert '<p class="pk-name">%s</p>' % name in ru, name
+    css = _read("assets/strategy.css")
+    assert '.pk { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name go" "price go" "next next" "free free";' in css
+    assert ".pk.hot { border-color: rgba(136,84,243,0.55);" in css
+    assert ".pk-next { grid-area: next; margin: 0; min-height: 1.4em; white-space: nowrap;" in css, "строка держит место и пустой"
+    assert B.PACKAGES == ("strategy", "platform", "transformation")
 
 
-def test_process_pool_note_replaces_one_time_packs():
-    """FR-SITE102, владелец 24.11: вместо «Разовая покупка. Без подписки» и счёта
-    процессов на сотрудника — одна строка про общий запас процессов компании."""
-    import sys
-    sys.path.insert(0, os.path.join(_ROOT, "tools"))
+def test_page_is_built_in_the_default_state():
+    """FR-SITE119: без скрипта экран читается в состоянии по умолчанию — 5
+    сотрудников (группа 1–10), «Месяц»: $100 разово, $200 за 1-й месяц, $1 257,14 за 3
+    месяца, далее $100 / мес, ≈ $20 на сотрудника."""
+    en, ru = _en(), _ru()
+    for page in (en, ru):
+        assert '<input class="calc-rng" id="calc-n" type="range" min="0" max="41" step="1" value="4"' in page
+        assert '<output class="calc-v" id="calc-v" for="calc-n">5</output>' in page
+        assert '<li class="on">1–10</li><li>11–100</li><li>101–249</li><li>250+</li>' in page
+    assert '<b class="pk-num">$100</b> <span class="pk-per">one-time</span>' in en
+    assert '<b class="pk-num">$200</b> <span class="pk-per">first month</span>' in en
+    assert '<b class="pk-num">$1,257.14</b> <span class="pk-per">first 3 months</span>' in en
+    assert '<span class="pk-ren">then $100 / mo</span><span class="pk-emp">≈ $20 per employee / mo</span>' in en
+    assert '<b class="pk-num">$1 257,14</b> <span class="pk-per">за 3 месяца</span>' in ru
+    assert '<b class="pk-num">$200</b> <span class="pk-per">за 1-й месяц</span>' in ru
+    assert '<span class="pk-ren">далее $100 / мес</span><span class="pk-emp">≈ $20 на сотрудника в месяц</span>' in ru
+    assert 'aria-valuetext="5 employees (1–10)"' in en and 'aria-valuetext="5 сотрудников (1–10)"' in ru
+    for page in (en, ru):
+        assert page.count('<s class="pk-was"></s>') == 3, "в «Месяц» зачёркнутых цен нет"
+
+
+def test_price_updates_live_on_input_with_a_short_roll():
+    """FR-SITE116, NFR-SITE104: цена пересчитывается на `input` ползунка (во время
+    перетаскивания), смена числа — короткая «прокрутка» ≤ 300 мс, при
+    prefers-reduced-motion — сразу; зачёркнутая цена — «было $X» для диктора."""
+    js, css = _read("assets/strategy.js"), _read("assets/strategy.css")
+    assert "$('#calc-n', calc).addEventListener('input', renderCalc);" in js
+    assert "addEventListener('change'" not in js
+    dur = int(re.search(r"\{ duration: (\d+), easing: 'cubic-bezier\(0\.22, 1, 0\.36, 1\)' \}", js).group(1))
+    assert dur <= 300, dur
+    assert "if (calcReady && html && !reduce && el.animate)" in js
+    assert "var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;" in js
+    assert ("calcRoll($('.pk-was', pk), p && p.was ? '<span class=\"sr\">' + TX.was + ' </span>' + calcMoney(p.was) : '');") in js
+    assert ".sr { position: absolute; width: 1px; height: 1px;" in css
     from strategy_copy import EN, RU
-    assert EN["pr_sub"] == "First process free. One process pool for the whole company — the admin decides who gets how many"
-    assert RU["pr_sub"] == "Первый процесс — бесплатно. Запас процессов — общий на компанию, админ раздаёт кому сколько"
+    assert EN["pr_calc"]["was"] == "was" and RU["pr_calc"]["was"] == "было"
+
+
+def test_per_employee_line_and_active_band():
+    """FR-SITE116: «≈ $X на сотрудника в месяц» — месячная часть Нейрония (за год —
+    10N / 12) ÷ сотрудников, до доллара; группы размеров под ползунком, активная
+    подсвечена не только цветом."""
+    B = _builder()
+    js, css = _read("assets/strategy.js"), _read("assets/strategy.css")
+    assert "pe = b.n == null ? 0 : Math.round((y ? CD.yearPaid * b.n / 12 : b.n) / n / 100);" in js
+    assert "calcRoll($('.pk-emp', pk), p && p.next ? TX.emp_line.replace('{m}', calcMoney(pe * 100)) : '');" in js
+    assert "$$('.calc-bands li', calc).forEach(function (li, k) { li.classList.toggle('on', CD.bands[k] === b); });" in js
+    assert ".calc-bands li.on { color: var(--w); font-weight: 700; }" in css
+    assert ".calc-bands li.on::before { background: linear-gradient(90deg, var(--p), var(--o)); }" in css
+    for n, month, year in ((5, 20, 17), (50, 10, 8), (150, 7, 6)):
+        band = B.band_of(n)
+        assert (B.per_employee(band, "month", n), B.per_employee(band, "year", n)) == (month, year), n
+    from strategy_copy import EN, RU
+    assert EN["pr_calc"]["emp_line"] == "≈ {m} per employee / mo" and RU["pr_calc"]["emp_line"] == "≈ {m} на сотрудника в месяц"
+    assert "' (' + b.id + ')'" in js, "диктору — число и группа"
+
+
+def test_no_start_free_button_and_first_process_free_under_each_card():
+    """FR-SITE117. Владелец 26.11: «"Start free — 1 process" — эту кнопку убери,
+    просто должно быть снизу под каждой написано First process free», строку «One
+    process pool for the whole company …» — убрать."""
+    from strategy_copy import EN, RU
+    for key in ("pr_free", "pr_sub", "pr_cur", "pr_cur_aria", "pr_contact", "pr_contact_href"):
+        assert key not in EN and key not in RU, key
+    assert EN["pr_first"] == "First process free" and RU["pr_first"] == "Первый процесс — бесплатно"
     for lang, html in _pages():
-        for gone in ("per employee", "на сотрудника", "opens in parts", "открывается частями", "No subscription", "Без подписки"):
-            assert gone not in html, lang + ": " + gone
+        sec = _pricing_sec(html)
+        for gone in ("Start free — 1 process", "Начать бесплатно — 1 процесс", "process pool", "Запас процессов", 'class="lead"'):
+            assert gone not in sec, lang + ": " + gone
+        free = EN["pr_first"] if lang == "en" else RU["pr_first"]
+        assert sec.count('<p class="pk-free">%s</p>' % free) == 3, lang + ": под каждым из трёх пакетов"
+
+
+def test_large_company_is_on_request_and_writes_to_the_owner():
+    """FR-SITE118: с 250 — «On request» / «По запросу», кнопки — «Contact us» /
+    «Связаться» на почту из подвала с темой в формате заявки главной
+    («Pricing: 300 (250+) / year / platform»); до 250 — «Start» / «Начать» в продукт."""
+    B = _builder()
+    from strategy_copy import EN, RU
+    assert (EN["pr_calc"]["ask"], EN["pr_calc"]["contact"], EN["pr_calc"]["go"]) == ("On request", "Contact us", "Start")
+    assert (RU["pr_calc"]["ask"], RU["pr_calc"]["contact"], RU["pr_calc"]["go"]) == ("По запросу", "Связаться", "Начать")
+    assert B.lead_subject(300, False, B.band_of(300), "year", "platform") == "Pricing: 300 (250+) / year / platform"
+    assert B.lead_subject(1000, True, B.band_of(1000), "month", "transformation") == "Pricing: 1000+ (250+) / month / transformation"
+    t = dict(EN, pr_calc=EN["pr_calc"])
+    card = B.package_html(t, "platform", 300, "year")
+    assert 'class="pk ask"' in card and '<b class="pk-num">On request</b>' in card
+    assert 'href="mailto:admin@andre.technology?subject=Pricing%3A%20300%20(250%2B)%20%2F%20year%20%2F%20platform"' in card, \
+        "тема кодируется как encodeURIComponent в скрипте"
+    js = _read("assets/strategy.js")
+    assert ("go.setAttribute('href', p ? CD.go : 'mailto:' + CD.mail + '?subject=' +\n"
+            "        encodeURIComponent('Pricing: ' + n + (more ? '+' : '') + ' (' + b.id + ') / ' + calcSt.period + ' / ' + key));") in js
+    assert "pk.classList.toggle('ask', !p);" in js
+    assert ".pk.ask" not in _read("assets/strategy.css"), "«По запросу» тем же кеглем, что цена: строка не меняет высоту"
 
 
 def test_pricing_keys_and_phone_targets():
-    """FR-SITE102: стрелки на ползунке двигают ползунок, а не листают экраны;
-    на телефоне переключатели и кнопки — не ниже 44px; длинная цена (рубли за год
-    у 250+) ужимается по ширине, когда экран показан (скрытый экран мерить нечем)."""
+    """FR-SITE102, NFR-SITE103: стрелки на ползунке двигают ползунок, а не листают
+    экраны; на телефоне переключатель, ползунок и кнопки пакетов — не ниже 44px;
+    длинная цена ужимается по ширине, когда экран показан (скрытый экран мерить
+    нечем), высота строки прежняя."""
     js, css = _read("assets/strategy.js"), _read("assets/strategy.css")
     assert "if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) return;" in js
     assert "fitHeadings(screens[cur]);\n    fitCalcPrice();\n    fitScreen(screens[cur]);" in js
+    assert "$$('.pk-price, .pk-next, .pk-name', calc).forEach(fitLine);" in js
+    assert "if (el.style.fontSize) el.style.minHeight = h + 'px';" in js
     assert ".calc-rng { display: block; width: 100%; height: 44px;" in css
     mob = _mobile_block()
-    assert ".seg button { min-height: 44px;" in mob and ".calc-contact { min-height: 44px; }" in mob
+    assert ".seg button { min-height: 44px;" in mob and ".pk .pk-go { min-height: 44px;" in mob
 
 
 # ── финал и подвал ────────────────────────────────────────────────────────
@@ -586,13 +758,14 @@ def test_final_screen_carries_the_footer():
 
 
 def test_cta_targets_the_product():
-    """Все кнопки — в продукт. Единственное исключение — «Связаться» у тарифа
-    250+ (FR-SITE102): она ведёт на почту, как значок письма в подвале."""
+    """Все кнопки — в продукт. Единственное исключение — «Связаться» у пакетов при
+    250+ (FR-SITE102, FR-SITE118): её адрес ставит скрипт — на почту из подвала, как
+    значок письма; в собранной странице (5 сотрудников) все кнопки ведут в продукт."""
     for lang, html in _pages():
-        hrefs = re.findall(r'class="btn btn-[a-z]+(?![^"]*calc-contact)[^"]*" href="([^"]+)"', html)
+        hrefs = re.findall(r'class="btn btn-[a-z]+[^"]*" href="([^"]+)"', html)
         assert hrefs, lang + ": на странице должны быть кнопки"
-        assert re.findall(r'class="btn btn-ghost btn-sm calc-contact" href="([^"]+)"', html) == \
-            ["mailto:admin@andre.technology"], lang + ": «Связаться» — на почту из подвала"
+        assert len(re.findall(r'class="btn btn-[a-z]+ btn-sm pk-go" href="https://strategy', html)) == 3, \
+            lang + ": кнопки трёх пакетов — в продукт"
         for h in hrefs:
             # FR-SITE85: русская — с ?lang=ru, английская — без (язык по браузеру)
             want = "https://strategy.andre.technology/" + ("?lang=ru" if lang == "ru" else "")
@@ -1329,14 +1502,14 @@ def test_every_step_subtitle_is_one_short_line():
 
 def test_pricing_buttons_all_say_start():
     """Правка владельца: «вместо choose везде start, просто, без SMB/Стартап».
-    FR-SITE102: карточек тарифов больше нет — главная кнопка экрана «Start free —
-    1 process» / «Начать бесплатно — 1 процесс», у 250+ ещё «Связаться»."""
+    FR-SITE117/118 (26.11): кнопки трёх пакетов — «Start» / «Начать», у 250+ —
+    «Contact us» / «Связаться»; «Start free — 1 process» убрана."""
     import sys, os
     sys.path.insert(0, os.path.join(_ROOT, "tools"))
     from strategy_copy import EN, RU
     assert "plans" not in EN and "plans" not in RU, "прежних карточек тарифов нет"
-    assert EN["pr_free"] == "Start free — 1 process" and RU["pr_free"] == "Начать бесплатно — 1 процесс"
-    assert EN["pr_contact"] == "Contact us" and RU["pr_contact"] == "Связаться"
+    assert EN["pr_calc"]["go"] == "Start" and RU["pr_calc"]["go"] == "Начать"
+    assert EN["pr_calc"]["contact"] == "Contact us" and RU["pr_calc"]["contact"] == "Связаться"
     for lang, html in _pages():
         assert "Choose" not in html and "Выбрать" not in html, lang + ": старых надписей нет"
 
@@ -1494,14 +1667,15 @@ def test_owner_batch_of_short_copy_and_card_sizes():
     «Что автоматизировать с ИИ» и «Что именно разрабатывать» по-русски,
     вторая строка обучения про самостоятельную разработку агентов, точки
     после «business model» и «Start free» убраны, в подвале нет точки-
-    разделителя, кнопка тарифа одинаковая у всех четырёх (с FR-SITE102 карточек
-    тарифов нет: ghost-кнопка на экране тарифов одна — «Связаться» у 250+)."""
+    разделителя, кнопка тарифа одинаковая у всех (с FR-SITE119 — три пакета: у
+    стратегии и платформы ghost-кнопка, у рекомендованной трансформации — белая,
+    размер у всех один — btn-sm)."""
     en, ru = _en(), _ru()
     for page in (en, ru):
         assert "&middot;" not in page.split('class="legal"')[1][:200], \
             "в подвале между ссылками нет точки"
-        assert page.count('class="btn btn-ghost btn-sm') == 1, \
-            "на экране тарифов одна ghost-кнопка — «Связаться» у 250+"
+        assert page.count('class="btn btn-ghost btn-sm pk-go"') == 2 and page.count('class="btn btn-primary btn-sm pk-go"') == 1, \
+            "на экране тарифов кнопки трёх пакетов одного размера"
     assert "Who does what</p>" in en and "Кто что делает</p>" in ru, "без «человек или ИИ»"
     assert "Your business processes</p>" in en and "Ваши бизнес-процессы</p>" in ru
     assert "How people think</p>" in en and "Как люди думают</p>" in ru
@@ -1693,7 +1867,7 @@ def test_ru_page_leads_to_the_russian_product():
     без параметра, язык по браузеру."""
     ru, en = _raw("ai-strategy/ru/index.html"), _raw("ai-strategy/index.html")
     hrefs = re.findall(r'href="(https://strategy\.andre\.technology/[^"]*)"', ru)
-    # с FR-SITE102 на экране тарифов одна кнопка в продукт вместо четырёх
+    # с FR-SITE119 на экране тарифов — кнопки трёх пакетов в продукт
     assert len(hrefs) >= 5 and set(hrefs) == {"https://strategy.andre.technology/?lang=ru"}, hrefs
     assert "?lang=" not in "".join(re.findall(r'href="https://strategy[^"]*"', en))
 
